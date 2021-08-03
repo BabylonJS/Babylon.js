@@ -24,12 +24,19 @@ const initialWindowSize = { width: 1024, height: 512 };
 // Note this should be false when committed until the feature is fully working.
 const isEnabled = false;
 
+// list of strategies to add to perf graph automatically.
 const defaultStrategies = [PerfCollectionStrategy.GpuFrameTimeStrategy(), PerfCollectionStrategy.FpsStrategy()];
+
+enum RecordingState {
+    NotRecording = "Begin Recording",
+    Recording = "Stop Recording",
+}
 
 export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentProps> = (props: IPerformanceViewerComponentProps) => {
     const { scene } = props;
     const [isOpen, setIsOpen] = useState(false);
     const [isLoaded, setIsLoaded] = useState(false);
+    const [recordingState, setRecordingState] = useState(RecordingState.NotRecording);
     const [ performanceCollector, setPerformanceCollector ] = useState<PerformanceViewerCollector | undefined>();
     const [layoutObservable] = useState(new Observable<IPerfLayoutSize>());
     const popupRef = useRef<PopupComponent | null>(null);
@@ -77,6 +84,14 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
         layoutObservable.notifyObservers({width, height});
     }
 
+    const onToggleRecording = () => {
+        if (recordingState === RecordingState.Recording) {
+            setRecordingState(RecordingState.NotRecording);
+        } else {
+            setRecordingState(RecordingState.Recording);
+        }    
+    }
+
     useEffect(() => {
         const perfCollector = new PerformanceViewerCollector(scene, defaultStrategies);
         setPerformanceCollector(perfCollector);
@@ -84,26 +99,37 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
 
     useEffect(() => {
         if (isOpen && !isLoaded) {
+            setRecordingState(RecordingState.Recording);
+        } else {
+            setRecordingState(RecordingState.NotRecording);
+        }
+    }, [isOpen]);
+
+    useEffect(() => {
+        if (recordingState === RecordingState.Recording) {
             if (performanceCollector?.hasLoadedData) {
                 performanceCollector?.clear();
                 performanceCollector?.addCollectionStrategies(...defaultStrategies);
             }
             performanceCollector?.start();
+        } else {
+            performanceCollector?.stop();
         }
 
         return () => {
             performanceCollector?.stop();
         }
-    }, [isOpen]);
+    }, [recordingState])
 
     return (
         <>
             {
                 isEnabled &&
                 <>
-                    <ButtonLineComponent label="Open Perf Viewer" onClick={onPerformanceButtonClick} />
-                    <FileButtonLineComponent accept="csv" label="Load CSV" onClick={onLoadClick} />
+                    <ButtonLineComponent label="Open Realtime Perf Viewer" onClick={onPerformanceButtonClick} />
+                    <FileButtonLineComponent accept="csv" label="Load Perf Viewer using CSV" onClick={onLoadClick} />
                     <ButtonLineComponent label="Export Perf to CSV" onClick={onExportClick} />
+                    {!isOpen && <ButtonLineComponent label={recordingState} onClick={onToggleRecording} />}
                 </>
             }
             {
