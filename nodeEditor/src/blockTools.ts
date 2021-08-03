@@ -344,6 +344,14 @@ export class BlockTools {
                 cameraPosition.setAsSystemValue(NodeMaterialSystemValues.CameraPosition);
                 return cameraPosition;
             }
+            case "CameraParametersBlock": {
+                let cameraParameters = new InputBlock("Camera parameters");
+                cameraParameters.setAsSystemValue(NodeMaterialSystemValues.CameraParameters);
+
+                let splitter = new VectorSplitterBlock("Vector splitter");
+                cameraParameters.connectTo(splitter);
+                return splitter;
+            }
             case "FogColorBlock": {
                 let FogColor = new InputBlock("Fog color");
                 FogColor.setAsSystemValue(NodeMaterialSystemValues.FogColor);

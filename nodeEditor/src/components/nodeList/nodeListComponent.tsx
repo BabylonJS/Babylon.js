@@ -88,6 +88,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         "RoundBlock": "Outputs fractional values rounded to the nearest whole number",
         "ModBlock": "Outputs the value of one parameter modulo another",
         "CameraPositionBlock": "Outputs a Vector3 position of the active scene camera",
+        "CameraParametersBlock": "Outputs a Vector4 containing (1 for webGL and -1 for webGPU, camera.minZ, camera.maxZ, 1 / camera.maxZ)",
         "FogBlock": "Applies fog to the scene with an increasing opacity based on distance from the camera",
         "FogColorBlock": "The system value for fog color pulled from the scene",
         "ImageProcessingBlock": "Provides access to all of the Babylon image processing properties",
@@ -253,7 +254,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Procedural__Texture: ["ScreenPositionBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
             Round: ["RoundBlock", "CeilingBlock", "FloorBlock"],
-            Scene: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock", "SceneDepthBlock"],
+            Scene: ["FogBlock", "CameraPositionBlock", "CameraParametersBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock", "SceneDepthBlock"],
         };
 
         switch (this.props.globalState.mode) {
