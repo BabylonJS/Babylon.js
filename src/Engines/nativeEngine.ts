@@ -177,10 +177,10 @@ interface INativeEngine {
     setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
 
     createTexture(): WebGLTexture;
-    loadTexture(texture: WebGLTexture, data: ArrayBufferView, generateMips: boolean, invertY: boolean, onSuccess: () => void, onError: () => void): void;
+    loadTexture(texture: WebGLTexture, data: ArrayBufferView, generateMips: boolean, invertY: boolean, srgb: boolean, onSuccess: () => void, onError: () => void): void;
     loadRawTexture(texture: WebGLTexture, data: ArrayBufferView, width: number, height: number, format: number, generateMips: boolean, invertY: boolean): void;
-    loadCubeTexture(texture: WebGLTexture, data: Array<ArrayBufferView>, generateMips: boolean, onSuccess: () => void, onError: () => void): void;
-    loadCubeTextureWithMips(texture: WebGLTexture, data: Array<Array<ArrayBufferView>>, onSuccess: () => void, onError: () => void): void;
+    loadCubeTexture(texture: WebGLTexture, data: Array<ArrayBufferView>, generateMips: boolean, invertY: boolean, srgb: boolean, onSuccess: () => void, onError: () => void): void;
+    loadCubeTextureWithMips(texture: WebGLTexture, data: Array<Array<ArrayBufferView>>, invertY: boolean, srgb: boolean, onSuccess: () => void, onError: () => void): void;
     getTextureWidth(texture: WebGLTexture): number;
     getTextureHeight(texture: WebGLTexture): number;
     setTextureSampling(texture: WebGLTexture, filter: number): void; // filter is a NativeFilter.XXXX value.
@@ -866,7 +866,7 @@ export class NativeEngine extends Engine {
             canUseGLInstanceID: true,
             canUseGLVertexID: true,
             supportComputeShaders: false,
-            supportSRGBBuffers: false,
+            supportSRGBBuffers: true,
         };
 
         this._features = {
@@ -1926,7 +1926,7 @@ export class NativeEngine extends Engine {
     public createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
         buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
-        forcedExtension: Nullable<string> = null, mimeType?: string, loaderOptions?: any): InternalTexture {
+        forcedExtension: Nullable<string> = null, mimeType?: string, loaderOptions?: any, creationFlags?: number, useSRGBBuffer = false): InternalTexture {
         url = url || "";
         const fromData = url.substr(0, 5) === "data:";
         //const fromBlob = url.substr(0, 5) === "blob:";
@@ -2009,17 +2009,18 @@ export class NativeEngine extends Engine {
                     return;
                 }
 
-                const webGLTexture = texture._hardwareTexture.underlyingResource;
+                const underlyingResource = texture._hardwareTexture.underlyingResource;
 
-                this._native.loadTexture(webGLTexture, data, !noMipmap, invertY, () => {
-                    texture.baseWidth = this._native.getTextureWidth(webGLTexture);
-                    texture.baseHeight = this._native.getTextureHeight(webGLTexture);
+                this._native.loadTexture(underlyingResource, data, !noMipmap, invertY, useSRGBBuffer, () => {
+                    texture._useSRGBBuffer = useSRGBBuffer && this._caps.supportSRGBBuffers;
+                    texture.baseWidth = this._native.getTextureWidth(underlyingResource);
+                    texture.baseHeight = this._native.getTextureHeight(underlyingResource);
                     texture.width = texture.baseWidth;
                     texture.height = texture.baseHeight;
                     texture.isReady = true;
 
                     var filter = this._getNativeSamplingMode(samplingMode);
-                    this._native.setTextureSampling(webGLTexture, filter);
+                    this._native.setTextureSampling(underlyingResource, filter);
 
                     if (scene) {
                         scene._removePendingData(texture);
@@ -2130,6 +2131,8 @@ export class NativeEngine extends Engine {
      * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
      * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
      * @param fallback defines texture to use while falling back when (compressed) texture file not found.
+     * @param loaderOptions options to be passed to the loader
+     * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
      * @returns the cube texture as an InternalTexture
      */
     public createCubeTexture(
@@ -2144,7 +2147,9 @@ export class NativeEngine extends Engine {
         createPolynomials = false,
         lodScale: number = 0,
         lodOffset: number = 0,
-        fallback: Nullable<InternalTexture> = null): InternalTexture {
+        fallback: Nullable<InternalTexture> = null,
+        loaderOptions?: any,
+        useSRGBBuffer = false): InternalTexture {
         var texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Cube);
         texture.isCube = true;
         texture.url = rootUrl;
@@ -2188,7 +2193,7 @@ export class NativeEngine extends Engine {
                 texture._isRGBD = true;
                 texture.invertY = true;
 
-                this._native.loadCubeTextureWithMips(texture._hardwareTexture!.underlyingResource, imageData, () => {
+                this._native.loadCubeTextureWithMips(texture._hardwareTexture!.underlyingResource, imageData, false, useSRGBBuffer, () => {
                     texture.isReady = true;
                     if (onLoad) {
                         onLoad();
@@ -2220,7 +2225,7 @@ export class NativeEngine extends Engine {
             const reorderedFiles = [files[0], files[3], files[1], files[4], files[2], files[5]];
             Promise.all(reorderedFiles.map((file) => Tools.LoadFileAsync(file).then((data) => new Uint8Array(data as ArrayBuffer)))).then((data) => {
                 return new Promise<void>((resolve, reject) => {
-                    this._native.loadCubeTexture(texture._hardwareTexture!.underlyingResource, data, !noMipmap, resolve, reject);
+                    this._native.loadCubeTexture(texture._hardwareTexture!.underlyingResource, data, !noMipmap, true, useSRGBBuffer, resolve, reject);
                 });
             }).then(() => {
                 texture.isReady = true;
