@@ -263,12 +263,12 @@ export class LinesMesh extends Mesh {
      * @returns a new InstancedLinesMesh
      */
     public createInstance(name: string): InstancedLinesMesh {
-        let instance = new InstancedLinesMesh(name, this);
+        const instance = new InstancedLinesMesh(name, this);
 
         if (this.instancedBuffers) {
             instance.instancedBuffers = {};
 
-            for (var key in this.instancedBuffers) {
+            for (const key in this.instancedBuffers) {
                 instance.instancedBuffers[key] = this.instancedBuffers[key];
             }
         }
