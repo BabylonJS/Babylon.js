@@ -7,6 +7,7 @@ import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
 import { serialize } from 'babylonjs/Misc/decorators';
+import { ICanvasRenderingContext } from 'babylonjs/Engines/ICanvas';
 import { DynamicTexture } from "babylonjs/Materials/Textures/dynamicTexture";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { Constants } from 'babylonjs/Engines/constants';
@@ -286,7 +287,7 @@ export class Container extends Control {
     }
 
     /** @hidden */
-    protected _localDraw(context: CanvasRenderingContext2D): void {
+    protected _localDraw(context: ICanvasRenderingContext): void {
         if (this._background) {
             context.save();
             if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -317,7 +318,7 @@ export class Container extends Control {
     }
 
     /** @hidden */
-    protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
             super._processMeasures(parentMeasure, context);
             this._evaluateClippingState(parentMeasure);
@@ -327,7 +328,7 @@ export class Container extends Control {
                     this._intermediateTexture = null;
                 }
                 if (!this._intermediateTexture) {
-                    this._intermediateTexture = new DynamicTexture('', {width: this._currentMeasure.width, height: this._currentMeasure.height},
+                    this._intermediateTexture = new DynamicTexture('', { width: this._currentMeasure.width, height: this._currentMeasure.height },
                         this._host.getScene(), false, Texture.NEAREST_SAMPLINGMODE, Constants.TEXTUREFORMAT_RGBA, false);
                     this._intermediateTexture.hasAlpha = true;
                 } else {
@@ -338,7 +339,7 @@ export class Container extends Control {
     }
 
     /** @hidden */
-    public _layout(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean {
+    public _layout(parentMeasure: Measure, context: ICanvasRenderingContext): boolean {
         if (!this.isDirty && (!this.isVisible || this.notRenderable)) {
             return false;
         }
@@ -421,9 +422,9 @@ export class Container extends Control {
     }
 
     /** @hidden */
-    public _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void {
+    public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Measure): void {
         const renderToIntermediateTextureThisDraw = this._renderToIntermediateTexture && this._intermediateTexture;
-        const contextToDrawTo: CanvasRenderingContext2D = renderToIntermediateTextureThisDraw ? (<DynamicTexture>this._intermediateTexture).getContext() : context;
+        const contextToDrawTo = renderToIntermediateTextureThisDraw ? (<DynamicTexture>this._intermediateTexture).getContext() : context;
 
         if (renderToIntermediateTextureThisDraw) {
             contextToDrawTo.save();
@@ -507,16 +508,16 @@ export class Container extends Control {
     }
 
     /** @hidden */
-    protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         super._additionalProcessing(parentMeasure, context);
 
         this._measureForChildren.copyFrom(this._currentMeasure);
     }
 
-     /**
-     * Serializes the current control
-     * @param serializationObject defined the JSON serialized object
-     */
+    /**
+    * Serializes the current control
+    * @param serializationObject defined the JSON serialized object
+    */
     public serialize(serializationObject: any) {
         super.serialize(serializationObject);
         if (!this.children.length) {

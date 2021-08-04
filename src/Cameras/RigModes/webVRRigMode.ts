@@ -2,7 +2,7 @@ import { Camera } from "../camera";
 import { Matrix } from "../../Maths/math.vector";
 import { Viewport } from '../../Maths/math.viewport';
 
-Camera._setWebVRRigMode = function(camera: Camera, rigParams: any) {
+Camera._setWebVRRigMode = function (camera: Camera, rigParams: any) {
     if (rigParams.vrDisplay) {
         var leftEye = rigParams.vrDisplay.getEyeParameters('left');
         var rightEye = rigParams.vrDisplay.getEyeParameters('right');

@@ -212,7 +212,7 @@ declare module "../../Engines/thinEngine" {
     }
 }
 
-ThinEngine.prototype.updateRawTexture = function(texture: Nullable<InternalTexture>, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): void {
+ThinEngine.prototype.updateRawTexture = function (texture: Nullable<InternalTexture>, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): void {
     if (!texture) {
         return;
     }
@@ -251,9 +251,8 @@ ThinEngine.prototype.updateRawTexture = function(texture: Nullable<InternalTextu
     texture.isReady = true;
 };
 
-ThinEngine.prototype.createRawTexture = function(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number,
-    compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT, creationFlags = 0): InternalTexture
-{
+ThinEngine.prototype.createRawTexture = function (data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number,
+    compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT, creationFlags = 0): InternalTexture {
     var texture = new InternalTexture(this, InternalTextureSource.Raw);
     texture.baseWidth = width;
     texture.baseHeight = height;
@@ -290,7 +289,7 @@ ThinEngine.prototype.createRawTexture = function(data: Nullable<ArrayBufferView>
     return texture;
 };
 
-ThinEngine.prototype.createRawCubeTexture = function(data: Nullable<ArrayBufferView[]>, size: number, format: number, type: number,
+ThinEngine.prototype.createRawCubeTexture = function (data: Nullable<ArrayBufferView[]>, size: number, format: number, type: number,
     generateMipMaps: boolean, invertY: boolean, samplingMode: number,
     compression: Nullable<string> = null): InternalTexture {
     var gl = this._gl;
@@ -367,7 +366,7 @@ ThinEngine.prototype.createRawCubeTexture = function(data: Nullable<ArrayBufferV
     return texture;
 };
 
-ThinEngine.prototype.updateRawCubeTexture = function(texture: InternalTexture, data: ArrayBufferView[], format: number, type: number, invertY: boolean, compression: Nullable<string> = null, level: number = 0): void {
+ThinEngine.prototype.updateRawCubeTexture = function (texture: InternalTexture, data: ArrayBufferView[], format: number, type: number, invertY: boolean, compression: Nullable<string> = null, level: number = 0): void {
     texture._bufferViewArray = data;
     texture.format = format;
     texture.type = type;
@@ -416,7 +415,7 @@ ThinEngine.prototype.updateRawCubeTexture = function(texture: InternalTexture, d
     texture.isReady = true;
 };
 
-ThinEngine.prototype.createRawCubeTextureFromUrl = function(url: string, scene: Nullable<Scene>, size: number, format: number, type: number, noMipmap: boolean,
+ThinEngine.prototype.createRawCubeTextureFromUrl = function (url: string, scene: Nullable<Scene>, size: number, format: number, type: number, noMipmap: boolean,
     callback: (ArrayBuffer: ArrayBuffer) => Nullable<ArrayBufferView[]>,
     mipmapGenerator: Nullable<((faces: ArrayBufferView[]) => ArrayBufferView[][])>,
     onLoad: Nullable<() => void> = null,
@@ -497,11 +496,14 @@ ThinEngine.prototype.createRawCubeTextureFromUrl = function(url: string, scene: 
 /** @hidden */
 function _convertRGBtoRGBATextureData(rgbData: any, width: number, height: number, textureType: number): ArrayBufferView {
     // Create new RGBA data container.
-    var rgbaData: any;
+    let rgbaData: any;
+    let val1 = 1;
     if (textureType === Constants.TEXTURETYPE_FLOAT) {
         rgbaData = new Float32Array(width * height * 4);
-    }
-    else {
+    } else if (textureType === Constants.TEXTURETYPE_HALF_FLOAT) {
+        rgbaData = new Uint16Array(width * height * 4);
+        val1 = 15360; // 15360 is the encoding of 1 in half float
+    } else {
         rgbaData = new Uint32Array(width * height * 4);
     }
 
@@ -517,7 +519,7 @@ function _convertRGBtoRGBATextureData(rgbData: any, width: number, height: numbe
             rgbaData[newIndex + 2] = rgbData[index + 2];
 
             // Add fully opaque alpha channel.
-            rgbaData[newIndex + 3] = 1;
+            rgbaData[newIndex + 3] = val1;
         }
     }
 
@@ -530,7 +532,7 @@ function _convertRGBtoRGBATextureData(rgbData: any, width: number, height: numbe
  * @hidden
  */
 function _makeCreateRawTextureFunction(is3D: boolean) {
-    return function(this: ThinEngine, data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
+    return function (this: ThinEngine, data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
         var target = is3D ? this._gl.TEXTURE_3D : this._gl.TEXTURE_2D_ARRAY;
         var source = is3D ? InternalTextureSource.Raw3D : InternalTextureSource.Raw2DArray;
         var texture = new InternalTexture(this, source);
@@ -588,7 +590,7 @@ ThinEngine.prototype.createRawTexture3D = _makeCreateRawTextureFunction(true);
  * @hidden
  */
 function _makeUpdateRawTextureFunction(is3D: boolean) {
-    return function(this: ThinEngine, texture: InternalTexture, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT): void {
+    return function (this: ThinEngine, texture: InternalTexture, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT): void {
         var target = is3D ? this._gl.TEXTURE_3D : this._gl.TEXTURE_2D_ARRAY;
         var internalType = this._getWebGLTextureType(textureType);
         var internalFormat = this._getInternalFormat(format);

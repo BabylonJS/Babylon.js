@@ -2,7 +2,7 @@ export interface IGroundConfiguration {
     size?: number;
     receiveShadows?: boolean;
     shadowLevel?: number;
-    /** @deprecated */ shadowOnly?: boolean; 
+    /** @deprecated */ shadowOnly?: boolean;
     mirror?: boolean | {
         sizeRatio?: number;
         blurKernel?: number;

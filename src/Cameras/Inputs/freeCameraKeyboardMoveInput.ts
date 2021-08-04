@@ -54,6 +54,24 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
     @serialize()
     public keysRight = [39];
 
+    /**
+     * Defines the pointer angular sensibility  along the X and Y axis or how fast is the camera rotating.
+     */
+    @serialize()
+    public rotationSpeed = 0.5;
+
+    /**
+     * Gets or Set the list of keyboard keys used to control the left rotation move of the camera.
+     */
+    @serialize()
+    public keysRotateLeft: number[] = [];
+
+    /**
+    * Gets or Set the list of keyboard keys used to control the right rotation move of the camera.
+    */
+    @serialize()
+    public keysRotateRight: number[] = [];
+
     private _keys = new Array<number>();
     private _onCanvasBlurObserver: Nullable<Observer<Engine>>;
     private _onKeyboardObserver: Nullable<Observer<KeyboardInfo>>;
@@ -81,7 +99,14 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
             let evt = info.event;
             if (!evt.metaKey) {
                 if (info.type === KeyboardEventTypes.KEYDOWN) {
-                    if (this.keysUp.indexOf(evt.keyCode) !== -1 || this.keysDown.indexOf(evt.keyCode) !== -1 || this.keysLeft.indexOf(evt.keyCode) !== -1 || this.keysRight.indexOf(evt.keyCode) !== -1 || this.keysUpward.indexOf(evt.keyCode) !== -1 || this.keysDownward.indexOf(evt.keyCode) !== -1) {
+                    if (this.keysUp.indexOf(evt.keyCode) !== -1
+                        || this.keysDown.indexOf(evt.keyCode) !== -1
+                        || this.keysLeft.indexOf(evt.keyCode) !== -1
+                        || this.keysRight.indexOf(evt.keyCode) !== -1
+                        || this.keysUpward.indexOf(evt.keyCode) !== -1
+                        || this.keysDownward.indexOf(evt.keyCode) !== -1
+                        || this.keysRotateLeft.indexOf(evt.keyCode) !== -1
+                        || this.keysRotateRight.indexOf(evt.keyCode) !== -1) {
                         var index = this._keys.indexOf(evt.keyCode);
 
                         if (index === -1) {
@@ -92,7 +117,14 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
                         }
                     }
                 } else {
-                    if (this.keysUp.indexOf(evt.keyCode) !== -1 || this.keysDown.indexOf(evt.keyCode) !== -1 || this.keysLeft.indexOf(evt.keyCode) !== -1 || this.keysRight.indexOf(evt.keyCode) !== -1 || this.keysUpward.indexOf(evt.keyCode) !== -1 || this.keysDownward.indexOf(evt.keyCode) !== -1) {
+                    if (this.keysUp.indexOf(evt.keyCode) !== -1
+                        || this.keysDown.indexOf(evt.keyCode) !== -1
+                        || this.keysLeft.indexOf(evt.keyCode) !== -1
+                        || this.keysRight.indexOf(evt.keyCode) !== -1
+                        || this.keysUpward.indexOf(evt.keyCode) !== -1
+                        || this.keysDownward.indexOf(evt.keyCode) !== -1
+                        || this.keysRotateLeft.indexOf(evt.keyCode) !== -1
+                        || this.keysRotateRight.indexOf(evt.keyCode) !== -1) {
                         var index = this._keys.indexOf(evt.keyCode);
 
                         if (index >= 0) {
@@ -155,6 +187,12 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
                     camera._localDirection.copyFromFloats(0, speed, 0);
                 } else if (this.keysDownward.indexOf(keyCode) !== -1) {
                     camera._localDirection.copyFromFloats(0, -speed, 0);
+                } else if (this.keysRotateLeft.indexOf(keyCode) !== -1) {
+                    camera._localDirection.copyFromFloats(0, 0, 0);
+                    camera.cameraRotation.y -= this._getLocalRotation();
+                } else if (this.keysRotateRight.indexOf(keyCode) !== -1) {
+                    camera._localDirection.copyFromFloats(0, 0, 0);
+                    camera.cameraRotation.y += this._getLocalRotation();
                 }
 
                 if (camera.getScene().useRightHandedSystem) {
@@ -187,6 +225,17 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
      */
     public getSimpleName(): string {
         return "keyboard";
+    }
+
+    private _getLocalRotation(): number {
+        let rotation = this.rotationSpeed * this._engine.getDeltaTime() / 1000;
+        if (this.camera.getScene().useRightHandedSystem) {
+            rotation *= -1;
+        }
+        if (this.camera.parent && this.camera.parent._getWorldMatrixDeterminant() < 0) {
+            rotation *= -1;
+        }
+        return rotation;
     }
 }
 

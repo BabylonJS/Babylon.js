@@ -1,6 +1,7 @@
 import { ThinEngine } from "../../Engines/thinEngine";
 import { InternalTexture, InternalTextureSource } from '../../Materials/Textures/internalTexture';
 import { Nullable } from '../../types';
+import { ICanvas } from "../ICanvas";
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
@@ -24,12 +25,12 @@ declare module "../../Engines/thinEngine" {
          * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
          */
         updateDynamicTexture(texture: Nullable<InternalTexture>,
-            source: ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | OffscreenCanvas,
+            source: ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | OffscreenCanvas | ICanvas,
             invertY?: boolean, premulAlpha?: boolean, format?: number, forceBindTexture?: boolean): void;
     }
 }
 
-ThinEngine.prototype.createDynamicTexture = function(width: number, height: number, generateMipMaps: boolean, samplingMode: number): InternalTexture {
+ThinEngine.prototype.createDynamicTexture = function (width: number, height: number, generateMipMaps: boolean, samplingMode: number): InternalTexture {
     var texture = new InternalTexture(this, InternalTextureSource.Dynamic);
     texture.baseWidth = width;
     texture.baseHeight = height;
@@ -53,7 +54,7 @@ ThinEngine.prototype.createDynamicTexture = function(width: number, height: numb
     return texture;
 };
 
-ThinEngine.prototype.updateDynamicTexture = function(texture: Nullable<InternalTexture>,
+ThinEngine.prototype.updateDynamicTexture = function (texture: Nullable<InternalTexture>,
     source: ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | OffscreenCanvas,
     invertY?: boolean,
     premulAlpha: boolean = false,

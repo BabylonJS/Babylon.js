@@ -65,8 +65,16 @@ export class PBRMaterialDefines extends MaterialDefines
 
     public MAINUV1 = false;
     public MAINUV2 = false;
+    public MAINUV3 = false;
+    public MAINUV4 = false;
+    public MAINUV5 = false;
+    public MAINUV6 = false;
     public UV1 = false;
     public UV2 = false;
+    public UV3 = false;
+    public UV4 = false;
+    public UV5 = false;
+    public UV6 = false;
 
     public ALBEDO = false;
     public GAMMAALBEDO = false;
@@ -101,6 +109,7 @@ export class PBRMaterialDefines extends MaterialDefines
     public GAMMAEMISSIVE = false;
 
     public REFLECTIVITY = false;
+    public REFLECTIVITY_GAMMA = false;
     public REFLECTIVITYDIRECTUV = 0;
     public SPECULARTERM = false;
 
@@ -116,9 +125,11 @@ export class PBRMaterialDefines extends MaterialDefines
     public METALLNESSSTOREINMETALMAPBLUE = false;
     public AOSTOREINMETALMAPRED = false;
     public METALLIC_REFLECTANCE = false;
+    public METALLIC_REFLECTANCE_GAMMA = false;
     public METALLIC_REFLECTANCEDIRECTUV = 0;
     public METALLIC_REFLECTANCE_USE_ALPHA_ONLY = false;
     public REFLECTANCE = false;
+    public REFLECTANCE_GAMMA = false;
     public REFLECTANCEDIRECTUV = 0;
 
     public ENVIRONMENTBRDF = false;
@@ -245,6 +256,7 @@ export class PBRMaterialDefines extends MaterialDefines
     public CLEARCOAT_REMAP_F0 = true;
     public CLEARCOAT_TINT = false;
     public CLEARCOAT_TINT_TEXTURE = false;
+    public CLEARCOAT_TINT_GAMMATEXTURE = false;
     public CLEARCOAT_TINT_TEXTUREDIRECTUV = 0;
 
     public ANISOTROPIC = false;
@@ -257,6 +269,7 @@ export class PBRMaterialDefines extends MaterialDefines
 
     public SHEEN = false;
     public SHEEN_TEXTURE = false;
+    public SHEEN_GAMMATEXTURE = false;
     public SHEEN_TEXTURE_ROUGHNESS = false;
     public SHEEN_TEXTUREDIRECTUV = 0;
     public SHEEN_TEXTURE_ROUGHNESSDIRECTUV = 0;
@@ -269,12 +282,18 @@ export class PBRMaterialDefines extends MaterialDefines
     public SUBSURFACE = false;
 
     public SS_REFRACTION = false;
+    public SS_REFRACTION_USE_INTENSITY_FROM_TEXTURE = false;
     public SS_TRANSLUCENCY = false;
+    public SS_TRANSLUCENCY_USE_INTENSITY_FROM_TEXTURE = false;
     public SS_SCATTERING = false;
 
     public SS_THICKNESSANDMASK_TEXTURE = false;
     public SS_THICKNESSANDMASK_TEXTUREDIRECTUV = 0;
     public SS_HAS_THICKNESS = false;
+    public SS_REFRACTIONINTENSITY_TEXTURE = false;
+    public SS_REFRACTIONINTENSITY_TEXTUREDIRECTUV = 0;
+    public SS_TRANSLUCENCYINTENSITY_TEXTURE = false;
+    public SS_TRANSLUCENCYINTENSITY_TEXTUREDIRECTUV = 0;
 
     public SS_REFRACTIONMAP_3D = false;
     public SS_REFRACTIONMAP_OPPOSITEZ = false;
@@ -289,7 +308,7 @@ export class PBRMaterialDefines extends MaterialDefines
     public SS_USE_THICKNESS_AS_DEPTH = false;
 
     public SS_MASK_FROM_THICKNESS_TEXTURE = false;
-    public SS_USE_GLTF_THICKNESS_TEXTURE = false;
+    public SS_USE_GLTF_TEXTURES = false;
 
     public UNLIT = false;
 
@@ -310,6 +329,7 @@ export class PBRMaterialDefines extends MaterialDefines
         super.reset();
         this.ALPHATESTVALUE = "0.5";
         this.PBR = true;
+        this.NORMALXYSCALE = true;
     }
 }
 
@@ -503,13 +523,13 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * If false, both RGB and A channels will be used
      * @hidden
      */
-     public _useOnlyMetallicFromMetallicReflectanceTexture = false;
+    public _useOnlyMetallicFromMetallicReflectanceTexture = false;
 
-     /**
-     * Defines to store metallicReflectanceColor in RGB and metallicF0Factor in A
-     * This is multiply against the scalar values defined in the material.
-     * @hidden
-     */
+    /**
+    * Defines to store metallicReflectanceColor in RGB and metallicF0Factor in A
+    * This is multiply against the scalar values defined in the material.
+    * @hidden
+    */
     public _metallicReflectanceTexture: Nullable<BaseTexture> = null;
 
     /**
@@ -519,13 +539,13 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * is false, _metallicReflectanceTexture takes precedence and _reflectanceTexture is not used
      * @hidden
      */
-     public _reflectanceTexture: Nullable<BaseTexture> = null;
+    public _reflectanceTexture: Nullable<BaseTexture> = null;
 
-     /**
-     * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
-     * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
-     * @hidden
-     */
+    /**
+    * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
+    * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
+    * @hidden
+    */
     public _microSurfaceTexture: Nullable<BaseTexture> = null;
 
     /**
@@ -1347,12 +1367,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             attribs.push(VertexBuffer.TangentKind);
         }
 
-        if (defines.UV1) {
-            attribs.push(VertexBuffer.UVKind);
-        }
-
-        if (defines.UV2) {
-            attribs.push(VertexBuffer.UV2Kind);
+        for (let i = 1; i <= Constants.MAX_SUPPORTED_UV_SETS; ++i) {
+            if (defines["UV" + i]) {
+                attribs.push(`uv${i === 1 ? "" : i}`);
+            }
         }
 
         if (defines.VERTEXCOLOR) {
@@ -1622,11 +1640,13 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                         defines.ROUGHNESSSTOREINMETALMAPGREEN = !this._useRoughnessFromMetallicTextureAlpha && this._useRoughnessFromMetallicTextureGreen;
                         defines.METALLNESSSTOREINMETALMAPBLUE = this._useMetallnessFromMetallicTextureBlue;
                         defines.AOSTOREINMETALMAPRED = this._useAmbientOcclusionFromMetallicTextureRed;
+                        defines.REFLECTIVITY_GAMMA = false;
                     }
                     else if (this._reflectivityTexture) {
                         MaterialHelper.PrepareDefinesForMergedUV(this._reflectivityTexture, defines, "REFLECTIVITY");
                         defines.MICROSURFACEFROMREFLECTIVITYMAP = this._useMicroSurfaceFromReflectivityMapAlpha;
                         defines.MICROSURFACEAUTOMATIC = this._useAutoMicroSurfaceFromReflectivityMap;
+                        defines.REFLECTIVITY_GAMMA = this._reflectivityTexture.gammaSpace;
                     } else {
                         defines.REFLECTIVITY = false;
                     }
@@ -1637,11 +1657,13 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                         defines.METALLIC_REFLECTANCE_USE_ALPHA_ONLY = this._useOnlyMetallicFromMetallicReflectanceTexture && !identicalTextures;
                         if (this._metallicReflectanceTexture) {
                             MaterialHelper.PrepareDefinesForMergedUV(this._metallicReflectanceTexture, defines, "METALLIC_REFLECTANCE");
+                            defines.METALLIC_REFLECTANCE_GAMMA = this._metallicReflectanceTexture.gammaSpace;
                         } else {
                             defines.METALLIC_REFLECTANCE = false;
                         }
                         if (this._reflectanceTexture && !identicalTextures && (!this._metallicReflectanceTexture || this._metallicReflectanceTexture && this._useOnlyMetallicFromMetallicReflectanceTexture)) {
                             MaterialHelper.PrepareDefinesForMergedUV(this._reflectanceTexture, defines, "REFLECTANCE");
+                            defines.REFLECTANCE_GAMMA = this._reflectanceTexture.gammaSpace;
                         } else {
                             defines.REFLECTANCE = false;
                         }

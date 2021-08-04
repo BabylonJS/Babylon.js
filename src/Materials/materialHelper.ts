@@ -49,11 +49,7 @@ export class MaterialHelper {
         defines[key] = true;
         if (texture.getTextureMatrix().isIdentityAs3x2()) {
             defines[key + "DIRECTUV"] = texture.coordinatesIndex + 1;
-            if (texture.coordinatesIndex === 0) {
-                defines["MAINUV1"] = true;
-            } else {
-                defines["MAINUV2"] = true;
-            }
+            defines["MAINUV" + (texture.coordinatesIndex + 1)] = true;
         } else {
             defines[key + "DIRECTUV"] = 0;
         }
@@ -254,12 +250,8 @@ export class MaterialHelper {
             defines["TANGENT"] = true;
         }
 
-        if (defines._needUVs) {
-            defines["UV1"] = mesh.isVerticesDataPresent(VertexBuffer.UVKind);
-            defines["UV2"] = mesh.isVerticesDataPresent(VertexBuffer.UV2Kind);
-        } else {
-            defines["UV1"] = false;
-            defines["UV2"] = false;
+        for (let i = 1; i <= Constants.MAX_SUPPORTED_UV_SETS; ++i) {
+            defines["UV" + i] = defines._needUVs ? mesh.isVerticesDataPresent(`uv${i === 1 ? "" : i}`) : false;
         }
 
         if (useVertexColor) {
@@ -308,41 +300,41 @@ export class MaterialHelper {
         }
 
         const texturesList = [
-        {
-            type: Constants.PREPASS_POSITION_TEXTURE_TYPE,
-            define: "PREPASS_POSITION",
-            index: "PREPASS_POSITION_INDEX",
-        },
-        {
-            type: Constants.PREPASS_VELOCITY_TEXTURE_TYPE,
-            define: "PREPASS_VELOCITY",
-            index: "PREPASS_VELOCITY_INDEX",
-        },
-        {
-            type: Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE,
-            define: "PREPASS_REFLECTIVITY",
-            index: "PREPASS_REFLECTIVITY_INDEX",
-        },
-        {
-            type: Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
-            define: "PREPASS_IRRADIANCE",
-            index: "PREPASS_IRRADIANCE_INDEX",
-        },
-        {
-            type: Constants.PREPASS_ALBEDO_TEXTURE_TYPE,
-            define: "PREPASS_ALBEDO",
-            index: "PREPASS_ALBEDO_INDEX",
-        },
-        {
-            type: Constants.PREPASS_DEPTH_TEXTURE_TYPE,
-            define: "PREPASS_DEPTH",
-            index: "PREPASS_DEPTH_INDEX",
-        },
-        {
-            type: Constants.PREPASS_NORMAL_TEXTURE_TYPE,
-            define: "PREPASS_NORMAL",
-            index: "PREPASS_NORMAL_INDEX",
-        }];
+            {
+                type: Constants.PREPASS_POSITION_TEXTURE_TYPE,
+                define: "PREPASS_POSITION",
+                index: "PREPASS_POSITION_INDEX",
+            },
+            {
+                type: Constants.PREPASS_VELOCITY_TEXTURE_TYPE,
+                define: "PREPASS_VELOCITY",
+                index: "PREPASS_VELOCITY_INDEX",
+            },
+            {
+                type: Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE,
+                define: "PREPASS_REFLECTIVITY",
+                index: "PREPASS_REFLECTIVITY_INDEX",
+            },
+            {
+                type: Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
+                define: "PREPASS_IRRADIANCE",
+                index: "PREPASS_IRRADIANCE_INDEX",
+            },
+            {
+                type: Constants.PREPASS_ALBEDO_TEXTURE_TYPE,
+                define: "PREPASS_ALBEDO",
+                index: "PREPASS_ALBEDO_INDEX",
+            },
+            {
+                type: Constants.PREPASS_DEPTH_TEXTURE_TYPE,
+                define: "PREPASS_DEPTH",
+                index: "PREPASS_DEPTH_INDEX",
+            },
+            {
+                type: Constants.PREPASS_NORMAL_TEXTURE_TYPE,
+                define: "PREPASS_NORMAL",
+                index: "PREPASS_NORMAL_INDEX",
+            }];
 
         if (scene.prePassRenderer && scene.prePassRenderer.enabled && canRenderToMRT) {
             defines.PREPASS = true;

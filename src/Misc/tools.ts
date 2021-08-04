@@ -215,7 +215,7 @@ export class Tools {
             return Math.fround(value);
         }
 
-        return (Tools._tmpFloatArray[0] = value);
+        return Tools._tmpFloatArray[0] = value, Tools._tmpFloatArray[0];
     }
 
     /**
@@ -741,7 +741,7 @@ export class Tools {
             successCallback(base64Image);
         }
         else {
-            this.ToBlob(canvas ?? Tools._ScreenshotCanvas, function(blob) {
+            this.ToBlob(canvas ?? Tools._ScreenshotCanvas, function (blob) {
                 //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
                 if (("download" in document.createElement("a"))) {
                     if (!fileName) {
@@ -757,7 +757,7 @@ export class Tools {
                     var newWindow = window.open("");
                     if (!newWindow) { return; }
                     var img = newWindow.document.createElement("img");
-                    img.onload = function() {
+                    img.onload = function () {
                         // no longer need to read the blob so it's revoked
                         URL.revokeObjectURL(url);
                     };
@@ -908,28 +908,22 @@ export class Tools {
 
     /**
      * Test if the given uri is a base64 string
+     * @deprecated Please use FileTools.IsBase64DataUrl instead.
      * @param uri The uri to test
      * @return True if the uri is a base64 string or false otherwise
      */
     public static IsBase64(uri: string): boolean {
-        return uri.length < 5 ? false : uri.substr(0, 5) === "data:";
+        return FileTools.IsBase64DataUrl(uri);
     }
 
     /**
      * Decode the given base64 uri.
+     * @deprecated Please use FileTools.DecodeBase64UrlToBinary instead.
      * @param uri The uri to decode
      * @return The decoded base64 data.
      */
     public static DecodeBase64(uri: string): ArrayBuffer {
-        const decodedString = atob(uri.split(",")[1]);
-        const bufferLength = decodedString.length;
-        const bufferView = new Uint8Array(new ArrayBuffer(bufferLength));
-
-        for (let i = 0; i < bufferLength; i++) {
-            bufferView[i] = decodedString.charCodeAt(i);
-        }
-
-        return bufferView.buffer;
+        return FileTools.DecodeBase64UrlToBinary(uri);
     }
 
     /**
@@ -1066,9 +1060,9 @@ export class Tools {
         Tools.EndPerformanceCounter = Tools._EndPerformanceCounterDisabled;
     }
 
-    private static _StartPerformanceCounterDisabled(counterName: string, condition?: boolean): void {}
+    private static _StartPerformanceCounterDisabled(counterName: string, condition?: boolean): void { }
 
-    private static _EndPerformanceCounterDisabled(counterName: string, condition?: boolean): void {}
+    private static _EndPerformanceCounterDisabled(counterName: string, condition?: boolean): void { }
 
     private static _StartUserMark(counterName: string, condition = true): void {
         if (!Tools._performance) {

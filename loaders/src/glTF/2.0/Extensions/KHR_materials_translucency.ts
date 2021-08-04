@@ -2,7 +2,7 @@ import { Nullable } from "babylonjs/types";
 import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
 import { Material } from "babylonjs/Materials/material";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
-import { IMaterial } from "../glTFLoaderInterfaces";
+import { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import { IKHRMaterialsTranslucency } from 'babylonjs-gltf2interface';
@@ -83,11 +83,10 @@ export class KHR_materials_translucency implements IGLTFLoaderExtension {
         }
 
         if (extension.translucencyTexture) {
+            (extension.translucencyTexture as ITextureInfo).nonColorData = true;
             return this._loader.loadTextureInfoAsync(`${context}/translucencyTexture`, extension.translucencyTexture)
                 .then((texture: BaseTexture) => {
-                    pbrMaterial.subSurface.thicknessTexture = texture;
-                    pbrMaterial.subSurface.useGltfStyleThicknessTexture = true;
-                    pbrMaterial.subSurface.useMaskFromThicknessTexture = true;
+                    pbrMaterial.subSurface.translucencyIntensityTexture = texture;
                 });
         } else {
             return Promise.resolve();

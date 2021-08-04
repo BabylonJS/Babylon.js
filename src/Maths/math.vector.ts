@@ -8,6 +8,8 @@ import { _TypeStore } from '../Misc/typeStore';
 import { Plane } from './math.plane';
 import { PerformanceConfigurator } from '../Engines/performanceConfigurator';
 
+type TransformNode = import('../Meshes/transformNode').TransformNode;
+
 /**
  * Class representing a vector containing 2 coordinates
  */
@@ -539,7 +541,7 @@ export class Vector2 {
      * @param time define where the derivative must be done
      * @returns 1st derivative
      */
-     public static Hermite1stDerivative(value1: DeepImmutable<Vector2>, tangent1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, tangent2: DeepImmutable<Vector2>, time: number): Vector2 {
+    public static Hermite1stDerivative(value1: DeepImmutable<Vector2>, tangent1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, tangent2: DeepImmutable<Vector2>, time: number): Vector2 {
         let result = Vector2.Zero();
 
         this.Hermite1stDerivativeToRef(value1, tangent1, value2, tangent2, time, result);
@@ -602,7 +604,7 @@ export class Vector2 {
      * @param vector defines the vector to normalize
      * @param result defines the vector where to store the result
      */
-     public static NormalizeToRef(vector: DeepImmutable<Vector2>, result: Vector2) {
+    public static NormalizeToRef(vector: DeepImmutable<Vector2>, result: Vector2) {
         var len = vector.length();
 
         if (len === 0) {
@@ -750,6 +752,9 @@ export class Vector2 {
  */
 export class Vector3 {
     private static _UpReadOnly = Vector3.Up() as DeepImmutable<Vector3>;
+    private static _LeftHandedForwardReadOnly = Vector3.Forward(false) as DeepImmutable<Vector3>;
+    private static _RightHandedForwardReadOnly = Vector3.Forward(true) as DeepImmutable<Vector3>;
+    private static _RightReadOnly = Vector3.Right() as DeepImmutable<Vector3>;
     private static _ZeroReadOnly = Vector3.Zero() as DeepImmutable<Vector3>;
 
     /** @hidden */
@@ -1499,6 +1504,35 @@ export class Vector3 {
     }
 
     /**
+     * Get angle between two vectors projected on a plane
+     * @param vector0 angle between vector0 and vector1
+     * @param vector1 angle between vector0 and vector1
+     * @param normal Normal of the projection plane
+     * @returns the angle between vector0 and vector1 projected on the plane with the specified normal
+     */
+    public static GetAngleBetweenVectorsOnPlane(vector0: Vector3, vector1: Vector3, normal: Vector3) {
+        MathTmp.Vector3[0].copyFrom(vector0);
+        const v0 = MathTmp.Vector3[0];
+        MathTmp.Vector3[1].copyFrom(vector1);
+        const v1 = MathTmp.Vector3[1];
+        MathTmp.Vector3[2].copyFrom(normal);
+        const vNormal = MathTmp.Vector3[2];
+        const right = MathTmp.Vector3[3];
+        const forward = MathTmp.Vector3[4];
+
+        v0.normalize();
+        v1.normalize();
+        vNormal.normalize();
+
+        Vector3.CrossToRef(vNormal, v0, right);
+        Vector3.CrossToRef(right, vNormal, forward);
+
+        const angle = Math.atan2(Vector3.Dot(v1, right), Vector3.Dot(v1, forward));
+
+        return Scalar.NormalizeRadians(angle);
+    }
+
+    /**
      * Slerp between two vectors. See also `SmoothToRef`
      * @param vector0 Start vector
      * @param vector1 End vector
@@ -1636,6 +1670,27 @@ export class Vector3 {
      */
     public static get UpReadOnly(): DeepImmutable<Vector3> {
         return Vector3._UpReadOnly;
+    }
+
+    /**
+     * Gets a right Vector3 that must not be updated
+     */
+    public static get RightReadOnly(): DeepImmutable<Vector3> {
+        return Vector3._RightReadOnly;
+    }
+
+    /**
+     * Gets a forward Vector3 that must not be updated
+     */
+    public static get LeftHandedForwardReadOnly(): DeepImmutable<Vector3> {
+        return Vector3._LeftHandedForwardReadOnly;
+    }
+
+    /**
+     * Gets a forward Vector3 that must not be updated
+     */
+    public static get RightHandedForwardReadOnly(): DeepImmutable<Vector3> {
+        return Vector3._RightHandedForwardReadOnly;
     }
 
     /**
@@ -1895,7 +1950,7 @@ export class Vector3 {
      * @param time define where the derivative must be done
      * @param result define where to store the derivative
      */
-     public static Hermite1stDerivativeToRef(value1: DeepImmutable<Vector3>, tangent1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, tangent2: DeepImmutable<Vector3>, time: number, result: Vector3) {
+    public static Hermite1stDerivativeToRef(value1: DeepImmutable<Vector3>, tangent1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, tangent2: DeepImmutable<Vector3>, time: number, result: Vector3) {
         const t2 = time * time;
 
         result.x = (t2 - time) * 6 * value1.x + (3 * t2 - 4 * time + 1) * tangent1.x + (-t2 + time) * 6 * value2.x + (3 * t2 - 2 * time) * tangent2.x;
@@ -2163,6 +2218,165 @@ export class Vector3 {
         var z = value1._z - value2._z;
 
         return (x * x) + (y * y) + (z * z);
+    }
+
+    /**
+     * Projects "vector" on the triangle determined by its extremities "p0", "p1" and "p2", stores the result in "ref"
+     * and returns the distance to the projected point.
+     * From http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.104.4264&rep=rep1&type=pdf
+     *
+     * @param vector the vector to get distance from
+     * @param p0 extremity of the triangle
+     * @param p1 extremity of the triangle
+     * @param p2 extremity of the triangle
+     * @param ref variable to store the result to
+     * @returns The distance between "ref" and "vector"
+     */
+    public static ProjectOnTriangleToRef(vector: DeepImmutable<Vector3>, p0: DeepImmutable<Vector3>, p1: DeepImmutable<Vector3>, p2: DeepImmutable<Vector3>, ref: Vector3): number {
+        const p1p0 = MathTmp.Vector3[0];
+        const p2p0 = MathTmp.Vector3[1];
+        const p2p1 = MathTmp.Vector3[2];
+        const normal = MathTmp.Vector3[3];
+        const vectorp0 = MathTmp.Vector3[4];
+
+        // Triangle vectors
+        p1.subtractToRef(p0, p1p0);
+        p2.subtractToRef(p0, p2p0);
+        p2.subtractToRef(p1, p2p1);
+
+        const p1p0L = p1p0.length();
+        const p2p0L = p2p0.length();
+        const p2p1L = p2p1.length();
+
+        if (p1p0L < Epsilon ||
+            p2p0L < Epsilon ||
+            p2p1L < Epsilon) {
+            // This is a degenerate triangle. As we assume this is part of a non-degenerate mesh,
+            // we will find a better intersection later.
+            // Let's just return one of the extremities
+            ref.copyFrom(p0);
+            return Vector3.Distance(vector, p0);
+        }
+
+        // Compute normal and vector to p0
+        vector.subtractToRef(p0, vectorp0);
+        Vector3.CrossToRef(p1p0, p2p0, normal);
+        const nl = normal.length();
+        if (nl < Epsilon) {
+            // Extremities are aligned, we are back on the case of a degenerate triangle
+            ref.copyFrom(p0);
+            return Vector3.Distance(vector, p0);
+        }
+        normal.normalizeFromLength(nl);
+        let l = vectorp0.length();
+        if (l < Epsilon) {
+            // Vector is p0
+            ref.copyFrom(p0);
+            return 0;
+        }
+        vectorp0.normalizeFromLength(l);
+
+        // Project to "proj" that lies on the triangle plane
+        const cosA = Vector3.Dot(normal, vectorp0);
+        const projVector = MathTmp.Vector3[5];
+        const proj = MathTmp.Vector3[6];
+        projVector.copyFrom(normal).scaleInPlace(- l * cosA);
+        proj.copyFrom(vector).addInPlace(projVector);
+
+        // Compute barycentric coordinates (v0, v1 and v2 are axis from barycenter to extremities)
+        const v0 = MathTmp.Vector3[4];
+        const v1 = MathTmp.Vector3[5];
+        const v2 = MathTmp.Vector3[7];
+        const tmp = MathTmp.Vector3[8];
+
+        v0.copyFrom(p1p0).scaleInPlace(1 / p1p0L);
+        tmp.copyFrom(p2p0).scaleInPlace(1 / p2p0L);
+        v0.addInPlace(tmp).scaleInPlace(-1);
+
+        v1.copyFrom(p1p0).scaleInPlace(- 1 / p1p0L);
+        tmp.copyFrom(p2p1).scaleInPlace(1 / p2p1L);
+        v1.addInPlace(tmp).scaleInPlace(-1);
+
+        v2.copyFrom(p2p1).scaleInPlace(- 1 / p2p1L);
+        tmp.copyFrom(p2p0).scaleInPlace(- 1 / p2p0L);
+        v2.addInPlace(tmp).scaleInPlace(-1);
+
+        // Determines which edge of the triangle is closest to "proj"
+        const projP = MathTmp.Vector3[9];
+        let dot;
+        let s0, s1, s2;
+        projP.copyFrom(proj).subtractInPlace(p0);
+        Vector3.CrossToRef(v0, projP, tmp);
+        dot = Vector3.Dot(tmp, normal);
+        s0 = dot;
+
+        projP.copyFrom(proj).subtractInPlace(p1);
+        Vector3.CrossToRef(v1, projP, tmp);
+        dot = Vector3.Dot(tmp, normal);
+        s1 = dot;
+
+        projP.copyFrom(proj).subtractInPlace(p2);
+        Vector3.CrossToRef(v2, projP, tmp);
+        dot = Vector3.Dot(tmp, normal);
+        s2 = dot;
+
+        const edge = MathTmp.Vector3[10];
+        let e0, e1;
+        if (s0 > 0 && s1 < 0) {
+            edge.copyFrom(p1p0);
+            e0 = p0;
+            e1 = p1;
+        } else if (s1 > 0 && s2 < 0) {
+            edge.copyFrom(p2p1);
+            e0 = p1;
+            e1 = p2;
+        } else {
+            edge.copyFrom(p2p0).scaleInPlace(-1);
+            e0 = p2;
+            e1 = p0;
+        }
+
+        // Determines if "proj" lies inside the triangle
+        const tmp2 = MathTmp.Vector3[9];
+        const tmp3 = MathTmp.Vector3[4];
+        e0.subtractToRef(proj, tmp);
+        e1.subtractToRef(proj, tmp2);
+        Vector3.CrossToRef(tmp, tmp2, tmp3);
+        const isOutside = Vector3.Dot(tmp3, normal) < 0;
+
+        // If inside, we already found the projected point, "proj"
+        if (!isOutside) {
+            ref.copyFrom(proj);
+            return Math.abs(l * cosA);
+        }
+
+        // If outside, we find "triProj", the closest point from "proj" on the closest edge
+        const r = MathTmp.Vector3[5];
+        Vector3.CrossToRef(edge, tmp3, r);
+        r.normalize();
+        const e0proj = MathTmp.Vector3[9];
+        e0proj.copyFrom(e0).subtractInPlace(proj);
+        const e0projL = e0proj.length();
+        if (e0projL < Epsilon) {
+            // Proj is e0
+            ref.copyFrom(e0);
+            return Vector3.Distance(vector, e0);
+        }
+        e0proj.normalizeFromLength(e0projL);
+        const cosG = Vector3.Dot(r, e0proj);
+        const triProj = MathTmp.Vector3[7];
+        triProj.copyFrom(proj).addInPlace(r.scaleInPlace(e0projL * cosG));
+
+        // Now we clamp "triProj" so it lies between e0 and e1
+        tmp.copyFrom(triProj).subtractInPlace(e0);
+        l = edge.length();
+        edge.normalizeFromLength(l);
+        let t = Vector3.Dot(tmp, edge) / Math.max(l, Epsilon);
+        t = Scalar.Clamp(t, 0, 1);
+        triProj.copyFrom(e0).addInPlace(edge.scaleInPlace(t * l));
+        ref.copyFrom(triProj);
+
+        return Vector3.Distance(vector, triProj);
     }
 
     /**
@@ -2886,6 +3100,55 @@ export class Vector4 {
     }
 
     /**
+     * Returns a new Vector4 set with the result of the transformation by the given matrix of the given vector.
+     * This method computes tranformed coordinates only, not transformed direction vectors (ie. it takes translation in account)
+     * The difference with Vector3.TransformCoordinates is that the w component is not used to divide the other coordinates but is returned in the w coordinate instead
+     * @param vector defines the Vector3 to transform
+     * @param transformation defines the transformation matrix
+     * @returns the transformed Vector4
+     */
+    public static TransformCoordinates(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>): Vector4 {
+        var result = Vector4.Zero();
+        Vector4.TransformCoordinatesToRef(vector, transformation, result);
+        return result;
+    }
+
+    /**
+     * Sets the given vector "result" coordinates with the result of the transformation by the given matrix of the given vector
+     * This method computes tranformed coordinates only, not transformed direction vectors (ie. it takes translation in account)
+     * The difference with Vector3.TransformCoordinatesToRef is that the w component is not used to divide the other coordinates but is returned in the w coordinate instead
+     * @param vector defines the Vector3 to transform
+     * @param transformation defines the transformation matrix
+     * @param result defines the Vector4 where to store the result
+     */
+    public static TransformCoordinatesToRef(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>, result: Vector4): void {
+        Vector4.TransformCoordinatesFromFloatsToRef(vector._x, vector._y, vector._z, transformation, result);
+    }
+
+    /**
+     * Sets the given vector "result" coordinates with the result of the transformation by the given matrix of the given floats (x, y, z)
+     * This method computes tranformed coordinates only, not transformed direction vectors
+     * The difference with Vector3.TransformCoordinatesFromFloatsToRef is that the w component is not used to divide the other coordinates but is returned in the w coordinate instead
+     * @param x define the x coordinate of the source vector
+     * @param y define the y coordinate of the source vector
+     * @param z define the z coordinate of the source vector
+     * @param transformation defines the transformation matrix
+     * @param result defines the Vector4 where to store the result
+     */
+    public static TransformCoordinatesFromFloatsToRef(x: number, y: number, z: number, transformation: DeepImmutable<Matrix>, result: Vector4): void {
+        const m = transformation.m;
+        var rx = x * m[0] + y * m[4] + z * m[8] + m[12];
+        var ry = x * m[1] + y * m[5] + z * m[9] + m[13];
+        var rz = x * m[2] + y * m[6] + z * m[10] + m[14];
+        var rw = x * m[3] + y * m[7] + z * m[11] + m[15];
+
+        result.x = rx;
+        result.y = ry;
+        result.z = rz;
+        result.w = rw;
+    }
+
+    /**
      * Returns a new Vector4 set with the result of the normal transformation by the given matrix of the given vector.
      * This methods computes transformed normalized direction vectors only.
      * @param vector the vector to transform
@@ -3305,10 +3568,10 @@ export class Quaternion {
 
     /**
      * Returns a new Vector3 set with the Euler angles translated from the current quaternion
-     * @param order is a reserved parameter and is ignored for now
      * @returns a new Vector3 containing the Euler angles
+     * @see https://doc.babylonjs.com/divingDeeper/mesh/transforms/center_origin/rotation_conventions
      */
-    public toEulerAngles(order = "YZX"): Vector3 {
+    public toEulerAngles(): Vector3 {
         var result = Vector3.Zero();
         this.toEulerAnglesToRef(result);
         return result;
@@ -3318,6 +3581,7 @@ export class Quaternion {
      * Sets the given vector3 "result" with the Euler angles translated from the current quaternion
      * @param result defines the vector which will be filled with the Euler angles
      * @returns the current unchanged quaternion
+     * @see https://doc.babylonjs.com/divingDeeper/mesh/transforms/center_origin/rotation_conventions
      */
     public toEulerAnglesToRef(result: Vector3): Quaternion {
 
@@ -3895,7 +4159,7 @@ export class Quaternion {
      * @param time define where the derivative must be done
      * @param result define where to store the derivative
      */
-    public static Hermite1stDerivativeToRef(value1: DeepImmutable<Quaternion>, tangent1: DeepImmutable<Quaternion>, value2: DeepImmutable<Quaternion>, tangent2: DeepImmutable<Quaternion>, time: number, result: Quaternion)  {
+    public static Hermite1stDerivativeToRef(value1: DeepImmutable<Quaternion>, tangent1: DeepImmutable<Quaternion>, value2: DeepImmutable<Quaternion>, tangent2: DeepImmutable<Quaternion>, time: number, result: Quaternion) {
         const t2 = time * time;
 
         result.x = (t2 - time) * 6 * value1.x + (3 * t2 - 4 * time + 1) * tangent1.x + (-t2 + time) * 6 * value2.x + (3 * t2 - 2 * time) * tangent2.x;
@@ -4479,6 +4743,16 @@ export class Matrix {
             hash = (hash * 397) ^ (this._m[i] | 0);
         }
         return hash;
+    }
+
+    /**
+     * Decomposes the current Matrix into a translation, rotation and scaling components of the provided node
+     * @param node the node to decompose the matrix to
+     * @returns true if operation was successful
+     */
+    public decomposeToTransformNode(node: TransformNode): boolean {
+        node.rotationQuaternion = node.rotationQuaternion || new Quaternion();
+        return this.decompose(node.scaling, node.rotationQuaternion, node.position);
     }
 
     /**
@@ -5090,16 +5364,14 @@ export class Matrix {
     public static RotationAlignToRef(from: DeepImmutable<Vector3>, to: DeepImmutable<Vector3>, result: Matrix): void {
         const c = Vector3.Dot(to, from);
         const m = result._m;
-        if (c < (-1 + Epsilon))
-        {
+        if (c < (-1 + Epsilon)) {
             // from and to are colinear and opposite direction.
             // compute a PI rotation on Z axis
-            m[0] = -1; m[1] =  0; m[2] =  0; m[3] =  0;
-            m[4] =  0; m[5] = -1; m[6] =  0; m[7] =  0;
-            m[8] =  0; m[9] =  0; m[10] = 1; m[11] = 0;
+            m[0] = -1; m[1] = 0; m[2] = 0; m[3] = 0;
+            m[4] = 0; m[5] = -1; m[6] = 0; m[7] = 0;
+            m[8] = 0; m[9] = 0; m[10] = 1; m[11] = 0;
         }
-        else
-        {
+        else {
             const v = Vector3.Cross(to, from);
             const k = 1 / (1 + c);
 
@@ -5472,11 +5744,12 @@ export class Matrix {
      * @param height defines the viewport height
      * @param znear defines the near clip plane
      * @param zfar defines the far clip plane
+     * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
      * @returns a new matrix as a left-handed orthographic projection matrix
      */
-    public static OrthoLH(width: number, height: number, znear: number, zfar: number): Matrix {
+    public static OrthoLH(width: number, height: number, znear: number, zfar: number, halfZRange?: boolean): Matrix {
         var matrix = new Matrix();
-        Matrix.OrthoLHToRef(width, height, znear, zfar, matrix);
+        Matrix.OrthoLHToRef(width, height, znear, zfar, matrix, halfZRange);
         return matrix;
     }
 
@@ -5487,8 +5760,9 @@ export class Matrix {
      * @param znear defines the near clip plane
      * @param zfar defines the far clip plane
      * @param result defines the target matrix
+     * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
      */
-    public static OrthoLHToRef(width: number, height: number, znear: number, zfar: number, result: Matrix): void {
+    public static OrthoLHToRef(width: number, height: number, znear: number, zfar: number, result: Matrix, halfZRange?: boolean): void {
         let n = znear;
         let f = zfar;
 
@@ -5505,6 +5779,10 @@ export class Matrix {
             result
         );
 
+        if (halfZRange) {
+            result.multiplyToRef(mtxConvertNDCToHalfZRange, result);
+        }
+
         result._updateIdentityStatus(a === 1 && b === 1 && c === 1 && d === 0);
     }
 
@@ -5516,11 +5794,12 @@ export class Matrix {
      * @param top defines the viewport top coordinate
      * @param znear defines the near clip plane
      * @param zfar defines the far clip plane
+     * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
      * @returns a new matrix as a left-handed orthographic projection matrix
      */
-    public static OrthoOffCenterLH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix {
+    public static OrthoOffCenterLH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, halfZRange?: boolean): Matrix {
         var matrix = new Matrix();
-        Matrix.OrthoOffCenterLHToRef(left, right, bottom, top, znear, zfar, matrix);
+        Matrix.OrthoOffCenterLHToRef(left, right, bottom, top, znear, zfar, matrix, halfZRange);
         return matrix;
     }
 
@@ -5533,8 +5812,9 @@ export class Matrix {
      * @param znear defines the near clip plane
      * @param zfar defines the far clip plane
      * @param result defines the target matrix
+     * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
      */
-    public static OrthoOffCenterLHToRef(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void {
+    public static OrthoOffCenterLHToRef(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, result: Matrix, halfZRange?: boolean): void {
         let n = znear;
         let f = zfar;
 
@@ -5553,6 +5833,10 @@ export class Matrix {
             result
         );
 
+        if (halfZRange) {
+            result.multiplyToRef(mtxConvertNDCToHalfZRange, result);
+        }
+
         result._markAsUpdated();
     }
 
@@ -5564,11 +5848,12 @@ export class Matrix {
      * @param top defines the viewport top coordinate
      * @param znear defines the near clip plane
      * @param zfar defines the far clip plane
+     * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
      * @returns a new matrix as a right-handed orthographic projection matrix
      */
-    public static OrthoOffCenterRH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix {
+    public static OrthoOffCenterRH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, halfZRange?: boolean): Matrix {
         var matrix = new Matrix();
-        Matrix.OrthoOffCenterRHToRef(left, right, bottom, top, znear, zfar, matrix);
+        Matrix.OrthoOffCenterRHToRef(left, right, bottom, top, znear, zfar, matrix, halfZRange);
         return matrix;
     }
 
@@ -5581,9 +5866,10 @@ export class Matrix {
      * @param znear defines the near clip plane
      * @param zfar defines the far clip plane
      * @param result defines the target matrix
+     * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
      */
-    public static OrthoOffCenterRHToRef(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void {
-        Matrix.OrthoOffCenterLHToRef(left, right, bottom, top, znear, zfar, result);
+    public static OrthoOffCenterRHToRef(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, result: Matrix, halfZRange?: boolean): void {
+        Matrix.OrthoOffCenterLHToRef(left, right, bottom, top, znear, zfar, result, halfZRange);
         result._m[10] *= -1; // No need to call _markAsUpdated as previous function already called it and let _isIdentityDirty to true
     }
 
@@ -5593,9 +5879,11 @@ export class Matrix {
      * @param height defines the viewport height
      * @param znear defines the near clip plane
      * @param zfar defines the far clip plane
+     * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
+     * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal)
      * @returns a new matrix as a left-handed perspective projection matrix
      */
-    public static PerspectiveLH(width: number, height: number, znear: number, zfar: number): Matrix {
+    public static PerspectiveLH(width: number, height: number, znear: number, zfar: number, halfZRange?: boolean, projectionPlaneTilt: number = 0): Matrix {
         var matrix = new Matrix();
 
         let n = znear;
@@ -5605,14 +5893,19 @@ export class Matrix {
         let b = 2.0 * n / height;
         let c = (f + n) / (f - n);
         let d = -2.0 * f * n / (f - n);
+        let rot = Math.tan(projectionPlaneTilt);
 
         Matrix.FromValuesToRef(
             a, 0.0, 0.0, 0.0,
-            0.0, b, 0.0, 0.0,
+            0.0, b, 0.0, rot,
             0.0, 0.0, c, 1.0,
             0.0, 0.0, d, 0.0,
             matrix
         );
+
+        if (halfZRange) {
+            matrix.multiplyToRef(mtxConvertNDCToHalfZRange, matrix);
+        }
 
         matrix._updateIdentityStatus(false);
         return matrix;
@@ -5624,11 +5917,13 @@ export class Matrix {
      * @param aspect defines the aspect ratio
      * @param znear defines the near clip plane
      * @param zfar defines the far clip plane
+     * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
+     * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal)
      * @returns a new matrix as a left-handed perspective projection matrix
      */
-    public static PerspectiveFovLH(fov: number, aspect: number, znear: number, zfar: number): Matrix {
+    public static PerspectiveFovLH(fov: number, aspect: number, znear: number, zfar: number, halfZRange?: boolean, projectionPlaneTilt: number = 0): Matrix {
         var matrix = new Matrix();
-        Matrix.PerspectiveFovLHToRef(fov, aspect, znear, zfar, matrix);
+        Matrix.PerspectiveFovLHToRef(fov, aspect, znear, zfar, matrix, true, halfZRange, projectionPlaneTilt);
         return matrix;
     }
 
@@ -5640,8 +5935,10 @@ export class Matrix {
      * @param zfar defines the far clip plane
      * @param result defines the target matrix
      * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
+     * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
+     * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal)
      */
-    public static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): void {
+    public static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true, halfZRange?: boolean, projectionPlaneTilt: number = 0): void {
         let n = znear;
         let f = zfar;
 
@@ -5650,14 +5947,20 @@ export class Matrix {
         let b = isVerticalFovFixed ? t : (t * aspect);
         let c = f !== 0 ? (f + n) / (f - n) : 1;
         let d = f !== 0 ? -2.0 * f * n / (f - n) : -2 * n;
+        let rot = Math.tan(projectionPlaneTilt);
 
         Matrix.FromValuesToRef(
             a, 0.0, 0.0, 0.0,
-            0.0, b, 0.0, 0.0,
+            0.0, b, 0.0, rot,
             0.0, 0.0, c, 1.0,
             0.0, 0.0, d, 0.0,
             result
         );
+
+        if (halfZRange) {
+            result.multiplyToRef(mtxConvertNDCToHalfZRange, result);
+        }
+
         result._updateIdentityStatus(false);
     }
 
@@ -5669,18 +5972,25 @@ export class Matrix {
      * @param zfar not used as infinity is used as far clip
      * @param result defines the target matrix
      * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
+     * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
+     * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal)
      */
-    public static PerspectiveFovReverseLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): void {
+    public static PerspectiveFovReverseLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true, halfZRange?: boolean, projectionPlaneTilt: number = 0): void {
         let t = 1.0 / (Math.tan(fov * 0.5));
         let a = isVerticalFovFixed ? (t / aspect) : t;
         let b = isVerticalFovFixed ? t : (t * aspect);
+        let rot = Math.tan(projectionPlaneTilt);
+
         Matrix.FromValuesToRef(
             a, 0.0, 0.0, 0.0,
-            0.0, b, 0.0, 0.0,
+            0.0, b, 0.0, rot,
             0.0, 0.0, -znear, 1.0,
             0.0, 0.0, 1.0, 0.0,
             result
         );
+        if (halfZRange) {
+            result.multiplyToRef(mtxConvertNDCToHalfZRange, result);
+        }
         result._updateIdentityStatus(false);
     }
 
@@ -5690,11 +6000,13 @@ export class Matrix {
      * @param aspect defines the aspect ratio
      * @param znear defines the near clip plane
      * @param zfar defines the far clip plane
+     * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
+     * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal)
      * @returns a new matrix as a right-handed perspective projection matrix
      */
-    public static PerspectiveFovRH(fov: number, aspect: number, znear: number, zfar: number): Matrix {
+    public static PerspectiveFovRH(fov: number, aspect: number, znear: number, zfar: number, halfZRange?: boolean, projectionPlaneTilt: number = 0): Matrix {
         var matrix = new Matrix();
-        Matrix.PerspectiveFovRHToRef(fov, aspect, znear, zfar, matrix);
+        Matrix.PerspectiveFovRHToRef(fov, aspect, znear, zfar, matrix, true, halfZRange, projectionPlaneTilt);
         return matrix;
     }
 
@@ -5706,8 +6018,10 @@ export class Matrix {
      * @param zfar defines the far clip plane
      * @param result defines the target matrix
      * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
+     * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
+     * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal)
      */
-    public static PerspectiveFovRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): void {
+    public static PerspectiveFovRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true, halfZRange?: boolean, projectionPlaneTilt: number = 0): void {
         //alternatively this could be expressed as:
         //    m = PerspectiveFovLHToRef
         //    m[10] *= -1.0;
@@ -5721,14 +6035,19 @@ export class Matrix {
         let b = isVerticalFovFixed ? t : (t * aspect);
         let c = f !== 0 ? -(f + n) / (f - n) : -1;
         let d = f !== 0 ? -2 * f * n / (f - n) : -2 * n;
+        let rot = Math.tan(projectionPlaneTilt);
 
         Matrix.FromValuesToRef(
             a, 0.0, 0.0, 0.0,
-            0.0, b, 0.0, 0.0,
+            0.0, b, 0.0, rot,
             0.0, 0.0, c, -1.0,
             0.0, 0.0, d, 0.0,
             result
         );
+
+        if (halfZRange) {
+            result.multiplyToRef(mtxConvertNDCToHalfZRange, result);
+        }
 
         result._updateIdentityStatus(false);
     }
@@ -5741,24 +6060,26 @@ export class Matrix {
      * @param zfar not used as infinity is used as far clip
      * @param result defines the target matrix
      * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
+     * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
+     * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal)
      */
-    public static PerspectiveFovReverseRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): void {
-        //alternatively this could be expressed as:
-        //    m = PerspectiveFovLHToRef
-        //    m[10] *= -1.0;
-        //    m[11] *= -1.0;
-
+    public static PerspectiveFovReverseRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true, halfZRange?: boolean, projectionPlaneTilt: number = 0): void {
         let t = 1.0 / (Math.tan(fov * 0.5));
         let a = isVerticalFovFixed ? (t / aspect) : t;
         let b = isVerticalFovFixed ? t : (t * aspect);
+        let rot = Math.tan(projectionPlaneTilt);
 
         Matrix.FromValuesToRef(
             a, 0.0, 0.0, 0.0,
-            0.0, b, 0.0, 0.0,
+            0.0, b, 0.0, rot,
             0.0, 0.0, -znear, -1.0,
             0.0, 0.0, -1.0, 0.0,
             result
         );
+
+        if (halfZRange) {
+            result.multiplyToRef(mtxConvertNDCToHalfZRange, result);
+        }
 
         result._updateIdentityStatus(false);
     }
@@ -5770,8 +6091,10 @@ export class Matrix {
      * @param zfar defines the far clip plane
      * @param result defines the target matrix
      * @param rightHanded defines if the matrix must be in right-handed mode (false by default)
+     * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
+     * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal)
      */
-    public static PerspectiveFovWebVRToRef(fov: { upDegrees: number, downDegrees: number, leftDegrees: number, rightDegrees: number }, znear: number, zfar: number, result: Matrix, rightHanded = false): void {
+    public static PerspectiveFovWebVRToRef(fov: { upDegrees: number, downDegrees: number, leftDegrees: number, rightDegrees: number }, znear: number, zfar: number, result: Matrix, rightHanded = false, halfZRange?: boolean, projectionPlaneTilt: number = 0): void {
 
         var rightHandedFactor = rightHanded ? -1 : 1;
 
@@ -5781,17 +6104,24 @@ export class Matrix {
         var rightTan = Math.tan(fov.rightDegrees * Math.PI / 180.0);
         var xScale = 2.0 / (leftTan + rightTan);
         var yScale = 2.0 / (upTan + downTan);
+        let rot = Math.tan(projectionPlaneTilt);
+
         const m = result._m;
         m[0] = xScale;
         m[1] = m[2] = m[3] = m[4] = 0.0;
         m[5] = yScale;
-        m[6] = m[7] = 0.0;
+        m[6] = 0.0;
+        m[7] = rot;
         m[8] = ((leftTan - rightTan) * xScale * 0.5);
         m[9] = -((upTan - downTan) * yScale * 0.5);
         m[10] = -zfar / (znear - zfar);
         m[11] = 1.0 * rightHandedFactor;
         m[12] = m[13] = m[15] = 0.0;
         m[14] = -(2.0 * zfar * znear) / (zfar - znear);
+
+        if (halfZRange) {
+            result.multiplyToRef(mtxConvertNDCToHalfZRange, result);
+        }
 
         result._markAsUpdated();
     }
@@ -5986,23 +6316,30 @@ export class Matrix {
  * Same as Tmp but not exported to keep it only for math functions to avoid conflicts
  */
 class MathTmp {
-    public static Vector3: Vector3[] = ArrayTools.BuildArray(6, Vector3.Zero);
-    public static Matrix: Matrix[] = ArrayTools.BuildArray(2, Matrix.Identity);
-    public static Quaternion: Quaternion[] = ArrayTools.BuildArray(3, Quaternion.Zero);
+    public static Vector3 = ArrayTools.BuildTuple(11, Vector3.Zero);
+    public static Matrix = ArrayTools.BuildTuple(2, Matrix.Identity);
+    public static Quaternion = ArrayTools.BuildTuple(3, Quaternion.Zero);
 }
 
 /**
  * @hidden
  */
 export class TmpVectors {
-    public static Vector2: Vector2[] = ArrayTools.BuildArray(3, Vector2.Zero); // 3 temp Vector2 at once should be enough
-    public static Vector3: Vector3[] = ArrayTools.BuildArray(13, Vector3.Zero); // 13 temp Vector3 at once should be enough
-    public static Vector4: Vector4[] = ArrayTools.BuildArray(3, Vector4.Zero); // 3 temp Vector4 at once should be enough
-    public static Quaternion: Quaternion[] = ArrayTools.BuildArray(2, Quaternion.Zero); // 2 temp Quaternion at once should be enough
-    public static Matrix: Matrix[] = ArrayTools.BuildArray(8, Matrix.Identity); // 8 temp Matrices at once should be enough
+    public static Vector2 = ArrayTools.BuildTuple(3, Vector2.Zero); // 3 temp Vector2 at once should be enough
+    public static Vector3 = ArrayTools.BuildTuple(13, Vector3.Zero); // 13 temp Vector3 at once should be enough
+    public static Vector4 = ArrayTools.BuildTuple(3, Vector4.Zero); // 3 temp Vector4 at once should be enough
+    public static Quaternion = ArrayTools.BuildTuple(2, Quaternion.Zero); // 2 temp Quaternion at once should be enough
+    public static Matrix = ArrayTools.BuildTuple(8, Matrix.Identity); // 8 temp Matrices at once should be enough
 }
 
 _TypeStore.RegisteredTypes["BABYLON.Vector2"] = Vector2;
 _TypeStore.RegisteredTypes["BABYLON.Vector3"] = Vector3;
 _TypeStore.RegisteredTypes["BABYLON.Vector4"] = Vector4;
 _TypeStore.RegisteredTypes["BABYLON.Matrix"] = Matrix;
+
+const mtxConvertNDCToHalfZRange = Matrix.FromValues(
+    1, 0, 0, 0,
+    0, 1, 0, 0,
+    0, 0, 0.5, 0,
+    0, 0, 0.5, 1
+);

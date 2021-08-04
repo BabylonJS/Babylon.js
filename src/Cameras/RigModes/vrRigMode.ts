@@ -6,7 +6,7 @@ import { VRCameraMetrics } from "../VR/vrCameraMetrics";
 import { Logger } from '../../Misc/logger';
 import { Viewport } from '../../Maths/math.viewport';
 
-Camera._setVRRigMode = function(camera: Camera, rigParams: any) {
+Camera._setVRRigMode = function (camera: Camera, rigParams: any) {
     var metrics = <VRCameraMetrics>rigParams.vrCameraMetrics || VRCameraMetrics.GetDefault();
 
     camera._rigCameras[0]._cameraRigParams.vrMetrics = metrics;

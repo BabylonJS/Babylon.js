@@ -10,7 +10,7 @@ import { EngineStore } from '../../Engines/engineStore';
 
 declare var earcut: any;
 
-VertexData.CreatePolygon = function(polygon: Mesh, sideOrientation: number, fUV?: Vector4[], fColors?: Color4[], frontUVs?: Vector4, backUVs?: Vector4, wrp?: boolean) {
+VertexData.CreatePolygon = function (polygon: Mesh, sideOrientation: number, fUV?: Vector4[], fColors?: Color4[], frontUVs?: Vector4, backUVs?: Vector4, wrp?: boolean) {
     var faceUV: Vector4[] = fUV || new Array<Vector4>(3);
     var faceColors = fColors;
     var colors = [];
@@ -154,7 +154,7 @@ export class PolygonBuilder {
      * @param earcutInjection can be used to inject your own earcut reference
      * @returns the polygon mesh
      */
-    public static CreatePolygon(name: string, options: { shape: Vector3[], holes?: Vector3[][], depth?: number, smoothingThreshold?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, wrap?: boolean}, scene: Nullable<Scene> = null, earcutInjection = earcut): Mesh {
+    public static CreatePolygon(name: string, options: { shape: Vector3[], holes?: Vector3[][], depth?: number, smoothingThreshold?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, wrap?: boolean }, scene: Nullable<Scene> = null, earcutInjection = earcut): Mesh {
         options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
         var shape = options.shape;
         var holes = options.holes || [];

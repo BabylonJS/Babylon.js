@@ -518,21 +518,25 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
     }
 
     /** @hidden */
-    public _getFromCache(url: Nullable<string>, noMipmap: boolean, sampling?: number, invertY?: boolean): Nullable<InternalTexture> {
+    public _getFromCache(url: Nullable<string>, noMipmap: boolean, sampling?: number, invertY?: boolean, useSRGBBuffer?: boolean): Nullable<InternalTexture> {
         const engine = this._getEngine();
         if (!engine) {
             return null;
         }
 
+        const correctedUseSRGBBuffer = !!useSRGBBuffer && engine._caps.supportSRGBBuffers && (engine.webGLVersion > 1 || engine.isWebGPU || noMipmap);
+
         var texturesCache = engine.getLoadedTexturesCache();
         for (var index = 0; index < texturesCache.length; index++) {
             var texturesCacheEntry = texturesCache[index];
 
-            if (invertY === undefined || invertY === texturesCacheEntry.invertY) {
-                if (texturesCacheEntry.url === url && texturesCacheEntry.generateMipMaps === !noMipmap) {
-                    if (!sampling || sampling === texturesCacheEntry.samplingMode) {
-                        texturesCacheEntry.incrementReferences();
-                        return texturesCacheEntry;
+            if (useSRGBBuffer === undefined || correctedUseSRGBBuffer === texturesCacheEntry._useSRGBBuffer) {
+                if (invertY === undefined || invertY === texturesCacheEntry.invertY) {
+                    if (texturesCacheEntry.url === url && texturesCacheEntry.generateMipMaps === !noMipmap) {
+                        if (!sampling || sampling === texturesCacheEntry.samplingMode) {
+                            texturesCacheEntry.incrementReferences();
+                            return texturesCacheEntry;
+                        }
                     }
                 }
             }
@@ -597,9 +601,10 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
      * @param level defines the LOD level of the texture to read (in case of Mip Maps)
      * @param buffer defines a user defined buffer to fill with data (can be null)
      * @param flushRenderer true to flush the renderer from the pending commands before reading the pixels
+     * @param noDataConversion false to convert the data to Uint8Array (if texture type is UNSIGNED_BYTE) or to Float32Array (if texture type is anything but UNSIGNED_BYTE). If true, the type of the generated buffer (if buffer==null) will depend on the type of the texture
      * @returns The Array buffer promise containing the pixels data.
      */
-    public readPixels(faceIndex = 0, level = 0, buffer: Nullable<ArrayBufferView> = null, flushRenderer = true): Nullable<Promise<ArrayBufferView>> {
+    public readPixels(faceIndex = 0, level = 0, buffer: Nullable<ArrayBufferView> = null, flushRenderer = true, noDataConversion = false): Nullable<Promise<ArrayBufferView>> {
         if (!this._texture) {
             return null;
         }
@@ -623,17 +628,17 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
 
         try {
             if (this._texture.isCube) {
-                return engine._readTexturePixels(this._texture, width, height, faceIndex, level, buffer, flushRenderer);
+                return engine._readTexturePixels(this._texture, width, height, faceIndex, level, buffer, flushRenderer, noDataConversion);
             }
 
-            return engine._readTexturePixels(this._texture, width, height, -1, level, buffer, flushRenderer);
+            return engine._readTexturePixels(this._texture, width, height, -1, level, buffer, flushRenderer, noDataConversion);
         } catch (e) {
             return null;
         }
     }
 
     /** @hidden */
-    public _readPixelsSync(faceIndex = 0, level = 0, buffer: Nullable<ArrayBufferView> = null, flushRenderer = true): Nullable<ArrayBufferView> {
+    public _readPixelsSync(faceIndex = 0, level = 0, buffer: Nullable<ArrayBufferView> = null, flushRenderer = true, noDataConversion = false): Nullable<ArrayBufferView> {
         if (!this._texture) {
             return null;
         }
@@ -657,10 +662,10 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
 
         try {
             if (this._texture.isCube) {
-                return engine._readTexturePixelsSync(this._texture, width, height, faceIndex, level, buffer, flushRenderer);
+                return engine._readTexturePixelsSync(this._texture, width, height, faceIndex, level, buffer, flushRenderer, noDataConversion);
             }
 
-            return engine._readTexturePixelsSync(this._texture, width, height, -1, level, buffer, flushRenderer);
+            return engine._readTexturePixelsSync(this._texture, width, height, -1, level, buffer, flushRenderer, noDataConversion);
         } catch (e) {
             return null;
         }
@@ -722,6 +727,8 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         // Callback
         this.onDisposeObservable.notifyObservers(this);
         this.onDisposeObservable.clear();
+
+        this.metadata = null;
 
         super.dispose();
     }

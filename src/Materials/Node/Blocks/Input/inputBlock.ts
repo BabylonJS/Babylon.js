@@ -14,7 +14,7 @@ import { Color3, Color4, TmpColors } from '../../../../Maths/math';
 import { AnimatedInputBlockTypes } from './animatedInputBlockTypes';
 import { Observable } from '../../../../Misc/observable';
 
-const remapAttributeName: { [name: string]: string }  = {
+const remapAttributeName: { [name: string]: string } = {
     "position2d": "position",
     "particle_uv": "vUV",
     "particle_color": "vColor",
@@ -22,14 +22,14 @@ const remapAttributeName: { [name: string]: string }  = {
     "particle_positionw": "vPositionW",
 };
 
-const attributeInFragmentOnly: { [name: string]: boolean }  = {
+const attributeInFragmentOnly: { [name: string]: boolean } = {
     "particle_uv": true,
     "particle_color": true,
     "particle_texturemask": true,
     "particle_positionw": true,
 };
 
-const attributeAsUniform: { [name: string]: boolean }  = {
+const attributeAsUniform: { [name: string]: boolean } = {
     "particle_texturemask": true,
 };
 
@@ -117,6 +117,10 @@ export class InputBlock extends NodeMaterialBlock {
                         return this._type;
                     case "uv":
                     case "uv2":
+                    case "uv3":
+                    case "uv4":
+                    case "uv5":
+                    case "uv6":
                     case "position2d":
                     case "particle_uv":
                         this._type = NodeMaterialBlockConnectionPointTypes.Vector2;
@@ -155,6 +159,9 @@ export class InputBlock extends NodeMaterialBlock {
                         return this._type;
                     case NodeMaterialSystemValues.DeltaTime:
                         this._type = NodeMaterialBlockConnectionPointTypes.Float;
+                        return this._type;
+                    case NodeMaterialSystemValues.CameraParameters:
+                        this._type = NodeMaterialBlockConnectionPointTypes.Vector4;
                         return this._type;
                 }
             }
@@ -589,6 +596,11 @@ export class InputBlock extends NodeMaterialBlock {
                     break;
                 case NodeMaterialSystemValues.DeltaTime:
                     effect.setFloat(variableName, scene.deltaTime / 1000.0);
+                case NodeMaterialSystemValues.CameraPosition:
+                    if (scene.activeCamera) {
+                        effect.setFloat4(variableName, scene.getEngine().hasOriginBottomLeft ? -1 : 1, scene.activeCamera.minZ, scene.activeCamera.maxZ, 1 / scene.activeCamera.maxZ);
+                    }
+                    break;
             }
             return;
         }

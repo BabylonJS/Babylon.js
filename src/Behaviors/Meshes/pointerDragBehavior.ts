@@ -84,6 +84,11 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
      */
     public onDragEndObservable = new Observable<{ dragPlanePoint: Vector3, pointerId: number }>();
     /**
+     *  Fires each time behavior enabled state changes
+     */
+    public onEnabledObservable = new Observable<boolean>();
+
+    /**
      *  If the attached mesh should be moved when dragged
      */
     public moveAttached = true;
@@ -91,7 +96,17 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
     /**
      *  If the drag behavior will react to drag events (Default: true)
      */
-    public enabled = true;
+    public set enabled(value: boolean) {
+        if (value != this._enabled) {
+            this.onEnabledObservable.notifyObservers(value);
+        }
+        this._enabled = value;
+    }
+
+    public get enabled() {
+        return this._enabled;
+    }
+    private _enabled = true;
 
     /**
      * If pointer events should start and release the drag (Default: true)
@@ -171,6 +186,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
      */
     public attach(ownerNode: AbstractMesh, predicate?: (m: AbstractMesh) => boolean): void {
         this._scene = ownerNode.getScene();
+        ownerNode.isNearGrabbable = true;
         this.attachedNode = ownerNode;
 
         // Initialize drag plane to not interfere with existing scene
@@ -430,12 +446,10 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
             // Calculate plane normal that is the cross product of local axis and (eye-dragPlanePosition)
             ray.origin.subtractToRef(this._pointA, this._pointC);
             this._pointC.normalize();
-            if (Math.abs(Vector3.Dot(this._localAxis, this._pointC)) > 0.999)
-            {
+            if (Math.abs(Vector3.Dot(this._localAxis, this._pointC)) > 0.999) {
                 // the drag axis is colinear with the (eye to position) ray. The cross product will give jittered values.
                 // A new axis vector need to be computed
-                if (Math.abs(Vector3.Dot(Vector3.UpReadOnly, this._pointC)) > 0.999)
-                {
+                if (Math.abs(Vector3.Dot(Vector3.UpReadOnly, this._pointC)) > 0.999) {
                     this._lookAt.copyFrom(Vector3.Right());
                 } else {
                     this._lookAt.copyFrom(Vector3.UpReadOnly);
@@ -469,6 +483,8 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
      *  Detaches the behavior from the mesh
      */
     public detach(): void {
+        this.attachedNode.isNearGrabbable = false;
+
         if (this._pointerObserver) {
             this._scene.onPointerObservable.remove(this._pointerObserver);
         }

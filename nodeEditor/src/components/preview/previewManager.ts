@@ -36,7 +36,7 @@ import { DataStorage } from "babylonjs/Misc/dataStorage";
 export class PreviewManager {
     private _nodeMaterial: NodeMaterial;
     private _onBuildObserver: Nullable<Observer<NodeMaterial>>;
-    
+
     private _onPreviewCommandActivatedObserver: Nullable<Observer<boolean>>;
     private _onAnimationCommandActivatedObserver: Nullable<Observer<void>>;
     private _onUpdateRequiredObserver: Nullable<Observer<void>>;
@@ -69,6 +69,7 @@ export class PreviewManager {
         this._onPreviewCommandActivatedObserver = globalState.onPreviewCommandActivated.add((forceRefresh: boolean) => {
             if (forceRefresh) {
                 this._currentType = -1;
+                this._scene.disableDepthRenderer();
             }
             this._refreshPreviewMesh();
         });
@@ -235,7 +236,7 @@ export class PreviewManager {
             case NodeMaterialModes.Particle: {
                 this._camera.radius = this._globalState.previewType === PreviewType.Explosion ? 50 : this._globalState.previewType === PreviewType.DefaultParticleSystem ? 6 : 20;
                 this._camera.upperRadiusLimit = 5000;
-                this._globalState.particleSystemBlendMode = this._particleSystem!.blendMode;
+                this._globalState.particleSystemBlendMode = this._particleSystem?.blendMode ?? ParticleSystem.BLENDMODE_STANDARD;;
                 break;
             }
         }

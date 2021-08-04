@@ -108,7 +108,7 @@ export class Database implements IOfflineProvider {
         var createManifestURL = (): string => {
             try {
                 // make sure we have a valid URL.
-                if (typeof URL !== "undefined" && this._currentSceneUrl.indexOf("http") === 0) {
+                if (typeof URL === "function" && this._currentSceneUrl.indexOf("http") === 0) {
                     // we don't have the base url, so the URL string must have a protocol
                     var url = new URL(this._currentSceneUrl);
                     url.pathname += ".manifest";
@@ -363,7 +363,7 @@ export class Database implements IOfflineProvider {
                                     if (error && error.name === "QuotaExceededError") {
                                         this._hasReachedQuota = true;
                                     }
-                                } catch (ex) {}
+                                } catch (ex) { }
                                 generateBlobUrl();
                             };
 
@@ -376,7 +376,7 @@ export class Database implements IOfflineProvider {
                             try {
                                 // Put the blob into the dabase
                                 var addRequest = transaction.objectStore("textures").put(newTexture);
-                                addRequest.onsuccess = () => {};
+                                addRequest.onsuccess = () => { };
                                 addRequest.onerror = () => {
                                     generateBlobUrl();
                                 };
@@ -482,7 +482,7 @@ export class Database implements IOfflineProvider {
                         if (error && error.name === "QuotaExceededError") {
                             this._hasReachedQuota = true;
                         }
-                    } catch (ex) {}
+                    } catch (ex) { }
                     callback(-1);
                 };
 
@@ -494,7 +494,7 @@ export class Database implements IOfflineProvider {
 
                 // Put the scene into the database
                 var addRequest = transaction.objectStore("versions").put(newVersion);
-                addRequest.onsuccess = () => {};
+                addRequest.onsuccess = () => { };
                 addRequest.onerror = () => {
                     Logger.Error("Error in DB add version request in BABYLON.Database.");
                 };
@@ -597,7 +597,7 @@ export class Database implements IOfflineProvider {
             // Create XHR
             var xhr = new WebRequest();
             var fileData: any;
-            xhr.open("GET", url + "?" + Date.now());
+            xhr.open("GET", url + (url.match(/\?/) == null ? "?" : "&") + Date.now());
 
             if (useArrayBuffer) {
                 xhr.responseType = "arraybuffer";
@@ -626,7 +626,7 @@ export class Database implements IOfflineProvider {
                                     if (error && error.name === "QuotaExceededError") {
                                         this._hasReachedQuota = true;
                                     }
-                                } catch (ex) {}
+                                } catch (ex) { }
                                 callback(fileData);
                             };
 
@@ -644,7 +644,7 @@ export class Database implements IOfflineProvider {
                             try {
                                 // Put the scene into the database
                                 var addRequest = transaction.objectStore(targetStore).put(newFile);
-                                addRequest.onsuccess = () => {};
+                                addRequest.onsuccess = () => { };
                                 addRequest.onerror = () => {
                                     Logger.Error("Error in DB add file request in BABYLON.Database.");
                                 };

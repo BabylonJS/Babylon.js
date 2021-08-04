@@ -42,10 +42,10 @@ declare module "../scene" {
 }
 
 Object.defineProperty(Scene.prototype, "forceShowBoundingBoxes", {
-    get: function(this: Scene) {
+    get: function (this: Scene) {
         return this._forceShowBoundingBoxes || false;
     },
-    set: function(this: Scene, value: boolean) {
+    set: function (this: Scene, value: boolean) {
         this._forceShowBoundingBoxes = value;
         // Lazyly creates a BB renderer if needed.
         if (value) {
@@ -56,7 +56,7 @@ Object.defineProperty(Scene.prototype, "forceShowBoundingBoxes", {
     configurable: true
 });
 
-Scene.prototype.getBoundingBoxRenderer = function(): BoundingBoxRenderer {
+Scene.prototype.getBoundingBoxRenderer = function (): BoundingBoxRenderer {
 
     if (!this._boundingBoxRenderer) {
         this._boundingBoxRenderer = new BoundingBoxRenderer(this);
@@ -78,10 +78,10 @@ declare module "../Meshes/abstractMesh" {
 }
 
 Object.defineProperty(AbstractMesh.prototype, "showBoundingBox", {
-    get: function(this: AbstractMesh) {
+    get: function (this: AbstractMesh) {
         return this._showBoundingBox || false;
     },
-    set: function(this: AbstractMesh, value: boolean) {
+    set: function (this: AbstractMesh, value: boolean) {
         this._showBoundingBox = value;
         // Lazyly creates a BB renderer if needed.
         if (value) {
@@ -276,9 +276,15 @@ export class BoundingBoxRenderer implements ISceneComponent {
             // VBOs
             engine.bindBuffers(this._vertexBuffers, this._indexBuffer, <Effect>this._colorShader.getEffect());
 
+            const useReverseDepthBuffer = engine.useReverseDepthBuffer;
+
             if (this.showBackLines) {
                 // Back
-                engine.setDepthFunctionToGreaterOrEqual();
+                if (useReverseDepthBuffer) {
+                    engine.setDepthFunctionToLessOrEqual();
+                } else {
+                    engine.setDepthFunctionToGreaterOrEqual();
+                }
                 this.scene.resetCachedMaterial();
                 this._colorShader.setColor4("color", this.backColor.toColor4());
                 this._colorShader.bind(worldMatrix);
@@ -288,7 +294,11 @@ export class BoundingBoxRenderer implements ISceneComponent {
             }
 
             // Front
-            engine.setDepthFunctionToLess();
+            if (useReverseDepthBuffer) {
+                engine.setDepthFunctionToGreater();
+            } else {
+                engine.setDepthFunctionToLess();
+            }
             this.scene.resetCachedMaterial();
             this._colorShader.setColor4("color", this.frontColor.toColor4());
             this._colorShader.bind(worldMatrix);

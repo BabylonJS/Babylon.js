@@ -74,6 +74,39 @@ export class VideoTexture extends Texture {
     private _createInternalTextureOnEvent: string;
     private _frameId = -1;
     private _currentSrc: Nullable<string | string[] | HTMLVideoElement> = null;
+    private _onError?: Nullable<(message?: string, exception?: any) => void>;
+    private _errorFound = false;
+
+    private _processError(reason: any) {
+        this._errorFound = true;
+        if (this._onError) {
+            this._onError(reason?.message);
+        } else {
+            Logger.Error(reason?.message);
+        }
+    }
+
+    private _handlePlay() {
+        this._errorFound = false;
+        this.video.play().catch((reason) => {
+            if (reason?.name === "NotAllowedError") {
+                if (this._onUserActionRequestedObservable && this._onUserActionRequestedObservable.hasObservers()) {
+                    this._onUserActionRequestedObservable.notifyObservers(this);
+                    return;
+                } else if (!this.video.muted) {
+                    Logger.Warn("Unable to autoplay a video with sound. Trying again with muted turned true");
+                    this.video.muted = true;
+                    this._errorFound = false;
+                    this.video.play().catch((otherReason) => {
+                        this._processError(otherReason);
+                    });
+                    return;
+                }
+            }
+
+            this._processError(reason);
+        });
+    }
 
     /**
      * Creates a video texture.
@@ -87,6 +120,7 @@ export class VideoTexture extends Texture {
      * @param invertY is false by default but can be used to invert video on Y axis
      * @param samplingMode controls the sampling method and is set to TRILINEAR_SAMPLINGMODE by default
      * @param settings allows finer control over video usage
+     * @param onError defines a callback triggered when an error occurred during the loading session
      */
     constructor(
         name: Nullable<string>,
@@ -95,13 +129,20 @@ export class VideoTexture extends Texture {
         generateMipMaps = false,
         invertY = false,
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
-        settings: VideoTextureSettings = {
-            autoPlay: true,
-            loop: true,
-            autoUpdateTexture: true,
-        }
+        settings?: VideoTextureSettings,
+        onError?: Nullable<(message?: string, exception?: any) => void>
     ) {
         super(null, scene, !generateMipMaps, invertY);
+
+        if (!settings) {
+            settings = {
+                autoPlay: true,
+                loop: true,
+                autoUpdateTexture: true,
+            };
+        }
+
+        this._onError = onError;
 
         this._generateMipMaps = generateMipMaps;
         this._initialSamplingMode = samplingMode;
@@ -126,7 +167,6 @@ export class VideoTexture extends Texture {
         }
 
         this.video.setAttribute("playsinline", "");
-
         this.video.addEventListener("paused", this._updateInternalTexture);
         this.video.addEventListener("seeked", this._updateInternalTexture);
         this.video.addEventListener("emptied", this.reset);
@@ -134,7 +174,7 @@ export class VideoTexture extends Texture {
         this.video.addEventListener(this._createInternalTextureOnEvent, this._createInternalTexture);
 
         if (settings.autoPlay) {
-            this.video.play();
+            this._handlePlay();
         }
 
         const videoHasEnoughData = (this.video.readyState >= this.video.HAVE_CURRENT_DATA);
@@ -152,7 +192,7 @@ export class VideoTexture extends Texture {
      * Get the current class name of the video texture useful for serialization or dynamic coding.
      * @returns "VideoTexture"
      */
-     public getClassName(): string {
+    public getClassName(): string {
         return "VideoTexture";
     }
 
@@ -221,40 +261,20 @@ export class VideoTexture extends Texture {
 
         if (!this.video.autoplay && !this._settings.poster) {
             let oldHandler = this.video.onplaying;
-            let error = false;
             let oldMuted = this.video.muted;
             this.video.muted = true;
             this.video.onplaying = () => {
                 this.video.muted = oldMuted;
                 this.video.onplaying = oldHandler;
                 this._updateInternalTexture();
-                if (!error) {
+                if (!this._errorFound) {
                     this.video.pause();
                 }
                 if (this.onLoadObservable.hasObservers()) {
                     this.onLoadObservable.notifyObservers(this);
                 }
             };
-            var playing = this.video.play();
-            if (playing) {
-                playing.then(() => {
-                    // Everything is good.
-                })
-                    .catch(() => {
-                        error = true;
-                        // On Chrome for instance, new policies might prevent playing without user interaction.
-                        if (this._onUserActionRequestedObservable && this._onUserActionRequestedObservable.hasObservers()) {
-                            this._onUserActionRequestedObservable.notifyObservers(this);
-                        }
-                    });
-            }
-            else {
-                this.video.onplaying = oldHandler;
-                this._updateInternalTexture();
-                if (this.onLoadObservable.hasObservers()) {
-                    this.onLoadObservable.notifyObservers(this);
-                }
-            }
+            this._handlePlay();
         }
         else {
             this._updateInternalTexture();
@@ -448,9 +468,9 @@ export class VideoTexture extends Texture {
 
         if (navigator.mediaDevices) {
             return navigator.mediaDevices.getUserMedia({
-                    video: constraints,
-                    audio: audioConstaints
-                })
+                video: constraints,
+                audio: audioConstaints
+            })
                 .then((stream) => {
                     return this.CreateFromStreamAsync(scene, stream, constraints);
                 });
@@ -481,7 +501,7 @@ export class VideoTexture extends Texture {
                     (stream: any) => {
                         return this.CreateFromStreamAsync(scene, stream, constraints);
                     },
-                    function(e: MediaStreamError) {
+                    function (e: MediaStreamError) {
                         Logger.Error(e.name);
                     }
                 );
@@ -511,12 +531,12 @@ export class VideoTexture extends Texture {
         audioConstaints: boolean | MediaTrackConstraints = false
     ): void {
         this.CreateFromWebCamAsync(scene, constraints, audioConstaints)
-            .then(function(videoTexture) {
+            .then(function (videoTexture) {
                 if (onReady) {
                     onReady(videoTexture);
                 }
             })
-            .catch(function(err) {
+            .catch(function (err) {
                 Logger.Error(err.name);
             });
     }

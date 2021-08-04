@@ -20,13 +20,14 @@ enum StatePosition {
     RasterizationState = 6,
     ColorStates = 7,
     ShaderStage = 8,
-    VertexState = 9, // vertex state will consume positions 9, 10, ... depending on the number of vertex inputs
+    TextureStage = 9,
+    VertexState = 10, // vertex state will consume positions 10, 11, ... depending on the number of vertex inputs
 
-    NumStates = 10
+    NumStates = 11
 }
 
 const textureFormatToIndex: { [name: string]: number } = {
-    "" : 0,
+    "": 0,
     "r8unorm": 1,
     "r8snorm": 2,
     "r8uint": 3,
@@ -183,9 +184,12 @@ export abstract class WebGPUCacheRenderPipeline {
     private _vertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }>;
     private _overrideVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }>;
     private _indexBuffer: Nullable<DataBuffer>;
+    private _textureState: number;
+    private _useTextureStage: boolean;
 
-    constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer) {
+    constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer, useTextureStage: boolean) {
         this._device = device;
+        this._useTextureStage = useTextureStage;
         this._states = new Array(30); // pre-allocate enough room so that no new allocation will take place afterwards
         this._statesLength = 0;
         this._stateDirtyLowestIndex = 0;
@@ -216,6 +220,7 @@ export abstract class WebGPUCacheRenderPipeline {
         this.setStencilEnabled(false);
         this.resetStencilState();
         this.setBuffers(null, null, null);
+        this._setTextureState(0);
     }
 
     protected abstract _getRenderPipeline(param: { token: any, pipeline: Nullable<GPURenderPipeline> }): void;
@@ -230,7 +235,7 @@ export abstract class WebGPUCacheRenderPipeline {
     public readonly mrtAttachments: number[];
     public readonly mrtTextureArray: InternalTexture[];
 
-    public getRenderPipeline(fillMode: number, effect: Effect, sampleCount: number): GPURenderPipeline {
+    public getRenderPipeline(fillMode: number, effect: Effect, sampleCount: number, textureState = 0): GPURenderPipeline {
         if (this.disabled) {
             const topology = WebGPUCacheRenderPipeline._GetTopology(fillMode);
 
@@ -249,6 +254,7 @@ export abstract class WebGPUCacheRenderPipeline {
         this._setColorStates();
         this._setDepthStencilState();
         this._setVertexState(effect);
+        this._setTextureState(textureState);
 
         this.lastStateDirtyLowestIndex = this._stateDirtyLowestIndex;
 
@@ -697,7 +703,7 @@ export abstract class WebGPUCacheRenderPipeline {
 
     private _getAphaBlendState(): GPUBlendComponent {
         if (!this._alphaBlendEnabled) {
-            return { };
+            return {};
         }
 
         return {
@@ -709,7 +715,7 @@ export abstract class WebGPUCacheRenderPipeline {
 
     private _getColorBlendState(): GPUBlendComponent {
         if (!this._alphaBlendEnabled) {
-            return { };
+            return {};
         }
 
         return {
@@ -778,9 +784,9 @@ export abstract class WebGPUCacheRenderPipeline {
             this._stencilFrontCompare + (this._stencilFrontDepthFailOp << 3) + (this._stencilFrontPassOp << 6) + (this._stencilFrontFailOp << 9);
 
         const depthStencilState =
-                this._depthStencilFormat +
-                ((this._depthTestEnabled ? this._depthCompare : 7 /* ALWAYS */) << 6) +
-                (stencilState << 10); // stencil front - stencil back is the same
+            this._depthStencilFormat +
+            ((this._depthTestEnabled ? this._depthCompare : 7 /* ALWAYS */) << 6) +
+            (stencilState << 10); // stencil front - stencil back is the same
 
         if (this._depthStencilState !== depthStencilState) {
             this._depthStencilState = depthStencilState;
@@ -842,7 +848,20 @@ export abstract class WebGPUCacheRenderPipeline {
         }
     }
 
+    private _setTextureState(textureState: number): void {
+        if (this._textureState !== textureState) {
+            this._textureState = textureState;
+            this._states[StatePosition.TextureStage] = this._textureState;
+            this._isDirty = true;
+            this._stateDirtyLowestIndex = Math.min(this._stateDirtyLowestIndex, StatePosition.TextureStage);
+        }
+    }
+
     private _createPipelineLayout(webgpuPipelineContext: WebGPUPipelineContext): GPUPipelineLayout {
+        if (this._useTextureStage) {
+            return this._createPipelineLayoutWithTextureStage(webgpuPipelineContext);
+        }
+
         const bindGroupLayouts: GPUBindGroupLayout[] = [];
 
         for (let i = 0; i < webgpuPipelineContext.shaderProcessingContext.orderedUBOsAndSamplers.length; i++) {
@@ -879,7 +898,7 @@ export abstract class WebGPUCacheRenderPipeline {
 
                 if (bindingDefinition.isSampler) {
                     entry.sampler = {
-                        type: bindingDefinition.isComparisonSampler ? WebGPUConstants.SamplerBindingType.Comparison : WebGPUConstants.SamplerBindingType.Filtering
+                        type: bindingDefinition.samplerBindingType
                     };
                 } else if (bindingDefinition.isTexture) {
                     entry.texture = {
@@ -895,11 +914,88 @@ export abstract class WebGPUCacheRenderPipeline {
             }
 
             if (entries.length > 0) {
-                const uniformsBindGroupLayout = this._device.createBindGroupLayout({
+                bindGroupLayouts[i] = this._device.createBindGroupLayout({
                     entries,
                 });
-                bindGroupLayouts[i] = uniformsBindGroupLayout;
             }
+        }
+
+        webgpuPipelineContext.bindGroupLayouts = bindGroupLayouts;
+
+        return this._device.createPipelineLayout({ bindGroupLayouts });
+    }
+
+    private _createPipelineLayoutWithTextureStage(webgpuPipelineContext: WebGPUPipelineContext): GPUPipelineLayout {
+        const bindGroupEntries: GPUBindGroupLayoutEntry[][] = [];
+        const shaderProcessingContext = webgpuPipelineContext.shaderProcessingContext;
+
+        let bitVal = 1;
+        for (let i = 0; i < shaderProcessingContext.orderedUBOsAndSamplers.length; i++) {
+            const setDefinition = shaderProcessingContext.orderedUBOsAndSamplers[i];
+            if (setDefinition === undefined) {
+                bindGroupEntries[i] = [];
+                continue;
+            }
+
+            const entries: GPUBindGroupLayoutEntry[] = [];
+            bindGroupEntries[i] = entries;
+            for (let j = 0; j < setDefinition.length; j++) {
+                const bindingDefinition = shaderProcessingContext.orderedUBOsAndSamplers[i][j];
+                if (bindingDefinition === undefined) {
+                    continue;
+                }
+
+                let visibility = 0;
+                if (bindingDefinition.usedInVertex) {
+                    visibility = visibility | WebGPUConstants.ShaderStage.Vertex;
+                }
+                if (bindingDefinition.usedInFragment) {
+                    visibility = visibility | WebGPUConstants.ShaderStage.Fragment;
+                }
+
+                const entry: GPUBindGroupLayoutEntry = {
+                    binding: j,
+                    visibility,
+                };
+                entries.push(entry);
+
+                if (bindingDefinition.isSampler) {
+                    entry.sampler = {
+                        type: bindingDefinition.samplerBindingType
+                    };
+                } else if (bindingDefinition.isTexture) {
+                    let sampleType = bindingDefinition.sampleType;
+
+                    if (this._textureState & bitVal) {
+                        // The texture is a 32 bits float texture but the system does not support linear filtering for them:
+                        // we set the sampler to "non-filtering" and the texture sample type to "unfilterable-float"
+                        const samplerTexture = shaderProcessingContext.availableSamplers[bindingDefinition.origName!];
+
+                        bindGroupEntries[samplerTexture.sampler.setIndex][samplerTexture.sampler.bindingIndex].sampler!.type = WebGPUConstants.SamplerBindingType.NonFiltering;
+                        sampleType = WebGPUConstants.TextureSampleType.UnfilterableFloat;
+                    }
+
+                    entry.texture = {
+                        sampleType,
+                        viewDimension: bindingDefinition.textureDimension,
+                        multisampled: false,
+                    };
+
+                    bitVal = bitVal << 1;
+                } else {
+                    entry.buffer = {
+                        type: WebGPUConstants.BufferBindingType.Uniform,
+                    };
+                }
+            }
+        }
+
+        const bindGroupLayouts: GPUBindGroupLayout[] = [];
+
+        for (let i = 0; i < bindGroupEntries.length; ++i) {
+            bindGroupLayouts[i] = this._device.createBindGroupLayout({
+                entries: bindGroupEntries[i],
+            });
         }
 
         webgpuPipelineContext.bindGroupLayouts = bindGroupLayouts;

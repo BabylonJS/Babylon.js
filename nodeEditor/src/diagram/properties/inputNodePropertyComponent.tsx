@@ -180,6 +180,10 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                 attributeOptions = [
                     { label: "uv", value: "uv" },
                     { label: "uv2", value: "uv2" },
+                    { label: "uv3", value: "uv3" },
+                    { label: "uv4", value: "uv4" },
+                    { label: "uv5", value: "uv5" },
+                    { label: "uv6", value: "uv6" },
                 ];
                 break;
             case NodeMaterialBlockConnectionPointTypes.Vector3:
@@ -193,11 +197,14 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                 ];
                 break;
             case NodeMaterialBlockConnectionPointTypes.Vector4:
-                    attributeOptions = [
-                        { label: "matricesIndices", value: "matricesIndices" },
-                        { label: "matricesWeights", value: "matricesWeights" }
-                    ];
-                    break;
+                attributeOptions = [
+                    { label: "matricesIndices", value: "matricesIndices" },
+                    { label: "matricesWeights", value: "matricesWeights" }
+                ];
+                systemValuesOptions = [
+                    { label: "Camera parameters", value: NodeMaterialSystemValues.CameraParameters }
+                ];
+                break;
         }
 
         var modeOptions = [

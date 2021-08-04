@@ -7,6 +7,7 @@ import { Scene } from "babylonjs/scene";
 import { TreeItemComponent } from "./treeItemComponent";
 import { Tools } from "../../tools";
 import { GlobalState } from "../../globalState";
+import { PropertyChangedEvent } from "../../sharedUiComponents/propertyChangedEvent";
 
 require("./sceneExplorer.scss");
 
@@ -43,7 +44,9 @@ interface ISceneExplorerComponentProps {
 
 export class SceneExplorerComponent extends React.Component<ISceneExplorerComponentProps, { filter: Nullable<string>; selectedEntity: any; scene: Nullable<Scene> }> {
     private _onSelectionChangeObserver: Nullable<Observer<any>>;
+    private _onParrentingChangeObserver: Nullable<Observer<any>>;
     private _onNewSceneObserver: Nullable<Observer<Nullable<Scene>>>;
+    private _onPropertyChangedObservable: Nullable<Observer<PropertyChangedEvent>>;
 
     constructor(props: ISceneExplorerComponentProps) {
         super(props);
@@ -53,6 +56,12 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             this.setState({
                 scene,
             });
+        });
+
+        this._onPropertyChangedObservable = this.props.globalState.onPropertyChangedObservable.add((event :PropertyChangedEvent) => {
+            if(event.property === "name") {
+                this.forceUpdate();
+            }
         });
     }
 
@@ -74,6 +83,10 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         this.props.globalState.onSelectionChangedObservable.add(() => {
             this.forceUpdate();
         });
+
+        this._onParrentingChangeObserver = this.props.globalState.onParentingChangeObservable.add(() => {
+            this.forceUpdate();
+        });
     }
 
     componentWillUnmount() {
@@ -85,6 +98,13 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             this.props.globalState.onNewSceneObservable.remove(this._onNewSceneObserver);
         }
 
+        if (this._onParrentingChangeObserver) {
+            this.props.globalState.onParentingChangeObservable.remove(this._onParrentingChangeObserver);
+        }
+
+        if (this._onPropertyChangedObservable) {
+            this.props.globalState.onPropertyChangedObservable.remove(this._onPropertyChangedObservable);
+        }
     }
 
     filterContent(filter: string) {
@@ -195,7 +215,22 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         let guiElements = scene.textures.filter((t) => t.getClassName() === "AdvancedDynamicTexture");
 
         return (
-            <div id="tree">
+            <div id="tree"
+                onDrop={event => {
+                    this.props.globalState.onParentingChangeObservable.notifyObservers(null);
+                }}
+                onDragOver={event => {
+                    event.preventDefault();
+                }}
+                onClick={event => {
+                    if (!this.props.globalState.selectionLock) {
+                        this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                    }
+                    else {
+                        this.props.globalState.selectionLock = false;
+                    }
+                }}>
+
                 {guiElements && guiElements.length > 0 && <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={guiElements} label="GUI" offset={1} filter={this.state.filter} />}
             </div>
         );

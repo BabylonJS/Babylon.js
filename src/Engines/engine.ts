@@ -25,8 +25,6 @@ import "./Extensions/engine.readTexture";
 import "./Extensions/engine.dynamicBuffer";
 import { IAudioEngine } from '../Audio/Interfaces/IAudioEngine';
 import { IPointerEvent } from "../Events/deviceInputEvents";
-import { CanvasGenerator } from '../Misc/canvasGenerator';
-import { IStencilState } from "../States/IStencilState";
 
 declare type IDeviceInputSystem = import("../DeviceInput/Interfaces/inputInterfaces").IDeviceInputSystem;
 declare type Material = import("../Materials/material").Material;
@@ -311,7 +309,7 @@ export class Engine extends ThinEngine {
      * @returns an uint8array containing RGBA values of bufferWidth * bufferHeight size
      */
     public resizeImageBitmap(image: HTMLImageElement | ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array {
-        var canvas = CanvasGenerator.CreateCanvas(bufferWidth, bufferHeight);
+        var canvas = this.createCanvas(bufferWidth, bufferHeight);
         var context = canvas.getContext("2d");
 
         if (!context) {
@@ -394,7 +392,7 @@ export class Engine extends ThinEngine {
     /**
      * Stores instance of DeviceInputSystem
      */
-     public deviceInputSystem: IDeviceInputSystem;
+    public deviceInputSystem: IDeviceInputSystem;
 
     // Observables
 
@@ -454,7 +452,7 @@ export class Engine extends ThinEngine {
      * Default AudioEngine factory responsible of creating the Audio Engine.
      * By default, this will create a BabylonJS Audio Engine if the workload has been embedded.
      */
-    public static AudioEngineFactory: (hostElement: Nullable<HTMLElement>) => IAudioEngine;
+    public static AudioEngineFactory: (hostElement: Nullable<HTMLElement>, audioContext: Nullable<AudioContext>, audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>) => IAudioEngine;
 
     /**
      * Default offline support factory responsible of creating a tool used to store data locally.
@@ -584,7 +582,7 @@ export class Engine extends ThinEngine {
 
                 // Create Audio Engine if needed.
                 if (!Engine.audioEngine && options.audioEngine && Engine.AudioEngineFactory) {
-                    Engine.audioEngine = Engine.AudioEngineFactory(this.getRenderingCanvas());
+                    Engine.audioEngine = Engine.AudioEngineFactory(this.getRenderingCanvas(), this.getAudioContext(), this.getAudioDestination());
                 }
             }
 
@@ -659,7 +657,7 @@ export class Engine extends ThinEngine {
 
         // Create Audio Engine if needed.
         if (!Engine.audioEngine && audioEngine && Engine.AudioEngineFactory) {
-            Engine.audioEngine = Engine.AudioEngineFactory(this.getRenderingCanvas());
+            Engine.audioEngine = Engine.AudioEngineFactory(this.getRenderingCanvas(), this.getAudioContext(), this.getAudioDestination());
         }
     }
 
@@ -747,55 +745,6 @@ export class Engine extends ThinEngine {
     }
 
     /** States */
-
-    /**
-     * Set various states to the webGL context
-     * @param culling defines culling state: true to enable culling, false to disable it
-     * @param zOffset defines the value to apply to zOffset (0 by default)
-     * @param force defines if states must be applied even if cache is up to date
-     * @param reverseSide defines if culling must be reversed (CCW if false, CW if true)
-     * @param cullBackFaces true to cull back faces, false to cull front faces (if culling is enabled)
-     * @param stencil stencil states to set
-     */
-    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false, cullBackFaces?: boolean, stencil?: IStencilState): void {
-        // Culling
-        if (this._depthCullingState.cull !== culling || force) {
-            this._depthCullingState.cull = culling;
-        }
-
-        // Cull face
-        var cullFace = (this.cullBackFaces ?? cullBackFaces ?? true) ? this._gl.BACK : this._gl.FRONT;
-        if (this._depthCullingState.cullFace !== cullFace || force) {
-            this._depthCullingState.cullFace = cullFace;
-        }
-
-        // Z offset
-        this.setZOffset(zOffset);
-
-        // Front face
-        var frontFace = reverseSide ? this._gl.CW : this._gl.CCW;
-        if (this._depthCullingState.frontFace !== frontFace || force) {
-            this._depthCullingState.frontFace = frontFace;
-        }
-
-        this._stencilStateComposer.stencilMaterial = stencil;
-    }
-
-    /**
-     * Set the z offset to apply to current rendering
-     * @param value defines the offset to apply
-     */
-    public setZOffset(value: number): void {
-        this._depthCullingState.zOffset = value;
-    }
-
-    /**
-     * Gets the current value of the zOffset
-     * @returns the current zOffset state
-     */
-    public getZOffset(): number {
-        return this._depthCullingState.zOffset;
-    }
 
     /**
      * Gets a boolean indicating if depth testing is enabled
@@ -1001,28 +950,28 @@ export class Engine extends ThinEngine {
      * Sets the current depth function to GREATER
      */
     public setDepthFunctionToGreater(): void {
-        this._depthCullingState.depthFunc = Constants.GREATER;
+        this.setDepthFunction(Constants.GREATER);
     }
 
     /**
      * Sets the current depth function to GEQUAL
      */
     public setDepthFunctionToGreaterOrEqual(): void {
-        this._depthCullingState.depthFunc = Constants.GEQUAL;
+        this.setDepthFunction(Constants.GEQUAL);
     }
 
     /**
      * Sets the current depth function to LESS
      */
     public setDepthFunctionToLess(): void {
-        this._depthCullingState.depthFunc = Constants.LESS;
+        this.setDepthFunction(Constants.LESS);
     }
 
     /**
      * Sets the current depth function to LEQUAL
      */
     public setDepthFunctionToLessOrEqual(): void {
-        this._depthCullingState.depthFunc = Constants.LEQUAL;
+        this.setDepthFunction(Constants.LEQUAL);
     }
 
     private _cachedStencilBuffer: boolean;
@@ -1555,7 +1504,7 @@ export class Engine extends ThinEngine {
         }
 
         this._rescalePostProcess.getEffect().executeWhenCompiled(() => {
-            this._rescalePostProcess.onApply = function(effect) {
+            this._rescalePostProcess.onApply = function (effect) {
                 effect._bindTexture("textureSampler", source);
             };
 
@@ -1774,12 +1723,12 @@ export class Engine extends ThinEngine {
             let check = () => {
                 const res = gl.clientWaitSync(sync, flags, 0);
                 if (res == gl.WAIT_FAILED) {
-                reject();
-                return;
+                    reject();
+                    return;
                 }
                 if (res == gl.TIMEOUT_EXPIRED) {
-                setTimeout(check, interval_ms);
-                return;
+                    setTimeout(check, interval_ms);
+                    return;
                 }
                 resolve();
             };

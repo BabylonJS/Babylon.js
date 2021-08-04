@@ -712,7 +712,7 @@ export class _Exporter {
             case VertexBuffer.ColorKind: {
                 const meshMaterial = (babylonTransformNode as Mesh).material;
                 const convertToLinear = meshMaterial ? (meshMaterial.getClassName() === "StandardMaterial") : true;
-                const vertexData : Color3 | Color4 = stride === 3 ? new Color3() : new Color4();
+                const vertexData: Color3 | Color4 = stride === 3 ? new Color3() : new Color4();
                 for (let k = 0, length = meshAttributeArray.length / stride; k < length; ++k) {
                     index = k * stride;
                     if (stride === 3) {
@@ -1049,9 +1049,15 @@ export class _Exporter {
             const glbFileName = glTFPrefix + '.glb';
             const headerLength = 12;
             const chunkLengthPrefix = 8;
-            const jsonLength = jsonText.length;
+            let jsonLength = jsonText.length;
+            let encodedJsonText;
             let imageByteLength = 0;
-
+            // make use of TextEncoder when available
+            if (typeof TextEncoder !== "undefined") {
+                const encoder = new TextEncoder();
+                encodedJsonText = encoder.encode(jsonText);
+                jsonLength = encodedJsonText.length;
+            }
             for (let i = 0; i < this._orderedImageData.length; ++i) {
                 imageByteLength += this._orderedImageData[i].data.byteLength;
             }
@@ -1076,8 +1082,21 @@ export class _Exporter {
 
             //json chunk bytes
             const jsonData = new Uint8Array(jsonChunkBuffer, chunkLengthPrefix);
-            for (let i = 0; i < jsonLength; ++i) {
-                jsonData[i] = jsonText.charCodeAt(i);
+            // if TextEncoder was available, we can simply copy the encoded array
+            if (encodedJsonText) {
+                jsonData.set(encodedJsonText);
+            }
+            else {
+                const blankCharCode = "_".charCodeAt(0);
+                for (let i = 0; i < jsonLength; ++i) {
+                    const charCode = jsonText.charCodeAt(i);
+                    // if the character doesn't fit into a single UTF-16 code unit, just put a blank character
+                    if (charCode != jsonText.codePointAt(i)) {
+                        jsonData[i] = blankCharCode;
+                    } else {
+                        jsonData[i] = charCode;
+                    }
+                }
             }
 
             //json padding
@@ -1885,7 +1904,7 @@ export class _Exporter {
             const inverseBindMatrices: Matrix[] = [];
             const skeletonMesh = babylonScene.meshes.find((mesh) => { mesh.skeleton === skeleton; });
             skin.skeleton = skeleton.overrideMesh === null ? (skeletonMesh ? nodeMap[skeletonMesh.uniqueId] : undefined) : nodeMap[skeleton.overrideMesh.uniqueId];
-            const boneIndexMap: {[index: number]: Bone} = {};
+            const boneIndexMap: { [index: number]: Bone } = {};
             let boneIndexMax: number = -1;
             let boneIndex: number = -1;
             for (let bone of skeleton.bones) {

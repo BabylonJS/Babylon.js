@@ -621,6 +621,9 @@ export class PhysicsImpostor {
             const boundingInfo = this.object.getBoundingInfo();
             // get the global scaling of the object
             const size = boundingInfo.boundingBox.extendSize.scale(2).multiplyInPlace(scaling);
+            size.x = Math.abs(size.x);
+            size.y = Math.abs(size.y);
+            size.z = Math.abs(size.z);
             //bring back the rotation
             this.object.rotationQuaternion = q;
             //calculate the world matrix with the new rotation

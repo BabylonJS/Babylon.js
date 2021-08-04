@@ -16,48 +16,20 @@ declare module BABYLON {
         static PauseRenderLoop: boolean;
         /** Set the preload auto update progress flag */
         static AutoUpdateProgress: boolean;
+        /** Is content running in a frame window */
+        static IsFrameWindow(): boolean;
         /** Gets the running status of the default audio context */
         static HasAudioContext(): boolean;
         /** Returns a Promise that resolves after the specfied time */
         static WaitForSeconds: (seconds: number) => Promise<void>;
-        /** Register handler that is triggered when the fonts have been loaded (engine.html) */
-        static OnFontsReadyObservable: Observable<Engine>;
+        /** Post a safe message to top parent window */
+        static PostWindowMessage(msg: any, targetOrigin: string, transfer?: Transferable[]): void;
         /** Register handler that is triggered when then engine has been resized (engine.html) */
         static OnEngineResizeObservable: Observable<Engine>;
         /** Register handler that is triggered when the scene has been loaded (engine.html) */
         static OnLoadCompleteObservable: Observable<Engine>;
-        /** Registers an handler for window state show scene loader function (engine.html) */
-        static RegisterOnShowSceneLoader(func: (show: boolean) => void): void;
-        /** Registers an handler for window socket disconnect event (engine.html) */
-        static RegisterOnUpdateSceneLoader(func: (status: string, details: string, state: number) => void): void;
-        /** Registers an handler for window state show scene loader function (engine.html) */
-        static RegisterOnTickSceneLoader(func: (percent: number) => void): void;
-        /** Loads a babylon scene file using the page loader window hooks (engine.html) */
+        /** Loads a babylon gltf scene file (engine.html) */
         static LoadSceneFile(sceneFile: string, queryString?: string): void;
-        /** Shows the top page scene loader (engine.html) */
-        static ShowParentLoader(show: boolean, duration?: number): void;
-        /** Get the system render quality local storage setting. */
-        static GetRenderQuality(): BABYLON.RenderQuality;
-        /** Set the system render quality local storage setting. */
-        static SetRenderQuality(quality: BABYLON.RenderQuality): void;
-        /** Get the system virtual reality local storage setting. */
-        static GetVirtualRealityEnabled(): boolean;
-        /** Set the system virtual reality local storage setting. */
-        static SetVirtualRealityEnabled(enabled: boolean): void;
-        /** Get an item from top window local storage. */
-        static GetLocalStorageItem(key: string): string;
-        /** Set an item to top window local storage. */
-        static SetLocalStorageItem(key: string, value: string): void;
-        /** Get an item from top window session storage. */
-        static GetSessionStorageItem(key: string): string;
-        /** Set an item to top window session storage. */
-        static SetSessionStorageItem(key: string, value: string): void;
-        /** Store data object in the window state cache */
-        static SetWindowState(name: string, data: any): void;
-        /** Retrieve data object from the window state cache */
-        static GetWindowState<T>(name: string): T;
-        /** Post a safe message to top or local window */
-        static PostWindowMessage(msg: any, targetOrigin: string, transfer?: Transferable[]): void;
         private static SceneParsingEnabled;
         /** Enable scene loader parsing plugin */
         static EnableSceneParsing(enabled: boolean): void;
@@ -70,6 +42,18 @@ declare module BABYLON {
         static GetAmbientSkybox(scene: BABYLON.Scene): BABYLON.AbstractMesh;
         /** Get the scene default intenisty factor */
         static GetIntensityFactor(): number;
+        /** Get the system render quality local storage setting. */
+        static GetRenderQuality(): BABYLON.RenderQuality;
+        /** Set the system render quality local storage setting. */
+        static SetRenderQuality(quality: BABYLON.RenderQuality): void;
+        /** Get the system virtual reality local storage setting. */
+        static GetVirtualRealityEnabled(): boolean;
+        /** Set the system virtual reality local storage setting. */
+        static SetVirtualRealityEnabled(enabled: boolean): void;
+        /** Store data object of function on the local window state. */
+        static SetWindowState(name: string, data: any): void;
+        /** Retrieve data object or function from the local window state. */
+        static GetWindowState<T>(name: string): T;
         /** Are scene manager debugging services available. */
         static IsDebugMode(): boolean;
         /** Send log data directly to the console. */
@@ -1103,8 +1087,8 @@ declare module BABYLON {
         static PointerWheelDeadZone: number;
         static PointerMouseDeadZone: number;
         static PointerMouseInverted: boolean;
-        static UseArrowKeyRotation: boolean;
         static UseCanvasElement: boolean;
+        static UseArrowKeyRotation: boolean;
     }
     /**
      * Unity Export Interfaces
@@ -1412,6 +1396,14 @@ declare module BABYLON {
         static ProjectVectorOnPlane(vector: BABYLON.Vector3, planenormal: BABYLON.Vector3): BABYLON.Vector3;
         /** Projects a vector onto a plane defined by a normal orthogonal to the plane and sets result */
         static ProjectVectorOnPlaneToRef(vector: BABYLON.Vector3, planenormal: BABYLON.Vector3, result: BABYLON.Vector3): void;
+        /** Get an item from window local storage. */
+        static GetLocalStorageItem(key: string): string;
+        /** Set an item to window local storage. */
+        static SetLocalStorageItem(key: string, value: string): void;
+        /** Get an item from window session storage. */
+        static GetSessionStorageItem(key: string): string;
+        /** Set an item to window session storage. */
+        static SetSessionStorageItem(key: string, value: string): void;
         /** TODO */
         static DownloadEnvironment(cubemap: BABYLON.CubeTexture, success?: () => void, failure?: () => void): void;
         static HasOwnProperty(object: any, property: string): boolean;

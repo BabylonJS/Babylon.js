@@ -46,7 +46,7 @@
             "excludeFromAutomaticTesting": true
         },
         {
-            "title": "Point light shadows",
+            "title": "Spotlight shadows",
             "playgroundId": "#U2F7P9#4",
             "referenceImage": "point-light-shadows.png"
         },
@@ -151,18 +151,16 @@
         {
             "title": "GUI Slate",
             "renderCount": 60,
-            "playgroundId": "#2YZFA0#200",
+            "playgroundId": "#2YZFA0#211",
             "referenceImage": "guiSlate.png",
-            "excludedEngines": ["webgl1"],
-            "excludeFromAutomaticTesting": true
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "GUI Near Menu",
             "renderCount": 60,
-            "playgroundId":"#2YZFA0#180",
+            "playgroundId":"#2YZFA0#243",
             "referenceImage": "guiNearMenu.png",
-            "excludedEngines": ["webgl1"],
-            "excludeFromAutomaticTesting": true
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "Camera rig",
@@ -408,7 +406,8 @@
             "title": "Self shadowing",
             "scriptToRun": "/Demos/SelfShadowing/shadows.js",
             "functionToCall": "CreateShadowsTestScene",
-            "referenceImage": "selfShadowing.png"
+            "referenceImage": "selfShadowing.png",
+            "excludedEngines": ["webgpu"]
         },
         {
             "title": "Advanced shadows",
@@ -446,8 +445,7 @@
         {
             "title": "Custom render target",
             "renderCount": 20,
-            "scriptToRun": "/Demos/CustomRenderTarget/customRenderTarget.js",
-            "functionToCall": "CreateCustomRenderTargetTestScene",
+            "playgroundId": "#TQCEBF#1",
             "referenceImage": "customRTT.png"
         },
         {
@@ -760,7 +758,7 @@
         },
         {
             "title": "Depth of field",
-            "playgroundId": "#IDSQK2#53",
+            "playgroundId": "#IDSQK2#86",
             "renderCount": 20,
             "referenceImage": "depthOfField.png"
         },
@@ -1031,7 +1029,7 @@
             "playgroundId": "#PIZ1GK#173",
             "referenceImage": "geometrybufferrenderer.png",
             "renderCount": 10,
-            "excludedEngines": ["webgl1", "webgpu"],
+            "excludedEngines": ["webgl1"],
             "excludeFromAutomaticTesting": true
         },
         {
@@ -1093,7 +1091,7 @@
         {
             "title": "Prepass SSAO + depth of field",
             "renderCount": 10,
-            "playgroundId": "#8F5HYV#14",
+            "playgroundId": "#8F5HYV#16",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-dof.png"
         },
@@ -1101,14 +1099,14 @@
             "title": "Prepass + mirror, without postprocess",
             "renderCount": 10,
             "playgroundId": "#PIZ1GK#212",
-            "excludedEngines": ["webgl1", "webgpu"],
+            "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-mirror-without-pp.png"
         },
         {
             "title": "Prepass + mirror, with postprocesses",
             "renderCount": 10,
             "playgroundId": "#PIZ1GK#213",
-            "excludedEngines": ["webgl1", "webgpu"],
+            "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-mirror-with-pp.png"
         },
         {
@@ -1318,6 +1316,38 @@
             "excludedEngines": ["webgl1"],
             "referenceImage": "gpuparticle-basic.png",
             "excludeFromAutomaticTesting": true
+        },
+        {
+            "title": "GLTF ext MSFT_LOD",
+            "playgroundId": "#2YZFA0#234",
+            "referenceImage": "gltfMSFTLOD.png"
+        },
+        {
+            "title": "Reverse depth buffer and shadows",
+            "renderCount": 10,
+            "playgroundId": "#WL4Q8J#16",
+            "excludedEngines": ["webgl1"],
+            "referenceImage": "reverseDepthBufferShadows.png"
+        },
+        {
+            "title": "Reverse depth buffer and CSM shadows",
+            "renderCount": 10,
+            "playgroundId": "#IIZ9UU#180",
+            "excludedEngines": ["webgl1"],
+            "referenceImage": "reverseDepthBufferCSMShadows.png"
+        },
+        {
+            "title": "Reverse depth buffer fix flicker",
+            "playgroundId": "#67JFXI#15",
+            "excludedEngines": ["webgl1", "webgl2"],
+            "referenceImage": "reverseDepthBufferFixFlicker.png",
+            "errorRatio": 2
+        },
+        {
+            "title": "Multi cameras and output render target",
+            "renderCount": 2,
+            "playgroundId": "#BCYE7J#17",
+            "referenceImage": "multiCamerasOutputRenderTarget.png"
         }
     ]
 }

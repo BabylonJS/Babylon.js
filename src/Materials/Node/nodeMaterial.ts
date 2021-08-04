@@ -70,6 +70,11 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     public NORMAL = false;
     public TANGENT = false;
     public UV1 = false;
+    public UV2 = false;
+    public UV3 = false;
+    public UV4 = false;
+    public UV5 = false;
+    public UV6 = false;
 
     /** BONES */
     public NUM_BONE_INFLUENCERS = 0;
@@ -187,13 +192,13 @@ export class NodeMaterial extends PushMaterial {
     /**
      * Gets or sets a boolean indicating that alpha value must be ignored (This will turn alpha blending off even if an alpha value is produced by the material)
      */
-     @serialize()
+    @serialize()
     public ignoreAlpha = false;
 
     /**
     * Defines the maximum number of lights that can be used in the material
     */
-     @serialize()
+    @serialize()
     public maxSimultaneousLights = 4;
 
     /**
@@ -575,11 +580,11 @@ export class NodeMaterial extends PushMaterial {
                 if (block !== node) {
                     if (block.target === NodeMaterialBlockTargets.VertexAndFragment) {
                         nodesToProcessForOtherBuildState.push(block);
-                    } else if (state.target ===  NodeMaterialBlockTargets.Fragment
+                    } else if (state.target === NodeMaterialBlockTargets.Fragment
                         && block.target === NodeMaterialBlockTargets.Vertex
                         && block._preparationId !== this._buildId) {
-                            nodesToProcessForOtherBuildState.push(block);
-                        }
+                        nodesToProcessForOtherBuildState.push(block);
+                    }
                     this._initializeBlock(block, state, nodesToProcessForOtherBuildState);
                 }
             }
@@ -749,15 +754,19 @@ export class NodeMaterial extends PushMaterial {
     private _prepareDefinesForAttributes(mesh: AbstractMesh, defines: NodeMaterialDefines) {
         let oldNormal = defines["NORMAL"];
         let oldTangent = defines["TANGENT"];
-        let oldUV1 = defines["UV1"];
 
         defines["NORMAL"] = mesh.isVerticesDataPresent(VertexBuffer.NormalKind);
 
         defines["TANGENT"] = mesh.isVerticesDataPresent(VertexBuffer.TangentKind);
 
-        defines["UV1"] = mesh.isVerticesDataPresent(VertexBuffer.UVKind);
+        let uvChanged = false;
+        for (let i = 1; i <= Constants.MAX_SUPPORTED_UV_SETS; ++i) {
+            let oldUV = defines["UV" + i];
+            defines["UV" + i] = mesh.isVerticesDataPresent(`uv${i === 1 ? "" : i}`);
+            uvChanged = uvChanged || defines["UV" + i] !== oldUV;
+        }
 
-        if (oldNormal !== defines["NORMAL"] || oldTangent !== defines["TANGENT"] || oldUV1 !== defines["UV1"]) {
+        if (oldNormal !== defines["NORMAL"] || oldTangent !== defines["TANGENT"] || uvChanged) {
             defines.markAsAttributesDirty();
         }
     }
@@ -776,11 +785,11 @@ export class NodeMaterial extends PushMaterial {
     public createPostProcess(
         camera: Nullable<Camera>, options: number | PostProcessOptions = 1, samplingMode: number = Constants.TEXTURE_NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean,
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, textureFormat = Constants.TEXTUREFORMAT_RGBA): Nullable<PostProcess> {
-            if (this.mode !== NodeMaterialModes.PostProcess) {
-                console.log("Incompatible material mode");
-                return null;
-            }
-            return this._createEffectForPostProcess(null, camera, options, samplingMode, engine, reusable, textureType, textureFormat);
+        if (this.mode !== NodeMaterialModes.PostProcess) {
+            console.log("Incompatible material mode");
+            return null;
+        }
+        return this._createEffectForPostProcess(null, camera, options, samplingMode, engine, reusable, textureType, textureFormat);
     }
 
     /**
@@ -872,9 +881,9 @@ export class NodeMaterial extends PushMaterial {
         Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, this._vertexCompilationState._builtCompilationString);
 
         let effect = this.getScene().getEngine().createEffect({
-                vertexElement: tempName,
-                fragmentElement: tempName
-            },
+            vertexElement: tempName,
+            fragmentElement: tempName
+        },
             [VertexBuffer.PositionKind],
             this._fragmentCompilationState.uniforms,
             this._fragmentCompilationState.samplers,
@@ -903,9 +912,9 @@ export class NodeMaterial extends PushMaterial {
 
                 TimingTools.SetImmediate(() => {
                     effect = this.getScene().getEngine().createEffect({
-                            vertexElement: tempName,
-                            fragmentElement: tempName
-                        },
+                        vertexElement: tempName,
+                        fragmentElement: tempName
+                    },
                         [VertexBuffer.PositionKind],
                         this._fragmentCompilationState.uniforms,
                         this._fragmentCompilationState.samplers,
@@ -995,8 +1004,8 @@ export class NodeMaterial extends PushMaterial {
     }
 
     private _checkInternals(effect: Effect) {
-         // Animated blocks
-         if (this._sharedData.animatedInputs) {
+        // Animated blocks
+        if (this._sharedData.animatedInputs) {
             const scene = this.getScene();
 
             let frameId = scene.getFrameId();
@@ -1043,8 +1052,8 @@ export class NodeMaterial extends PushMaterial {
         mergedUniforms: string[],
         mergedSamplers: string[],
         fallbacks: EffectFallbacks,
-     }> {
-         let result = null;
+    }> {
+        let result = null;
 
         // Shared defines
         this._sharedData.blocksWithDefines.forEach((b) => {
@@ -1631,7 +1640,7 @@ export class NodeMaterial extends PushMaterial {
 
         let alreadyDumped: NodeMaterialBlock[] = [];
         let vertexBlocks: NodeMaterialBlock[] = [];
-        let uniqueNames: string[] = [];
+        let uniqueNames: string[] = ["const", "var", "let"];
         // Gets active blocks
         for (var outputNode of this._vertexOutputNodes) {
             this._gatherBlocks(outputNode, vertexBlocks);
@@ -1733,7 +1742,7 @@ export class NodeMaterial extends PushMaterial {
         return serializationObject;
     }
 
-    private _restoreConnections(block: NodeMaterialBlock, source: any, map: {[key: number]: NodeMaterialBlock}) {
+    private _restoreConnections(block: NodeMaterialBlock, source: any, map: { [key: number]: NodeMaterialBlock }) {
         for (var outputPoint of block.outputs) {
             for (var candidate of source.blocks) {
                 let target = map[candidate.id];
@@ -1769,7 +1778,7 @@ export class NodeMaterial extends PushMaterial {
             this.clear();
         }
 
-        let map: {[key: number]: NodeMaterialBlock} = {};
+        let map: { [key: number]: NodeMaterialBlock } = {};
 
         // Create blocks
         for (var parsedBlock of source.blocks) {

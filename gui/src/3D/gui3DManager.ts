@@ -1,7 +1,7 @@
 import { Nullable } from "babylonjs/types";
 import { Observable, Observer } from "babylonjs/Misc/observable";
 import { Vector3 } from "babylonjs/Maths/math.vector";
-import { PointerInfo, PointerEventTypes } from 'babylonjs/Events/pointerEvents';
+import { PointerInfo, PointerEventTypes } from "babylonjs/Events/pointerEvents";
 import { Material } from "babylonjs/Materials/material";
 import { HemisphericLight } from "babylonjs/Lights/hemisphericLight";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
@@ -11,7 +11,6 @@ import { IDisposable, Scene } from "babylonjs/scene";
 
 import { Container3D } from "./controls/container3D";
 import { Control3D } from "./controls/control3D";
-import { TouchButton3D } from "./controls/touchButton3D";
 
 /**
  * Class used to manage 3D user interface
@@ -24,9 +23,6 @@ export class GUI3DManager implements IDisposable {
     private _rootContainer: Container3D;
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
     private _pointerOutObserver: Nullable<Observer<number>>;
-    private _touchableButtons = new Set<TouchButton3D>();
-    private _touchIds = new Map<string, number>();
-    private static _touchIdCounter = 300;
     /** @hidden */
     public _lastPickedControl: Control3D;
     /** @hidden */
@@ -39,12 +35,17 @@ export class GUI3DManager implements IDisposable {
      */
     public onPickedPointChangedObservable = new Observable<Nullable<Vector3>>();
 
+    /**
+     * Observable raised when a picking happens
+     */
+    public onPickingObservable = new Observable<Nullable<AbstractMesh>>();
+
     // Shared resources
     /** @hidden */
     public _sharedMaterials: { [key: string]: Material } = {};
 
     /** @hidden */
-    public _touchSharedMaterials:  { [key: string]: Material } = {};
+    public _touchSharedMaterials: { [key: string]: Material } = {};
 
     /** Gets the hosting scene */
     public get scene(): Scene {
@@ -117,12 +118,16 @@ export class GUI3DManager implements IDisposable {
             return false;
         }
 
-        let pointerEvent = <PointerEvent>(pi.event);
+        let pointerEvent = <PointerEvent>pi.event;
 
         let pointerId = pointerEvent.pointerId || 0;
         let buttonIndex = pointerEvent.button;
 
         let pickingInfo = pi.pickInfo;
+        if (pickingInfo) {
+            this.onPickingObservable.notifyObservers(pickingInfo.pickedMesh);
+        }
+
         if (!pickingInfo || !pickingInfo.hit) {
             this._handlePointerOut(pointerId, pi.type === PointerEventTypes.POINTERUP);
             return false;
@@ -132,9 +137,8 @@ export class GUI3DManager implements IDisposable {
             this.onPickedPointChangedObservable.notifyObservers(pickingInfo.pickedPoint);
         }
 
-        const control = <Control3D>(pickingInfo.pickedMesh!.reservedDataStore?.GUI3D?.control);
-        if (!!control && !control._processObservables(pi.type, pickingInfo.pickedPoint!, pointerId, buttonIndex)) {
-
+        const control = <Control3D>pickingInfo.pickedMesh!.reservedDataStore?.GUI3D?.control;
+        if (!!control && !control._processObservables(pi.type, pickingInfo.pickedPoint!, pickingInfo.originMesh?.position || null, pointerId, buttonIndex)) {
             if (pi.type === PointerEventTypes.POINTERMOVE) {
                 if (this._lastControlOver[pointerId]) {
                     this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId]);
@@ -156,44 +160,6 @@ export class GUI3DManager implements IDisposable {
         }
 
         return true;
-    }
-
-    private _processTouchControls = () => {
-        let utilityLayerScene = this._utilityLayer ? this._utilityLayer.utilityLayerScene : null;
-        if (utilityLayerScene) {
-            const touchMeshes = utilityLayerScene.getMeshesByTags("touchEnabled");
-            // Remove stale meshes
-            this._touchIds.forEach((uniqueId, controllerName) => {
-                let objectExists = false;
-                touchMeshes.forEach((mesh) => {
-                    if (mesh.name === controllerName) {
-                        objectExists = true;
-                    }
-                });
-
-                if (!objectExists) {
-                    this._touchableButtons.forEach((button) => {
-                        button._collisionCheckForStateChange(Vector3.Zero(), uniqueId, true);
-                    });
-                    this._touchIds.delete(controllerName);
-                }
-            });
-
-            // Add new meshes
-            touchMeshes.forEach((mesh) => {
-                let controllerName = mesh.name;
-                if (!this._touchIds.has(controllerName)) {
-                    this._touchIds.set(controllerName, GUI3DManager._touchIdCounter++);
-                }
-            });
-
-            this._touchableButtons.forEach((button) => {
-                touchMeshes.forEach((mesh) => {
-                    let uniqueId = this._touchIds.get(mesh.name)!;
-                    button._collisionCheckForStateChange(mesh.getAbsolutePosition(), uniqueId);
-                });
-            });
-        }
     }
 
     /**
@@ -219,16 +185,6 @@ export class GUI3DManager implements IDisposable {
      */
     public addControl(control: Control3D): GUI3DManager {
         this._rootContainer.addControl(control);
-
-        let utilityLayerScene = this._utilityLayer ? this._utilityLayer.utilityLayerScene : null;
-        if (utilityLayerScene && (control instanceof TouchButton3D)) {
-            if (this._touchableButtons.size == 0) {
-                utilityLayerScene.registerBeforeRender(this._processTouchControls);
-            }
-
-            this._touchableButtons.add(control as TouchButton3D);
-        }
-
         return this;
     }
 
@@ -239,16 +195,6 @@ export class GUI3DManager implements IDisposable {
      */
     public removeControl(control: Control3D): GUI3DManager {
         this._rootContainer.removeControl(control);
-
-        let utilityLayerScene = this._utilityLayer ? this._utilityLayer.utilityLayerScene : null;
-        if (utilityLayerScene && (control instanceof TouchButton3D)) {
-            this._touchableButtons.delete(control);
-
-            if (this._touchableButtons.size == 0) {
-                utilityLayerScene.unregisterBeforeRender(this._processTouchControls);
-            }
-        }
-
         return this;
     }
 
@@ -284,14 +230,11 @@ export class GUI3DManager implements IDisposable {
         }
 
         this.onPickedPointChangedObservable.clear();
+        this.onPickingObservable.clear();
 
         let utilityLayerScene = this._utilityLayer ? this._utilityLayer.utilityLayerScene : null;
 
         if (utilityLayerScene) {
-            if (this._touchableButtons.size != 0) {
-                utilityLayerScene.unregisterBeforeRender(this._processTouchControls);
-            }
-
             if (this._pointerObserver) {
                 utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
                 this._pointerObserver = null;

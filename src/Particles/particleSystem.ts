@@ -112,7 +112,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     private _spriteBuffer: Nullable<Buffer>;
     private _indexBuffer: Nullable<DataBuffer>;
     private _drawWrapper: DrawWrapper;
-    private _customWrappers: { [blendMode: number] : Nullable<DrawWrapper> };
+    private _customWrappers: { [blendMode: number]: Nullable<DrawWrapper> };
     private _scaledColorStep = new Color4(0, 0, 0, 0);
     private _colorDiff = new Color4(0, 0, 0, 0);
     private _scaledDirection = Vector3.Zero();
@@ -295,7 +295,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             this._scene.particleSystems.push(this);
         } else {
             this._engine = (sceneOrEngine as ThinEngine);
-            this.defaultProjectionMatrix = Matrix.PerspectiveFovLH(0.8, 1, 0.1, 100);
+            this.defaultProjectionMatrix = Matrix.PerspectiveFovLH(0.8, 1, 0.1, 100, this._engine.isNDCHalfZRange);
         }
 
         if (this._engine.getCaps().vertexArrayObject) {
@@ -2731,7 +2731,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                 case "MeshParticleEmitter":
                     emitterType = new MeshParticleEmitter();
                     break;
-                    case "BoxEmitter":
+                case "BoxEmitter":
                 case "BoxParticleEmitter":
                 default:
                     emitterType = new BoxParticleEmitter();

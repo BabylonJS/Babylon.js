@@ -30,7 +30,7 @@ type XREye = "none" | "left" | "right";
 /**
  * Type of XR events available
  */
-type XREventType = "devicechange" | "visibilitychange" | "end" | "inputsourceschange" | "select" | "selectstart" | "selectend" | "squeeze" | "squeezestart" | "squeezeend" | "reset";
+type XREventType = "devicechange" | "visibilitychange" | "end" | "inputsourceschange" | "select" | "selectstart" | "selectend" | "squeeze" | "squeezestart" | "squeezeend" | "reset" | "eyetrackingstart" | "eyetrackingend";
 
 type XRDOMOverlayType = "screen" | "floating" | "head-locked";
 
@@ -41,7 +41,7 @@ type XRAnchorSet = Set<XRAnchor>;
 
 type XREventHandler = (callback: any) => void;
 
-interface XRLayer extends EventTarget {}
+interface XRLayer extends EventTarget { }
 
 type XRDOMOverlayInit = {
     /**
@@ -97,7 +97,7 @@ declare class XRWebGLLayer {
 }
 
 // tslint:disable-next-line no-empty-interface
-interface XRSpace extends EventTarget {}
+interface XRSpace extends EventTarget { }
 
 interface XRRenderState {
     readonly baseLayer?: XRWebGLLayer;
@@ -147,6 +147,7 @@ interface XRWorldInformation {
 interface XRFrame {
     readonly session: XRSession;
     getPose(space: XRSpace, baseSpace: XRSpace): XRPose | undefined;
+    fillPoses?(spaces: XRSpace[], baseSpace: XRSpace, transforms: Float32Array): boolean;
     getViewerPose(referenceSpace: XRReferenceSpace): XRViewerPose | undefined;
 
     // AR
@@ -160,6 +161,7 @@ interface XRFrame {
     detectedPlanes?: XRPlaneSet;
     // Hand tracking
     getJointPose?(joint: XRJointSpace, baseSpace: XRSpace): XRJointPose;
+    fillJointRadii?(jointSpaces: XRJointSpace[], radii: Float32Array): boolean;
     // Image tracking
     getImageTrackingResults?(): Array<XRImageTrackingResult>;
 }
@@ -167,6 +169,10 @@ interface XRFrame {
 interface XRInputSourceEvent extends Event {
     readonly frame: XRFrame;
     readonly inputSource: XRInputSource;
+}
+
+interface XREyeTrackingSourceEvent extends Event {
+    readonly gazeSpace: XRSpace;
 }
 
 type XRInputSourceArray = XRInputSource[];
@@ -222,6 +228,8 @@ interface XRSession {
     updateRenderState(XRRenderStateInit: XRRenderState): Promise<void>;
 
     onend: XREventHandler;
+    oneyetrackingstart: XREventHandler;
+    oneyetrackingend: XREventHandler;
     oninputsourceschange: XREventHandler;
     onselect: XREventHandler;
     onselectstart: XREventHandler;
@@ -337,7 +345,7 @@ interface XRPlane {
     lastChangedTime: number;
 }
 
-interface XRJointSpace extends XRSpace {}
+interface XRJointSpace extends XRSpace { }
 
 interface XRJointPose extends XRPose {
     radius: number | undefined;

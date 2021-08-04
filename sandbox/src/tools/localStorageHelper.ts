@@ -3,7 +3,7 @@ export class LocalStorageHelper {
         if (typeof (Storage) !== "undefined" && localStorage.getItem(key) !== null) {
             return parseInt(localStorage.getItem(key)!);
         }
-    
+
         return defaultValue;
     }
 }

@@ -46,7 +46,7 @@ export class PickingInfo {
     /** If we are picking a mesh with thin instance, this will give you the picked thin instance */
     public thinInstanceIndex = -1;
     /**
-     * If a mesh was used to do the picking (eg. 6dof controller) this will be populated.
+     * If a mesh was used to do the picking (eg. 6dof controller) as a "near interaction", this will be populated.
      */
     public originMesh: Nullable<AbstractMesh> = null;
     /**

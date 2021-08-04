@@ -18,6 +18,7 @@ import { Color3 } from "babylonjs/Maths/math.color";
 import { TouchButton3D } from "./touchButton3D";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SceneLoader } from "babylonjs/Loading/sceneLoader";
+import { DomManagement } from "babylonjs/Misc/domManagement";
 
 /**
  * Class used to create a holographic button in 3D
@@ -232,11 +233,11 @@ export class TouchHolographicButton extends TouchButton3D {
 
     private _rebuildContent(): void {
         this._disposeFacadeTexture();
-        // HACK: Temporary fix for BabylonNative while we wait for the polyfill.
-        if (!!document.createElement) {
-            let panel = new StackPanel();
-            panel.isVertical = true;
 
+        let panel = new StackPanel();
+        panel.isVertical = true;
+
+        if (DomManagement.IsDocumentAvailable() && !!document.createElement) {
             if (this._imageUrl) {
                 let image = new Image();
                 image.source = this._imageUrl;
@@ -246,18 +247,18 @@ export class TouchHolographicButton extends TouchButton3D {
                 image.paddingBottom = "40px";
                 panel.addControl(image);
             }
-
-            if (this._text) {
-                let text = new TextBlock();
-                text.text = this._text;
-                text.color = "white";
-                text.height = "30px";
-                text.fontSize = 24;
-                panel.addControl(text);
-            }
-
-            this.content = panel;
         }
+
+        if (this._text) {
+            let text = new TextBlock();
+            text.text = this._text;
+            text.color = "white";
+            text.height = "30px";
+            text.fontSize = 24;
+            panel.addControl(text);
+        }
+
+        this.content = panel;
     }
 
     // Mesh association
@@ -268,8 +269,9 @@ export class TouchHolographicButton extends TouchButton3D {
             depth: 1.0,
         }, scene);
         collisionMesh.isPickable = true;
+        collisionMesh.isNearPickable = true;
         collisionMesh.visibility = 0;
-        collisionMesh.scaling = new Vector3(0.032, 0.032, 0.016);
+        collisionMesh.scaling = new Vector3(1, 1, 0.5);
 
         SceneLoader.ImportMeshAsync(
             undefined,
