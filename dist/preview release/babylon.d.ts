@@ -62951,7 +62951,7 @@ declare module BABYLON {
          * @param loaderOptions options to be passed to the loader
          * @returns a InternalTexture for assignment back into BABYLON.Texture
          */
-        createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string, loaderOptions?: any): InternalTexture;
+        createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string, loaderOptions?: any, creationFlags?: number, useSRGBBuffer?: boolean): InternalTexture;
         _createDepthStencilTexture(size: RenderTargetTextureSize, options: DepthTextureCreationOptions): InternalTexture;
         _releaseFramebufferObjects(texture: InternalTexture): void;
         /**
@@ -62983,9 +62983,11 @@ declare module BABYLON {
          * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
          * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
          * @param fallback defines texture to use while falling back when (compressed) texture file not found.
+         * @param loaderOptions options to be passed to the loader
+         * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
          * @returns the cube texture as an InternalTexture
          */
-        createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad?: Nullable<(data?: any) => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, forcedExtension?: any, createPolynomials?: boolean, lodScale?: number, lodOffset?: number, fallback?: Nullable<InternalTexture>): InternalTexture;
+        createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad?: Nullable<(data?: any) => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, forcedExtension?: any, createPolynomials?: boolean, lodScale?: number, lodOffset?: number, fallback?: Nullable<InternalTexture>, loaderOptions?: any, useSRGBBuffer?: boolean): InternalTexture;
         createRenderTargetTexture(size: number | {
             width: number;
             height: number;
