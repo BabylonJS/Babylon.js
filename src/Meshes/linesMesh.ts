@@ -263,7 +263,17 @@ export class LinesMesh extends Mesh {
      * @returns a new InstancedLinesMesh
      */
     public createInstance(name: string): InstancedLinesMesh {
-        return new InstancedLinesMesh(name, this);
+        let instance = new InstancedLinesMesh(name, this);
+
+        if (this.instancedBuffers) {
+            instance.instancedBuffers = {};
+
+            for (var key in this.instancedBuffers) {
+                instance.instancedBuffers[key] = this.instancedBuffers[key];
+            }
+        }
+
+        return instance;
     }
 
     /**
