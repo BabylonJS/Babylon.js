@@ -29931,6 +29931,8 @@ declare module BABYLON {
      * @see https://doc.babylonjs.com/how_to/how_to_use_morphtargets
      */
     export class MorphTargetManager implements IDisposable {
+        /** Enable storing morph target data into textures when set to true (true by default) */
+        static EnableTextureStorage: boolean;
         private _targets;
         private _targetInfluenceChangedObservers;
         private _targetDataLayoutChangedObservers;
@@ -29948,6 +29950,7 @@ declare module BABYLON {
         private _uniqueId;
         private _tempInfluences;
         private _canUseTextureForTargets;
+        private _blockCounter;
         /** @hidden */
         _parentContainer: Nullable<AbstractScene>;
         /** @hidden */
@@ -29968,6 +29971,11 @@ declare module BABYLON {
          * Gets or sets a boolean indicating if UV must be morphed
          */
         enableUVMorphing: boolean;
+        /**
+         * Sets a boolean indicating that adding new target will or will not update the underlying data buffers
+         */
+        set areUpdatesFrozen(block: boolean);
+        get areUpdatesFrozen(): boolean;
         /**
          * Creates a new MorphTargetManager
          * @param scene defines the current scene
@@ -77021,11 +77029,11 @@ declare module BABYLON {
          * This member defines the tile cube side length in world units.
          * If no obstacles are needed, leave it undefined or 0.
          */
-        tileSize: number;
+        tileSize?: number;
         /**
         * The size of the non-navigable border around the heightfield.
         */
-        borderSize: number;
+        borderSize?: number;
     }
 }
 declare module BABYLON {
