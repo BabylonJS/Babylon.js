@@ -991,12 +991,14 @@ export class GLTFLoader implements IGLTFLoader {
         const targetNames = mesh.extras ? mesh.extras.targetNames : null;
 
         babylonMesh.morphTargetManager = new MorphTargetManager(babylonMesh.getScene());
+        babylonMesh.morphTargetManager.areUpdatesFrozen = true;
         for (let index = 0; index < primitive.targets.length; index++) {
             const weight = node.weights ? node.weights[index] : mesh.weights ? mesh.weights[index] : 0;
             const name = targetNames ? targetNames[index] : `morphTarget${index}`;
             babylonMesh.morphTargetManager.addTarget(new MorphTarget(name, weight, babylonMesh.getScene()));
             // TODO: tell the target whether it has positions, normals, tangents
         }
+        babylonMesh.morphTargetManager.areUpdatesFrozen = false;
     }
 
     private _loadMorphTargetsAsync(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh, babylonGeometry: Geometry): Promise<void> {
