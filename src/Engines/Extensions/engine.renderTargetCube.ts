@@ -16,7 +16,7 @@ declare module "../../Engines/thinEngine" {
     }
 }
 
-ThinEngine.prototype.createRenderTargetCubeTexture = function(size: number, options?: Partial<RenderTargetCreationOptions>): InternalTexture {
+ThinEngine.prototype.createRenderTargetCubeTexture = function (size: number, options?: Partial<RenderTargetCreationOptions>): InternalTexture {
     let fullOptions = {
         generateMipMaps: true,
         generateDepthBuffer: true,

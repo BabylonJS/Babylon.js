@@ -11,6 +11,8 @@ import { GUI3DManager } from "../gui3DManager";
 import { Vector3WithInfo } from "../vector3WithInfo";
 import { Container3D } from "./container3D";
 
+declare type TouchButton3D = import("./touchButton3D").TouchButton3D;
+
 /**
  * Class used as base class for controls
  */
@@ -67,12 +69,12 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
     public pointerUpAnimation: () => void;
 
     /**
-     * An event triggered when the pointer move over the control
+     * An event triggered when the pointer moves over the control
      */
     public onPointerMoveObservable = new Observable<Vector3>();
 
     /**
-     * An event triggered when the pointer move out of the control
+     * An event triggered when the pointer moves out of the control
      */
     public onPointerOutObservable = new Observable<Control3D>();
 
@@ -200,7 +202,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
     constructor(
         /** Defines the control name */
         public name?: string
-    ) {}
+    ) { }
 
     /**
      * Gets a string representing the class name
@@ -293,6 +295,10 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
      */
     protected _affectMaterial(mesh: AbstractMesh) {
         mesh.material = null;
+    }
+
+    private _IsTouchButton3D(control: Control3D): control is TouchButton3D {
+        return (control as TouchButton3D)._generatePointerEventType !== undefined;
     }
 
     // Pointers
@@ -402,7 +408,11 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
     }
 
     /** @hidden */
-    public _processObservables(type: number, pickedPoint: Vector3, pointerId: number, buttonIndex: number): boolean {
+    public _processObservables(type: number, pickedPoint: Vector3, originMeshPosition: Nullable<Vector3>, pointerId: number, buttonIndex: number): boolean {
+        if (this._IsTouchButton3D(this) && originMeshPosition) {
+            type = this._generatePointerEventType(type, originMeshPosition, this._downCount);
+        }
+
         if (type === PointerEventTypes.POINTERMOVE) {
             this._onPointerMove(this, pickedPoint);
 

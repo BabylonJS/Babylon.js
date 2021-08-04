@@ -202,7 +202,7 @@ export class NodeMaterialConnectionPoint {
     /**
      * Gets or sets a boolean indicating that this connection point is exposed on a frame
      */
-    public isExposedOnFrame: boolean =  false;
+    public isExposedOnFrame: boolean = false;
 
     /**
      * Gets or sets number indicating the position that the port is exposed to on a frame
@@ -426,8 +426,7 @@ export class NodeMaterialConnectionPoint {
 
             // Accepted types
             if (connectionPoint.acceptedConnectionPointTypes && connectionPoint.acceptedConnectionPointTypes.indexOf(this.type) !== -1 ||
-                connectionPoint._acceptedConnectionPointType && NodeMaterialConnectionPoint.AreEquivalentTypes(connectionPoint._acceptedConnectionPointType.type, this.type))
-            {
+                connectionPoint._acceptedConnectionPointType && NodeMaterialConnectionPoint.AreEquivalentTypes(connectionPoint._acceptedConnectionPointType.type, this.type)) {
                 return NodeMaterialConnectionPointCompatibilityStates.Compatible;
             } else {
                 return NodeMaterialConnectionPointCompatibilityStates.TypeIncompatible;

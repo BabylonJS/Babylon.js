@@ -112,7 +112,7 @@ export abstract class Light extends Node implements ISortableLight {
 
     /**
      * Specular produces a highlight color on an object.
-     * Note: This is note affecting PBR materials.
+     * Note: This is not affecting PBR materials.
      */
     @serializeAsColor3()
     public specular = new Color3(1.0, 1.0, 1.0);
@@ -346,7 +346,7 @@ export abstract class Light extends Node implements ISortableLight {
     constructor(name: string, scene: Scene) {
         super(name, scene);
         this.getScene().addLight(this);
-        this._uniformBuffer = new UniformBuffer(this.getScene().getEngine(), undefined,  undefined, name);
+        this._uniformBuffer = new UniformBuffer(this.getScene().getEngine(), undefined, undefined, name);
         this._buildUniformLayout();
 
         this.includedOnlyMeshes = new Array<AbstractMesh>();

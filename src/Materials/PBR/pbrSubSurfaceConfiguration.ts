@@ -25,12 +25,18 @@ export interface IMaterialSubSurfaceDefines {
     SUBSURFACE: boolean;
 
     SS_REFRACTION: boolean;
+    SS_REFRACTION_USE_INTENSITY_FROM_TEXTURE: boolean;
     SS_TRANSLUCENCY: boolean;
+    SS_TRANSLUCENCY_USE_INTENSITY_FROM_TEXTURE: boolean;
     SS_SCATTERING: boolean;
 
     SS_THICKNESSANDMASK_TEXTURE: boolean;
     SS_THICKNESSANDMASK_TEXTUREDIRECTUV: number;
     SS_HAS_THICKNESS: boolean;
+    SS_REFRACTIONINTENSITY_TEXTURE: boolean;
+    SS_REFRACTIONINTENSITY_TEXTUREDIRECTUV: number;
+    SS_TRANSLUCENCYINTENSITY_TEXTURE: boolean;
+    SS_TRANSLUCENCYINTENSITY_TEXTUREDIRECTUV: number;
 
     SS_REFRACTIONMAP_3D: boolean;
     SS_REFRACTIONMAP_OPPOSITEZ: boolean;
@@ -45,7 +51,7 @@ export interface IMaterialSubSurfaceDefines {
     SS_USE_THICKNESS_AS_DEPTH: boolean;
 
     SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
-    SS_USE_GLTF_THICKNESS_TEXTURE: boolean;
+    SS_USE_GLTF_TEXTURES: boolean;
 
     /** @hidden */
     _areTexturesDirty: boolean;
@@ -138,7 +144,7 @@ export class PBRSubSurfaceConfiguration {
     private _thicknessTexture: Nullable<BaseTexture> = null;
     /**
      * Stores the average thickness of a mesh in a texture (The texture is holding the values linearly).
-     * The red channel of the texture should contain the thickness remapped between 0 and 1.
+     * The red (or green if useGltfStyleTextures=true) channel of the texture should contain the thickness remapped between 0 and 1.
      * 0 would mean minimumThickness
      * 1 would mean maximumThickness
      * The other channels might be use as a mask to vary the different effects intensity.
@@ -226,13 +232,13 @@ export class PBRSubSurfaceConfiguration {
     /**
      * Defines that the thickness should be used as a measure of the depth volume.
      */
-     @serialize()
-     public useThicknessAsDepth = false;
+    @serialize()
+    public useThicknessAsDepth = false;
 
-     /**
-     * Defines the volume tint of the material.
-     * This is used for both translucency and scattering.
-     */
+    /**
+    * Defines the volume tint of the material.
+    * This is used for both translucency and scattering.
+    */
     @serializeAsColor3()
     public tintColor = Color3.White();
 
@@ -253,25 +259,43 @@ export class PBRSubSurfaceConfiguration {
     private _useMaskFromThicknessTexture = false;
     /**
      * Stores the intensity of the different subsurface effects in the thickness texture.
-     * * the green channel is the translucency intensity.
-     * * the blue channel is the scattering intensity.
-     * * the alpha channel is the refraction intensity.
+     * Note that if refractionIntensityTexture and/or translucencyIntensityTexture is provided it takes precedence over thicknessTexture + useMaskFromThicknessTexture
+     * * the green (red if useGltfStyleTextures = true) channel is the refraction intensity.
+     * * the blue channel is the translucency intensity.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public useMaskFromThicknessTexture: boolean = false;
 
-    private _scene: Scene;
-    private _useGltfStyleThicknessTexture = false;
+    private _refractionIntensityTexture: Nullable<BaseTexture> = null;
     /**
-     * Stores the intensity of the different subsurface effects in the thickness texture. This variation
-     * matches the channel-packing that is used by glTF.
-     * * the red channel is the transmission/translucency intensity.
-     * * the green channel is the thickness.
+     * Stores the intensity of the refraction. If provided, it takes precedence over thicknessTexture + useMaskFromThicknessTexture
+     * * the green (red if useGltfStyleTextures = true) channel is the refraction intensity.
+     */
+    @serializeAsTexture()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public refractionIntensityTexture: Nullable<BaseTexture> = null;
+
+    private _translucencyIntensityTexture: Nullable<BaseTexture> = null;
+    /**
+     * Stores the intensity of the translucency. If provided, it takes precedence over thicknessTexture + useMaskFromThicknessTexture
+     * * the blue channel is the translucency intensity.
+     */
+    @serializeAsTexture()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public translucencyIntensityTexture: Nullable<BaseTexture> = null;
+
+    private _scene: Scene;
+    private _useGltfStyleTextures = false;
+    /**
+     * Use channels layout used by glTF:
+     * * thicknessTexture: the green (instead of red) channel is the thickness
+     * * thicknessTexture/refractionIntensityTexture: the red (instead of green) channel is the refraction intensity
+     * * thicknessTexture/translucencyIntensityTexture: no change, use the blue channel for the translucency intensity
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useGltfStyleThicknessTexture: boolean = false;
+    public useGltfStyleTextures: boolean = false;
 
     /** @hidden */
     private _internalMarkAllSubMeshesAsTexturesDirty: () => void;
@@ -336,12 +360,16 @@ export class PBRSubSurfaceConfiguration {
             defines.SUBSURFACE = false;
 
             defines.SS_TRANSLUCENCY = this._isTranslucencyEnabled;
+            defines.SS_TRANSLUCENCY_USE_INTENSITY_FROM_TEXTURE = false;
             defines.SS_SCATTERING = this._isScatteringEnabled;
             defines.SS_THICKNESSANDMASK_TEXTURE = false;
+            defines.SS_REFRACTIONINTENSITY_TEXTURE = false;
+            defines.SS_TRANSLUCENCYINTENSITY_TEXTURE = false;
             defines.SS_HAS_THICKNESS = false;
             defines.SS_MASK_FROM_THICKNESS_TEXTURE = false;
-            defines.SS_USE_GLTF_THICKNESS_TEXTURE = false;
+            defines.SS_USE_GLTF_TEXTURES = false;
             defines.SS_REFRACTION = false;
+            defines.SS_REFRACTION_USE_INTENSITY_FROM_TEXTURE = false;
             defines.SS_REFRACTIONMAP_3D = false;
             defines.SS_GAMMAREFRACTION = false;
             defines.SS_RGBDREFRACTION = false;
@@ -357,17 +385,40 @@ export class PBRSubSurfaceConfiguration {
             if (this._isRefractionEnabled || this._isTranslucencyEnabled || this._isScatteringEnabled) {
                 defines.SUBSURFACE = true;
 
+                const refractionIntensityTextureIsThicknessTexture =
+                    !!this._thicknessTexture &&
+                    !!this._refractionIntensityTexture &&
+                    this._refractionIntensityTexture.checkTransformsAreIdentical(this._thicknessTexture) && this._refractionIntensityTexture._texture === this._thicknessTexture._texture;
+
+                const translucencyIntensityTextureIsThicknessTexture =
+                    !!this._thicknessTexture &&
+                    !!this._translucencyIntensityTexture &&
+                    this._translucencyIntensityTexture.checkTransformsAreIdentical(this._thicknessTexture) && this._translucencyIntensityTexture._texture === this._thicknessTexture._texture;
+
+                // if true, it means the refraction/translucency textures are the same than the thickness texture so there's no need to pass them to the shader, only thicknessTexture
+                const useOnlyThicknessTexture = (refractionIntensityTextureIsThicknessTexture || !this._refractionIntensityTexture) && (translucencyIntensityTextureIsThicknessTexture || !this._translucencyIntensityTexture);
+
                 if (defines._areTexturesDirty) {
                     if (scene.texturesEnabled) {
                         if (this._thicknessTexture && MaterialFlags.ThicknessTextureEnabled) {
                             MaterialHelper.PrepareDefinesForMergedUV(this._thicknessTexture, defines, "SS_THICKNESSANDMASK_TEXTURE");
                         }
+
+                        if (this._refractionIntensityTexture && MaterialFlags.RefractionIntensityTextureEnabled && !useOnlyThicknessTexture) {
+                            MaterialHelper.PrepareDefinesForMergedUV(this._refractionIntensityTexture, defines, "SS_REFRACTIONINTENSITY_TEXTURE");
+                        }
+
+                        if (this._translucencyIntensityTexture && MaterialFlags.TranslucencyIntensityTextureEnabled && !useOnlyThicknessTexture) {
+                            MaterialHelper.PrepareDefinesForMergedUV(this._translucencyIntensityTexture, defines, "SS_TRANSLUCENCYINTENSITY_TEXTURE");
+                        }
                     }
                 }
 
                 defines.SS_HAS_THICKNESS = (this.maximumThickness - this.minimumThickness) !== 0.0;
-                defines.SS_MASK_FROM_THICKNESS_TEXTURE = this._useMaskFromThicknessTexture;
-                defines.SS_USE_GLTF_THICKNESS_TEXTURE = this._useGltfStyleThicknessTexture;
+                defines.SS_MASK_FROM_THICKNESS_TEXTURE = (this._useMaskFromThicknessTexture || !!this._refractionIntensityTexture || !!this._translucencyIntensityTexture) && useOnlyThicknessTexture;
+                defines.SS_USE_GLTF_TEXTURES = this._useGltfStyleTextures;
+                defines.SS_REFRACTION_USE_INTENSITY_FROM_TEXTURE = (this._useMaskFromThicknessTexture || !!this._refractionIntensityTexture) && useOnlyThicknessTexture;
+                defines.SS_TRANSLUCENCY_USE_INTENSITY_FROM_TEXTURE = (this._useMaskFromThicknessTexture || !!this._translucencyIntensityTexture) && useOnlyThicknessTexture;
             }
 
             if (this._isRefractionEnabled) {
@@ -406,12 +457,24 @@ export class PBRSubSurfaceConfiguration {
      * @param subMesh the submesh to bind data for
     */
     public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, isFrozen: boolean, lodBasedMicrosurface: boolean, realTimeFiltering: boolean, subMesh: SubMesh): void {
+        const defines = subMesh!._materialDefines as unknown as IMaterialSubSurfaceDefines;
+
         var refractionTexture = this._getRefractionTexture(scene);
 
         if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {
             if (this._thicknessTexture && MaterialFlags.ThicknessTextureEnabled) {
                 uniformBuffer.updateFloat2("vThicknessInfos", this._thicknessTexture.coordinatesIndex, this._thicknessTexture.level);
                 MaterialHelper.BindTextureMatrix(this._thicknessTexture, uniformBuffer, "thickness");
+            }
+
+            if (this._refractionIntensityTexture && MaterialFlags.RefractionIntensityTextureEnabled && defines.SS_REFRACTIONINTENSITY_TEXTURE) {
+                uniformBuffer.updateFloat2("vRefractionIntensityInfos", this._refractionIntensityTexture.coordinatesIndex, this._refractionIntensityTexture.level);
+                MaterialHelper.BindTextureMatrix(this._refractionIntensityTexture, uniformBuffer, "refractionIntensity");
+            }
+
+            if (this._translucencyIntensityTexture && MaterialFlags.TranslucencyIntensityTextureEnabled && defines.SS_TRANSLUCENCYINTENSITY_TEXTURE) {
+                uniformBuffer.updateFloat2("vTranslucencyIntensityInfos", this._translucencyIntensityTexture.coordinatesIndex, this._translucencyIntensityTexture.level);
+                MaterialHelper.BindTextureMatrix(this._translucencyIntensityTexture, uniformBuffer, "translucencyIntensity");
             }
 
             subMesh.getRenderingMesh().getWorldMatrix().decompose(TmpVectors.Vector3[0]);
@@ -459,7 +522,7 @@ export class PBRSubSurfaceConfiguration {
             uniformBuffer.updateFloat4("vTintColor", this.tintColor.r,
                 this.tintColor.g,
                 this.tintColor.b,
-                this.tintColorAtDistance);
+                Math.max(0.00001, this.tintColorAtDistance));
 
             uniformBuffer.updateFloat3("vSubSurfaceIntensity", this.refractionIntensity, this.translucencyIntensity, 0);
         }
@@ -468,6 +531,14 @@ export class PBRSubSurfaceConfiguration {
         if (scene.texturesEnabled) {
             if (this._thicknessTexture && MaterialFlags.ThicknessTextureEnabled) {
                 uniformBuffer.setTexture("thicknessSampler", this._thicknessTexture);
+            }
+
+            if (this._refractionIntensityTexture && MaterialFlags.RefractionIntensityTextureEnabled && defines.SS_REFRACTIONINTENSITY_TEXTURE) {
+                uniformBuffer.setTexture("refractionIntensitySampler", this._refractionIntensityTexture);
+            }
+
+            if (this._translucencyIntensityTexture && MaterialFlags.TranslucencyIntensityTextureEnabled && defines.SS_TRANSLUCENCYINTENSITY_TEXTURE) {
+                uniformBuffer.setTexture("translucencyIntensitySampler", this._translucencyIntensityTexture);
             }
 
             if (refractionTexture && MaterialFlags.RefractionTextureEnabled) {
@@ -638,9 +709,9 @@ export class PBRSubSurfaceConfiguration {
         uniforms.push(
             "vDiffusionDistance", "vTintColor", "vSubSurfaceIntensity",
             "vRefractionMicrosurfaceInfos", "vRefractionFilteringInfo",
-            "vRefractionInfos", "vThicknessInfos", "vThicknessParam",
+            "vRefractionInfos", "vThicknessInfos", "vRefractionIntensityInfos", "vTranslucencyIntensityInfos", "vThicknessParam",
             "vRefractionPosition", "vRefractionSize",
-            "refractionMatrix", "thicknessMatrix", "scatteringDiffusionProfile");
+            "refractionMatrix", "thicknessMatrix", "refractionIntensityMatrix", "translucencyIntensityMatrix", "scatteringDiffusionProfile");
     }
 
     /**
@@ -648,7 +719,7 @@ export class PBRSubSurfaceConfiguration {
      * @param samplers defines the current sampler list.
      */
     public static AddSamplers(samplers: string[]): void {
-        samplers.push("thicknessSampler",
+        samplers.push("thicknessSampler", "refractionIntensitySampler", "translucencyIntensitySampler",
             "refractionSampler", "refractionSamplerLow", "refractionSamplerHigh");
     }
 
@@ -659,10 +730,14 @@ export class PBRSubSurfaceConfiguration {
     public static PrepareUniformBuffer(uniformBuffer: UniformBuffer): void {
         uniformBuffer.addUniform("vRefractionMicrosurfaceInfos", 4);
         uniformBuffer.addUniform("vRefractionFilteringInfo", 2);
+        uniformBuffer.addUniform("vTranslucencyIntensityInfos", 2);
         uniformBuffer.addUniform("vRefractionInfos", 4);
         uniformBuffer.addUniform("refractionMatrix", 16);
         uniformBuffer.addUniform("vThicknessInfos", 2);
+        uniformBuffer.addUniform("vRefractionIntensityInfos", 2);
         uniformBuffer.addUniform("thicknessMatrix", 16);
+        uniformBuffer.addUniform("refractionIntensityMatrix", 16);
+        uniformBuffer.addUniform("translucencyIntensityMatrix", 16);
         uniformBuffer.addUniform("vThicknessParam", 2);
         uniformBuffer.addUniform("vDiffusionDistance", 3);
         uniformBuffer.addUniform("vTintColor", 4);

@@ -79,7 +79,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     private _randomTextureSize: number;
     private _actualFrame = 0;
     private _drawWrapper: DrawWrapper;
-    private _customWrappers: { [blendMode: number] : Nullable<DrawWrapper> };
+    private _customWrappers: { [blendMode: number]: Nullable<DrawWrapper> };
 
     private readonly _rawTextureWidth = 256;
 
@@ -761,7 +761,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             this._scene.particleSystems.push(this);
         } else {
             this._engine = sceneOrEngine as ThinEngine;
-            this.defaultProjectionMatrix = Matrix.PerspectiveFovLH(0.8, 1, 0.1, 100);
+            this.defaultProjectionMatrix = Matrix.PerspectiveFovLH(0.8, 1, 0.1, 100, this._engine.isNDCHalfZRange);
         }
 
         if (this._engine.getCaps().supportComputeShaders) {

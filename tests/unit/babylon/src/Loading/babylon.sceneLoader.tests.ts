@@ -1,7 +1,7 @@
 /**
  * Describes the test suite.
  */
-describe('Babylon Scene Loader', function() {
+describe('Babylon Scene Loader', function () {
     let subject: BABYLON.Engine;
 
     this.timeout(10000);
@@ -9,12 +9,12 @@ describe('Babylon Scene Loader', function() {
     /**
      * Loads the dependencies.
      */
-    before(function(done) {
+    before(function (done) {
         this.timeout(180000);
         (BABYLONDEVTOOLS).Loader
             .useDist()
             .testMode()
-            .load(function() {
+            .load(function () {
                 // Force apply promise polyfill for consistent behavior between chrome headless, IE11, and other browsers.
                 BABYLON.PromisePolyfill.Apply(true);
                 BABYLON.Engine.audioEngine = new BABYLON.AudioEngine();
@@ -25,7 +25,7 @@ describe('Babylon Scene Loader', function() {
     /**
      * Create a new engine subject before each test.
      */
-    beforeEach(function() {
+    beforeEach(function () {
         subject = new BABYLON.NullEngine({
             renderHeight: 256,
             renderWidth: 256,
@@ -333,7 +333,7 @@ describe('Babylon Scene Loader', function() {
             const scene = new BABYLON.Scene(subject);
             const promises = new Array<Promise<void>>();
 
-            const materialNames = [ "Low", "Medium", "High" ];
+            const materialNames = ["Low", "Medium", "High"];
 
             BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader: BABYLON.GLTFFileLoader) => {
                 const observer = loader.onExtensionLoadedObservable.add((extension) => {
@@ -414,14 +414,14 @@ describe('Babylon Scene Loader', function() {
 
             const setRequestHeaderCalls = new Array<string>();
             const origSetRequestHeader = BABYLON.WebRequest.prototype.setRequestHeader;
-            const setRequestHeaderStub = sinon.stub(BABYLON.WebRequest.prototype, "setRequestHeader").callsFake(function(...args) {
+            const setRequestHeaderStub = sinon.stub(BABYLON.WebRequest.prototype, "setRequestHeader").callsFake(function (...args) {
                 setRequestHeaderCalls.push(args.join(": "));
                 origSetRequestHeader.apply(this, args);
             });
 
             // Simulate default CORS policy on some web servers that reject getResponseHeader calls with `Content-Range`.
             const origGetResponseHeader = BABYLON.WebRequest.prototype.getResponseHeader;
-            const getResponseHeaderStub = sinon.stub(BABYLON.WebRequest.prototype, "getResponseHeader").callsFake(function(...args) {
+            const getResponseHeaderStub = sinon.stub(BABYLON.WebRequest.prototype, "getResponseHeader").callsFake(function (...args) {
                 return (args[0] === "Content-Range") ? null : origGetResponseHeader.apply(this, args);
             });
 
@@ -729,6 +729,112 @@ describe('Babylon Scene Loader', function() {
             BABYLON.FileTools.PreprocessUrl = (url) => urlRedirects[url] || url;
             const resetPreprocessUrl = () => BABYLON.FileTools.PreprocessUrl = oldPreprocessUrl;
             return BABYLON.SceneLoader.LoadAsync("file:///", "Box.gltf").then(resetPreprocessUrl, resetPreprocessUrl);
+        });
+    });
+
+    describe('#DirectLoad', () => {
+        it('should load a raw obj with no mime type', () => {
+            const scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:${objRaw}`, scene, undefined, ".obj").then((result) => {
+                expect(result.meshes.length).to.eq(1);
+                expect(result.meshes[0].getTotalVertices()).to.eq(4);
+            });
+        });
+
+        it('should load a base64 encoded obj with no mime type', () => {
+            const scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:;base64,${objBase64}`, scene, undefined, ".obj").then((result) => {
+                expect(result.meshes.length).to.eq(1);
+                expect(result.meshes[0].getTotalVertices()).to.eq(4);
+            });
+        });
+
+        it('should load a base64 encoded obj with a valid mime type', () => {
+            const scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:model/obj;base64,${objBase64}`, scene, undefined, ".obj").then((result) => {
+                expect(result.meshes.length).to.eq(1);
+                expect(result.meshes[0].getTotalVertices()).to.eq(4);
+            });
+        });
+
+        it('should load a base64 encoded obj with an invalid mime type', () => {
+            const scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:foo/bar;base64,${objBase64}`, scene, undefined, ".obj").then((result) => {
+                expect(result.meshes.length).to.eq(1);
+                expect(result.meshes[0].getTotalVertices()).to.eq(4);
+            });
+        });
+
+        it('should load a base64 encoded obj with an invalid mime type', () => {
+            const scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:foo/bar;base64,${objBase64}`, scene, undefined, ".obj").then((result) => {
+                expect(result.meshes.length).to.eq(1);
+                expect(result.meshes[0].getTotalVertices()).to.eq(4);
+            });
+        });
+
+        it('should direct load a glTF file without specifying a pluginExtension', () => {
+            const scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:${gltfRaw}`, scene).then((result) => {
+                expect(result.meshes.length).to.eq(2);
+                expect(result.meshes[1].getTotalVertices()).to.eq(3);
+            });
+        });
+
+        it('should direct load a base64 encoded glTF file', () => {
+            const scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:;base64,${gltfBase64}`, scene, undefined, ".gltf").then((result) => {
+                expect(result.meshes.length).to.eq(2);
+                expect(result.meshes[1].getTotalVertices()).to.eq(3);
+            });
+        });
+
+        it('should direct load a base64 encoded glb with a valid mime type and no pluginExtension', () => {
+            const scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:model/gltf-binary;base64,${glbBase64}`, scene, undefined).then((result) => {
+                expect(result.meshes.length).to.eq(2);
+                expect(result.meshes[1].getTotalVertices()).to.eq(24);
+            });
+        });
+
+        it('should direct load a base64 encoded glb with an invalid mime type and pluginExtension specified', () => {
+            const scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:image/jpg;base64,${glbBase64}`, scene, undefined, ".glb").then((result) => {
+                expect(result.meshes.length).to.eq(2);
+                expect(result.meshes[1].getTotalVertices()).to.eq(24);
+            });
+        });
+
+        it('should direct load an incorrectly formatted base64 encoded glb (backcompat)', () => {
+            const scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:base64,${glbBase64}`, scene).then((result) => {
+                expect(result.meshes.length).to.eq(2);
+                expect(result.meshes[1].getTotalVertices()).to.eq(24);
+            });
+        });
+
+        it('should direct load an ascii stl file', () => {
+            const scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:${stlAsciiRaw}`, scene, undefined, ".stl").then((result) => {
+                expect(result.meshes.length).to.eq(1);
+                expect(result.meshes[0].getTotalVertices()).to.eq(3);
+            });
+        });
+
+        it('should direct load a base64 encoded ascii stl file', () => {
+            const scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:;base64,${stlAsciiBase64}`, scene, undefined, ".stl").then((result) => {
+                expect(result.meshes.length).to.eq(1);
+                expect(result.meshes[0].getTotalVertices()).to.eq(3);
+            });
+        });
+
+        it('should direct load a base64 encoded binary stl file', () => {
+            const scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:;base64,${stlBinaryBase64}`, scene, undefined, ".stl").then((result) => {
+                expect(result.meshes.length).to.eq(1);
+                expect(result.meshes[0].getTotalVertices()).to.eq(3);
+            });
         });
     });
 });

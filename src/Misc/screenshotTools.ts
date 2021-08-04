@@ -95,7 +95,7 @@ export class ScreenshotTools {
     public static CreateScreenshotAsync(engine: Engine, camera: Camera, size: IScreenshotSize | number, mimeType: string = "image/png"): Promise<string> {
         return new Promise((resolve, reject) => {
             ScreenshotTools.CreateScreenshot(engine, camera, size, (data) => {
-                if (typeof(data) !== "undefined") {
+                if (typeof (data) !== "undefined") {
                     resolve(data);
                 } else {
                     reject(new Error("Data is undefined"));
@@ -237,10 +237,10 @@ export class ScreenshotTools {
      * @returns screenshot as a string of base64-encoded characters. This string can be assigned
      * to the src parameter of an <img> to display it
      */
-    public static CreateScreenshotUsingRenderTargetAsync(engine: Engine, camera: Camera, size: IScreenshotSize | number, mimeType: string = "image/png", samples: number = 1, antialiasing: boolean = false, fileName?: string,  renderSprites: boolean = false): Promise<string> {
+    public static CreateScreenshotUsingRenderTargetAsync(engine: Engine, camera: Camera, size: IScreenshotSize | number, mimeType: string = "image/png", samples: number = 1, antialiasing: boolean = false, fileName?: string, renderSprites: boolean = false): Promise<string> {
         return new Promise((resolve, reject) => {
             ScreenshotTools.CreateScreenshotUsingRenderTarget(engine, camera, size, (data) => {
-                if (typeof(data) !== "undefined") {
+                if (typeof (data) !== "undefined") {
                     resolve(data);
                 } else {
                     reject(new Error("Data is undefined"));
@@ -253,15 +253,15 @@ export class ScreenshotTools {
      * Gets height and width for screenshot size
      * @private
      */
-    private static _getScreenshotSize(engine: Engine, camera: Camera, size: IScreenshotSize | number): {height: number, width: number} {
+    private static _getScreenshotSize(engine: Engine, camera: Camera, size: IScreenshotSize | number): { height: number, width: number } {
         let height = 0;
         let width = 0;
 
         //If a size value defined as object
-        if (typeof(size) === 'object') {
+        if (typeof (size) === 'object') {
             const precision = size.precision
-              ? Math.abs(size.precision) // prevent GL_INVALID_VALUE : glViewport: negative width/height
-              : 1;
+                ? Math.abs(size.precision) // prevent GL_INVALID_VALUE : glViewport: negative width/height
+                : 1;
 
             //If a width and height values is specified
             if (size.width && size.height) {

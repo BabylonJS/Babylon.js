@@ -154,7 +154,7 @@ export class MinMaxReducer {
             if (w == 1 && h == 1) {
                 let func = (w: number, h: number, reduction: PostProcess) => {
                     let buffer = new Float32Array(4 * w * h),
-                        minmax = { min: 0, max: 0};
+                        minmax = { min: 0, max: 0 };
                     return () => {
                         scene.getEngine()._readTexturePixels(reduction.inputTexture, w, h, -1, 0, buffer, false);
                         minmax.min = buffer[0];

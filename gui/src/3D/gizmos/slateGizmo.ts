@@ -1,17 +1,14 @@
-import { PointerDragBehavior } from "babylonjs/Behaviors/Meshes/pointerDragBehavior";
 import { Gizmo } from "babylonjs/Gizmos/gizmo";
-import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
 import { Matrix, Quaternion, TmpVectors, Vector3 } from "babylonjs/Maths/math.vector";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { Observer } from "babylonjs/Misc/observable";
 import { PivotTools } from "babylonjs/Misc/pivotTools";
-import { Node } from "babylonjs/node";
 import { UtilityLayerRenderer } from "babylonjs/Rendering/utilityLayerRenderer";
 import { Nullable } from "babylonjs/types";
 
 import { HolographicSlate } from "../controls/holographicSlate";
+import { CornerHandle, GizmoHandle, SideHandle } from "./gizmoHandle";
 
 // Mask contains the influence of the drag offset vectors on dimensions or origin of the slate
 // Mask vector is multiplied to the offset vector
@@ -25,39 +22,28 @@ type HandleMasks = {
  */
 export class SlateGizmo extends Gizmo {
     private _boundingDimensions = new Vector3(0, 0, 0);
-    private _dragPlaneNormal = new Vector3(0, 0, 1);
+    private _pickedPointObserver: Nullable<Observer<Nullable<AbstractMesh>>>;
 
     private _tmpQuaternion = new Quaternion();
     private _tmpVector = new Vector3(0, 0, 0);
 
     // Ordered bl, br, tr, tl
-    private _corners: TransformNode[] = [];
+    private _corners: CornerHandle[] = [];
     // Ordered left, bottom, right, top
-    private _sides: TransformNode[] = [];
+    private _sides: SideHandle[] = [];
     private _handlesParent: TransformNode;
+    private _handleHovered: Nullable<GizmoHandle>;
+    private _handleDragged: Nullable<GizmoHandle>;
 
     private _boundingBoxGizmo = {
         min: new Vector3(),
         max: new Vector3(),
     };
 
-    private _dragStartObserver: Nullable<Observer<{ dragPlanePoint: Vector3; pointerId: number }>>;
-    private _draggingObserver: Nullable<
-        Observer<{
-            delta: Vector3;
-            dragPlanePoint: Vector3;
-            dragPlaneNormal: Vector3;
-            dragDistance: number;
-            pointerId: number;
-        }>
-    >;
-    private _dragEndObserver: Nullable<Observer<{ dragPlanePoint: Vector3; pointerId: number }>>;
-    private _dragBehavior: PointerDragBehavior;
-
     /**
      * Value we use to offset handles from mesh
      */
-    private _margin = 1;
+    private _margin = 0.35;
     private _attachedSlate: Nullable<HolographicSlate> = null;
     /**
      * If set, the handles will increase in size based on the distance away from the camera to have a consistent screen size (Default: true)
@@ -69,18 +55,36 @@ export class SlateGizmo extends Gizmo {
     public fixedScreenSizeDistanceFactor = 10;
 
     /**
-     * Size of the handles
+     * Size of the handles (meters in XR)
      */
-    public handleSize = 0.1;
+    public handleSize = 0.01;
 
     /**
      * The slate attached to this gizmo
      */
     public set attachedSlate(control: Nullable<HolographicSlate>) {
-        this._attachedSlate = control;
-        if (this._attachedSlate) {
-            this.attachedMesh = this._attachedSlate.mesh;
+        if (control) {
+            this.attachedMesh = control.mesh;
+            this.updateBoundingBox();
+
+            this._pickedPointObserver = control._host.onPickingObservable.add((pickedMesh) => {
+                if (this._handleHovered && (!pickedMesh || pickedMesh.parent !== this._handleHovered.node)) {
+                    this._handleHovered.hover = false;
+                    this._handleHovered = null;
+                }
+
+                if (pickedMesh && pickedMesh.parent && pickedMesh.parent.reservedDataStore && pickedMesh.parent.reservedDataStore.handle) {
+                    const handle = pickedMesh.parent.reservedDataStore.handle as GizmoHandle;
+                    if (handle.gizmo === this) {
+                        this._handleHovered = handle;
+                        this._handleHovered.hover = true;
+                    }
+                }
+            });
+        } else if (this._attachedSlate) {
+            this._attachedSlate._host.onPickingObservable.remove(this._pickedPointObserver);
         }
+        this._attachedSlate = control;
     }
 
     public get attachedSlate(): Nullable<HolographicSlate> {
@@ -117,50 +121,27 @@ export class SlateGizmo extends Gizmo {
             },
         ];
 
-        const masksSides = [
-            {
-                dimensions: new Vector3(-1, 0, 0),
-                origin: new Vector3(1, 0, 0),
-            },
-            {
-                dimensions: new Vector3(0, -1, 0),
-                origin: new Vector3(0, 0, 0),
-            },
-            {
-                dimensions: new Vector3(1, 0, 0),
-                origin: new Vector3(0, 0, 0),
-            },
-            {
-                dimensions: new Vector3(0, 1, 0),
-                origin: new Vector3(0, 1, 0),
-            },
-        ];
-
         for (let i = 0; i < 4; i++) {
-            const node = this._createAngleMesh();
-            this._corners.push(node);
-            node.rotation.z = (Math.PI / 2) * i;
-            node.scaling.setAll(this.handleSize);
+            const corner = new CornerHandle(this, this.gizmoLayer.utilityLayerScene);
+            this._corners.push(corner);
+            corner.node.rotation.z = (Math.PI / 2) * i;
+            corner.node.scaling.setAll(this.handleSize);
 
-            node.parent = this._handlesParent;
-            this._assignDragBehavior(
-                node,
+            corner.node.parent = this._handlesParent;
+            this._assignDragBehaviorCorners(
+                corner,
                 (originStart: Vector3, dimensionsStart: Vector3, offset: Vector3, masks: HandleMasks) => this._moveHandle(originStart, dimensionsStart, offset, masks, true),
                 masksCorners[i]
             );
         }
 
         for (let i = 0; i < 4; i++) {
-            const node = this._createSideMesh();
-            this._sides.push(node);
-            node.rotation.z = (Math.PI / 2) * i;
-            node.scaling.copyFromFloats(this.handleSize, this.handleSize, this.handleSize);
-            node.parent = this._handlesParent;
-            this._assignDragBehavior(
-                node,
-                (originStart: Vector3, dimensionsStart: Vector3, offset: Vector3, masks: HandleMasks) => this._moveHandle(originStart, dimensionsStart, offset, masks, false),
-                masksSides[i]
-            );
+            const side = new SideHandle(this, this.gizmoLayer.utilityLayerScene);
+            this._sides.push(side);
+            side.node.rotation.z = (Math.PI / 2) * i;
+            side.node.scaling.copyFromFloats(this.handleSize, this.handleSize, this.handleSize);
+            side.node.parent = this._handlesParent;
+            this._assignDragBehaviorSides(side, i % 2 === 0 ? new Vector3(0, 1, 0) : new Vector3(1, 0, 0));
         }
 
         this._handlesParent.parent = this._rootMesh;
@@ -223,35 +204,49 @@ export class SlateGizmo extends Gizmo {
         this._attachedSlate.backplateDimensions.x = this._attachedSlate.dimensions.x;
     }
 
-    private _assignDragBehavior(node: Node, moveFn: (originStart: Vector3, dimensionsStart: Vector3, offset: Vector3, masks: HandleMasks) => void, masks: HandleMasks) {
-        var dragBehavior = new PointerDragBehavior({
-            dragPlaneNormal: this._dragPlaneNormal,
-        });
-        dragBehavior.moveAttached = false;
-        dragBehavior.updateDragPlane = false;
-        node.addBehavior(dragBehavior);
-
-        let dimensionsStart = new Vector3();
-        let originStart = new Vector3();
-        let dragOrigin = new Vector3();
-        let toObjectFrame = new Matrix();
+    private _assignDragBehaviorCorners(
+        handle: GizmoHandle,
+        moveFn: (originStart: Vector3, dimensionsStart: Vector3, offset: Vector3, masks: HandleMasks) => void,
+        masks: HandleMasks
+    ) {
+        const dimensionsStart = new Vector3();
+        const originStart = new Vector3();
+        const dragOrigin = new Vector3();
+        const toObjectFrame = new Matrix();
+        const dragPlaneNormal = new Vector3();
 
         let previousFollowState = false;
-        this._dragStartObserver = dragBehavior.onDragStartObservable.add((event) => {
+        const projectToRef = (position: Vector3, normal: Vector3, origin: Vector3, ref: Vector3) => {
+            // Projects on the plane with its normal and origin
+            position.subtractToRef(origin, TmpVectors.Vector3[0]);
+            const dot = Vector3.Dot(TmpVectors.Vector3[0], normal);
+            TmpVectors.Vector3[1].copyFrom(normal).scaleInPlace(dot);
+            TmpVectors.Vector3[0].subtractInPlace(TmpVectors.Vector3[1]);
+            TmpVectors.Vector3[0].addToRef(origin, ref);
+        };
+
+        const dragStart = (event: { position: Vector3 }) => {
             if (this.attachedSlate && this.attachedMesh) {
                 dimensionsStart.copyFrom(this.attachedSlate.dimensions);
                 originStart.copyFrom(this.attachedSlate.origin);
-                dragOrigin.copyFrom(event.dragPlanePoint);
+                dragOrigin.copyFrom(event.position);
                 toObjectFrame.copyFrom(this.attachedMesh.computeWorldMatrix(true));
                 toObjectFrame.invert();
-                previousFollowState = this.attachedSlate._defaultBehavior.followBehaviorEnabled;
-                this.attachedSlate._defaultBehavior.followBehaviorEnabled = false;
-            }
-        });
+                previousFollowState = this.attachedSlate.defaultBehavior.followBehaviorEnabled;
+                this.attachedSlate.defaultBehavior.followBehaviorEnabled = false;
+                Vector3.TransformNormalToRef(Vector3.Forward(), this.attachedMesh.getWorldMatrix(), dragPlaneNormal);
+                dragPlaneNormal.normalize();
 
-        this._draggingObserver = dragBehavior.onDragObservable.add((event) => {
+                if (this._handleHovered) {
+                    this._handleDragged = this._handleHovered;
+                    this._handleDragged.drag = true;
+                }
+            }
+        };
+
+        const dragging = (event: { position: Vector3 }) => {
             if (this.attachedSlate && this.attachedMesh) {
-                this._tmpVector.copyFrom(event.dragPlanePoint);
+                projectToRef(event.position, dragPlaneNormal, dragOrigin, this._tmpVector);
                 this._tmpVector.subtractInPlace(dragOrigin);
                 Vector3.TransformNormalToRef(this._tmpVector, toObjectFrame, this._tmpVector);
 
@@ -259,53 +254,74 @@ export class SlateGizmo extends Gizmo {
                 this.attachedSlate._positionElements();
                 this.updateBoundingBox();
             }
-        });
+        };
 
-        this._dragEndObserver = dragBehavior.onDragEndObservable.add(() => {
+        const dragEnd = () => {
             if (this.attachedSlate && this.attachedNode) {
                 this.attachedSlate._updatePivot();
-                this.attachedSlate._defaultBehavior.followBehaviorEnabled = previousFollowState;
+                this.attachedSlate.defaultBehavior.followBehaviorEnabled = previousFollowState;
+
+                if (this._handleDragged) {
+                    this._handleDragged.drag = false;
+                    this._handleDragged = null;
+                }
             }
-        });
+        };
 
-        this._dragBehavior = dragBehavior;
+        handle.setDragBehavior(dragStart, dragging, dragEnd);
     }
 
-    private _createAngleMesh(): TransformNode {
-        // Create 2 boxes making a bottom left corner
-        const horizontalBox = BoxBuilder.CreateBox("angleHor", { width: 3, height: 1, depth: 0.1 }, this.gizmoLayer.utilityLayerScene);
-        const verticalBox = BoxBuilder.CreateBox("angleVert", { width: 1, height: 3, depth: 0.1 }, this.gizmoLayer.utilityLayerScene);
+    private _assignDragBehaviorSides(handle: GizmoHandle, dragPlaneNormal: Vector3) {
+        let quaternionOrigin = new Quaternion();
+        let dragOrigin = new Vector3();
+        let directionOrigin = new Vector3();
+        let worldPivot = new Vector3();
+        let previousFollowState: boolean;
+        let worldPlaneNormal = new Vector3();
 
-        const angleNode = new TransformNode("angle", this.gizmoLayer.utilityLayerScene);
-        horizontalBox.parent = angleNode;
-        verticalBox.parent = angleNode;
+        const dragStart = (event: { position: Vector3 }) => {
+            if (this.attachedSlate && this.attachedMesh) {
+                quaternionOrigin.copyFrom(this.attachedMesh.rotationQuaternion!);
+                dragOrigin.copyFrom(event.position);
+                previousFollowState = this.attachedSlate.defaultBehavior.followBehaviorEnabled;
+                this.attachedSlate.defaultBehavior.followBehaviorEnabled = false;
+                worldPivot.copyFrom(this.attachedMesh.getAbsolutePivotPoint());
+                directionOrigin.copyFrom(dragOrigin).subtractInPlace(worldPivot).normalize();
+                Vector3.TransformNormalToRef(dragPlaneNormal, this.attachedMesh.getWorldMatrix(), worldPlaneNormal);
+                worldPlaneNormal.normalize();
 
-        horizontalBox.position.x = 1;
-        verticalBox.position.y = 1;
+                if (this._handleHovered) {
+                    this._handleDragged = this._handleHovered;
+                    this._handleDragged.drag = true;
+                }
+            }
+        };
 
-        const mat = new StandardMaterial("slategizmo", this.gizmoLayer.utilityLayerScene);
-        mat.diffuseColor.copyFromFloats(0, 0, 0);
-        mat.emissiveColor.copyFromFloats(1, 1, 1);
+        const dragging = (event: { position: Vector3 }) => {
+            if (this.attachedSlate && this.attachedMesh) {
+                this._tmpVector.copyFrom(event.position);
+                this._tmpVector.subtractInPlace(worldPivot);
+                this._tmpVector.normalize();
 
-        horizontalBox.material = mat;
-        verticalBox.material = mat;
+                let angle = -Vector3.GetAngleBetweenVectorsOnPlane(this._tmpVector, directionOrigin, worldPlaneNormal);
+                Quaternion.RotationAxisToRef(dragPlaneNormal, angle, this._tmpQuaternion);
+                quaternionOrigin.multiplyToRef(this._tmpQuaternion, this.attachedMesh.rotationQuaternion!);
+            }
+        };
 
-        return angleNode;
-    }
+        const dragEnd = () => {
+            if (this.attachedSlate && this.attachedNode) {
+                this.attachedSlate._updatePivot();
+                this.attachedSlate.defaultBehavior.followBehaviorEnabled = previousFollowState;
 
-    private _createSideMesh(): TransformNode {
-        // Create a simple vertical rectangle
-        const verticalBox = BoxBuilder.CreateBox("sideVert", { width: 1, height: 10, depth: 0.1 }, this.gizmoLayer.utilityLayerScene);
-        const sideNode = new TransformNode("side", this.gizmoLayer.utilityLayerScene);
-        verticalBox.parent = sideNode;
+                if (this._handleDragged) {
+                    this._handleDragged.drag = false;
+                    this._handleDragged = null;
+                }
+            }
+        };
 
-        const mat = new StandardMaterial("slategizmo", this.gizmoLayer.utilityLayerScene);
-        mat.diffuseColor.copyFromFloats(0, 0, 0);
-        mat.emissiveColor.copyFromFloats(1, 1, 1);
-
-        verticalBox.material = mat;
-
-        return sideNode;
+        handle.setDragBehavior(dragStart, dragging, dragEnd);
     }
 
     protected _attachedNodeChanged(value: Nullable<AbstractMesh>) {
@@ -355,6 +371,7 @@ export class SlateGizmo extends Gizmo {
 
             // Restore original parent
             this.attachedMesh.setParent(originalParent);
+            this.attachedMesh.computeWorldMatrix(true);
         }
     }
 
@@ -362,7 +379,7 @@ export class SlateGizmo extends Gizmo {
         const min = this._boundingBoxGizmo.min.clone();
         const max = this._boundingBoxGizmo.max.clone();
 
-        const handleScaling = this._corners[0].scaling.length();
+        const handleScaling = this._corners[0].node.scaling.length();
         min.x -= this._margin * handleScaling;
         min.y -= this._margin * handleScaling;
         max.x += this._margin * handleScaling;
@@ -370,15 +387,15 @@ export class SlateGizmo extends Gizmo {
 
         const center = min.add(max).scaleInPlace(0.5);
 
-        this._corners[0].position.copyFromFloats(min.x, min.y, 0);
-        this._corners[1].position.copyFromFloats(max.x, min.y, 0);
-        this._corners[2].position.copyFromFloats(max.x, max.y, 0);
-        this._corners[3].position.copyFromFloats(min.x, max.y, 0);
+        this._corners[0].node.position.copyFromFloats(min.x, min.y, 0);
+        this._corners[1].node.position.copyFromFloats(max.x, min.y, 0);
+        this._corners[2].node.position.copyFromFloats(max.x, max.y, 0);
+        this._corners[3].node.position.copyFromFloats(min.x, max.y, 0);
 
-        this._sides[0].position.copyFromFloats(min.x, center.y, 0);
-        this._sides[1].position.copyFromFloats(center.x, min.y, 0);
-        this._sides[2].position.copyFromFloats(max.x, center.y, 0);
-        this._sides[3].position.copyFromFloats(center.x, max.y, 0);
+        this._sides[0].node.position.copyFromFloats(min.x, center.y, 0);
+        this._sides[1].node.position.copyFromFloats(center.x, min.y, 0);
+        this._sides[2].node.position.copyFromFloats(max.x, center.y, 0);
+        this._sides[3].node.position.copyFromFloats(center.x, max.y, 0);
     }
 
     protected _update() {
@@ -393,7 +410,7 @@ export class SlateGizmo extends Gizmo {
                 this._attachedSlate.mesh.absolutePosition.subtractToRef(this.gizmoLayer.utilityLayerScene.activeCamera.position, this._tmpVector);
                 var distanceFromCamera = (this.handleSize * this._tmpVector.length()) / this.fixedScreenSizeDistanceFactor;
                 for (let i = 0; i < this._corners.length; i++) {
-                    this._corners[i].scaling.set(distanceFromCamera, distanceFromCamera, distanceFromCamera);
+                    this._corners[i].node.scaling.set(distanceFromCamera, distanceFromCamera, distanceFromCamera);
                 }
             }
             this._updateHandlesPosition();
@@ -403,10 +420,13 @@ export class SlateGizmo extends Gizmo {
     public dispose() {
         // Will dispose rootMesh and all descendants
         super.dispose();
-        this._dragBehavior.onDragStartObservable.remove(this._dragStartObserver);
-        this._dragBehavior.onDragObservable.remove(this._draggingObserver);
-        this._dragBehavior.onDragEndObservable.remove(this._dragEndObserver);
 
-        this._dragBehavior.detach();
+        for (const corner of this._corners) {
+            corner.dispose();
+        }
+
+        for (const side of this._sides) {
+            side.dispose();
+        }
     }
 }

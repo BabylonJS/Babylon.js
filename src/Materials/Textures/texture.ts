@@ -273,9 +273,6 @@ export class Texture extends BaseTexture {
     private _cachedCoordinatesMode: number = -1;
 
     /** @hidden */
-    protected _initialSamplingMode = Texture.BILINEAR_SAMPLINGMODE;
-
-    /** @hidden */
     public _buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null;
     private _deleteBuffer: boolean = false;
     protected _format: Nullable<number> = null;
@@ -310,17 +307,6 @@ export class Texture extends BaseTexture {
     }
 
     /**
-     * Get the current sampling mode associated with the texture.
-     */
-    public get samplingMode(): number {
-        if (!this._texture) {
-            return this._initialSamplingMode;
-        }
-
-        return this._texture.samplingMode;
-    }
-
-    /**
      * Gets a boolean indicating if the texture needs to be inverted on the y axis during loading
      */
     public get invertY(): boolean {
@@ -346,9 +332,8 @@ export class Texture extends BaseTexture {
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      */
     constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | ThinEngine>, noMipmapOrOptions?: boolean | ITextureCreationOptions, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
-            onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null,
-            deleteBuffer: boolean = false, format?: number, mimeType?: string, loaderOptions?: any, creationFlags?: number)
-    {
+        onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null,
+        deleteBuffer: boolean = false, format?: number, mimeType?: string, loaderOptions?: any, creationFlags?: number) {
         super(sceneOrEngine);
 
         this.name = url || "";
@@ -435,11 +420,18 @@ export class Texture extends BaseTexture {
             return;
         }
 
-        this._texture = this._getFromCache(this.url, noMipmap, samplingMode, invertY);
+        this._texture = this._getFromCache(this.url, noMipmap, samplingMode, invertY, useSRGBBuffer);
 
         if (!this._texture) {
             if (!scene || !scene.useDelayedTextureLoading) {
-                this._texture = engine.createTexture(this.url, noMipmap, invertY, scene, samplingMode, load, onError, this._buffer, undefined, this._format, null, mimeType, loaderOptions, creationFlags, useSRGBBuffer);
+                try {
+                    this._texture = engine.createTexture(this.url, noMipmap, invertY, scene, samplingMode, load, onError, this._buffer, undefined, this._format, null, mimeType, loaderOptions, creationFlags, useSRGBBuffer);
+                } catch (e) {
+                    if (onError) {
+                        onError(e.message, e);
+                    }
+                    throw e;
+                }
                 if (deleteBuffer) {
                     this._buffer = null;
                 }
@@ -498,7 +490,7 @@ export class Texture extends BaseTexture {
         }
 
         this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
-        this._texture = this._getFromCache(this.url, this._noMipmap, this.samplingMode, this._invertY);
+        this._texture = this._getFromCache(this.url, this._noMipmap, this.samplingMode, this._invertY, this._useSRGBBuffer);
 
         if (!this._texture) {
             this._texture = scene.getEngine().createTexture(this.url, this._noMipmap, this._invertY, scene, this.samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer, null, this._format, null, this._mimeType, this._loaderOptions, this._creationFlags, this._useSRGBBuffer);
@@ -541,13 +533,13 @@ export class Texture extends BaseTexture {
      */
     public checkTransformsAreIdentical(texture: Nullable<Texture>): boolean {
         return texture !== null &&
-                this.uOffset === texture.uOffset &&
-                this.vOffset === texture.vOffset &&
-                this.uScale === texture.uScale &&
-                this.vScale === texture.vScale &&
-                this.uAng === texture.uAng &&
-                this.vAng === texture.vAng &&
-                this.wAng === texture.wAng;
+            this.uOffset === texture.uOffset &&
+            this.vOffset === texture.vOffset &&
+            this.uScale === texture.uScale &&
+            this.vScale === texture.vScale &&
+            this.uAng === texture.uAng &&
+            this.vAng === texture.vAng &&
+            this.wAng === texture.wAng;
     }
 
     /**

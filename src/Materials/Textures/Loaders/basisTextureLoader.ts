@@ -53,7 +53,7 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
             texture.onLoadedObservable.notifyObservers(texture);
             texture.onLoadedObservable.clear();
             if (onLoad) {
-              onLoad();
+                onLoad();
             }
         }).catch((err) => {
             Tools.Warn("Failed to transcode Basis file, transcoding may not be supported on this device");

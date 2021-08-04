@@ -224,7 +224,7 @@ export class SpriteRenderer {
         const culling = engine.depthCullingState.cull || true;
         const zOffset = engine.depthCullingState.zOffset;
 
-        this._scene!.getEngine().setState(culling, zOffset, false, false);
+        engine.setState(culling, zOffset, false, false);
 
         // Render
         engine.enableEffect(drawWrapper);
@@ -254,7 +254,7 @@ export class SpriteRenderer {
         }
 
         // Draw order
-        engine.depthCullingState.depthFunc = Constants.LEQUAL;
+        engine.depthCullingState.depthFunc = engine.useReverseDepthBuffer ? Constants.GEQUAL : Constants.LEQUAL;
         if (!this.disableDepthWrite) {
             effect.setBool("alphaTest", true);
             engine.setColorWrite(false);
@@ -376,7 +376,7 @@ export class SpriteRenderer {
     /**
      * Rebuilds the renderer (after a context lost, for eg)
      */
-     public rebuild(): void {
+    public rebuild(): void {
         if (this._indexBuffer) {
             this._buildIndexBuffer();
         }

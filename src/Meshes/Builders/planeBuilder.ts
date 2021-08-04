@@ -5,7 +5,7 @@ import { VertexData } from "../mesh.vertexData";
 import { Nullable } from '../../types';
 import { Plane } from '../../Maths/math.plane';
 
-VertexData.CreatePlane = function(options: { size?: number, width?: number, height?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
+VertexData.CreatePlane = function (options: { size?: number, width?: number, height?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
     var indices = [];
     var positions = [];
     var normals = [];

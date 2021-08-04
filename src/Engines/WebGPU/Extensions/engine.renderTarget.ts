@@ -5,7 +5,7 @@ import { Constants } from "../../constants";
 import { DepthTextureCreationOptions } from "../../depthTextureCreationOptions";
 import { WebGPUEngine } from "../../webgpuEngine";
 
-WebGPUEngine.prototype.createRenderTargetTexture = function(size: any, options: boolean | RenderTargetCreationOptions): InternalTexture {
+WebGPUEngine.prototype.createRenderTargetTexture = function (size: any, options: boolean | RenderTargetCreationOptions): InternalTexture {
     let fullOptions = new RenderTargetCreationOptions();
 
     if (options !== undefined && typeof options === "object") {
@@ -26,6 +26,12 @@ WebGPUEngine.prototype.createRenderTargetTexture = function(size: any, options: 
         fullOptions.format = Constants.TEXTUREFORMAT_RGBA;
         fullOptions.samples = 1;
         fullOptions.creationFlags = 0;
+    }
+
+    if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+        fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+    } else if (fullOptions.type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+        fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
     }
 
     const texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
@@ -83,7 +89,7 @@ WebGPUEngine.prototype.createRenderTargetTexture = function(size: any, options: 
     return texture;
 };
 
-WebGPUEngine.prototype._createDepthStencilTexture = function(size: number | { width: number, height: number, layers?: number }, options: DepthTextureCreationOptions): InternalTexture {
+WebGPUEngine.prototype._createDepthStencilTexture = function (size: number | { width: number, height: number, layers?: number }, options: DepthTextureCreationOptions): InternalTexture {
     const internalTexture = new InternalTexture(this, InternalTextureSource.Depth);
 
     const internalOptions = {
@@ -106,7 +112,7 @@ WebGPUEngine.prototype._createDepthStencilTexture = function(size: number | { wi
     return internalTexture;
 };
 
-WebGPUEngine.prototype._setupDepthStencilTexture = function(internalTexture: InternalTexture, size: number | { width: number, height: number, layers?: number }, generateStencil: boolean, bilinearFiltering: boolean, comparisonFunction: number, samples = 1): void {
+WebGPUEngine.prototype._setupDepthStencilTexture = function (internalTexture: InternalTexture, size: number | { width: number, height: number, layers?: number }, generateStencil: boolean, bilinearFiltering: boolean, comparisonFunction: number, samples = 1): void {
     const width = (<{ width: number, height: number, layers?: number }>size).width || <number>size;
     const height = (<{ width: number, height: number, layers?: number }>size).height || <number>size;
     const layers = (<{ width: number, height: number, layers?: number }>size).layers || 0;
@@ -129,7 +135,7 @@ WebGPUEngine.prototype._setupDepthStencilTexture = function(internalTexture: Int
     internalTexture._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
 };
 
-WebGPUEngine.prototype.updateRenderTargetTextureSampleCount = function(texture: Nullable<InternalTexture>, samples: number): number {
+WebGPUEngine.prototype.updateRenderTargetTextureSampleCount = function (texture: Nullable<InternalTexture>, samples: number): number {
     if (!texture || texture.samples === samples) {
         return samples;
     }

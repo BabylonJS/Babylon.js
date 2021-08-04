@@ -251,7 +251,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
     }
 
     /**
-     * constructs a new anchor system
+     * constructs a new teleportation system
      * @param _xrSessionManager an instance of WebXRSessionManager
      * @param _options configuration object for this feature
      */

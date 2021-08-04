@@ -6,14 +6,16 @@ import { Control } from "./control";
 import { Measure } from "../measure";
 import { _TypeStore } from "babylonjs/Misc/typeStore";
 import { serialize } from "babylonjs/Misc/decorators";
+import { Engine } from "babylonjs/Engines/engine";
+import { ICanvas, ICanvasRenderingContext, IImage } from "babylonjs/Engines/ICanvas";
 
 /**
  * Class used to create 2D images
  */
 export class Image extends Control {
-    private _workingCanvas: Nullable<HTMLCanvasElement> = null;
+    private _workingCanvas: Nullable<ICanvas> = null;
 
-    private _domImage: HTMLImageElement;
+    private _domImage: IImage;
     private _imageWidth: number;
     private _imageHeight: number;
     private _loaded = false;
@@ -307,14 +309,17 @@ export class Image extends Control {
 
     /** @hidden */
     public _rotate90(n: number, preserveProperties: boolean = false): Image {
-        let canvas = document.createElement("canvas");
-
-        const context = canvas.getContext("2d")!;
         const width = this._domImage.width;
         const height = this._domImage.height;
 
-        canvas.width = height;
-        canvas.height = width;
+        // Should abstract platform instead of using LastCreatedEngine
+        const engine = this._host?.getScene()?.getEngine() || Engine.LastCreatedEngine;
+        if (!engine) {
+            throw new Error("Invalid engine. Unable to create a canvas.");
+        }
+        let canvas = engine.createCanvas(height, width);
+
+        const context = canvas.getContext("2d")!;
 
         context.translate(canvas.width / 2, canvas.height / 2);
         context.rotate((n * Math.PI) / 2);
@@ -391,16 +396,18 @@ export class Image extends Control {
     }
 
     private _extractNinePatchSliceDataFromImage() {
-        if (!this._workingCanvas) {
-            this._workingCanvas = document.createElement("canvas");
-        }
-        const canvas = this._workingCanvas;
-        const context = canvas.getContext("2d")!;
         const width = this._domImage.width;
         const height = this._domImage.height;
 
-        canvas.width = width;
-        canvas.height = height;
+        if (!this._workingCanvas) {
+            const engine = this._host?.getScene()?.getEngine() || Engine.LastCreatedEngine;
+            if (!engine) {
+                throw new Error("Invalid engine. Unable to create a canvas.");
+            }
+            this._workingCanvas = engine.createCanvas(width, height);
+        }
+        const canvas = this._workingCanvas;
+        const context = canvas.getContext("2d")!;
 
         context.drawImage(this._domImage, 0, 0, width, height);
         const imageData = context.getImageData(0, 0, width, height);
@@ -443,7 +450,7 @@ export class Image extends Control {
     /**
      * Gets or sets the internal DOM image used to render the control
      */
-    public set domImage(value: HTMLImageElement) {
+    public set domImage(value: IImage) {
         this._domImage = value;
         this._loaded = false;
         this._imageDataCache.data = null;
@@ -457,7 +464,7 @@ export class Image extends Control {
         }
     }
 
-    public get domImage(): HTMLImageElement {
+    public get domImage(): IImage {
         return this._domImage;
     }
 
@@ -504,7 +511,12 @@ export class Image extends Control {
             value = this._svgCheck(value);
         }
 
-        this._domImage = document.createElement("img");
+        // Should abstract platform instead of using LastCreatedEngine
+        const engine = this._host?.getScene()?.getEngine() || Engine.LastCreatedEngine;
+        if (!engine) {
+            throw new Error("Invalid engine. Unable to create a canvas.");
+        }
+        this._domImage = engine.createCanvasImage();
 
         this._domImage.onload = () => {
             this._onImageLoaded();
@@ -713,7 +725,7 @@ export class Image extends Control {
         this.height = this._domImage.height + "px";
     }
 
-    protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         if (this._loaded) {
             switch (this._stretch) {
                 case Image.STRETCH_NONE:
@@ -745,21 +757,24 @@ export class Image extends Control {
             return;
         }
 
-        if (!this._workingCanvas) {
-            this._workingCanvas = document.createElement("canvas");
-        }
-        const canvas = this._workingCanvas;
         const width = this._currentMeasure.width;
         const height = this._currentMeasure.height;
-        const context = canvas.getContext("2d")!;
 
-        canvas.width = width;
-        canvas.height = height;
+        if (!this._workingCanvas) {
+            const engine = this._host?.getScene()?.getEngine() || Engine.LastCreatedEngine;
+            if (!engine) {
+                throw new Error("Invalid engine. Unable to create a canvas.");
+            }
+            this._workingCanvas = engine.createCanvas(width, height);
+        }
+        const canvas = this._workingCanvas;
+
+        const context = canvas.getContext("2d")!;
 
         context.clearRect(0, 0, width, height);
     }
 
-    private _drawImage(context: CanvasRenderingContext2D, sx: number, sy: number, sw: number, sh: number, tx: number, ty: number, tw: number, th: number) {
+    private _drawImage(context: ICanvasRenderingContext, sx: number, sy: number, sw: number, sh: number, tx: number, ty: number, tw: number, th: number) {
         context.drawImage(this._domImage, sx, sy, sw, sh, tx, ty, tw, th);
 
         if (!this._detectPointerOnOpaqueOnly) {
@@ -772,7 +787,7 @@ export class Image extends Control {
         context.drawImage(this._domImage, sx, sy, sw, sh, tx - this._currentMeasure.left, ty - this._currentMeasure.top, tw, th);
     }
 
-    public _draw(context: CanvasRenderingContext2D): void {
+    public _draw(context: ICanvasRenderingContext): void {
         context.save();
 
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -832,7 +847,7 @@ export class Image extends Control {
         context.restore();
     }
 
-    private _renderNinePatch(context: CanvasRenderingContext2D): void {
+    private _renderNinePatch(context: ICanvasRenderingContext): void {
         const leftWidth = this._sliceLeft;
         const topHeight = this._sliceTop;
         const bottomHeight = this._imageHeight - this._sliceBottom;

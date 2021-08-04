@@ -6,6 +6,8 @@ interface INumericInputComponentProps {
     step?: number;
     onChange: (value: number) => void;
     precision?: number;
+    icon? : string;
+    iconLabel? : string;
 }
 
 export class NumericInputComponent extends React.Component<INumericInputComponentProps, { value: string }> {
@@ -67,6 +69,7 @@ export class NumericInputComponent extends React.Component<INumericInputComponen
     render() {
         return (
             <div className="numeric">
+                {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel}  className="icon"/>}
                 {
                     this.props.label &&
                     <div className="numeric-label" title={this.props.label}>

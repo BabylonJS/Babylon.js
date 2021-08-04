@@ -52,30 +52,30 @@ declare module "../../Engines/engine" {
     }
 }
 
-Engine.prototype.createTransformFeedback = function(): WebGLTransformFeedback {
+Engine.prototype.createTransformFeedback = function (): WebGLTransformFeedback {
     return this._gl.createTransformFeedback();
 };
 
-Engine.prototype.deleteTransformFeedback = function(value: WebGLTransformFeedback): void {
+Engine.prototype.deleteTransformFeedback = function (value: WebGLTransformFeedback): void {
     this._gl.deleteTransformFeedback(value);
 };
 
-Engine.prototype.bindTransformFeedback = function(value: Nullable<WebGLTransformFeedback>): void {
+Engine.prototype.bindTransformFeedback = function (value: Nullable<WebGLTransformFeedback>): void {
     this._gl.bindTransformFeedback(this._gl.TRANSFORM_FEEDBACK, value);
 };
 
-Engine.prototype.beginTransformFeedback = function(usePoints: boolean = true): void {
+Engine.prototype.beginTransformFeedback = function (usePoints: boolean = true): void {
     this._gl.beginTransformFeedback(usePoints ? this._gl.POINTS : this._gl.TRIANGLES);
 };
 
-Engine.prototype.endTransformFeedback = function(): void {
+Engine.prototype.endTransformFeedback = function (): void {
     this._gl.endTransformFeedback();
 };
 
-Engine.prototype.setTranformFeedbackVaryings = function(program: WebGLProgram, value: string[]): void {
+Engine.prototype.setTranformFeedbackVaryings = function (program: WebGLProgram, value: string[]): void {
     this._gl.transformFeedbackVaryings(program, value, this._gl.INTERLEAVED_ATTRIBS);
 };
 
-Engine.prototype.bindTransformFeedbackBuffer = function(value: Nullable<DataBuffer>): void {
+Engine.prototype.bindTransformFeedbackBuffer = function (value: Nullable<DataBuffer>): void {
     this._gl.bindBufferBase(this._gl.TRANSFORM_FEEDBACK_BUFFER, 0, value ? value.underlyingResource : null);
 };

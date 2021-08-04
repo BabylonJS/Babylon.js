@@ -215,6 +215,7 @@ export class Material implements IAnimatable {
     /**
      * Gets or sets user defined metadata
      */
+    @serialize()
     public metadata: any = null;
 
     /**
@@ -243,7 +244,7 @@ export class Material implements IAnimatable {
     /**
      * If the material can be rendered to several textures with MRT extension
      */
-    public get canRenderToMRT() : boolean {
+    public get canRenderToMRT(): boolean {
         // By default, shaders are not compatible with MRTs
         // Base classes should override that if their shader supports MRT
         return false;
@@ -306,30 +307,30 @@ export class Material implements IAnimatable {
     /**
      * Specifies if back or front faces should be culled (when culling is enabled)
      */
-     @serialize("cullBackFaces")
-     protected _cullBackFaces = true;
+    @serialize("cullBackFaces")
+    protected _cullBackFaces = true;
 
-     /**
-      * Sets the type of faces that should be culled (true for back faces, false for front faces)
-      */
-     public set cullBackFaces(value: boolean) {
-         if (this._cullBackFaces === value) {
-             return;
-         }
-         this._cullBackFaces = value;
-         this.markAsDirty(Material.TextureDirtyFlag);
-     }
-
-     /**
-      * Gets the type of faces that should be culled
-      */
-     public get cullBackFaces(): boolean {
-         return this._cullBackFaces;
-     }
-
-     /**
-     * Stores the value for side orientation
+    /**
+     * Sets the type of faces that should be culled (true for back faces, false for front faces)
      */
+    public set cullBackFaces(value: boolean) {
+        if (this._cullBackFaces === value) {
+            return;
+        }
+        this._cullBackFaces = value;
+        this.markAsDirty(Material.TextureDirtyFlag);
+    }
+
+    /**
+     * Gets the type of faces that should be culled
+     */
+    public get cullBackFaces(): boolean {
+        return this._cullBackFaces;
+    }
+
+    /**
+    * Stores the value for side orientation
+    */
     @serialize()
     public sideOrientation: number;
 
@@ -430,14 +431,14 @@ export class Material implements IAnimatable {
         return this._onUnBindObservable;
     }
 
-    protected _onEffectCreatedObservable: Nullable<Observable<{ effect: Effect, subMesh: Nullable<SubMesh>}>>;
+    protected _onEffectCreatedObservable: Nullable<Observable<{ effect: Effect, subMesh: Nullable<SubMesh> }>>;
 
     /**
     * An event triggered when the effect is (re)created
     */
-    public get onEffectCreatedObservable(): Observable<{ effect: Effect, subMesh: Nullable<SubMesh>}> {
+    public get onEffectCreatedObservable(): Observable<{ effect: Effect, subMesh: Nullable<SubMesh> }> {
         if (!this._onEffectCreatedObservable) {
-            this._onEffectCreatedObservable = new Observable<{effect: Effect, subMesh: Nullable<SubMesh>}>();
+            this._onEffectCreatedObservable = new Observable<{ effect: Effect, subMesh: Nullable<SubMesh> }>();
         }
 
         return this._onEffectCreatedObservable;
@@ -863,7 +864,7 @@ export class Material implements IAnimatable {
      */
     protected get _disableAlphaBlending(): boolean {
         return (this._transparencyMode === Material.MATERIAL_OPAQUE ||
-                this._transparencyMode === Material.MATERIAL_ALPHATEST);
+            this._transparencyMode === Material.MATERIAL_ALPHATEST);
     }
 
     /**
@@ -1467,6 +1468,8 @@ export class Material implements IAnimatable {
 
             this._drawWrapper.effect = null;
         }
+
+        this.metadata = null;
 
         // Callback
         this.onDisposeObservable.notifyObservers(this);

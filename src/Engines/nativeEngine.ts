@@ -22,11 +22,12 @@ import { ThinEngine, ISceneLike } from './thinEngine';
 import { IWebRequest } from '../Misc/interfaces/iWebRequest';
 import { EngineStore } from './engineStore';
 import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
-import { NativeShaderProcessor } from '../Engines/Native/nativeShaderProcessors';
 import { RenderTargetTextureSize } from '../Engines/Extensions/engine.renderTarget';
+import { WebGL2ShaderProcessor } from '../Engines/WebGL/webGL2ShaderProcessors';
 import { DepthTextureCreationOptions } from '../Engines/depthTextureCreationOptions';
 import { IMaterialContext } from "./IMaterialContext";
 import { IDrawContext } from "./IDrawContext";
+import { ICanvas, IImage } from "./ICanvas";
 import { IStencilState } from "../States/IStencilState";
 
 interface INativeCamera {
@@ -86,7 +87,41 @@ interface INativeEngine {
     readonly ALPHA_INTERPOLATE: number;
     readonly ALPHA_SCREENMODE: number;
 
-    readonly homogeneousDepth: boolean;
+    readonly STENCIL_TEST_LESS: number;
+    readonly STENCIL_TEST_LEQUAL: number;
+    readonly STENCIL_TEST_EQUAL: number;
+    readonly STENCIL_TEST_GEQUAL: number;
+    readonly STENCIL_TEST_GREATER: number;
+    readonly STENCIL_TEST_NOTEQUAL: number;
+    readonly STENCIL_TEST_NEVER: number;
+    readonly STENCIL_TEST_ALWAYS: number;
+
+    readonly STENCIL_OP_FAIL_S_ZERO: number;
+    readonly STENCIL_OP_FAIL_S_KEEP: number;
+    readonly STENCIL_OP_FAIL_S_REPLACE: number;
+    readonly STENCIL_OP_FAIL_S_INCR: number;
+    readonly STENCIL_OP_FAIL_S_INCRSAT: number;
+    readonly STENCIL_OP_FAIL_S_DECR: number;
+    readonly STENCIL_OP_FAIL_S_DECRSAT: number;
+    readonly STENCIL_OP_FAIL_S_INVERT: number;
+
+    readonly STENCIL_OP_FAIL_Z_ZERO: number;
+    readonly STENCIL_OP_FAIL_Z_KEEP: number;
+    readonly STENCIL_OP_FAIL_Z_REPLACE: number;
+    readonly STENCIL_OP_FAIL_Z_INCR: number;
+    readonly STENCIL_OP_FAIL_Z_INCRSAT: number;
+    readonly STENCIL_OP_FAIL_Z_DECR: number;
+    readonly STENCIL_OP_FAIL_Z_DECRSAT: number;
+    readonly STENCIL_OP_FAIL_Z_INVERT: number;
+
+    readonly STENCIL_OP_PASS_Z_ZERO: number;
+    readonly STENCIL_OP_PASS_Z_KEEP: number;
+    readonly STENCIL_OP_PASS_Z_REPLACE: number;
+    readonly STENCIL_OP_PASS_Z_INCR: number;
+    readonly STENCIL_OP_PASS_Z_INCRSAT: number;
+    readonly STENCIL_OP_PASS_Z_DECR: number;
+    readonly STENCIL_OP_PASS_Z_DECRSAT: number;
+    readonly STENCIL_OP_PASS_Z_INVERT: number;
 
     dispose(): void;
 
@@ -152,9 +187,10 @@ interface INativeEngine {
     setTextureWrapMode(texture: WebGLTexture, addressModeU: number, addressModeV: number, addressModeW: number): void; // addressModes are NativeAddressMode.XXXX values.
     setTextureAnisotropicLevel(texture: WebGLTexture, value: number): void;
     setTexture(uniform: WebGLUniformLocation, texture: Nullable<WebGLTexture>): void;
+    copyTexture(desination: Nullable<WebGLTexture>, source: Nullable<WebGLTexture>): void;
     deleteTexture(texture: Nullable<WebGLTexture>): void;
     createImageBitmap(data: ArrayBufferView): ImageBitmap;
-    resizeImageBitmap(image: ImageBitmap, bufferWidth: number, bufferHeight: number) : Uint8Array;
+    resizeImageBitmap(image: ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array;
 
     createFrameBuffer(texture: WebGLTexture, width: number, height: number, format: number, generateStencilBuffer: boolean, generateDepthBuffer: boolean, generateMips: boolean): WebGLFramebuffer;
     deleteFrameBuffer(framebuffer: WebGLFramebuffer): void;
@@ -172,6 +208,7 @@ interface INativeEngine {
     setHardwareScalingLevel(level: number): void;
 
     setViewPort(x: number, y: number, width: number, height: number): void;
+    setStencil(mask: number, stencilOpFail: number, depthOpFail: number, depthOpPass: number, func: number, ref: number): void;
 }
 
 class NativePipelineContext implements IPipelineContext {
@@ -243,7 +280,7 @@ class NativePipelineContext implements IPipelineContext {
      * Release all associated resources.
      **/
     public dispose() {
-        this._uniforms = { };
+        this._uniforms = {};
     }
 
     /** @hidden */
@@ -751,7 +788,7 @@ export interface NativeEngineOptions {
     /**
      * defines whether to adapt to the device's viewport characteristics (default: false)
      */
-    adaptToDeviceRatio? : boolean;
+    adaptToDeviceRatio?: boolean;
 }
 
 /** @hidden */
@@ -763,7 +800,14 @@ export class NativeEngine extends Engine {
     private readonly INVALID_HANDLE = 65535;
     private _boundBuffersVertexArray: any = null;
     private _currentDepthTest: number = this._native.DEPTH_TEST_LEQUAL;
-    public homogeneousDepth: boolean = this._native.homogeneousDepth;
+    private _stencilTest = false;
+    private _stencilMask: number = 255;
+    private _stencilFunc: number = Constants.ALWAYS;
+    private _stencilFuncRef: number = 0;
+    private _stencilFuncMask: number = 255;
+    private _stencilOpStencilFail: number = Constants.KEEP;
+    private _stencilOpDepthFail: number = Constants.KEEP;
+    private _stencilOpStencilDepthPass: number = Constants.REPLACE;
 
     public getHardwareScalingLevel(): number {
         return this._native.getHardwareScalingLevel();
@@ -845,6 +889,7 @@ export class NativeEngine extends Engine {
             supportSyncTextureRead: false,
             needsInvertingBitmap: true,
             useUBOBindingCache: true,
+            needShaderCodeInlining: true,
             _collectUbosUpdatedInFrame: false,
         };
 
@@ -857,23 +902,23 @@ export class NativeEngine extends Engine {
                     onSuccess();
                 }
             }, undefined, undefined, false,
-            (request, exception) => {
-                if (onError) {
-                    onError("LoadScript Error", exception);
-                }
-            });
+                (request, exception) => {
+                    if (onError) {
+                        onError("LoadScript Error", exception);
+                    }
+                });
         };
 
         // Wrappers
         if (typeof URL === "undefined") {
             (window.URL as any) = {
-                createObjectURL: function() { },
-                revokeObjectURL: function() { }
+                createObjectURL: function () { },
+                revokeObjectURL: function () { }
             };
         }
 
         if (typeof Blob === "undefined") {
-            (window.Blob as any) = function(v: any) { return v; };
+            (window.Blob as any) = function (v: any) { return v; };
         }
 
         // Currently we do not fully configure the ThinEngine on construction of NativeEngine.
@@ -882,8 +927,13 @@ export class NativeEngine extends Engine {
         this._hardwareScalingLevel = options.adaptToDeviceRatio ? devicePixelRatio : 1.0;
         this.resize();
 
+        const currentDepthFunction = this.getDepthFunction();
+        if (currentDepthFunction) {
+            this.setDepthFunction(currentDepthFunction);
+        }
+
         // Shader processor
-        this._shaderProcessor = new NativeShaderProcessor();
+        this._shaderProcessor = new WebGL2ShaderProcessor();
     }
 
     public dispose(): void {
@@ -1130,6 +1180,18 @@ export class NativeEngine extends Engine {
         return program;
     }
 
+    /**
+     * Inline functions in shader code that are marked to be inlined
+     * @param code code to inline
+     * @returns inlined code
+     */
+    public inlineShaderCode(code: string): string {
+        const sci = new ShaderCodeInliner(code);
+        sci.debug = false;
+        sci.processCode();
+        return sci.code;
+    }
+
     protected _setProgram(program: WebGLProgram): void {
         if (this._currentProgram !== program) {
             this._native.setProgram(program);
@@ -1225,7 +1287,7 @@ export class NativeEngine extends Engine {
      * @param value defines the offset to apply
      */
     public setZOffset(value: number): void {
-        this._native.setZOffset(value);
+        this._native.setZOffset(this.useReverseDepthBuffer ? -value : value);
     }
 
     /**
@@ -1252,23 +1314,58 @@ export class NativeEngine extends Engine {
         return this._native.getDepthWrite();
     }
 
-    public setDepthFunctionToGreater(): void {
-        this._currentDepthTest = this._native.DEPTH_TEST_GREATER;
-        this._native.setDepthTest(this._currentDepthTest);
+    public getDepthFunction(): Nullable<number> {
+        switch (this._currentDepthTest) {
+            case this._native.DEPTH_TEST_NEVER:
+                return Constants.NEVER;
+            case this._native.DEPTH_TEST_ALWAYS:
+                return Constants.ALWAYS;
+            case this._native.DEPTH_TEST_GREATER:
+                return Constants.GREATER;
+            case this._native.DEPTH_TEST_GEQUAL:
+                return Constants.GEQUAL;
+            case this._native.DEPTH_TEST_NOTEQUAL:
+                return Constants.NOTEQUAL;
+            case this._native.DEPTH_TEST_EQUAL:
+                return Constants.EQUAL;
+            case this._native.DEPTH_TEST_LESS:
+                return Constants.LESS;
+            case this._native.DEPTH_TEST_LEQUAL:
+                return Constants.LEQUAL;
+        }
+        return null;
     }
 
-    public setDepthFunctionToGreaterOrEqual(): void {
-        this._currentDepthTest = this._native.DEPTH_TEST_GEQUAL;
-        this._native.setDepthTest(this._currentDepthTest);
-    }
+    public setDepthFunction(depthFunc: number) {
+        let nativeDepthFunc = 0;
+        switch (depthFunc) {
+            case Constants.NEVER:
+                nativeDepthFunc = this._native.DEPTH_TEST_NEVER;
+                break;
+            case Constants.ALWAYS:
+                nativeDepthFunc = this._native.DEPTH_TEST_ALWAYS;
+                break;
+            case Constants.GREATER:
+                nativeDepthFunc = this._native.DEPTH_TEST_GREATER;
+                break;
+            case Constants.GEQUAL:
+                nativeDepthFunc = this._native.DEPTH_TEST_GEQUAL;
+                break;
+            case Constants.NOTEQUAL:
+                nativeDepthFunc = this._native.DEPTH_TEST_NOTEQUAL;
+                break;
+            case Constants.EQUAL:
+                nativeDepthFunc = this._native.DEPTH_TEST_EQUAL;
+                break;
+            case Constants.LESS:
+                nativeDepthFunc = this._native.DEPTH_TEST_LESS;
+                break;
+            case Constants.LEQUAL:
+                nativeDepthFunc = this._native.DEPTH_TEST_LEQUAL;
+                break;
+        }
 
-    public setDepthFunctionToLess(): void {
-        this._currentDepthTest = this._native.DEPTH_TEST_LESS;
-        this._native.setDepthTest(this._currentDepthTest);
-    }
-
-    public setDepthFunctionToLessOrEqual(): void {
-        this._currentDepthTest = this._native.DEPTH_TEST_LEQUAL;
+        this._currentDepthTest = nativeDepthFunc;
         this._native.setDepthTest(this._currentDepthTest);
     }
 
@@ -1295,6 +1392,159 @@ export class NativeEngine extends Engine {
      */
     public getColorWrite(): boolean {
         return this._colorWrite;
+    }
+
+    private applyStencil(): void {
+        this._native.setStencil(this._stencilMask,
+            this._getStencilOpFail(this._stencilOpStencilFail),
+            this._getStencilDepthFail(this._stencilOpDepthFail),
+            this._getStencilDepthPass(this._stencilOpStencilDepthPass),
+            this._getStencilFunc(this._stencilFunc),
+            this._stencilFuncRef);
+    }
+
+    /**
+     * Enable or disable the stencil buffer
+     * @param enable defines if the stencil buffer must be enabled or disabled
+     */
+    public setStencilBuffer(enable: boolean): void {
+        this._stencilTest = enable;
+        if (enable) {
+            this.applyStencil();
+        } else {
+            this._native.setStencil(255,
+                this._native.STENCIL_OP_FAIL_S_KEEP,
+                this._native.STENCIL_OP_FAIL_Z_KEEP,
+                this._native.STENCIL_OP_PASS_Z_KEEP,
+                this._native.STENCIL_TEST_ALWAYS,
+                0);
+        }
+    }
+
+    /**
+     * Gets a boolean indicating if stencil buffer is enabled
+     * @returns the current stencil buffer state
+     */
+    public getStencilBuffer(): boolean {
+        return this._stencilTest;
+    }
+
+    /**
+ * Gets the current stencil operation when stencil passes
+ * @returns a number defining stencil operation to use when stencil passes
+ */
+    public getStencilOperationPass(): number {
+        return this._stencilOpStencilDepthPass;
+    }
+
+    /**
+     * Sets the stencil operation to use when stencil passes
+     * @param operation defines the stencil operation to use when stencil passes
+     */
+    public setStencilOperationPass(operation: number): void {
+        this._stencilOpStencilDepthPass = operation;
+        this.applyStencil();
+    }
+
+    /**
+     * Sets the current stencil mask
+     * @param mask defines the new stencil mask to use
+     */
+    public setStencilMask(mask: number): void {
+        this._stencilMask = mask;
+        this.applyStencil();
+    }
+
+    /**
+     * Sets the current stencil function
+     * @param stencilFunc defines the new stencil function to use
+     */
+    public setStencilFunction(stencilFunc: number) {
+        this._stencilFunc = stencilFunc;
+        this.applyStencil();
+    }
+
+    /**
+     * Sets the current stencil reference
+     * @param reference defines the new stencil reference to use
+     */
+    public setStencilFunctionReference(reference: number) {
+        this._stencilFuncRef = reference;
+        this.applyStencil();
+    }
+
+    /**
+     * Sets the current stencil mask
+     * @param mask defines the new stencil mask to use
+     */
+    public setStencilFunctionMask(mask: number) {
+        this._stencilFuncMask = mask;
+    }
+
+    /**
+     * Sets the stencil operation to use when stencil fails
+     * @param operation defines the stencil operation to use when stencil fails
+     */
+    public setStencilOperationFail(operation: number): void {
+        this._stencilOpStencilFail = operation;
+        this.applyStencil();
+    }
+
+    /**
+     * Sets the stencil operation to use when depth fails
+     * @param operation defines the stencil operation to use when depth fails
+     */
+    public setStencilOperationDepthFail(operation: number): void {
+        this._stencilOpDepthFail = operation;
+        this.applyStencil();
+    }
+
+    /**
+     * Gets the current stencil mask
+     * @returns a number defining the new stencil mask to use
+     */
+    public getStencilMask(): number {
+        return this._stencilMask;
+    }
+
+    /**
+     * Gets the current stencil function
+     * @returns a number defining the stencil function to use
+     */
+    public getStencilFunction(): number {
+        return this._stencilFunc;
+    }
+
+    /**
+     * Gets the current stencil reference value
+     * @returns a number defining the stencil reference value to use
+     */
+    public getStencilFunctionReference(): number {
+        return this._stencilFuncRef;
+    }
+
+    /**
+     * Gets the current stencil mask
+     * @returns a number defining the stencil mask to use
+     */
+    public getStencilFunctionMask(): number {
+        return this._stencilFuncMask;
+    }
+
+    /**
+     * Gets the current stencil operation when stencil fails
+     * @returns a number defining stencil operation to use when stencil fails
+     */
+    public getStencilOperationFail(): number {
+        return this._stencilOpStencilFail;
+    }
+
+    /**
+     * Gets the current stencil operation when depth fails
+     * @returns a number defining stencil operation to use when depth fails
+     */
+    public getStencilOperationDepthFail(): number {
+        return this._stencilOpDepthFail;
     }
 
     /**
@@ -1576,14 +1826,25 @@ export class NativeEngine extends Engine {
      * @param format defines the format of the data
      * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
      */
-    public updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha: boolean = false, format?: number): void {
-        // TODO: Stub! This function is needed for some GLTF validation tests.
-        // Loads a dummy 8x8 transparent png
-        var imageData = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYSURBVChTY/z//z8DPsAEpXGC4aCAgQEAGGMDDWwwgqsAAAAASUVORK5CYII=';
-        this.createTexture('data:my_image_name', true, invertY, null, Texture.BILINEAR_SAMPLINGMODE, undefined, undefined, imageData, texture, NativeEngine.TEXTUREFORMAT_RGBA, null, undefined);
+    public updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: any, invertY: boolean, premulAlpha: boolean = false, format?: number): void {
+        if (premulAlpha === void 0) {
+            premulAlpha = false;
+        }
+
+        if (!!texture &&
+            !!texture._hardwareTexture) {
+            const source = canvas.getCanvasTexture();
+            const destination = texture._hardwareTexture.underlyingResource;
+            this._native.copyTexture(destination, source);
+            texture.isReady = true;
+        }
     }
 
     public createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): InternalTexture {
+        // it's not possible to create 0x0 texture sized. Many bgfx methods assume texture size is at least 1x1(best case).
+        // Worst case is getting a crash/assert.
+        width = Math.max(width, 1);
+        height = Math.max(height, 1);
         return this.createRawTexture(new Uint8Array(width * height * 4), width, height, Constants.TEXTUREFORMAT_RGBA, false, false, samplingMode);
     }
 
@@ -1883,8 +2144,7 @@ export class NativeEngine extends Engine {
         createPolynomials = false,
         lodScale: number = 0,
         lodOffset: number = 0,
-        fallback: Nullable<InternalTexture> = null): InternalTexture
-    {
+        fallback: Nullable<InternalTexture> = null): InternalTexture {
         var texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Cube);
         texture.isCube = true;
         texture.url = rootUrl;
@@ -2073,9 +2333,7 @@ export class NativeEngine extends Engine {
     }
 
     public unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
-        if (disableGenerateMipMaps) {
-            Logger.Warn("Disabling mipmap generation not yet supported in NativeEngine. Ignoring.");
-        }
+        // NOTE: Disabling mipmap generation is not yet supported in NativeEngine.
 
         if (onBeforeUnbind) {
             onBeforeUnbind();
@@ -2205,7 +2463,7 @@ export class NativeEngine extends Engine {
     public _bindTexture(channel: number, texture: InternalTexture): void {
         let uniform = this._boundUniforms[channel];
         if (!uniform) {
-            return ;
+            return;
         }
         if (texture && texture._hardwareTexture) {
             const webGLTexture = texture._hardwareTexture.underlyingResource;
@@ -2227,6 +2485,34 @@ export class NativeEngine extends Engine {
 
     public releaseEffects() {
         // TODO
+    }
+
+    /**
+     * Create a canvas
+     * @param width width
+     * @param height height
+     * @return ICanvas interface
+     */
+    public createCanvas(width: number, height: number): ICanvas {
+        if (!_native.NativeCanvas) {
+            throw new Error("Native Canvas plugin not available.");
+        }
+        const canvas = new _native.NativeCanvas();
+        canvas.width = width;
+        canvas.height = height;
+        return canvas;
+    }
+
+    /**
+     * Create an image to use with canvas
+     * @return IImage interface
+     */
+    public createCanvasImage(): IImage {
+        if (!_native.NativeCanvas) {
+            throw new Error("Native Canvas plugin not available.");
+        }
+        const image = new _native.NativeCanvasImage();
+        return image;
     }
 
     /** @hidden */
@@ -2279,6 +2565,98 @@ export class NativeEngine extends Engine {
                 return this._native.TEXTURE_LINEAR_NEAREST;
             default:
                 throw new Error(`Unsupported sampling mode: ${samplingMode}.`);
+        }
+    }
+
+    private _getStencilFunc(func: number): number {
+        switch (func) {
+            case Constants.LESS:
+                return this._native.STENCIL_TEST_LESS;
+            case Constants.LEQUAL:
+                return this._native.STENCIL_TEST_LEQUAL;
+            case Constants.EQUAL:
+                return this._native.STENCIL_TEST_EQUAL;
+            case Constants.GEQUAL:
+                return this._native.STENCIL_TEST_GEQUAL;
+            case Constants.GREATER:
+                return this._native.STENCIL_TEST_GREATER;
+            case Constants.NOTEQUAL:
+                return this._native.STENCIL_TEST_NOTEQUAL;
+            case Constants.NEVER:
+                return this._native.STENCIL_TEST_NEVER;
+            case Constants.ALWAYS:
+                return this._native.STENCIL_TEST_ALWAYS;
+            default:
+                throw new Error(`Unsupported stencil func mode: ${func}.`);
+        }
+    }
+
+    private _getStencilOpFail(opFail: number): number {
+        switch (opFail) {
+            case Constants.KEEP:
+                return this._native.STENCIL_OP_FAIL_S_KEEP;
+            case Constants.ZERO:
+                return this._native.STENCIL_OP_FAIL_S_ZERO;
+            case Constants.REPLACE:
+                return this._native.STENCIL_OP_FAIL_S_REPLACE;
+            case Constants.INCR:
+                return this._native.STENCIL_OP_FAIL_S_INCR;
+            case Constants.DECR:
+                return this._native.STENCIL_OP_FAIL_S_DECR;
+            case Constants.INVERT:
+                return this._native.STENCIL_OP_FAIL_S_INVERT;
+            case Constants.INCR_WRAP:
+                return this._native.STENCIL_OP_FAIL_S_INCRSAT;
+            case Constants.DECR_WRAP:
+                return this._native.STENCIL_OP_FAIL_S_DECRSAT;
+            default:
+                throw new Error(`Unsupported stencil OpFail mode: ${opFail}.`);
+        }
+    }
+
+    private _getStencilDepthFail(depthFail: number): number {
+        switch (depthFail) {
+            case Constants.KEEP:
+                return this._native.STENCIL_OP_FAIL_Z_KEEP;
+            case Constants.ZERO:
+                return this._native.STENCIL_OP_FAIL_Z_ZERO;
+            case Constants.REPLACE:
+                return this._native.STENCIL_OP_FAIL_Z_REPLACE;
+            case Constants.INCR:
+                return this._native.STENCIL_OP_FAIL_Z_INCR;
+            case Constants.DECR:
+                return this._native.STENCIL_OP_FAIL_Z_DECR;
+            case Constants.INVERT:
+                return this._native.STENCIL_OP_FAIL_Z_INVERT;
+            case Constants.INCR_WRAP:
+                return this._native.STENCIL_OP_FAIL_Z_INCRSAT;
+            case Constants.DECR_WRAP:
+                return this._native.STENCIL_OP_FAIL_Z_DECRSAT;
+            default:
+                throw new Error(`Unsupported stencil depthFail mode: ${depthFail}.`);
+        }
+    }
+
+    private _getStencilDepthPass(opPass: number): number {
+        switch (opPass) {
+            case Constants.KEEP:
+                return this._native.STENCIL_OP_PASS_Z_KEEP;
+            case Constants.ZERO:
+                return this._native.STENCIL_OP_PASS_Z_ZERO;
+            case Constants.REPLACE:
+                return this._native.STENCIL_OP_PASS_Z_REPLACE;
+            case Constants.INCR:
+                return this._native.STENCIL_OP_PASS_Z_INCR;
+            case Constants.DECR:
+                return this._native.STENCIL_OP_PASS_Z_DECR;
+            case Constants.INVERT:
+                return this._native.STENCIL_OP_PASS_Z_INVERT;
+            case Constants.INCR_WRAP:
+                return this._native.STENCIL_OP_PASS_Z_INCRSAT;
+            case Constants.DECR_WRAP:
+                return this._native.STENCIL_OP_PASS_Z_DECRSAT;
+            default:
+                throw new Error(`Unsupported stencil opPass mode: ${opPass}.`);
         }
     }
 
@@ -2341,5 +2719,11 @@ export class NativeEngine extends Engine {
             default:
                 throw new Error(`Unsupported attribute type: ${type}.`);
         }
+    }
+
+    public getFontOffset(font: string): { ascent: number, height: number, descent: number } {
+        // TODO
+        var result = { ascent: 0, height: 0, descent: 0 };
+        return result;
     }
 }

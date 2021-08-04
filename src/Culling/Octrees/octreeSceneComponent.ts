@@ -35,7 +35,7 @@ declare module "../../scene" {
     }
 }
 
-Scene.prototype.createOrUpdateSelectionOctree = function(maxCapacity = 64, maxDepth = 2): Octree<AbstractMesh> {
+Scene.prototype.createOrUpdateSelectionOctree = function (maxCapacity = 64, maxDepth = 2): Octree<AbstractMesh> {
     let component = this._getComponent(SceneComponentConstants.NAME_OCTREE);
     if (!component) {
         component = new OctreeSceneComponent(this);
@@ -55,7 +55,7 @@ Scene.prototype.createOrUpdateSelectionOctree = function(maxCapacity = 64, maxDe
 };
 
 Object.defineProperty(Scene.prototype, "selectionOctree", {
-    get: function(this: Scene) {
+    get: function (this: Scene) {
         return this._selectionOctree;
     },
     enumerable: true,
@@ -92,7 +92,7 @@ declare module "../../Meshes/abstractMesh" {
  * @see https://www.babylonjs-playground.com/#NA4OQ#12
  * @see https://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
  */
-AbstractMesh.prototype.createOrUpdateSubmeshesOctree = function(maxCapacity = 64, maxDepth = 2): Octree<SubMesh> {
+AbstractMesh.prototype.createOrUpdateSubmeshesOctree = function (maxCapacity = 64, maxDepth = 2): Octree<SubMesh> {
     const scene = this.getScene();
     let component = scene._getComponent(SceneComponentConstants.NAME_OCTREE);
     if (!component) {

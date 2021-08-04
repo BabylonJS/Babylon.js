@@ -31,7 +31,7 @@ function eventTemplate(target: HTMLElement): MockPointerEvent {
     let returnVal = {
         target,
         button: 0,
-        preventDefault: () => {},
+        preventDefault: () => { },
     };
     return returnVal;
 }

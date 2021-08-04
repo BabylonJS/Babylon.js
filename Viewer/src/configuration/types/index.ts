@@ -14,7 +14,7 @@ import { deepmerge } from '../../helper/';
  *
  * @param types a comma-separated string of the type(s) or configuration to load.
  */
-let getConfigurationType = function(types: string): ViewerConfiguration {
+let getConfigurationType = function (types: string): ViewerConfiguration {
     let config: ViewerConfiguration = {};
     let typesSeparated = types.split(",");
     typesSeparated.forEach((type) => {

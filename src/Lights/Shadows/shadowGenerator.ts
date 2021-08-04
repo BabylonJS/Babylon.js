@@ -892,9 +892,10 @@ export class ShadowGenerator implements IShadowGenerator {
     }
 
     protected _createTargetRenderTexture(): void {
-        if (this._scene.getEngine()._features.supportDepthStencilTexture) {
+        const engine = this._scene.getEngine();
+        if (engine._features.supportDepthStencilTexture) {
             this._shadowMap = new RenderTargetTexture(this._light.name + "_shadowMap", this._mapSize, this._scene, false, true, this._textureType, this._light.needCube(), undefined, false, false);
-            this._shadowMap.createDepthStencilTexture(Constants.LESS, true);
+            this._shadowMap.createDepthStencilTexture(engine.useReverseDepthBuffer ? Constants.GREATER : Constants.LESS, true);
         }
         else {
             this._shadowMap = new RenderTargetTexture(this._light.name + "_shadowMap", this._mapSize, this._scene, false, true, this._textureType, this._light.needCube());
@@ -1045,15 +1046,11 @@ export class ShadowGenerator implements IShadowGenerator {
 
     protected _renderForShadowMap(opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void {
         var index: number;
-        let engine = this._scene.getEngine();
 
-        const colorWrite = engine.getColorWrite();
         if (depthOnlySubMeshes.length) {
-            engine.setColorWrite(false);
             for (index = 0; index < depthOnlySubMeshes.length; index++) {
                 this._renderSubMeshForShadowMap(depthOnlySubMeshes.data[index]);
             }
-            engine.setColorWrite(colorWrite);
         }
 
         for (index = 0; index < opaqueSubMeshes.length; index++) {
@@ -1351,7 +1348,7 @@ export class ShadowGenerator implements IShadowGenerator {
      */
     public isReady(subMesh: SubMesh, useInstances: boolean, isTransparent: boolean): boolean {
         const material = subMesh.getMaterial(),
-              shadowDepthWrapper = material?.shadowDepthWrapper;
+            shadowDepthWrapper = material?.shadowDepthWrapper;
 
         const defines: string[] = [];
 
@@ -1490,8 +1487,8 @@ export class ShadowGenerator implements IShadowGenerator {
 
                 let shaderName = "shadowMap";
                 const uniforms = ["world", "mBones", "viewProjection", "diffuseMatrix", "lightDataSM", "depthValuesSM", "biasAndScaleSM", "morphTargetInfluences", "boneTextureWidth",
-                                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "softTransparentShadowSM",
-                                "morphTargetTextureInfo", "morphTargetTextureIndices"];
+                    "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "softTransparentShadowSM",
+                    "morphTargetTextureInfo", "morphTargetTextureIndices"];
                 const samplers = ["diffuseSampler", "boneSampler", "morphTargets"];
                 const uniformBuffers = ["Scene", "Mesh"];
 
@@ -1730,7 +1727,18 @@ export class ShadowGenerator implements IShadowGenerator {
         // Reaffect the filter.
         this._applyFilterValues();
         // Reaffect Render List.
-        this._shadowMap!.renderList = renderList;
+        if (renderList) {
+            // Note: don't do this._shadowMap!.renderList = renderList;
+            // The renderList hooked array is accessing the old RenderTargetTexture (see RenderTargetTexture._hookArray), which is disposed at this point (by the call to _disposeRTTandPostProcesses)
+            if (!this._shadowMap!.renderList) {
+                this._shadowMap!.renderList = [];
+            }
+            for (const mesh of renderList) {
+                this._shadowMap!.renderList.push(mesh);
+            }
+        } else {
+            this._shadowMap!.renderList = null;
+        }
     }
 
     protected _disposeBlurPostProcesses(): void {
@@ -1847,7 +1855,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
         for (var meshIndex = 0; meshIndex < parsedShadowGenerator.renderList.length; meshIndex++) {
             var meshes = scene.getMeshesById(parsedShadowGenerator.renderList[meshIndex]);
-            meshes.forEach(function(mesh) {
+            meshes.forEach(function (mesh) {
                 if (!shadowMap) {
                     return;
                 }
@@ -1899,12 +1907,12 @@ export class ShadowGenerator implements IShadowGenerator {
         } else if (parsedShadowGenerator.useBlurCloseExponentialShadowMap) {
             shadowGenerator.useBlurCloseExponentialShadowMap = true;
         } else
-        // Backward compat
-        if (parsedShadowGenerator.useVarianceShadowMap) {
-            shadowGenerator.useExponentialShadowMap = true;
-        } else if (parsedShadowGenerator.useBlurVarianceShadowMap) {
-            shadowGenerator.useBlurExponentialShadowMap = true;
-        }
+            // Backward compat
+            if (parsedShadowGenerator.useVarianceShadowMap) {
+                shadowGenerator.useExponentialShadowMap = true;
+            } else if (parsedShadowGenerator.useBlurVarianceShadowMap) {
+                shadowGenerator.useBlurExponentialShadowMap = true;
+            }
 
         if (parsedShadowGenerator.contactHardeningLightSizeUVRatio !== undefined) {
             shadowGenerator.contactHardeningLightSizeUVRatio = parsedShadowGenerator.contactHardeningLightSizeUVRatio;

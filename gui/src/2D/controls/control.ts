@@ -15,6 +15,8 @@ import { Style } from "../style";
 import { Matrix2D, Vector2WithInfo } from "../math2D";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { SerializationHelper, serialize } from 'babylonjs/Misc/decorators';
+import { ICanvasRenderingContext } from 'babylonjs/Engines/ICanvas';
+import { Engine } from "babylonjs/Engines/engine";
 
 /**
  * Root class used for all 2D controls
@@ -253,12 +255,12 @@ export class Control {
     */
     public onWheelObservable = new Observable<Vector2>();
     /**
-    * An event triggered when the pointer move over the control.
+    * An event triggered when the pointer moves over the control.
     */
     public onPointerMoveObservable = new Observable<Vector2>();
 
     /**
-    * An event triggered when the pointer move out of the control.
+    * An event triggered when the pointer moves out of the control.
     */
     public onPointerOutObservable = new Observable<Control>();
 
@@ -300,7 +302,7 @@ export class Control {
     /**
     * An event triggered when the control has been disposed
     */
-   public onDisposeObservable = new Observable<Control>();
+    public onDisposeObservable = new Observable<Control>();
 
     /**
      * Get the hosting AdvancedDynamicTexture
@@ -359,7 +361,7 @@ export class Control {
 
     public set isHighlighted(value: boolean) {
         if (this._isHighlighted === value) {
-             return;
+            return;
         }
 
         this._isHighlighted = value;
@@ -369,7 +371,7 @@ export class Control {
     /** Gets or sets a value indicating the scale factor on X axis (1 by default)
      * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
     */
-   @serialize()
+    @serialize()
     public get scaleX(): number {
         return this._scaleX;
     }
@@ -387,7 +389,7 @@ export class Control {
     /** Gets or sets a value indicating the scale factor on Y axis (1 by default)
      * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
     */
-   @serialize()
+    @serialize()
     public get scaleY(): number {
         return this._scaleY;
     }
@@ -405,7 +407,7 @@ export class Control {
     /** Gets or sets the rotation angle (0 by default)
      * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
     */
-   @serialize()
+    @serialize()
     public get rotation(): number {
         return this._rotation;
     }
@@ -423,7 +425,7 @@ export class Control {
     /** Gets or sets the transformation center on Y axis (0 by default)
      * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
     */
-   @serialize()
+    @serialize()
     public get transformCenterY(): number {
         return this._transformCenterY;
     }
@@ -441,7 +443,7 @@ export class Control {
     /** Gets or sets the transformation center on X axis (0 by default)
      * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
     */
-   @serialize()
+    @serialize()
     public get transformCenterX(): number {
         return this._transformCenterX;
     }
@@ -1231,14 +1233,14 @@ export class Control {
         this._host._linkedControls.push(this);
     }
 
-     /**
-     * Shorthand funtion to set the top, right, bottom, and left padding values on the control.
-     * @param { string | number} paddingTop - The value of the top padding.
-     * @param { string | number} paddingRight - The value of the right padding. If omitted, top is used.
-     * @param { string | number} paddingBottom - The value of the bottom padding. If omitted, top is used.
-     * @param { string | number} paddingLeft - The value of the left padding. If omitted, right is used.
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
-     */
+    /**
+    * Shorthand funtion to set the top, right, bottom, and left padding values on the control.
+    * @param { string | number} paddingTop - The value of the top padding.
+    * @param { string | number} paddingRight - The value of the right padding. If omitted, top is used.
+    * @param { string | number} paddingBottom - The value of the bottom padding. If omitted, top is used.
+    * @param { string | number} paddingLeft - The value of the left padding. If omitted, right is used.
+    * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+    */
     public setPadding(
         paddingTop: string | number,
         paddingRight?: string | number,
@@ -1414,7 +1416,7 @@ export class Control {
     }
 
     /** @hidden */
-    protected _transform(context?: CanvasRenderingContext2D): void {
+    protected _transform(context?: ICanvasRenderingContext): void {
         if (!this._isMatrixDirty && this._scaleX === 1 && this._scaleY === 1 && this._rotation === 0) {
             return;
         }
@@ -1448,7 +1450,7 @@ export class Control {
     }
 
     /** @hidden */
-    public _renderHighlight(context: CanvasRenderingContext2D): void {
+    public _renderHighlight(context: ICanvasRenderingContext): void {
         if (!this.isHighlighted) {
             return;
         }
@@ -1462,12 +1464,12 @@ export class Control {
     }
 
     /** @hidden */
-    public _renderHighlightSpecific(context: CanvasRenderingContext2D): void {
+    public _renderHighlightSpecific(context: ICanvasRenderingContext): void {
         context.strokeRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
     }
 
     /** @hidden */
-    protected _applyStates(context: CanvasRenderingContext2D): void {
+    protected _applyStates(context: ICanvasRenderingContext): void {
         if (this._isFontSizeInPercentage) {
             this._fontSet = true;
         }
@@ -1493,7 +1495,7 @@ export class Control {
     }
 
     /** @hidden */
-    public _layout(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean {
+    public _layout(parentMeasure: Measure, context: ICanvasRenderingContext): boolean {
         if (!this.isDirty && (!this.isVisible || this.notRenderable)) {
             return false;
         }
@@ -1536,7 +1538,7 @@ export class Control {
     }
 
     /** @hidden */
-    protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         this._currentMeasure.copyFrom(parentMeasure);
 
         // Let children take some pre-measurement actions
@@ -1613,7 +1615,7 @@ export class Control {
     }
 
     /** @hidden */
-    protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _computeAlignment(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         var width = this._currentMeasure.width;
         var height = this._currentMeasure.height;
 
@@ -1693,23 +1695,23 @@ export class Control {
     }
 
     /** @hidden */
-    protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _preMeasure(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         // Do nothing
     }
 
     /** @hidden */
-    protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         // Do nothing
     }
 
     /** @hidden */
-    protected _clipForChildren(context: CanvasRenderingContext2D): void {
+    protected _clipForChildren(context: ICanvasRenderingContext): void {
         // DO nothing
     }
 
     private static _ClipMeasure = new Measure(0, 0, 0, 0);
     private _tmpMeasureA = new Measure(0, 0, 0, 0);
-    private _clip(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>) {
+    private _clip(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>) {
         context.beginPath();
         Control._ClipMeasure.copyFrom(this._currentMeasure);
         if (invalidatedRectangle) {
@@ -1749,7 +1751,7 @@ export class Control {
     }
 
     /** @hidden */
-    public _render(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): boolean {
+    public _render(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): boolean {
         if (!this.isVisible || this.notRenderable || this._isClipped) {
             this._isDirty = false;
             return false;
@@ -1795,7 +1797,7 @@ export class Control {
     }
 
     /** @hidden */
-    public _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void {
+    public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void {
         // Do nothing
     }
 
@@ -1960,7 +1962,7 @@ export class Control {
     }
 
     /** @hidden */
-    public _onCanvasBlur(): void {}
+    public _onCanvasBlur(): void { }
 
     /** @hidden */
     public _processObservables(type: number, x: number, y: number, pi: PointerInfoBase, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
@@ -2142,33 +2144,12 @@ export class Control {
             return Control._FontHeightSizes[font];
         }
 
-        var text = document.createElement("span");
-        text.innerHTML = "Hg";
-        text.setAttribute('style', `font: ${font} !important`);
-
-        var block = document.createElement("div");
-        block.style.display = "inline-block";
-        block.style.width = "1px";
-        block.style.height = "0px";
-        block.style.verticalAlign = "bottom";
-
-        var div = document.createElement("div");
-        div.style.whiteSpace = "nowrap";
-        div.appendChild(text);
-        div.appendChild(block);
-
-        document.body.appendChild(div);
-
-        var fontAscent = 0;
-        var fontHeight = 0;
-        try {
-            fontHeight = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
-            block.style.verticalAlign = "baseline";
-            fontAscent = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
-        } finally {
-            document.body.removeChild(div);
+        const engine = Engine.LastCreatedEngine;
+        if (!engine) {
+            throw new Error("Invalid engine. Unable to create a canvas.");
         }
-        var result = { ascent: fontAscent, height: fontHeight, descent: fontHeight - fontAscent };
+
+        var result = engine.getFontOffset(font);
         Control._FontHeightSizes[font] = result;
 
         return result;
@@ -2204,7 +2185,7 @@ export class Control {
     public static AddHeader: (control: Control, text: string, size: string | number, options: { isHorizontal: boolean, controlFirst: boolean }) => any = () => { };
 
     /** @hidden */
-    protected static drawEllipse(x: number, y: number, width: number, height: number, context: CanvasRenderingContext2D): void {
+    protected static drawEllipse(x: number, y: number, width: number, height: number, context: ICanvasRenderingContext): void {
         context.translate(x, y);
         context.scale(width, height);
 

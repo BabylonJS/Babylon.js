@@ -10,6 +10,7 @@ interface IDropUpButtonProps {
     globalState: GlobalState;
     enabled: boolean;
     icon?: any;
+    iconLabel? : string;
     label: string;
     options: string[];
     activeEntry: () => string;
@@ -54,7 +55,7 @@ export class DropUpButton extends React.Component<IDropUpButtonProps, {isOpen: b
                 {
                     this.props.icon &&
                     <div className={"button" + (this.state.isOpen ? " active" : "")} onClick={() => this.switchDropUp()}>
-                        <img src={this.props.icon} alt={this.props.label} title={this.props.label}  />
+                        <img src={this.props.icon} title={this.props.label} alt={this.props.label}/>
                     </div>
                 }
                 {

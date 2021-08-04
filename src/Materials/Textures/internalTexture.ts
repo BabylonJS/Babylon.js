@@ -2,6 +2,7 @@ import { Observable } from "../../Misc/observable";
 import { Nullable, int } from "../../types";
 import { RenderTargetCreationOptions } from "../../Materials/Textures/renderTargetCreationOptions";
 import { Constants } from "../../Engines/constants";
+import { ICanvas, ICanvasRenderingContext } from "../../Engines/ICanvas";
 import { _DevTools } from '../../Misc/devTools';
 import { Engine } from '../../Engines/engine';
 import { HardwareTextureWrapper } from "./hardwareTextureWrapper";
@@ -184,9 +185,9 @@ export class InternalTexture {
     /** @hidden */
     public _files: Nullable<string[]> = null;
     /** @hidden */
-    public _workingCanvas: Nullable<HTMLCanvasElement | OffscreenCanvas> = null;
+    public _workingCanvas: Nullable<ICanvas> = null;
     /** @hidden */
-    public _workingContext: Nullable<CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D> = null;
+    public _workingContext: Nullable<ICanvasRenderingContext> = null;
     /** @hidden */
     public _framebuffer: Nullable<WebGLFramebuffer> = null;
     /** @hidden */
@@ -526,7 +527,7 @@ export class InternalTexture {
                     proxy._swapAndDie(this, false);
 
                     this.isReady = true;
-                 } else if (this.isCube) {
+                } else if (this.isCube) {
                     let depthTextureOptions = {
                         bilinearFiltering: this.samplingMode !== Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
                         comparisonFunction: this._comparisonFunction,
@@ -538,8 +539,8 @@ export class InternalTexture {
                     proxy._swapAndDie(this, false);
 
                     this.isReady = true;
-                 }
-                 break;
+                }
+                break;
         }
 
         rebuildSamples();

@@ -21,7 +21,9 @@ interface IFloatLineComponentProps {
     min?: number;
     max?: number;
     smallUI?: boolean;
-    onEnter?: (newValue:number) => void;
+    onEnter?: (newValue: number) => void;
+    icon?: string;
+    iconLabel? : string;
 }
 
 export class FloatLineComponent extends React.Component<IFloatLineComponentProps, { value: string }> {
@@ -91,13 +93,13 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                 if (valueAsNumber < this.props.min) {
                     valueAsNumber = this.props.min;
                     valueString = valueAsNumber.toString();
-                }            
+                }
             }
             if (this.props.max !== undefined) {
                 if (valueAsNumber > this.props.max) {
                     valueAsNumber = this.props.max;
                     valueString = valueAsNumber.toString();
-                }            
+                }
             }
         }
 
@@ -135,32 +137,35 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
             valueAsNumber = parseFloat(this.state.value);
         }
 
-        let className = this.props.smallUI ? "short": "value";
+        let className = this.props.smallUI ? "short" : "value";
 
         return (
             <div>
                 {
                     !this.props.useEuler &&
                     <div className={this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine"}>
-                        <div className="label" title={this.props.label}>
-                            {this.props.label}
-                        </div>
+                        {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel}  className="icon" />}
+                        {(!this.props.icon || this.props.label != "") &&
+                            <div className="label" title={this.props.label}>
+                                {this.props.label}
+                            </div>
+                        }
                         <div className={className}>
                             <input type="number" step={this.props.step || this.props.isInteger ? "1" : "0.01"} className="numeric-input"
-                            onKeyDown={evt => {
-                                if (evt.keyCode !== 13) {
-                                    return;
-                                }
-                                if(this.props.onEnter) {
-                                    this.props.onEnter(this._store);
-                                }
-                            }}
-                            value={this.state.value} onBlur={() => {
-                                this.unlock();
-                                if(this.props.onEnter) {
-                                    this.props.onEnter(this._store);
-                                }
-                            }} onFocus={() => this.lock()} onChange={evt => this.updateValue(evt.target.value)} />
+                                onKeyDown={evt => {
+                                    if (evt.keyCode !== 13) {
+                                        return;
+                                    }
+                                    if (this.props.onEnter) {
+                                        this.props.onEnter(this._store);
+                                    }
+                                }}
+                                value={this.state.value} onBlur={() => {
+                                    this.unlock();
+                                    if (this.props.onEnter) {
+                                        this.props.onEnter(this._store);
+                                    }
+                                }} onFocus={() => this.lock()} onChange={evt => this.updateValue(evt.target.value)} />
                         </div>
                     </div>
                 }

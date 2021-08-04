@@ -21,6 +21,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
     private _canvasRef: React.RefObject<HTMLCanvasElement>;
     private _downloadManager: DownloadManager;
     private _unityToolkitWasLoaded = false;
+    private _tmpErrorEvent?: ErrorEvent;
 
     public constructor(props: IRenderingComponentProps) {
         super(props);
@@ -78,11 +79,17 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
             this._engine.resize();
         });
+
+        window.addEventListener("error", this._saveError);
     }
+
+    private _saveError = (err: ErrorEvent) => {
+        this._tmpErrorEvent = err;
+    };
 
     private async _loadScriptAsync(url: string): Promise<void> {
         return new Promise((resolve, reject) => {
-            let script = document.createElement('script');
+            let script = document.createElement("script");
             script.src = url;
             script.onload = () => {
                 resolve();
@@ -109,7 +116,6 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 forceWebGL1 = true;
                 break;
         }
-        
 
         if (this._engine) {
             try {
@@ -132,21 +138,22 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             globalObject.canvas = canvas;
 
             if (useWebGPU) {
-                globalObject.createDefaultEngine = async function() { 
+                globalObject.createDefaultEngine = async function () {
                     var engine = new WebGPUEngine(canvas, {
                         deviceDescriptor: {
-                            nonGuaranteedFeatures: [
+                            requiredFeatures: [
                                 "texture-compression-bc",
                                 "timestamp-query",
                                 "pipeline-statistics-query",
                                 "depth-clamping",
                                 "depth24unorm-stencil8",
-                                "depth32float-stencil8"
-                            ]
-                    }});
+                                "depth32float-stencil8",
+                            ],
+                        },
+                    });
                     await engine.initAsync();
                     return engine;
-                }                
+                };
             } else {
                 globalObject.createDefaultEngine = function () {
                     return new Engine(canvas, true, {
@@ -175,8 +182,9 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             }
 
             // Check for Ammo.js
+            let ammoInit = "";
             if (code.indexOf("AmmoJSPlugin") > -1 && typeof Ammo === "function") {
-                await Ammo();
+                ammoInit = "await Ammo();";
             }
 
             // Check for Unity Toolkit
@@ -220,7 +228,8 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 // using the appropriate default or user-provided functions.
                 // (Use "window.x = foo" to allow later deletion, see above.)
                 code += `
-                window.initFunction = async function() {               
+                window.initFunction = async function() {
+                    ${ammoInit}
                     var asyncEngineCreation = async function() {
                         try {
                         return ${createEngineFunction}();
@@ -241,10 +250,16 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                     code += "\n" + "window.scene = " + createSceneFunction + "();";
                 }
 
-                code += `}`;  // Finish "initFunction" definition.
+                code += `}`; // Finish "initFunction" definition.
 
-                // Execute the code
-                Utilities.FastEval(code);
+                this._tmpErrorEvent = undefined;
+
+                try {
+                    // Execute the code
+                    Utilities.FastEval(code);
+                } catch (e) {
+                    (window as any).handleException(e);
+                }
 
                 await globalObject.initFunction();
 
@@ -298,7 +313,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                     }
                 }
 
-                if (this._scene.activeCamera || this._scene.activeCameras && this._scene.activeCameras.length > 0) {
+                if (this._scene.activeCamera || (this._scene.activeCameras && this._scene.activeCameras.length > 0)) {
                     this._scene.render();
                 }
 
@@ -338,7 +353,8 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 });
             }
         } catch (err) {
-            this.props.globalState.onErrorObservable.notifyObservers(err);
+            console.error(err);
+            this.props.globalState.onErrorObservable.notifyObservers(this._tmpErrorEvent || err);
         }
     }
 

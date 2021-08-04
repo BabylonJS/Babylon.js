@@ -51,11 +51,11 @@ declare module "../../Engines/engine" {
     }
 }
 
-Engine.prototype.getInputElement = function(): Nullable<HTMLElement> {
+Engine.prototype.getInputElement = function (): Nullable<HTMLElement> {
     return this.inputElement || this.getRenderingCanvas();
 };
 
-Engine.prototype.registerView = function(canvas: HTMLCanvasElement, camera?: Camera, clearBeforeCopy?: boolean): EngineView {
+Engine.prototype.registerView = function (canvas: HTMLCanvasElement, camera?: Camera, clearBeforeCopy?: boolean): EngineView {
     if (!this.views) {
         this.views = [];
     }
@@ -72,7 +72,7 @@ Engine.prototype.registerView = function(canvas: HTMLCanvasElement, camera?: Cam
         canvas.height = masterCanvas.height;
     }
 
-    let newView = {target: canvas, camera, clearBeforeCopy};
+    let newView = { target: canvas, camera, clearBeforeCopy };
     this.views.push(newView);
 
     if (camera) {
@@ -84,7 +84,7 @@ Engine.prototype.registerView = function(canvas: HTMLCanvasElement, camera?: Cam
     return newView;
 };
 
-Engine.prototype.unRegisterView = function(canvas: HTMLCanvasElement): Engine {
+Engine.prototype.unRegisterView = function (canvas: HTMLCanvasElement): Engine {
     if (!this.views) {
         return this;
     }
@@ -103,7 +103,7 @@ Engine.prototype.unRegisterView = function(canvas: HTMLCanvasElement): Engine {
     return this;
 };
 
-Engine.prototype._renderViews = function() {
+Engine.prototype._renderViews = function () {
     if (!this.views) {
         return false;
     }
@@ -155,6 +155,8 @@ Engine.prototype._renderViews = function() {
 
         // Render the frame
         this._renderFrame();
+
+        this.flushFramebuffer();
 
         // Copy to target
         if (view.clearBeforeCopy) {
