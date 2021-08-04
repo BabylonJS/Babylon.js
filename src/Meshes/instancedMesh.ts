@@ -15,12 +15,12 @@ import { BoundingInfo } from '../Culling/boundingInfo';
 import { Tools } from '../Misc/tools';
 
 Mesh._instancedMeshFactory = (name: string, mesh: Mesh): InstancedMesh => {
-    let instance = new InstancedMesh(name, mesh);
+    const instance = new InstancedMesh(name, mesh);
 
     if (mesh.instancedBuffers) {
         instance.instancedBuffers = {};
 
-        for (var key in mesh.instancedBuffers) {
+        for (const key in mesh.instancedBuffers) {
             instance.instancedBuffers[key] = mesh.instancedBuffers[key];
         }
     }
