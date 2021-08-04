@@ -30,7 +30,7 @@ export class GUIEditor {
             if (popupWindow) {
                 popupWindow.close();
             }
-            if(options.currentSnippetToken) {
+            if (options.currentSnippetToken) {
                 try {
                     this._CurrentState.workbench.loadFromSnippet(options.currentSnippetToken);
                 } catch (error) {
@@ -55,21 +55,21 @@ export class GUIEditor {
         const graphEditor = React.createElement(WorkbenchEditor, {
             globalState: globalState,
         });
-    
+
         ReactDOM.render(graphEditor, hostElement);
         // create the middle workbench canvas
         if (!globalState.guiTexture) {
             globalState.workbench.createGUICanvas();
-            if(options.currentSnippetToken) {
+            if (options.currentSnippetToken) {
                 try {
                     globalState.workbench.loadFromSnippet(options.currentSnippetToken);
-                
+
                 } catch (error) {
                     //swallow and continue
                 }
             }
         }
-                
+
         if (options.customLoadObservable) {
             options.customLoadObservable.add((data) => {
                 globalState.onResetRequiredObservable.notifyObservers();
@@ -89,6 +89,6 @@ export class GUIEditor {
                 }
             };
         }
-        window.addEventListener("beforeunload", () => {});
+        window.addEventListener("beforeunload", () => { });
     }
 }

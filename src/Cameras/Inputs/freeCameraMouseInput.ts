@@ -52,7 +52,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
          * Define if touch is enabled in the mouse input
          */
         public touchEnabled = true
-    ) {}
+    ) { }
 
     /**
      * Attach the input controls to a specific dom element to get the input from.

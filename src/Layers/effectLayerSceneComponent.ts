@@ -45,7 +45,7 @@ declare module "../abstractScene" {
     }
 }
 
-AbstractScene.prototype.removeEffectLayer = function(toRemove: EffectLayer): number {
+AbstractScene.prototype.removeEffectLayer = function (toRemove: EffectLayer): number {
     var index = this.effectLayers.indexOf(toRemove);
     if (index !== -1) {
         this.effectLayers.splice(index, 1);
@@ -54,7 +54,7 @@ AbstractScene.prototype.removeEffectLayer = function(toRemove: EffectLayer): num
     return index;
 };
 
-AbstractScene.prototype.addEffectLayer = function(newEffectLayer: EffectLayer): void {
+AbstractScene.prototype.addEffectLayer = function (newEffectLayer: EffectLayer): void {
     this.effectLayers.push(newEffectLayer);
 };
 

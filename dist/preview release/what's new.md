@@ -6,6 +6,7 @@
 - Added support for ConditionalBlock for NodeMaterial ([Deltakosh](https://github.com/deltakosh))
 - Improved performance when using the shadow / cascacaded shadow generator ([Popov72](https://github.com/Popov72))
 - Add support for up to 6 uv sets in the standard, PBR and node materials ([Popov72](https://github.com/Popov72))
+- Added GUI Editor ([msDestiny14](https://github.com/msDestiny14))
 
 ## Updates
 
@@ -35,6 +36,10 @@
 - Update `createPickingRay` and `createPickingRayToRef` matrix parameter to be nullable. ([jlivak](https://github.com/jlivak))
 - Added `applyVerticalCorrection` and `projectionPlaneTilt` to perspective cameras to correct perspective projections ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Support rotation keys in universal camera ([Sebavan](https://github.com/sebavan))
+- Added flag to allow users to swap between rotation and movement for single touch on FreeCameraTouchInput ([PolygonalSun](https://github.com/PolygonalSun))
+- Added the ability to load a fullscreen GUI from the snippet server ([PirateJC](https://github.com/piratejc))
+- Updated the gravity parameter in `Scene.enablePhysics()` as optional to fit the current behaviour ([Faber](https://https://github.com/Faber-smythe))
+- Allow the possibility to override the radius delta calculation for mouse wheel event ([RaananW](https://github.com/RaananW))
 
 ### Engine
 
@@ -66,6 +71,7 @@
 - Added support for thin instances in navigation mesh creation ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Added recast.d.ts definition file for recast.js ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Added obstacle support ([CedricGuillemet](https://github.com/CedricGuillemet))
+- Added onReachTargetObservable observer to notify when agent reaches destination ([CedricGuillemet](https://github.com/CedricGuillemet))
 
 ### Materials
 
@@ -104,23 +110,6 @@
 - Added a `SceneDepth` block to access the scene depth buffer ([Popov72](https://github.com/Popov72))
 - Fixed Conditional Block output when pressing the 'Generate Code' button. ([PirateJC](https://github.com/piratejc))
 
-### GUIEditor
-
-- Added GUI Editor project to master. ([msDestiny14](https://github.com/msDestiny14))
-- Moving GUI property tab components into GUIEditor. ([msDestiny14](https://github.com/msDestiny14))
-- Added basic saving and loading funtionality. ([msDestiny14](https://github.com/msDestiny14))
-- Added more GUI controls. ([msDestiny14](https://github.com/msDestiny14))
-- Added snippet server from url functionality ([msDestiny14](https://github.com/msDestiny14))
-- Added scrolling and zooming functionality ([msDestiny14](https://github.com/msDestiny14))
-- Added resizable canvas ([msDestiny14](https://github.com/msDestiny14))
-- Added parenting system for scene explorer ([msDestiny14](https://github.com/msDestiny14))
-- Added ability to change zorder ([msDestiny14](https://github.com/msDestiny14))
-- Added highlighting on selection ([msDestiny14](https://github.com/msDestiny14))
-- Creating default values for controls ([msDestiny14](https://github.com/msDestiny14))
-- Bug fix to panning ([msDestiny14](https://github.com/msDestiny14))
-- Added black bar and scene explorer view ([msDestiny14](https://github.com/msDestiny14))
-- Added navigation hotkeys ([msDestiny14](https://github.com/msDestiny14))
-
 ### GUI
 
 - Added a `FocusableButton` gui control to simplify creating menus with keyboard navigation ([Flux159](https://github.com/Flux159))
@@ -136,6 +125,7 @@
 - Added `NearMenu` GUI control ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Added `HandMenu`, a simple menu that uses `HandConstraintBehavior` ([CraigFeldspar](https://github.com/CraigFeldspar))
 - `VolumeBasedPanel`'s constructor now accepts a name parameter, similar to other controls ([rickfromwork](https://github.com/rickfromwork))
+- Added loadLayoutAsync in the XmlLoader. Now the layouts can be loaded asynchronously rather than providing a callback.
 
 ### Behaviors
 
@@ -169,6 +159,8 @@
 - Fixed an issue with superfluous reloading of the hand tracking models ([#10453](https://github.com/BabylonJS/Babylon.js/issues/10453)) ([rgerd](https://github.com/rgerd))
 - Added support for XRFrame.fillPoses and XRFrame.fillJointRadii ([#10454](https://github.com/BabylonJS/Babylon.js/issues/10454)) ([rgerd](https://github.com/rgerd))
 - Improved functionality of `WebXRNearInteraction` and updated coverage to be enabled on Behaviors and Gizmos ([rickfromwork](https://github.com/rickfromwork))
+- Introduced framework support for XR-based eye tracking. XR eye tracking is not yet supported in webXR, but is supported in BabylonNative using OpenXR. ([rickfromwork](https://github.com/rickfromwork))
+- Introduced spectator mode for desktop VR experiences and fixed an issue with XR camera in the activeCameras array ([#10560](https://github.com/BabylonJS/Babylon.js/issues/10560)) ([RaananW](https://github.com/RaananW))
 
 ### Gizmos
 
@@ -192,16 +184,19 @@
 
 - Added the `exportUnusedUVs` property to the `IExportOptions` interface that will prevent any unused vertex uv attributes from being stripped during the glTF export. ([ericbroberic](https://github.com/ericbroberic))
 - glTF serializer now supports KHR_materials_clearcoat ([drigax](https://github.com/drigax))
+- Fixed bug where characters that didn't fit into a single UTF-16 code point were not correctly encoded in .glb exports ([darraghjburke](https://github.com/darraghjburke))
 
 ## Bugs
 
 - Fix CubeTexture extension detection when rootUrl has a query string ([civa86](https://github.com/civa86))
 - Fix issue with the Promise polyfill where a return value was expected from resolve() ([Deltakosh](https://github.com/deltakosh))
 - Fix ArcRotateCamera panning with axis decomposition ([CedricGuillemet](https://github.com/CedricGuillemet))
+- Fix negative scale support for physics impostors ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Fix an issue with keyboard control (re)attachment. ([#9411](https://github.com/BabylonJS/Babylon.js/issues/9411)) ([RaananW](https://github.com/RaananW))
 - Fix issue when scaling is reapplied with BoundingBoxGizmo and GizmoManager ([CedricGuillemet](https://github.com/CedricGuillemet)
 - Fix direct loading of a glTF string that has base64-encoded URI. ([bghgary](https://github.com/bghgary))
 - Fix capsule impostor size computation for ammojs ([CedricGuillemet](https://github.com/CedricGuillemet)
+- Fix compound shapes for CannonJS plugin ([cedricguillemet](https://github.com/cedricguillemet))
 - Fix crash of some node materials using instances on iOS ([Popov72](https://github.com/Popov72))
 - Fix the code generated for the NME gradient block ([Popov72](https://github.com/Popov72))
 - Fix ssao2RenderingPipeline for orthographic cameras ([Kesshi](https://github.com/Kesshi))
@@ -274,7 +269,12 @@
 - Fix for triggering interactions on nearby meshes when performing a near interaction grab ([rickfromwork](https://github.com/rickfromwork))
 - Fix for near interaction failing when multiple utility layers are present ([rickfromwork](https://github.com/rickfromwork))
 - Fix handling of events to support multiple canvas scenarios DeviceInputSystem ([PolygonalSun](https://github.com/PolygonalSun))
+- Fix undisposed textures in PrePass effects that would cause the scene to have more textures than expected ([CraigFeldspar](https://github.com/CraigFeldspar))
+- Fix postprocess autoclear when enabling/disabling an effect in PrePass ([CraigFeldspar](https://github.com/CraigFeldspar))
+- Fix ThinEngine isMobile to detect changes when window is resized to allow for proper emulator evaluation ([PolygonalSun](https://github.com/PolygonalSun))
+- Fix discrete animation not looping correctly ([#10694](https://github.com/BabylonJS/Babylon.js/issues/10694)) ([Popov72](https://github.com/Popov72))
 - Fix support for camera output render targets ([Popov72](https://github.com/Popov72))
+- Fix `bakeTransformIntoVertices` not working when using `rotationQuaternion` + sometimes inverting winding ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 

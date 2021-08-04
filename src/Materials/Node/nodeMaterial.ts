@@ -75,7 +75,6 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     public UV4 = false;
     public UV5 = false;
     public UV6 = false;
-    public USE_REVERSE_DEPTHBUFFER = false;
 
     /** BONES */
     public NUM_BONE_INFLUENCERS = 0;
@@ -193,13 +192,13 @@ export class NodeMaterial extends PushMaterial {
     /**
      * Gets or sets a boolean indicating that alpha value must be ignored (This will turn alpha blending off even if an alpha value is produced by the material)
      */
-     @serialize()
+    @serialize()
     public ignoreAlpha = false;
 
     /**
     * Defines the maximum number of lights that can be used in the material
     */
-     @serialize()
+    @serialize()
     public maxSimultaneousLights = 4;
 
     /**
@@ -581,11 +580,11 @@ export class NodeMaterial extends PushMaterial {
                 if (block !== node) {
                     if (block.target === NodeMaterialBlockTargets.VertexAndFragment) {
                         nodesToProcessForOtherBuildState.push(block);
-                    } else if (state.target ===  NodeMaterialBlockTargets.Fragment
+                    } else if (state.target === NodeMaterialBlockTargets.Fragment
                         && block.target === NodeMaterialBlockTargets.Vertex
                         && block._preparationId !== this._buildId) {
-                            nodesToProcessForOtherBuildState.push(block);
-                        }
+                        nodesToProcessForOtherBuildState.push(block);
+                    }
                     this._initializeBlock(block, state, nodesToProcessForOtherBuildState);
                 }
             }
@@ -786,11 +785,11 @@ export class NodeMaterial extends PushMaterial {
     public createPostProcess(
         camera: Nullable<Camera>, options: number | PostProcessOptions = 1, samplingMode: number = Constants.TEXTURE_NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean,
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, textureFormat = Constants.TEXTUREFORMAT_RGBA): Nullable<PostProcess> {
-            if (this.mode !== NodeMaterialModes.PostProcess) {
-                console.log("Incompatible material mode");
-                return null;
-            }
-            return this._createEffectForPostProcess(null, camera, options, samplingMode, engine, reusable, textureType, textureFormat);
+        if (this.mode !== NodeMaterialModes.PostProcess) {
+            console.log("Incompatible material mode");
+            return null;
+        }
+        return this._createEffectForPostProcess(null, camera, options, samplingMode, engine, reusable, textureType, textureFormat);
     }
 
     /**
@@ -882,9 +881,9 @@ export class NodeMaterial extends PushMaterial {
         Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, this._vertexCompilationState._builtCompilationString);
 
         let effect = this.getScene().getEngine().createEffect({
-                vertexElement: tempName,
-                fragmentElement: tempName
-            },
+            vertexElement: tempName,
+            fragmentElement: tempName
+        },
             [VertexBuffer.PositionKind],
             this._fragmentCompilationState.uniforms,
             this._fragmentCompilationState.samplers,
@@ -913,9 +912,9 @@ export class NodeMaterial extends PushMaterial {
 
                 TimingTools.SetImmediate(() => {
                     effect = this.getScene().getEngine().createEffect({
-                            vertexElement: tempName,
-                            fragmentElement: tempName
-                        },
+                        vertexElement: tempName,
+                        fragmentElement: tempName
+                    },
                         [VertexBuffer.PositionKind],
                         this._fragmentCompilationState.uniforms,
                         this._fragmentCompilationState.samplers,
@@ -1005,8 +1004,8 @@ export class NodeMaterial extends PushMaterial {
     }
 
     private _checkInternals(effect: Effect) {
-         // Animated blocks
-         if (this._sharedData.animatedInputs) {
+        // Animated blocks
+        if (this._sharedData.animatedInputs) {
             const scene = this.getScene();
 
             let frameId = scene.getFrameId();
@@ -1053,8 +1052,8 @@ export class NodeMaterial extends PushMaterial {
         mergedUniforms: string[],
         mergedSamplers: string[],
         fallbacks: EffectFallbacks,
-     }> {
-         let result = null;
+    }> {
+        let result = null;
 
         // Shared defines
         this._sharedData.blocksWithDefines.forEach((b) => {
@@ -1064,8 +1063,6 @@ export class NodeMaterial extends PushMaterial {
         this._sharedData.blocksWithDefines.forEach((b) => {
             b.prepareDefines(mesh, this, defines, useInstances, subMesh);
         });
-
-        defines.setValue("USE_REVERSE_DEPTHBUFFER", this.getScene().getEngine().useReverseDepthBuffer, true);
 
         // Need to recompile?
         if (defines.isDirty) {
@@ -1745,7 +1742,7 @@ export class NodeMaterial extends PushMaterial {
         return serializationObject;
     }
 
-    private _restoreConnections(block: NodeMaterialBlock, source: any, map: {[key: number]: NodeMaterialBlock}) {
+    private _restoreConnections(block: NodeMaterialBlock, source: any, map: { [key: number]: NodeMaterialBlock }) {
         for (var outputPoint of block.outputs) {
             for (var candidate of source.blocks) {
                 let target = map[candidate.id];
@@ -1781,7 +1778,7 @@ export class NodeMaterial extends PushMaterial {
             this.clear();
         }
 
-        let map: {[key: number]: NodeMaterialBlock} = {};
+        let map: { [key: number]: NodeMaterialBlock } = {};
 
         // Create blocks
         for (var parsedBlock of source.blocks) {

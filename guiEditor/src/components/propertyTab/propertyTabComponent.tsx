@@ -72,10 +72,10 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         this.state = { currentNode: null, textureSize: new Vector2(1200, 1200) };
 
         this.props.globalState.onSaveObservable.add(() => {
-            this.save();
+            this.save(this.saveLocally);
         });
         this.props.globalState.onSnippetSaveObservable.add(() => {
-            this.saveToSnippetServer();
+            this.save(this.saveToSnippetServer);
         });
         this.props.globalState.onSnippetLoadObservable.add(() => {
             this.loadFromSnippet();
@@ -125,7 +125,20 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         );
     }
 
-    save() {
+    save(saveCallback: () => void) {
+        //removing the art board background from the adt.
+        this.props.globalState.guiTexture.removeControl(this.props.globalState.workbench.artBoardBackground);
+        saveCallback();
+        //readding the art board at the front of the list so it will be the first thing rendered.
+        if (this.props.globalState.guiTexture.getChildren()[0].children.length) {
+            this.props.globalState.guiTexture.getChildren()[0].children.unshift(this.props.globalState.workbench.artBoardBackground);
+        }
+        else {
+            this.props.globalState.guiTexture.getChildren()[0].children.push(this.props.globalState.workbench.artBoardBackground);
+        }
+    }
+
+    saveLocally = () => {
         try {
             const json = JSON.stringify(this.props.globalState.guiTexture.serializeContent());
             StringTools.DownloadAsFile(this.props.globalState.hostDocument, json, "guiTexture.json");
@@ -134,7 +147,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         }
     }
 
-    saveToSnippetServer() {
+    saveToSnippetServer = () => {
         const adt = this.props.globalState.guiTexture;
         const content = JSON.stringify(adt.serializeContent());
 
@@ -274,12 +287,36 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         <div id="title">{`${this.state.currentNode.name} [${this.state.currentNode.getClassName()}] (ID: ${this.state.currentNode.uniqueId.toString()})`}</div>
                     </div>
                     {this.renderProperties()}
-                   <hr/>
+                    <hr />
                     <ButtonLineComponent
                         label="REMOVE ELEMENT"
                         onClick={() => {
                             this.state.currentNode?.dispose();
                             this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                        }}
+                    />
+                    <ButtonLineComponent
+                        label="COPY ELEMENT"
+                        onClick={() => {
+                            if (this.state.currentNode) {
+                                const serializationObject = {};
+                                this.state.currentNode.serialize(serializationObject);
+                                const newControl = Control.Parse(serializationObject, this.props.globalState.guiTexture);
+
+                                if (newControl) { //insert the new control into the adt or parent container
+                                    this.props.globalState.workbench.appendBlock(newControl);
+                                    this.props.globalState.guiTexture.removeControl(newControl);
+                                    this.state.currentNode.parent?.addControl(newControl);
+
+                                    let index = 1;
+                                    while (this.props.globalState.guiTexture.getDescendants(false).filter(  //search if there are any copies
+                                        control => control.name === `${newControl.name} Copy ${index}`).length) { 
+                                        index++;
+                                    }
+                                    newControl.name = `${newControl.name} Copy ${index}`;
+                                    this.props.globalState.onSelectionChangedObservable.notifyObservers(newControl);
+                                }
+                            }
                         }}
                     />
                 </div>
@@ -303,15 +340,16 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     <div id="title">AdvanceDyanamicTexture</div>
                 </div>
                 <div>
-                    <TextLineComponent label="ART BOARD" value=" " color="grey"></TextLineComponent>
+                    <TextLineComponent tooltip="" label="ART BOARD" value=" " color="grey"></TextLineComponent>
                     {
                         this.props.globalState.workbench.artBoardBackground !== undefined &&
-                        <TextInputLineComponent icon={artboardColorIcon} lockObject={this._lockObject} label="Background" target={this.props.globalState.workbench.artBoardBackground} propertyName="background" onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
+                        <TextInputLineComponent icon={artboardColorIcon} lockObject={this._lockObject} label="" target={this.props.globalState.workbench.artBoardBackground} propertyName="background" onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
                     }
-                    <hr/>
-                    <TextLineComponent label="CANVAS" value=" " color="grey"></TextLineComponent>
+                    <hr />
+                    <TextLineComponent tooltip="" label="CANVAS" value=" " color="grey"></TextLineComponent>
                     <CheckBoxLineComponent
-                        label="Responsive"
+                        label=""
+                        iconLabel="Responsive"
                         icon={responsiveIcon}
                         isSelected={() => DataStorage.ReadBoolean("Responsive", true)}
                         onSelect={(value: boolean) => {
@@ -320,7 +358,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         }}
                     />
                     <OptionsLineComponent
-                        label="Size"
+                        label=""
+                        iconLabel="Size"
                         options={sizeOptions}
                         icon={canvasSizeIcon}
                         target={this}
@@ -339,6 +378,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         <div className="divider">
                             <FloatLineComponent
                                 icon={canvasSizeIcon}
+                                iconLabel="Canvas Size"
                                 label=" "
                                 target={this.state.textureSize}
                                 propertyName="x"
@@ -352,27 +392,27 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 propertyName="y"
                                 isInteger={true}
                                 onChange={(newvalue) => {
-                                    this.props.globalState.workbench.resizeGuiTexture(new Vector2( this.state.textureSize.x,newvalue));
+                                    this.props.globalState.workbench.resizeGuiTexture(new Vector2(this.state.textureSize.x, newvalue));
                                 }}
                             ></FloatLineComponent>
                         </div>
                     }
-                    <hr/>
-                    <TextLineComponent label="FILE" value=" " color="grey"></TextLineComponent>
+                    <hr />
+                    <TextLineComponent tooltip="" label="FILE" value=" " color="grey"></TextLineComponent>
                     <FileButtonLineComponent label="Load" onClick={(file) => this.load(file)} accept=".json" />
                     <ButtonLineComponent
                         label="Save"
                         onClick={() => {
-                            this.save();
+                            this.props.globalState.onSaveObservable.notifyObservers();
                         }}
                     />
-                    <hr/>
-                    <TextLineComponent label="SNIPPET" value=" " color="grey"></TextLineComponent>
+                    <hr />
+                    <TextLineComponent tooltip="" label="SNIPPET" value=" " color="grey"></TextLineComponent>
                     <ButtonLineComponent label="Load from snippet server" onClick={() => this.loadFromSnippet()} />
                     <ButtonLineComponent
                         label="Save to snippet server"
                         onClick={() => {
-                            this.saveToSnippetServer();
+                            this.props.globalState.onSnippetSaveObservable.notifyObservers();
                         }}
                     />
                 </div>

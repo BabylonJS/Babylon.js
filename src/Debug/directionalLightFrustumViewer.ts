@@ -183,7 +183,7 @@ export class DirectionalLightFrustumViewer {
 
         LinesBuilder.CreateLines("nearlines", { updatable: true, points: this._nearLinesPoints, instance: this._lightHelperFrustumMeshes[0] as LinesMesh }, this._scene);
 
-        LinesBuilder.CreateLines("farlines",  { updatable: true, points: this._farLinesPoints, instance: this._lightHelperFrustumMeshes[1] as LinesMesh }, this._scene);
+        LinesBuilder.CreateLines("farlines", { updatable: true, points: this._farLinesPoints, instance: this._lightHelperFrustumMeshes[1] as LinesMesh }, this._scene);
 
         LinesBuilder.CreateLines("trlines", { updatable: true, points: this._trLinesPoints, instance: this._lightHelperFrustumMeshes[2] as LinesMesh }, this._scene);
 
@@ -251,7 +251,7 @@ export class DirectionalLightFrustumViewer {
         nearLines.alwaysSelectAsActiveMesh = true;
 
         this._farLinesPoints = [Vector3.ZeroReadOnly, Vector3.ZeroReadOnly, Vector3.ZeroReadOnly, Vector3.ZeroReadOnly, Vector3.ZeroReadOnly];
-        const farLines = LinesBuilder.CreateLines("farlines",  { updatable: true, points: this._farLinesPoints }, this._scene);
+        const farLines = LinesBuilder.CreateLines("farlines", { updatable: true, points: this._farLinesPoints }, this._scene);
         farLines.parent = this._rootNode;
         farLines.alwaysSelectAsActiveMesh = true;
 
@@ -309,12 +309,12 @@ export class DirectionalLightFrustumViewer {
         this._topPlaneVertices = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
         this._bottomPlaneVertices = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
-        makePlane("near",   new Color3(1, 0, 0),    this._nearPlaneVertices);
-        makePlane("far",    new Color3(0.3, 0, 0),  this._farPlaneVertices);
-        makePlane("right",  new Color3(0, 1, 0),    this._rightPlaneVertices);
-        makePlane("left",   new Color3(0, 0.3, 0),  this._leftPlaneVertices);
-        makePlane("top",    new Color3(0, 0, 1),    this._topPlaneVertices);
-        makePlane("bottom", new Color3(0, 0, 0.3),  this._bottomPlaneVertices);
+        makePlane("near", new Color3(1, 0, 0), this._nearPlaneVertices);
+        makePlane("far", new Color3(0.3, 0, 0), this._farPlaneVertices);
+        makePlane("right", new Color3(0, 1, 0), this._rightPlaneVertices);
+        makePlane("left", new Color3(0, 0.3, 0), this._leftPlaneVertices);
+        makePlane("top", new Color3(0, 0, 1), this._topPlaneVertices);
+        makePlane("bottom", new Color3(0, 0, 0.3), this._bottomPlaneVertices);
 
         this._nearLinesPoints[0] = TmpVectors.Vector3[2];
         this._nearLinesPoints[1] = TmpVectors.Vector3[3];
@@ -338,7 +338,7 @@ export class DirectionalLightFrustumViewer {
         this._tlLinesPoints[1] = TmpVectors.Vector3[8];
 
         this._blLinesPoints[0] = TmpVectors.Vector3[5];
-        this._blLinesPoints [1] = TmpVectors.Vector3[9];
+        this._blLinesPoints[1] = TmpVectors.Vector3[9];
     }
 
     protected _getInvertViewMatrix(): Matrix {

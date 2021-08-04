@@ -96,6 +96,7 @@ class _InternalAbstractMeshDataInfo {
     public _morphTargetManager: Nullable<MorphTargetManager> = null;
     public _renderingGroupId = 0;
     public _material: Nullable<Material> = null;
+    public _positions: Nullable<Vector3[]> = null;
     // Collisions
     public _meshCollisionData = new _MeshCollisionData();
 }
@@ -285,7 +286,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /** @hidden */
-    public _syncGeometryWithMorphTargetManager(): void {}
+    public _syncGeometryWithMorphTargetManager(): void { }
 
     /** @hidden */
     public _updateNonUniformScalingState(value: boolean): boolean {
@@ -357,8 +358,13 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             return;
         }
 
+        const oldValue = this._internalAbstractMeshDataInfo._visibility;
+
         this._internalAbstractMeshDataInfo._visibility = value;
-        this._markSubMeshesAsMiscDirty();
+
+        if (oldValue === 1 && value !== 1 || oldValue !== 1 && value === 1) {
+            this._markSubMeshesAsMiscDirty();
+        }
     }
 
     /** Gets or sets the alpha index used to sort transparent meshes
@@ -694,10 +700,10 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         actions: Nullable<any>;
         freezeWorldMatrix: Nullable<boolean>;
     } = {
-        lods: null,
-        actions: null,
-        freezeWorldMatrix: null,
-    };
+            lods: null,
+            actions: null,
+            freezeWorldMatrix: null,
+        };
 
     /** @hidden */
     public _bonesTransformMatrices: Nullable<Float32Array> = null;
@@ -1132,10 +1138,10 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /** @hidden */
-    public _preActivate(): void {}
+    public _preActivate(): void { }
 
     /** @hidden */
-    public _preActivateForIntermediateRendering(renderId: number): void {}
+    public _preActivateForIntermediateRendering(renderId: number): void { }
 
     /** @hidden */
     public _activate(renderId: number, intermediateRendering: boolean): boolean {
@@ -1300,11 +1306,22 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /** @hidden */
     public _getPositionData(applySkeleton: boolean, applyMorph: boolean): Nullable<FloatArray> {
-        var data = this.getVerticesData(VertexBuffer.PositionKind);
+        let data = this.getVerticesData(VertexBuffer.PositionKind);
+
+        if (this._internalAbstractMeshDataInfo._positions) {
+            this._internalAbstractMeshDataInfo._positions = null;
+        }
 
         if (data && ((applySkeleton && this.skeleton) || (applyMorph && this.morphTargetManager))) {
             data = Tools.Slice(data);
             this._generatePointsArray();
+            if (this._positions) {
+                const pos = this._positions;
+                this._internalAbstractMeshDataInfo._positions = new Array<Vector3>(pos.length);
+                for (let i = 0; i < pos.length; i++) {
+                    this._internalAbstractMeshDataInfo._positions[i] = pos[i]?.clone() || new Vector3();
+                }
+            }
         }
 
         if (data && applySkeleton && this.skeleton) {
@@ -1355,6 +1372,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             }
         }
         if (data && applyMorph && this.morphTargetManager) {
+            let faceIndexCount = 0;
+            let positionIndex = 0;
             for (let vertexCount = 0; vertexCount < data.length; vertexCount++) {
                 for (let targetCount = 0; targetCount < this.morphTargetManager.numTargets; targetCount++) {
                     const targetMorph = this.morphTargetManager.getTarget(targetCount);
@@ -1365,6 +1384,14 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
                             data[vertexCount] += (morphTargetPositions[vertexCount] - data[vertexCount]) * influence;
                         }
                     }
+                }
+
+                faceIndexCount++;
+
+                if (this._positions && faceIndexCount === 3) { // We want to merge into positions every 3 indices starting (but not 0)
+                    faceIndexCount = 0;
+                    let index = positionIndex * 3;
+                    this._positions[positionIndex++].copyFromFloats(data[index], data[index + 1], data[index + 2]);
                 }
             }
         }

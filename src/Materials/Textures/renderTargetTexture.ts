@@ -80,8 +80,8 @@ export class RenderTargetTexture extends Texture {
 
             var result = oldPush.apply(array, items);
 
-            if (wasEmpty && this.getScene()) {
-                this.getScene()!.meshes.forEach((mesh) => {
+            if (wasEmpty) {
+                this.getScene()?.meshes.forEach((mesh) => {
                     mesh._markSubMeshesAsLightDirty();
                 });
             }
@@ -94,7 +94,7 @@ export class RenderTargetTexture extends Texture {
             var deleted = oldSplice.apply(array, [index, deleteCount]);
 
             if (array.length === 0) {
-                this.getScene()!.meshes.forEach((mesh) => {
+                this.getScene()?.meshes.forEach((mesh) => {
                     mesh._markSubMeshesAsLightDirty();
                 });
             }
@@ -317,8 +317,7 @@ export class RenderTargetTexture extends Texture {
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      */
     constructor(name: string, size: number | { width: number, height: number, layers?: number } | { ratio: number }, scene: Nullable<Scene>, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
-            isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false, isMulti = false, format = Constants.TEXTUREFORMAT_RGBA, delayAllocation = false, samples?: number, creationFlags?: number)
-        {
+        isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false, isMulti = false, format = Constants.TEXTUREFORMAT_RGBA, delayAllocation = false, samples?: number, creationFlags?: number) {
         super(null, scene, !generateMipMaps, undefined, samplingMode, undefined, undefined, undefined, undefined, format);
         scene = this.getScene();
         if (!scene) {
@@ -970,8 +969,8 @@ export class RenderTargetTexture extends Texture {
             const saveGenerateMipMaps = this._texture.generateMipMaps;
 
             this._texture.generateMipMaps = false;  // if left true, the mipmaps will be generated (if this._texture.generateMipMaps = true) when the first post process binds its own RTT: by doing so it will unbind the current RTT,
-                                                    // which will trigger a mipmap generation. We don't want this because it's a wasted work, we will do an unbind of the current RTT at the end of the process (see unbindFrameBuffer) which will
-                                                    // trigger the generation of the final mipmaps
+            // which will trigger a mipmap generation. We don't want this because it's a wasted work, we will do an unbind of the current RTT at the end of the process (see unbindFrameBuffer) which will
+            // trigger the generation of the final mipmaps
 
             if (this._postProcessManager) {
                 this._postProcessManager._finalizeFrame(false, this._texture, faceIndex, this._postProcesses, this.ignoreCameraViewport);

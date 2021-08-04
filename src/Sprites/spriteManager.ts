@@ -1,7 +1,7 @@
 import { IDisposable, Scene } from "../scene";
 import { Nullable } from "../types";
 import { Observable, Observer } from "../Misc/observable";
-import { Vector3, TmpVectors } from "../Maths/math.vector";
+import { Vector3, TmpVectors, Matrix } from "../Maths/math.vector";
 import { Sprite } from "./sprite";
 import { SpriteSceneComponent } from "./spriteSceneComponent";
 import { PickingInfo } from "../Collisions/pickingInfo";
@@ -94,7 +94,7 @@ export interface ISpriteManager extends IDisposable {
     /**
      * Rebuilds the manager (after a context lost, for eg)
      */
-     rebuild(): void;
+    rebuild(): void;
 }
 
 /**
@@ -293,7 +293,7 @@ export class SpriteManager implements ISpriteManager {
                 let celldata: any;
                 if (typeof spriteJSON === "string") {
                     celldata = JSON.parse(spriteJSON);
-                }else {
+                } else {
                     celldata = spriteJSON;
                 }
 
@@ -340,7 +340,7 @@ export class SpriteManager implements ISpriteManager {
             };
             xmlhttp.onload = () => {
                 try {
-                    let celldata  = JSON.parse(xmlhttp.response);
+                    let celldata = JSON.parse(xmlhttp.response);
                     let spritemap = (<string[]>(Reflect).ownKeys(celldata.frames));
                     this._spriteMap = spritemap;
                     this._packedAndReady = true;
@@ -384,7 +384,7 @@ export class SpriteManager implements ISpriteManager {
         let rotatedV = 0.5 + (contactPointU * Math.sin(angle) + contactPointV * Math.cos(angle));
 
         let u = (sprite._xOffset * textureSize.width + rotatedU * sprite._xSize) | 0;
-        let v = (sprite._yOffset * textureSize.height +  rotatedV * sprite._ySize) | 0;
+        let v = (sprite._yOffset * textureSize.height + rotatedV * sprite._ySize) | 0;
 
         let alpha = this._textureContent![(u + v * textureSize.width) * 4 + 3];
 
@@ -408,6 +408,8 @@ export class SpriteManager implements ISpriteManager {
         var pickedPoint = TmpVectors.Vector3[0];
         var cameraSpacePosition = TmpVectors.Vector3[1];
         var cameraView = camera.getViewMatrix();
+        let activeRay: Ray = ray;
+        let pickedRay: Ray = ray;
 
         for (var index = 0; index < count; index++) {
             var sprite = this.sprites[index];
@@ -425,18 +427,36 @@ export class SpriteManager implements ISpriteManager {
 
             Vector3.TransformCoordinatesToRef(sprite.position, cameraView, cameraSpacePosition);
 
+            if (sprite.angle) {
+                // Create a rotation matrix to rotate the ray to the sprite's rotation
+                Matrix.TranslationToRef(-cameraSpacePosition.x, -cameraSpacePosition.y, 0, TmpVectors.Matrix[1]);
+                Matrix.TranslationToRef(cameraSpacePosition.x, cameraSpacePosition.y, 0, TmpVectors.Matrix[2]);
+                Matrix.RotationZToRef(sprite.angle, TmpVectors.Matrix[3]);
+
+                // inv translation x rotation x translation
+                TmpVectors.Matrix[1].multiplyToRef(TmpVectors.Matrix[3], TmpVectors.Matrix[4]);
+                TmpVectors.Matrix[4].multiplyToRef(TmpVectors.Matrix[2], TmpVectors.Matrix[0]);
+
+                activeRay = ray.clone();
+                Vector3.TransformCoordinatesToRef(ray.origin, TmpVectors.Matrix[0], activeRay.origin);
+                Vector3.TransformNormalToRef(ray.direction, TmpVectors.Matrix[0], activeRay.direction);
+            } else {
+                activeRay = ray;
+            }
+
             min.copyFromFloats(cameraSpacePosition.x - sprite.width / 2, cameraSpacePosition.y - sprite.height / 2, cameraSpacePosition.z);
             max.copyFromFloats(cameraSpacePosition.x + sprite.width / 2, cameraSpacePosition.y + sprite.height / 2, cameraSpacePosition.z);
 
-            if (ray.intersectsBoxMinMax(min, max)) {
-                var currentDistance = Vector3.Distance(cameraSpacePosition, ray.origin);
+            if (activeRay.intersectsBoxMinMax(min, max)) {
+                var currentDistance = Vector3.Distance(cameraSpacePosition, activeRay.origin);
 
                 if (distance > currentDistance) {
 
-                    if (!this._checkTextureAlpha(sprite, ray, currentDistance, min, max)) {
+                    if (!this._checkTextureAlpha(sprite, activeRay, currentDistance, min, max)) {
                         continue;
                     }
 
+                    pickedRay = activeRay;
                     distance = currentDistance;
                     currentSprite = sprite;
 
@@ -457,11 +477,11 @@ export class SpriteManager implements ISpriteManager {
 
             // Get picked point
             let direction = TmpVectors.Vector3[2];
-            direction.copyFrom(ray.direction);
+            direction.copyFrom(pickedRay.direction);
             direction.normalize();
             direction.scaleInPlace(distance);
 
-            ray.origin.addToRef(direction, pickedPoint);
+            pickedRay.origin.addToRef(direction, pickedPoint);
             result.pickedPoint = Vector3.TransformCoordinates(pickedPoint, TmpVectors.Matrix[0]);
 
             return result;
@@ -541,7 +561,7 @@ export class SpriteManager implements ISpriteManager {
      */
     public render(): void {
         // Check
-        if (this._fromPacked  && (!this._packedAndReady || !this._spriteMap || !this._cellData)) {
+        if (this._fromPacked && (!this._packedAndReady || !this._spriteMap || !this._cellData)) {
             return;
         }
 

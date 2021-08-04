@@ -890,11 +890,11 @@ declare module "babylonjs-gui/2D/controls/control" {
         */
         onWheelObservable: Observable<Vector2>;
         /**
-        * An event triggered when the pointer move over the control.
+        * An event triggered when the pointer moves over the control.
         */
         onPointerMoveObservable: Observable<Vector2>;
         /**
-        * An event triggered when the pointer move out of the control.
+        * An event triggered when the pointer moves out of the control.
         */
         onPointerOutObservable: Observable<Control>;
         /**
@@ -1728,7 +1728,7 @@ declare module "babylonjs-gui/2D/controls/image" {
     import { Observable } from "babylonjs/Misc/observable";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { Measure } from "babylonjs-gui/2D/measure";
-    import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
+    import { ICanvasRenderingContext, IImage } from "babylonjs/Engines/ICanvas";
     /**
      * Class used to create 2D images
      */
@@ -1850,8 +1850,8 @@ declare module "babylonjs-gui/2D/controls/image" {
         /**
          * Gets or sets the internal DOM image used to render the control
          */
-        set domImage(value: HTMLImageElement);
-        get domImage(): HTMLImageElement;
+        set domImage(value: IImage);
+        get domImage(): IImage;
         private _onImageLoaded;
         /**
          * Gets the image source url
@@ -3906,6 +3906,7 @@ declare module "babylonjs-gui/2D/adtInstrumentation" {
     }
 }
 declare module "babylonjs-gui/2D/xmlLoader" {
+    import { Nullable } from 'babylonjs/types';
     /**
     * Class used to load GUI via XML.
     */
@@ -3914,12 +3915,13 @@ declare module "babylonjs-gui/2D/xmlLoader" {
         private _nodeTypes;
         private _isLoaded;
         private _objectAttributes;
+        private _rootNode;
         private _parentClass;
         /**
         * Create a new xml loader
         * @param parentClass Sets the class context. Used when the loader is instanced inside a class and not in a global context
         */
-        constructor(parentClass?: null);
+        constructor(parentClass?: any);
         private _getChainElement;
         private _getClassAttribute;
         private _createGuiElement;
@@ -3945,12 +3947,24 @@ declare module "babylonjs-gui/2D/xmlLoader" {
         */
         getNodes(): any;
         /**
+         * Disposes the loaded layout
+        */
+        dispose(): void;
+        /**
          * Initiates the xml layout loading
          * @param xmlFile defines the xml layout to load
          * @param rootNode defines the node / control to use as a parent for the loaded layout controls.
-         * @param callback defines the callback called on layout load.
+         * @param onSuccess defines the callback called on layout load successfully.
+         * @param onError defines the callback called on layout load failure.
          */
-        loadLayout(xmlFile: any, rootNode: any, callback: any): void;
+        loadLayout(xmlFile: any, rootNode: any, onSuccess?: Nullable<() => void>, onError?: Nullable<(error: string) => void>): void;
+        /**
+         * Initiates the xml layout loading asynchronously
+         * @param xmlFile defines the xml layout to load
+         * @param rootNode defines the node / control to use as a parent for the loaded layout controls.
+         * @returns Promise
+         */
+        loadLayoutAsync(xmlFile: any, rootNode: any): Promise<any>;
     }
 }
 declare module "babylonjs-gui/2D/index" {
@@ -4256,11 +4270,11 @@ declare module "babylonjs-gui/3D/controls/control3D" {
         /** Callback used to start pointer up animation */
         pointerUpAnimation: () => void;
         /**
-         * An event triggered when the pointer move over the control
+         * An event triggered when the pointer moves over the control
          */
         onPointerMoveObservable: Observable<Vector3>;
         /**
-         * An event triggered when the pointer move out of the control
+         * An event triggered when the pointer moves out of the control
          */
         onPointerOutObservable: Observable<Control3D>;
         /**
@@ -6939,11 +6953,11 @@ declare module BABYLON.GUI {
         */
         onWheelObservable: BABYLON.Observable<BABYLON.Vector2>;
         /**
-        * An event triggered when the pointer move over the control.
+        * An event triggered when the pointer moves over the control.
         */
         onPointerMoveObservable: BABYLON.Observable<BABYLON.Vector2>;
         /**
-        * An event triggered when the pointer move out of the control.
+        * An event triggered when the pointer moves out of the control.
         */
         onPointerOutObservable: BABYLON.Observable<Control>;
         /**
@@ -7879,8 +7893,8 @@ declare module BABYLON.GUI {
         /**
          * Gets or sets the internal DOM image used to render the control
          */
-        set domImage(value: HTMLImageElement);
-        get domImage(): HTMLImageElement;
+        set domImage(value: BABYLON.IImage);
+        get domImage(): BABYLON.IImage;
         private _onImageLoaded;
         /**
          * Gets the image source url
@@ -9773,12 +9787,13 @@ declare module BABYLON.GUI {
         private _nodeTypes;
         private _isLoaded;
         private _objectAttributes;
+        private _rootNode;
         private _parentClass;
         /**
         * Create a new xml loader
         * @param parentClass Sets the class context. Used when the loader is instanced inside a class and not in a global context
         */
-        constructor(parentClass?: null);
+        constructor(parentClass?: any);
         private _getChainElement;
         private _getClassAttribute;
         private _createGuiElement;
@@ -9804,12 +9819,24 @@ declare module BABYLON.GUI {
         */
         getNodes(): any;
         /**
+         * Disposes the loaded layout
+        */
+        dispose(): void;
+        /**
          * Initiates the xml layout loading
          * @param xmlFile defines the xml layout to load
          * @param rootNode defines the node / control to use as a parent for the loaded layout controls.
-         * @param callback defines the callback called on layout load.
+         * @param onSuccess defines the callback called on layout load successfully.
+         * @param onError defines the callback called on layout load failure.
          */
-        loadLayout(xmlFile: any, rootNode: any, callback: any): void;
+        loadLayout(xmlFile: any, rootNode: any, onSuccess?: BABYLON.Nullable<() => void>, onError?: BABYLON.Nullable<(error: string) => void>): void;
+        /**
+         * Initiates the xml layout loading asynchronously
+         * @param xmlFile defines the xml layout to load
+         * @param rootNode defines the node / control to use as a parent for the loaded layout controls.
+         * @returns Promise
+         */
+        loadLayoutAsync(xmlFile: any, rootNode: any): Promise<any>;
     }
 }
 declare module BABYLON.GUI {
@@ -10069,11 +10096,11 @@ declare module BABYLON.GUI {
         /** Callback used to start pointer up animation */
         pointerUpAnimation: () => void;
         /**
-         * An event triggered when the pointer move over the control
+         * An event triggered when the pointer moves over the control
          */
         onPointerMoveObservable: BABYLON.Observable<BABYLON.Vector3>;
         /**
-         * An event triggered when the pointer move out of the control
+         * An event triggered when the pointer moves out of the control
          */
         onPointerOutObservable: BABYLON.Observable<Control3D>;
         /**

@@ -234,6 +234,20 @@ export class ThinTexture {
         return this._cachedBaseSize;
     }
 
+    /** @hidden */
+    protected _initialSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
+
+    /**
+     * Get the current sampling mode associated with the texture.
+     */
+    public get samplingMode(): number {
+        if (!this._texture) {
+            return this._initialSamplingMode;
+        }
+
+        return this._texture.samplingMode;
+    }
+
     /**
      * Update the sampling mode of the texture.
      * Default is Trilinear mode.

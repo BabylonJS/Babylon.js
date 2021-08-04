@@ -1,5 +1,5 @@
 import * as React from "react";
-import { GlobalState } from "../globalState";
+import { DragOverLocation, GlobalState } from "../globalState";
 import { Nullable } from "babylonjs/types";
 import { Control } from "babylonjs-gui/2D/controls/control";
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
@@ -36,25 +36,31 @@ export const isFramePortData = (variableToCheck: any): variableToCheck is FrameP
     } else return false;
 };
 
+export enum ConstraintDirection {
+    NONE = 0,
+    X = 2, // Horizontal constraint
+    Y = 3, // Vertical constraint
+}
+
 export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps> {
-    private _rootContainer: React.RefObject<HTMLCanvasElement>;;
+    public artBoardBackground: Rectangle;
+    private _rootContainer: React.RefObject<HTMLCanvasElement>;
+    private _setConstraintDirection: boolean;
     private _mouseStartPointX: Nullable<number> = null;
     private _mouseStartPointY: Nullable<number> = null;
     private _textureMesh: Mesh;
     private _scene: Scene;
     private _selectedGuiNodes: Control[] = [];
     private _ctrlKeyIsPressed = false;
+    private _constraintDirection = ConstraintDirection.NONE;
     private _forcePanning = false;
     private _forceZooming = false;
     private _forceSelecting = false;
     private _outlines = false;
-    public _frameIsMoving = false;
-    public _isLoading = false;
-    public isOverGUINode = false;
-    public artBoardBackground : Rectangle;
     private _panning: boolean;
     private _canvas: HTMLCanvasElement;
     private _responsive: boolean;
+    private _isOverGUINode = false;
 
     public get globalState() {
         return this.props.globalState;
@@ -157,7 +163,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     ctrlEvent = (evt: KeyboardEvent) => {
         this._ctrlKeyIsPressed = evt.ctrlKey;
-
+        if (evt.shiftKey) {
+            this._setConstraintDirection = this._constraintDirection === ConstraintDirection.NONE;
+        } else {
+            this._constraintDirection = ConstraintDirection.NONE;
+        }
     };
 
     ctrlFalseEvent = () => {
@@ -185,7 +195,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     loadToEditor() {
         var children = this.globalState.guiTexture.getChildren();
         children[0].children.forEach(guiElement => {
-            if(guiElement.name === "Art-Board-Background" && guiElement.typeName === "Rectangle"){
+            if (guiElement.name === "Art-Board-Background" && guiElement.typeName === "Rectangle") {
                 this.artBoardBackground = guiElement as Rectangle;
                 return;
             }
@@ -249,11 +259,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         });
 
         guiControl.onPointerEnterObservable.add((evt) => {
-            this.isOverGUINode = true;
+            this._isOverGUINode = true;
         });
 
         guiControl.onPointerOutObservable.add((evt) => {
-            this.isOverGUINode = false;
+            this._isOverGUINode = false;
         });
 
         if (this.isContainer(guiControl)) {
@@ -281,20 +291,59 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         guiControl.highlightLineWidth = 5;
     }
 
-    private parent(control: Nullable<Control>) {
+    private parent(dropLocationControl: Nullable<Control>) {
         const draggedControl = this.props.globalState.draggedControl;
+        const draggedControlParent = draggedControl?.parent;
 
-        if (draggedControl != null) {
-            if (draggedControl.parent) {
-                (draggedControl.parent as Container).removeControl(draggedControl);
-                this.props.globalState.guiTexture.addControl(draggedControl);
-            }
-            if (control != null && this.props.globalState.workbench.isContainer(control)) {
-                this.props.globalState.guiTexture.removeControl(draggedControl);
-                (control as Container).addControl(draggedControl);
+        if (draggedControlParent && draggedControl) {
+            if (this._isNotChildInsert(dropLocationControl, draggedControl)) { //checking to make sure the element is not being inserted into a child
+                
+                draggedControlParent.removeControl(draggedControl);
+                if (dropLocationControl != null) { //the control you are dragging onto top
+                    if (this.props.globalState.workbench.isContainer(dropLocationControl) && //dropping inside a contrainer control
+                        this.props.globalState.draggedControlDirection === DragOverLocation.CENTER) {
+                        (dropLocationControl as Container).addControl(draggedControl);
+                    }
+                    else if (dropLocationControl.parent) { //dropping inside the controls parent container
+                        let index = dropLocationControl.parent.children.indexOf(dropLocationControl);
+                        //adjusting index to be before or after based on where the control is over
+                        index = this._adjustParentingIndex(index);
+                        dropLocationControl.parent.children.splice(index, 0, draggedControl);
+                        draggedControl.parent = dropLocationControl.parent;
+                    }
+                    else {
+                        this.props.globalState.guiTexture.addControl(draggedControl);
+                    }
+                }
+                else {
+                    //starting at index 1 because of object "Art-Board-Background" must be at index 0
+                    draggedControlParent.children.splice(1, 0, draggedControl);
+                    draggedControl.parent = draggedControlParent;
+                }
             }
         }
         this.globalState.draggedControl = null;
+    }
+
+    private _isNotChildInsert(control: Nullable<Control>, draggedControl: Nullable<Control>) {
+        while (control?.parent) {
+            if (control.parent == draggedControl) {
+                return false;
+            }
+            control = control.parent;
+        }
+        return true;
+    }
+
+    private _adjustParentingIndex(index: number) {
+        switch (this.props.globalState.draggedControlDirection) {
+            case DragOverLocation.ABOVE:
+                return index + 1;
+            case DragOverLocation.BELOW:
+            case DragOverLocation.CENTER:
+                return index;
+        }
+        return index;
     }
 
     public isSelected(value: boolean, guiNode: Control) {
@@ -306,6 +355,18 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     public _onMove(guiControl: Control, evt: Vector2, startPos: Vector2, ignorClick: boolean = false) {
         let newX = evt.x - startPos.x;
         let newY = evt.y - startPos.y;
+
+        if (this._setConstraintDirection) {
+            this._setConstraintDirection = false;
+            this._constraintDirection = Math.abs(newX) >= Math.abs(newY) ? ConstraintDirection.X : ConstraintDirection.Y;
+        }
+
+        if (this._constraintDirection === ConstraintDirection.X) {
+            newY = 0;
+        }
+        else if (this._constraintDirection === ConstraintDirection.Y) {
+            newX = 0;
+        }
 
         if (guiControl.typeName === "Line") {
             let line = (guiControl as Line);
@@ -345,13 +406,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             var y = this._mouseStartPointY;
             let selected = false;
             this.selectedGuiNodes.forEach((element) => {
-                //var zoom = this._camera.radius;
-
                 if (pos) {
                     selected =
                         this._onMove(
                             element,
-                            new Vector2(pos.x, -pos.z), //need to add zoom factor here.
+                            new Vector2(pos.x, -pos.z),
                             new Vector2(x, y),
                             false
                         ) || selected;
@@ -379,7 +438,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     onDown(evt: React.PointerEvent<HTMLElement>) {
         this._rootContainer.current?.setPointerCapture(evt.pointerId);
 
-        if (!this.isOverGUINode) {
+        if (!this._isOverGUINode) {
             this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         }
 
@@ -392,6 +451,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     onUp(evt: React.PointerEvent) {
         this._mouseStartPointX = null;
         this._mouseStartPointY = null;
+        this._constraintDirection = ConstraintDirection.NONE;
         this._rootContainer.current?.releasePointerCapture(evt.pointerId);
         this.isUp = true;
     }
@@ -422,6 +482,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.artBoardBackground.width = "100%"
         this.artBoardBackground.height = "100%";
         this.artBoardBackground.background = "white";
+        this.artBoardBackground.thickness = 0;
 
         this.globalState.guiTexture.addControl(this.artBoardBackground);
         this.addControls(this._scene, camera);

@@ -3,7 +3,7 @@ import { Utilities } from './utilities';
 
 export class ShortcutManager {
 
-    public constructor(public globalState: GlobalState) {  
+    public constructor(public globalState: GlobalState) {
         this._register();
     }
 
@@ -15,7 +15,7 @@ export class ShortcutManager {
                 this.globalState.onRunRequiredObservable.notifyObservers();
                 return;
             }
-            
+
             // Ctrl+Shift+S to Download Zip
             if (
                 (window.navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey) &&

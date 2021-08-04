@@ -39,13 +39,13 @@ export class SheenBlock extends NodeMaterialBlock {
      * It allows the strength of the sheen effect to not depend on the base color of the material,
      * making it easier to setup and tweak the effect
      */
-    @editableInPropertyPage("Albedo scaling", PropertyTypeForEdition.Boolean, "PROPERTIES", { "notifiers": { "update": true }})
+    @editableInPropertyPage("Albedo scaling", PropertyTypeForEdition.Boolean, "PROPERTIES", { "notifiers": { "update": true } })
     public albedoScaling: boolean = false;
 
     /**
      * Defines if the sheen is linked to the sheen color.
      */
-    @editableInPropertyPage("Link sheen with albedo", PropertyTypeForEdition.Boolean, "PROPERTIES", { "notifiers": { "update": true }})
+    @editableInPropertyPage("Link sheen with albedo", PropertyTypeForEdition.Boolean, "PROPERTIES", { "notifiers": { "update": true } })
     public linkSheenWithAlbedo: boolean = false;
 
     /**
@@ -131,6 +131,7 @@ export class SheenBlock extends NodeMaterialBlock {
                 roughness,
             #ifdef SHEEN_TEXTURE
                 ${texture},
+                1.0,
             #endif
                 reflectance,
             #ifdef SHEEN_LINKWITHALBEDO

@@ -24,10 +24,10 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
     private _tangentSpaceParameterName = "";
 
     /** Gets or sets a boolean indicating that normal should be inverted on X axis */
-    @editableInPropertyPage("Invert X axis", PropertyTypeForEdition.Boolean, "PROPERTIES", { "notifiers": { "update": false }})
+    @editableInPropertyPage("Invert X axis", PropertyTypeForEdition.Boolean, "PROPERTIES", { "notifiers": { "update": false } })
     public invertX = false;
     /** Gets or sets a boolean indicating that normal should be inverted on Y axis */
-    @editableInPropertyPage("Invert Y axis", PropertyTypeForEdition.Boolean, "PROPERTIES", { "notifiers": { "update": false }})
+    @editableInPropertyPage("Invert Y axis", PropertyTypeForEdition.Boolean, "PROPERTIES", { "notifiers": { "update": false } })
     public invertY = false;
     /** Gets or sets a boolean indicating that parallax occlusion should be enabled */
     @editableInPropertyPage("Use parallax occlusion", PropertyTypeForEdition.Boolean)
@@ -111,21 +111,21 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
     /**
     * Gets the view direction input component
     */
-     public get viewDirection(): NodeMaterialConnectionPoint {
+    public get viewDirection(): NodeMaterialConnectionPoint {
         return this._inputs[6];
     }
 
     /**
     * Gets the parallax scale input component
     */
-     public get parallaxScale(): NodeMaterialConnectionPoint {
+    public get parallaxScale(): NodeMaterialConnectionPoint {
         return this._inputs[7];
     }
 
     /**
     * Gets the parallax height input component
     */
-     public get parallaxHeight(): NodeMaterialConnectionPoint {
+    public get parallaxHeight(): NodeMaterialConnectionPoint {
         return this._inputs[8];
     }
 
@@ -139,7 +139,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
     /**
      * Gets the uv offset output component
      */
-     public get uvOffset(): NodeMaterialConnectionPoint {
+    public get uvOffset(): NodeMaterialConnectionPoint {
         return this._outputs[1];
     }
 
@@ -223,10 +223,10 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
 
         state._emitFunctionFromInclude("bumpFragmentFunctions", comments, {
             replaceStrings: [
-                { search: /varying vec2 vBumpUV;/g, replace: ""},
-                { search: /uniform sampler2D bumpSampler;/g, replace: ""},
+                { search: /#include<samplerFragmentDeclaration>\(_DEFINENAME_,BUMP,_VARYINGNAME_,Bump,_SAMPLERNAME_,bump\)/g, replace: "" },
+                { search: /uniform sampler2D bumpSampler;/g, replace: "" },
                 { search: /vec2 parallaxOcclusion\(vec3 vViewDirCoT,vec3 vNormalCoT,vec2 texCoord,float parallaxScale\)/g, replace: "#define inline\r\nvec2 parallaxOcclusion(vec3 vViewDirCoT, vec3 vNormalCoT, vec2 texCoord, float parallaxScale, sampler2D bumpSampler)" },
-                { search : /vec2 parallaxOffset\(vec3 viewDir,float heightScale\)/g, replace: "vec2 parallaxOffset(vec3 viewDir, float heightScale, float height_)" },
+                { search: /vec2 parallaxOffset\(vec3 viewDir,float heightScale\)/g, replace: "vec2 parallaxOffset(vec3 viewDir, float heightScale, float height_)" },
                 { search: /texture2D\(bumpSampler,vBumpUV\)\.w/g, replace: "height_" },
             ]
         });
@@ -237,14 +237,16 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         state.compilationString += state._emitCodeFromInclude("bumpFragment", comments, {
             replaceStrings: [
                 { search: /perturbNormal\(TBN,texture2D\(bumpSampler,vBumpUV\+uvOffset\).xyz,vBumpInfos.y\)/g, replace: `perturbNormal(TBN, ${uvForPerturbNormal}, vBumpInfos.y)` },
-                { search: /parallaxOcclusion\(invTBN\*-viewDirectionW,invTBN\*normalW,vBumpUV,vBumpInfos.z\)/g,
-                        replace: `parallaxOcclusion((invTBN * -viewDirectionW), (invTBN * normalW), vBumpUV, vBumpInfos.z, ${useParallax && this.useParallaxOcclusion ? normalSamplerName : "bumpSampler"})` },
+                {
+                    search: /parallaxOcclusion\(invTBN\*-viewDirectionW,invTBN\*normalW,vBumpUV,vBumpInfos.z\)/g,
+                    replace: `parallaxOcclusion((invTBN * -viewDirectionW), (invTBN * normalW), vBumpUV, vBumpInfos.z, ${useParallax && this.useParallaxOcclusion ? normalSamplerName : "bumpSampler"})`
+                },
                 { search: /parallaxOffset\(invTBN\*viewDirectionW,vBumpInfos\.z\)/g, replace: `parallaxOffset(invTBN * viewDirectionW, vBumpInfos.z, ${useParallax ? this.parallaxHeight.associatedVariableName : "0."})` },
-                { search: /vTangentSpaceParams/g, replace: this._tangentSpaceParameterName},
+                { search: /vTangentSpaceParams/g, replace: this._tangentSpaceParameterName },
                 { search: /vBumpInfos.y/g, replace: replaceForBumpInfos },
                 { search: /vBumpInfos.z/g, replace: replaceForParallaxInfos },
-                { search: /vBumpUV/g, replace: uv.associatedVariableName},
-                { search: /vPositionW/g, replace: worldPosition.associatedVariableName + ".xyz"},
+                { search: /vBumpUV/g, replace: uv.associatedVariableName },
+                { search: /vPositionW/g, replace: worldPosition.associatedVariableName + ".xyz" },
                 { search: /normalW=/g, replace: this.output.associatedVariableName + ".xyz = " },
                 { search: /mat3\(normalMatrix\)\*normalW/g, replace: "mat3(normalMatrix) * " + this.output.associatedVariableName + ".xyz" },
                 { search: /normalW/g, replace: worldNormal.associatedVariableName + ".xyz" },

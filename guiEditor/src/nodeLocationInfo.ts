@@ -22,5 +22,5 @@ export interface IEditorData {
     y: number;
     zoom: number;
     frames?: IFrameData[];
-    map?: {[key: number]: number};
+    map?: { [key: number]: number };
 }

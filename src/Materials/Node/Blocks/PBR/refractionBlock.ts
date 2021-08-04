@@ -64,24 +64,24 @@ export class RefractionBlock extends NodeMaterialBlock {
      * This parameters will make the material used its opacity to control how much it is refracting against not.
      * Materials half opaque for instance using refraction could benefit from this control.
      */
-    @editableInPropertyPage("Link refraction to transparency", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true }})
+    @editableInPropertyPage("Link refraction to transparency", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true } })
     public linkRefractionWithTransparency: boolean = false;
 
     /**
      * Controls if refraction needs to be inverted on Y. This could be useful for procedural texture.
      */
-    @editableInPropertyPage("Invert refraction Y", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true }})
+    @editableInPropertyPage("Invert refraction Y", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true } })
     public invertRefractionY: boolean = false;
 
     /**
      * Controls if refraction needs to be inverted on Y. This could be useful for procedural texture.
      */
-     @editableInPropertyPage("Use thickness as depth", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true }})
-     public useThicknessAsDepth: boolean = false;
+    @editableInPropertyPage("Use thickness as depth", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true } })
+    public useThicknessAsDepth: boolean = false;
 
-     /**
-     * Gets or sets the texture associated with the node
-     */
+    /**
+    * Gets or sets the texture associated with the node
+    */
     public texture: Nullable<BaseTexture>;
 
     /**
@@ -135,7 +135,7 @@ export class RefractionBlock extends NodeMaterialBlock {
     /**
      * Gets the volume index of refraction input component
      */
-     public get volumeIndexOfRefraction(): NodeMaterialConnectionPoint {
+    public get volumeIndexOfRefraction(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 

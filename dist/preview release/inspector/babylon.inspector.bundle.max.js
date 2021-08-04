@@ -11149,6 +11149,24 @@ module.exports = exports;
 
 /***/ }),
 
+/***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/performanceViewer/scss/performanceViewer.scss":
+/*!***************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/performanceViewer/scss/performanceViewer.scss ***!
+  \***************************************************************************************************************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+// Imports
+var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
+exports = ___CSS_LOADER_API_IMPORT___(false);
+// Module
+exports.push([module.i, "#performance-viewer {\n  display: grid;\n  height: 100%;\n  width: 100%;\n  grid-template-columns: 25% 75%;\n  grid-template-areas: \"sidebar graph\"; }\n  #performance-viewer #performance-viewer-graph {\n    grid-area: \"graph\"; }\n  #performance-viewer #performance-viewer-sidebar {\n    grid-area: \"sidebar\";\n    display: flex;\n    flex-direction: column; }\n    #performance-viewer #performance-viewer-sidebar .sidebar-item {\n      display: inline-flex;\n      flex-direction: row;\n      width: 100%; }\n      #performance-viewer #performance-viewer-sidebar .sidebar-item .sidebar-item-label {\n        width: 100%; }\n      #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker {\n        height: calc(100% - 8px);\n        margin: 4px;\n        width: 100%; }\n        #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-rect {\n          height: calc(100% - 4px);\n          border: 2px white solid;\n          cursor: pointer;\n          min-height: 18px; }\n        #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-picker-cover {\n          position: fixed;\n          top: 0px;\n          right: 0px;\n          bottom: 0px;\n          left: 0px;\n          z-index: 100; }\n        #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-picker-float {\n          position: absolute; }\n          #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-picker-float .color-picker-container {\n            width: 200px; }\n", ""]);
+// Exports
+module.exports = exports;
+
+
+/***/ }),
+
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/bottomBar.scss":
 /*!**************************************************************************************************************************************************************************************************************************!*\
   !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/bottomBar.scss ***!
@@ -45346,7 +45364,7 @@ var TextureLineComponent = /** @class */ (function (_super) {
     };
     TextureLineComponent.prototype.updatePreview = function () {
         return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function () {
-            var previewCanvas, texture, size, ratio, width, height, data, context, imageData, castData;
+            var previewCanvas, texture, size, ratio, width, height, data, context, imageData, castData, e_1;
             return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -45356,8 +45374,11 @@ var TextureLineComponent = /** @class */ (function (_super) {
                         ratio = size.width / size.height;
                         width = this.props.width;
                         height = (width / ratio) | 1;
-                        return [4 /*yield*/, _textureHelper__WEBPACK_IMPORTED_MODULE_3__["TextureHelper"].GetTextureDataAsync(texture, width, height, this.state.face, this.state.channels, this.props.globalState)];
+                        _a.label = 1;
                     case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, _textureHelper__WEBPACK_IMPORTED_MODULE_3__["TextureHelper"].GetTextureDataAsync(texture, width, height, this.state.face, this.state.channels, this.props.globalState)];
+                    case 2:
                         data = _a.sent();
                         previewCanvas.width = width;
                         previewCanvas.height = height;
@@ -45369,7 +45390,14 @@ var TextureLineComponent = /** @class */ (function (_super) {
                             context.putImageData(imageData, 0, 0);
                         }
                         previewCanvas.style.height = height + "px";
-                        return [2 /*return*/];
+                        return [3 /*break*/, 4];
+                    case 3:
+                        e_1 = _a.sent();
+                        previewCanvas.width = width;
+                        previewCanvas.height = height;
+                        previewCanvas.style.height = height + "px";
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
                 }
             });
         });
@@ -45882,22 +45910,34 @@ var GradientStepComponent = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PerformanceViewerComponent", function() { return PerformanceViewerComponent; });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
-/* harmony import */ var _graph_canvasGraphComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../graph/canvasGraphComponent */ "./components/graph/canvasGraphComponent.tsx");
-/* harmony import */ var _popupComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../popupComponent */ "./components/popupComponent.tsx");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
+/* harmony import */ var _graph_canvasGraphComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../graph/canvasGraphComponent */ "./components/graph/canvasGraphComponent.tsx");
+/* harmony import */ var _popupComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../popupComponent */ "./components/popupComponent.tsx");
+/* harmony import */ var _performanceViewerSidebarComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./performanceViewerSidebarComponent */ "./components/actionTabs/tabs/performanceViewer/performanceViewerSidebarComponent.tsx");
 
 
 
 
 
+
+
+
+
+__webpack_require__(/*! ./scss/performanceViewer.scss */ "./components/actionTabs/tabs/performanceViewer/scss/performanceViewer.scss");
 // aribitrary window size
 var initialWindowSize = { width: 1024, height: 512 };
 // Note this should be false when committed until the feature is fully working.
 var isEnabled = false;
 var PerformanceViewerComponent = function (props) {
-    var _a = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(false), isOpen = _a[0], setIsOpen = _a[1];
+    var scene = props.scene;
+    var _a = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(false), isOpen = _a[0], setIsOpen = _a[1];
+    var _b = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(), performanceCollector = _b[0], setPerformanceCollector = _b[1];
+    var layoutObservable = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]())[0];
+    var popupRef = Object(react__WEBPACK_IMPORTED_MODULE_1__["useRef"])(null);
     // do cleanup when the window is closed
     var onClosePerformanceViewer = function (window) {
         if (window) {
@@ -45909,21 +45949,121 @@ var PerformanceViewerComponent = function (props) {
         setIsOpen(true);
     };
     var onResize = function () {
-        // do nothing for now.
+        var _a, _b;
+        if (!popupRef.current) {
+            return;
+        }
+        var window = popupRef.current.getWindow();
+        var width = (_a = window === null || window === void 0 ? void 0 : window.innerWidth) !== null && _a !== void 0 ? _a : 0;
+        var height = (_b = window === null || window === void 0 ? void 0 : window.innerHeight) !== null && _b !== void 0 ? _b : 0;
+        layoutObservable.notifyObservers({ width: width, height: height });
     };
-    var canvasServiceCallback = function (canvasService) {
-        canvasService.draw();
-    };
-    return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"](react__WEBPACK_IMPORTED_MODULE_0__["Fragment"], null,
+    Object(react__WEBPACK_IMPORTED_MODULE_1__["useEffect"])(function () {
+        var perfCollector = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PerformanceViewerCollector"](scene, [babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PerfCollectionStrategy"].GpuFrameTimeStrategy(), babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PerfCollectionStrategy"].FpsStrategy()]);
+        setPerformanceCollector(perfCollector);
+    }, []);
+    Object(react__WEBPACK_IMPORTED_MODULE_1__["useEffect"])(function () {
+        if (isOpen) {
+            performanceCollector === null || performanceCollector === void 0 ? void 0 : performanceCollector.start();
+        }
+        return function () {
+            performanceCollector === null || performanceCollector === void 0 ? void 0 : performanceCollector.stop();
+        };
+    }, [isOpen]);
+    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
         isEnabled &&
-            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_1__["ButtonLineComponent"], { label: "Open Perf Viewer", onClick: onPerformanceButtonClick }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Open Perf Viewer", onClick: onPerformanceButtonClick }),
         isOpen &&
-            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_popupComponent__WEBPACK_IMPORTED_MODULE_3__["PopupComponent"], { id: "perf-viewer", title: "Performance Viewer", size: initialWindowSize, onResize: onResize, onClose: onClosePerformanceViewer },
-                react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { id: "performance-viewer" },
-                    react__WEBPACK_IMPORTED_MODULE_0__["createElement"](react__WEBPACK_IMPORTED_MODULE_0__["Fragment"], null,
-                        react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_graph_canvasGraphComponent__WEBPACK_IMPORTED_MODULE_2__["CanvasGraphComponent"], { id: "myChart", canvasServiceCallback: canvasServiceCallback }))))));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_popupComponent__WEBPACK_IMPORTED_MODULE_4__["PopupComponent"], { id: "perf-viewer", title: "Performance Viewer", size: initialWindowSize, ref: popupRef, onResize: onResize, onClose: onClosePerformanceViewer },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "performance-viewer" }, performanceCollector && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_performanceViewerSidebarComponent__WEBPACK_IMPORTED_MODULE_5__["PerformanceViewerSidebarComponent"], { collector: performanceCollector }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_graph_canvasGraphComponent__WEBPACK_IMPORTED_MODULE_3__["CanvasGraphComponent"], { id: "performance-viewer-graph", layoutObservable: layoutObservable, scene: scene, collector: performanceCollector }))))));
 };
 
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/performanceViewer/performanceViewerSidebarComponent.tsx":
+/*!********************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/performanceViewer/performanceViewerSidebarComponent.tsx ***!
+  \********************************************************************************************/
+/*! exports provided: PerformanceViewerSidebarComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PerformanceViewerSidebarComponent", function() { return PerformanceViewerSidebarComponent; });
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _sharedUiComponents_lines_colorPickerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/colorPickerComponent */ "./sharedUiComponents/lines/colorPickerComponent.tsx");
+
+
+
+
+var PerformanceViewerSidebarComponent = function (props) {
+    var collector = props.collector;
+    var _a = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])([]), metadata = _a[0], setMetadata = _a[1];
+    Object(react__WEBPACK_IMPORTED_MODULE_1__["useEffect"])(function () {
+        var onUpdateMetadata = function (metadata) {
+            var entries = [];
+            // convert to iterable list of entries
+            metadata.forEach(function (value, key) {
+                entries.push([key, value]);
+            });
+            setMetadata(entries);
+        };
+        collector.metadataObservable.add(onUpdateMetadata);
+        return function () {
+            collector.metadataObservable.removeCallback(onUpdateMetadata);
+        };
+    }, []);
+    var onCheckChange = function (id) { return function (event) {
+        collector.updateMetadata(id, "hidden", !event.currentTarget.checked);
+    }; };
+    var onColorChange = function (id) { return function (color) {
+        collector.updateMetadata(id, "color", color);
+    }; };
+    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "performance-viewer-sidebar" }, metadata.map(function (_a) {
+        var _b;
+        var id = _a[0], metadata = _a[1];
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: "perf-sidebar-item-" + id, className: "sidebar-item" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkbox", checked: !metadata.hidden, onChange: onCheckChange(id) }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("span", { className: "sidebar-item-label" }, id),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_colorPickerComponent__WEBPACK_IMPORTED_MODULE_2__["ColorPickerLineComponent"], { value: babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromHexString((_b = metadata.color) !== null && _b !== void 0 ? _b : "#000"), onColorChanged: onColorChange(id), shouldPopRight: true })));
+    })));
+};
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/performanceViewer/scss/performanceViewer.scss":
+/*!**********************************************************************************!*\
+  !*** ./components/actionTabs/tabs/performanceViewer/scss/performanceViewer.scss ***!
+  \**********************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var api = __webpack_require__(/*! ../../../../../../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js */ "../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js");
+            var content = __webpack_require__(/*! !../../../../../../../node_modules/css-loader/dist/cjs.js!../../../../../../../node_modules/sass-loader/dist/cjs.js!./performanceViewer.scss */ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/performanceViewer/scss/performanceViewer.scss");
+
+            content = content.__esModule ? content.default : content;
+
+            if (typeof content === 'string') {
+              content = [[module.i, content, '']];
+            }
+
+var options = {};
+
+options.insert = "head";
+options.singleton = false;
+
+var update = api(content, options);
+
+
+
+module.exports = content.locals || {};
 
 /***/ }),
 
@@ -52711,6 +52851,52 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
+
+var textureFormat = [
+    { label: "Alpha", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_ALPHA },
+    { label: "Luminance", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_LUMINANCE },
+    { label: "Luminance/Alpha", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_LUMINANCE_ALPHA },
+    { label: "RGB", normalizable: 1, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_RGB },
+    { label: "RGBA", normalizable: 1, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_RGBA },
+    { label: "R (red)", normalizable: 1, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_RED },
+    { label: "RG (red/green)", normalizable: 1, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_RG },
+    { label: "R (red) integer", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_RED_INTEGER },
+    { label: "RG (red/green) integer", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_RG_INTEGER },
+    { label: "RGB integer", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_RGB_INTEGER },
+    { label: "RGBA integer", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_RGBA_INTEGER },
+    { label: "BGRA", normalizable: 1, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_BGRA },
+    { label: "Depth24/Stencil8", normalizable: 0, hideType: true, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_DEPTH24_STENCIL8 },
+    { label: "Depth32 float", normalizable: 0, hideType: true, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_DEPTH32_FLOAT },
+    { label: "Depth16", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_DEPTH16 },
+    { label: "RGBA BPTC UNorm", normalizable: 0, compressed: true, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM },
+    { label: "RGB BPTC UFloat", normalizable: 0, compressed: true, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT },
+    { label: "RGB BPTC SFloat", normalizable: 0, compressed: true, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT },
+    { label: "RGBA S3TC DXT5", normalizable: 0, compressed: true, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5 },
+    { label: "RGBA S3TC DXT3", normalizable: 0, compressed: true, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3 },
+    { label: "RGBA S3TC DXT1", normalizable: 0, compressed: true, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1 },
+    { label: "RGB S3TC DXT1", normalizable: 0, compressed: true, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1 },
+    { label: "RGBA ASTC 4x4", normalizable: 0, compressed: true, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4 },
+];
+var textureType = [
+    { label: "unsigned byte", normalizable: 1, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_UNSIGNED_BYTE },
+    { label: "32-bit float", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_FLOAT },
+    { label: "16-bit float", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_HALF_FLOAT },
+    { label: "signed byte", normalizable: 1, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_BYTE },
+    { label: "signed short", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_SHORT },
+    { label: "unsigned short", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_UNSIGNED_SHORT },
+    { label: "signed int", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_INT },
+    { label: "unsigned int", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_UNSIGNED_INTEGER },
+    { label: "unsigned 4/4/4/4 short", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4 },
+    { label: "unsigned 5/5/5/1 short", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1 },
+    { label: "unsigned 5/6/5 short", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_UNSIGNED_SHORT_5_6_5 },
+    { label: "unsigned 2/10/10/10 int", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV },
+    { label: "unsigned 24/8 int", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_UNSIGNED_INT_24_8 },
+    { label: "unsigned 10f/11f/11f int", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV },
+    { label: "unsigned 5/9/9/9 int", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV },
+    { label: "32-bits with only 8-bit used (stencil)", normalizable: 0, value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV },
+];
 var TexturePropertyGridComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TexturePropertyGridComponent, _super);
     function TexturePropertyGridComponent(props) {
@@ -52788,9 +52974,25 @@ var TexturePropertyGridComponent = /** @class */ (function (_super) {
         this.forceUpdate();
         this.textureLineRef.current.updatePreview();
     };
+    TexturePropertyGridComponent.prototype.findTextureFormat = function (format) {
+        for (var i = 0; i < textureFormat.length; ++i) {
+            if (textureFormat[i].value === format) {
+                return textureFormat[i];
+            }
+        }
+        return null;
+    };
+    TexturePropertyGridComponent.prototype.findTextureType = function (type) {
+        for (var i = 0; i < textureType.length; ++i) {
+            if (textureType[i].value === type) {
+                return textureType[i];
+            }
+        }
+        return null;
+    };
     TexturePropertyGridComponent.prototype.render = function () {
         var _this = this;
-        var _a;
+        var _a, _b, _c, _d, _e, _f, _g, _h;
         var texture = this.props.texture;
         var samplingMode = [
             { label: "Nearest", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].NEAREST_NEAREST },
@@ -52818,6 +53020,12 @@ var TexturePropertyGridComponent = /** @class */ (function (_super) {
             { label: "Skybox", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].SKYBOX_MODE },
             { label: "Spherical", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].SPHERICAL_MODE },
         ];
+        var format = (_b = (_a = texture._texture) === null || _a === void 0 ? void 0 : _a.format) !== null && _b !== void 0 ? _b : -2; // -2 is an invalid value so that findTextureFormat will return null when texture is null/undefined. It can't be -1 because -1 means RGBA, so it is -2 :)
+        var type = (_d = (_c = texture._texture) === null || _c === void 0 ? void 0 : _c.type) !== null && _d !== void 0 ? _d : -2; // same than above, -1 means ubyte
+        var oformat = this.findTextureFormat(format === -1 ? babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTUREFORMAT_RGBA : format);
+        var otype = this.findTextureType(type === -1 ? babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_UNSIGNED_BYTE : type);
+        var textureClass = texture instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["MultiRenderTarget"] ? "MultiRenderTarget" : texture instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["RenderTargetTexture"] ? "RenderTargetTexture" : texture.getClassName();
+        var count = texture instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["MultiRenderTarget"] ? texture.count : -1;
         var extension = "";
         var url = texture.url;
         var textureUrl = (!url || url.substring(0, 4) === "data" || url.substring(0, 4) === "blob") ? "" : url;
@@ -52860,11 +53068,20 @@ var TexturePropertyGridComponent = /** @class */ (function (_super) {
                                 _this.props.globalState.onSelectionChangedObservable.notifyObservers(scene.getTextureByUniqueId(texture.uniqueId));
                             });
                         } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Format", value: (_e = oformat === null || oformat === void 0 ? void 0 : oformat.label) !== null && _e !== void 0 ? _e : "unknown" }),
+                !(oformat === null || oformat === void 0 ? void 0 : oformat.hideType) && !(oformat === null || oformat === void 0 ? void 0 : oformat.compressed) &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Type", value: (_f = otype === null || otype === void 0 ? void 0 : otype.label) !== null && _f !== void 0 ? _f : "unknown" }),
+                !!(oformat === null || oformat === void 0 ? void 0 : oformat.normalizable) && !(oformat === null || oformat === void 0 ? void 0 : oformat.compressed) && !!(otype === null || otype === void 0 ? void 0 : otype.normalizable) &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Normalized", value: otype.normalizable ? "Yes" : "No" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Is compressed", value: (oformat === null || oformat === void 0 ? void 0 : oformat.compressed) ? "Yes" : "No" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Use sRGB buffers", value: ((_g = texture._texture) === null || _g === void 0 ? void 0 : _g._useSRGBBuffer) ? "Yes" : "No" }),
                 extension &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "File format", value: extension }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Unique ID", value: texture.uniqueId.toString() }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Internal Unique ID", value: (_a = texture._texture) === null || _a === void 0 ? void 0 : _a.uniqueId.toString() }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Class", value: texture.getClassName() }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Internal Unique ID", value: (_h = texture._texture) === null || _h === void 0 ? void 0 : _h.uniqueId.toString() }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Class", value: textureClass }),
+                count >= 0 &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Number of textures", value: count.toString() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Has alpha", value: texture.hasAlpha ? "Yes" : "No" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Is 3D", value: texture.is3D ? "Yes" : "No" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Is 2D array", value: texture.is2DArray ? "Yes" : "No" }),
@@ -54641,7 +54858,6 @@ var TextureEditorComponent = /** @class */ (function (_super) {
         });
         newTools = this.state.tools.concat(newTools);
         this.setState({ tools: newTools });
-        console.log(newTools);
     };
     TextureEditorComponent.prototype.getToolParameters = function () {
         var _this = this;
@@ -58927,16 +59143,48 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var CanvasGraphComponent = function (props) {
-    var id = props.id, canvasServiceCallback = props.canvasServiceCallback;
+    var id = props.id, collector = props.collector, scene = props.scene, layoutObservable = props.layoutObservable;
     var canvasRef = Object(react__WEBPACK_IMPORTED_MODULE_0__["useRef"])(null);
     Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
         if (!canvasRef.current) {
             return;
         }
-        // temporarily set empty array, will eventually be passed by props!
-        var canvasGraphService = new _canvasGraphService__WEBPACK_IMPORTED_MODULE_1__["CanvasGraphService"](canvasRef.current, { datasets: [] });
-        canvasServiceCallback(canvasGraphService);
-        return function () { return canvasGraphService.destroy(); };
+        var cs;
+        try {
+            cs = new _canvasGraphService__WEBPACK_IMPORTED_MODULE_1__["CanvasGraphService"](canvasRef.current, { datasets: collector.datasets });
+        }
+        catch (error) {
+            console.error(error);
+            return;
+        }
+        var layoutUpdated = function (newSize) {
+            if (!canvasRef.current) {
+                return;
+            }
+            var _a = canvasRef.current.getBoundingClientRect(), left = _a.left, top = _a.top;
+            newSize.width = newSize.width - left;
+            newSize.height = newSize.height - top;
+            cs === null || cs === void 0 ? void 0 : cs.resize(newSize);
+        };
+        var dataUpdated = function () {
+            cs === null || cs === void 0 ? void 0 : cs.update();
+        };
+        var metaUpdated = function (meta) {
+            if (!cs) {
+                return;
+            }
+            cs.metadata = meta;
+            cs.update();
+        };
+        scene.onAfterRenderObservable.add(dataUpdated);
+        collector.metadataObservable.add(metaUpdated);
+        layoutObservable === null || layoutObservable === void 0 ? void 0 : layoutObservable.add(layoutUpdated);
+        return function () {
+            cs === null || cs === void 0 ? void 0 : cs.destroy();
+            layoutObservable === null || layoutObservable === void 0 ? void 0 : layoutObservable.removeCallback(layoutUpdated);
+            scene.onAfterRenderObservable.removeCallback(dataUpdated);
+            collector.metadataObservable.removeCallback(metaUpdated);
+        };
     }, [canvasRef]);
     return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("canvas", { id: id, ref: canvasRef }));
 };
@@ -58954,19 +59202,58 @@ var CanvasGraphComponent = function (props) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CanvasGraphService", function() { return CanvasGraphService; });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.scalar */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math.scalar */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__);
 
 
 var defaultColor = "#000";
 var futureBoxColor = "#dfe9ed";
 var dividerColor = "#0a3066";
 var playheadColor = "#b9dbef";
+var tooltipBackgroundColor = "#121212";
+var tooltipForegroundColor = "#fff";
+var defaultAlpha = 1;
+var tooltipBackgroundAlpha = 0.8;
+var tooltipHorizontalPadding = 10;
+var spaceBetweenTextAndBox = 5;
+var tickerHorizontalPadding = 10;
 var playheadSize = 8;
 var dividerSize = 2;
+var axisLineLength = 10;
+var axisPadding = 10;
 // Currently the scale factor is a constant but when we add panning this may become formula based.
 var scaleFactor = 0.8;
+// This controls the scale factor at which we stop drawing the playhead. Below this value there tends to be flickering of the playhead as data comes in.
+var stopDrawingPlayheadThreshold = 0.95;
+// Threshold for the ratio at which we go from panning mode to live mode.
+var returnToLiveThreshold = 0.998;
+// Font to use on the addons such as tooltips and tickers!
+var graphAddonFont = "12px Arial";
+// A string containing the alphabet, used in line height calculation for the font.
+var alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+// Arbitrary maximum used to make some GC optimizations.
+var maximumDatasetsAllowed = 64;
+// time in ms to wait between tooltip draws inside the mouse move.
+var tooltipDebounceTime = 32;
+// time in ms to wait between draws
+var drawDebounceTime = 15;
+/**
+ * This function will debounce calls to functions.
+ *
+ * @param callback callback to call.
+ * @param time time to wait between calls in ms.
+ */
+function debounce(callback, time) {
+    var timerId;
+    return function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        clearTimeout(timerId);
+        timerId = setTimeout(function () { return callback.apply(void 0, args); }, time);
+    };
+}
 /**
  * This class acts as the main API for graphing given a Here is where you will find methods to let the service know new data needs to be drawn,
  * let it know something has been resized, etc!
@@ -58982,6 +59269,36 @@ var CanvasGraphService = /** @class */ (function () {
         var _this = this;
         this._sizeOfWindow = 300;
         /**
+         * This method lets the service know it should get ready to update what it is displaying.
+         */
+        this.update = debounce(function () { return _this._draw(); }, drawDebounceTime);
+        /**
+         * Handles what to do when we are hovering over the canvas and not panning.
+         *
+         * @param event A reference to the event to be handled.
+         */
+        this._handleDataHover = function (event) {
+            if (_this._panPosition) {
+                // we don't want to do anything if we are in the middle of panning
+                return;
+            }
+            _this._hoverPosition = event.clientX;
+            // then draw the tooltip.
+            _this._debouncedTooltip(_this._hoverPosition, _this._drawableArea);
+        };
+        /**
+         * Debounced version of _drawTooltip.
+         */
+        this._debouncedTooltip = debounce(function (pixel, drawableArea) {
+            _this._drawTooltip(pixel, drawableArea);
+        }, tooltipDebounceTime);
+        /**
+         * Handles what to do when we stop hovering over the canvas.
+         */
+        this._handleStopHover = function () {
+            _this._hoverPosition = null;
+        };
+        /**
          * The handler for when we want to zoom in and out of the graph.
          *
          * @param event a mouse wheel event.
@@ -58993,68 +59310,305 @@ var CanvasGraphService = /** @class */ (function () {
             }
             var amount = (event.deltaY * -0.01 | 0) * 100;
             var minZoom = 60;
-            // The max zoom is the largest dataset's length.      
-            var maxZoom = _this.datasets.map(function (dataset) { return dataset.data.length; })
-                .reduce(function (maxLengthSoFar, currLength) {
-                return Math.max(currLength, maxLengthSoFar);
-            }, 0);
+            // The max zoom is the number of slices.      
+            var maxZoom = _this._getNumberOfSlices();
+            if (_this._shouldBecomeRealtime()) {
+                _this._position = null;
+            }
             // Bind the zoom between [minZoom, maxZoom]
-            _this._sizeOfWindow = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp(_this._sizeOfWindow - amount, minZoom, maxZoom);
+            _this._sizeOfWindow = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["Scalar"].Clamp(_this._sizeOfWindow - amount, minZoom, maxZoom);
+        };
+        /**
+         * Initializes the panning object and attaches appropriate listener.
+         *
+         * @param event the mouse event containing positional information.
+         */
+        this._handlePanStart = function (event) {
+            var ctx = _this._ctx;
+            if (!ctx || !ctx.canvas) {
+                return;
+            }
+            var canvas = ctx.canvas;
+            _this._panPosition = {
+                xPos: event.clientX,
+                delta: 0,
+            };
+            _this._hoverPosition = null;
+            canvas.addEventListener("mousemove", _this._handlePan);
+        };
+        /**
+         * While panning this event will keep track of the delta and update the "positions".
+         *
+         * @param event The mouse event that contains positional information.
+         */
+        this._handlePan = function (event) {
+            var _a;
+            if (!_this._panPosition || _this._getNumberOfSlices() === 0) {
+                return;
+            }
+            var pixelDelta = _this._panPosition.delta + event.clientX - _this._panPosition.xPos;
+            var pixelsPerItem = (_this._drawableArea.right - _this._drawableArea.left) / _this._sizeOfWindow;
+            var itemsDelta = pixelDelta / pixelsPerItem | 0;
+            var pos = (_a = _this._position) !== null && _a !== void 0 ? _a : (_this._getNumberOfSlices() - 1);
+            // update our position without allowing the user to pan more than they need to (approximation) 
+            _this._position = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["Scalar"].Clamp(pos - itemsDelta, Math.floor(_this._sizeOfWindow * scaleFactor), _this._getNumberOfSlices() - Math.floor(_this._sizeOfWindow * (1 - scaleFactor)));
+            if (itemsDelta === 0) {
+                _this._panPosition.delta += pixelDelta;
+            }
+            else {
+                _this._panPosition.delta = 0;
+            }
+            _this._panPosition.xPos = event.clientX;
+        };
+        /**
+         * Clears the panning object and removes the appropriate listener.
+         *
+         * @param event the mouse event containing positional information.
+         */
+        this._handlePanStop = function () {
+            var ctx = _this._ctx;
+            if (!ctx || !ctx.canvas) {
+                return;
+            }
+            // check if we should return to realtime.
+            if (_this._shouldBecomeRealtime()) {
+                _this._position = null;
+            }
+            var canvas = ctx.canvas;
+            canvas.removeEventListener("mousemove", _this._handlePan);
+            _this._panPosition = null;
         };
         this._ctx = canvas.getContext && canvas.getContext("2d");
         this._width = canvas.width;
         this._height = canvas.height;
         this._ticks = [];
+        this._panPosition = null;
+        this._hoverPosition = null;
+        this._position = null;
+        this._datasetBounds = { start: 0, end: 0 };
+        this._globalTimeMinMax = { min: Infinity, max: 0 };
+        this._drawableArea = { top: 0, left: 0, right: 0, bottom: 0 };
+        this._tooltipTextCache = { text: "", width: 0 };
+        this._tickerTextCache = { text: "", width: 0 };
+        this._tooltipItems = [];
+        this._tickerItems = [];
+        for (var i = 0; i < maximumDatasetsAllowed; i++) {
+            this._tooltipItems.push({ text: "", color: "" });
+            this._tickerItems.push({ text: "", id: "", max: 0, min: 0 });
+        }
+        if (!this._ctx) {
+            throw Error("No canvas context accessible");
+        }
+        var defaultMetrics = this._ctx.measureText(alphabet);
+        this._defaultLineHeight = defaultMetrics.actualBoundingBoxAscent + defaultMetrics.actualBoundingBoxDescent;
+        this._axisHeight = axisLineLength + axisPadding + this._defaultLineHeight + axisPadding;
+        this._ctx.save();
+        this._ctx.font = graphAddonFont;
+        var fontMetrics = this._ctx.measureText(alphabet);
+        this._addonFontLineHeight = fontMetrics.actualBoundingBoxAscent + fontMetrics.actualBoundingBoxDescent;
+        this._ctx.restore();
         this.datasets = settings.datasets;
+        this.metadata = new Map();
         this._attachEventListeners(canvas);
     }
+    CanvasGraphService.prototype.resize = function (size) {
+        var ctx = this._ctx;
+        var width = size.width, height = size.height;
+        if (!ctx || !ctx.canvas) {
+            return;
+        }
+        this._width = width;
+        this._height = height;
+        ctx.canvas.width = width;
+        ctx.canvas.height = height;
+        this.update();
+    };
     /**
      * This method draws the data and sets up the appropriate scales.
      */
-    CanvasGraphService.prototype.draw = function () {
+    CanvasGraphService.prototype._draw = function () {
         var _this = this;
+        var _a;
         var ctx = this._ctx;
         if (!ctx) {
+            return;
+        }
+        var numSlices = this._getNumberOfSlices();
+        if (numSlices === 0) {
             return;
         }
         // First we clear the canvas so we can draw our data!
         this.clear();
         // Get global min max of time axis (across all datasets).
-        var globalTimeMinMax = { min: Infinity, max: 0 };
-        // TODO: Make better sliding window code (accounting for zoom and pan).
-        // TODO: Perhaps see if i can reduce the number of allocations.
-        // Keep only visible and non empty datasets and get a certain window of items.
-        var datasets = this.datasets.filter(function (dataset) { return !dataset.hidden && dataset.data.length > 0; }).map(function (dataset) { return (Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, dataset), { data: dataset.data.slice(Math.max(dataset.data.length - _this._sizeOfWindow, 0)) })); });
-        datasets.forEach(function (dataset) {
-            var timeMinMax = _this._getMinMax(dataset.data.map(function (point) { return point.timestamp; }));
-            globalTimeMinMax.min = Math.min(timeMinMax.min, globalTimeMinMax.min);
-            globalTimeMinMax.max = Math.max(timeMinMax.max, globalTimeMinMax.max);
-        });
-        var drawableArea = {
-            top: 0,
-            left: 0,
-            bottom: this._height,
-            right: this._width,
-        };
-        // we will now rescale the maximum for the playhead.
-        globalTimeMinMax.max = Math.ceil((globalTimeMinMax.max - globalTimeMinMax.min) / scaleFactor + globalTimeMinMax.min);
-        this._drawTimeAxis(globalTimeMinMax, drawableArea);
-        this._drawPlayheadRegion(drawableArea, scaleFactor);
+        this._globalTimeMinMax.min = Infinity;
+        this._globalTimeMinMax.max = 0;
+        // First we must get the end positions of our view port.
+        var pos = (_a = this._position) !== null && _a !== void 0 ? _a : (numSlices - 1);
+        var start = pos - Math.ceil(this._sizeOfWindow * scaleFactor);
+        var startOverflow = 0;
+        // account for overflow from start.
+        if (start < 0) {
+            startOverflow = 0 - start;
+            start = 0;
+        }
+        var end = Math.ceil(pos + this._sizeOfWindow * (1 - scaleFactor) + startOverflow);
+        // account for overflow from end.
+        if (end > numSlices) {
+            var endOverflow = end - numSlices;
+            end = numSlices;
+            start = Math.max(start - endOverflow, 0);
+        }
+        // update the bounds
+        this._datasetBounds.start = start;
+        this._datasetBounds.end = end;
+        // next we must find the min and max timestamp in bounds. (Timestamps are sorted)
+        this._globalTimeMinMax.min = this.datasets.data.at(this.datasets.startingIndices.at(this._datasetBounds.start));
+        this._globalTimeMinMax.max = this.datasets.data.at(this.datasets.startingIndices.at(this._datasetBounds.end - 1));
+        // set the buffer region maximum by rescaling the max timestamp in bounds.
+        var bufferMaximum = Math.ceil((this._globalTimeMinMax.max - this._globalTimeMinMax.min) / scaleFactor + this._globalTimeMinMax.min);
+        // we then need to update the end position based on the maximum for the buffer region
+        // binary search to get closest point to the buffer maximum.
+        this._datasetBounds.end = this._getClosestPointToTimestamp(bufferMaximum) + 1;
+        // keep track of largest timestamp value in view!
+        this._globalTimeMinMax.max = Math.max(this.datasets.data.at(this.datasets.startingIndices.at(this._datasetBounds.end - 1)), this._globalTimeMinMax.max);
+        var updatedScaleFactor = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["Scalar"].Clamp((this._globalTimeMinMax.max - this._globalTimeMinMax.min) / (bufferMaximum - this._globalTimeMinMax.min), scaleFactor, 1);
+        // we will now set the global maximum to the maximum of the buffer.
+        this._globalTimeMinMax.max = bufferMaximum;
+        this._drawableArea.top = 0;
+        this._drawableArea.left = 0;
+        this._drawableArea.bottom = this._height;
+        this._drawableArea.right = this._width;
+        var numberOfTickers = this._drawTickers(this._drawableArea, this._datasetBounds);
+        this._drawTimeAxis(this._globalTimeMinMax, this._drawableArea);
+        this._drawPlayheadRegion(this._drawableArea, updatedScaleFactor);
+        var _b = this._drawableArea, left = _b.left, right = _b.right, bottom = _b.bottom, top = _b.top;
         // process, and then draw our points
-        datasets.forEach(function (dataset) {
-            var _a;
-            var valueMinMax = _this._getMinMax(dataset.data.map(function (point) { return point.value; }));
-            var drawablePoints = dataset.data.map(function (point) { return _this._getPixelPointFromDataPoint(point, globalTimeMinMax, valueMinMax, drawableArea); });
-            var prevPoint = drawablePoints[0];
+        this.datasets.ids.forEach(function (id, idOffset) {
+            var _a, _b;
+            var valueMinMax;
+            // we have already calculated  the min and max while getting the tickers, so use those.
+            for (var i = 0; i < numberOfTickers; i++) {
+                if (_this._tickerItems[i].id === id) {
+                    valueMinMax = _this._tickerItems[i];
+                }
+            }
+            // if we could not find the min max object it must be hidden so we skip.
+            if (!valueMinMax) {
+                return;
+            }
             ctx.beginPath();
-            ctx.strokeStyle = (_a = dataset.color) !== null && _a !== void 0 ? _a : defaultColor;
-            drawablePoints.forEach(function (point) {
-                ctx.moveTo(prevPoint.timestamp, prevPoint.value);
-                ctx.lineTo(point.timestamp, point.value);
-                prevPoint = point;
-            });
+            ctx.strokeStyle = (_b = (_a = _this.metadata.get(id)) === null || _a === void 0 ? void 0 : _a.color) !== null && _b !== void 0 ? _b : defaultColor;
+            var prevPoint;
+            for (var pointIndex = _this._datasetBounds.start; pointIndex < _this._datasetBounds.end; pointIndex++) {
+                var numPoints = _this.datasets.data.at(_this.datasets.startingIndices.at(pointIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["PerformanceViewerCollector"].NumberOfPointsOffset);
+                if (idOffset >= numPoints) {
+                    continue;
+                }
+                var valueIndex = _this.datasets.startingIndices.at(pointIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["PerformanceViewerCollector"].SliceDataOffset + idOffset;
+                var timestamp = _this.datasets.data.at(_this.datasets.startingIndices.at(pointIndex));
+                var value = _this.datasets.data.at(valueIndex);
+                var drawableTime = _this._getPixelForNumber(timestamp, _this._globalTimeMinMax, left, right - left, false);
+                var drawableValue = _this._getPixelForNumber(value, valueMinMax, top, bottom - top, true);
+                if (prevPoint === undefined) {
+                    prevPoint = [drawableTime, drawableValue];
+                }
+                ctx.moveTo(prevPoint[0], prevPoint[1]);
+                ctx.lineTo(drawableTime, drawableValue);
+                prevPoint[0] = drawableTime;
+                prevPoint[1] = drawableValue;
+            }
             ctx.stroke();
         });
+        // then draw the tooltip.
+        this._drawTooltip(this._hoverPosition, this._drawableArea);
+    };
+    CanvasGraphService.prototype._drawTickers = function (drawableArea, bounds) {
+        var _this = this;
+        var ctx = this._ctx;
+        if (!ctx) {
+            return 0;
+        }
+        // create the ticker objects for each of the non hidden items.
+        var longestText = "";
+        var numberOfTickers = 0;
+        this.datasets.ids.forEach(function (id, idOffset) {
+            var _a;
+            if (!!((_a = _this.metadata.get(id)) === null || _a === void 0 ? void 0 : _a.hidden)) {
+                return;
+            }
+            var valueMinMax = _this._getMinMax(bounds, idOffset);
+            var latestValue = _this.datasets.data.at(_this.datasets.startingIndices.at(bounds.end - 1) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["PerformanceViewerCollector"].SliceDataOffset + idOffset);
+            var text = id + ": " + latestValue.toFixed(2) + " (max: " + valueMinMax.max.toFixed(2) + ", min: " + valueMinMax.min.toFixed(2) + ")";
+            if (text.length > longestText.length) {
+                longestText = text;
+            }
+            _this._tickerItems[numberOfTickers].id = id;
+            _this._tickerItems[numberOfTickers].max = valueMinMax.max;
+            _this._tickerItems[numberOfTickers].min = valueMinMax.min;
+            _this._tickerItems[numberOfTickers].text = text;
+            numberOfTickers++;
+        });
+        ctx.save();
+        ctx.font = graphAddonFont;
+        ctx.textBaseline = "middle";
+        ctx.textAlign = "left";
+        var width;
+        // if the lengths are the same the estimate should be good enough given the padding.
+        if (this._tickerTextCache.text.length === longestText.length) {
+            width = this._tickerTextCache.width;
+        }
+        else {
+            width = ctx.measureText(longestText).width + 2 * tickerHorizontalPadding;
+            this._tickerTextCache.text = longestText;
+            this._tickerTextCache.width = width;
+        }
+        drawableArea.right -= width;
+        var textHeight = this._addonFontLineHeight + Math.floor(tooltipHorizontalPadding / 2);
+        var x = drawableArea.right + tickerHorizontalPadding;
+        var y = drawableArea.top + textHeight;
+        for (var i = 0; i < numberOfTickers; i++) {
+            var tickerItem = this._tickerItems[i];
+            ctx.fillText(tickerItem.text, x, y);
+            y += textHeight;
+        }
+        ctx.restore();
+        return numberOfTickers;
+    };
+    /**
+     * Returns the index of the closest time for the datasets.
+     * Uses a modified binary search to get value.
+     *
+     * @param targetTime the time we want to get close to.
+     * @returns index of the item with the closest time to the targetTime
+     */
+    CanvasGraphService.prototype._getClosestPointToTimestamp = function (targetTime) {
+        var low = 0;
+        var high = this._getNumberOfSlices() - 1;
+        var closestIndex = 0;
+        while (low <= high) {
+            var middle = Math.trunc((low + high) / 2);
+            var middleTimestamp = this.datasets.data.at(this.datasets.startingIndices.at(middle));
+            if (Math.abs(middleTimestamp - targetTime) < Math.abs(this.datasets.data.at(this.datasets.startingIndices.at(closestIndex)) - targetTime)) {
+                closestIndex = middle;
+            }
+            if (middleTimestamp < targetTime) {
+                low = middle + 1;
+            }
+            else if (middleTimestamp > targetTime) {
+                high = middle - 1;
+            }
+            else {
+                break;
+            }
+        }
+        return closestIndex;
+    };
+    /**
+     * This is a convenience method to get the number of collected slices.
+     * @returns the total number of collected slices.
+     */
+    CanvasGraphService.prototype._getNumberOfSlices = function () {
+        return this.datasets.startingIndices.itemLength;
     };
     /**
      * Draws the time axis, adjusts the drawable area for the graph.
@@ -59070,9 +59624,8 @@ var CanvasGraphService = /** @class */ (function () {
         }
         var spaceAvailable = drawableArea.right - drawableArea.left;
         this._generateTicks(timeMinMax, spaceAvailable);
-        var axisHeight = 100;
         // remove the height of the axis from the available drawable area.
-        drawableArea.bottom -= axisHeight;
+        drawableArea.bottom -= this._axisHeight;
         // draw time axis line
         ctx.save();
         ctx.beginPath();
@@ -59161,10 +59714,15 @@ var CanvasGraphService = /** @class */ (function () {
      * @param items the array of numbers to get the min and max for.
      * @returns the min and max of the array.
      */
-    CanvasGraphService.prototype._getMinMax = function (items) {
+    CanvasGraphService.prototype._getMinMax = function (bounds, offset) {
         var min = Infinity, max = 0;
-        for (var _i = 0, items_1 = items; _i < items_1.length; _i++) {
-            var item = items_1[_i];
+        for (var i = bounds.start; i < bounds.end; i++) {
+            var numPoints = this.datasets.data.at(this.datasets.startingIndices.at(i) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["PerformanceViewerCollector"].NumberOfPointsOffset);
+            if (offset >= numPoints) {
+                continue;
+            }
+            var itemIndex = this.datasets.startingIndices.at(i) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["PerformanceViewerCollector"].SliceDataOffset + offset;
+            var item = this.datasets.data.at(itemIndex);
             if (item < min) {
                 min = item;
             }
@@ -59175,23 +59733,6 @@ var CanvasGraphService = /** @class */ (function () {
         return {
             min: min,
             max: max
-        };
-    };
-    /**
-     * Converts a data point to a point on the canvas (a pixel coordinate).
-     *
-     * @param point The datapoint
-     * @param timeMinMax The minimum and maximum in the time axis.
-     * @param valueMinMax The minimum and maximum in the value axis for the dataset.
-     * @param drawableArea The allowed drawable area.
-     * @returns
-     */
-    CanvasGraphService.prototype._getPixelPointFromDataPoint = function (point, timeMinMax, valueMinMax, drawableArea) {
-        var timestamp = point.timestamp, value = point.value;
-        var top = drawableArea.top, left = drawableArea.left, bottom = drawableArea.bottom, right = drawableArea.right;
-        return {
-            timestamp: this._getPixelForNumber(timestamp, timeMinMax, left, right - left, false),
-            value: this._getPixelForNumber(value, valueMinMax, top, bottom - top, true)
         };
     };
     /**
@@ -59221,6 +59762,11 @@ var CanvasGraphService = /** @class */ (function () {
      */
     CanvasGraphService.prototype._attachEventListeners = function (canvas) {
         canvas.addEventListener("wheel", this._handleZoom);
+        canvas.addEventListener("mousemove", this._handleDataHover);
+        canvas.addEventListener("mousedown", this._handlePanStart);
+        canvas.addEventListener("mouseleave", this._handleStopHover);
+        // The user may stop panning outside of the canvas size so we should add the event listener to the document.
+        canvas.ownerDocument.addEventListener("mouseup", this._handlePanStop);
     };
     /**
      * We remove all event listeners we added.
@@ -59229,6 +59775,119 @@ var CanvasGraphService = /** @class */ (function () {
      */
     CanvasGraphService.prototype._removeEventListeners = function (canvas) {
         canvas.removeEventListener("wheel", this._handleZoom);
+        canvas.removeEventListener("mousemove", this._handleDataHover);
+        canvas.removeEventListener("mousedown", this._handlePanStart);
+        canvas.removeEventListener("mouseleave", this._handleStopHover);
+        canvas.ownerDocument.removeEventListener("mouseup", this._handlePanStop);
+    };
+    /**
+     * Draws the tooltip given the area it is allowed to draw in and the current pixel position.
+     *
+     * @param pixel the position of the mouse cursor in pixels.
+     * @param drawableArea  the available area we can draw in.
+     */
+    CanvasGraphService.prototype._drawTooltip = function (pixel, drawableArea) {
+        var _this = this;
+        var ctx = this._ctx;
+        if (pixel === null || !ctx || !ctx.canvas || this._getNumberOfSlices() === 0) {
+            return;
+        }
+        // first convert the mouse position in pixels to a timestamp.
+        var _a = ctx.canvas.getBoundingClientRect(), start = _a.left, end = _a.right;
+        var inferredTimestamp = this._getNumberFromPixel(pixel, this._globalTimeMinMax, start, end);
+        var longestText = "";
+        var numberOfTooltipItems = 0;
+        // get the closest timestamps to the target timestamp, and store the appropriate meta object.
+        var closestIndex = this._getClosestPointToTimestamp(inferredTimestamp);
+        this.datasets.ids.forEach(function (id, idOffset) {
+            var _a, _b, _c;
+            if (!!((_a = _this.metadata.get(id)) === null || _a === void 0 ? void 0 : _a.hidden)) {
+                return;
+            }
+            var numPoints = _this.datasets.data.at(_this.datasets.startingIndices.at(closestIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["PerformanceViewerCollector"].NumberOfPointsOffset);
+            if (idOffset >= numPoints) {
+                return;
+            }
+            var valueIndex = _this.datasets.startingIndices.at(closestIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["PerformanceViewerCollector"].SliceDataOffset + idOffset;
+            var text = id + ": " + _this.datasets.data.at(valueIndex).toFixed(2);
+            if (text.length > longestText.length) {
+                longestText = text;
+            }
+            _this._tooltipItems[numberOfTooltipItems].text = text;
+            _this._tooltipItems[numberOfTooltipItems].color = (_c = (_b = _this.metadata.get(id)) === null || _b === void 0 ? void 0 : _b.color) !== null && _c !== void 0 ? _c : defaultColor;
+            numberOfTooltipItems++;
+        });
+        var x = pixel - start;
+        var y = Math.floor((drawableArea.bottom - drawableArea.top) / 2);
+        ctx.save();
+        ctx.font = graphAddonFont;
+        ctx.textBaseline = "middle";
+        ctx.textAlign = "left";
+        var boxLength = this._addonFontLineHeight;
+        var textHeight = this._addonFontLineHeight + Math.floor(tooltipHorizontalPadding / 2);
+        // initialize width with cached value or measure width of longest text and update cache.
+        var width;
+        if (longestText === this._tooltipTextCache.text) {
+            width = this._tooltipTextCache.width;
+        }
+        else {
+            width = ctx.measureText(longestText).width + boxLength + 2 * tooltipHorizontalPadding + spaceBetweenTextAndBox;
+            this._tooltipTextCache.text = longestText;
+            this._tooltipTextCache.width = width;
+        }
+        // We want the tool tip to always be inside the canvas so we adjust which way it is drawn.
+        if (x + width > this._width) {
+            x -= width;
+        }
+        ctx.globalAlpha = tooltipBackgroundAlpha;
+        ctx.fillStyle = tooltipBackgroundColor;
+        ctx.fillRect(x, y, width, textHeight * (numberOfTooltipItems + 1));
+        ctx.globalAlpha = defaultAlpha;
+        x += tooltipHorizontalPadding;
+        y += textHeight;
+        for (var i = 0; i < numberOfTooltipItems; i++) {
+            var tooltipItem = this._tooltipItems[i];
+            ctx.fillStyle = tooltipItem.color;
+            ctx.fillRect(x, y - Math.floor(boxLength / 2), boxLength, boxLength);
+            ctx.fillStyle = tooltipForegroundColor;
+            ctx.fillText(tooltipItem.text, x + boxLength + spaceBetweenTextAndBox, y);
+            y += textHeight;
+        }
+        ctx.restore();
+    };
+    /**
+     * Gets the number from a pixel position given the minimum and maximum value in range, and the starting pixel and the ending pixel.
+     *
+     * @param pixel current pixel position we want to get the number for.
+     * @param minMax the minimum and maximum number in the range.
+     * @param startingPixel position of the starting pixel in range.
+     * @param endingPixel position of ending pixel in range.
+     * @returns number corresponding to pixel position
+     */
+    CanvasGraphService.prototype._getNumberFromPixel = function (pixel, minMax, startingPixel, endingPixel) {
+        // normalize pixel to range [0, 1].
+        var normalizedPixelPosition = (pixel - startingPixel) / (endingPixel - startingPixel);
+        return minMax.min + normalizedPixelPosition * (minMax.max - minMax.min);
+    };
+    /**
+     * Method which returns true if the data should become realtime, false otherwise.
+     *
+     * @returns if the data should become realtime or not.
+     */
+    CanvasGraphService.prototype._shouldBecomeRealtime = function () {
+        if (this._getNumberOfSlices() === 0) {
+            return false;
+        }
+        // we need to compare our current slice to the latest slice to see if we should return to realtime mode.
+        var pos = this._position;
+        var latestSlicePos = this._getNumberOfSlices() - 1;
+        if (pos === null) {
+            return false;
+        }
+        // account for overflow on the left side only as it will be the one determining if we have sufficiently caught up to the realtime data.
+        var overflow = Math.max(0 - (pos - Math.ceil(this._sizeOfWindow * scaleFactor)), 0);
+        var rightmostPos = Math.min(overflow + pos + Math.ceil(this._sizeOfWindow * (1 - scaleFactor)), latestSlicePos);
+        return this.datasets.data.at(this.datasets.startingIndices.at(rightmostPos)) / this.datasets.data.at(this.datasets.startingIndices.at(latestSlicePos)) > returnToLiveThreshold;
     };
     /**
      * Will generate a playhead with a futurebox that takes up (1-scalefactor)*100% of the canvas.
@@ -59238,7 +59897,7 @@ var CanvasGraphService = /** @class */ (function () {
      */
     CanvasGraphService.prototype._drawPlayheadRegion = function (drawableArea, scaleFactor) {
         var ctx = this._ctx;
-        if (!ctx) {
+        if (!ctx || scaleFactor >= stopDrawingPlayheadThreshold) {
             return;
         }
         var dividerXPos = Math.ceil(drawableArea.right * scaleFactor);
@@ -62733,7 +63392,7 @@ var BooleanLineComponent = /** @class */ (function (_super) {
         var check = this.props.value ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faCheck"] }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faTimesCircle"] });
         var className = this.props.value ? "value check" : "value uncheck";
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "textLine" },
-            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: className }, check)));
     };
@@ -62767,7 +63426,7 @@ var ButtonLineComponent = /** @class */ (function (_super) {
     ButtonLineComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "buttonLine" },
-            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { onClick: function () { return _this.props.onClick(); } }, this.props.label)));
     };
     return ButtonLineComponent;
@@ -62851,7 +63510,7 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
     CheckBoxLineComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "checkBoxLine" },
-            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "checkBox" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkbox", id: "checkbox" + this._uniqueId, className: "cbx hidden", checked: this.state.isSelected, onChange: function () { return _this.onChange(); }, disabled: !!this.props.disabled }),
@@ -62989,7 +63648,7 @@ var Color3LineComponent = /** @class */ (function (_super) {
         var _this = this;
         var chevron = this.state.isExpanded ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faMinus"] }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faPlus"] });
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color3Line" },
-            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine", title: this.props.label },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color3" },
@@ -63155,7 +63814,7 @@ var Color4LineComponent = /** @class */ (function (_super) {
         var chevron = this.state.isExpanded ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_5__["faMinus"] }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_5__["faPlus"] });
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color3Line" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine" },
-                this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
+                this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color3" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorPickerComponent__WEBPACK_IMPORTED_MODULE_6__["ColorPickerLineComponent"], { value: this.state.color, onColorChanged: function (color) {
@@ -63218,7 +63877,12 @@ var ColorPickerLineComponent = /** @class */ (function (_super) {
             top = window.innerHeight - height - 10;
         }
         div.style.top = top + "px";
-        div.style.left = host.getBoundingClientRect().left - div.getBoundingClientRect().width + "px";
+        if (!this.props.shouldPopRight) {
+            div.style.left = host.getBoundingClientRect().left - div.getBoundingClientRect().width + "px";
+        }
+        else {
+            div.style.left = host.getBoundingClientRect().left + "px";
+        }
     };
     ColorPickerLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
         var diffProps = nextProps.value.toHexString() !== this.props.value.toHexString();
@@ -63240,7 +63904,7 @@ var ColorPickerLineComponent = /** @class */ (function (_super) {
         var _this = this;
         var color = this.state.color;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker" },
-            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-rect", ref: this._floatHostRef, style: { background: this.state.hex }, onClick: function () { return _this.setState({ pickerEnabled: true }); } }),
             this.state.pickerEnabled &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
@@ -63320,7 +63984,7 @@ var FileButtonLineComponent = /** @class */ (function (_super) {
     FileButtonLineComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "buttonLine" },
-            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "file-upload" + this._id, className: "file-upload" }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: this.uploadInputRef, id: "file-upload" + this._id, type: "file", accept: this.props.accept, onChange: function (evt) { return _this.onChange(evt); } })));
     };
@@ -63365,7 +64029,7 @@ var FileMultipleButtonLineComponent = /** @class */ (function (_super) {
     FileMultipleButtonLineComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "buttonLine" },
-            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "file-upload" + this._id, className: "file-upload" }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: this.uploadInputRef, id: "file-upload" + this._id, type: "file", accept: this.props.accept, onChange: function (evt) { return _this.onChange(evt); }, multiple: true })));
     };
@@ -63494,8 +64158,9 @@ var FloatLineComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             !this.props.useEuler &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine" },
-                    this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
+                    this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
+                    (!this.props.icon || this.props.label != "") &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: className },
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", step: this.props.step || this.props.isInteger ? "1" : "0.01", className: "numeric-input", onKeyDown: function (evt) {
                                 if (evt.keyCode !== 13) {
@@ -63650,7 +64315,7 @@ var HexLineComponent = /** @class */ (function (_super) {
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null, !this.props.useEuler &&
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine" },
-                this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
+                this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "string", className: "hex-input", value: valueAsHex, onBlur: function () { return _this.unlock(); }, onFocus: function () { return _this.lock(); }, onChange: function (evt) { return _this.updateValue(evt.target.value, false); }, onKeyDown: function (evt) {
@@ -63941,7 +64606,7 @@ var NumericInputComponent = /** @class */ (function (_super) {
     NumericInputComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "numeric" },
-            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
             this.props.label &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "numeric-label", title: this.props.label }, this.props.label + ": "),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", step: this.props.step, className: "numeric-input", value: this.state.value, onChange: function (evt) { return _this.updateValue(evt); }, onBlur: function () { return _this.onBlur(); } })));
@@ -64036,7 +64701,7 @@ var OptionsLineComponent = /** @class */ (function (_super) {
         var _this = this;
         var _a;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "listLine" },
-            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, color: "black", className: "icon" }),
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, color: "black", className: "icon" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "options" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { onChange: function (evt) { return _this.updateValue(evt.target.value); }, value: (_a = this.state.value) !== null && _a !== void 0 ? _a : "" }, this.props.options.map(function (option, i) {
@@ -64091,7 +64756,7 @@ var RadioButtonLineComponent = /** @class */ (function (_super) {
     RadioButtonLineComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "radioLine" },
-            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "radioContainer" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { id: this.props.label, className: "radio", type: "radio", checked: this.state.isSelected, onChange: function () { return _this.onChange(); } }),
@@ -64199,8 +64864,9 @@ var SliderLineComponent = /** @class */ (function (_super) {
     SliderLineComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "sliderLine" },
-            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.margin ? "label withMargins" : "label", title: this.props.label }, this.props.label),
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
+            (!this.props.icon || this.props.label != "") &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.margin ? "label withMargins" : "label", title: this.props.label }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { isInteger: this.props.decimalCount === 0, smallUI: true, label: "", target: this.state, digits: this.props.decimalCount === undefined ? 4 : this.props.decimalCount, propertyName: "value", min: this.props.minimum, max: this.props.maximum, onEnter: function () {
                     var changed = _this.prepareDataToRead(_this.state.value);
                     _this.onChange(changed);
@@ -64280,8 +64946,9 @@ var TextInputLineComponent = /** @class */ (function (_super) {
     TextInputLineComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "textInputLine" },
-            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, color: "black", className: "icon" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, color: "black", className: "icon" }),
+            (!this.props.icon || (this.props.icon && this.props.label != "")) &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { value: this.state.value, onBlur: function () { return _this.props.lockObject.lock = false; }, onFocus: function () { return _this.props.lockObject.lock = true; }, onChange: function (evt) { return _this.updateValue(evt.target.value); } }))));
     };
@@ -64333,10 +65000,10 @@ var TextLineComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value", title: this.props.value, style: { color: this.props.color ? this.props.color : "" } }, this.props.value || "no name"));
     };
     TextLineComponent.prototype.render = function () {
-        var _a, _b;
+        var _a, _b, _c;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.underline ? "textLine underline" : "textLine" + (this.props.additionalClass ? " " + this.props.additionalClass : "") },
-            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: (_a = this.props.label) !== null && _a !== void 0 ? _a : "" }, (_b = this.props.label) !== null && _b !== void 0 ? _b : ""),
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: (_b = (_a = this.props.tooltip) !== null && _a !== void 0 ? _a : this.props.label) !== null && _b !== void 0 ? _b : "" }, (_c = this.props.label) !== null && _c !== void 0 ? _c : ""),
             this.renderContent()));
     };
     return TextLineComponent;
@@ -64370,7 +65037,7 @@ var ValueLineComponent = /** @class */ (function (_super) {
         var digits = this.props.fractionDigits !== undefined ? this.props.fractionDigits : 2;
         var value = this.props.value.toFixed(digits) + (this.props.units ? " " + this.props.units : "");
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "textLine" },
-            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value", style: { color: this.props.color ? this.props.color : "" } }, value)));
     };
@@ -64457,7 +65124,7 @@ var Vector2LineComponent = /** @class */ (function (_super) {
         var _this = this;
         var chevron = this.state.isExpanded ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faMinus"] }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faPlus"] });
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector3Line" },
-            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine", title: this.props.label },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector" }, "X: " + this.state.value.x.toFixed(2) + ", Y: " + this.state.value.y.toFixed(2)),
@@ -64567,7 +65234,7 @@ var Vector3LineComponent = /** @class */ (function (_super) {
         var chevron = this.state.isExpanded ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faMinus"] }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faPlus"] });
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector3Line" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine" },
-                this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
+                this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector" },
                     !this.props.useEuler &&
@@ -64691,7 +65358,7 @@ var Vector4LineComponent = /** @class */ (function (_super) {
         var chevron = this.state.isExpanded ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faMinus"] }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faPlus"] });
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector3Line" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine" },
-                this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
+                this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector" }, "X: " + this.state.value.x.toFixed(2) + ", Y: " + this.state.value.y.toFixed(2) + ", Z: " + this.state.value.z.toFixed(2) + ", W: " + this.state.value.w.toFixed(2)),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" }, chevron)),

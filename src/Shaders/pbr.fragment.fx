@@ -146,7 +146,9 @@ void main(void) {
     vec4 surfaceMetallicOrReflectivityColorMap = texture2D(reflectivitySampler, vReflectivityUV + uvOffset);
     vec4 baseReflectivity = surfaceMetallicOrReflectivityColorMap;
     #ifndef METALLICWORKFLOW
-        surfaceMetallicOrReflectivityColorMap = toLinearSpace(surfaceMetallicOrReflectivityColorMap);
+        #ifdef REFLECTIVITY_GAMMA
+            surfaceMetallicOrReflectivityColorMap = toLinearSpace(surfaceMetallicOrReflectivityColorMap);
+        #endif
         surfaceMetallicOrReflectivityColorMap.rgb *= vReflectivityInfos.y;
     #endif
 #endif
@@ -159,13 +161,17 @@ void main(void) {
     vec4 metallicReflectanceFactors = vMetallicReflectanceFactors;
     #ifdef REFLECTANCE
         vec4 reflectanceFactorsMap = texture2D(reflectanceSampler, vReflectanceUV + uvOffset);
-        reflectanceFactorsMap = toLinearSpace(reflectanceFactorsMap);
+        #ifdef REFLECTANCE_GAMMA
+            reflectanceFactorsMap = toLinearSpace(reflectanceFactorsMap);
+        #endif
 
         metallicReflectanceFactors.rgb *= reflectanceFactorsMap.rgb;
     #endif
     #ifdef METALLIC_REFLECTANCE
         vec4 metallicReflectanceFactorsMap = texture2D(metallicReflectanceSampler, vMetallicReflectanceUV + uvOffset);
-        metallicReflectanceFactorsMap = toLinearSpace(metallicReflectanceFactorsMap);
+        #ifdef METALLIC_REFLECTANCE_GAMMA
+            metallicReflectanceFactorsMap = toLinearSpace(metallicReflectanceFactorsMap);
+        #endif
 
         #ifndef METALLIC_REFLECTANCE_USE_ALPHA_ONLY
             metallicReflectanceFactors.rgb *= metallicReflectanceFactorsMap.rgb;
@@ -298,7 +304,7 @@ void main(void) {
         sheenOutParams sheenOut;
 
         #ifdef SHEEN_TEXTURE
-            vec4 sheenMapData = toLinearSpace(texture2D(sheenSampler, vSheenUV + uvOffset)) * vSheenInfos.y;
+            vec4 sheenMapData = texture2D(sheenSampler, vSheenUV + uvOffset);
         #endif
         #if defined(SHEEN_ROUGHNESS) && defined(SHEEN_TEXTURE_ROUGHNESS) && !defined(SHEEN_TEXTURE_ROUGHNESS_IDENTICAL) && !defined(SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE)
             vec4 sheenMapRoughnessData = texture2D(sheenRoughnessSampler, vSheenRoughnessUV + uvOffset) * vSheenInfos.w;
@@ -315,6 +321,7 @@ void main(void) {
             roughness,
         #ifdef SHEEN_TEXTURE
             sheenMapData,
+            vSheenInfos.y,
         #endif
             reflectance,
         #ifdef SHEEN_LINKWITHALBEDO
@@ -369,7 +376,7 @@ void main(void) {
         #endif
 
         #if defined(CLEARCOAT_TINT) && defined(CLEARCOAT_TINT_TEXTURE)
-            vec4 clearCoatTintMapData = toLinearSpace(texture2D(clearCoatTintSampler, vClearCoatTintUV + uvOffset));
+            vec4 clearCoatTintMapData = texture2D(clearCoatTintSampler, vClearCoatTintUV + uvOffset);
         #endif
 
         #ifdef CLEARCOAT_BUMP
@@ -554,6 +561,8 @@ void main(void) {
 #endif // UNLIT
 
     #include<pbrBlockFinalUnlitComponents>
+
+    #define CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION
 
     #include<pbrBlockFinalColorComposition>
 
