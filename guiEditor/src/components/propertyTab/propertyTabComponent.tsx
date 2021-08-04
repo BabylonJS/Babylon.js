@@ -43,8 +43,8 @@ import { ControlPropertyGridComponent } from "./propertyGrids/gui/controlPropert
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
 import { Vector2 } from "babylonjs/Maths/math.vector";
 import { OptionsLineComponent } from "../../sharedUiComponents/lines/optionsLineComponent";
-import { TextInputLineComponent } from "../../sharedUiComponents/lines/textInputLineComponent";
 import { FloatLineComponent } from "../../sharedUiComponents/lines/floatLineComponent";
+import { Color3LineComponent } from "../../sharedUiComponents/lines/color3LineComponent";
 
 require("./propertyTab.scss");
 const adtIcon: string = require("../../../public/imgs/adtIcon.svg");
@@ -343,7 +343,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     <TextLineComponent label="ART BOARD" value=" " color="grey"></TextLineComponent>
                     {
                         this.props.globalState.workbench.artBoardBackground !== undefined &&
-                        <TextInputLineComponent icon={artboardColorIcon} lockObject={this._lockObject} label="Background" target={this.props.globalState.workbench.artBoardBackground} propertyName="background" onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
+                        <Color3LineComponent lockObject={this._lockObject} icon={artboardColorIcon} label="" target={this.props.globalState.workbench._scene} propertyName="clearColor" onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
                     }
                     <hr />
                     <TextLineComponent label="CANVAS" value=" " color="grey"></TextLineComponent>
