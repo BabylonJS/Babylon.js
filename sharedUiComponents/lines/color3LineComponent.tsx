@@ -163,7 +163,7 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
                             this.onChange(color);
                         }} />                             
                     </div>
-                    {this.props.icon && 
+                    {(this.props.icon && this.props.lockObject) &&
                     <TextInputLineComponent lockObject={this.props.lockObject} label="" target={this} propertyName="_colorString" onChange={newValue => this.convert(newValue)}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     }
