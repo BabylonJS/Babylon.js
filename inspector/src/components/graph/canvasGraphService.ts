@@ -465,7 +465,7 @@ export class CanvasGraphService {
     private _getPixelForNumber(num: number, minMax: IPerfMinMax, startingPixel: number, spaceAvailable: number, shouldFlipValue: boolean) {
         const { min, max } = minMax;
         // Perform a min-max normalization to rescale the value onto a [0, 1] scale given the min and max of the dataset.
-        let normalizedValue = (num - min) / (max - min);
+        let normalizedValue = max !== min ? (num - min) / (max - min) : 1;
 
         // if we should make this a [1, 0] range instead (higher numbers = smaller pixel value)
         if (shouldFlipValue) {
