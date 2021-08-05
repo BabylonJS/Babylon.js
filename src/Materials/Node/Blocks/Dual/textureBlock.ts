@@ -373,13 +373,17 @@ export class TextureBlock extends NodeMaterialBlock {
 
     private _generateConversionCode(state: NodeMaterialBuildState, output: NodeMaterialConnectionPoint, swizzle: string): void {
         if (swizzle !== 'a') { // no conversion if the output is "a" (alpha)
-            state.compilationString += `#ifdef ${this._linearDefineName}\r\n`;
-            state.compilationString += `${output.associatedVariableName} = toGammaSpace(${output.associatedVariableName});\r\n`;
-            state.compilationString += `#endif\r\n`;
+            if (!this.texture || !this.texture.gammaSpace) {
+                state.compilationString += `#ifdef ${this._linearDefineName}\r\n`;
+                state.compilationString += `${output.associatedVariableName} = toGammaSpace(${output.associatedVariableName});\r\n`;
+                state.compilationString += `#endif\r\n`;
+            }
 
-            state.compilationString += `#ifdef ${this._gammaDefineName}\r\n`;
-            state.compilationString += `${output.associatedVariableName} = toLinearSpace(${output.associatedVariableName});\r\n`;
-            state.compilationString += `#endif\r\n`;
+            if (!this.texture || this.texture.gammaSpace) {
+                state.compilationString += `#ifdef ${this._gammaDefineName}\r\n`;
+                state.compilationString += `${output.associatedVariableName} = toLinearSpace(${output.associatedVariableName});\r\n`;
+                state.compilationString += `#endif\r\n`;
+            }
         }
     }
 
