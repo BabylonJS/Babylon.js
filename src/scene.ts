@@ -5185,8 +5185,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         });
     }
 
-    /** @hidden */
-    public _perfCollector: Nullable<PerformanceViewerCollector> = null;
+    /**
+     * Internal perfCollector instance used for sharing between inspector and playground.
+     * Marked as protected to allow sharing between prototype extensions, but disallow access at toplevel. 
+     */
+    protected _perfCollector: Nullable<PerformanceViewerCollector> = null;
 
     /** @hidden */
     public _getPerfCollector(): PerformanceViewerCollector {
