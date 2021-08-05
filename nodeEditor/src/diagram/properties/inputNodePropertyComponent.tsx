@@ -197,11 +197,14 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                 ];
                 break;
             case NodeMaterialBlockConnectionPointTypes.Vector4:
-                    attributeOptions = [
-                        { label: "matricesIndices", value: "matricesIndices" },
-                        { label: "matricesWeights", value: "matricesWeights" }
-                    ];
-                    break;
+                attributeOptions = [
+                    { label: "matricesIndices", value: "matricesIndices" },
+                    { label: "matricesWeights", value: "matricesWeights" }
+                ];
+                systemValuesOptions = [
+                    { label: "Camera parameters", value: NodeMaterialSystemValues.CameraParameters }
+                ];
+                break;
         }
 
         var modeOptions = [

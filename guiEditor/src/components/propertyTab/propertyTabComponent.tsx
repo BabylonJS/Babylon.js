@@ -340,15 +340,16 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     <div id="title">AdvanceDyanamicTexture</div>
                 </div>
                 <div>
-                    <TextLineComponent label="ART BOARD" value=" " color="grey"></TextLineComponent>
+                    <TextLineComponent tooltip="" label="ART BOARD" value=" " color="grey"></TextLineComponent>
                     {
                         this.props.globalState.workbench.artBoardBackground !== undefined &&
                         <Color3LineComponent lockObject={this._lockObject} icon={artboardColorIcon} label="" target={this.props.globalState.workbench._scene} propertyName="clearColor" onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
                     }
                     <hr />
-                    <TextLineComponent label="CANVAS" value=" " color="grey"></TextLineComponent>
+                    <TextLineComponent tooltip="" label="CANVAS" value=" " color="grey"></TextLineComponent>
                     <CheckBoxLineComponent
-                        label="Responsive"
+                        label=""
+                        iconLabel="Responsive"
                         icon={responsiveIcon}
                         isSelected={() => DataStorage.ReadBoolean("Responsive", true)}
                         onSelect={(value: boolean) => {
@@ -357,7 +358,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         }}
                     />
                     <OptionsLineComponent
-                        label="Size"
+                        label=""
+                        iconLabel="Size"
                         options={sizeOptions}
                         icon={canvasSizeIcon}
                         target={this}
@@ -376,6 +378,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         <div className="divider">
                             <FloatLineComponent
                                 icon={canvasSizeIcon}
+                                iconLabel="Canvas Size"
                                 label=" "
                                 target={this.state.textureSize}
                                 propertyName="x"
@@ -395,7 +398,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         </div>
                     }
                     <hr />
-                    <TextLineComponent label="FILE" value=" " color="grey"></TextLineComponent>
+                    <TextLineComponent tooltip="" label="FILE" value=" " color="grey"></TextLineComponent>
                     <FileButtonLineComponent label="Load" onClick={(file) => this.load(file)} accept=".json" />
                     <ButtonLineComponent
                         label="Save"
@@ -404,7 +407,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         }}
                     />
                     <hr />
-                    <TextLineComponent label="SNIPPET" value=" " color="grey"></TextLineComponent>
+                    <TextLineComponent tooltip="" label="SNIPPET" value=" " color="grey"></TextLineComponent>
                     <ButtonLineComponent label="Load from snippet server" onClick={() => this.loadFromSnippet()} />
                     <ButtonLineComponent
                         label="Save to snippet server"

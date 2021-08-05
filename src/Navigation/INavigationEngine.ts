@@ -461,10 +461,10 @@ export interface INavMeshParameters {
      * This member defines the tile cube side length in world units.
      * If no obstacles are needed, leave it undefined or 0.
      */
-    tileSize: number;
+    tileSize?: number;
 
     /**
     * The size of the non-navigable border around the heightfield.
     */
-    borderSize: number;
+    borderSize?: number;
 }

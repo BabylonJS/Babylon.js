@@ -179,14 +179,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-alpha.36";
+        return "babylonjs@5.0.0-alpha.37";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-alpha.36";
+        return "5.0.0-alpha.37";
     }
 
     /**
@@ -294,6 +294,11 @@ export class ThinEngine {
      * Indicates if the z range in NDC space is 0..1 (value: true) or -1..1 (value: false)
      */
     public readonly isNDCHalfZRange = false;
+
+    /**
+     * Indicates that the origin of the texture/framebuffer space is the bottom left corner. If false, the origin is top left
+     */
+     public readonly hasOriginBottomLeft = true;
 
     /**
      * Gets or sets a boolean indicating that uniform buffers must be disabled even if they are supported
