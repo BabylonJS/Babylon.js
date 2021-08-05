@@ -457,6 +457,9 @@ export abstract class EffectLayer {
                     defines.push("#define ALPHATEST");
                     defines.push("#define ALPHATESTVALUE 0.4");
                 }
+                if (!diffuseTexture.gammaSpace) {
+                    defines.push("#define DIFFUSE_ISLINEAR")
+                }
             }
 
             var opacityTexture = (material as any).opacityTexture;
@@ -485,6 +488,9 @@ export abstract class EffectLayer {
             else if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
                 defines.push("#define EMISSIVEUV1");
                 uv1 = true;
+            }
+            if (!emissiveTexture.gammaSpace) {
+                defines.push("#define EMISSIVE_ISLINEAR")
             }
         }
 
