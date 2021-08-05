@@ -66,7 +66,7 @@ declare type MorphTargetManager = import("./Morph/morphTargetManager").MorphTarg
 declare type Effect = import("./Materials/effect").Effect;
 declare type MorphTarget = import("./Morph/morphTarget").MorphTarget;
 declare type WebVRFreeCamera = import("./Cameras/VR/webVRCamera").WebVRFreeCamera;
-declare type PerformanceViewerCollector = import("Misc/PerformanceViewer/performanceViewerCollector").PerformanceViewerCollector;
+declare type PerformanceViewerCollector = import("./Misc/PerformanceViewer/performanceViewerCollector").PerformanceViewerCollector;
 
 /**
  * Define an interface for all classes that will hold resources
