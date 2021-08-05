@@ -7,4 +7,4 @@ Scene.prototype._getPerfCollector = function(this: Scene): PerformanceViewerColl
     }
 
     return this._perfCollector;
-}
+};
