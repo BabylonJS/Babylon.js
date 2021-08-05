@@ -8,7 +8,7 @@ WebGPUEngine.prototype.getGPUFrameTimeCounter = function (): PerfCounter {
 };
 
 WebGPUEngine.prototype.captureGPUFrameTime = function (value: boolean) {
-    this._timestampQuery.enable = value;
+    this._timestampQuery.enable = value && !!this._caps.timerQuery;
 };
 
 WebGPUEngine.prototype.createQuery = function (): OcclusionQuery {
