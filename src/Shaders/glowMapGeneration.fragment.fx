@@ -1,4 +1,8 @@
-﻿#ifdef DIFFUSE
+﻿#if defined(DIFFUSE_ISLINEAR) || defined(EMISSIVE_ISLINEAR)
+    #include<helperFunctions>
+#endif
+
+#ifdef DIFFUSE
 varying vec2 vUVDiffuse;
 uniform sampler2D diffuseSampler;
 #endif
@@ -28,6 +32,9 @@ vec4 finalColor = glowColor;
 // _____________________________ Alpha Information _______________________________
 #ifdef DIFFUSE
     vec4 albedoTexture = texture2D(diffuseSampler, vUVDiffuse);
+    #ifdef DIFFUSE_ISLINEAR
+        albedoTexture = toGammaSpace(albedoTexture);
+    #endif
 
     #ifdef GLOW
         // In glow mode a is used to dim the opacity
@@ -62,7 +69,11 @@ vec4 finalColor = glowColor;
 #endif
 
 #ifdef EMISSIVE
-    gl_FragColor = texture2D(emissiveSampler, vUVEmissive) * finalColor;
+    vec4 emissive = texture2D(emissiveSampler, vUVEmissive);
+    #ifdef EMISSIVE_ISLINEAR
+        emissive = toGammaSpace(emissive);
+    #endif
+    gl_FragColor = emissive * finalColor;
 #else
     gl_FragColor = finalColor;
 #endif
