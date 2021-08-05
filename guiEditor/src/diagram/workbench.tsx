@@ -49,7 +49,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _mouseStartPointX: Nullable<number> = null;
     private _mouseStartPointY: Nullable<number> = null;
     private _textureMesh: Mesh;
-    private _scene: Scene;
+    public _scene: Scene;
     private _selectedGuiNodes: Control[] = [];
     private _ctrlKeyIsPressed = false;
     private _constraintDirection = ConstraintDirection.NONE;
