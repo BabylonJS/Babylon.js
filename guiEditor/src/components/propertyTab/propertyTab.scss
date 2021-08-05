@@ -320,15 +320,13 @@
     }
 
     .color-picker {
-        height: calc(100% - 8px);
-        margin: 4px;
-        width: calc(100% - 8px);
+        height: 150px;
+        width: 15px;
 
         .color-rect {
-            height: calc(100% - 4px);
-            border: 2px white solid;
+            height: 15px;
+            border: 1px black solid;
             cursor: pointer;
-            min-height: 18px;
         }
 
         .color-picker-cover {
@@ -587,7 +585,6 @@
         align-items: center;
         justify-items: stretch;
         padding-bottom: 5px;
-
         input[type="file"] {
             display: none;
         }
@@ -801,18 +798,30 @@
         .firstLine {
             height: var(--spacingHeight);
             display: grid;
-            grid-template-columns: 1fr auto 20px 20px;
+            grid-template-columns: auto auto 1fr;
 
             .label {
+                grid-column: 2;
+                padding-left: 5px;
+                display: none;
+                align-items: center;
+                min-width: 15px;
+            }
+    
+            .img {
                 grid-column: 1;
                 display: flex;
                 align-items: center;
             }
 
+            .textInputLine {
+                grid-column: 3;
+                margin-top: 5px;;
+            }
+    
             .color3 {
                 grid-column: 2;                
-                width: 50px;
-                
+                margin-top: 12px;
                 display: flex;
                 align-items: center;            
                 
@@ -822,12 +831,12 @@
             }
 
             .copy {
-                grid-column: 3;
+                grid-column: 4;
                 display: grid;
                 align-items: center;
                 justify-items: center;
                 cursor: pointer;
-                
+                color: black;
                 img {
                     height: 100%;
                     width: 20px;
@@ -836,7 +845,7 @@
 
             .expand {
                 grid-column: 4;
-                display: grid;
+                display: none;
                 align-items: center;
                 justify-items: center;
                 cursor: pointer;
