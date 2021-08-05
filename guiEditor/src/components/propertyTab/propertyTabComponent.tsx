@@ -342,6 +342,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 <div>
                     <TextLineComponent tooltip="" label="ART BOARD" value=" " color="grey"></TextLineComponent>
                     {
+                        this.props.globalState.workbench.artBoardBackground !== undefined &&
                         <Color3LineComponent iconLabel={"Bacground Color"} lockObject={this._lockObject} icon={artboardColorIcon} label="" target={this.props.globalState.workbench._scene} propertyName="clearColor" onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
                     }
                     <hr />
