@@ -11,6 +11,7 @@ import { PerformanceViewerSidebarComponent } from "./performanceViewerSidebarCom
 import { PerformanceViewerCollector } from "babylonjs/Misc/PerformanceViewer/performanceViewerCollector";
 import { PerfCollectionStrategy } from "babylonjs/Misc/PerformanceViewer/performanceViewerCollectionStrategies";
 import { Tools } from "babylonjs/Misc/tools";
+import 'babylonjs/Misc/PerformanceViewer/performanceViewerSceneExtension';
 
 require('./scss/performanceViewer.scss');
 
@@ -22,10 +23,15 @@ interface IPerformanceViewerComponentProps {
 const initialWindowSize = { width: 1024, height: 512 };
 
 // Note this should be false when committed until the feature is fully working.
-const isEnabled = false;
+const isEnabled = true;
 
 // list of strategies to add to perf graph automatically.
-const defaultStrategies = [PerfCollectionStrategy.GpuFrameTimeStrategy(), PerfCollectionStrategy.FpsStrategy()];
+const defaultStrategies = [
+                            PerfCollectionStrategy.GpuFrameTimeStrategy(),
+                            PerfCollectionStrategy.FpsStrategy(), 
+                            PerfCollectionStrategy.DrawCallsStrategy(),
+                            PerfCollectionStrategy.ActiveMeshesStrategy(),
+                        ];
 
 enum RecordingState {
     NotRecording = "Begin Recording",
@@ -93,7 +99,8 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
     }
 
     useEffect(() => {
-        const perfCollector = new PerformanceViewerCollector(scene, defaultStrategies);
+        const perfCollector = scene._getPerfCollector();
+        perfCollector.addCollectionStrategies(...defaultStrategies);
         setPerformanceCollector(perfCollector);
     }, []);
 
