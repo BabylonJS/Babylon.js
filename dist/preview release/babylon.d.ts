@@ -6725,7 +6725,9 @@ declare module BABYLON {
         /** Fog Color */
         FogColor = 8,
         /** Delta time */
-        DeltaTime = 9
+        DeltaTime = 9,
+        /** Camera parameters */
+        CameraParameters = 10
     }
 }
 declare module BABYLON {
@@ -29929,6 +29931,8 @@ declare module BABYLON {
      * @see https://doc.babylonjs.com/how_to/how_to_use_morphtargets
      */
     export class MorphTargetManager implements IDisposable {
+        /** Enable storing morph target data into textures when set to true (true by default) */
+        static EnableTextureStorage: boolean;
         private _targets;
         private _targetInfluenceChangedObservers;
         private _targetDataLayoutChangedObservers;
@@ -29946,6 +29950,7 @@ declare module BABYLON {
         private _uniqueId;
         private _tempInfluences;
         private _canUseTextureForTargets;
+        private _blockCounter;
         /** @hidden */
         _parentContainer: Nullable<AbstractScene>;
         /** @hidden */
@@ -29966,6 +29971,11 @@ declare module BABYLON {
          * Gets or sets a boolean indicating if UV must be morphed
          */
         enableUVMorphing: boolean;
+        /**
+         * Sets a boolean indicating that adding new target will or will not update the underlying data buffers
+         */
+        set areUpdatesFrozen(block: boolean);
+        get areUpdatesFrozen(): boolean;
         /**
          * Creates a new MorphTargetManager
          * @param scene defines the current scene
@@ -39570,6 +39580,10 @@ declare module BABYLON {
          * Indicates if the z range in NDC space is 0..1 (value: true) or -1..1 (value: false)
          */
         readonly isNDCHalfZRange: boolean;
+        /**
+         * Indicates that the origin of the texture/framebuffer space is the bottom left corner. If false, the origin is top left
+         */
+        readonly hasOriginBottomLeft: boolean;
         /**
          * Gets or sets a boolean indicating that uniform buffers must be disabled even if they are supported
          */
@@ -62945,7 +62959,7 @@ declare module BABYLON {
          * @param loaderOptions options to be passed to the loader
          * @returns a InternalTexture for assignment back into BABYLON.Texture
          */
-        createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string, loaderOptions?: any): InternalTexture;
+        createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string, loaderOptions?: any, creationFlags?: number, useSRGBBuffer?: boolean): InternalTexture;
         _createDepthStencilTexture(size: RenderTargetTextureSize, options: DepthTextureCreationOptions): InternalTexture;
         _releaseFramebufferObjects(texture: InternalTexture): void;
         /**
@@ -62977,9 +62991,11 @@ declare module BABYLON {
          * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
          * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
          * @param fallback defines texture to use while falling back when (compressed) texture file not found.
+         * @param loaderOptions options to be passed to the loader
+         * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
          * @returns the cube texture as an InternalTexture
          */
-        createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad?: Nullable<(data?: any) => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, forcedExtension?: any, createPolynomials?: boolean, lodScale?: number, lodOffset?: number, fallback?: Nullable<InternalTexture>): InternalTexture;
+        createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad?: Nullable<(data?: any) => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, forcedExtension?: any, createPolynomials?: boolean, lodScale?: number, lodOffset?: number, fallback?: Nullable<InternalTexture>, loaderOptions?: any, useSRGBBuffer?: boolean): InternalTexture;
         createRenderTargetTexture(size: number | {
             width: number;
             height: number;
@@ -77013,11 +77029,11 @@ declare module BABYLON {
          * This member defines the tile cube side length in world units.
          * If no obstacles are needed, leave it undefined or 0.
          */
-        tileSize: number;
+        tileSize?: number;
         /**
         * The size of the non-navigable border around the heightfield.
         */
-        borderSize: number;
+        borderSize?: number;
     }
 }
 declare module BABYLON {

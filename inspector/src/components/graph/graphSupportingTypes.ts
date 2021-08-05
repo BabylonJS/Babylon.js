@@ -56,6 +56,14 @@ export interface IGraphDrawableArea {
 }
 
 /**
+ * Defines the structure representing necessary ticker information. 
+ */
+export interface IPerfTicker extends IPerfMinMax {
+    id: string;
+    text: string;
+}
+
+/**
  * Defines what settings our canvas graphing service accepts
  */
 export interface ICanvasGraphServiceSettings {

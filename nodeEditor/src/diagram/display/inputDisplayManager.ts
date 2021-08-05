@@ -115,6 +115,9 @@ export class InputDisplayManager implements IDisplayManager {
                 case NodeMaterialSystemValues.DeltaTime:
                     value = "Delta time";
                     break;
+                case NodeMaterialSystemValues.CameraParameters:
+                    value = "Camera parameters";
+                    break;
             }
         } else {
             switch (inputBlock.type) {
