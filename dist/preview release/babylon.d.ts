@@ -84896,6 +84896,7 @@ declare module BABYLON {
         private _datasetMeta;
         private _strategies;
         private _startingTimestamp;
+        private _hasLoadedData;
         /**
          * Datastructure containing the collected datasets. Warning: you should not modify the values in here, data will be of the form [timestamp, numberOfPoints, value1, value2..., timestamp, etc...]
          */
@@ -84952,6 +84953,27 @@ declare module BABYLON {
          * @param value the value to update the property with.
          */
         updateMetadata<T extends keyof IPerfMetadata>(id: string, prop: T, value: IPerfMetadata[T]): void;
+        /**
+         * Completely clear, data, ids, and strategies saved to this performance collector.
+         */
+        clear(): void;
+        /**
+         * Accessor which lets the caller know if the performance collector has data loaded from a file or not!
+         * Call clear() to reset this value.
+         * @returns true if the data is loaded from a file, false otherwise.
+         */
+        get hasLoadedData(): boolean;
+        /**
+         * Given a string containing file data, this function parses the file data into the datasets object.
+         * It returns a boolean to indicate if this object was successfully loaded with the data.
+         * @param data string content representing the file data.
+         * @returns true if the data was successfully loaded, false otherwise.
+         */
+        loadFromFileData(data: string): boolean;
+        /**
+         * Exports the datasets inside of the collector to a csv.
+         */
+        exportDataToCsv(): void;
         /**
          * Starts the realtime collection of data.
          * @param shouldPreserve optional boolean param, if set will preserve the dataset between calls of start.
