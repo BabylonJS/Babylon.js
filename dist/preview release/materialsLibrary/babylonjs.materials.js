@@ -5598,6 +5598,9 @@ var SkyMaterial = /** @class */ (function (_super) {
         babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, false, defines);
         // Attribs
         babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].PrepareDefinesForAttributes(mesh, defines, true, false);
+        if (defines.IMAGEPROCESSINGPOSTPROCESS !== scene.imageProcessingConfiguration.applyByPostProcess) {
+            defines.markAsMiscDirty();
+        }
         // Get correct effect
         if (defines.isDirty) {
             defines.markAsProcessed();
