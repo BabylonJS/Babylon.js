@@ -365,7 +365,7 @@ export class InternalTexture {
                     proxy._swapAndDie(this, false);
                     rebuildSamples();
                     this.isReady = true;
-                }, null, this._buffer, undefined, this.format, undefined, undefined, undefined, undefined, this._useSRGBBuffer);
+                }, null, this._buffer, undefined, this.format, this._extension, undefined, undefined, undefined, this._useSRGBBuffer);
                 return;
 
             case InternalTextureSource.Raw:
