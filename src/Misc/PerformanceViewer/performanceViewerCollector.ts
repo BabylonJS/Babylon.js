@@ -21,6 +21,9 @@ const timestampColHeader = "timestamp";
 // header for the numPoints column
 const numPointsColHeader = "numPoints";
 
+// regex to capture all carriage returns in the string.
+const carriageReturnRegex = /\r/g;
+
 /**
  * The collector class handles the collection and storage of data into the appropriate array.
  * The collector also handles notifying any observers of any updates.
@@ -248,14 +251,12 @@ export class PerformanceViewerCollector {
      */
     public loadFromFileData(data: string): boolean {
         const lines =
-            data.split('\n')
+            data.replace(carriageReturnRegex, '').split('\n')
                 .map((line) => (
-                    line.replace('\r', '')
-                        .split(',')
+                    line.split(',')
                         .filter((s) =>  s.length > 0)
                 ))
                 .filter((line) => line.length > 0);
-
         const timestampIndex = 0;
         const numPointsIndex = PerformanceViewerCollector.NumberOfPointsOffset;
         if (lines.length < 2) {
