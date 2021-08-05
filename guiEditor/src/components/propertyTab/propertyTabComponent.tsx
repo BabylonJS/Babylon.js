@@ -277,14 +277,16 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         }
         return null;
     }
-
+// {`${this.state.currentNode.name} [${this.state.currentNode.getClassName()}] (ID: ${this.state.currentNode.uniqueId.toString()})`}
     render() {
         if (this.state.currentNode) {
             return (
                 <div id="ge-propertyTab">
                     <div id="header">
                         <img id="logo" src={adtIcon} />
-                        <div id="title">{`${this.state.currentNode.name} [${this.state.currentNode.getClassName()}] (ID: ${this.state.currentNode.uniqueId.toString()})`}</div>
+                        <div id="title">
+                            <TextInputLineComponent lockObject={this._lockObject} label="" target={this.state.currentNode} propertyName="name" onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
+                        </div>
                     </div>
                     {this.renderProperties()}
                     <hr />
