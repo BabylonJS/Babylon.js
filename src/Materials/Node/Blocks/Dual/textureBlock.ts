@@ -374,14 +374,14 @@ export class TextureBlock extends NodeMaterialBlock {
     private _generateConversionCode(state: NodeMaterialBuildState, output: NodeMaterialConnectionPoint, swizzle: string): void {
         if (swizzle !== 'a') { // no conversion if the output is "a" (alpha)
             if (!this.texture || !this.texture.gammaSpace) {
-                state.compilationString += `#ifdef ${this._linearDefineName};
+                state.compilationString += `#ifdef ${this._linearDefineName}
                     ${output.associatedVariableName} = toGammaSpace(${output.associatedVariableName});
                     #endif
                 `;
             }
 
             if (!this.texture || this.texture.gammaSpace) {
-                state.compilationString += `#ifdef ${this._linearDefineName};
+                state.compilationString += `#ifdef ${this._gammaDefineName}
                     ${output.associatedVariableName} = toLinearSpace(${output.associatedVariableName});
                     #endif
                 `;

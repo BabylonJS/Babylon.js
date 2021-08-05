@@ -458,7 +458,7 @@ export abstract class EffectLayer {
                     defines.push("#define ALPHATESTVALUE 0.4");
                 }
                 if (!diffuseTexture.gammaSpace) {
-                    defines.push("#define DIFFUSE_ISLINEAR")
+                    defines.push("#define DIFFUSE_ISLINEAR");
                 }
             }
 
@@ -490,7 +490,7 @@ export abstract class EffectLayer {
                 uv1 = true;
             }
             if (!emissiveTexture.gammaSpace) {
-                defines.push("#define EMISSIVE_ISLINEAR")
+                defines.push("#define EMISSIVE_ISLINEAR");
             }
         }
 
