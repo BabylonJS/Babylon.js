@@ -66,6 +66,7 @@ declare type MorphTargetManager = import("./Morph/morphTargetManager").MorphTarg
 declare type Effect = import("./Materials/effect").Effect;
 declare type MorphTarget = import("./Morph/morphTarget").MorphTarget;
 declare type WebVRFreeCamera = import("./Cameras/VR/webVRCamera").WebVRFreeCamera;
+declare type PerformanceViewerCollector = import("./Misc/PerformanceViewer/performanceViewerCollector").PerformanceViewerCollector;
 
 /**
  * Define an interface for all classes that will hold resources
@@ -5182,5 +5183,16 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                 reject(error);
             });
         });
+    }
+
+    /**
+     * Internal perfCollector instance used for sharing between inspector and playground.
+     * Marked as protected to allow sharing between prototype extensions, but disallow access at toplevel.
+     */
+    protected _perfCollector: Nullable<PerformanceViewerCollector> = null;
+
+    /** @hidden */
+    public _getPerfCollector(): PerformanceViewerCollector {
+        throw _DevTools.WarnImport("performanceViewerSceneExtension");
     }
 }
