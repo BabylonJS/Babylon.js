@@ -194,13 +194,11 @@ export class TreeItemComponent extends React.Component<ITreeItemComponentProps, 
             )
         }
 
-        let sortedItems = Tools.SortAndFilter(null, items);
-        sortedItems = sortedItems[0].getChildren();
-        
+        let sortedItems = Tools.SortAndFilter(null, items)[0].getChildren();         
         return (
             <div>
                 {
-                    sortedItems.map(item => {
+                    sortedItems.map((item: { uniqueId: React.Key | null | undefined; name: React.Key | null | undefined; }) => {
                         return (
                             <TreeItemSelectableComponent mustExpand={this.state.mustExpand} extensibilityGroups={this.props.extensibilityGroups}
                                 key={item.uniqueId !== undefined && item.uniqueId !== null ? item.uniqueId : item.name}
