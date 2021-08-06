@@ -4,20 +4,35 @@ import { Scalar } from "babylonjs/Maths/math.scalar";
 import { PerformanceViewerCollector } from "babylonjs/Misc/PerformanceViewer/performanceViewerCollector";
 
 const defaultColor = "#000";
+const axisColor = "#c0c4c8";
 const futureBoxColor = "#dfe9ed";
 const dividerColor = "#0a3066";
 const playheadColor = "#b9dbef";
 
-const tooltipBackgroundColor = "#121212";
-const tooltipForegroundColor = "#fff";
+const positionIndicatorColor = "#4d5960";
+const tooltipBackgroundColor = "#566268";
+const tooltipForegroundColor = "#fbfbfb";
+
+const topOfGraphY = 0;
 
 const defaultAlpha = 1;
 const tooltipBackgroundAlpha = 0.8;
 
 const tooltipHorizontalPadding = 10;
 const spaceBetweenTextAndBox = 5;
+const tooltipPaddingFromBottom = 20;
+
+// height of indicator triangle
+const triangleHeight = 10;
+// width of indicator triangle
+const triangleWidth = 20;
+// padding to indicate how far below the axis line the triangle should be.
+const trianglePaddingFromAxisLine = 3;
 
 const tickerHorizontalPadding = 10;
+
+// pixels to pad the top and bottom of data so that it doesn't get cut off by the margins.
+const dataPadding = 2;
 
 const playheadSize = 8;
 const dividerSize = 2;
@@ -239,7 +254,8 @@ export class CanvasGraphService {
         const numberOfTickers = this._drawTickers(this._drawableArea, this._datasetBounds);
         this._drawTimeAxis(this._globalTimeMinMax, this._drawableArea);
         this._drawPlayheadRegion(this._drawableArea, updatedScaleFactor);
-
+        this._drawableArea.top += dataPadding;
+        this._drawableArea.bottom -= dataPadding;
         const {left, right, bottom, top} = this._drawableArea;
         // process, and then draw our points
         this.datasets.ids.forEach((id, idOffset) => {
@@ -335,7 +351,7 @@ export class CanvasGraphService {
         
         drawableArea.right -= width;
 
-        const textHeight = this._addonFontLineHeight + Math.floor(tooltipHorizontalPadding/2);
+        const textHeight = this._addonFontLineHeight + Math.floor(tickerHorizontalPadding/2);
 
         const x = drawableArea.right + tickerHorizontalPadding;
         let y = drawableArea.top + textHeight;
@@ -409,14 +425,18 @@ export class CanvasGraphService {
         // remove the height of the axis from the available drawable area.
         drawableArea.bottom -= this._axisHeight;
 
-        // draw time axis line
+        // draw axis box.
         ctx.save();
+        ctx.fillStyle = axisColor;
+        ctx.fillRect(drawableArea.left, drawableArea.bottom, spaceAvailable, this._axisHeight);
+        // draw time axis line
         ctx.beginPath();
         ctx.strokeStyle = defaultColor;
         ctx.moveTo(drawableArea.left, drawableArea.bottom);
         ctx.lineTo(drawableArea.right, drawableArea.bottom);
 
         // draw ticks and text.
+        ctx.fillStyle = defaultColor;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
 
@@ -625,8 +645,12 @@ export class CanvasGraphService {
         }
 
         // first convert the mouse position in pixels to a timestamp.
-        const { left: start, right: end } = ctx.canvas.getBoundingClientRect();
-        const inferredTimestamp = this._getNumberFromPixel(pixel, this._globalTimeMinMax, start, end);
+        const { left: start } = ctx.canvas.getBoundingClientRect();
+        let adjustedPixel = pixel - start;
+        if (adjustedPixel > drawableArea.right) {
+            adjustedPixel = drawableArea.right;
+        }
+        const inferredTimestamp = this._getNumberFromPixel(adjustedPixel, this._globalTimeMinMax, drawableArea.left, drawableArea.right);
 
         let longestText: string = "";
         let numberOfTooltipItems = 0;
@@ -634,6 +658,7 @@ export class CanvasGraphService {
         // get the closest timestamps to the target timestamp, and store the appropriate meta object.
         const closestIndex = this._getClosestPointToTimestamp(inferredTimestamp);
 
+        let actualTimestamp: number = 0;
         this.datasets.ids.forEach((id, idOffset) => {
             if (!!this.metadata.get(id)?.hidden) {
                 return;
@@ -646,7 +671,7 @@ export class CanvasGraphService {
             }
 
             const valueIndex = this.datasets.startingIndices.at(closestIndex) + PerformanceViewerCollector.SliceDataOffset + idOffset;
-
+            actualTimestamp = this.datasets.data.at(this.datasets.startingIndices.at(closestIndex));
             const text = `${id}: ${this.datasets.data.at(valueIndex).toFixed(2)}`;
             
             if (text.length > longestText.length) {
@@ -658,11 +683,27 @@ export class CanvasGraphService {
             numberOfTooltipItems++;
         });
 
-        let x = pixel - start;
-        let y = Math.floor((drawableArea.bottom - drawableArea.top) / 2);
-
+        let xForActualTimestamp = this._getPixelForNumber(actualTimestamp, this._globalTimeMinMax, drawableArea.left, drawableArea.right - drawableArea.left, false);
         ctx.save();
 
+        // draw pointer triangle
+        ctx.fillStyle = positionIndicatorColor;
+        let yTriangle = drawableArea.bottom + trianglePaddingFromAxisLine;
+        ctx.beginPath();
+        ctx.moveTo(xForActualTimestamp, yTriangle);
+        ctx.lineTo(xForActualTimestamp + triangleWidth/2, yTriangle + triangleHeight);
+        ctx.lineTo(xForActualTimestamp - triangleWidth/2, yTriangle + triangleHeight);
+        ctx.closePath();
+        ctx.fill();
+
+        // draw vertical line
+        ctx.strokeStyle = positionIndicatorColor;
+        ctx.beginPath();
+        ctx.moveTo(xForActualTimestamp, drawableArea.bottom);
+        ctx.lineTo(xForActualTimestamp, topOfGraphY);
+        ctx.stroke();
+
+        // draw the actual tooltip
         ctx.font = graphAddonFont;
         ctx.textBaseline = "middle";
         ctx.textAlign = "left";
@@ -680,6 +721,10 @@ export class CanvasGraphService {
             this._tooltipTextCache.width = width;
         }
 
+        const tooltipHeight = textHeight * (numberOfTooltipItems + 1);
+        let x = pixel - start;
+        let y = drawableArea.bottom - tooltipPaddingFromBottom - tooltipHeight;
+
         // We want the tool tip to always be inside the canvas so we adjust which way it is drawn.
         if (x + width > this._width) {
             x -= width;
@@ -688,7 +733,7 @@ export class CanvasGraphService {
         ctx.globalAlpha = tooltipBackgroundAlpha;
         ctx.fillStyle = tooltipBackgroundColor;
 
-        ctx.fillRect(x, y, width, textHeight * (numberOfTooltipItems + 1));
+        ctx.fillRect(x, y, width, tooltipHeight);
 
         ctx.globalAlpha = defaultAlpha;
 
