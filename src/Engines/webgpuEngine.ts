@@ -2193,11 +2193,9 @@ export class WebGPUEngine extends Engine {
         // we need to end the current render pass (main or rtt) if any as we are not allowed to submit the command buffers when being in a pass
         const currentRenderPassIsNULL = !this._currentRenderPass;
         let currentPasses = 0; // 0 if no pass, 1 for rtt, 2 for main pass
-        if (this._currentRenderPass) {
-            if (this._currentRenderTarget) {
-                currentPasses |= 1;
-                this._endRenderTargetRenderPass();
-            }
+        if (this._currentRenderPass && this._currentRenderTarget) {
+            currentPasses |= 1;
+            this._endRenderTargetRenderPass();
         }
         if (this._mainRenderPassWrapper.renderPass) {
             currentPasses |= 2;
