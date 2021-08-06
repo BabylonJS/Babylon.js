@@ -154,7 +154,6 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
                     }
                     <TreeItemSpecializedComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} label={entity.name} entity={entity} onClick={() => this.onSelect()} />
                 </div>
-                <div className="spacer"></div>
                 {
                     this.renderChildren()
                 }
