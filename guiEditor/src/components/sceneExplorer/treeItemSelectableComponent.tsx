@@ -109,7 +109,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
 
     render() {
         const marginStyle = {
-            paddingLeft: (10 * (this.props.offset + 0.5)) + "px"
+            paddingLeft: (10 * (this.props.offset + 0.5)) -20 + "px"
         };
         const entity = this.props.entity;
 
