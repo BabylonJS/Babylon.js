@@ -1,31 +1,9 @@
 ﻿"use strict";
 
-let debug = false;
-let dist = true;
+let config = null;
 let numTestsOk = 0;
 const failedTests = [];
 const renderImages = [];
-
-function checkUrl() {
-    const indexOf = location.href.indexOf("?");
-    if (indexOf !== -1) {
-        const params = location.href.substr(indexOf + 1).split("&");
-        for (let index = 0; index < params.length; index++) {
-            const param = params[index].split("=");
-            const name = param[0];
-            const value = param[1];
-            switch (name) {
-                case "debug": {
-                    debug = (value === "true" ? true : false);
-                }
-                case "dist": {
-                    dist = (value === "true" ? true : false);
-                    break;
-                }
-            }
-        }
-    }
-}
 
 function download(blob, fileName) {
     if (navigator && navigator.msSaveBlob) {
@@ -81,16 +59,12 @@ function compare(renderCanvas, referenceCanvas, diffCanvas, threshold, errorRati
         differencesCount++;
     }
 
-    if (debug) {
-        console.log(`Max deltaE: ${maxDeltaE}`);
-    }
-
     diffContext.putImageData(referenceData, 0, 0);
 
     const curErrorRatio = (differencesCount * 100) / (width * height);
 
     if (differencesCount) {
-        console.log(`%c Pixel difference: ${differencesCount} pixels. Error ratio=${curErrorRatio.toFixed(4)}%`, "color: orange");
+        console.log(`%c Pixel difference: ${differencesCount} pixels. Error ratio=${curErrorRatio.toFixed(4)}%. Max deltaE: ${maxDeltaE}`, "color: orange");
     }
 
     return curErrorRatio > errorRatio;
@@ -139,25 +113,25 @@ function loadImage(src) {
 
 function loadFrame(frame, src) {
     return new Promise(function (resolve) {
-        frame.onload = function () {
-            const BABYLONDEVTOOLS = frame.contentWindow.BABYLONDEVTOOLS;
-            if (BABYLONDEVTOOLS) {
-                BABYLONDEVTOOLS.Loader.onReady(function () {
-                    resolve();
-                });
-            }
-            else {
+        const checkReady = function () {
+            if (frame.contentWindow.BABYLON && frame.contentWindow.BABYLON.Sandbox) {
                 resolve();
+                return;
             }
-        };
+
+            setTimeout(checkReady, 100);
+        }
+
+        checkReady();
 
         frame.src = src;
     });
 }
 
-async function runTest(index) {
+async function runTest(sandboxUrl, index) {
     const test = config.tests[index];
 
+    // Container
     const container = document.createElement("div");
     container.id = "container#" + index;
     container.className = "container";
@@ -198,7 +172,7 @@ async function runTest(index) {
 
     // Reference
     const referenceContext = referenceCanvas.getContext("2d");
-    const referenceImage = await loadImage(test.referenceImage);
+    const referenceImage = await loadImage(`${config.root}/${test.referenceImage}`);
     referenceCanvas.width = referenceImage.width;
     referenceCanvas.height = referenceImage.height;
     referenceContext.drawImage(referenceImage, 0, 0);
@@ -206,11 +180,7 @@ async function runTest(index) {
     // Render
     renderFrame.width = referenceCanvas.clientWidth;
     renderFrame.height = referenceCanvas.clientHeight;
-    const src = "../../sandbox/public/index-local.html?skybox=false&clearColor=FFFFFF&kiosk=true"
-        + `&assetUrl=../../tests/certification/models/${test.model}`
-        + `&environment=../../tests/certification/models/${test.environment || "Neutral.hdr"}`
-        + `&camera=${test.camera || 0}`
-        + (dist ? "&dist=true" : "");
+    const src = `${sandboxUrl}?&dist=true&skybox=false&clearColor=FFFFFF&kiosk=true&assetUrl=${config.root}/${test.model}&environment=${config.root}/${test.environment || "Neutral.hdr"}&camera=${test.camera || 0}`;
     await loadFrame(renderFrame, src);
     const renderScreenshot = await renderFrame.contentWindow.BABYLON.Sandbox.CaptureScreenshotAsync({width: 1024, height: 1024});
     const renderCanvas = document.createElement("canvas");
@@ -252,4 +222,29 @@ async function downloadResult() {
     const blob = await blobWriter.getData();
 
     download(blob, "certification.zip");
+}
+
+function runTests(sandboxUrl) {
+    const xhr = new XMLHttpRequest();
+    xhr.open("GET", "src/config.json", true);
+    xhr.addEventListener("load", async function() {
+        if (xhr.status === 200) {
+            config = JSON.parse(xhr.responseText);
+
+            const recursiveRunTest = async function(index) {
+                const result = await runTest(sandboxUrl, index);
+
+                if (index + 1 == config.tests.length) {
+                    showResultSummary();
+                    downloadResult();
+                    return;
+                }
+
+                recursiveRunTest(index + 1);
+            }
+
+            recursiveRunTest(0);
+        }
+    }, false);
+    xhr.send();
 }

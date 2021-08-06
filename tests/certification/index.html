@@ -3,38 +3,15 @@
 
 <head>
     <title>BabylonJS - Certification</title>
-    <link href="index.css" rel="stylesheet" />
-    <script src="color.js"></script>
-    <script src="zip.min.js"></script>
-    <script src="certification.js"></script>
+    <link href="src/index.css" rel="stylesheet" />
+    <script src="src/color.js"></script>
+    <script src="src/zip.min.js"></script>
+    <script src="src/certification.js"></script>
 </head>
 
 <body>
     <script>
-        checkUrl();
-
-        const xhr = new XMLHttpRequest();
-        xhr.open("GET", "config.json", true);
-        xhr.addEventListener("load", async function() {
-            if (xhr.status === 200) {
-                config = JSON.parse(xhr.responseText);
-
-                const recursiveRunTest = async function(index) {
-                    const result = await runTest(index);
-
-                    if (index + 1 == config.tests.length) {
-                        showResultSummary();
-                        downloadResult();
-                        return;
-                    }
-
-                    recursiveRunTest(index + 1);
-                }
-
-                recursiveRunTest(0);
-            }
-        }, false);
-        xhr.send();
+        runTests("../../sandbox/public/index-local.html");
     </script>
 </body>
 

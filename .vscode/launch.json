@@ -414,7 +414,7 @@
             ]
         },
         {
-            "name": "Launch 3D Commerce Certification (Chrome)",
+            "name": "Launch 3D Commerce Viewer Certification (Chrome)",
             "type": "chrome",
             "request": "launch",
             "url": "http://localhost:1338/tests/certification/index.html",
