@@ -281,16 +281,12 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
     render() {
 
-        const marginStyle = {
-            borderBottom: "transparent"
-        };
-
         if (this.state.currentNode) {
             return (
                 <div id="ge-propertyTab">
                     <div id="header">
                         <img id="logo" src={adtIcon} />
-                        <div id="title" style={marginStyle} > 
+                        <div id="title"> 
                             <TextInputLineComponent noUnderline={true} lockObject={this._lockObject} label="" target={this.state.currentNode} propertyName="name" onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
                         </div>
                     </div>
