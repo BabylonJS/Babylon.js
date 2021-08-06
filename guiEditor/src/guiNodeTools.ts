@@ -119,6 +119,8 @@ export class GUINodeTools {
             case "StackPanel":
                 element = new StackPanel("StackPanel");
                 element.isHighlighted = true;
+                element.width = "160%";
+                element.height = "100%";
                 return element;
             default:
                 element = Button.CreateSimpleButton("Button", "Click Me");

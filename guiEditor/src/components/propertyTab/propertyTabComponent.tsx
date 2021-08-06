@@ -291,7 +291,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     <div id="header">
                         <img id="logo" src={adtIcon} />
                         <div id="title" style={marginStyle} > 
-                            <TextInputLineComponent lockObject={this._lockObject} label="" target={this.state.currentNode} propertyName="name" onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
+                            <TextInputLineComponent noUnderline={true} lockObject={this._lockObject} label="" target={this.state.currentNode} propertyName="name" onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
                         </div>
                     </div>
                     {this.renderProperties()}
@@ -356,7 +356,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     <hr />
                     <TextLineComponent tooltip="" label="CANVAS" value=" " color="grey"></TextLineComponent>
                     <CheckBoxLineComponent
-                        label=""
+                        label="RESPONSIVE"
                         iconLabel="Responsive"
                         icon={responsiveIcon}
                         isSelected={() => DataStorage.ReadBoolean("Responsive", true)}
