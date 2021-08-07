@@ -210,6 +210,12 @@
                 outline-width: 0px
             }
         }
+
+        .noUnderline {
+            input {
+                border-bottom: transparent;
+            }
+        }
     }
     
     .textInputArea {
@@ -667,7 +673,7 @@
         padding-top: $line-padding-top;
         height: var(--spacingHeight);
         display: grid;
-        grid-template-columns: auto 1fr auto ;
+        grid-template-columns: auto auto 1fr ;
 
         .label {
             grid-column: 2;
@@ -685,6 +691,7 @@
             grid-column: 3;
             display: flex;
             align-items: center;
+            padding-left: 15px;
 
             .lbl {
                 position: relative;
@@ -763,7 +770,7 @@
 
         .label {
             grid-column: 2;
-            display: flex;
+            display: none;
             align-items: center;
         }
 
@@ -774,7 +781,7 @@
         }
 
         .options {
-            grid-column: 3;
+            grid-column: 2;
             
             display: flex;
             align-items: center;   
@@ -832,7 +839,7 @@
 
             .copy {
                 grid-column: 4;
-                display: grid;
+                display: none;
                 align-items: center;
                 justify-items: center;
                 cursor: pointer;

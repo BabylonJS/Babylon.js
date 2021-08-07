@@ -84,11 +84,6 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         return (
             <div>
                 <div className="divider">
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="Name" target={control} propertyName="name" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <FloatLineComponent lockObject={this.props.lockObject} label="ZIndex" target={control} propertyName="zIndex" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                </div>
-                <hr />
-                <div className="divider">
                     <CommandButtonComponent tooltip="Left" icon={hAlignLeftIcon} shortcut="" isActive={control.horizontalAlignment === Control.HORIZONTAL_ALIGNMENT_LEFT} onClick={() => { control.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT }} />
                     <CommandButtonComponent tooltip="Center" icon={hAlignCenterIcon} shortcut="" isActive={control.horizontalAlignment === Control.HORIZONTAL_ALIGNMENT_CENTER} onClick={() => { control.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER }} />
                     <CommandButtonComponent tooltip="Right" icon={hAlignRightIcon} shortcut="" isActive={control.horizontalAlignment === Control.HORIZONTAL_ALIGNMENT_RIGHT} onClick={() => { control.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT }} />
@@ -101,7 +96,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Y" target={control} propertyName="top" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </div>
                 <div className="divider">
-                    <TextInputLineComponent iconLabel={"Sca;e"} icon={sizeIcon} lockObject={this.props.lockObject} label="W" target={control} propertyName="width" onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    <TextInputLineComponent iconLabel={"Scale"} icon={sizeIcon} lockObject={this.props.lockObject} label="W" target={control} propertyName="width" onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         onChange={() => {
                             if (control.typeName === "Image") {
                                 (control as Image).autoScale = false;
