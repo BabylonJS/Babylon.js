@@ -45,6 +45,7 @@ import { Vector2 } from "babylonjs/Maths/math.vector";
 import { OptionsLineComponent } from "../../sharedUiComponents/lines/optionsLineComponent";
 import { FloatLineComponent } from "../../sharedUiComponents/lines/floatLineComponent";
 import { Color3LineComponent } from "../../sharedUiComponents/lines/color3LineComponent";
+import { TextInputLineComponent } from "../../sharedUiComponents/lines/textInputLineComponent";
 
 require("./propertyTab.scss");
 const adtIcon: string = require("../../../public/imgs/adtIcon.svg");
@@ -279,12 +280,15 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     }
 
     render() {
+
         if (this.state.currentNode) {
             return (
                 <div id="ge-propertyTab">
                     <div id="header">
                         <img id="logo" src={adtIcon} />
-                        <div id="title">{`${this.state.currentNode.name} [${this.state.currentNode.getClassName()}] (ID: ${this.state.currentNode.uniqueId.toString()})`}</div>
+                        <div id="title"> 
+                            <TextInputLineComponent noUnderline={true} lockObject={this._lockObject} label="" target={this.state.currentNode} propertyName="name" onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
+                        </div>
                     </div>
                     {this.renderProperties()}
                     <hr />
@@ -343,12 +347,12 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     <TextLineComponent tooltip="" label="ART BOARD" value=" " color="grey"></TextLineComponent>
                     {
                         this.props.globalState.workbench.artBoardBackground !== undefined &&
-                        <Color3LineComponent iconLabel={"Bacground Color"} lockObject={this._lockObject} icon={artboardColorIcon} label="" target={this.props.globalState.workbench._scene} propertyName="clearColor" onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
+                        <Color3LineComponent iconLabel={"Background Color"} lockObject={this._lockObject} icon={artboardColorIcon} label="" target={this.props.globalState.workbench._scene} propertyName="clearColor" onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
                     }
                     <hr />
                     <TextLineComponent tooltip="" label="CANVAS" value=" " color="grey"></TextLineComponent>
                     <CheckBoxLineComponent
-                        label=""
+                        label="RESPONSIVE"
                         iconLabel="Responsive"
                         icon={responsiveIcon}
                         isSelected={() => DataStorage.ReadBoolean("Responsive", true)}

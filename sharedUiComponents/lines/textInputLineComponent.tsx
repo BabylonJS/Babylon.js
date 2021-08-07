@@ -13,6 +13,7 @@ interface ITextInputLineComponentProps {
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     icon?: string;
     iconLabel? : string;
+    noUnderline? : boolean;
 }
 
 export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, { value: string }> {
@@ -82,7 +83,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                         {this.props.label}
                     </div>
                 }
-                <div className="value">
+                <div className={"value" + (this.props.noUnderline === true? " noUnderline": "")}>
                     <input value={this.state.value} onBlur={() => this.props.lockObject.lock = false} onFocus={() => this.props.lockObject.lock = true} onChange={evt => this.updateValue(evt.target.value)} />
                 </div>
             </div>
