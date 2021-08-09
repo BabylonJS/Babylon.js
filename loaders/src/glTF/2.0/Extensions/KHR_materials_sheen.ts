@@ -13,7 +13,6 @@ const NAME = "KHR_materials_sheen";
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_sheen/README.md)
  * [Playground Sample](https://www.babylonjs-playground.com/frame.html#BNIZX6#4)
- * !!! Experimental Extension Subject to Changes !!!
  */
 export class KHR_materials_sheen implements IGLTFLoaderExtension {
     /**

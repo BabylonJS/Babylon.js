@@ -10,8 +10,7 @@ import { IKHRMaterialsIor } from 'babylonjs-gltf2interface';
 const NAME = "KHR_materials_ior";
 
 /**
- * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1718)
- * !!! Experimental Extension Subject to Changes !!!
+ * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_ior)
  */
 export class KHR_materials_ior implements IGLTFLoaderExtension {
     /**
