@@ -34,3 +34,13 @@ import { DynamicFloat32Array } from "../PerformanceViewer/dynamicFloat32Array";
       */
      hidden?: boolean;
 }
+
+/**
+ * Defines the shape of a custom user registered event.
+ */
+export interface IPerfCustomEvent {
+   /**
+    * The name of the event.
+    */
+   name: string;
+}
