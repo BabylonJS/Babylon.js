@@ -98,6 +98,9 @@
 - Added support for the material stencil properties ([Popov72](https://github.com/Popov72))
 - Added space + LMB panning to texture inspector to improve accessibility ([darraghjburke](https://github.com/darraghjburke))
 
+### Playground
+- Added tooltips for menubar buttons ([darraghjburke](https://github.com/darraghjburke))
+
 ### NME
 
 - Increased float precision to 4 ([msDestiny14](https://github.com/msDestiny14))

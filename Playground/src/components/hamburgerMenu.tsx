@@ -83,6 +83,7 @@ export class HamburgerMenuComponent extends React.Component<IHamburgerMenuCompon
         var versionOptions = Object.keys(Versions).map(key => {
             return { 
                 label: key,
+                tooltip: `Use Babylon.js version: ${key}`,
                 storeKey: "version",
                 isActive: activeVersion === key,
                 onClick: () => {
@@ -95,6 +96,7 @@ export class HamburgerMenuComponent extends React.Component<IHamburgerMenuCompon
         var engineOptions = [
             {
                 label: "WebGL2",
+                tooltip: "WebGL 2.0",
                 storeKey: "engineVersion",
                 isActive: activeEngineVersion === "WebGL2",
                 onClick: () => {
@@ -104,6 +106,7 @@ export class HamburgerMenuComponent extends React.Component<IHamburgerMenuCompon
             },
             {
                 label: "WebGL",
+                tooltip: "WebGL 1.0",
                 storeKey: "engineVersion",
                 isActive: activeEngineVersion === "WebGL",
                 onClick: () => {
@@ -116,6 +119,7 @@ export class HamburgerMenuComponent extends React.Component<IHamburgerMenuCompon
         if (!!navigator.gpu) {
             engineOptions.splice(0,0, {
                 label: "WebGPU",
+                tooltip: "WebGPU",
                 storeKey: "engineVersion",
                 isActive: activeEngineVersion === "WebGPU",
                 onClick: () => {
