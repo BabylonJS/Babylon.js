@@ -34,7 +34,7 @@ declare var MeshoptDecoder: any;
  *
  * To update the configuration, use the following code:
  * ```javascript
- *     MeshOptimizer.Configuration = {
+ *     MeshoptCompression.Configuration = {
  *         decoder: {
  *             url: "<url to the meshopt decoder library>"
  *         }

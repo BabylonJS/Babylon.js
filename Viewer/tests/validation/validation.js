@@ -308,7 +308,7 @@ function init() {
         wasmBinaryUrl: GetAbsoluteUrl("../../dist/preview%20release/draco_decoder_gltf.wasm"),
         fallbackUrl: GetAbsoluteUrl("../../dist/preview%20release/draco_decoder_gltf.js")
     };
-    BABYLON.MeshoptCompression.Configuration = {
+    BABYLON.MeshoptCompression.Configuration.decoder = {
         url: GetAbsoluteUrl("../../dist/preview%20release/meshopt_decoder.js")
     };
     BABYLON.GLTFValidation.Configuration = {
