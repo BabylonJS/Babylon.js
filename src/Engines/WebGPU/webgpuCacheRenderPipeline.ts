@@ -701,9 +701,9 @@ export abstract class WebGPUCacheRenderPipeline {
         throw new Error(`Invalid Format '${vertexBuffer.getKind()}' - type=${type}, normalized=${normalized}, size=${size}`);
     }
 
-    private _getAphaBlendState(): GPUBlendComponent {
+    private _getAphaBlendState(): Nullable<GPUBlendComponent> {
         if (!this._alphaBlendEnabled) {
-            return {};
+            return null;
         }
 
         return {
@@ -713,9 +713,9 @@ export abstract class WebGPUCacheRenderPipeline {
         };
     }
 
-    private _getColorBlendState(): GPUBlendComponent {
+    private _getColorBlendState(): Nullable<GPUBlendComponent> {
         if (!this._alphaBlendEnabled) {
-            return {};
+            return null;
         }
 
         return {
@@ -1063,24 +1063,30 @@ export abstract class WebGPUCacheRenderPipeline {
 
         if (this._mrtAttachments1 > 0) {
             for (let i = 0; i < this._mrtFormats.length; ++i) {
-                colorStates.push({
+                const descr: GPUColorTargetState = {
                     format: this._mrtFormats[i],
-                    blend: {
+                    writeMask: this._writeMask,
+                };
+                if (alphaBlend && colorBlend) {
+                    descr.blend = {
                         alpha: alphaBlend,
                         color: colorBlend,
-                    },
-                    writeMask: this._writeMask,
-                });
+                    };
+                }
+                colorStates.push(descr);
             }
         } else {
-            colorStates.push({
+            const descr: GPUColorTargetState = {
                 format: this._webgpuColorFormat[0],
-                blend: {
+                writeMask: this._writeMask,
+            };
+            if (alphaBlend && colorBlend) {
+                descr.blend = {
                     alpha: alphaBlend,
                     color: colorBlend,
-                },
-                writeMask: this._writeMask,
-            });
+                };
+            }
+            colorStates.push(descr);
         }
 
         const stencilFrontBack: GPUStencilStateFace = {
