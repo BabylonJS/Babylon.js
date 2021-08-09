@@ -628,6 +628,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/performanceViewer
 declare module "babylonjs-inspector/components/actionTabs/tabs/performanceViewer/performanceViewerComponent" {
     import { Scene } from "babylonjs/scene";
     import * as React from "react";
+    import 'babylonjs/Misc/PerformanceViewer/performanceViewerSceneExtension';
     interface IPerformanceViewerComponentProps {
         scene: Scene;
     }
@@ -879,6 +880,7 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/textInputLineCompon
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
         icon?: string;
         iconLabel?: string;
+        noUnderline?: boolean;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
@@ -5605,6 +5607,7 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         icon?: string;
         iconLabel?: string;
+        noUnderline?: boolean;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
