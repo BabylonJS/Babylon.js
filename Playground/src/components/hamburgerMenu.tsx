@@ -96,7 +96,7 @@ export class HamburgerMenuComponent extends React.Component<IHamburgerMenuCompon
         var engineOptions = [
             {
                 label: "WebGL2",
-                tooltip: "WebGL 2.0",
+                tooltip: "Use WebGL 2 Renderer",
                 storeKey: "engineVersion",
                 isActive: activeEngineVersion === "WebGL2",
                 onClick: () => {
@@ -106,7 +106,7 @@ export class HamburgerMenuComponent extends React.Component<IHamburgerMenuCompon
             },
             {
                 label: "WebGL",
-                tooltip: "WebGL 1.0",
+                tooltip: "Use WebGL 1 Renderer",
                 storeKey: "engineVersion",
                 isActive: activeEngineVersion === "WebGL",
                 onClick: () => {
@@ -119,7 +119,7 @@ export class HamburgerMenuComponent extends React.Component<IHamburgerMenuCompon
         if (!!navigator.gpu) {
             engineOptions.splice(0,0, {
                 label: "WebGPU",
-                tooltip: "WebGPU",
+                tooltip: "Use WebGPU Renderer (experimental)",
                 storeKey: "engineVersion",
                 isActive: activeEngineVersion === "WebGPU",
                 onClick: () => {

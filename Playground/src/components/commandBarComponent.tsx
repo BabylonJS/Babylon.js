@@ -75,7 +75,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
         var engineOptions = [
             {
                 label: "WebGL2",
-                tooltip: "Use WebGL 2 API",
+                tooltip: "Use WebGL 2 Renderer",
                 storeKey: "engineVersion",
                 isActive: activeEngineVersion === "WebGL2",
                 onClick: () => {
@@ -85,7 +85,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
             },
             {
                 label: "WebGL",
-                tooltip: "Use WebGL 1 API",
+                tooltip: "Use WebGL 1 Renderer",
                 storeKey: "engineVersion",
                 isActive: activeEngineVersion === "WebGL",
                 onClick: () => {
@@ -98,7 +98,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
         if (!!navigator.gpu) {
             engineOptions.splice(0,0, {
                 label: "WebGPU",
-                tooltip: "Use WebGPU API (experimental)",
+                tooltip: "Use WebGPU Renderer (experimental)",
                 storeKey: "engineVersion",
                 isActive: activeEngineVersion === "WebGPU",
                 onClick: () => {
