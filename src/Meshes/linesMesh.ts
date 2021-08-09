@@ -59,7 +59,7 @@ export class LinesMesh extends Mesh {
      * This will make creation of children, recursive.
      * @param useVertexColor defines if this LinesMesh supports vertex color
      * @param useVertexAlpha defines if this LinesMesh supports vertex alpha
-     * @param material material to use to draw the line. If not provided, will create a new one @since 5.0.0
+     * @param material material to use to draw the line. If not provided, will create a new one
      */
     constructor(
         name: string,
@@ -178,7 +178,6 @@ export class LinesMesh extends Mesh {
 
     /**
      * @hidden
-     * @since 5.0.0
      */
     public set material(value: Material) {
         this._lineMaterial = value;

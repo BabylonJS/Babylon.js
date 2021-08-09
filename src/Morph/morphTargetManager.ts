@@ -15,7 +15,7 @@ import { AbstractScene } from "../abstractScene";
  * @see https://doc.babylonjs.com/how_to/how_to_use_morphtargets
  */
 export class MorphTargetManager implements IDisposable {
-    /** Enable storing morph target data into textures when set to true (true by default). @since 5.0.0 */
+    /** Enable storing morph target data into textures when set to true (true by default) */
     public static EnableTextureStorage = true;
 
     private _targets = new Array<MorphTarget>();
@@ -164,7 +164,6 @@ export class MorphTargetManager implements IDisposable {
     /**
      * Gets or sets a boolean indicating that targets should be stored as a texture instead of using vertex attributes (default is true).
      * Please note that this option is not available if the hardware does not support it
-     * @since 5.0.0
      */
     public get useTextureToStoreTargets(): boolean {
         return this._useTextureToStoreTargets;
@@ -176,7 +175,6 @@ export class MorphTargetManager implements IDisposable {
 
     /**
      * Gets a boolean indicating that the targets are stored into a texture (instead of as attributes)
-     * @since 5.0.0
      */
     public get isUsingTextureForTargets() {
         return MorphTargetManager.EnableTextureStorage && this.useTextureToStoreTargets && this._canUseTextureForTargets;

@@ -146,7 +146,6 @@ export class BoundingInfo implements ICullable {
      * Grows the bounding info to include the given point.
      * @param point The point that will be included in the current bounding info
      * @returns the current bounding info
-     * @since 5.0.0
      */
     public encapsulate(point: Vector3): BoundingInfo {
         const minimum = Vector3.Minimize(this.minimum, point);
@@ -160,7 +159,6 @@ export class BoundingInfo implements ICullable {
      * Grows the bounding info to encapsulate the given bounding info.
      * @param toEncapsulate The bounding info that will be encapsulated in the current bounding info
      * @returns the current bounding info
-     * @since 5.0.0
      */
     public encapsulateBoundingInfo(toEncapsulate: BoundingInfo): BoundingInfo {
         this.encapsulate(toEncapsulate.boundingBox.centerWorld.subtract(toEncapsulate.boundingBox.extendSizeWorld));

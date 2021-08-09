@@ -92,7 +92,6 @@ export class GizmoManager implements IDisposable {
 
     /**
      * Ratio for the scale of the gizmo (Default: 1)
-     * @since 5.0.0
      */
     public set scaleRatio(value: number) {
         this._scaleRatio = value;

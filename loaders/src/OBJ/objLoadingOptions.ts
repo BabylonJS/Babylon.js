@@ -31,7 +31,6 @@ export type OBJLoadingOptions = {
     /**
      * Optimize the normals for the model. Lighting can be uneven if you use OptimizeWithUV = true because new vertices can be created for the same location if they pertain to different faces.
      * Using OptimizehNormals = true will help smoothing the lighting by averaging the normals of those vertices.
-     * @since 5.0.0
      */
     optimizeNormals: boolean,
     /**

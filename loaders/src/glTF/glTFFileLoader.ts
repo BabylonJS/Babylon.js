@@ -231,7 +231,6 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
 
     /**
      * If true, load the color (gamma encoded) textures into sRGB buffers (if supported by the GPU), which will yield more accurate results when sampling the texture. Defaults to true.
-     * @since 5.0.0
      */
     public useSRGBBuffers = true;
 
