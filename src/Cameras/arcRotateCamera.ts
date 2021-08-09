@@ -436,7 +436,7 @@ export class ArcRotateCamera extends TargetCamera {
     /**
      * Gets or Set the boolean value that controls whether or not the mouse wheel
      * zooms to the location of the mouse pointer or not.  The default is false.
-     * since @5.0.0
+     * @since 5.0.0
      */
     @serialize()
     public get zoomToMouseLocation(): boolean {
