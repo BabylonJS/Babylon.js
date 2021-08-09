@@ -92,7 +92,7 @@ export class ScreenshotTools {
      * @returns screenshot as a string of base64-encoded characters. This string can be assigned
      * to the src parameter of an <img> to display it
      */
-    public static CreateScreenshotAsync(engine: Engine, camera: Camera, size: any, mimeType: string = "image/png"): Promise<string> {
+    public static CreateScreenshotAsync(engine: Engine, camera: Camera, size: IScreenshotSize | number, mimeType: string = "image/png"): Promise<string> {
         return new Promise((resolve, reject) => {
             ScreenshotTools.CreateScreenshot(engine, camera, size, (data) => {
                 if (typeof (data) !== "undefined") {
@@ -237,7 +237,7 @@ export class ScreenshotTools {
      * @returns screenshot as a string of base64-encoded characters. This string can be assigned
      * to the src parameter of an <img> to display it
      */
-    public static CreateScreenshotUsingRenderTargetAsync(engine: Engine, camera: Camera, size: any, mimeType: string = "image/png", samples: number = 1, antialiasing: boolean = false, fileName?: string, renderSprites: boolean = false): Promise<string> {
+    public static CreateScreenshotUsingRenderTargetAsync(engine: Engine, camera: Camera, size: IScreenshotSize | number, mimeType: string = "image/png", samples: number = 1, antialiasing: boolean = false, fileName?: string, renderSprites: boolean = false): Promise<string> {
         return new Promise((resolve, reject) => {
             ScreenshotTools.CreateScreenshotUsingRenderTarget(engine, camera, size, (data) => {
                 if (typeof (data) !== "undefined") {
