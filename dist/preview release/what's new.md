@@ -275,6 +275,7 @@
 - Fix discrete animation not looping correctly ([#10694](https://github.com/BabylonJS/Babylon.js/issues/10694)) ([Popov72](https://github.com/Popov72))
 - Fix support for camera output render targets ([Popov72](https://github.com/Popov72))
 - Fix `bakeTransformIntoVertices` not working when using `rotationQuaternion` + sometimes inverting winding ([Popov72](https://github.com/Popov72))
+- Fix error handling in basis texture loading ([RaananW](https://github.com/RaananW))
 
 ## Breaking changes
 
