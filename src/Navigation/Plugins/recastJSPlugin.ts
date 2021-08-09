@@ -529,7 +529,8 @@ export class RecastJSCrowd implements ICrowd {
     private _onBeforeAnimationsObserver: Nullable<Observer<Scene>> = null;
 
     /**
-     *  Fires each time an agent is in reach radius of its destination
+     * Fires each time an agent is in reach radius of its destination
+     * @since 5.0.0
      */
     public onReachTargetObservable = new Observable<{agentIndex: number, destination: Vector3}>();
 

@@ -444,7 +444,7 @@ export class TransformNode extends Node {
     /**
      * Prevents the World matrix to be computed any longer
      * @param newWorldMatrix defines an optional matrix to use as world matrix
-     * @param decompose defines whether to decompose the given newWorldMatrix or directly assign
+     * @param decompose defines whether to decompose the given newWorldMatrix or directly assign @since 5.0.0
      * @returns the TransformNode.
      */
     public freezeWorldMatrix(newWorldMatrix: Nullable<Matrix> = null, decompose = false): TransformNode {

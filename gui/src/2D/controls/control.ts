@@ -1240,6 +1240,7 @@ export class Control {
     * @param { string | number} paddingBottom - The value of the bottom padding. If omitted, top is used.
     * @param { string | number} paddingLeft - The value of the left padding. If omitted, right is used.
     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+    * @since 5.0.0
     */
     public setPadding(
         paddingTop: string | number,
@@ -1265,6 +1266,7 @@ export class Control {
      * @param { number} paddingBottom - The value in pixels of the bottom padding. If omitted, top is used.
      * @param { number} paddingLeft - The value in pixels of the left padding. If omitted, right is used.
      * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @since 5.0.0
      */
     public setPaddingInPixels(
         paddingTop: number,

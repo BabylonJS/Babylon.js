@@ -378,6 +378,7 @@ export class Vector2 {
      * @param angle defines the rotation angle
      * @param result defines the result vector where to store the rotated vector
      * @returns the current vector
+     * @since 5.0.0
      */
     public rotateToRef(angle: number, result: Vector2) {
         const cos = Math.cos(angle);
@@ -540,6 +541,7 @@ export class Vector2 {
      * @param tangent2 defines the second tangent
      * @param time define where the derivative must be done
      * @returns 1st derivative
+     * @since 5.0.0
      */
     public static Hermite1stDerivative(value1: DeepImmutable<Vector2>, tangent1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, tangent2: DeepImmutable<Vector2>, time: number): Vector2 {
         let result = Vector2.Zero();
@@ -557,6 +559,7 @@ export class Vector2 {
      * @param tangent2 defines the second tangent
      * @param time define where the derivative must be done
      * @param result define where the derivative will be stored
+     * @since 5.0.0
      */
     public static Hermite1stDerivativeToRef(value1: DeepImmutable<Vector2>, tangent1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, tangent2: DeepImmutable<Vector2>, time: number, result: Vector2) {
         const t2 = time * time;
@@ -592,6 +595,7 @@ export class Vector2 {
      * Returns a new Vector2 equal to the normalized given vector
      * @param vector defines the vector to normalize
      * @returns a new Vector2
+     * @since 5.0.0
      */
     public static Normalize(vector: DeepImmutable<Vector2>): Vector2 {
         var newVector = Vector2.Zero();
@@ -720,6 +724,7 @@ export class Vector2 {
      * @param value2 defines second vector
      * @param ref defines third vector
      * @returns ref
+     * @since 5.0.0
      */
     public static CenterToRef(value1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, ref: DeepImmutable<Vector2>): Vector2 {
         return ref.copyFromFloats((value1.x + value2.x) / 2, (value1.y + value2.y) / 2);
@@ -1674,6 +1679,7 @@ export class Vector3 {
 
     /**
      * Gets a right Vector3 that must not be updated
+     * @since 5.0.0
      */
     public static get RightReadOnly(): DeepImmutable<Vector3> {
         return Vector3._RightReadOnly;
@@ -1681,6 +1687,7 @@ export class Vector3 {
 
     /**
      * Gets a forward Vector3 that must not be updated
+     * @since 5.0.0
      */
     public static get LeftHandedForwardReadOnly(): DeepImmutable<Vector3> {
         return Vector3._LeftHandedForwardReadOnly;
@@ -1688,6 +1695,7 @@ export class Vector3 {
 
     /**
      * Gets a forward Vector3 that must not be updated
+     * @since 5.0.0
      */
     public static get RightHandedForwardReadOnly(): DeepImmutable<Vector3> {
         return Vector3._RightHandedForwardReadOnly;
@@ -1932,6 +1940,7 @@ export class Vector3 {
      * @param tangent2 defines the second tangent
      * @param time define where the derivative must be done
      * @returns 1st derivative
+     * @since 5.0.0
      */
     public static Hermite1stDerivative(value1: DeepImmutable<Vector3>, tangent1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, tangent2: DeepImmutable<Vector3>, time: number): Vector3 {
         let result = Vector3.Zero();
@@ -1949,6 +1958,7 @@ export class Vector3 {
      * @param tangent2 defines the second tangent
      * @param time define where the derivative must be done
      * @param result define where to store the derivative
+     * @since 5.0.0
      */
     public static Hermite1stDerivativeToRef(value1: DeepImmutable<Vector3>, tangent1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, tangent2: DeepImmutable<Vector3>, time: number, result: Vector3) {
         const t2 = time * time;
@@ -2231,6 +2241,7 @@ export class Vector3 {
      * @param p2 extremity of the triangle
      * @param ref variable to store the result to
      * @returns The distance between "ref" and "vector"
+     * @since 5.0.0
      */
     public static ProjectOnTriangleToRef(vector: DeepImmutable<Vector3>, p0: DeepImmutable<Vector3>, p1: DeepImmutable<Vector3>, p2: DeepImmutable<Vector3>, ref: Vector3): number {
         const p1p0 = MathTmp.Vector3[0];
@@ -2395,6 +2406,7 @@ export class Vector3 {
      * @param value2 defines second vector
      * @param ref defines third vector
      * @returns ref
+     * @since 5.0.0
      */
     public static CenterToRef(value1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, ref: DeepImmutable<Vector3>): Vector3 {
         return ref.copyFromFloats((value1._x + value2._x) / 2, (value1._y + value2._y) / 2, (value1._z + value2._z) / 2);
@@ -3094,6 +3106,7 @@ export class Vector4 {
      * @param value2 defines second vector
      * @param ref defines third vector
      * @returns ref
+     * @since 5.0.0
      */
     public static CenterToRef(value1: DeepImmutable<Vector4>, value2: DeepImmutable<Vector4>, ref: DeepImmutable<Vector4>): Vector4 {
         return ref.copyFromFloats((value1.x + value2.x) / 2, (value1.y + value2.y) / 2, (value1.z + value2.z) / 2, (value1.w + value2.w) / 2);
@@ -3887,6 +3900,7 @@ export class Quaternion {
      * @param vecTo defines the direction vector to which to rotate
      * @param result the quaternion to store the result
      * @returns the updated quaternion
+     * @since 5.0.0
      */
     public static FromUnitVectorsToRef(vecFrom: DeepImmutable<Vector3>, vecTo: DeepImmutable<Vector3>, result: Quaternion): Quaternion {
         const r = Vector3.Dot(vecFrom, vecTo) + 1;
@@ -4021,12 +4035,13 @@ export class Quaternion {
     }
 
     /**
-    * Creates a new rotation value to orient an object to look towards the given forward direction with the up direction being oriented like "up", and stores it in the target quaternion.
-    * This function works in left handed mode
-    * @param forward defines the forward direction - Must be normalized and orthogonal to up.
-    * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
-    * @param ref defines the target quaternion.
-    */
+     * Creates a new rotation value to orient an object to look towards the given forward direction with the up direction being oriented like "up", and stores it in the target quaternion.
+     * This function works in left handed mode
+     * @param forward defines the forward direction - Must be normalized and orthogonal to up.
+     * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
+     * @param ref defines the target quaternion.
+     * @since 5.0.0
+     */
     public static FromLookDirectionLHToRef(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, ref: Quaternion): void {
         var rotMat = MathTmp.Matrix[0];
         Matrix.LookDirectionLHToRef(forward, up, rotMat);
@@ -4052,6 +4067,7 @@ export class Quaternion {
      * @param forward defines the forward direction - Must be normalized and orthogonal to up.
      * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
      * @param ref defines the target quaternion.
+     * @since 5.0.0
      */
     public static FromLookDirectionRHToRef(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, ref: Quaternion): void {
         var rotMat = MathTmp.Matrix[0];
@@ -4141,6 +4157,7 @@ export class Quaternion {
      * @param tangent2 defines the second tangent
      * @param time define where the derivative must be done
      * @returns 1st derivative
+     * @since 5.0.0
      */
     public static Hermite1stDerivative(value1: DeepImmutable<Quaternion>, tangent1: DeepImmutable<Quaternion>, value2: DeepImmutable<Quaternion>, tangent2: DeepImmutable<Quaternion>, time: number): Quaternion {
         let result = Quaternion.Zero();
@@ -4158,6 +4175,7 @@ export class Quaternion {
      * @param tangent2 defines the second tangent
      * @param time define where the derivative must be done
      * @param result define where to store the derivative
+     * @since 5.0.0
      */
     public static Hermite1stDerivativeToRef(value1: DeepImmutable<Quaternion>, tangent1: DeepImmutable<Quaternion>, value2: DeepImmutable<Quaternion>, tangent2: DeepImmutable<Quaternion>, time: number, result: Quaternion) {
         const t2 = time * time;
@@ -4749,6 +4767,7 @@ export class Matrix {
      * Decomposes the current Matrix into a translation, rotation and scaling components of the provided node
      * @param node the node to decompose the matrix to
      * @returns true if operation was successful
+     * @since 5.0.0
      */
     public decomposeToTransformNode(node: TransformNode): boolean {
         node.rotationQuaternion = node.rotationQuaternion || new Quaternion();
@@ -5673,6 +5692,7 @@ export class Matrix {
      * @param forward defines the forward direction - Must be normalized and orthogonal to up.
      * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
      * @returns the new matrix
+     * @since 5.0.0
      */
     public static LookDirectionLH(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>): Matrix {
         var result = new Matrix();
@@ -5686,6 +5706,7 @@ export class Matrix {
      * @param forward defines the forward direction - Must be normalized and orthogonal to up.
      * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
      * @param result defines the target matrix
+     * @since 5.0.0
      */
     public static LookDirectionLHToRef(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, result: Matrix): void {
         const back = MathTmp.Vector3[0];
@@ -5705,12 +5726,13 @@ export class Matrix {
     }
 
     /**
-    * Gets a new rotation matrix used to rotate an entity so as it looks in the direction specified by forward from the eye position, the up Vector3 being oriented like "up".
-    * This function works in right handed mode
-    * @param forward defines the forward direction - Must be normalized and orthogonal to up.
-    * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
-    * @returns the new matrix
-    */
+     * Gets a new rotation matrix used to rotate an entity so as it looks in the direction specified by forward from the eye position, the up Vector3 being oriented like "up".
+     * This function works in right handed mode
+     * @param forward defines the forward direction - Must be normalized and orthogonal to up.
+     * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
+     * @returns the new matrix
+     * @since 5.0.0
+     */
     public static LookDirectionRH(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>): Matrix {
         var result = new Matrix();
         Matrix.LookDirectionRHToRef(forward, up, result);
@@ -5723,6 +5745,7 @@ export class Matrix {
      * @param forward defines the forward direction - Must be normalized and orthogonal to up.
      * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
      * @param result defines the target matrix
+     * @since 5.0.0
      */
     public static LookDirectionRHToRef(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, result: Matrix): void {
         const right = MathTmp.Vector3[2];
@@ -5936,7 +5959,7 @@ export class Matrix {
      * @param result defines the target matrix
      * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
      * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
-     * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal)
+     * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal) @since 5.0.0
      */
     public static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true, halfZRange?: boolean, projectionPlaneTilt: number = 0): void {
         let n = znear;
@@ -5973,7 +5996,7 @@ export class Matrix {
      * @param result defines the target matrix
      * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
      * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
-     * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal)
+     * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal) @since 5.0.0
      */
     public static PerspectiveFovReverseLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true, halfZRange?: boolean, projectionPlaneTilt: number = 0): void {
         let t = 1.0 / (Math.tan(fov * 0.5));
@@ -6001,7 +6024,7 @@ export class Matrix {
      * @param znear defines the near clip plane
      * @param zfar defines the far clip plane
      * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
-     * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal)
+     * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal) @since 5.0.0
      * @returns a new matrix as a right-handed perspective projection matrix
      */
     public static PerspectiveFovRH(fov: number, aspect: number, znear: number, zfar: number, halfZRange?: boolean, projectionPlaneTilt: number = 0): Matrix {
@@ -6019,7 +6042,7 @@ export class Matrix {
      * @param result defines the target matrix
      * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
      * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
-     * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal)
+     * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal) @since 5.0.0
      */
     public static PerspectiveFovRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true, halfZRange?: boolean, projectionPlaneTilt: number = 0): void {
         //alternatively this could be expressed as:
@@ -6061,7 +6084,7 @@ export class Matrix {
      * @param result defines the target matrix
      * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
      * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
-     * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal)
+     * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal) @since 5.0.0
      */
     public static PerspectiveFovReverseRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true, halfZRange?: boolean, projectionPlaneTilt: number = 0): void {
         let t = 1.0 / (Math.tan(fov * 0.5));
@@ -6092,7 +6115,7 @@ export class Matrix {
      * @param result defines the target matrix
      * @param rightHanded defines if the matrix must be in right-handed mode (false by default)
      * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
-     * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal)
+     * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal) @since 5.0.0
      */
     public static PerspectiveFovWebVRToRef(fov: { upDegrees: number, downDegrees: number, leftDegrees: number, rightDegrees: number }, znear: number, zfar: number, result: Matrix, rightHanded = false, halfZRange?: boolean, projectionPlaneTilt: number = 0): void {
 

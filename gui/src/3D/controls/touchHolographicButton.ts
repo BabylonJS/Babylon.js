@@ -22,6 +22,7 @@ import { DomManagement } from "babylonjs/Misc/domManagement";
 
 /**
  * Class used to create a holographic button in 3D
+ * @since 5.0.0
  */
 export class TouchHolographicButton extends TouchButton3D {
     /**

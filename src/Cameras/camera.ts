@@ -198,6 +198,7 @@ export class Camera extends Node {
      * Projection plane tilt around the X axis (horizontal), set in Radians. (default is 0)
      * Can be used to make vertical lines in world space actually vertical on the screen.
      * See https://forum.babylonjs.com/t/add-vertical-shift-to-3ds-max-exporter-babylon-cameras/17480
+     * @since 5.0.0
      */
     @serialize()
     public projectionPlaneTilt = 0;
@@ -439,6 +440,7 @@ export class Camera extends Node {
 
     /**
      * Automatically tilts the projection plane, using `projectionPlaneTilt`, to correct the perspective effect on vertical lines.
+     * @since 5.0.0
      */
     public applyVerticalCorrection() {
         const rot = this.absoluteRotation.toEulerAngles();

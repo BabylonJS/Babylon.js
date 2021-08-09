@@ -32,7 +32,7 @@ export class Container extends Control {
     /** @hidden */
     protected _intermediateTexture: Nullable<DynamicTexture> = null;
 
-    /** Gets or sets boolean indicating if children should be rendered to an intermediate texture rather than directly to host, useful for alpha blending */
+    /** Gets or sets boolean indicating if children should be rendered to an intermediate texture rather than directly to host, useful for alpha blending. @since 5.0.0*/
     @serialize()
     public get renderToIntermediateTexture(): boolean {
         return this._renderToIntermediateTexture;

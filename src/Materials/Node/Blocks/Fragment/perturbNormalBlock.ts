@@ -29,7 +29,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
     /** Gets or sets a boolean indicating that normal should be inverted on Y axis */
     @editableInPropertyPage("Invert Y axis", PropertyTypeForEdition.Boolean, "PROPERTIES", { "notifiers": { "update": false } })
     public invertY = false;
-    /** Gets or sets a boolean indicating that parallax occlusion should be enabled */
+    /** Gets or sets a boolean indicating that parallax occlusion should be enabled @since 5.0.0 */
     @editableInPropertyPage("Use parallax occlusion", PropertyTypeForEdition.Boolean)
     public useParallaxOcclusion = false;
 
@@ -117,6 +117,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
 
     /**
     * Gets the parallax scale input component
+    * @since 5.0.0
     */
     public get parallaxScale(): NodeMaterialConnectionPoint {
         return this._inputs[7];
@@ -124,6 +125,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
 
     /**
     * Gets the parallax height input component
+    * @since 5.0.0
     */
     public get parallaxHeight(): NodeMaterialConnectionPoint {
         return this._inputs[8];
@@ -138,6 +140,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
 
     /**
      * Gets the uv offset output component
+     * @since 5.0.0
      */
     public get uvOffset(): NodeMaterialConnectionPoint {
         return this._outputs[1];
