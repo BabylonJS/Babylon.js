@@ -43,6 +43,7 @@ export class STLFileLoader implements ISceneLoaderPlugin {
      * Defines if Y and Z axes are swapped or not when loading an STL file.
      * The default is false to maintain backward compatibility. When set to
      * true, coordinates from the STL file are used without change.
+     * @since 5.0.0
      */
     public static DO_NOT_ALTER_FILE_COORDINATES = false;
 

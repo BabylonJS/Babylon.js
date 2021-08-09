@@ -51,6 +51,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
     /**
      * The list of child meshes that can receive drag events
      * If `null`, all child meshes will receive drag event
+     * @since 5.0.0
      */
     public draggableMeshes: Nullable<AbstractMesh[]> = null;
 

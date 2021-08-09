@@ -17,6 +17,7 @@ interface IBufferViewMeshopt extends IBufferView {
  * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Vendor/EXT_meshopt_compression)
  *
  * This extension uses a WebAssembly decoder module from https://github.com/zeux/meshoptimizer/tree/master/js
+ * @since 5.0.0
  */
 export class EXT_meshopt_compression implements IGLTFLoaderExtension {
     /**

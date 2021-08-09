@@ -15,6 +15,7 @@ declare type NodeMaterial = import("../../nodeMaterial").NodeMaterial;
 
 /**
  * Block used to retrieve the depth (zbuffer) of the scene
+ * @since 5.0.0
  */
 export class SceneDepthBlock extends NodeMaterialBlock {
 

@@ -98,6 +98,7 @@ export class BoundingBoxGizmo extends Gizmo {
     /**
      * Sets the axis factor
      * @param factor the Vector3 value
+     * @since 5.0.0
      */
     public set axisFactor(factor: Vector3) {
         this._axisFactor = factor;
@@ -125,6 +126,7 @@ export class BoundingBoxGizmo extends Gizmo {
     /**
      * Gets the axis factor
      * @returns the Vector3 factor value
+     * @since 5.0.0
      */
     public get axisFactor(): Vector3 {
         return this._axisFactor;
@@ -133,6 +135,7 @@ export class BoundingBoxGizmo extends Gizmo {
     /**
      * Sets scale drag speed value
      * @param value the new speed value
+     * @since 5.0.0
      */
     public set scaleDragSpeed(value: number) {
         this._scaleDragSpeed = value;
@@ -141,6 +144,7 @@ export class BoundingBoxGizmo extends Gizmo {
     /**
      * Gets scale drag speed
      * @returns the scale speed number
+     * @since 5.0.0
      */
     public get scaleDragSpeed(): number {
         return this._scaleDragSpeed;

@@ -671,6 +671,7 @@ export class CubeTextureAssetTask extends AbstractAssetTask implements ITextureA
         public files?: string[],
         /**
          * Defines the prefiltered texture option (default is false)
+         * @since 5.0.0
          */
         public prefiltered?: boolean) {
         super(name);

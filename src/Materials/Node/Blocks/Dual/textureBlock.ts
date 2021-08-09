@@ -82,6 +82,7 @@ export class TextureBlock extends NodeMaterialBlock {
 
     /**
      * Gets or sets a boolean indicating if multiplication of texture with level should be disabled
+     * @since 5.0.0
      */
     public disableLevelMultiplication = false;
 
@@ -170,6 +171,7 @@ export class TextureBlock extends NodeMaterialBlock {
 
     /**
      * Gets the level output component
+     * @since 5.0.0
      */
     public get level(): NodeMaterialConnectionPoint {
         return this._outputs[6];

@@ -231,6 +231,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * Indicates that the instanced meshes should be sorted from back to front before rendering if their material is transparent
+     * @since 5.0.0
      */
     public static INSTANCEDMESH_SORT_TRANSPARENT = false;
 
@@ -261,6 +262,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /**
      * Will notify when the mesh is completely ready, including materials.
      * Observers added to this observable will be removed once triggered
+     * @since 5.0.0
      */
     public onMeshReadyObservable: Observable<Mesh>;
 
@@ -434,6 +436,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /**
      * Gets or sets a boolean indicating whether to render ignoring the active camera's max z setting. (false by default)
      * Note this will reduce performance when set to true.
+     * @since 5.0.0
      */
     public ignoreCameraMaxZ = false;
 
