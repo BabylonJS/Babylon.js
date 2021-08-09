@@ -306,7 +306,6 @@ export class Material implements IAnimatable {
 
     /**
      * Specifies if back or front faces should be culled (when culling is enabled)
-     * @since 5.0.0
      */
     @serialize("cullBackFaces")
     protected _cullBackFaces = true;
@@ -645,7 +644,6 @@ export class Material implements IAnimatable {
 
     /**
      * Gives access to the stencil properties of the material
-     * @since 5.0.0
      */
     public readonly stencil = new MaterialStencilState();
 

@@ -106,7 +106,6 @@ export class WebRequest implements IWebRequest {
 
     /**
      * Gets or sets the timeout value in milliseconds
-     * @since 5.0.0
      */
     public get timeout(): number {
         return this._xhr.timeout;

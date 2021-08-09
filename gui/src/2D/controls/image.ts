@@ -228,7 +228,6 @@ export class Image extends Control {
 
     /**
      * Gets the image width
-     * @since 5.0.0
      */
     public get imageWidth(): number {
         return this._imageWidth;
@@ -236,7 +235,6 @@ export class Image extends Control {
 
     /**
      * Gets the image height
-     * @since 5.0.0
      */
     public get imageHeight(): number {
         return this._imageHeight;

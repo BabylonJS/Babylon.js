@@ -33,7 +33,6 @@ export interface IExportOptions {
 
     /**
      * Indicates if unused vertex uv attributes should be included in export
-     * @since 5.0.0
      */
     exportUnusedUVs?: boolean;
 

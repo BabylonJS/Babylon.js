@@ -292,13 +292,11 @@ export class ThinEngine {
 
     /**
      * Indicates if the z range in NDC space is 0..1 (value: true) or -1..1 (value: false)
-     * @since 5.0.0
      */
     public readonly isNDCHalfZRange = false;
 
     /**
      * Indicates that the origin of the texture/framebuffer space is the bottom left corner. If false, the origin is top left
-     * @since 5.0.0
      */
      public readonly hasOriginBottomLeft = true;
 

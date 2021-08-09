@@ -171,7 +171,6 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
     public onLoadErrorObservable = new Observable<string>();
     /**
      * Observable raised when the texture finished loading
-     * @since 5.0.0
      */
     public onLoadObservable = new Observable<void>();
 

@@ -444,7 +444,7 @@ export class TransformNode extends Node {
     /**
      * Prevents the World matrix to be computed any longer
      * @param newWorldMatrix defines an optional matrix to use as world matrix
-     * @param decompose defines whether to decompose the given newWorldMatrix or directly assign @since 5.0.0
+     * @param decompose defines whether to decompose the given newWorldMatrix or directly assign
      * @returns the TransformNode.
      */
     public freezeWorldMatrix(newWorldMatrix: Nullable<Matrix> = null, decompose = false): TransformNode {
@@ -814,7 +814,7 @@ export class TransformNode extends Node {
 
     /**
      * Detach the transform node if its associated with a bone
-     * @param resetToPreviousParent Indicates if the parent that was in effect when attachToBone was called should be set back or if we should set parent to null instead (defaults to the latter) @since 5.0.0
+     * @param resetToPreviousParent Indicates if the parent that was in effect when attachToBone was called should be set back or if we should set parent to null instead (defaults to the latter)
      * @returns this object
      */
     public detachFromBone(resetToPreviousParent = false): TransformNode {
