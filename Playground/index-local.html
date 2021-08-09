@@ -68,11 +68,12 @@
                         wasmBinaryUrl: GetAbsoluteUrl("../dist/preview%20release/draco_decoder_gltf.wasm"),
                         fallbackUrl: GetAbsoluteUrl("../dist/preview%20release/draco_decoder_gltf.js")
                     };
+                    BABYLON.MeshoptCompression.Configuration.decoder = {
+                        url: GetAbsoluteUrl("../dist/preview%20release/meshopt_decoder.js")
+                    };
                     BABYLON.GLTFValidation.Configuration = {
                         url: GetAbsoluteUrl("../dist/preview%20release/gltf_validator.js")
                     };
-                    BABYLON.GLTF2.Loader.Extensions.EXT_meshopt_compression.DecoderPath =
-                        GetAbsoluteUrl("../dist/preview%20release/meshopt_decoder.js");
                     BABYLON.KhronosTextureContainer2.URLConfig = {
                         jsDecoderModule: GetAbsoluteUrl("../dist/preview%20release/babylon.ktx2Decoder.js"),
                         wasmUASTCToASTC: GetAbsoluteUrl("../dist/preview%20release/ktx2Transcoders/uastc_astc.wasm"),
