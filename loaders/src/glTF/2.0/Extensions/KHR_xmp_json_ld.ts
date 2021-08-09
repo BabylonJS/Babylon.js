@@ -5,8 +5,8 @@ import { IKHRXmpJsonLd_Gltf, IKHRXmpJsonLd_Node } from 'babylonjs-gltf2interface
 const NAME = "KHR_xmp_json_ld";
 
 /**
- * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1893)
- * !!! Experimental Extension Subject to Changes !!!
+ * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_xmp_json_ld)
+ * @since 5.0.0
  */
 export class KHR_xmp_json_ld implements IGLTFLoaderExtension {
     /**
