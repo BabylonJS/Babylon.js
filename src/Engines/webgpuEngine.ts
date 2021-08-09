@@ -181,7 +181,6 @@ export interface WebGPUEngineOptions extends GPURequestAdapterOptions {
 
 /**
  * The web GPU engine class provides support for WebGPU version of babylon.js.
- * 
  * @since 5.0.0
  */
 export class WebGPUEngine extends Engine {

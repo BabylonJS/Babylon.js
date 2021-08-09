@@ -32,7 +32,6 @@ export enum ConditionalBlockConditions {
 
 /**
  * Block used to apply conditional operation between floats
- * 
  * @since 5.0.0
  */
 export class ConditionalBlock extends NodeMaterialBlock {
