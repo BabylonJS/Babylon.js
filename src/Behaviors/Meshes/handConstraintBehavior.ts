@@ -46,6 +46,7 @@ export enum HandConstraintOrientation {
 
 /**
  * Hand constraint behavior that makes the attached `TransformNode` follow hands in XR experiences.
+ * @since 5.0.0
  */
 export class HandConstraintBehavior implements Behavior<TransformNode> {
     private _scene: Scene;

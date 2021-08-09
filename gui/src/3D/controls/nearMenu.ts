@@ -12,6 +12,7 @@ import { PickingInfo } from "babylonjs/Collisions/pickingInfo";
 
 /**
  * NearMenu that displays buttons and follows the camera
+ * @since 5.0.0
  */
 export class NearMenu extends TouchHolographicMenu {
     /**
