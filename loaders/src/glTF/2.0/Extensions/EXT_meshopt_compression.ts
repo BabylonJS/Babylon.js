@@ -1,5 +1,4 @@
 import { Nullable } from "babylonjs/types";
-import { Tools } from "babylonjs/Misc/tools";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { ArrayItem, GLTFLoader } from "../glTFLoader";
 import { IBufferView } from "../glTFLoaderInterfaces";
