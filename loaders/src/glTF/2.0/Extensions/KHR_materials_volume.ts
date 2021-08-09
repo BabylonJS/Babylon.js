@@ -16,8 +16,8 @@ interface IMaterialsTransmission {
 }
 
 /**
- * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1726)
- * !!! Experimental Extension Subject to Changes !!!
+ * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_volume)
+ * @since 5.0.0
  */
 export class KHR_materials_volume implements IGLTFLoaderExtension {
     /**

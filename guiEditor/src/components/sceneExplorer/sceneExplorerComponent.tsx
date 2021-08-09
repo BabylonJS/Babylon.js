@@ -185,6 +185,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 break;
             case "Delete":
                 this.state.selectedEntity.dispose();
+                this.forceUpdate();
                 break;
             default:
                 break;

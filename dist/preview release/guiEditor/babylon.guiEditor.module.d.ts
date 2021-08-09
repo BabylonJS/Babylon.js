@@ -393,6 +393,7 @@ declare module "babylonjs-gui-editor/sharedUiComponents/lines/textInputLineCompo
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
         icon?: string;
         iconLabel?: string;
+        noUnderline?: boolean;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
@@ -2465,6 +2466,7 @@ declare module GUIEDITOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         icon?: string;
         iconLabel?: string;
+        noUnderline?: boolean;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;

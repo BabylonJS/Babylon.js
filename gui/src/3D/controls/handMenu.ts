@@ -8,6 +8,7 @@ import { WebXRExperienceHelper } from "babylonjs/XR/webXRExperienceHelper";
 
 /**
  * Hand menu that displays buttons and floats around the hand.
+ * @since 5.0.0
  */
 export class HandMenu extends TouchHolographicMenu {
     private _handConstraintBehavior: HandConstraintBehavior;

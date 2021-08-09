@@ -749,7 +749,9 @@ export class ThinEngine {
                 this._checkForMobile();
 
                 // Set up event listener to check when window is resized (used to get emulator activation to work properly)
-                window.addEventListener("resize", this._checkForMobile);
+                if (DomManagement.IsWindowObjectExist()) {
+                    window.addEventListener("resize", this._checkForMobile);
+                }
 
                 let ua = navigator.userAgent;
                 for (var exception of ThinEngine.ExceptionList) {

@@ -56,8 +56,12 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
                 onLoad();
             }
         }).catch((err) => {
-            Tools.Warn("Failed to transcode Basis file, transcoding may not be supported on this device");
+            const errorMessage = "Failed to transcode Basis file, transcoding may not be supported on this device";
+            Tools.Warn(errorMessage);
             texture.isReady = true;
+            if (onError) {
+                onError(err);
+            }
         });
     }
 
@@ -68,7 +72,7 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
      * @param callback defines the method to call once ready to upload
      */
     public loadData(data: ArrayBufferView, texture: InternalTexture,
-        callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void): void {
+        callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, failedLoading?: boolean) => void): void {
         var caps = texture.getEngine().getCaps();
         var transcodeConfig = {
             supportedCompressionFormats: {
@@ -87,7 +91,7 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
         }).catch((err) => {
             Tools.Warn("Failed to transcode Basis file, transcoding may not be supported on this device");
             callback(0, 0, false, false, () => {
-            });
+            }, true);
         });
     }
 }
