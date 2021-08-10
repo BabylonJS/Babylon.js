@@ -8,7 +8,7 @@ import { PhysicsImpostor, IPhysicsEnabledObject } from "../../Physics/physicsImp
 import { PhysicsJoint, IMotorEnabledJoint, DistanceJointData, SpringJointData } from "../../Physics/physicsJoint";
 import { PhysicsEngine } from "../../Physics/physicsEngine";
 import { PhysicsRaycastResult } from "../physicsRaycastResult";
-import { TransformNode } from "../../Meshes/transformNode";
+import { TransformNode } from '../../Meshes/transformNode';
 
 //declare var require: any;
 declare var CANNON: any;
@@ -140,7 +140,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
             this.world.addEventListener("preStep", impostor.beforeStep);
             this.world.addEventListener("postStep", impostor.afterStep);
             impostor.physicsBody.addShape(shape);
-            if (typeof this.world.addBody === "function") {
+            if (typeof this.world.addBody === 'function') {
                 this.world.addBody(impostor.physicsBody);
             } else {
                 this.world.add(impostor.physicsBody);
@@ -189,11 +189,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
                         }
                         childImpostor.parent = mainImpostor;
                         childImpostor.resetUpdateFlags();
-                        mainImpostor.physicsBody.addShape(
-                            this._createShape(childImpostor),
-                            new this.BJSCANNON.Vec3(pPosition.x, pPosition.y, pPosition.z),
-                            new this.BJSCANNON.Quaternion(q.x, q.y, q.z, q.w)
-                        );
+                        mainImpostor.physicsBody.addShape(this._createShape(childImpostor), new this.BJSCANNON.Vec3(pPosition.x, pPosition.y, pPosition.z), new this.BJSCANNON.Quaternion(q.x, q.y, q.z, q.w));
                         //Add the mass of the children.
                         mainImpostor.physicsBody.mass += childImpostor.getParam("mass");
                     }
@@ -674,7 +670,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
         result.z = shape.halfExtents.z * 2;
     }
 
-    public dispose() {}
+    public dispose() { }
 
     private _extendNamespace() {
         //this will force cannon to execute at least one step when using interpolation
