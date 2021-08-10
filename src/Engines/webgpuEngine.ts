@@ -398,11 +398,18 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * Gets a boolean indicating if the engine can be instantiated (ie. if a WebGPU context can be found)
-     * @returns true if the engine can be created
+     * Gets a Promise<boolean> indicating if the engine can be instantiated (ie. if a WebGPU context can be found)
+     */
+     public static get IsSupportedAsync(): Promise<boolean> {
+        return !navigator.gpu ? Promise.resolve(false) : navigator.gpu.requestAdapter().then((adapter: GPUAdapter | null) => adapter !== null);
+    }
+
+    /**
+     * Not supported by WebGPU, you should call IsSupportedAsync instead!
      */
     public static get IsSupported(): boolean {
-        return !!navigator.gpu;
+        Logger.Warn("You must call IsSupportedAsync for WebGPU!");
+        return false;
     }
 
     /**
@@ -1959,6 +1966,14 @@ export class WebGPUEngine extends Engine {
         }
 
         this._setInternalTexture(name, texture);
+    }
+
+    /**
+     * Generates the mipmaps for a texture
+     * @param texture texture to generate the mipmaps for
+     */
+    public generateMipmaps(texture: InternalTexture): void {
+        this._generateMipmaps(texture, this._renderTargetEncoder);
     }
 
     /** @hidden */

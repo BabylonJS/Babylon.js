@@ -332,7 +332,7 @@
             "runtimeArgs": [
                 "--enable-unsafe-es3-apis"
             ]
-        },        
+        },
         {
             "name": "Launch Build Validation (Chrome)",
             "type": "chrome",
@@ -345,7 +345,7 @@
             "runtimeArgs": [
                 "--enable-unsafe-es3-apis"
             ]
-        },  
+        },
         {
             "name": "Launch Build Validation (Edge)",
             "type": "edge",
@@ -405,6 +405,19 @@
             "type": "chrome",
             "request": "launch",
             "url": "http://localhost:1338/sandbox/public/index-local.html?reflector=true",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
+            "preLaunchTask": "run",
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis"
+            ]
+        },
+        {
+            "name": "Launch 3D Commerce Viewer Certification (Chrome)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:1338/tests/certification/index.html",
             "webRoot": "${workspaceRoot}/",
             "sourceMaps": true,
             "preLaunchTask": "run",
