@@ -43,4 +43,8 @@ export interface IPerfCustomEvent {
     * The name of the event.
     */
    name: string;
+   /**
+    * The value for the event, if set we will use it as the value, otherwise we will count the number of occurences.
+    */
+   value?: number;
 }

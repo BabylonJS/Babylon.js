@@ -112,7 +112,13 @@ export class PerformanceViewerCollector {
             });
 
             const stringObserver = this._customEventObservable.add((eventVal) => {
-                if (name === eventVal.name) {
+                if (name !== eventVal.name) {
+                    return;
+                }
+
+                if (eventVal.value !== undefined) {
+                    counter = eventVal.value;
+                } else {
                     counter++;
                 }
             });
