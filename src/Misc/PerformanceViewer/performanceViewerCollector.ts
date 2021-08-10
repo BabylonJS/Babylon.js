@@ -87,7 +87,8 @@ export class PerformanceViewerCollector {
     }
 
     /**
-     * Registers a custom string event which will be callable via sendEvent, this method allows counting of occurences of an event being triggered.
+     * Registers a custom string event which will be callable via sendEvent, this method allows counting of occurences of an event being triggered, or the capturing of the value
+     * of the event, depending on if the event.value is provided.
      * @param name The name of the event to register
      * @param forceUpdate if the code should force add an event, and replace the last one.
      * @returns The event registered, used in sendEvent
@@ -143,7 +144,7 @@ export class PerformanceViewerCollector {
     }
 
     /**
-     * Lets the perf collector know there has been a new occurence of an event.
+     * Lets the perf collector handle an event, occurences or event value depending on if the event.value params is set.
      * @param event the event to handle an occurence for
      */
     public sendEvent(event: IPerfCustomEvent) {
