@@ -4025,7 +4025,7 @@ export class ThinEngine {
 
         // Create the depth/stencil buffer
         if (generateStencilBuffer && generateDepthBuffer) {
-            return this._getDepthStencilBuffer(width, height, samples, gl.DEPTH_STENCIL, gl.DEPTH24_STENCIL8, gl.DEPTH_STENCIL_ATTACHMENT);
+            return this._createRenderBuffer(width, height, samples, gl.DEPTH_STENCIL, gl.DEPTH24_STENCIL8, gl.DEPTH_STENCIL_ATTACHMENT);
         }
         if (generateDepthBuffer) {
             let depthFormat = gl.DEPTH_COMPONENT16;
@@ -4033,20 +4033,21 @@ export class ThinEngine {
                 depthFormat = gl.DEPTH_COMPONENT32F;
             }
 
-            return this._getDepthStencilBuffer(width, height, samples, depthFormat, depthFormat, gl.DEPTH_ATTACHMENT);
+            return this._createRenderBuffer(width, height, samples, depthFormat, depthFormat, gl.DEPTH_ATTACHMENT);
         }
         if (generateStencilBuffer) {
-            return this._getDepthStencilBuffer(width, height, samples, gl.STENCIL_INDEX8, gl.STENCIL_INDEX8, gl.STENCIL_ATTACHMENT);
+            return this._createRenderBuffer(width, height, samples, gl.STENCIL_INDEX8, gl.STENCIL_INDEX8, gl.STENCIL_ATTACHMENT);
         }
 
         return null;
     }
 
-    private _getDepthStencilBuffer = (width: number, height: number, samples: number, internalFormat: number, msInternalFormat: number, attachment: number) => {
-        var gl = this._gl;
-        const depthStencilBuffer = gl.createRenderbuffer();
+    /** @hidden */
+    public _createRenderBuffer(width: number, height: number, samples: number, internalFormat: number, msInternalFormat: number, attachment: number): Nullable<WebGLRenderbuffer> {
+        const gl = this._gl;
+        const renderBuffer = gl.createRenderbuffer();
 
-        gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
+        gl.bindRenderbuffer(gl.RENDERBUFFER, renderBuffer);
 
         if (samples > 1 && gl.renderbufferStorageMultisample) {
             gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, msInternalFormat, width, height);
@@ -4054,11 +4055,11 @@ export class ThinEngine {
             gl.renderbufferStorage(gl.RENDERBUFFER, internalFormat, width, height);
         }
 
-        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, attachment, gl.RENDERBUFFER, depthStencilBuffer);
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, attachment, gl.RENDERBUFFER, renderBuffer);
 
         gl.bindRenderbuffer(gl.RENDERBUFFER, null);
 
-        return depthStencilBuffer;
+        return renderBuffer;
     }
 
     /** @hidden */

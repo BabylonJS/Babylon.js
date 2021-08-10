@@ -1619,16 +1619,11 @@ export class Engine extends ThinEngine {
             texture._MSAAFramebuffer = framebuffer;
             this._bindUnboundFramebuffer(texture._MSAAFramebuffer);
 
-            var colorRenderbuffer = gl.createRenderbuffer();
+            const colorRenderbuffer = this._createRenderBuffer(texture.width, texture.height, samples, -1 /* not used */, this._getRGBAMultiSampleBufferFormat(texture.type), gl.COLOR_ATTACHMENT0);
 
             if (!colorRenderbuffer) {
                 throw new Error("Unable to create multi sampled framebuffer");
             }
-
-            gl.bindRenderbuffer(gl.RENDERBUFFER, colorRenderbuffer);
-            gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, this._getRGBAMultiSampleBufferFormat(texture.type), texture.width, texture.height);
-
-            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, colorRenderbuffer);
 
             texture._MSAARenderBuffer = colorRenderbuffer;
         } else {

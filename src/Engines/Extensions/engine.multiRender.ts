@@ -324,13 +324,13 @@ ThinEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function (te
         return samples;
     }
 
-    var count = textures[0]._attachments!.length;
+    const count = textures[0]._attachments!.length;
 
     if (count === 0) {
         return 1;
     }
 
-    var gl = this._gl;
+    const gl = this._gl;
 
     samples = Math.min(samples, this.getCaps().maxMSAASamples);
 
@@ -345,7 +345,7 @@ ThinEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function (te
         textures[0]._MSAAFramebuffer = null;
     }
 
-    for (var i = 0; i < count; i++) {
+    for (let i = 0; i < count; i++) {
         if (textures[i]._MSAARenderBuffer) {
             gl.deleteRenderbuffer(textures[i]._MSAARenderBuffer);
             textures[i]._MSAARenderBuffer = null;
@@ -353,7 +353,7 @@ ThinEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function (te
     }
 
     if (samples > 1 && gl.renderbufferStorageMultisample) {
-        let framebuffer = gl.createFramebuffer();
+        const framebuffer = gl.createFramebuffer();
 
         if (!framebuffer) {
             throw new Error("Unable to create multi sampled framebuffer");
@@ -363,28 +363,23 @@ ThinEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function (te
 
         let depthStencilBuffer = this._setupFramebufferDepthAttachments(textures[0]._generateStencilBuffer, textures[0]._generateDepthBuffer, textures[0].width, textures[0].height, samples);
 
-        var attachments = [];
+        const attachments = [];
 
-        for (var i = 0; i < count; i++) {
-            var texture = textures[i];
-            var attachment = (<any>gl)[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + i : "COLOR_ATTACHMENT" + i + "_WEBGL"];
+        for (let i = 0; i < count; i++) {
+            const texture = textures[i];
+            const attachment = (<any>gl)[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + i : "COLOR_ATTACHMENT" + i + "_WEBGL"];
 
-            var colorRenderbuffer = gl.createRenderbuffer();
+            const colorRenderbuffer = this._createRenderBuffer(texture.width, texture.height, samples, -1 /* not used */, this._getRGBAMultiSampleBufferFormat(texture.type), attachment);
 
             if (!colorRenderbuffer) {
                 throw new Error("Unable to create multi sampled framebuffer");
             }
 
-            gl.bindRenderbuffer(gl.RENDERBUFFER, colorRenderbuffer);
-            gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, this._getRGBAMultiSampleBufferFormat(texture.type), texture.width, texture.height);
-
-            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, attachment, gl.RENDERBUFFER, colorRenderbuffer);
-
             texture._MSAAFramebuffer = framebuffer;
             texture._MSAARenderBuffer = colorRenderbuffer;
             texture.samples = samples;
             texture._depthStencilBuffer = depthStencilBuffer;
-            gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+
             attachments.push(attachment);
         }
         if (initializeBuffers) {
