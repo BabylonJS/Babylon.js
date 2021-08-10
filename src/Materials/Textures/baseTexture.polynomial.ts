@@ -26,7 +26,7 @@ BaseTexture.prototype.forceSphericalPolynomialsRecompute = function(): void {
         this._texture._sphericalPolynomialPromise = null;
         this._texture._sphericalPolynomialComputed = false;
     }
-}
+};
 
 Object.defineProperty(BaseTexture.prototype, "sphericalPolynomial", {
     get: function (this: BaseTexture) {
