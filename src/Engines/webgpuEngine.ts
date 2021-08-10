@@ -1968,6 +1968,14 @@ export class WebGPUEngine extends Engine {
         this._setInternalTexture(name, texture);
     }
 
+    /**
+     * Generates the mipmaps for a texture
+     * @param texture texture to generate the mipmaps for
+     */
+    public generateMipmaps(texture: InternalTexture): void {
+        this._generateMipmaps(texture, this._renderTargetEncoder);
+    }
+
     /** @hidden */
     public _generateMipmaps(texture: InternalTexture, commandEncoder?: GPUCommandEncoder) {
         const gpuTexture = texture._hardwareTexture?.underlyingResource;
