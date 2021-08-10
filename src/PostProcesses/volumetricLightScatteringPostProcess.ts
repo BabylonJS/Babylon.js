@@ -127,13 +127,13 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
      */
     constructor(name: string, ratio: any, camera: Camera, mesh?: Mesh, samples: number = 100, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean, scene?: Scene) {
         super(name, "volumetricLightScattering", ["decay", "exposure", "weight", "meshPositionOnScreen", "density"], ["lightScatteringSampler"], ratio.postProcessRatio || ratio, camera, samplingMode, engine, reusable, "#define NUM_SAMPLES " + samples);
-        scene = <Scene>((camera === null) ? scene : camera.getScene()); // parameter "scene" can be null.
+        scene = camera?.getScene() ?? scene; // parameter "scene" can be null.
 
         engine = scene.getEngine();
         this._viewPort = new Viewport(0, 0, 1, 1).toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
 
         // Configure mesh
-        this.mesh = (<Mesh>((mesh !== null) ? mesh : VolumetricLightScatteringPostProcess.CreateDefaultMesh("VolumetricLightScatteringMesh", scene)));
+        this.mesh = mesh ?? VolumetricLightScatteringPostProcess.CreateDefaultMesh("VolumetricLightScatteringMesh", scene);
         this._volumetricLightScatteringPass = new DrawWrapper(engine);
 
         // Configure

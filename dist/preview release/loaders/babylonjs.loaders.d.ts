@@ -1721,12 +1721,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
          * Defines whether this extension is enabled.
          */
         enabled: boolean;
-        /**
-         * Path to decoder module; defaults to https://preview.babylonjs.com/meshopt_decoder.js
-         */
-        static DecoderPath: string;
         private _loader;
-        private static _DecoderPromise?;
         /** @hidden */
         constructor(loader: GLTFLoader);
         /** @hidden */

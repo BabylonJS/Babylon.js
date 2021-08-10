@@ -100,13 +100,13 @@ export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: b
 
     checkUrl() {
         // Check URL
-        var indexOf = location.href.indexOf("?");
+        const indexOf = location.href.indexOf("?");
         if (indexOf !== -1) {
-            var params = location.href.substr(indexOf + 1).split("&");
-            for (var index = 0; index < params.length; index++) {
-                var param = params[index].split("=");
-                var name = param[0];
-                var value = param[1];
+            const params = location.href.substr(indexOf + 1).split("&");
+            for (const param of params) {
+                const split = param.split("=", 2);
+                const name = split[0];
+                const value = split[1];
                 switch (name) {
                     case "assetUrl": {
                         this._assetUrl = value;
