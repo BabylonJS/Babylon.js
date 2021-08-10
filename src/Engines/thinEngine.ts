@@ -4939,6 +4939,13 @@ export class ThinEngine {
     private static _HasMajorPerformanceCaveat: Nullable<boolean> = null;
 
     /**
+     * Gets a Promise<boolean> indicating if the engine can be instantiated (ie. if a webGL context can be found)
+     */
+    public static get IsSupportedAsync(): Promise<boolean> {
+        return Promise.resolve(this.isSupported());
+    }
+
+    /**
      * Gets a boolean indicating if the engine can be instantiated (ie. if a webGL context can be found)
      */
     public static get IsSupported(): boolean {
