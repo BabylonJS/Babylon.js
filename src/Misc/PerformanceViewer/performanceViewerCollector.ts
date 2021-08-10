@@ -87,8 +87,9 @@ export class PerformanceViewerCollector {
     }
 
     /**
-     * Registers a custom string event which will be callable via sendEvent, this method allows counting of occurences of an event being triggered, or the capturing of the value
-     * of the event, depending on if the event.value is provided.
+     * Registers a custom string event which will be callable via sendEvent. This method returns an event object which will contain the id of the event.
+     * The user can set a value optionally, which will be used in the sendEvent method. If the value is set, we will record this value at the end of each frame,
+     * if not we will increment our counter and record the value of the counter at the end of each frame. The value recorded is 0 if no sendEvent method is called, within a frame.
      * @param name The name of the event to register
      * @param forceUpdate if the code should force add an event, and replace the last one.
      * @returns The event registered, used in sendEvent
