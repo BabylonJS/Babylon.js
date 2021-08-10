@@ -2,7 +2,6 @@ import { Nullable } from "../../types";
 import { CubeMapToSphericalPolynomialTools } from "../../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
 import { SphericalPolynomial } from "../../Maths/sphericalPolynomial";
 import { BaseTexture } from "./baseTexture";
-import { InternalTexture } from "./internalTexture";
 
 declare module "./baseTexture" {
     export interface BaseTexture {
@@ -16,16 +15,17 @@ declare module "./baseTexture" {
         /**
          * Force recomputation of spherical polynomials.
          * Can be useful if you generate a cubemap multiple times (from a probe for eg) and you need the proper polynomials each time
-         * @param texture texture to recompute the spherical polynomials for
          */
-        forceSphericalPolynomialsRecompute(texture: InternalTexture): void;
+        forceSphericalPolynomialsRecompute(): void;
     }
 }
 
-BaseTexture.prototype.forceSphericalPolynomialsRecompute = function(texture: InternalTexture): void {
-    texture._sphericalPolynomial = null;
-    texture._sphericalPolynomialPromise = null;
-    texture._sphericalPolynomialComputed = false;
+BaseTexture.prototype.forceSphericalPolynomialsRecompute = function(): void {
+    if (this._texture) {
+        this._texture._sphericalPolynomial = null;
+        this._texture._sphericalPolynomialPromise = null;
+        this._texture._sphericalPolynomialComputed = false;
+    }
 }
 
 Object.defineProperty(BaseTexture.prototype, "sphericalPolynomial", {
