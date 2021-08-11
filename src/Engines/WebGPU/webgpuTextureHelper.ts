@@ -197,7 +197,7 @@ export class WebGPUTextureHelper {
             if (!modules) {
                 let vertexCode = this._glslang.compileGLSL(defines + shadersForPipelineType[type].vertex, 'vertex');
                 let fragmentCode = this._glslang.compileGLSL(defines + shadersForPipelineType[type].fragment, 'fragment');
-                
+
                 if (this._tintWASM) {
                     vertexCode = this._tintWASM.convertSpirV2WGSL(vertexCode);
                     fragmentCode = this._tintWASM.convertSpirV2WGSL(fragmentCode);
