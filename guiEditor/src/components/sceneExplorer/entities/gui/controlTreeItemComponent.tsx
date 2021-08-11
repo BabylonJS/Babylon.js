@@ -76,6 +76,7 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
         }
         event.preventDefault();
         this.dragOverHover = true;
+        this.forceUpdate();
     }
 
     drop(): void {
