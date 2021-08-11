@@ -180,6 +180,7 @@ export class WebXRInputSource {
      * Updates the controller pose based on the given XRFrame
      * @param xrFrame xr frame to update the pose with
      * @param referenceSpace reference space to use
+     * @param xrCamera the xr camera, used for parenting
      */
     public updateFromXRFrame(xrFrame: XRFrame, referenceSpace: XRReferenceSpace, xrCamera: WebXRCamera) {
         const pose = xrFrame.getPose(this.inputSource.targetRaySpace, referenceSpace);
