@@ -38,6 +38,7 @@ import { FileTools, LoadFileError, RequestFileError, ReadFileError } from './Mis
 import { IClipPlanesHolder } from './Misc/interfaces/iClipPlanesHolder';
 import { IPointerEvent } from "./Events/deviceInputEvents";
 import { LightConstants } from "./Lights/lightConstants";
+import { IComputePressureData, ComputePressureObserver } from "./Misc/computePressure";
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -1503,6 +1504,17 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         if (!options || !options.virtual) {
             this._engine.onNewSceneAddedObservable.notifyObservers(this);
+        }
+
+        if ('ComputePressureObserver' in window) {
+            this._computePressureObserver = new ComputePressureObserver((update) => {
+                this.onComputePressureChanged.notifyObservers(update);
+            }, {
+                // Thresholds divide the interval [0.0 .. 1.0] into ranges.
+                cpuUtilizationThresholds: [0.25, 0.50, 0.75, 0.9],
+                cpuSpeedThresholds: [0.5],
+            });
+            this._computePressureObserver.observe();
         }
     }
 
@@ -4612,6 +4624,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.onPreKeyboardObservable.clear();
         this.onKeyboardObservable.clear();
         this.onActiveCameraChanged.clear();
+        this.onComputePressureChanged.clear();
+
+        this._computePressureObserver?.unobserve();
+        this._computePressureObserver = undefined;
 
         this.detachControl();
 
@@ -5195,4 +5211,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public _getPerfCollector(): PerformanceViewerCollector {
         throw _DevTools.WarnImport("performanceViewerSceneExtension");
     }
+
+    private _computePressureObserver: ComputePressureObserver | undefined;
+
+    /**
+     * An event triggered when the cpu usage/speed meets certain thresholds.
+     * Note: Compute pressure is an experimental API.
+     */
+    public onComputePressureChanged = new Observable<IComputePressureData>();
 }

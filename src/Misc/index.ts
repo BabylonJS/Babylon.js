@@ -55,4 +55,5 @@ export * from './timer';
 export * from "./copyTools";
 export * from "./reflector";
 export * from "./domManagement";
+export * from "./computePressure";
 export * from "./PerformanceViewer/index";

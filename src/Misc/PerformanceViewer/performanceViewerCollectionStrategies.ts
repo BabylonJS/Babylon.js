@@ -1,7 +1,7 @@
 import { EngineInstrumentation } from "../../Instrumentation/engineInstrumentation";
 import { Scene } from "../../scene";
 import { PrecisionDate } from "../precisionDate";
-declare var ComputePressureObserver: any;
+
 /**
  * Defines the general structure of what is necessary for a collection strategy.
  */
@@ -50,26 +50,15 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the cpu utilization strategy
      */
     public static CpuStrategy(): PerfStrategyInitialization {
-        let observer: any;
-        let value: number = 0;
-        function callback(update: any) {
-            value = update.cpuUtilization;
-        }
-          
-          
-        if ('ComputePressureObserver' in window) {
-            observer = new ComputePressureObserver(callback, {
-                // Thresholds divide the interval [0.0 .. 1.0] into ranges.
-                cpuUtilizationThresholds: [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95],
+        return (scene) => {
+            let value = 0;
+            const computePressureObserver = scene.onComputePressureChanged.add((update) => {
+                value = update.cpuUtilization;
             });
-            observer.observe && observer.observe();
-        }
-
-        return () => {
             return {
                 id: "cpu utilization",
                 getData: () => value,
-                dispose: () => observer?.unobserve && observer?.unobserve(),
+                dispose: () => scene.onComputePressureChanged.remove(computePressureObserver),
             };
         };
     }
