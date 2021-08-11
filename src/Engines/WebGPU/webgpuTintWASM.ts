@@ -22,6 +22,8 @@ declare function importScripts(...urls: string[]): void;
     wasmPath?: string;
 }
 
+let wgsl: string = "";
+
 /** @hidden */
 export class WebGPUTintWASM {
     // Default twgsl options.
@@ -87,12 +89,12 @@ export class WebGPUTintWASM {
     }
 
     public convertSpirV2WGSL(code: Uint32Array): string {
-        let wgsl: string = "";
-
-        this._twgsl._return_string_callback = (data: number, length: number) => {
-            const bytes = new Uint8ClampedArray(this._twgsl.HEAPU8.subarray(data, data + length));
-            wgsl = String.fromCharCode(...Array.from(bytes));
-        };
+        if (!this._twgsl._return_string_callback) {
+            this._twgsl._return_string_callback = (data: number, length: number) => {
+                const bytes = new Uint8ClampedArray(this._twgsl.HEAPU8.subarray(data, data + length));
+                wgsl = String.fromCharCode(...Array.from(bytes));
+            };
+        }
 
         let addr = this._twgsl._malloc(code.byteLength);
         this._twgsl.HEAPU32.set(code, addr / 4);
