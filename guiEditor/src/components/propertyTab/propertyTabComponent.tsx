@@ -46,6 +46,7 @@ import { OptionsLineComponent } from "../../sharedUiComponents/lines/optionsLine
 import { FloatLineComponent } from "../../sharedUiComponents/lines/floatLineComponent";
 import { Color3LineComponent } from "../../sharedUiComponents/lines/color3LineComponent";
 import { TextInputLineComponent } from "../../sharedUiComponents/lines/textInputLineComponent";
+import { ParentingPropertyGridComponent } from "../parentingPropertyGridComponent";
 
 require("./propertyTab.scss");
 const adtIcon: string = require("../../../public/imgs/adtIcon.svg");
@@ -292,6 +293,10 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     </div>
                     {this.renderProperties()}
                     <hr />
+                    {
+                        this.state.currentNode?.parent?.typeName === "Grid" && 
+                        <ParentingPropertyGridComponent control={this.state.currentNode} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} lockObject={this._lockObject}></ParentingPropertyGridComponent>
+                    }
                     <ButtonLineComponent
                         label="REMOVE ELEMENT"
                         onClick={() => {
