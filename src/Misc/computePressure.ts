@@ -9,9 +9,16 @@ export class ComputePressureObserver {
      * @param thresholds An object containing the thresholds used to decide what value to to return for each update property (average of start and end of a threshold boundary).
      */
     constructor(callback: (update: IComputePressureData) => void, thresholds: IComputePressureThresholds) {
-        if ('ComputePressureObserver' in window) {
+        if (ComputePressureObserver.IsAvailable) {
             this._observer = new (<any>window).ComputePressureObserver(callback, thresholds);
         }
+    }
+
+    /**
+     * Returns true if ComputePressureObserver is available for use, false otherwise.
+     */
+    public static get IsAvailable() {
+        return 'ComputePressureObserver' in window;
     }
 
     /**

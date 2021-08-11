@@ -1506,7 +1506,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             this._engine.onNewSceneAddedObservable.notifyObservers(this);
         }
 
-        if ('ComputePressureObserver' in window) {
+        if (ComputePressureObserver.IsAvailable) {
             this._computePressureObserver = new ComputePressureObserver((update) => {
                 this.onComputePressureChanged.notifyObservers(update);
             }, {
