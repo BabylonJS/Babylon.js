@@ -104,9 +104,10 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
         const displayInspector = this._scene?.debugLayer.isVisible();
 
-        const webGPUSupported = await WebGPUEngine.IsSupportedAsync;
+        const webgpuPromise = WebGPUEngine ? WebGPUEngine.IsSupportedAsync : Promise.resolve(false);
+        const webGPUSupported = await webgpuPromise;
 
-        let useWebGPU = location.href.indexOf("webgpu") !== -1 && webGPUSupported;
+        let useWebGPU = location.search.indexOf("webgpu") !== -1 && webGPUSupported;
         let forceWebGL1 = false;
         const configuredEngine = Utilities.ReadStringFromStore("engineVersion", "WebGL2");
 
