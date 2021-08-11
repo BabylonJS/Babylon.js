@@ -349,6 +349,7 @@ export class Camera extends Node {
     private _refreshFrustumPlanes = true;
     private _storedFov: number;
     private _stateStored: boolean;
+    private _absoluteRotation: Quaternion = Quaternion.Identity();
 
     /**
      * Instantiates a new camera object.
@@ -1289,11 +1290,9 @@ export class Camera extends Node {
      * Returns the current camera absolute rotation
      */
     public get absoluteRotation(): Quaternion {
-        var result = Quaternion.Zero();
+        this.getWorldMatrix().decompose(undefined, this._absoluteRotation);
 
-        this.getWorldMatrix().decompose(undefined, result);
-
-        return result;
+        return this._absoluteRotation;
     }
 
     /**
