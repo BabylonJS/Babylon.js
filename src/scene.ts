@@ -38,7 +38,7 @@ import { FileTools, LoadFileError, RequestFileError, ReadFileError } from './Mis
 import { IClipPlanesHolder } from './Misc/interfaces/iClipPlanesHolder';
 import { IPointerEvent } from "./Events/deviceInputEvents";
 import { LightConstants } from "./Lights/lightConstants";
-import { IComputePressureData, ComputePressureObserver } from "./Misc/computePressure";
+import { IComputePressureData, ComputePressureObserverWrapper } from "./Misc/computePressure";
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -1506,8 +1506,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             this._engine.onNewSceneAddedObservable.notifyObservers(this);
         }
 
-        if (ComputePressureObserver.IsAvailable) {
-            this._computePressureObserver = new ComputePressureObserver((update) => {
+        if (ComputePressureObserverWrapper.IsAvailable) {
+            this._computePressureObserver = new ComputePressureObserverWrapper((update) => {
                 this.onComputePressureChanged.notifyObservers(update);
             }, {
                 // Thresholds divide the interval [0.0 .. 1.0] into ranges.
@@ -5212,7 +5212,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         throw _DevTools.WarnImport("performanceViewerSceneExtension");
     }
 
-    private _computePressureObserver: ComputePressureObserver | undefined;
+    private _computePressureObserver: ComputePressureObserverWrapper | undefined;
 
     /**
      * An event triggered when the cpu usage/speed meets certain thresholds.
