@@ -22,9 +22,6 @@ export interface IPerfViewerCollectionStrategy {
 // Dispose which does nothing.
 const defaultDisposeImpl = () => {};
 
-// Temporary until implemented all getDatas.
-const defaultGetDataImpl = () => 0;
-
 /**
  * Initializer callback for a strategy
  */
@@ -53,11 +50,15 @@ export class PerfCollectionStrategy {
      * @returns the initializer for the cpu utilization strategy
      */
     public static CpuStrategy(): PerfStrategyInitialization {
-        return () => {
+        return (scene) => {
+            let value = 0;
+            const computePressureObserver = scene.onComputePressureChanged.add((update) => {
+                value = update.cpuUtilization;
+            });
             return {
                 id: "cpu utilization",
-                getData: defaultGetDataImpl,
-                dispose: defaultDisposeImpl,
+                getData: () => value,
+                dispose: () => scene.onComputePressureChanged.remove(computePressureObserver),
             };
         };
     }
