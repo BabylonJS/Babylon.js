@@ -46018,7 +46018,7 @@ var PerformanceViewerComponent = function (props) {
     Object(react__WEBPACK_IMPORTED_MODULE_1__["useEffect"])(function () {
         if (recordingState === RecordingState.Recording) {
             if (performanceCollector === null || performanceCollector === void 0 ? void 0 : performanceCollector.hasLoadedData) {
-                performanceCollector === null || performanceCollector === void 0 ? void 0 : performanceCollector.clear();
+                performanceCollector === null || performanceCollector === void 0 ? void 0 : performanceCollector.clear(true);
                 performanceCollector === null || performanceCollector === void 0 ? void 0 : performanceCollector.addCollectionStrategies.apply(performanceCollector, defaultStrategies);
             }
             performanceCollector === null || performanceCollector === void 0 ? void 0 : performanceCollector.start();
