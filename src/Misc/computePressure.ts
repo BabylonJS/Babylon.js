@@ -1,7 +1,7 @@
 /**
  * A wrapper for the experimental compute pressure api which allows a callback to be called whenever certain thresholds are met.
  */
-export class ComputePressureObserver {
+export class ComputePressureObserverWrapper {
     private _observer: any;
     /**
      * A compute pressure observer will call this callback, whenever these thresholds are met.
@@ -9,7 +9,7 @@ export class ComputePressureObserver {
      * @param thresholds An object containing the thresholds used to decide what value to to return for each update property (average of start and end of a threshold boundary).
      */
     constructor(callback: (update: IComputePressureData) => void, thresholds: IComputePressureThresholds) {
-        if (ComputePressureObserver.IsAvailable) {
+        if (ComputePressureObserverWrapper.IsAvailable) {
             this._observer = new (<any>window).ComputePressureObserver(callback, thresholds);
         }
     }
