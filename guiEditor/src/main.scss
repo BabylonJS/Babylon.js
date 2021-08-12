@@ -48,7 +48,32 @@
     grid-row: 1 / span 3;
     grid-column: 2;
     height: 100%;
+    .command-dropdown-label {
+        color:white;
+        padding: 5px;
+        padding-left: 7px;
+        height: 35px;
+        font-size: 18px;
+        display: grid;
+        align-items: center;
+        cursor: pointer;
+        user-select: none;
+        grid-template-columns: 1fr 20px;
+        grid-template-rows: 100%;
+        position: relative;
 
+        &.active {
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        &:hover {
+            background: var(--selectionGrey);
+            .sub-items {
+                display: block;
+            }
+        } 
+    }
 }
 
 .diagram-container {
