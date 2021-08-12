@@ -35,6 +35,12 @@ export class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
     @serialize()
     public gamepadMoveSensibility = 40;
 
+    /**
+     * Defines the minimum value at which any analog stick input is ignored.
+     * Note: This value should only be a value between 0 and 1.
+     */
+    public deadzoneDelta = 0.1;
+
     private _yAxisScale = 1.0;
 
     /**
@@ -107,17 +113,15 @@ export class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
         if (this.gamepad && this.gamepad.leftStick) {
             var camera = this.camera;
             var LSValues = this.gamepad.leftStick;
-            var normalizedLX = LSValues.x / this.gamepadMoveSensibility;
-            var normalizedLY = LSValues.y / this.gamepadMoveSensibility;
-            LSValues.x = Math.abs(normalizedLX) > 0.005 ? 0 + normalizedLX : 0;
-            LSValues.y = Math.abs(normalizedLY) > 0.005 ? 0 + normalizedLY : 0;
+            if (this.gamepadMoveSensibility !== 0) {
+                LSValues.x = (Math.abs(LSValues.x) > this.deadzoneDelta) ? LSValues.x / this.gamepadMoveSensibility : 0;
+                LSValues.y = (Math.abs(LSValues.y) > this.deadzoneDelta) ? LSValues.y / this.gamepadMoveSensibility : 0;
+            }
 
             var RSValues = this.gamepad.rightStick;
-            if (RSValues) {
-                var normalizedRX = RSValues.x / this.gamepadAngularSensibility;
-                var normalizedRY = (RSValues.y / this.gamepadAngularSensibility) * this._yAxisScale;
-                RSValues.x = Math.abs(normalizedRX) > 0.001 ? 0 + normalizedRX : 0;
-                RSValues.y = Math.abs(normalizedRY) > 0.001 ? 0 + normalizedRY : 0;
+            if (RSValues && this.gamepadAngularSensibility !== 0) {
+                RSValues.x = (Math.abs(RSValues.x) > this.deadzoneDelta) ? RSValues.x / this.gamepadAngularSensibility : 0;
+                RSValues.y = (Math.abs(RSValues.y) > this.deadzoneDelta) ? RSValues.y / this.gamepadAngularSensibility : 0;
             } else {
                 RSValues = { x: 0, y: 0 };
             }
