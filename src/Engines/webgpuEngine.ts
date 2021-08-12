@@ -46,6 +46,7 @@ import { ComputeEffect } from "../Compute/computeEffect";
 import { WebGPUOcclusionQuery } from "./WebGPU/webgpuOcclusionQuery";
 import { Observable } from "../Misc/observable";
 import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
+import { TwgslOptions, WebGPUTintWASM } from "./WebGPU/webgpuTintWASM";
 
 import "../Shaders/clearQuad.vertex";
 import "../Shaders/clearQuad.fragment";
@@ -150,6 +151,11 @@ export interface WebGPUEngineOptions extends GPURequestAdapterOptions {
     glslangOptions?: GlslangOptions;
 
     /**
+     * Options to load the associated Twgsl library
+     */
+    twgslOptions?: TwgslOptions;
+
+     /**
      * Defines if the engine should no exceed a specified device ratio
      * @see https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio
      */
@@ -190,6 +196,9 @@ export class WebGPUEngine extends Engine {
         wasmPath: "https://preview.babylonjs.com/glslang/glslang.wasm"
     };
 
+    /** true to enable using TintWASM to convert Spir-V to WGSL */
+    public static UseTWGSL = true;
+
     // Page Life cycle and constants
     private readonly _uploadEncoderDescriptor = { label: "upload" };
     private readonly _renderEncoderDescriptor = { label: "render" };
@@ -207,6 +216,7 @@ export class WebGPUEngine extends Engine {
     /** @hidden */
     public _options: WebGPUEngineOptions;
     private _glslang: any = null;
+    private _tintWASM: Nullable<WebGPUTintWASM> = null;
     private _adapter: GPUAdapter;
     private _adapterSupportedExtensions: GPUFeatureName[];
     /** @hidden */
@@ -475,7 +485,7 @@ export class WebGPUEngine extends Engine {
         const engine = new WebGPUEngine(canvas, options);
 
         return new Promise((resolve) => {
-            engine.initAsync(options.glslangOptions).then(() => resolve(engine));
+            engine.initAsync(options.glslangOptions, options.twgslOptions).then(() => resolve(engine));
         });
     }
 
@@ -555,13 +565,24 @@ export class WebGPUEngine extends Engine {
     /**
      * Initializes the WebGPU context and dependencies.
      * @param glslangOptions Defines the GLSLang compiler options if necessary
+     * @param twgslOptions Defines the Twgsl compiler options if necessary
      * @returns a promise notifying the readiness of the engine.
      */
-    public initAsync(glslangOptions?: GlslangOptions): Promise<void> {
+    public initAsync(glslangOptions?: GlslangOptions, twgslOptions?: TwgslOptions): Promise<void> {
         return this._initGlslang(glslangOptions ?? this._options?.glslangOptions)
             .then((glslang: any) => {
                 this._glslang = glslang;
-                return navigator.gpu!.requestAdapter(this._options);
+                this._tintWASM = WebGPUEngine.UseTWGSL ? new WebGPUTintWASM() : null;
+                return this._tintWASM ?
+                    this._tintWASM.initTwgsl(twgslOptions ?? this._options?.twgslOptions)
+                        .then(() => {
+                            return navigator.gpu!.requestAdapter(this._options);
+                        }, (msg: string) => {
+                            Logger.Error("Can not initialize twgsl!");
+                            Logger.Error(msg);
+                            throw Error("WebGPU initializations stopped.");
+                        })
+                    : navigator.gpu!.requestAdapter(this._options);
             }, (msg: string) => {
                 Logger.Error("Can not initialize glslang!");
                 Logger.Error(msg);
@@ -614,7 +635,7 @@ export class WebGPUEngine extends Engine {
             })
             .then(() => {
                 this._bufferManager = new WebGPUBufferManager(this._device);
-                this._textureHelper = new WebGPUTextureHelper(this._device, this._glslang, this._bufferManager);
+                this._textureHelper = new WebGPUTextureHelper(this._device, this._glslang, this._tintWASM, this._bufferManager);
                 this._cacheSampler = new WebGPUCacheSampler(this._device);
                 this._cacheBindGroups = new WebGPUCacheBindGroups(this._device, this._cacheSampler, this);
                 this._timestampQuery = new WebGPUTimestampQuery(this._device, this._bufferManager);
@@ -1443,6 +1464,11 @@ export class WebGPUEngine extends Engine {
     }
 
     private _createPipelineStageDescriptor(vertexShader: Uint32Array, fragmentShader: Uint32Array): IWebGPURenderPipelineStageDescriptor {
+        if (this._tintWASM) {
+            vertexShader = this._tintWASM.convertSpirV2WGSL(vertexShader) as any;
+            fragmentShader = this._tintWASM.convertSpirV2WGSL(fragmentShader) as any;
+        }
+
         return {
             vertexStage: {
                 module: this._device.createShaderModule({

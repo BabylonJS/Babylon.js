@@ -40040,6 +40040,11 @@ declare module BABYLON {
         /** @hidden */
         _currentFrameBufferIsDefaultFrameBuffer(): boolean;
         /**
+         * Generates the mipmaps for a texture
+         * @param texture texture to generate the mipmaps for
+         */
+        generateMipmaps(texture: InternalTexture): void;
+        /**
          * Unbind the current render target texture from the webGL context
          * @param texture defines the render target texture to unbind
          * @param disableGenerateMipMaps defines a boolean indicating that mipmaps must not be generated
@@ -40737,6 +40742,10 @@ declare module BABYLON {
         readPixels(x: number, y: number, width: number, height: number, hasAlpha?: boolean, flushRenderer?: boolean): Promise<ArrayBufferView>;
         private static _IsSupported;
         private static _HasMajorPerformanceCaveat;
+        /**
+         * Gets a Promise<boolean> indicating if the engine can be instantiated (ie. if a webGL context can be found)
+         */
+        static get IsSupportedAsync(): Promise<boolean>;
         /**
          * Gets a boolean indicating if the engine can be instantiated (ie. if a webGL context can be found)
          */
@@ -62216,8 +62225,11 @@ declare module BABYLON {
         get disableCacheBindGroups(): boolean;
         set disableCacheBindGroups(disable: boolean);
         /**
-         * Gets a boolean indicating if the engine can be instantiated (ie. if a WebGPU context can be found)
-         * @returns true if the engine can be created
+         * Gets a Promise<boolean> indicating if the engine can be instantiated (ie. if a WebGPU context can be found)
+         */
+        static get IsSupportedAsync(): Promise<boolean>;
+        /**
+         * Not supported by WebGPU, you should call IsSupportedAsync instead!
          */
         static get IsSupported(): boolean;
         /**
@@ -62530,6 +62542,11 @@ declare module BABYLON {
         _setAnisotropicLevel(target: number, internalTexture: InternalTexture, anisotropicFilteringLevel: number): void;
         /** @hidden */
         _bindTexture(channel: number, texture: InternalTexture, name: string): void;
+        /**
+         * Generates the mipmaps for a texture
+         * @param texture texture to generate the mipmaps for
+         */
+        generateMipmaps(texture: InternalTexture): void;
         /** @hidden */
         _generateMipmaps(texture: InternalTexture, commandEncoder?: GPUCommandEncoder): void;
         /**
@@ -62879,6 +62896,11 @@ declare module BABYLON {
              * @see https://learnopengl.com/PBR/IBL/Diffuse-irradiance
              */
             sphericalPolynomial: Nullable<SphericalPolynomial>;
+            /**
+             * Force recomputation of spherical polynomials.
+             * Can be useful if you generate a cubemap multiple times (from a probe for eg) and you need the proper polynomials each time
+             */
+            forceSphericalPolynomialsRecompute(): void;
         }
 }
 declare module BABYLON {
@@ -75349,6 +75371,80 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Configuration for meshoptimizer compression
+     */
+    export interface IMeshoptCompressionConfiguration {
+        /**
+         * Configuration for the decoder.
+         */
+        decoder: {
+            /**
+             * The url to the meshopt decoder library.
+             */
+            url: string;
+        };
+    }
+    /**
+     * Meshopt compression (https://github.com/zeux/meshoptimizer)
+     *
+     * This class wraps the meshopt library from https://github.com/zeux/meshoptimizer/tree/master/js.
+     *
+     * **Encoder**
+     *
+     * The encoder is not currently implemented.
+     *
+     * **Decoder**
+     *
+     * By default, the configuration points to a copy of the meshopt files on the Babylon.js preview CDN (e.g. https://preview.babylonjs.com/meshopt_decoder.js).
+     *
+     * To update the configuration, use the following code:
+     * ```javascript
+     *     MeshoptCompression.Configuration = {
+     *         decoder: {
+     *             url: "<url to the meshopt decoder library>"
+     *         }
+     *     };
+     * ```
+     */
+    export class MeshoptCompression implements IDisposable {
+        private _decoderModulePromise?;
+        /**
+         * The configuration. Defaults to the following:
+         * ```javascript
+         * decoder: {
+         *   url: "https://preview.babylonjs.com/meshopt_decoder.js"
+         * }
+         * ```
+         */
+        static Configuration: IMeshoptCompressionConfiguration;
+        private static _Default;
+        /**
+         * Default instance for the meshoptimizer object.
+         */
+        static get Default(): MeshoptCompression;
+        /**
+         * Constructor
+         */
+        constructor();
+        /**
+         * Stop all async operations and release resources.
+         */
+        dispose(): void;
+        /**
+          * Decode meshopt data.
+          * @see https://github.com/zeux/meshoptimizer/tree/master/js#decoder
+          * @param source The input data.
+          * @param count The number of elements.
+          * @param stride The stride in bytes.
+          * @param mode The compression mode.
+          * @param filter The compression filter.
+          * @returns a Promise<Uint8Array> that resolves to the decoded data
+          */
+        decodeGltfBufferAsync(source: Uint8Array, count: number, stride: number, mode: "ATTRIBUTES" | "TRIANGLES" | "INDICES", filter?: string): Promise<Uint8Array>;
+    }
+}
+declare module BABYLON {
+    /**
      * Class for building Constructive Solid Geometry
      */
     export class CSG {
@@ -84645,7 +84741,7 @@ declare module BABYLON {
          * @returns screenshot as a string of base64-encoded characters. This string can be assigned
          * to the src parameter of an <img> to display it
          */
-        static CreateScreenshotAsync(engine: Engine, camera: Camera, size: any, mimeType?: string): Promise<string>;
+        static CreateScreenshotAsync(engine: Engine, camera: Camera, size: IScreenshotSize | number, mimeType?: string): Promise<string>;
         /**
          * Captures a screenshot of the current rendering for a specific size. This will render the entire canvas but will generate a blink (due to canvas resize)
          * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
@@ -84700,7 +84796,7 @@ declare module BABYLON {
          * @returns screenshot as a string of base64-encoded characters. This string can be assigned
          * to the src parameter of an <img> to display it
          */
-        static CreateScreenshotUsingRenderTargetAsync(engine: Engine, camera: Camera, size: any, mimeType?: string, samples?: number, antialiasing?: boolean, fileName?: string, renderSprites?: boolean): Promise<string>;
+        static CreateScreenshotUsingRenderTargetAsync(engine: Engine, camera: Camera, size: IScreenshotSize | number, mimeType?: string, samples?: number, antialiasing?: boolean, fileName?: string, renderSprites?: boolean): Promise<string>;
         /**
          * Gets height and width for screenshot size
          * @private

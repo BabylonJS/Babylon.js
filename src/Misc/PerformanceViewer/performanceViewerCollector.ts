@@ -1,5 +1,5 @@
 import { Scene } from "../../scene";
-import { IPerfDatasets, IPerfMetadata } from "../interfaces/iPerfViewer";
+import { IPerfCustomEvent, IPerfDatasets, IPerfMetadata } from "../interfaces/iPerfViewer";
 import { EventState, Observable } from "../observable";
 import { PrecisionDate } from "../precisionDate";
 import { Tools } from "../tools";
@@ -33,6 +33,8 @@ export class PerformanceViewerCollector {
     private _strategies: Map<string, IPerfViewerCollectionStrategy>;
     private _startingTimestamp: number;
     private _hasLoadedData: boolean;
+    private readonly _customEventObservable: Observable<IPerfCustomEvent>;
+    private readonly _eventRestoreSet: Set<string>;
 
     /**
      * Datastructure containing the collected datasets. Warning: you should not modify the values in here, data will be of the form [timestamp, numberOfPoints, value1, value2..., timestamp, etc...]
@@ -75,10 +77,89 @@ export class PerformanceViewerCollector {
         };
         this._strategies = new Map<string, IPerfViewerCollectionStrategy>();
         this._datasetMeta = new Map<string, IPerfMetadata>();
+        this._eventRestoreSet = new Set();
+        this._customEventObservable = new Observable();
         this.datasetObservable = new Observable();
         this.metadataObservable = new Observable((observer) => observer.callback(this._datasetMeta, new EventState(0)));
         if (_enabledStrategyCallbacks) {
             this.addCollectionStrategies(..._enabledStrategyCallbacks);
+        }
+    }
+
+    /**
+     * Registers a custom string event which will be callable via sendEvent. This method returns an event object which will contain the id of the event.
+     * The user can set a value optionally, which will be used in the sendEvent method. If the value is set, we will record this value at the end of each frame,
+     * if not we will increment our counter and record the value of the counter at the end of each frame. The value recorded is 0 if no sendEvent method is called, within a frame.
+     * @param name The name of the event to register
+     * @param forceUpdate if the code should force add an event, and replace the last one.
+     * @returns The event registered, used in sendEvent
+     */
+    public registerEvent(name: string, forceUpdate?: boolean): IPerfCustomEvent | undefined {
+        if (this._strategies.has(name) && !forceUpdate) {
+            return;
+        }
+
+        if (this._strategies.has(name) && forceUpdate) {
+            this._strategies.get(name)?.dispose();
+            this._strategies.delete(name);
+        }
+
+        const strategy: PerfStrategyInitialization = (scene) => {
+            let counter: number = 0;
+            let value: number = 0;
+
+            const afterRenderObserver = scene.onAfterRenderObservable.add(() => {
+                value = counter;
+                counter = 0;
+            });
+
+            const stringObserver = this._customEventObservable.add((eventVal) => {
+                if (name !== eventVal.name) {
+                    return;
+                }
+
+                if (eventVal.value !== undefined) {
+                    counter = eventVal.value;
+                } else {
+                    counter++;
+                }
+            });
+
+            return {
+                id: name,
+                getData: () => value,
+                dispose: () => {
+                    scene.onAfterRenderObservable.remove(afterRenderObserver);
+                    this._customEventObservable.remove(stringObserver);
+                }
+            };
+        };
+        const event: IPerfCustomEvent = {
+            name
+        };
+
+        this._eventRestoreSet.add(name);
+        this.addCollectionStrategies(strategy);
+
+        return event;
+    }
+
+    /**
+     * Lets the perf collector handle an event, occurences or event value depending on if the event.value params is set.
+     * @param event the event to handle an occurence for
+     */
+    public sendEvent(event: IPerfCustomEvent) {
+        this._customEventObservable.notifyObservers(event);
+    }
+
+    /**
+     * This event restores all custom string events if necessary.
+     */
+    private _restoreStringEvents() {
+        if (this._eventRestoreSet.size !== this._customEventObservable.observers.length) {
+            this._eventRestoreSet.forEach((event) => {
+                this.registerEvent(event, true);
+            });
         }
     }
 
@@ -89,7 +170,6 @@ export class PerformanceViewerCollector {
     public addCollectionStrategies(...strategyCallbacks: PerfStrategyInitialization[]) {
         for (const strategyCallback of strategyCallbacks) {
             const strategy = strategyCallback(this._scene);
-
             if (this._strategies.has(strategy.id)) {
                 strategy.dispose();
                 continue;
@@ -224,13 +304,19 @@ export class PerformanceViewerCollector {
 
     /**
      * Completely clear, data, ids, and strategies saved to this performance collector.
+     * @param preserveStringEventsRestore if it should preserve the string events, by default will clear string events registered when called.
      */
-    public clear() {
+    public clear(preserveStringEventsRestore?: boolean) {
         this.datasets.data = new DynamicFloat32Array(initialArraySize);
         this.datasets.ids.length = 0;
         this.datasets.startingIndices = new DynamicFloat32Array(initialArraySize);
         this._datasetMeta.clear();
+        this._strategies.forEach((strategy) => strategy.dispose());
         this._strategies.clear();
+
+        if (!preserveStringEventsRestore) {
+            this._eventRestoreSet.clear();
+        }
         this._hasLoadedData = false;
     }
 
@@ -317,6 +403,7 @@ export class PerformanceViewerCollector {
         this.datasets.data = parsedDatasets.data;
         this.datasets.startingIndices = parsedDatasets.startingIndices;
         this._datasetMeta.clear();
+        this._strategies.forEach((strategy) => strategy.dispose());
         this._strategies.clear();
 
         // populate metadata.
@@ -373,6 +460,7 @@ export class PerformanceViewerCollector {
         }
         this._startingTimestamp = PrecisionDate.Now;
         this._scene.onBeforeRenderObservable.add(this._collectDataAtFrame);
+        this._restoreStringEvents();
     }
 
     /**
