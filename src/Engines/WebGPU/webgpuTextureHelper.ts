@@ -27,6 +27,7 @@ import { HardwareTextureWrapper } from '../../Materials/Textures/hardwareTexture
 import { BaseTexture } from '../../Materials/Textures/baseTexture';
 import { WebGPUHardwareTexture } from './webgpuHardwareTexture';
 import { EngineStore } from "../engineStore";
+import { WebGPUTintWASM } from "./webgpuTintWASM";
 
 // TODO WEBGPU improve mipmap generation by not using the OutputAttachment flag (but that requires an extra copy...) - use compute shaders?
 // see https://github.com/toji/web-texture-tool/tree/main/src
@@ -143,6 +144,7 @@ export class WebGPUTextureHelper {
 
     private _device: GPUDevice;
     private _glslang: any;
+    private _tintWASM: Nullable<WebGPUTintWASM>;
     private _bufferManager: WebGPUBufferManager;
     private _mipmapSampler: GPUSampler;
     private _pipelines: { [format: string]: Array<GPURenderPipeline> } = {};
@@ -158,9 +160,10 @@ export class WebGPUTextureHelper {
     //                         Initialization / Helpers
     //------------------------------------------------------------------------------
 
-    constructor(device: GPUDevice, glslang: any, bufferManager: WebGPUBufferManager) {
+    constructor(device: GPUDevice, glslang: any, tintWASM: Nullable<WebGPUTintWASM>, bufferManager: WebGPUBufferManager) {
         this._device = device;
         this._glslang = glslang;
+        this._tintWASM = tintWASM;
         this._bufferManager = bufferManager;
 
         this._mipmapSampler = device.createSampler({ minFilter: WebGPUConstants.FilterMode.Linear });
@@ -192,11 +195,19 @@ export class WebGPUTextureHelper {
 
             let modules = this._compiledShaders[index];
             if (!modules) {
+                let vertexCode = this._glslang.compileGLSL(defines + shadersForPipelineType[type].vertex, 'vertex');
+                let fragmentCode = this._glslang.compileGLSL(defines + shadersForPipelineType[type].fragment, 'fragment');
+
+                if (this._tintWASM) {
+                    vertexCode = this._tintWASM.convertSpirV2WGSL(vertexCode);
+                    fragmentCode = this._tintWASM.convertSpirV2WGSL(fragmentCode);
+                }
+
                 const vertexModule = this._device.createShaderModule({
-                    code: this._glslang.compileGLSL(defines + shadersForPipelineType[type].vertex, 'vertex')
+                    code: vertexCode
                 });
                 const fragmentModule = this._device.createShaderModule({
-                    code: this._glslang.compileGLSL(defines + shadersForPipelineType[type].fragment, 'fragment')
+                    code: fragmentCode
                 });
                 modules = this._compiledShaders[index] = [vertexModule, fragmentModule];
             }
