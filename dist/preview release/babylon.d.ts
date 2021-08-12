@@ -44441,6 +44441,19 @@ declare module BABYLON {
          */
         hidden?: boolean;
     }
+    /**
+     * Defines the shape of a custom user registered event.
+     */
+    export interface IPerfCustomEvent {
+        /**
+         * The name of the event.
+         */
+        name: string;
+        /**
+         * The value for the event, if set we will use it as the value, otherwise we will count the number of occurences.
+         */
+        value?: number;
+    }
 }
 declare module BABYLON {
     /**
@@ -44659,6 +44672,8 @@ declare module BABYLON {
         private _strategies;
         private _startingTimestamp;
         private _hasLoadedData;
+        private readonly _customEventObservable;
+        private readonly _eventRestoreSet;
         /**
          * Datastructure containing the collected datasets. Warning: you should not modify the values in here, data will be of the form [timestamp, numberOfPoints, value1, value2..., timestamp, etc...]
          */
@@ -44686,6 +44701,24 @@ declare module BABYLON {
          * @param _enabledStrategyCallbacks the list of data to collect with callbacks for initialization purposes.
          */
         constructor(_scene: Scene, _enabledStrategyCallbacks?: PerfStrategyInitialization[]);
+        /**
+         * Registers a custom string event which will be callable via sendEvent. This method returns an event object which will contain the id of the event.
+         * The user can set a value optionally, which will be used in the sendEvent method. If the value is set, we will record this value at the end of each frame,
+         * if not we will increment our counter and record the value of the counter at the end of each frame. The value recorded is 0 if no sendEvent method is called, within a frame.
+         * @param name The name of the event to register
+         * @param forceUpdate if the code should force add an event, and replace the last one.
+         * @returns The event registered, used in sendEvent
+         */
+        registerEvent(name: string, forceUpdate?: boolean): IPerfCustomEvent | undefined;
+        /**
+         * Lets the perf collector handle an event, occurences or event value depending on if the event.value params is set.
+         * @param event the event to handle an occurence for
+         */
+        sendEvent(event: IPerfCustomEvent): void;
+        /**
+         * This event restores all custom string events if necessary.
+         */
+        private _restoreStringEvents;
         /**
          * This method adds additional collection strategies for data collection purposes.
          * @param strategyCallbacks the list of data to collect with callbacks.
@@ -44717,8 +44750,9 @@ declare module BABYLON {
         updateMetadata<T extends keyof IPerfMetadata>(id: string, prop: T, value: IPerfMetadata[T]): void;
         /**
          * Completely clear, data, ids, and strategies saved to this performance collector.
+         * @param preserveStringEventsRestore if it should preserve the string events, by default will clear string events registered when called.
          */
-        clear(): void;
+        clear(preserveStringEventsRestore?: boolean): void;
         /**
          * Accessor which lets the caller know if the performance collector has data loaded from a file or not!
          * Call clear() to reset this value.
@@ -52393,6 +52427,11 @@ declare module BABYLON {
          * This is the threshold from when moving starts to be accounted for for to prevent jittering.
          */
         gamepadMoveSensibility: number;
+        /**
+         * Defines the minimum value at which any analog stick input is ignored.
+         * Note: This value should only be a value between 0 and 1.
+         */
+        deadzoneDelta: number;
         private _yAxisScale;
         /**
          * Gets or sets a boolean indicating that Yaxis (for right stick) should be inverted
@@ -61486,10 +61525,41 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /**
+     * Options to load the associated Twgsl library
+     */
+    export interface TwgslOptions {
+        /**
+         * Defines an existing instance of Twgsl (useful in modules who do not access the global instance).
+         */
+        twgsl?: any;
+        /**
+         * Defines the URL of the twgsl JS File.
+         */
+        jsPath?: string;
+        /**
+         * Defines the URL of the twgsl WASM File.
+         */
+        wasmPath?: string;
+    }
+    /** @hidden */
+    export class WebGPUTintWASM {
+        private static readonly _twgslDefaultOptions;
+        private static _TwgslInitedResolve;
+        private static _TwgslInited;
+        private _twgsl;
+        /** @hidden */
+        static _TWGSLModuleInitialized(): void;
+        initTwgsl(twgslOptions?: TwgslOptions): Promise<void>;
+        convertSpirV2WGSL(code: Uint32Array): string;
+    }
+}
+declare module BABYLON {
     /** @hidden */
     export class WebGPUTextureHelper {
         private _device;
         private _glslang;
+        private _tintWASM;
         private _bufferManager;
         private _mipmapSampler;
         private _pipelines;
@@ -61497,7 +61567,7 @@ declare module BABYLON {
         private _deferredReleaseTextures;
         private _commandEncoderForCreation;
         static ComputeNumMipmapLevels(width: number, height: number): number;
-        constructor(device: GPUDevice, glslang: any, bufferManager: WebGPUBufferManager);
+        constructor(device: GPUDevice, glslang: any, tintWASM: Nullable<WebGPUTintWASM>, bufferManager: WebGPUBufferManager);
         private _getPipeline;
         private static _GetTextureTypeFromFormat;
         private static _GetBlockInformationFromFormat;
@@ -62056,9 +62126,13 @@ declare module BABYLON {
          */
         glslangOptions?: GlslangOptions;
         /**
-         * Defines if the engine should no exceed a specified device ratio
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio
+         * Options to load the associated Twgsl library
          */
+        twgslOptions?: TwgslOptions;
+        /**
+        * Defines if the engine should no exceed a specified device ratio
+        * @see https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio
+        */
         limitDeviceRatio?: number;
         /**
          * Defines whether to adapt to the device's viewport characteristics (default: false)
@@ -62086,6 +62160,8 @@ declare module BABYLON {
      */
     export class WebGPUEngine extends Engine {
         private static readonly _glslangDefaultOptions;
+        /** true to enable using TintWASM to convert Spir-V to WGSL */
+        static UseTWGSL: boolean;
         private readonly _uploadEncoderDescriptor;
         private readonly _renderEncoderDescriptor;
         private readonly _renderTargetEncoderDescriptor;
@@ -62100,6 +62176,7 @@ declare module BABYLON {
         /** @hidden */
         _options: WebGPUEngineOptions;
         private _glslang;
+        private _tintWASM;
         private _adapter;
         private _adapterSupportedExtensions;
         /** @hidden */
@@ -62277,9 +62354,10 @@ declare module BABYLON {
         /**
          * Initializes the WebGPU context and dependencies.
          * @param glslangOptions Defines the GLSLang compiler options if necessary
+         * @param twgslOptions Defines the Twgsl compiler options if necessary
          * @returns a promise notifying the readiness of the engine.
          */
-        initAsync(glslangOptions?: GlslangOptions): Promise<void>;
+        initAsync(glslangOptions?: GlslangOptions, twgslOptions?: TwgslOptions): Promise<void>;
         private _initGlslang;
         private _initializeLimits;
         private _initializeContextAndSwapChain;
