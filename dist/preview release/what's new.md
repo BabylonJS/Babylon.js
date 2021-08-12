@@ -279,6 +279,7 @@
 - Fix support for camera output render targets ([Popov72](https://github.com/Popov72)) and ([RaananW](https://github.com/RaananW))
 - Fix `bakeTransformIntoVertices` not working when using `rotationQuaternion` + sometimes inverting winding ([Popov72](https://github.com/Popov72))
 - Fix error handling in basis texture loading ([RaananW](https://github.com/RaananW))
+- Fix issue with deadzones for gamepads being negatively affected by sensibility values ([PolygonalSun](https://github.com/PolygonalSun))
 
 ## Breaking changes
 
