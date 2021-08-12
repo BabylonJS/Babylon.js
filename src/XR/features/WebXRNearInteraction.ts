@@ -691,12 +691,12 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         const tmpVec = TmpVectors.Vector3[1];
 
         let distance = +Infinity;
-        let tmp;
+        let tmp, tmpDistanceSphereToCenter, tmpDistanceSurfaceToCenter;
         const center = TmpVectors.Vector3[2];
-        const invert = TmpVectors.Matrix[0];
-        invert.copyFrom(mesh.getWorldMatrix());
-        invert.invert();
-        Vector3.TransformCoordinatesToRef(sphere.center, invert, center);
+        const worldToMesh = TmpVectors.Matrix[0];
+        worldToMesh.copyFrom(mesh.getWorldMatrix());
+        worldToMesh.invert();
+        Vector3.TransformCoordinatesToRef(sphere.center, worldToMesh, center);
 
         for (var index = 0; index < subMeshes.length; index++) {
             const subMesh = subMeshes[index];
@@ -705,6 +705,14 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
 
             Vector3.TransformCoordinatesToRef(tmpVec, mesh.getWorldMatrix(), tmpVec);
             tmp = Vector3.Distance(tmpVec, sphere.center);
+
+            // Check for finger inside of mesh
+            tmpDistanceSurfaceToCenter = Vector3.Distance(tmpVec, mesh.getAbsolutePosition());
+            tmpDistanceSphereToCenter = Vector3.Distance(sphere.center, mesh.getAbsolutePosition());
+            if (tmpDistanceSphereToCenter !== -1 && tmpDistanceSurfaceToCenter !== -1 && tmpDistanceSurfaceToCenter > tmpDistanceSphereToCenter) {
+                tmp = 0;
+                tmpVec.set(sphere.center.x, sphere.center.y, sphere.center.z);
+            }
 
             if (tmp !== -1 && tmp < distance) {
                 distance = tmp;
