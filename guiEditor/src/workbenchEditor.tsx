@@ -424,8 +424,11 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
 
         ]
     }
-    onCreate(arg0: string) {
-        //throw new Error("Method not implemented.");
+    onCreate(value: string): void {
+        let guiElement = GUINodeTools.CreateControlFromString(value);
+        let newGuiNode = this.props.globalState.workbench.appendBlock(guiElement);
+        this.props.globalState.onSelectionChangedObservable.notifyObservers(newGuiNode);
+        this.forceUpdate();
     }
     
     createToolbar() {
