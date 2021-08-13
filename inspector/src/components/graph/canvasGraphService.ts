@@ -66,7 +66,7 @@ const msInHour =  msInMinute * 60;
 const tooltipDebounceTime = 32;
 
 // time in ms to wait between draws
-const drawDebounceTime = 15;
+const drawThrottleTime = 15;
 
 /**
  * This function will debounce calls to functions.
@@ -83,6 +83,24 @@ function debounce(callback: (...args: any[]) => void, time: number) {
 }
 
 /**
+ * This function will throttle calls to functions.
+ * 
+ * @param callback callback to call.
+ * @param time time to wait between calls in ms.
+ */
+ function throttle(callback: (...args: any[]) => void, time: number) {
+    let lastCalledTime: number = 0;
+    return function (...args: any[]) {
+        const now = Date.now();
+        if (now - lastCalledTime < time) {
+            return;
+        }
+        lastCalledTime = now;
+        callback(...args);
+    }
+}
+
+/*
  * This class acts as the main API for graphing given a Here is where you will find methods to let the service know new data needs to be drawn,
  * let it know something has been resized, etc! 
  */
@@ -160,9 +178,9 @@ export class CanvasGraphService {
     /**
      * This method lets the service know it should get ready to update what it is displaying.
      */
-    public update = debounce(
+    public update = throttle(
         () => this._draw(),
-        drawDebounceTime
+        drawThrottleTime
     );
 
     public resize(size: IPerfLayoutSize) {
