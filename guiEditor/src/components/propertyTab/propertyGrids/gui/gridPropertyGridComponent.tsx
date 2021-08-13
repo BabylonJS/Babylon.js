@@ -34,7 +34,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                 let newrd = new ValueAndUnit(rd.getValue(grid.host), rd.unit);
                 return (
                     <div className="divider">
-                        <FloatLineComponent key={`c${i}`} label={`Row ${i}`} target={newrd} propertyName={"_value"} digits={rd.unit == 1 ? 0 : 2}
+                        <FloatLineComponent lockObject={this.props.lockObject} key={`c${i}`} label={`Row ${i}`} target={newrd} propertyName={"_value"} digits={rd.unit == 1 ? 0 : 2}
                             onChange={(newValue) => {
                                 grid.setRowDefinition(i, newValue, newrd.isPixel ? true : false);
                             }} />
@@ -95,11 +95,13 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                     label="ADD ROW"
                     onClick={() => {
                         grid.addRowDefinition(0.5);
+                        this.forceUpdate();
                     }}
                 />                <ButtonLineComponent
                     label="REMOVE ROW"
                     onClick={() => {
                         grid.removeRowDefinition(grid.rowCount - 1);
+                        this.forceUpdate();
                     }}
                 />
 
@@ -111,12 +113,14 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                     label="ADD COLUMN"
                     onClick={() => {
                         grid.addColumnDefinition(0.5);
+                        this.forceUpdate();
                     }}
                 />
                 <ButtonLineComponent
                     label="REMOVE COLUMN"
                     onClick={() => {
                         grid.removeColumnDefinition(grid.columnCount - 1);
+                        this.forceUpdate();
                     }}
                 />
                 {
