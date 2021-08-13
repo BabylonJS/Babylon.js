@@ -20409,7 +20409,7 @@ declare module BABYLON {
         getOutputByName(name: string): NodeMaterialConnectionPoint | null;
         /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
         visibleInInspector: boolean;
-        /** Gets or sets a boolean indicating that this input can be edited from a collapsed frame*/
+        /** Gets or sets a boolean indicating that this input can be edited from a collapsed frame */
         visibleOnFrame: boolean;
         /**
          * Creates a new NodeMaterialBlock
@@ -32286,7 +32286,7 @@ declare module BABYLON {
          */
         get facetDepthSortFrom(): Vector3;
         set facetDepthSortFrom(location: Vector3);
-        /** number of collision detection tries. Change this value if not all colisions are detected and handled properly. */
+        /** number of collision detection tries. Change this value if not all colisions are detected and handled properly */
         get collisionRetryCount(): number;
         set collisionRetryCount(retryCount: number);
         /**
@@ -33896,7 +33896,7 @@ declare module BABYLON {
         attachToBone(bone: Bone, affectedTransformNode: TransformNode): TransformNode;
         /**
          * Detach the transform node if its associated with a bone
-         * @param resetToPreviousParent Indicates if the parent that was in effect when attachToBone was called should be set back or if we should set parent to null instead (defaults to the latter) @since 5.0.0
+         * @param resetToPreviousParent Indicates if the parent that was in effect when attachToBone was called should be set back or if we should set parent to null instead (defaults to the latter)
          * @returns this object
          */
         detachFromBone(resetToPreviousParent?: boolean): TransformNode;
@@ -36198,12 +36198,12 @@ declare module BABYLON {
          */
         static FromLookDirectionLH(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>): Quaternion;
         /**
-        * Creates a new rotation value to orient an object to look towards the given forward direction with the up direction being oriented like "up", and stores it in the target quaternion.
-        * This function works in left handed mode
-        * @param forward defines the forward direction - Must be normalized and orthogonal to up.
-        * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
-        * @param ref defines the target quaternion.
-        */
+         * Creates a new rotation value to orient an object to look towards the given forward direction with the up direction being oriented like "up", and stores it in the target quaternion.
+         * This function works in left handed mode
+         * @param forward defines the forward direction - Must be normalized and orthogonal to up.
+         * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
+         * @param ref defines the target quaternion.
+         */
         static FromLookDirectionLHToRef(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, ref: Quaternion): void;
         /**
          * Creates a new rotation value to orient an object to look towards the given forward direction, the up direction being oriented like "up".
@@ -36862,12 +36862,12 @@ declare module BABYLON {
          */
         static LookDirectionLHToRef(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, result: Matrix): void;
         /**
-        * Gets a new rotation matrix used to rotate an entity so as it looks in the direction specified by forward from the eye position, the up Vector3 being oriented like "up".
-        * This function works in right handed mode
-        * @param forward defines the forward direction - Must be normalized and orthogonal to up.
-        * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
-        * @returns the new matrix
-        */
+         * Gets a new rotation matrix used to rotate an entity so as it looks in the direction specified by forward from the eye position, the up Vector3 being oriented like "up".
+         * This function works in right handed mode
+         * @param forward defines the forward direction - Must be normalized and orthogonal to up.
+         * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
+         * @returns the new matrix
+         */
         static LookDirectionRH(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>): Matrix;
         /**
          * Sets the given "result" Matrix to a rotation matrix used to rotate an entity so that it looks in the direction of forward, the up vector3 being oriented like "up".
@@ -37439,6 +37439,7 @@ declare module BABYLON {
         private _refreshFrustumPlanes;
         private _storedFov;
         private _stateStored;
+        private _absoluteRotation;
         /**
          * Instantiates a new camera object.
          * This should not be used directly but through the inherited cameras: ArcRotate, Free...
@@ -39219,6 +39220,7 @@ declare module BABYLON {
 declare module BABYLON {
     /**
      * Interface used to define options for the Audio Engine
+     * @since 5.0.0
      */
     export interface IAudioEngineOptions {
         /**
@@ -40039,6 +40041,11 @@ declare module BABYLON {
         /** @hidden */
         _currentFrameBufferIsDefaultFrameBuffer(): boolean;
         /**
+         * Generates the mipmaps for a texture
+         * @param texture texture to generate the mipmaps for
+         */
+        generateMipmaps(texture: InternalTexture): void;
+        /**
          * Unbind the current render target texture from the webGL context
          * @param texture defines the render target texture to unbind
          * @param disableGenerateMipMaps defines a boolean indicating that mipmaps must not be generated
@@ -40736,6 +40743,10 @@ declare module BABYLON {
         readPixels(x: number, y: number, width: number, height: number, hasAlpha?: boolean, flushRenderer?: boolean): Promise<ArrayBufferView>;
         private static _IsSupported;
         private static _HasMajorPerformanceCaveat;
+        /**
+         * Gets a Promise<boolean> indicating if the engine can be instantiated (ie. if a webGL context can be found)
+         */
+        static get IsSupportedAsync(): Promise<boolean>;
         /**
          * Gets a boolean indicating if the engine can be instantiated (ie. if a webGL context can be found)
          */
@@ -44114,6 +44125,59 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * A wrapper for the experimental compute pressure api which allows a callback to be called whenever certain thresholds are met.
+     */
+    export class ComputePressureObserverWrapper {
+        private _observer;
+        /**
+         * A compute pressure observer will call this callback, whenever these thresholds are met.
+         * @param callback The callback that is called whenever thresholds are met.
+         * @param thresholds An object containing the thresholds used to decide what value to to return for each update property (average of start and end of a threshold boundary).
+         */
+        constructor(callback: (update: IComputePressureData) => void, thresholds: IComputePressureThresholds);
+        /**
+         * Returns true if ComputePressureObserver is available for use, false otherwise.
+         */
+        static get IsAvailable(): boolean;
+        /**
+         * Method that must be called to begin observing changes, and triggering callbacks.
+         */
+        observe(): void;
+        /**
+         * Method that must be called to stop observing changes and triggering callbacks (cleanup function).
+         */
+        unobserve(): void;
+    }
+    /**
+     * An interface defining the shape of the thresholds parameter in the experimental compute pressure api
+     */
+    export interface IComputePressureThresholds {
+        /**
+         * Thresholds to make buckets out of for the cpu utilization, the average between the start and end points of a threshold will be returned to the callback.
+         */
+        cpuUtilizationThresholds: number[];
+        /**
+         * Thresholds to make buckets out of for the cpu speed, the average between the start and end points of a threshold will be returned to the callback.
+         * 0.5 represents base speed.
+         */
+        cpuSpeedThresholds: number[];
+    }
+    /**
+     * An interface defining the shape of the data sent to the callback in the compute pressure observer.
+     */
+    export interface IComputePressureData {
+        /**
+         * The cpu utilization which will be a number between 0.0 and 1.0.
+         */
+        cpuUtilization: number;
+        /**
+         * The cpu speed which will be a number between 0.0 and 1.0.
+         */
+        cpuSpeed: number;
+    }
+}
+declare module BABYLON {
+    /**
      * This class defines the direct association between an animation and a target
      */
     export class TargetedAnimation {
@@ -44358,6 +44422,421 @@ declare module BABYLON {
          * @returns a string representing the object
          */
         toString(fullDetails?: boolean): string;
+    }
+}
+declare module BABYLON {
+    /**
+     * A class acting as a dynamic float32array used in the performance viewer
+     */
+    export class DynamicFloat32Array {
+        private _view;
+        private _itemLength;
+        /**
+         * Creates a new DynamicFloat32Array with the desired item capacity.
+         * @param itemCapacity The initial item capacity you would like to set for the array.
+         */
+        constructor(itemCapacity: number);
+        /**
+         * The number of items currently in the array.
+         */
+        get itemLength(): number;
+        /**
+         * Gets value at index, NaN if no such index exists.
+         * @param index the index to get the value at.
+         * @returns the value at the index provided.
+         */
+        at(index: number): number;
+        /**
+         * Gets a view of the original array from start to end (exclusive of end).
+         * @param start starting index.
+         * @param end ending index.
+         * @returns a subarray of the original array.
+         */
+        subarray(start: number, end: number): Float32Array;
+        /**
+         * Pushes items to the end of the array.
+         * @param item The item to push into the array.
+         */
+        push(item: number): void;
+        /**
+         * Grows the array by the growth factor when necessary.
+         */
+        private _growArray;
+    }
+}
+declare module BABYLON {
+    /**
+     * Defines the shape of a collection of datasets that our graphing service uses for drawing purposes.
+     */
+    export interface IPerfDatasets {
+        /**
+         * The ids of our dataset.
+         */
+        ids: string[];
+        /**
+         * The data to be processed by the performance graph. Each slice will be of the form of [timestamp, numberOfPoints, value1, value2...]
+         */
+        data: DynamicFloat32Array;
+        /**
+         * A list of starting indices for each slice of data collected. Used for fast access of an arbitrary slice inside the data array.
+         */
+        startingIndices: DynamicFloat32Array;
+    }
+    /**
+     * Defines the shape of a the metadata the graphing service uses for drawing purposes.
+     */
+    export interface IPerfMetadata {
+        /**
+         * The color of the line to be drawn.
+         */
+        color?: string;
+        /**
+         * Specifies if data should be hidden, falsey by default.
+         */
+        hidden?: boolean;
+    }
+    /**
+     * Defines the shape of a custom user registered event.
+     */
+    export interface IPerfCustomEvent {
+        /**
+         * The name of the event.
+         */
+        name: string;
+        /**
+         * The value for the event, if set we will use it as the value, otherwise we will count the number of occurences.
+         */
+        value?: number;
+    }
+}
+declare module BABYLON {
+    /**
+     * This class can be used to get instrumentation data from a Babylon engine
+     * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#engineinstrumentation
+     */
+    export class EngineInstrumentation implements IDisposable {
+        /**
+         * Define the instrumented engine.
+         */
+        engine: Engine;
+        private _captureGPUFrameTime;
+        private _captureShaderCompilationTime;
+        private _shaderCompilationTime;
+        private _onBeginFrameObserver;
+        private _onEndFrameObserver;
+        private _onBeforeShaderCompilationObserver;
+        private _onAfterShaderCompilationObserver;
+        /**
+         * Gets the perf counter used for GPU frame time
+         */
+        get gpuFrameTimeCounter(): PerfCounter;
+        /**
+         * Gets the GPU frame time capture status
+         */
+        get captureGPUFrameTime(): boolean;
+        /**
+         * Enable or disable the GPU frame time capture
+         */
+        set captureGPUFrameTime(value: boolean);
+        /**
+         * Gets the perf counter used for shader compilation time
+         */
+        get shaderCompilationTimeCounter(): PerfCounter;
+        /**
+         * Gets the shader compilation time capture status
+         */
+        get captureShaderCompilationTime(): boolean;
+        /**
+         * Enable or disable the shader compilation time capture
+         */
+        set captureShaderCompilationTime(value: boolean);
+        /**
+         * Instantiates a new engine instrumentation.
+         * This class can be used to get instrumentation data from a Babylon engine
+         * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#engineinstrumentation
+         * @param engine Defines the engine to instrument
+         */
+        constructor(
+        /**
+         * Define the instrumented engine.
+         */
+        engine: Engine);
+        /**
+         * Dispose and release associated resources.
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Defines the general structure of what is necessary for a collection strategy.
+     */
+    export interface IPerfViewerCollectionStrategy {
+        /**
+         * The id of the strategy.
+         */
+        id: string;
+        /**
+         * Function which gets the data for the strategy.
+         */
+        getData: () => number;
+        /**
+         * Function which does any necessary cleanup. Called when performanceViewerCollector.dispose() is called.
+         */
+        dispose: () => void;
+    }
+    /**
+     * Initializer callback for a strategy
+     */
+    export type PerfStrategyInitialization = (scene: Scene) => IPerfViewerCollectionStrategy;
+    /**
+     * Defines the predefined strategies used in the performance viewer.
+     */
+    export class PerfCollectionStrategy {
+        /**
+         * Gets the initializer for the strategy used for collection of fps metrics
+         * @returns the initializer for the fps strategy
+         */
+        static FpsStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of cpu utilization metrics.
+         * @returns the initializer for the cpu utilization strategy
+         */
+        static CpuStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of total meshes metrics.
+         * @returns the initializer for the total meshes strategy
+         */
+        static TotalMeshesStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of active meshes metrics.
+         * @returns the initializer for the active meshes strategy
+         */
+        static ActiveMeshesStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of active indices metrics.
+         * @returns the initializer for the active indices strategy
+         */
+        static ActiveIndiciesStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of active faces metrics.
+         * @returns the initializer for the active faces strategy
+         */
+        static ActiveFacesStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of active bones metrics.
+         * @returns the initializer for the active bones strategy
+         */
+        static ActiveBonesStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of active particles metrics.
+         * @returns the initializer for the active particles strategy
+         */
+        static ActiveParticlesStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of draw calls metrics.
+         * @returns the initializer for the draw calls strategy
+         */
+        static DrawCallsStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of total lights metrics.
+         * @returns the initializer for the total lights strategy
+         */
+        static TotalLightsStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of total vertices metrics.
+         * @returns the initializer for the total vertices strategy
+         */
+        static TotalVerticesStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of total materials metrics.
+         * @returns the initializer for the total materials strategy
+         */
+        static TotalMaterialsStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of total textures metrics.
+         * @returns the initializer for the total textures strategy
+         */
+        static TotalTexturesStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of absolute fps metrics.
+         * @returns the initializer for the absolute fps strategy
+         */
+        static AbsoluteFpsStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of meshes selection time metrics.
+         * @returns the initializer for the meshes selection time strategy
+         */
+        static MeshesSelectionStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of render targets time metrics.
+         * @returns the initializer for the render targets time strategy
+         */
+        static RenderTargetsStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of particles time metrics.
+         * @returns the initializer for the particles time strategy
+         */
+        static ParticlesStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of sprites time metrics.
+         * @returns the initializer for the sprites time strategy
+         */
+        static SpritesStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of animations time metrics.
+         * @returns the initializer for the animations time strategy
+         */
+        static AnimationsStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of physics time metrics.
+         * @returns the initializer for the physics time strategy
+         */
+        static PhysicsStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of render time metrics.
+         * @returns the initializer for the render time strategy
+         */
+        static RenderStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of total frame time metrics.
+         * @returns the initializer for the total frame time strategy
+         */
+        static FrameTotalStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of inter-frame time metrics.
+         * @returns the initializer for the inter-frame time strategy
+         */
+        static InterFrameStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of gpu frame time metrics.
+         * @returns the initializer for the gpu frame time strategy
+         */
+        static GpuFrameTimeStrategy(): PerfStrategyInitialization;
+    }
+}
+declare module BABYLON {
+    /**
+     * The collector class handles the collection and storage of data into the appropriate array.
+     * The collector also handles notifying any observers of any updates.
+     */
+    export class PerformanceViewerCollector {
+        private _scene;
+        private _datasetMeta;
+        private _strategies;
+        private _startingTimestamp;
+        private _hasLoadedData;
+        private readonly _customEventObservable;
+        private readonly _eventRestoreSet;
+        /**
+         * Datastructure containing the collected datasets. Warning: you should not modify the values in here, data will be of the form [timestamp, numberOfPoints, value1, value2..., timestamp, etc...]
+         */
+        readonly datasets: IPerfDatasets;
+        /**
+         * An observable you can attach to get deltas in the dataset. Subscribing to this will increase memory consumption slightly, and may hurt performance due to increased garbage collection needed.
+         * Updates of slices will be of the form [timestamp, numberOfPoints, value1, value2...].
+         */
+        readonly datasetObservable: Observable<number[]>;
+        /**
+         * An observable you can attach to get the most updated map of metadatas.
+         */
+        readonly metadataObservable: Observable<Map<string, IPerfMetadata>>;
+        /**
+         * The offset for when actual data values start appearing inside a slice.
+         */
+        static get SliceDataOffset(): number;
+        /**
+         * The offset for the value of the number of points inside a slice.
+         */
+        static get NumberOfPointsOffset(): number;
+        /**
+         * Handles the creation of a performance viewer collector.
+         * @param _scene the scene to collect on.
+         * @param _enabledStrategyCallbacks the list of data to collect with callbacks for initialization purposes.
+         */
+        constructor(_scene: Scene, _enabledStrategyCallbacks?: PerfStrategyInitialization[]);
+        /**
+         * Registers a custom string event which will be callable via sendEvent. This method returns an event object which will contain the id of the event.
+         * The user can set a value optionally, which will be used in the sendEvent method. If the value is set, we will record this value at the end of each frame,
+         * if not we will increment our counter and record the value of the counter at the end of each frame. The value recorded is 0 if no sendEvent method is called, within a frame.
+         * @param name The name of the event to register
+         * @param forceUpdate if the code should force add an event, and replace the last one.
+         * @returns The event registered, used in sendEvent
+         */
+        registerEvent(name: string, forceUpdate?: boolean): IPerfCustomEvent | undefined;
+        /**
+         * Lets the perf collector handle an event, occurences or event value depending on if the event.value params is set.
+         * @param event the event to handle an occurence for
+         */
+        sendEvent(event: IPerfCustomEvent): void;
+        /**
+         * This event restores all custom string events if necessary.
+         */
+        private _restoreStringEvents;
+        /**
+         * This method adds additional collection strategies for data collection purposes.
+         * @param strategyCallbacks the list of data to collect with callbacks.
+         */
+        addCollectionStrategies(...strategyCallbacks: PerfStrategyInitialization[]): void;
+        /**
+         * Gets a 6 character hexcode representing the colour from a passed in string.
+         * @param id the string to get a hex code for.
+         * @returns a hexcode hashed from the id.
+         */
+        private _getHexColorFromId;
+        /**
+         * Collects data for every dataset by using the appropriate strategy. This is called every frame.
+         * This method will then notify all observers with the latest slice.
+         */
+        private _collectDataAtFrame;
+        /**
+         * Collects and then sends the latest slice to any observers by using the appropriate strategy when the user wants.
+         * The slice will be of the form [timestamp, numberOfPoints, value1, value2...]
+         * This method does not add onto the collected data accessible via the datasets variable.
+         */
+        getCurrentSlice(): void;
+        /**
+         * Updates a property for a dataset's metadata with the value provided.
+         * @param id the id of the dataset which needs its metadata updated.
+         * @param prop the property to update.
+         * @param value the value to update the property with.
+         */
+        updateMetadata<T extends keyof IPerfMetadata>(id: string, prop: T, value: IPerfMetadata[T]): void;
+        /**
+         * Completely clear, data, ids, and strategies saved to this performance collector.
+         * @param preserveStringEventsRestore if it should preserve the string events, by default will clear string events registered when called.
+         */
+        clear(preserveStringEventsRestore?: boolean): void;
+        /**
+         * Accessor which lets the caller know if the performance collector has data loaded from a file or not!
+         * Call clear() to reset this value.
+         * @returns true if the data is loaded from a file, false otherwise.
+         */
+        get hasLoadedData(): boolean;
+        /**
+         * Given a string containing file data, this function parses the file data into the datasets object.
+         * It returns a boolean to indicate if this object was successfully loaded with the data.
+         * @param data string content representing the file data.
+         * @returns true if the data was successfully loaded, false otherwise.
+         */
+        loadFromFileData(data: string): boolean;
+        /**
+         * Exports the datasets inside of the collector to a csv.
+         */
+        exportDataToCsv(): void;
+        /**
+         * Starts the realtime collection of data.
+         * @param shouldPreserve optional boolean param, if set will preserve the dataset between calls of start.
+         */
+        start(shouldPreserve?: boolean): void;
+        /**
+         * Stops the collection of data.
+         */
+        stop(): void;
+        /**
+         * Disposes of the object
+         */
+        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -46478,6 +46957,19 @@ declare module BABYLON {
         _readFile(file: File, onSuccess: (data: string | ArrayBuffer) => void, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean, onError?: (error: ReadFileError) => void): IFileRequest;
         /** @hidden */
         _readFileAsync(file: File, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean): Promise<string | ArrayBuffer>;
+        /**
+         * Internal perfCollector instance used for sharing between inspector and playground.
+         * Marked as protected to allow sharing between prototype extensions, but disallow access at toplevel.
+         */
+        protected _perfCollector: Nullable<PerformanceViewerCollector>;
+        /** @hidden */
+        _getPerfCollector(): PerformanceViewerCollector;
+        private _computePressureObserver;
+        /**
+         * An event triggered when the cpu usage/speed meets certain thresholds.
+         * Note: Compute pressure is an experimental API.
+         */
+        onComputePressureChanged: Observable<IComputePressureData>;
     }
 }
 declare module BABYLON {
@@ -49352,6 +49844,7 @@ declare module BABYLON {
 declare module BABYLON {
     /**
      * A behavior that allows a transform node to stick to a surface position/orientation
+     * @since 5.0.0
      */
     export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
         private _scene;
@@ -49432,6 +49925,7 @@ declare module BABYLON {
 declare module BABYLON {
     /**
      * A behavior that when attached to a mesh will follow a camera
+     * @since 5.0.0
      */
     export class FollowBehavior implements Behavior<TransformNode> {
         private _scene;
@@ -50974,6 +51468,7 @@ declare module BABYLON {
          * @hidden
          */
         _doNotLoadControllerMesh: boolean;
+        private _controllerCache?;
         private _initComponent;
         private _modelReady;
         /**
@@ -51006,6 +51501,7 @@ declare module BABYLON {
          * @param gamepadObject The gamepad object correlating to this controller
          * @param handedness handedness (left/right/none) of this controller
          * @param _doNotLoadControllerMesh set this flag to ignore the mesh loading
+         * @param _controllerCache a cache holding controller models already loaded in this session
          */
         constructor(scene: Scene, layout: IMotionControllerLayout, 
         /**
@@ -51019,7 +51515,11 @@ declare module BABYLON {
         /**
          * @hidden
          */
-        _doNotLoadControllerMesh?: boolean);
+        _doNotLoadControllerMesh?: boolean, _controllerCache?: {
+            filename: string;
+            path: string;
+            meshes: AbstractMesh[];
+        }[] | undefined);
         /**
          * Dispose this controller, the model mesh and all its components
          */
@@ -51191,13 +51691,18 @@ declare module BABYLON {
      */
     export class WebXRProfiledMotionController extends WebXRAbstractMotionController {
         private _repositoryUrl;
+        private controllerCache?;
         private _buttonMeshMapping;
         private _touchDots;
         /**
          * The profile ID of this controller. Will be populated when the controller initializes.
          */
         profileId: string;
-        constructor(scene: Scene, xrInput: XRInputSource, _profile: IMotionControllerProfile, _repositoryUrl: string);
+        constructor(scene: Scene, xrInput: XRInputSource, _profile: IMotionControllerProfile, _repositoryUrl: string, controllerCache?: {
+            filename: string;
+            path: string;
+            meshes: AbstractMesh[];
+        }[] | undefined);
         dispose(): void;
         protected _getFilenameAndPath(): {
             filename: string;
@@ -51215,12 +51720,8 @@ declare module BABYLON {
      */
     export type MotionControllerConstructor = (xrInput: XRInputSource, scene: Scene) => WebXRAbstractMotionController;
     /**
-     * The MotionController Manager manages all registered motion controllers and loads the right one when needed.
-     *
-     * When this repository is complete: https://github.com/immersive-web/webxr-input-profiles/tree/master/packages/assets
-     * it should be replaced with auto-loaded controllers.
-     *
-     * When using a model try to stay as generic as possible. Eventually there will be no need in any of the controller classes
+     * Motion controller manager is managing the different webxr profiles and makes sure the right
+     * controller is being loaded.
      */
     export class WebXRMotionControllerManager {
         private static _AvailableControllers;
@@ -51239,6 +51740,11 @@ declare module BABYLON {
          * Use the online repository, or use only locally-defined controllers
          */
         static UseOnlineRepository: boolean;
+        /**
+         * Disable the controller cache and load the models each time a new WebXRProfileMotionController is loaded.
+         * Defaults to true.
+         */
+        static DisableControllerCache: boolean;
         /**
          * Clear the cache used for profile loading and reload when requested again
          */
@@ -51291,8 +51797,84 @@ declare module BABYLON {
         static UpdateProfilesList(): Promise<{
             [profile: string]: string;
         }>;
+        /**
+         * Clear the controller's cache (usually happens at the end of a session)
+         */
+        static ClearControllerCache(): void;
         private static _LoadProfileFromRepository;
         private static _LoadProfilesFromAvailableControllers;
+    }
+}
+declare module BABYLON {
+    /**
+     * WebXR Camera which holds the views for the xrSession
+     * @see https://doc.babylonjs.com/how_to/webxr_camera
+     */
+    export class WebXRCamera extends FreeCamera {
+        private _xrSessionManager;
+        private static _ScaleReadOnly;
+        private _firstFrame;
+        private _referenceQuaternion;
+        private _referencedPosition;
+        private _trackingState;
+        /**
+         * Observable raised before camera teleportation
+         */
+        onBeforeCameraTeleport: Observable<Vector3>;
+        /**
+         *  Observable raised after camera teleportation
+         */
+        onAfterCameraTeleport: Observable<Vector3>;
+        /**
+         * Notifies when the camera's tracking state has changed.
+         * Notice - will also be triggered when tracking has started (at the beginning of the session)
+         */
+        onTrackingStateChanged: Observable<WebXRTrackingState>;
+        /**
+         * Should position compensation execute on first frame.
+         * This is used when copying the position from a native (non XR) camera
+         */
+        compensateOnFirstFrame: boolean;
+        /**
+         * The last XRViewerPose from the current XRFrame
+         * @hidden
+         */
+        _lastXRViewerPose?: XRViewerPose;
+        /**
+         * Creates a new webXRCamera, this should only be set at the camera after it has been updated by the xrSessionManager
+         * @param name the name of the camera
+         * @param scene the scene to add the camera to
+         * @param _xrSessionManager a constructed xr session manager
+         */
+        constructor(name: string, scene: Scene, _xrSessionManager: WebXRSessionManager);
+        /**
+         * Get the current XR tracking state of the camera
+         */
+        get trackingState(): WebXRTrackingState;
+        private _setTrackingState;
+        /**
+         * Return the user's height, unrelated to the current ground.
+         * This will be the y position of this camera, when ground level is 0.
+         */
+        get realWorldHeight(): number;
+        /** @hidden */
+        _updateForDualEyeDebugging(): void;
+        /**
+         * Sets this camera's transformation based on a non-vr camera
+         * @param otherCamera the non-vr camera to copy the transformation from
+         * @param resetToBaseReferenceSpace should XR reset to the base reference space
+         */
+        setTransformationFromNonVRCamera(otherCamera?: Camera, resetToBaseReferenceSpace?: boolean): void;
+        /**
+         * Gets the current instance class name ("WebXRCamera").
+         * @returns the class name
+         */
+        getClassName(): string;
+        dispose(): void;
+        private _rotate180;
+        private _updateFromXRSession;
+        private _updateNumberOfRigCameras;
+        private _updateReferenceSpace;
     }
 }
 declare module BABYLON {
@@ -51394,80 +51976,9 @@ declare module BABYLON {
          * Updates the controller pose based on the given XRFrame
          * @param xrFrame xr frame to update the pose with
          * @param referenceSpace reference space to use
+         * @param xrCamera the xr camera, used for parenting
          */
-        updateFromXRFrame(xrFrame: XRFrame, referenceSpace: XRReferenceSpace): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * WebXR Camera which holds the views for the xrSession
-     * @see https://doc.babylonjs.com/how_to/webxr_camera
-     */
-    export class WebXRCamera extends FreeCamera {
-        private _xrSessionManager;
-        private static _ScaleReadOnly;
-        private _firstFrame;
-        private _referenceQuaternion;
-        private _referencedPosition;
-        private _trackingState;
-        /**
-         * Observable raised before camera teleportation
-         */
-        onBeforeCameraTeleport: Observable<Vector3>;
-        /**
-         *  Observable raised after camera teleportation
-         */
-        onAfterCameraTeleport: Observable<Vector3>;
-        /**
-         * Notifies when the camera's tracking state has changed.
-         * Notice - will also be triggered when tracking has started (at the beginning of the session)
-         */
-        onTrackingStateChanged: Observable<WebXRTrackingState>;
-        /**
-         * Should position compensation execute on first frame.
-         * This is used when copying the position from a native (non XR) camera
-         */
-        compensateOnFirstFrame: boolean;
-        /**
-         * The last XRViewerPose from the current XRFrame
-         * @hidden
-         */
-        _lastXRViewerPose?: XRViewerPose;
-        /**
-         * Creates a new webXRCamera, this should only be set at the camera after it has been updated by the xrSessionManager
-         * @param name the name of the camera
-         * @param scene the scene to add the camera to
-         * @param _xrSessionManager a constructed xr session manager
-         */
-        constructor(name: string, scene: Scene, _xrSessionManager: WebXRSessionManager);
-        /**
-         * Get the current XR tracking state of the camera
-         */
-        get trackingState(): WebXRTrackingState;
-        private _setTrackingState;
-        /**
-         * Return the user's height, unrelated to the current ground.
-         * This will be the y position of this camera, when ground level is 0.
-         */
-        get realWorldHeight(): number;
-        /** @hidden */
-        _updateForDualEyeDebugging(): void;
-        /**
-         * Sets this camera's transformation based on a non-vr camera
-         * @param otherCamera the non-vr camera to copy the transformation from
-         * @param resetToBaseReferenceSpace should XR reset to the base reference space
-         */
-        setTransformationFromNonVRCamera(otherCamera?: Camera, resetToBaseReferenceSpace?: boolean): void;
-        /**
-         * Gets the current instance class name ("WebXRCamera").
-         * @returns the class name
-         */
-        getClassName(): string;
-        dispose(): void;
-        private _rotate180;
-        private _updateFromXRSession;
-        private _updateNumberOfRigCameras;
-        private _updateReferenceSpace;
+        updateFromXRFrame(xrFrame: XRFrame, referenceSpace: XRReferenceSpace, xrCamera: WebXRCamera): void;
     }
 }
 declare module BABYLON {
@@ -51993,6 +52504,11 @@ declare module BABYLON {
          * This is the threshold from when moving starts to be accounted for for to prevent jittering.
          */
         gamepadMoveSensibility: number;
+        /**
+         * Defines the minimum value at which any analog stick input is ignored.
+         * Note: This value should only be a value between 0 and 1.
+         */
+        deadzoneDelta: number;
         private _yAxisScale;
         /**
          * Gets or sets a boolean indicating that Yaxis (for right stick) should be inverted
@@ -52847,6 +53363,7 @@ declare module BABYLON {
     }
     /**
      * Hand constraint behavior that makes the attached `TransformNode` follow hands in XR experiences.
+     * @since 5.0.0
      */
     export class HandConstraintBehavior implements Behavior<TransformNode> {
         private _scene;
@@ -57560,8 +58077,8 @@ declare module BABYLON {
         /** The utility layer the gizmo will be added to */
         gizmoLayer?: UtilityLayerRenderer);
         /**
-         * poseture that the gizmo will be display
-         * * When set null, default value will be used (Quaternion(0, 0, 0, 1))
+         * posture that the gizmo will be display
+         * When set null, default value will be used (Quaternion(0, 0, 0, 1))
          */
         get customRotationQuaternion(): Nullable<Quaternion>;
         set customRotationQuaternion(customRotationQuaternion: Nullable<Quaternion>);
@@ -57710,6 +58227,7 @@ declare module BABYLON {
 declare module BABYLON {
     /**
      * Options for each individual plane rotation gizmo contained within RotationGizmo
+     * @since 5.0.0
      */
     export interface PlaneRotationGizmoOptions {
         /**
@@ -59331,6 +59849,7 @@ declare module BABYLON {
     /**
      * Class used to render a debug view of the frustum for a directional light
      * @see https://playground.babylonjs.com/#7EFGSG#3
+     * @since 5.0.0
      */
     export class DirectionalLightFrustumViewer {
         private _scene;
@@ -61083,10 +61602,41 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /**
+     * Options to load the associated Twgsl library
+     */
+    export interface TwgslOptions {
+        /**
+         * Defines an existing instance of Twgsl (useful in modules who do not access the global instance).
+         */
+        twgsl?: any;
+        /**
+         * Defines the URL of the twgsl JS File.
+         */
+        jsPath?: string;
+        /**
+         * Defines the URL of the twgsl WASM File.
+         */
+        wasmPath?: string;
+    }
+    /** @hidden */
+    export class WebGPUTintWASM {
+        private static readonly _twgslDefaultOptions;
+        private static _TwgslInitedResolve;
+        private static _TwgslInited;
+        private _twgsl;
+        /** @hidden */
+        static _TWGSLModuleInitialized(): void;
+        initTwgsl(twgslOptions?: TwgslOptions): Promise<void>;
+        convertSpirV2WGSL(code: Uint32Array): string;
+    }
+}
+declare module BABYLON {
     /** @hidden */
     export class WebGPUTextureHelper {
         private _device;
         private _glslang;
+        private _tintWASM;
         private _bufferManager;
         private _mipmapSampler;
         private _pipelines;
@@ -61094,7 +61644,7 @@ declare module BABYLON {
         private _deferredReleaseTextures;
         private _commandEncoderForCreation;
         static ComputeNumMipmapLevels(width: number, height: number): number;
-        constructor(device: GPUDevice, glslang: any, bufferManager: WebGPUBufferManager);
+        constructor(device: GPUDevice, glslang: any, tintWASM: Nullable<WebGPUTintWASM>, bufferManager: WebGPUBufferManager);
         private _getPipeline;
         private static _GetTextureTypeFromFormat;
         private static _GetBlockInformationFromFormat;
@@ -61653,9 +62203,13 @@ declare module BABYLON {
          */
         glslangOptions?: GlslangOptions;
         /**
-         * Defines if the engine should no exceed a specified device ratio
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio
+         * Options to load the associated Twgsl library
          */
+        twgslOptions?: TwgslOptions;
+        /**
+        * Defines if the engine should no exceed a specified device ratio
+        * @see https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio
+        */
         limitDeviceRatio?: number;
         /**
          * Defines whether to adapt to the device's viewport characteristics (default: false)
@@ -61679,9 +62233,12 @@ declare module BABYLON {
     }
     /**
      * The web GPU engine class provides support for WebGPU version of babylon.js.
+     * @since 5.0.0
      */
     export class WebGPUEngine extends Engine {
         private static readonly _glslangDefaultOptions;
+        /** true to enable using TintWASM to convert Spir-V to WGSL */
+        static UseTWGSL: boolean;
         private readonly _uploadEncoderDescriptor;
         private readonly _renderEncoderDescriptor;
         private readonly _renderTargetEncoderDescriptor;
@@ -61696,6 +62253,7 @@ declare module BABYLON {
         /** @hidden */
         _options: WebGPUEngineOptions;
         private _glslang;
+        private _tintWASM;
         private _adapter;
         private _adapterSupportedExtensions;
         /** @hidden */
@@ -61821,8 +62379,11 @@ declare module BABYLON {
         get disableCacheBindGroups(): boolean;
         set disableCacheBindGroups(disable: boolean);
         /**
-         * Gets a boolean indicating if the engine can be instantiated (ie. if a WebGPU context can be found)
-         * @returns true if the engine can be created
+         * Gets a Promise<boolean> indicating if the engine can be instantiated (ie. if a WebGPU context can be found)
+         */
+        static get IsSupportedAsync(): Promise<boolean>;
+        /**
+         * Not supported by WebGPU, you should call IsSupportedAsync instead!
          */
         static get IsSupported(): boolean;
         /**
@@ -61870,9 +62431,10 @@ declare module BABYLON {
         /**
          * Initializes the WebGPU context and dependencies.
          * @param glslangOptions Defines the GLSLang compiler options if necessary
+         * @param twgslOptions Defines the Twgsl compiler options if necessary
          * @returns a promise notifying the readiness of the engine.
          */
-        initAsync(glslangOptions?: GlslangOptions): Promise<void>;
+        initAsync(glslangOptions?: GlslangOptions, twgslOptions?: TwgslOptions): Promise<void>;
         private _initGlslang;
         private _initializeLimits;
         private _initializeContextAndSwapChain;
@@ -62135,6 +62697,11 @@ declare module BABYLON {
         _setAnisotropicLevel(target: number, internalTexture: InternalTexture, anisotropicFilteringLevel: number): void;
         /** @hidden */
         _bindTexture(channel: number, texture: InternalTexture, name: string): void;
+        /**
+         * Generates the mipmaps for a texture
+         * @param texture texture to generate the mipmaps for
+         */
+        generateMipmaps(texture: InternalTexture): void;
         /** @hidden */
         _generateMipmaps(texture: InternalTexture, commandEncoder?: GPUCommandEncoder): void;
         /**
@@ -62484,6 +63051,11 @@ declare module BABYLON {
              * @see https://learnopengl.com/PBR/IBL/Diffuse-irradiance
              */
             sphericalPolynomial: Nullable<SphericalPolynomial>;
+            /**
+             * Force recomputation of spherical polynomials.
+             * Can be useful if you generate a cubemap multiple times (from a probe for eg) and you need the proper polynomials each time
+             */
+            forceSphericalPolynomialsRecompute(): void;
         }
 }
 declare module BABYLON {
@@ -67759,64 +68331,6 @@ declare module BABYLON {
 declare module BABYLON {
     /**
      * This class can be used to get instrumentation data from a Babylon engine
-     * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#engineinstrumentation
-     */
-    export class EngineInstrumentation implements IDisposable {
-        /**
-         * Define the instrumented engine.
-         */
-        engine: Engine;
-        private _captureGPUFrameTime;
-        private _captureShaderCompilationTime;
-        private _shaderCompilationTime;
-        private _onBeginFrameObserver;
-        private _onEndFrameObserver;
-        private _onBeforeShaderCompilationObserver;
-        private _onAfterShaderCompilationObserver;
-        /**
-         * Gets the perf counter used for GPU frame time
-         */
-        get gpuFrameTimeCounter(): PerfCounter;
-        /**
-         * Gets the GPU frame time capture status
-         */
-        get captureGPUFrameTime(): boolean;
-        /**
-         * Enable or disable the GPU frame time capture
-         */
-        set captureGPUFrameTime(value: boolean);
-        /**
-         * Gets the perf counter used for shader compilation time
-         */
-        get shaderCompilationTimeCounter(): PerfCounter;
-        /**
-         * Gets the shader compilation time capture status
-         */
-        get captureShaderCompilationTime(): boolean;
-        /**
-         * Enable or disable the shader compilation time capture
-         */
-        set captureShaderCompilationTime(value: boolean);
-        /**
-         * Instantiates a new engine instrumentation.
-         * This class can be used to get instrumentation data from a Babylon engine
-         * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#engineinstrumentation
-         * @param engine Defines the engine to instrument
-         */
-        constructor(
-        /**
-         * Define the instrumented engine.
-         */
-        engine: Engine);
-        /**
-         * Dispose and release associated resources.
-         */
-        dispose(): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * This class can be used to get instrumentation data from a Babylon engine
      * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#sceneinstrumentation
      */
     export class SceneInstrumentation implements IDisposable {
@@ -71083,6 +71597,7 @@ declare module BABYLON {
 declare module BABYLON {
     /**
      * A material to use for fast depth-only rendering.
+     * @since 5.0.0
      */
     export class OcclusionMaterial extends ShaderMaterial {
         constructor(name: string, scene: Scene);
@@ -71720,7 +72235,7 @@ declare module BABYLON {
          * @param texture defines the BabylonJS internal texture
          * @param callback defines the method to call once ready to upload
          */
-        loadData(data: ArrayBufferView, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void): void;
+        loadData(data: ArrayBufferView, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, failedLoading?: boolean) => void): void;
     }
 }
 declare module BABYLON {
@@ -72840,6 +73355,7 @@ declare module BABYLON {
 declare module BABYLON {
     /**
      * Block used to retrieve the depth (zbuffer) of the scene
+     * @since 5.0.0
      */
     export class SceneDepthBlock extends NodeMaterialBlock {
         private _samplerName;
@@ -74719,19 +75235,19 @@ declare module BABYLON {
         /**
          * Gets the indirect diffuse output component
          */
-        get diffuseIndirect(): NodeMaterialConnectionPoint;
+        get diffuseInd(): NodeMaterialConnectionPoint;
         /**
          * Gets the indirect specular output component
          */
-        get specularIndirect(): NodeMaterialConnectionPoint;
+        get specularInd(): NodeMaterialConnectionPoint;
         /**
          * Gets the indirect clear coat output component
          */
-        get clearcoatIndirect(): NodeMaterialConnectionPoint;
+        get clearcoatInd(): NodeMaterialConnectionPoint;
         /**
          * Gets the indirect sheen output component
          */
-        get sheenIndirect(): NodeMaterialConnectionPoint;
+        get sheenInd(): NodeMaterialConnectionPoint;
         /**
          * Gets the refraction output component
          */
@@ -74858,6 +75374,7 @@ declare module BABYLON {
     }
     /**
      * Block used to apply conditional operation between floats
+     * @since 5.0.0
      */
     export class ConditionalBlock extends NodeMaterialBlock {
         /**
@@ -75005,6 +75522,80 @@ declare module BABYLON {
         decodeMeshAsync(data: ArrayBuffer | ArrayBufferView, attributes?: {
             [kind: string]: number;
         }): Promise<VertexData>;
+    }
+}
+declare module BABYLON {
+    /**
+     * Configuration for meshoptimizer compression
+     */
+    export interface IMeshoptCompressionConfiguration {
+        /**
+         * Configuration for the decoder.
+         */
+        decoder: {
+            /**
+             * The url to the meshopt decoder library.
+             */
+            url: string;
+        };
+    }
+    /**
+     * Meshopt compression (https://github.com/zeux/meshoptimizer)
+     *
+     * This class wraps the meshopt library from https://github.com/zeux/meshoptimizer/tree/master/js.
+     *
+     * **Encoder**
+     *
+     * The encoder is not currently implemented.
+     *
+     * **Decoder**
+     *
+     * By default, the configuration points to a copy of the meshopt files on the Babylon.js preview CDN (e.g. https://preview.babylonjs.com/meshopt_decoder.js).
+     *
+     * To update the configuration, use the following code:
+     * ```javascript
+     *     MeshoptCompression.Configuration = {
+     *         decoder: {
+     *             url: "<url to the meshopt decoder library>"
+     *         }
+     *     };
+     * ```
+     */
+    export class MeshoptCompression implements IDisposable {
+        private _decoderModulePromise?;
+        /**
+         * The configuration. Defaults to the following:
+         * ```javascript
+         * decoder: {
+         *   url: "https://preview.babylonjs.com/meshopt_decoder.js"
+         * }
+         * ```
+         */
+        static Configuration: IMeshoptCompressionConfiguration;
+        private static _Default;
+        /**
+         * Default instance for the meshoptimizer object.
+         */
+        static get Default(): MeshoptCompression;
+        /**
+         * Constructor
+         */
+        constructor();
+        /**
+         * Stop all async operations and release resources.
+         */
+        dispose(): void;
+        /**
+          * Decode meshopt data.
+          * @see https://github.com/zeux/meshoptimizer/tree/master/js#decoder
+          * @param source The input data.
+          * @param count The number of elements.
+          * @param stride The stride in bytes.
+          * @param mode The compression mode.
+          * @param filter The compression filter.
+          * @returns a Promise<Uint8Array> that resolves to the decoded data
+          */
+        decodeGltfBufferAsync(source: Uint8Array, count: number, stride: number, mode: "ATTRIBUTES" | "TRIANGLES" | "INDICES", filter?: string): Promise<Uint8Array>;
     }
 }
 declare module BABYLON {
@@ -77261,7 +77852,7 @@ declare module BABYLON {
          */
         private _onBeforeAnimationsObserver;
         /**
-         *  Fires each time an agent is in reach radius of its destination
+         * Fires each time an agent is in reach radius of its destination
          */
         onReachTargetObservable: Observable<{
             agentIndex: number;
@@ -84305,7 +84896,7 @@ declare module BABYLON {
          * @returns screenshot as a string of base64-encoded characters. This string can be assigned
          * to the src parameter of an <img> to display it
          */
-        static CreateScreenshotAsync(engine: Engine, camera: Camera, size: any, mimeType?: string): Promise<string>;
+        static CreateScreenshotAsync(engine: Engine, camera: Camera, size: IScreenshotSize | number, mimeType?: string): Promise<string>;
         /**
          * Captures a screenshot of the current rendering for a specific size. This will render the entire canvas but will generate a blink (due to canvas resize)
          * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
@@ -84360,84 +84951,12 @@ declare module BABYLON {
          * @returns screenshot as a string of base64-encoded characters. This string can be assigned
          * to the src parameter of an <img> to display it
          */
-        static CreateScreenshotUsingRenderTargetAsync(engine: Engine, camera: Camera, size: any, mimeType?: string, samples?: number, antialiasing?: boolean, fileName?: string, renderSprites?: boolean): Promise<string>;
+        static CreateScreenshotUsingRenderTargetAsync(engine: Engine, camera: Camera, size: IScreenshotSize | number, mimeType?: string, samples?: number, antialiasing?: boolean, fileName?: string, renderSprites?: boolean): Promise<string>;
         /**
          * Gets height and width for screenshot size
          * @private
          */
         private static _getScreenshotSize;
-    }
-}
-declare module BABYLON {
-    /**
-     * A class acting as a dynamic float32array used in the performance viewer
-     */
-    export class DynamicFloat32Array {
-        private _view;
-        private _itemLength;
-        /**
-         * Creates a new DynamicFloat32Array with the desired item capacity.
-         * @param itemCapacity The initial item capacity you would like to set for the array.
-         */
-        constructor(itemCapacity: number);
-        /**
-         * The number of items currently in the array.
-         */
-        get itemLength(): number;
-        /**
-         * Gets value at index, NaN if no such index exists.
-         * @param index the index to get the value at.
-         * @returns the value at the index provided.
-         */
-        at(index: number): number;
-        /**
-         * Gets a view of the original array from start to end (exclusive of end).
-         * @param start starting index.
-         * @param end ending index.
-         * @returns a subarray of the original array.
-         */
-        subarray(start: number, end: number): Float32Array;
-        /**
-         * Pushes items to the end of the array.
-         * @param item The item to push into the array.
-         */
-        push(item: number): void;
-        /**
-         * Grows the array by the growth factor when necessary.
-         */
-        private _growArray;
-    }
-}
-declare module BABYLON {
-    /**
-     * Defines the shape of a collection of datasets that our graphing service uses for drawing purposes.
-     */
-    export interface IPerfDatasets {
-        /**
-         * The ids of our dataset.
-         */
-        ids: string[];
-        /**
-         * The data to be processed by the performance graph. Each slice will be of the form of [timestamp, numberOfPoints, value1, value2...]
-         */
-        data: DynamicFloat32Array;
-        /**
-         * A list of starting indices for each slice of data collected. Used for fast access of an arbitrary slice inside the data array.
-         */
-        startingIndices: DynamicFloat32Array;
-    }
-    /**
-     * Defines the shape of a the metadata the graphing service uses for drawing purposes.
-     */
-    export interface IPerfMetadata {
-        /**
-         * The color of the line to be drawn.
-         */
-        color?: string;
-        /**
-         * Specifies if data should be hidden, falsey by default.
-         */
-        hidden?: boolean;
     }
 }
 declare module BABYLON {
@@ -84718,6 +85237,7 @@ declare module BABYLON {
 declare module BABYLON {
     /**
      * Class used to connect with the reflector zone of the sandbox via the reflector bridge
+     * @since 5.0.0
      */
     export class Reflector {
         private static readonly SERVER_PREFIX;
@@ -84736,235 +85256,6 @@ declare module BABYLON {
         close(): void;
         private _handleServerMessage;
         private _handleClientMessage;
-    }
-}
-declare module BABYLON {
-    /**
-     * Defines the general structure of what is necessary for a collection strategy.
-     */
-    export interface IPerfViewerCollectionStrategy {
-        /**
-         * The id of the strategy.
-         */
-        id: string;
-        /**
-         * Function which gets the data for the strategy.
-         */
-        getData: () => number;
-        /**
-         * Function which does any necessary cleanup. Called when performanceViewerCollector.dispose() is called.
-         */
-        dispose: () => void;
-    }
-    /**
-     * Initializer callback for a strategy
-     */
-    export type PerfStrategyInitialization = (scene: Scene) => IPerfViewerCollectionStrategy;
-    /**
-     * Defines the predefined strategies used in the performance viewer.
-     */
-    export class PerfCollectionStrategy {
-        /**
-         * Gets the initializer for the strategy used for collection of fps metrics
-         * @returns the initializer for the fps strategy
-         */
-        static FpsStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of cpu utilization metrics.
-         * @returns the initializer for the cpu utilization strategy
-         */
-        static CpuStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of total meshes metrics.
-         * @returns the initializer for the total meshes strategy
-         */
-        static TotalMeshesStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of active meshes metrics.
-         * @returns the initializer for the active meshes strategy
-         */
-        static ActiveMeshesStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of active indices metrics.
-         * @returns the initializer for the active indices strategy
-         */
-        static ActiveIndiciesStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of active faces metrics.
-         * @returns the initializer for the active faces strategy
-         */
-        static ActiveFacesStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of active bones metrics.
-         * @returns the initializer for the active bones strategy
-         */
-        static ActiveBonesStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of active particles metrics.
-         * @returns the initializer for the active particles strategy
-         */
-        static ActiveParticlesStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of draw calls metrics.
-         * @returns the initializer for the draw calls strategy
-         */
-        static DrawCallsStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of total lights metrics.
-         * @returns the initializer for the total lights strategy
-         */
-        static TotalLightsStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of total vertices metrics.
-         * @returns the initializer for the total vertices strategy
-         */
-        static TotalVerticesStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of total materials metrics.
-         * @returns the initializer for the total materials strategy
-         */
-        static TotalMaterialsStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of total textures metrics.
-         * @returns the initializer for the total textures strategy
-         */
-        static TotalTexturesStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of absolute fps metrics.
-         * @returns the initializer for the absolute fps strategy
-         */
-        static AbsoluteFpsStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of meshes selection time metrics.
-         * @returns the initializer for the meshes selection time strategy
-         */
-        static MeshesSelectionStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of render targets time metrics.
-         * @returns the initializer for the render targets time strategy
-         */
-        static RenderTargetsStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of particles time metrics.
-         * @returns the initializer for the particles time strategy
-         */
-        static ParticlesStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of sprites time metrics.
-         * @returns the initializer for the sprites time strategy
-         */
-        static SpritesStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of animations time metrics.
-         * @returns the initializer for the animations time strategy
-         */
-        static AnimationsStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of physics time metrics.
-         * @returns the initializer for the physics time strategy
-         */
-        static PhysicsStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of render time metrics.
-         * @returns the initializer for the render time strategy
-         */
-        static RenderStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of total frame time metrics.
-         * @returns the initializer for the total frame time strategy
-         */
-        static FrameTotalStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of inter-frame time metrics.
-         * @returns the initializer for the inter-frame time strategy
-         */
-        static InterFrameStrategy(): PerfStrategyInitialization;
-        /**
-         * Gets the initializer for the strategy used for collection of gpu frame time metrics.
-         * @returns the initializer for the gpu frame time strategy
-         */
-        static GpuFrameTimeStrategy(): PerfStrategyInitialization;
-    }
-}
-declare module BABYLON {
-    /**
-     * The collector class handles the collection and storage of data into the appropriate array.
-     * The collector also handles notifying any observers of any updates.
-     */
-    export class PerformanceViewerCollector {
-        private _scene;
-        private _datasetMeta;
-        private _strategies;
-        private _startingTimestamp;
-        /**
-         * Datastructure containing the collected datasets. Warning: you should not modify the values in here, data will be of the form [timestamp, numberOfPoints, value1, value2..., timestamp, etc...]
-         */
-        readonly datasets: IPerfDatasets;
-        /**
-         * An observable you can attach to get deltas in the dataset. Subscribing to this will increase memory consumption slightly, and may hurt performance due to increased garbage collection needed.
-         * Updates of slices will be of the form [timestamp, numberOfPoints, value1, value2...].
-         */
-        readonly datasetObservable: Observable<number[]>;
-        /**
-         * An observable you can attach to get the most updated map of metadatas.
-         */
-        readonly metadataObservable: Observable<Map<string, IPerfMetadata>>;
-        /**
-         * The offset for when actual data values start appearing inside a slice.
-         */
-        static get SliceDataOffset(): number;
-        /**
-         * The offset for the value of the number of points inside a slice.
-         */
-        static get NumberOfPointsOffset(): number;
-        /**
-         * Handles the creation of a performance viewer collector.
-         * @param _scene the scene to collect on.
-         * @param _enabledStrategyCallbacks the list of data to collect with callbacks for initialization purposes.
-         */
-        constructor(_scene: Scene, _enabledStrategyCallbacks?: PerfStrategyInitialization[]);
-        /**
-         * This method adds additional collection strategies for data collection purposes.
-         * @param strategyCallbacks the list of data to collect with callbacks.
-         */
-        addCollectionStrategies(...strategyCallbacks: PerfStrategyInitialization[]): void;
-        /**
-         * Gets a 6 character hexcode representing the colour from a passed in string.
-         * @param id the string to get a hex code for.
-         * @returns a hexcode hashed from the id.
-         */
-        private _getHexColorFromId;
-        /**
-         * Collects data for every dataset by using the appropriate strategy. This is called every frame.
-         * This method will then notify all observers with the latest slice.
-         */
-        private _collectDataAtFrame;
-        /**
-         * Collects and then sends the latest slice to any observers by using the appropriate strategy when the user wants.
-         * The slice will be of the form [timestamp, numberOfPoints, value1, value2...]
-         * This method does not add onto the collected data accessible via the datasets variable.
-         */
-        getCurrentSlice(): void;
-        /**
-         * Updates a property for a dataset's metadata with the value provided.
-         * @param id the id of the dataset which needs its metadata updated.
-         * @param prop the property to update.
-         * @param value the value to update the property with.
-         */
-        updateMetadata<T extends keyof IPerfMetadata>(id: string, prop: T, value: IPerfMetadata[T]): void;
-        /**
-         * Starts the realtime collection of data.
-         * @param shouldPreserve optional boolean param, if set will preserve the dataset between calls of start.
-         */
-        start(shouldPreserve?: boolean): void;
-        /**
-         * Stops the collection of data.
-         */
-        stop(): void;
-        /**
-         * Disposes of the object
-         */
-        dispose(): void;
     }
 }
 declare module BABYLON {

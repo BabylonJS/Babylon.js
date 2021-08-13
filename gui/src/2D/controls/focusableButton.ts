@@ -11,6 +11,7 @@ import { IKeyboardEvent } from "babylonjs/Events/deviceInputEvents";
 
 /**
  * Class used to create a focusable button that can easily handle keyboard events
+ * @since 5.0.0
  */
 export class FocusableButton extends Button implements IFocusableControl {
     /** Highlight color when button is focused */

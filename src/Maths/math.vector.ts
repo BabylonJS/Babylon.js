@@ -4021,12 +4021,12 @@ export class Quaternion {
     }
 
     /**
-    * Creates a new rotation value to orient an object to look towards the given forward direction with the up direction being oriented like "up", and stores it in the target quaternion.
-    * This function works in left handed mode
-    * @param forward defines the forward direction - Must be normalized and orthogonal to up.
-    * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
-    * @param ref defines the target quaternion.
-    */
+     * Creates a new rotation value to orient an object to look towards the given forward direction with the up direction being oriented like "up", and stores it in the target quaternion.
+     * This function works in left handed mode
+     * @param forward defines the forward direction - Must be normalized and orthogonal to up.
+     * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
+     * @param ref defines the target quaternion.
+     */
     public static FromLookDirectionLHToRef(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, ref: Quaternion): void {
         var rotMat = MathTmp.Matrix[0];
         Matrix.LookDirectionLHToRef(forward, up, rotMat);
@@ -5705,12 +5705,12 @@ export class Matrix {
     }
 
     /**
-    * Gets a new rotation matrix used to rotate an entity so as it looks in the direction specified by forward from the eye position, the up Vector3 being oriented like "up".
-    * This function works in right handed mode
-    * @param forward defines the forward direction - Must be normalized and orthogonal to up.
-    * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
-    * @returns the new matrix
-    */
+     * Gets a new rotation matrix used to rotate an entity so as it looks in the direction specified by forward from the eye position, the up Vector3 being oriented like "up".
+     * This function works in right handed mode
+     * @param forward defines the forward direction - Must be normalized and orthogonal to up.
+     * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
+     * @returns the new matrix
+     */
     public static LookDirectionRH(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>): Matrix {
         var result = new Matrix();
         Matrix.LookDirectionRHToRef(forward, up, result);

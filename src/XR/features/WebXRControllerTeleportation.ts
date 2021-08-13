@@ -456,7 +456,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                         if (index === -1) {
                             return false;
                         }
-                        return this._floorMeshes[index].absolutePosition.y < this._options.xrInput.xrCamera.position.y;
+                        return this._floorMeshes[index].absolutePosition.y < this._options.xrInput.xrCamera.globalPosition.y;
                     });
                     if (pick && pick.pickedMesh && this._options.pickBlockerMeshes && this._options.pickBlockerMeshes.indexOf(pick.pickedMesh) !== -1) {
                         return;

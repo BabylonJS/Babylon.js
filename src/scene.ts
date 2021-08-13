@@ -38,6 +38,7 @@ import { FileTools, LoadFileError, RequestFileError, ReadFileError } from './Mis
 import { IClipPlanesHolder } from './Misc/interfaces/iClipPlanesHolder';
 import { IPointerEvent } from "./Events/deviceInputEvents";
 import { LightConstants } from "./Lights/lightConstants";
+import { IComputePressureData, ComputePressureObserverWrapper } from "./Misc/computePressure";
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -66,6 +67,7 @@ declare type MorphTargetManager = import("./Morph/morphTargetManager").MorphTarg
 declare type Effect = import("./Materials/effect").Effect;
 declare type MorphTarget = import("./Morph/morphTarget").MorphTarget;
 declare type WebVRFreeCamera = import("./Cameras/VR/webVRCamera").WebVRFreeCamera;
+declare type PerformanceViewerCollector = import("./Misc/PerformanceViewer/performanceViewerCollector").PerformanceViewerCollector;
 
 /**
  * Define an interface for all classes that will hold resources
@@ -1502,6 +1504,17 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         if (!options || !options.virtual) {
             this._engine.onNewSceneAddedObservable.notifyObservers(this);
+        }
+
+        if (ComputePressureObserverWrapper.IsAvailable) {
+            this._computePressureObserver = new ComputePressureObserverWrapper((update) => {
+                this.onComputePressureChanged.notifyObservers(update);
+            }, {
+                // Thresholds divide the interval [0.0 .. 1.0] into ranges.
+                cpuUtilizationThresholds: [0.25, 0.50, 0.75, 0.9],
+                cpuSpeedThresholds: [0.5],
+            });
+            this._computePressureObserver.observe();
         }
     }
 
@@ -4611,6 +4624,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.onPreKeyboardObservable.clear();
         this.onKeyboardObservable.clear();
         this.onActiveCameraChanged.clear();
+        this.onComputePressureChanged.clear();
+
+        this._computePressureObserver?.unobserve();
+        this._computePressureObserver = undefined;
 
         this.detachControl();
 
@@ -5183,4 +5200,23 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             });
         });
     }
+
+    /**
+     * Internal perfCollector instance used for sharing between inspector and playground.
+     * Marked as protected to allow sharing between prototype extensions, but disallow access at toplevel.
+     */
+    protected _perfCollector: Nullable<PerformanceViewerCollector> = null;
+
+    /** @hidden */
+    public _getPerfCollector(): PerformanceViewerCollector {
+        throw _DevTools.WarnImport("performanceViewerSceneExtension");
+    }
+
+    private _computePressureObserver: ComputePressureObserverWrapper | undefined;
+
+    /**
+     * An event triggered when the cpu usage/speed meets certain thresholds.
+     * Note: Compute pressure is an experimental API.
+     */
+    public onComputePressureChanged = new Observable<IComputePressureData>();
 }

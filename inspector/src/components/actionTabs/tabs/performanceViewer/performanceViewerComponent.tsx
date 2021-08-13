@@ -11,6 +11,7 @@ import { PerformanceViewerSidebarComponent } from "./performanceViewerSidebarCom
 import { PerformanceViewerCollector } from "babylonjs/Misc/PerformanceViewer/performanceViewerCollector";
 import { PerfCollectionStrategy } from "babylonjs/Misc/PerformanceViewer/performanceViewerCollectionStrategies";
 import { Tools } from "babylonjs/Misc/tools";
+import 'babylonjs/Misc/PerformanceViewer/performanceViewerSceneExtension';
 
 require('./scss/performanceViewer.scss');
 
@@ -25,7 +26,12 @@ const initialWindowSize = { width: 1024, height: 512 };
 const isEnabled = false;
 
 // list of strategies to add to perf graph automatically.
-const defaultStrategies = [PerfCollectionStrategy.GpuFrameTimeStrategy(), PerfCollectionStrategy.FpsStrategy()];
+const defaultStrategies = [
+                            PerfCollectionStrategy.GpuFrameTimeStrategy(),
+                            PerfCollectionStrategy.FpsStrategy(), 
+                            PerfCollectionStrategy.DrawCallsStrategy(),
+                            PerfCollectionStrategy.ActiveMeshesStrategy(),
+                        ];
 
 enum RecordingState {
     NotRecording = "Begin Recording",
@@ -93,7 +99,8 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
     }
 
     useEffect(() => {
-        const perfCollector = new PerformanceViewerCollector(scene, defaultStrategies);
+        const perfCollector = scene._getPerfCollector();
+        perfCollector.addCollectionStrategies(...defaultStrategies);
         setPerformanceCollector(perfCollector);
     }, []);
 
@@ -108,7 +115,7 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
     useEffect(() => {
         if (recordingState === RecordingState.Recording) {
             if (performanceCollector?.hasLoadedData) {
-                performanceCollector?.clear();
+                performanceCollector?.clear(true);
                 performanceCollector?.addCollectionStrategies(...defaultStrategies);
             }
             performanceCollector?.start();
