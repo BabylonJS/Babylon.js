@@ -12,6 +12,7 @@ import { PerformanceViewerCollector } from "babylonjs/Misc/PerformanceViewer/per
 import { PerfCollectionStrategy } from "babylonjs/Misc/PerformanceViewer/performanceViewerCollectionStrategies";
 import { Tools } from "babylonjs/Misc/tools";
 import 'babylonjs/Misc/PerformanceViewer/performanceViewerSceneExtension';
+import { LineContainerComponent } from "../../../../sharedUiComponents/lines/lineContainerComponent";
 
 require('./scss/performanceViewer.scss');
 
@@ -132,12 +133,12 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
         <>
             {
                 isEnabled &&
-                <>
+                <LineContainerComponent title="Performance Viewer">
                     <ButtonLineComponent label="Open Realtime Perf Viewer" onClick={onPerformanceButtonClick} />
                     <FileButtonLineComponent accept="csv" label="Load Perf Viewer using CSV" onClick={onLoadClick} />
                     <ButtonLineComponent label="Export Perf to CSV" onClick={onExportClick} />
                     {!isOpen && <ButtonLineComponent label={recordingState} onClick={onToggleRecording} />}
-                </>
+                </LineContainerComponent>
             }
             {
                 isOpen &&
