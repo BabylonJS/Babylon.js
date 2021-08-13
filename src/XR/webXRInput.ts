@@ -98,7 +98,7 @@ export class WebXRInput implements IDisposable {
         this._frameObserver = this.xrSessionManager.onXRFrameObservable.add((frame) => {
             // Update controller pose info
             this.controllers.forEach((controller) => {
-                controller.updateFromXRFrame(frame, this.xrSessionManager.referenceSpace);
+                controller.updateFromXRFrame(frame, this.xrSessionManager.referenceSpace, this.xrCamera);
             });
         });
 
@@ -170,5 +170,8 @@ export class WebXRInput implements IDisposable {
         this.xrSessionManager.onXRSessionEnded.remove(this._sessionEndedObserver);
         this.onControllerAddedObservable.clear();
         this.onControllerRemovedObservable.clear();
+
+        // clear the controller cache
+        WebXRMotionControllerManager.ClearControllerCache();
     }
 }

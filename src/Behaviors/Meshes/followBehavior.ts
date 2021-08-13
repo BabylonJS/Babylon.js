@@ -10,6 +10,7 @@ import { Epsilon } from "../../Maths/math.constants";
 
 /**
  * A behavior that when attached to a mesh will follow a camera
+ * @since 5.0.0
  */
 export class FollowBehavior implements Behavior<TransformNode> {
     private _scene: Scene;

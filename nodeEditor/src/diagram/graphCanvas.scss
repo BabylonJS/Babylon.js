@@ -603,6 +603,10 @@
                         margin-top: 30px;                        
                     }
 
+                    &.reflection-block {
+                        grid-row: 3;
+                    }
+
                     &.remap-block {                    
                         height: 34px;
                         text-align: center;

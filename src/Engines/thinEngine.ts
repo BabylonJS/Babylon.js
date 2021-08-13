@@ -749,7 +749,9 @@ export class ThinEngine {
                 this._checkForMobile();
 
                 // Set up event listener to check when window is resized (used to get emulator activation to work properly)
-                window.addEventListener("resize", this._checkForMobile);
+                if (DomManagement.IsWindowObjectExist()) {
+                    window.addEventListener("resize", this._checkForMobile);
+                }
 
                 let ua = navigator.userAgent;
                 for (var exception of ThinEngine.ExceptionList) {
@@ -1754,6 +1756,16 @@ export class ThinEngine {
     }
 
     /**
+     * Generates the mipmaps for a texture
+     * @param texture texture to generate the mipmaps for
+     */
+    public generateMipmaps(texture: InternalTexture): void {
+        this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
+        this._gl.generateMipmap(this._gl.TEXTURE_2D);
+        this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
+    }
+
+    /**
      * Unbind the current render target texture from the webGL context
      * @param texture defines the render target texture to unbind
      * @param disableGenerateMipMaps defines a boolean indicating that mipmaps must not be generated
@@ -1778,9 +1790,7 @@ export class ThinEngine {
         }
 
         if (texture.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
-            this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
-            gl.generateMipmap(gl.TEXTURE_2D);
-            this._bindTextureDirectly(gl.TEXTURE_2D, null);
+            this.generateMipmaps(texture);
         }
 
         if (onBeforeUnbind) {
@@ -4935,6 +4945,13 @@ export class ThinEngine {
 
     private static _IsSupported: Nullable<boolean> = null;
     private static _HasMajorPerformanceCaveat: Nullable<boolean> = null;
+
+    /**
+     * Gets a Promise<boolean> indicating if the engine can be instantiated (ie. if a webGL context can be found)
+     */
+    public static get IsSupportedAsync(): Promise<boolean> {
+        return Promise.resolve(this.isSupported());
+    }
 
     /**
      * Gets a boolean indicating if the engine can be instantiated (ie. if a webGL context can be found)

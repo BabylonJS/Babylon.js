@@ -528,28 +528,28 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     /**
      * Gets the indirect diffuse output component
      */
-    public get diffuseIndirect(): NodeMaterialConnectionPoint {
+    public get diffuseInd(): NodeMaterialConnectionPoint {
         return this._outputs[5];
     }
 
     /**
      * Gets the indirect specular output component
      */
-    public get specularIndirect(): NodeMaterialConnectionPoint {
+    public get specularInd(): NodeMaterialConnectionPoint {
         return this._outputs[6];
     }
 
     /**
      * Gets the indirect clear coat output component
      */
-    public get clearcoatIndirect(): NodeMaterialConnectionPoint {
+    public get clearcoatInd(): NodeMaterialConnectionPoint {
         return this._outputs[7];
     }
 
     /**
      * Gets the indirect sheen output component
      */
-    public get sheenIndirect(): NodeMaterialConnectionPoint {
+    public get sheenInd(): NodeMaterialConnectionPoint {
         return this._outputs[8];
     }
 

@@ -254,7 +254,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         this._internalAbstractMeshDataInfo._facetData.facetDepthSortFrom = location;
     }
 
-    /** number of collision detection tries. Change this value if not all colisions are detected and handled properly. */
+    /** number of collision detection tries. Change this value if not all colisions are detected and handled properly */
     public get collisionRetryCount(): number {
         return this._internalAbstractMeshDataInfo._collisionRetryCount;
     }
