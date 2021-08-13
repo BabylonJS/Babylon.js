@@ -70,6 +70,9 @@ export interface ICanvasGraphServiceSettings {
     datasets: IPerfDatasets;
 }
 
+/**
+ * Defines the supported timestamp units.
+ */
 export enum TimestampUnit {
     Milliseconds = 0,
     Seconds = 1,
