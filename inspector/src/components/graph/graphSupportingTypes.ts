@@ -69,3 +69,10 @@ export interface IPerfTicker extends IPerfMinMax {
 export interface ICanvasGraphServiceSettings {
     datasets: IPerfDatasets;
 }
+
+export enum TimestampUnit {
+    Milliseconds = 0,
+    Seconds = 1,
+    Minutes = 2,
+    Hours = 3,
+}
