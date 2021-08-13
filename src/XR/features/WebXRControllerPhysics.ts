@@ -305,8 +305,8 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
         this._delta = this._xrSessionManager.currentTimestamp - this._lastTimestamp;
         this._lastTimestamp = this._xrSessionManager.currentTimestamp;
         if (this._headsetMesh && this._headsetImpostor) {
-            this._headsetMesh.position.copyFrom(this._options.xrInput.xrCamera.position);
-            this._headsetMesh.rotationQuaternion!.copyFrom(this._options.xrInput.xrCamera.rotationQuaternion!);
+            this._headsetMesh.position.copyFrom(this._options.xrInput.xrCamera.globalPosition);
+            this._headsetMesh.rotationQuaternion!.copyFrom(this._options.xrInput.xrCamera.absoluteRotation);
             if (this._options.xrInput.xrCamera._lastXRViewerPose?.linearVelocity) {
                 const lv = this._options.xrInput.xrCamera._lastXRViewerPose.linearVelocity;
                 this._tmpVector.set(lv.x, lv.y, lv.z);
