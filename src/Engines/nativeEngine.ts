@@ -211,7 +211,10 @@ interface INativeEngine {
     setViewPort(x: number, y: number, width: number, height: number): void;
     setStencil(mask: number, stencilOpFail: number, depthOpFail: number, depthOpPass: number, func: number, ref: number): void;
 
-    submitCommandBuffer(commandCount: number, commandBuffer: Uint8Array, uint32ArgBuffer: Uint32Array, float32ArgBuffer: Float32Array): void;
+    setCommandBuffer(commandBuffer: Uint8Array): void;
+    setCommandUint32Buffer(commandBuffer: Uint32Array): void;
+    setCommandFloat32Buffer(commandBuffer: Float32Array): void;
+    submitCommandBuffer(commandCount: number): void;
 }
 
 class NativePipelineContext implements IPipelineContext {
@@ -800,19 +803,20 @@ class Buffer<T extends ArrayLike<number> & {[n: number]: number, set(array: Arra
     private buffer: T;
     private index = 0;
 
-    public constructor(typedArray: new (size: number) => T) {
+    public constructor(typedArray: new (size: number) => T, onBufferChanged: (buffer: T) => void) {
         this.buffer = new typedArray(1024);
+        onBufferChanged(this.buffer);
     }
 
     public get length() {
         return this.index;
     }
 
-    public get data() {
-        return this.buffer;
-    }
-
     public pushValue(value: number) {
+        if (this.index >= this.buffer.length) {
+            throw new Error(`Buffer is full.`);
+        }
+
         this.buffer[this.index++] = value;
     }
 
@@ -828,12 +832,15 @@ class Buffer<T extends ArrayLike<number> & {[n: number]: number, set(array: Arra
 
 /** @hidden */
 class CommandBufferEncoder {
-    private readonly _commandBuffer = new Buffer(Uint8Array);
-    private readonly _uint32Buffer = new Buffer(Uint32Array);
-    private readonly _float32Buffer = new Buffer(Float32Array);
+    private readonly _commandBuffer: Buffer<Uint8Array>;
+    private readonly _uint32Buffer: Buffer<Uint32Array>;
+    private readonly _float32Buffer: Buffer<Float32Array>;
     private _isCommandBufferScopeActive = false;
 
-    public constructor(private readonly _submitHandler: (commandCount: number, commandBuffer: Uint8Array, uint32ArgBuffer: Uint32Array, float32ArgBuffer: Float32Array) => void) {
+    public constructor(private readonly _nativeEngine: INativeEngine) {
+        this._commandBuffer = new Buffer(Uint8Array, (buffer) => this._nativeEngine.setCommandBuffer(buffer));
+        this._uint32Buffer = new Buffer(Uint32Array, (buffer) => this._nativeEngine.setCommandUint32Buffer(buffer));
+        this._float32Buffer = new Buffer(Float32Array, (buffer) => this._nativeEngine.setCommandFloat32Buffer(buffer));
     }
 
     public beginCommandScope() {
@@ -880,7 +887,7 @@ class CommandBufferEncoder {
     }
 
     public _submitCommandBuffer() {
-        this._submitHandler(this._commandBuffer.length, this._commandBuffer.data, this._uint32Buffer.data, this._float32Buffer.data);
+        this._nativeEngine.submitCommandBuffer(this._commandBuffer.length);
         this._commandBuffer.reset();
         this._uint32Buffer.reset();
         this._float32Buffer.reset();
@@ -892,7 +899,7 @@ export class NativeEngine extends Engine {
     private readonly _native: INativeEngine = new _native.Engine();
     private _nativeCamera: INativeCamera = _native.NativeCamera ? new _native.NativeCamera() : null;
 
-    private readonly _commandBufferEncoder = new CommandBufferEncoder(this._native.submitCommandBuffer.bind(this._native));
+    private readonly _commandBufferEncoder = new CommandBufferEncoder(this._native);
 
     /** Defines the invalid handle returned by bgfx when resource creation goes wrong */
     private readonly INVALID_HANDLE = 65535;
