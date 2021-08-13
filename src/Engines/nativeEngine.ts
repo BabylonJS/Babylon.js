@@ -124,6 +124,7 @@ interface INativeEngine {
     readonly STENCIL_OP_PASS_Z_INVERT: number;
 
     readonly COMMAND_SETMATRICES: number;
+    readonly COMMAND_SETTEXTURE: number;
 
     dispose(): void;
 
@@ -187,7 +188,7 @@ interface INativeEngine {
     setTextureSampling(texture: WebGLTexture, filter: number): void; // filter is a NativeFilter.XXXX value.
     setTextureWrapMode(texture: WebGLTexture, addressModeU: number, addressModeV: number, addressModeW: number): void; // addressModes are NativeAddressMode.XXXX values.
     setTextureAnisotropicLevel(texture: WebGLTexture, value: number): void;
-    setTexture(uniform: WebGLUniformLocation, texture: Nullable<WebGLTexture>): void;
+    //setTexture(uniform: WebGLUniformLocation, texture: Nullable<WebGLTexture>): void;
     copyTexture(desination: Nullable<WebGLTexture>, source: Nullable<WebGLTexture>): void;
     deleteTexture(texture: Nullable<WebGLTexture>): void;
     createImageBitmap(data: ArrayBufferView): ImageBitmap;
@@ -2494,7 +2495,8 @@ export class NativeEngine extends Engine {
         if (!texture) {
             if (this._boundTexturesCache[channel] != null) {
                 this._activeChannel = channel;
-                this._native.setTexture(uniform, null);
+                //this._native.setTexture(uniform, null);
+                this._setTextureCore(uniform, null);
             }
             return false;
         }
@@ -2537,9 +2539,17 @@ export class NativeEngine extends Engine {
             this._getAddressMode(texture.wrapR));
         this._updateAnisotropicLevel(texture);
 
-        this._native.setTexture(uniform, internalTexture._hardwareTexture.underlyingResource);
+        //this._native.setTexture(uniform, internalTexture._hardwareTexture.underlyingResource);
+        this._setTextureCore(uniform, internalTexture._hardwareTexture.underlyingResource);
 
         return true;
+    }
+
+    private _setTextureCore(uniform: WebGLUniformLocation, texture: Nullable<WebGLTexture>) {
+        this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_SETTEXTURE);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(uniform);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(texture);
+        this._commandBufferEncoder.finishEncodingCommand();
     }
 
     // TODO: Share more of this logic with the base implementation.
@@ -2580,7 +2590,8 @@ export class NativeEngine extends Engine {
         }
         if (texture && texture._hardwareTexture) {
             const webGLTexture = texture._hardwareTexture.underlyingResource;
-            this._native.setTexture(uniform, webGLTexture);
+            //this._native.setTexture(uniform, webGLTexture);
+            this._setTextureCore(uniform, webGLTexture);
         }
     }
 
