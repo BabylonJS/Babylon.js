@@ -123,6 +123,8 @@ interface INativeEngine {
     readonly STENCIL_OP_PASS_Z_DECRSAT: number;
     readonly STENCIL_OP_PASS_Z_INVERT: number;
 
+    readonly COMMAND_SETMATRICES: number;
+
     dispose(): void;
 
     requestAnimationFrame(callback: () => void): void;
@@ -168,7 +170,6 @@ interface INativeEngine {
     setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array | number[]): void;
     setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array | number[]): void;
     setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array | number[]): void;
-    setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): void;
     setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): void;
     setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): void;
     setFloat(uniform: WebGLUniformLocation, value: number): void;
@@ -209,6 +210,8 @@ interface INativeEngine {
 
     setViewPort(x: number, y: number, width: number, height: number): void;
     setStencil(mask: number, stencilOpFail: number, depthOpFail: number, depthOpPass: number, func: number, ref: number): void;
+
+    submitCommandBuffer(commandCount: number, commandBuffer: Uint8Array, uint32ArgBuffer: Uint32Array, float32ArgBuffer: Float32Array): void;
 }
 
 class NativePipelineContext implements IPipelineContext {
@@ -792,9 +795,104 @@ export interface NativeEngineOptions {
 }
 
 /** @hidden */
+// TODO: Handle growing/shrinking
+class Buffer<T extends ArrayLike<number> & {[n: number]: number, set(array: ArrayLike<number>, offset?: number): void}> {
+    private buffer: T;
+    private index = 0;
+
+    public constructor(typedArray: new (size: number) => T) {
+        this.buffer = new typedArray(1024);
+    }
+
+    public get length() {
+        return this.index;
+    }
+
+    public get data() {
+        return this.buffer;
+    }
+
+    public pushValue(value: number) {
+        this.buffer[this.index++] = value;
+    }
+
+    public pushValues(values: ArrayLike<number>) {
+        this.buffer.set(values, this.index);
+        this.index += values.length;
+    }
+
+    public reset() {
+        this.index = 0;
+    }
+}
+
+/** @hidden */
+class CommandBufferEncoder {
+    private readonly _commandBuffer = new Buffer(Uint8Array);
+    private readonly _uint32Buffer = new Buffer(Uint32Array);
+    private readonly _float32Buffer = new Buffer(Float32Array);
+    private _isCommandBufferScopeActive = false;
+
+    public constructor(private readonly _submitHandler: (commandCount: number, commandBuffer: Uint8Array, uint32ArgBuffer: Uint32Array, float32ArgBuffer: Float32Array) => void) {
+    }
+
+    public beginCommandScope() {
+        if (this._isCommandBufferScopeActive) {
+            throw new Error("Command scope already active.");
+        }
+
+        this._isCommandBufferScopeActive = true;
+    }
+
+    public endCommandScope() {
+        if (!this._isCommandBufferScopeActive) {
+            throw new Error("Command scope is not active.");
+        }
+
+        this._isCommandBufferScopeActive = false;
+        this._submitCommandBuffer();
+    }
+
+    public beginEncodingCommand(command: number) {
+        this._commandBuffer.pushValue(command);
+    }
+
+    public encodeCommandArgAsUInt32(commandArg: unknown) {
+        this._uint32Buffer.pushValue(commandArg as number);
+    }
+
+    public encodeCommandArgAsUInt32s(commandArg: Uint32Array) {
+        this._uint32Buffer.pushValues(commandArg);
+    }
+
+    public encodeCommandArgAsFloat32(commandArg: unknown) {
+        this._float32Buffer.pushValue(commandArg as number);
+    }
+
+    public encodeCommandArgAsFloat32s(commandArg: Float32Array) {
+        this._float32Buffer.pushValues(commandArg);
+    }
+
+    public finishEncodingCommand() {
+        if (!this._isCommandBufferScopeActive) {
+            this._submitCommandBuffer();
+        }
+    }
+
+    public _submitCommandBuffer() {
+        this._submitHandler(this._commandBuffer.length, this._commandBuffer.data, this._uint32Buffer.data, this._float32Buffer.data);
+        this._commandBuffer.reset();
+        this._uint32Buffer.reset();
+        this._float32Buffer.reset();
+    }
+}
+
+/** @hidden */
 export class NativeEngine extends Engine {
     private readonly _native: INativeEngine = new _native.Engine();
     private _nativeCamera: INativeCamera = _native.NativeCamera ? new _native.NativeCamera() : null;
+
+    private readonly _commandBufferEncoder = new CommandBufferEncoder(this._native.submitCommandBuffer.bind(this._native));
 
     /** Defines the invalid handle returned by bgfx when resource creation goes wrong */
     private readonly INVALID_HANDLE = 65535;
@@ -1711,7 +1809,12 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setMatrices(uniform, matrices);
+        this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_SETMATRICES);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(uniform);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(matrices.length);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32s(matrices);
+        this._commandBufferEncoder.finishEncodingCommand();
+
         return true;
     }
 
@@ -1833,7 +1936,7 @@ export class NativeEngine extends Engine {
 
         if (!!texture &&
             !!texture._hardwareTexture) {
-            const source = canvas.getCanvasTexture();
+            const source = canvas.getCanvasTexture(); // Change this to loadCanvasTexture, then call create/delete
             const destination = texture._hardwareTexture.underlyingResource;
             this._native.copyTexture(destination, source);
             texture.isReady = true;
