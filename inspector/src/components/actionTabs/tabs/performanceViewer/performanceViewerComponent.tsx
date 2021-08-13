@@ -4,6 +4,7 @@ import * as React from "react";
 import { useEffect, useRef, useState } from "react";
 import { ButtonLineComponent } from "../../../../sharedUiComponents/lines/buttonLineComponent";
 import { FileButtonLineComponent } from "../../../../sharedUiComponents/lines/fileButtonLineComponent";
+import { LineContainerComponent } from "../../../../sharedUiComponents/lines/lineContainerComponent";
 import { CanvasGraphComponent } from "../../../graph/canvasGraphComponent";
 import { IPerfLayoutSize } from "../../../graph/graphSupportingTypes";
 import { PopupComponent } from "../../../popupComponent";
@@ -12,7 +13,6 @@ import { PerformanceViewerCollector } from "babylonjs/Misc/PerformanceViewer/per
 import { PerfCollectionStrategy } from "babylonjs/Misc/PerformanceViewer/performanceViewerCollectionStrategies";
 import { Tools } from "babylonjs/Misc/tools";
 import 'babylonjs/Misc/PerformanceViewer/performanceViewerSceneExtension';
-import { LineContainerComponent } from "../../../../sharedUiComponents/lines/lineContainerComponent";
 
 require('./scss/performanceViewer.scss');
 
