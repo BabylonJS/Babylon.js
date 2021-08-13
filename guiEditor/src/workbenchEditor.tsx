@@ -341,7 +341,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     }[];
 
     createItems() {
-        this._items=[
+        this._items = [
             {
                 label: "Image",
                 icon: imageIcon,
@@ -430,50 +430,50 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         this.props.globalState.onSelectionChangedObservable.notifyObservers(newGuiNode);
         this.forceUpdate();
     }
-    
+
     createToolbar() {
         return (
             <>
                 <div id="toolbarGrab">
                     {
-                        <div className={"command-dropdown-content sub1"}>
+                        <div className={"toolbar-content sub1"}>
                             {
                                 this._items.map(m => {
-                                        return (
-                                            <div className={"command-dropdown-label" + (m.isActive ? " active" : "")} key={m.label} onClick={() => {
-                                                if (!m.onClick) {
-                                                    this.forceUpdate();
-                                                    return;
-                                                }
-                                                if (!m.subItems) {
-                                                    m.onClick();
-          
-                                                }
-                                            }} title={m.label}>
-                                                {
-                                                    !m.icon &&
-                                                    <div className="command-dropdown-label-text">
-                                                        {(m.isActive ? "> " : "") + m.label}
-                                                    </div>
-                                                }
-                                                {
-                                                    m.icon &&
-                                                    <div className="command-dropdown-icon">
-                                                        <img src={m.icon} />
-                                                    </div>
-                                                }
-                                                {
-                                                    m.onCheck &&
-                                                    <input type="checkBox" className="command-dropdown-label-check"
-                                                        onChange={(evt) => {
+                                    return (
+                                        <div className={"toolbar-label" + (m.isActive ? " active" : "")} key={m.label} onClick={() => {
+                                            if (!m.onClick) {
+                                                this.forceUpdate();
+                                                return;
+                                            }
+                                            if (!m.subItems) {
+                                                m.onClick();
 
-                                                            this.forceUpdate();
-                                                            m.onCheck!(evt.target.checked);
-                                                        }}
-                                                        checked={false} />
-                                                }
-                                            </div>
-                                        )  
+                                            }
+                                        }} title={m.label}>
+                                            {
+                                                !m.icon &&
+                                                <div className="toolbar-label-text">
+                                                    {(m.isActive ? "> " : "") + m.label}
+                                                </div>
+                                            }
+                                            {
+                                                m.icon &&
+                                                <div className="toolbar-icon">
+                                                    <img src={m.icon} />
+                                                </div>
+                                            }
+                                            {
+                                                m.onCheck &&
+                                                <input type="checkBox" className="toolbar-label-check"
+                                                    onChange={(evt) => {
+
+                                                        this.forceUpdate();
+                                                        m.onCheck!(evt.target.checked);
+                                                    }}
+                                                    checked={false} />
+                                            }
+                                        </div>
+                                    )
                                 })
                             }
                         </div>
