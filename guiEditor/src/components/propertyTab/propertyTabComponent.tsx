@@ -83,15 +83,14 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             this.loadFromSnippet();
         });
 
+        this.props.globalState.onPropertyGridUpdateRequiredObservable.add(() => {
+            this.forceUpdate();
+        });
+
     }
 
-    timerRefresh() {
-        if (!this._lockObject.lock) {
-            this.forceUpdate();
-        }
-    }
     componentDidMount() {
-        this._timerIntervalId = window.setInterval(() => this.timerRefresh(), 500);
+
         this.props.globalState.onSelectionChangedObservable.add((selection) => {
             if (selection instanceof Control) {
                 this.setState({ currentNode: selection });

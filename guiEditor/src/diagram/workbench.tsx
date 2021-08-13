@@ -407,6 +407,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             guiControl.left = `${left}%`;
             guiControl.top = `${top}%`;
         }
+        this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
         return true;
     }
 
