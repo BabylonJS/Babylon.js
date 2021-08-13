@@ -1,4 +1,4 @@
-import { ICanvasGraphServiceSettings, IPerfMinMax, IGraphDrawableArea, IPerfMousePanningPosition, IPerfIndexBounds, IPerfTooltip, IPerfTextMeasureCache, IPerfLayoutSize, IPerfTicker } from "./graphSupportingTypes";
+import { ICanvasGraphServiceSettings, IPerfMinMax, IGraphDrawableArea, IPerfMousePanningPosition, IPerfIndexBounds, IPerfTooltip, IPerfTextMeasureCache, IPerfLayoutSize, IPerfTicker, TimestampUnit } from "./graphSupportingTypes";
 import { IPerfDatasets, IPerfMetadata } from "babylonjs/Misc/interfaces/iPerfViewer";
 import { Scalar } from "babylonjs/Maths/math.scalar";
 import { PerformanceViewerCollector } from "babylonjs/Misc/PerformanceViewer/performanceViewerCollector";
@@ -57,6 +57,10 @@ const alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 // Arbitrary maximum used to make some GC optimizations.
 const maximumDatasetsAllowed = 64;
+
+const msInSecond = 1000;
+const msInMinute = msInSecond * 60;
+const msInHour =  msInMinute * 60;
 
 // time in ms to wait between tooltip draws inside the mouse move.
 const tooltipDebounceTime = 32;
@@ -440,6 +444,8 @@ export class CanvasGraphService {
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
 
+        const timestampUnit: TimestampUnit = this._getTimestampUnit(this._ticks[this._ticks.length - 1]);
+
         this._ticks.forEach((tick: number) => {
             let position = this._getPixelForNumber(tick, timeMinMax, drawableArea.left, spaceAvailable, false);
             if (position > spaceAvailable) {
@@ -447,10 +453,52 @@ export class CanvasGraphService {
             }
             ctx.moveTo(position, drawableArea.bottom);
             ctx.lineTo(position, drawableArea.bottom + 10);
-            ctx.fillText(tick.toString(), position, drawableArea.bottom + 20);
+            ctx.fillText(this._parseTimestamp(tick, timestampUnit), position, drawableArea.bottom + 20);
         });
         ctx.stroke();
         ctx.restore();
+    }
+
+    private _getTimestampUnit(timestamp: number): TimestampUnit {
+        if (timestamp / msInHour > 1) {
+            return TimestampUnit.Hours;
+        } else if (timestamp / msInMinute > 1) {
+            return TimestampUnit.Minutes;
+        } else if (timestamp / msInSecond > 1) {
+            return TimestampUnit.Seconds;
+        } else {
+            return TimestampUnit.Milliseconds;
+        }
+    }
+
+    private _parseTimestamp(timestamp: number, intervalUnit: TimestampUnit): string {
+        let parsedTimestamp = "";
+
+        
+        if (intervalUnit >= TimestampUnit.Hours) {
+            const numHours = Math.floor(timestamp / msInHour);
+            timestamp -= numHours * msInHour;
+            parsedTimestamp += `${numHours.toString().padStart(intervalUnit > TimestampUnit.Hours ? 2 : 1, "0")}:`;
+        }
+
+        if (intervalUnit >= TimestampUnit.Minutes) {
+            const numMinutes = Math.floor(timestamp / msInMinute);
+            timestamp -= numMinutes * msInMinute;
+            parsedTimestamp += `${numMinutes.toString().padStart(intervalUnit > TimestampUnit.Minutes ? 2 : 1, "0")}:`;
+        }
+
+        const numSeconds = Math.floor(timestamp / msInSecond);
+        timestamp -= numSeconds * msInSecond;
+        parsedTimestamp += numSeconds.toString().padStart(intervalUnit > TimestampUnit.Seconds ? 2 : 1, "0");
+
+        if (timestamp > 0) {
+            if (parsedTimestamp.length > 0) {
+                parsedTimestamp += ".";
+            }
+            parsedTimestamp += Math.round(timestamp).toString().padStart(3, "0");
+        }
+
+        return parsedTimestamp;
     }
 
     /**
