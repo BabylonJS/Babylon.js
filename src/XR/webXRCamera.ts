@@ -225,6 +225,8 @@ export class WebXRCamera extends FreeCamera {
             const pos = view.transform.position;
             const orientation = view.transform.orientation;
 
+            currentRig.parent = this.parent;
+
             currentRig.position.set(pos.x, pos.y, pos.z);
             currentRig.rotationQuaternion.set(orientation.x, orientation.y, orientation.z, orientation.w);
             if (!this._scene.useRightHandedSystem) {
