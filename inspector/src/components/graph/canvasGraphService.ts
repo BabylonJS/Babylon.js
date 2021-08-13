@@ -477,6 +477,12 @@ export class CanvasGraphService {
         ctx.restore();
     }
 
+    /**
+     * Given a timestamp (should be the maximum timestamp in view), this function returns the maximum unit the timestamp contains. 
+     * This information can be used for formatting purposes.
+     * @param timestamp the maximum timestamp to find the maximum timestamp unit for. 
+     * @returns The maximum unit the timestamp has.
+     */
     private _getTimestampUnit(timestamp: number): TimestampUnit {
         if (timestamp / msInHour > 1) {
             return TimestampUnit.Hours;
@@ -489,9 +495,14 @@ export class CanvasGraphService {
         }
     }
 
+    /**
+     * Given a timestamp and the interval unit, this function will parse the timestamp to the appropriate format.
+     * @param timestamp The timestamp to parse
+     * @param intervalUnit The maximum unit of the maximum timestamp in an interval.
+     * @returns a string representing the parsed timestamp.
+     */
     private _parseTimestamp(timestamp: number, intervalUnit: TimestampUnit): string {
         let parsedTimestamp = "";
-
         
         if (intervalUnit >= TimestampUnit.Hours) {
             const numHours = Math.floor(timestamp / msInHour);
