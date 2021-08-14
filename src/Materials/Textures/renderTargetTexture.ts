@@ -873,10 +873,10 @@ export class RenderTargetTexture extends Texture {
     public _prepareFrame(scene: Scene, faceIndex?: number, layer?: number, useCameraPostProcess?: boolean) {
         if (this._postProcessManager) {
             if (!this._prePassEnabled) {
-                this._postProcessManager._prepareFrame(this._rtWrapper?.texture, this._postProcesses);
+                this._postProcessManager._prepareFrame(this._texture, this._postProcesses);
             }
         }
-        else if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame(this._rtWrapper?.texture)) {
+        else if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame(this._texture)) {
             this._bindFrameBuffer(faceIndex, layer);
         }
     }

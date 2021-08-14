@@ -448,9 +448,9 @@ export class PrePassRenderer {
     private _bindFrameBuffer(prePassRenderTarget: PrePassRenderTarget) {
         if (this._enabled && this._currentTarget.enabled) {
             this._currentTarget._checkSize();
-            var rtWrapper = this._currentTarget.rtWrapper;
-            if (rtWrapper) {
-                this._engine.bindFramebuffer(rtWrapper);
+            var internalTexture = this._currentTarget.rtWrapper;
+            if (internalTexture) {
+                this._engine.bindFramebuffer(internalTexture);
             }
         }
     }
