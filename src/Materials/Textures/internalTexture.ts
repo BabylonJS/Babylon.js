@@ -533,18 +533,6 @@ export class InternalTexture {
             target._isRGBD = this._isRGBD;
         }
 
-        /*if (this._framebuffer) {
-            target._framebuffer = this._framebuffer;
-        }
-
-        if (this._depthStencilBuffer) {
-            target._depthStencilBuffer = this._depthStencilBuffer;
-        }
-
-        if (swapAll) {
-            target._depthStencilTexture = this._depthStencilTexture;
-        }*/
-
         if (this._lodTextureHigh) {
             if (target._lodTextureHigh) {
                 target._lodTextureHigh.dispose();
