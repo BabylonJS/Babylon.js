@@ -1205,10 +1205,9 @@ export class WebGPUTextureHelper {
         if (WebGPUTextureHelper._IsInternalTexture(texture)) {
             const hardwareTexture = texture._hardwareTexture;
             const irradianceTexture = texture._irradianceTexture;
-            const depthStencilTexture = texture._depthStencilTexture;
 
             // We can't destroy the objects just now because they could be used in the current frame - we delay the destroying after the end of the frame
-            this._deferredReleaseTextures.push([hardwareTexture, irradianceTexture, depthStencilTexture]);
+            this._deferredReleaseTextures.push([hardwareTexture, irradianceTexture, texture]);
         } else {
             this._deferredReleaseTextures.push([texture, null, null]);
         }
@@ -1216,7 +1215,7 @@ export class WebGPUTextureHelper {
 
     public destroyDeferredTextures(): void {
         for (let i = 0; i < this._deferredReleaseTextures.length; ++i) {
-            const [hardwareTexture, irradianceTexture, depthStencilTexture] = this._deferredReleaseTextures[i];
+            const [hardwareTexture, irradianceTexture, texture] = this._deferredReleaseTextures[i];
 
             if (hardwareTexture) {
                 if (WebGPUTextureHelper._IsHardwareTexture(hardwareTexture)) {
@@ -1226,7 +1225,7 @@ export class WebGPUTextureHelper {
                 }
             }
             irradianceTexture?.dispose();
-            depthStencilTexture?.dispose();
+            texture?.dispose();
         }
 
         this._deferredReleaseTextures.length = 0;

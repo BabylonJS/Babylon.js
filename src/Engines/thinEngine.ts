@@ -41,6 +41,8 @@ import { StencilStateComposer } from "../States/stencilStateComposer";
 import { StorageBuffer } from "../Buffers/storageBuffer";
 import { IAudioEngineOptions } from '../Audio/Interfaces/IAudioEngineOptions';
 import { IStencilState } from "../States/IStencilState";
+import { WebGLRenderTargetWrapper } from "./WebGL/webGLRenderTargetWrapper";
+import { RenderTargetWrapper } from "./renderTargetWrapper";
 
 declare type WebRequest = import("../Misc/webRequest").WebRequest;
 declare type LoadFileError = import("../Misc/fileTools").LoadFileError;
@@ -444,6 +446,8 @@ export class ThinEngine {
     /** @hidden */
     public _internalTexturesCache = new Array<InternalTexture>();
     /** @hidden */
+    public _renderTargetWrapperCache = new Array<RenderTargetWrapper>();
+    /** @hidden */
     protected _activeChannel = 0;
     private _currentTextureChannel = -1;
     /** @hidden */
@@ -464,7 +468,7 @@ export class ThinEngine {
     /** @hidden */
     protected _cachedEffectForVertexBuffers: Nullable<Effect>;
     /** @hidden */
-    public _currentRenderTarget: Nullable<InternalTexture>;
+    public _currentRenderTarget: Nullable<RenderTargetWrapper>;
     private _uintIndicesCurrentlySet = false;
     protected _currentBoundBuffer = new Array<Nullable<WebGLBuffer>>();
     /** @hidden */
@@ -1634,7 +1638,7 @@ export class ThinEngine {
 
     /**
      * Binds the frame buffer to the specified texture.
-     * @param texture The texture to render to or null for the default canvas
+     * @param rtWrapper The render target wrapper to render to
      * @param faceIndex The face of the texture to render to in case of cube texture
      * @param requiredWidth The width of the target to render to
      * @param requiredHeight The height of the target to render to
@@ -1642,28 +1646,31 @@ export class ThinEngine {
      * @param lodLevel defines the lod level to bind to the frame buffer
      * @param layer defines the 2d array index to bind to frame buffer to
      */
-    public bindFramebuffer(texture: InternalTexture, faceIndex: number = 0, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean, lodLevel = 0, layer = 0): void {
+    public bindFramebuffer(rtWrapper: RenderTargetWrapper, faceIndex: number = 0, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean, lodLevel = 0, layer = 0): void {
+        const webglRTWrapper = rtWrapper as WebGLRenderTargetWrapper;
+        const texture = webglRTWrapper.texture!;
+
         if (this._currentRenderTarget) {
             this.unBindFramebuffer(this._currentRenderTarget);
         }
-        this._currentRenderTarget = texture;
-        this._bindUnboundFramebuffer(texture._MSAAFramebuffer ? texture._MSAAFramebuffer : texture._framebuffer);
+        this._currentRenderTarget = webglRTWrapper;
+        this._bindUnboundFramebuffer(webglRTWrapper._MSAAFramebuffer ? webglRTWrapper._MSAAFramebuffer : webglRTWrapper._framebuffer);
 
         const gl = this._gl;
-        if (texture.is2DArray) {
+        if (webglRTWrapper.is2DArray) {
             gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, texture._hardwareTexture?.underlyingResource, lodLevel, layer);
         }
-        else if (texture.isCube) {
+        else if (webglRTWrapper.isCube) {
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture._hardwareTexture?.underlyingResource, lodLevel);
         }
 
-        const depthStencilTexture = texture._depthStencilTexture;
+        const depthStencilTexture = webglRTWrapper._depthStencilTexture;
         if (depthStencilTexture) {
-            const attachment = (depthStencilTexture._generateStencilBuffer) ? gl.DEPTH_STENCIL_ATTACHMENT : gl.DEPTH_ATTACHMENT;
-            if (texture.is2DArray) {
+            const attachment = (webglRTWrapper._depthStencilTextureWithStencil) ? gl.DEPTH_STENCIL_ATTACHMENT : gl.DEPTH_ATTACHMENT;
+            if (webglRTWrapper.is2DArray) {
                 gl.framebufferTextureLayer(gl.FRAMEBUFFER, attachment, depthStencilTexture._hardwareTexture?.underlyingResource, lodLevel, layer);
             }
-            else if (texture.isCube) {
+            else if (webglRTWrapper.isCube) {
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, depthStencilTexture._hardwareTexture?.underlyingResource, lodLevel);
             }
             else {
@@ -1675,13 +1682,13 @@ export class ThinEngine {
             this.setViewport(this._cachedViewport, requiredWidth, requiredHeight);
         } else {
             if (!requiredWidth) {
-                requiredWidth = texture.width;
+                requiredWidth = webglRTWrapper.width;
                 if (lodLevel) {
                     requiredWidth = requiredWidth / Math.pow(2, lodLevel);
                 }
             }
             if (!requiredHeight) {
-                requiredHeight = texture.height;
+                requiredHeight = webglRTWrapper.height;
                 if (lodLevel) {
                     requiredHeight = requiredHeight / Math.pow(2, lodLevel);
                 }
@@ -1767,36 +1774,39 @@ export class ThinEngine {
 
     /**
      * Unbind the current render target texture from the webGL context
-     * @param texture defines the render target texture to unbind
+     * @param rtWrapper defines the render target wrapper to unbind
      * @param disableGenerateMipMaps defines a boolean indicating that mipmaps must not be generated
      * @param onBeforeUnbind defines a function which will be called before the effective unbind
      */
-    public unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
+    public unBindFramebuffer(rtWrapper: RenderTargetWrapper, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
+        const webglRTWrapper = rtWrapper as WebGLRenderTargetWrapper;
+
         this._currentRenderTarget = null;
 
         // If MSAA, we need to bitblt back to main texture
         var gl = this._gl;
-        if (texture._MSAAFramebuffer) {
-            if (texture._textureArray) {
+        if (webglRTWrapper._MSAAFramebuffer) {
+            if (webglRTWrapper.isMulti) {
                 // This texture is part of a MRT texture, we need to treat all attachments
-                this.unBindMultiColorAttachmentFramebuffer(texture._textureArray!, disableGenerateMipMaps, onBeforeUnbind);
+                this.unBindMultiColorAttachmentFramebuffer(webglRTWrapper, disableGenerateMipMaps, onBeforeUnbind);
                 return;
             }
-            gl.bindFramebuffer(gl.READ_FRAMEBUFFER, texture._MSAAFramebuffer);
-            gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, texture._framebuffer);
-            gl.blitFramebuffer(0, 0, texture.width, texture.height,
-                0, 0, texture.width, texture.height,
+            gl.bindFramebuffer(gl.READ_FRAMEBUFFER, webglRTWrapper._MSAAFramebuffer);
+            gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, webglRTWrapper._framebuffer);
+            gl.blitFramebuffer(0, 0, webglRTWrapper.width, webglRTWrapper.height,
+                0, 0, webglRTWrapper.width, webglRTWrapper.height,
                 gl.COLOR_BUFFER_BIT, gl.NEAREST);
         }
 
-        if (texture.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
+        const texture = webglRTWrapper.texture!;
+        if (texture.generateMipMaps && !disableGenerateMipMaps && !webglRTWrapper.isCube) {
             this.generateMipmaps(texture);
         }
 
         if (onBeforeUnbind) {
-            if (texture._MSAAFramebuffer) {
+            if (webglRTWrapper._MSAAFramebuffer) {
                 // Bind the correct framebuffer
-                this._bindUnboundFramebuffer(texture._framebuffer);
+                this._bindUnboundFramebuffer(webglRTWrapper._framebuffer);
             }
             onBeforeUnbind();
         }
@@ -3825,8 +3835,6 @@ export class ThinEngine {
         internalTexture.isReady = true;
         internalTexture.samples = samples;
         internalTexture.generateMipMaps = false;
-        internalTexture._generateDepthBuffer = true;
-        internalTexture._generateStencilBuffer = generateStencil;
         internalTexture.samplingMode = bilinearFiltering ? Constants.TEXTURE_BILINEAR_SAMPLINGMODE : Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         internalTexture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
         internalTexture._comparisonFunction = comparisonFunction;
@@ -4043,7 +4051,7 @@ export class ThinEngine {
     }
 
     /** @hidden */
-    public _createRenderBuffer(width: number, height: number, samples: number, internalFormat: number, msInternalFormat: number, attachment: number): Nullable<WebGLRenderbuffer> {
+    public _createRenderBuffer(width: number, height: number, samples: number, internalFormat: number, msInternalFormat: number, attachment: number, unbindBuffer = true): Nullable<WebGLRenderbuffer> {
         const gl = this._gl;
         const renderBuffer = gl.createRenderbuffer();
 
@@ -4057,40 +4065,15 @@ export class ThinEngine {
 
         gl.framebufferRenderbuffer(gl.FRAMEBUFFER, attachment, gl.RENDERBUFFER, renderBuffer);
 
-        gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+        if (unbindBuffer) {
+            gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+        }
 
         return renderBuffer;
     }
 
     /** @hidden */
-    public _releaseFramebufferObjects(texture: InternalTexture): void {
-        var gl = this._gl;
-
-        if (texture._framebuffer) {
-            gl.deleteFramebuffer(texture._framebuffer);
-            texture._framebuffer = null;
-        }
-
-        if (texture._depthStencilBuffer) {
-            gl.deleteRenderbuffer(texture._depthStencilBuffer);
-            texture._depthStencilBuffer = null;
-        }
-
-        if (texture._MSAAFramebuffer) {
-            gl.deleteFramebuffer(texture._MSAAFramebuffer);
-            texture._MSAAFramebuffer = null;
-        }
-
-        if (texture._MSAARenderBuffer) {
-            gl.deleteRenderbuffer(texture._MSAARenderBuffer);
-            texture._MSAARenderBuffer = null;
-        }
-    }
-
-    /** @hidden */
     public _releaseTexture(texture: InternalTexture): void {
-        this._releaseFramebufferObjects(texture);
-
         this._deleteTexture(texture._hardwareTexture?.underlyingResource);
 
         // Unbind channels
@@ -4116,8 +4099,14 @@ export class ThinEngine {
         if (texture._irradianceTexture) {
             texture._irradianceTexture.dispose();
         }
+    }
 
-        texture._depthStencilTexture?.dispose();
+    /** @hidden */
+    public _releaseRenderTargetWrapper(rtWrapper: RenderTargetWrapper): void {
+        const index = this._renderTargetWrapperCache.indexOf(rtWrapper);
+        if (index !== -1) {
+            this._renderTargetWrapperCache.splice(index, 1);
+        }
     }
 
     protected _deleteTexture(texture: Nullable<WebGLTexture>): void {
@@ -4174,7 +4163,9 @@ export class ThinEngine {
             this._activateCurrentTexture();
 
             if (texture && texture.isMultiview) {
-                this._gl.bindTexture(target, texture ? texture._colorTextureArray : null);
+                //this._gl.bindTexture(target, texture ? texture._colorTextureArray : null);
+                console.error(target, texture);
+                throw "_bindTextureDirectly called with a multiview texture!";
             } else {
                 this._gl.bindTexture(target, texture?._hardwareTexture?.underlyingResource ?? null);
             }

@@ -4127,7 +4127,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         // Finalize frame
         if (this.postProcessManager && !camera._multiviewTexture) {
             // if the camera has an output render target, render the post process to the render target
-            const texture = camera.outputRenderTarget ? camera.outputRenderTarget.getInternalTexture()! : undefined;
+            const texture = camera.outputRenderTarget ? camera.outputRenderTarget.rtWrapper! : undefined;
             this.postProcessManager._finalizeFrame(camera.isIntermediate, texture);
         }
 

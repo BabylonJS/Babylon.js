@@ -398,13 +398,13 @@ export class HighlightLayer extends EffectLayer {
         this._mainTexture.onAfterUnbindObservable.add(() => {
             this.onBeforeBlurObservable.notifyObservers(this);
 
-            let internalTexture = this._blurTexture.getInternalTexture();
-            if (internalTexture) {
+            let rtWrapper = this._blurTexture.rtWrapper;
+            if (rtWrapper) {
                 this._scene.postProcessManager.directRender(
                     this._postProcesses,
-                    internalTexture,
+                    rtWrapper,
                     true);
-                this._engine.unBindFramebuffer(internalTexture, true);
+                this._engine.unBindFramebuffer(rtWrapper, true);
             }
 
             this.onAfterBlurObservable.notifyObservers(this);

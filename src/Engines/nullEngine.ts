@@ -12,6 +12,7 @@ import { IColor4Like, IViewportLike } from '../Maths/math.like';
 import { ISceneLike } from './thinEngine';
 import { PerformanceConfigurator } from './performanceConfigurator';
 import { DrawWrapper } from "../Materials/drawWrapper";
+import { RenderTargetWrapper } from "./renderTargetWrapper";
 
 declare const global: any;
 
@@ -671,13 +672,22 @@ export class NullEngine extends Engine {
         return texture;
     }
 
+    /** @hidden */
+    public _createRenderTargetWrapper(isMulti: boolean, isCube: boolean, size: number | { width: number, height: number, layers?: number }): RenderTargetWrapper {
+        const rtWrapper = new RenderTargetWrapper(isMulti, isCube, size, this);
+        this._renderTargetWrapperCache.push(rtWrapper);
+        return rtWrapper;
+    }
+
     /**
-     * Creates a new render target texture
+     * Creates a new render target wrapper
      * @param size defines the size of the texture
      * @param options defines the options used to create the texture
-     * @returns a new render target texture stored in an InternalTexture
+     * @returns a new render target wrapper
      */
-    public createRenderTargetTexture(size: any, options: boolean | RenderTargetCreationOptions): InternalTexture {
+    public createRenderTargetTexture(size: any, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper {
+        const rtWrapper = this._createRenderTargetWrapper(false, false, size);
+
         let fullOptions = new RenderTargetCreationOptions();
 
         if (options !== undefined && typeof options === "object") {
@@ -698,8 +708,9 @@ export class NullEngine extends Engine {
         var width = size.width || size;
         var height = size.height || size;
 
-        texture._depthStencilBuffer = {};
-        texture._framebuffer = {};
+        rtWrapper._generateDepthBuffer = fullOptions.generateDepthBuffer;
+        rtWrapper._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
+
         texture.baseWidth = width;
         texture.baseHeight = height;
         texture.width = width;
@@ -709,12 +720,10 @@ export class NullEngine extends Engine {
         texture.generateMipMaps = fullOptions.generateMipMaps ? true : false;
         texture.samplingMode = fullOptions.samplingMode;
         texture.type = fullOptions.type;
-        texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
-        texture._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
 
         this._internalTexturesCache.push(texture);
 
-        return texture;
+        return rtWrapper;
     }
 
     /**
@@ -728,19 +737,19 @@ export class NullEngine extends Engine {
 
     /**
      * Binds the frame buffer to the specified texture.
-     * @param texture The texture to render to or null for the default canvas
+     * @param rtWrapper The render target wrapper to render to
      * @param faceIndex The face of the texture to render to in case of cube texture
      * @param requiredWidth The width of the target to render to
      * @param requiredHeight The height of the target to render to
      * @param forceFullscreenViewport Forces the viewport to be the entire texture/screen if true
      * @param lodLevel defines le lod level to bind to the frame buffer
      */
-    public bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void {
+    public bindFramebuffer(rtWrapper: RenderTargetWrapper, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void {
         if (this._currentRenderTarget) {
             this.unBindFramebuffer(this._currentRenderTarget);
         }
-        this._currentRenderTarget = texture;
-        this._currentFramebuffer = texture._MSAAFramebuffer ? texture._MSAAFramebuffer : texture._framebuffer;
+        this._currentRenderTarget = rtWrapper;
+        this._currentFramebuffer = null;
         if (this._cachedViewport && !forceFullscreenViewport) {
             this.setViewport(this._cachedViewport, requiredWidth, requiredHeight);
         }
@@ -748,17 +757,14 @@ export class NullEngine extends Engine {
 
     /**
      * Unbind the current render target texture from the webGL context
-     * @param texture defines the render target texture to unbind
+     * @param rtWrapper defines the render target wrapper to unbind
      * @param disableGenerateMipMaps defines a boolean indicating that mipmaps must not be generated
      * @param onBeforeUnbind defines a function which will be called before the effective unbind
      */
-    public unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
+    public unBindFramebuffer(rtWrapper: RenderTargetWrapper, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
         this._currentRenderTarget = null;
 
         if (onBeforeUnbind) {
-            if (texture._MSAAFramebuffer) {
-                this._currentFramebuffer = texture._framebuffer;
-            }
             onBeforeUnbind();
         }
         this._currentFramebuffer = null;

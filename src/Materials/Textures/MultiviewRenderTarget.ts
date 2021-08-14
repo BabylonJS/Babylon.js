@@ -14,10 +14,10 @@ export class MultiviewRenderTarget extends RenderTargetTexture {
      */
     constructor(scene: Scene, size: number | { width: number, height: number } | { ratio: number } = 512) {
         super("multiview rtt", size, scene, false, true, Constants.TEXTURETYPE_UNSIGNED_INT, false, undefined, false, false, true, undefined, true);
-        var internalTexture = scene.getEngine().createMultiviewRenderTargetTexture(this.getRenderWidth(), this.getRenderHeight());
-        internalTexture.isMultiview = true;
-        internalTexture.format = Constants.TEXTUREFORMAT_RGBA;
-        this._texture = internalTexture;
+        var rtWrapper = scene.getEngine().createMultiviewRenderTargetTexture(this.getRenderWidth(), this.getRenderHeight());
+        this._texture = rtWrapper.texture!;
+        this._texture.isMultiview = true;
+        this._texture.format = Constants.TEXTUREFORMAT_RGBA;
         this.samples = this._getEngine()!.getCaps().maxSamples || this.samples;
     }
 
@@ -26,10 +26,10 @@ export class MultiviewRenderTarget extends RenderTargetTexture {
      * @param faceIndex the face index, if its a cube texture
      */
     public _bindFrameBuffer(faceIndex: number = 0) {
-        if (!this._texture) {
+        if (!this._rtWrapper) {
             return;
         }
-        this.getScene()!.getEngine().bindMultiviewFramebuffer(this._texture);
+        this.getScene()!.getEngine().bindMultiviewFramebuffer(this._rtWrapper);
     }
 
     /**
