@@ -175,7 +175,7 @@ ThinEngine.prototype._createDepthStencilTexture = function (size: RenderTargetTe
     const gl = this._gl;
     const layers = (<{ width: number, height: number, layers?: number }>size).layers || 0;
     const target = layers !== 0 ? gl.TEXTURE_2D_ARRAY : gl.TEXTURE_2D;
-    const internalTexture = new InternalTexture(this, InternalTextureSource.Depth);
+    const internalTexture = new InternalTexture(this, InternalTextureSource.DepthStencil);
     if (!this._caps.depthTextureExtension) {
         Logger.Error("Depth texture is not supported by your browser or hardware.");
         return internalTexture;
