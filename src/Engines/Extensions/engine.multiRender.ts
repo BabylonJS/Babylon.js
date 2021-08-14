@@ -170,7 +170,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: RenderTargetTe
     var types = new Array<number>();
     var samplingModes = new Array<number>();
 
-    const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, size) as WebGLRenderTargetWrapper;
+    const rtWrapper = this._createHardwareRenderTargetWrapper(true, false, size) as WebGLRenderTargetWrapper;
 
     if (options !== undefined) {
         generateMipMaps = options.generateMipMaps === undefined ? false : options.generateMipMaps;
