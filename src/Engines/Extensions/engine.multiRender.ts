@@ -265,7 +265,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: RenderTargetTe
 
     if (generateDepthTexture && this._caps.depthTextureExtension) {
         // Depth texture
-        var depthTexture = new InternalTexture(this, InternalTextureSource.MultiRenderTarget);
+        var depthTexture = new InternalTexture(this, InternalTextureSource.Depth);
 
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, depthTexture._hardwareTexture!.underlyingResource);
