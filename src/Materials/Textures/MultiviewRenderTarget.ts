@@ -26,10 +26,10 @@ export class MultiviewRenderTarget extends RenderTargetTexture {
      * @param faceIndex the face index, if its a cube texture
      */
     public _bindFrameBuffer(faceIndex: number = 0) {
-        if (!this._rtWrapper) {
+        if (!this._renderTarget) {
             return;
         }
-        this.getScene()!.getEngine().bindMultiviewFramebuffer(this._rtWrapper);
+        this.getScene()!.getEngine().bindMultiviewFramebuffer(this._renderTarget);
     }
 
     /**

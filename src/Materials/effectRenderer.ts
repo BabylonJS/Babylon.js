@@ -133,7 +133,7 @@ export class EffectRenderer {
         // Reset state
         this.setViewport();
 
-        const out = outputTexture === null ? null : this.isRenderTargetTexture(outputTexture) ? outputTexture.rtWrapper! : outputTexture;
+        const out = outputTexture === null ? null : this.isRenderTargetTexture(outputTexture) ? outputTexture.renderTarget! : outputTexture;
 
         if (out) {
             this.engine.bindFramebuffer(out);

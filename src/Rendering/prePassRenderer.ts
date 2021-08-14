@@ -403,7 +403,7 @@ export class PrePassRenderer {
 
     private _renderPostProcesses(prePassRenderTarget: PrePassRenderTarget, faceIndex?: number) {
         const firstPP = this._postProcessesSourceForThisPass[0];
-        let outputTexture = firstPP ? firstPP.inputTexture : prePassRenderTarget.renderTargetTexture ? prePassRenderTarget.renderTargetTexture.rtWrapper : null;
+        let outputTexture = firstPP ? firstPP.inputTexture : prePassRenderTarget.renderTargetTexture ? prePassRenderTarget.renderTargetTexture.renderTarget : null;
 
         // Build post process chain for this prepass post draw
         let postProcessChain = this._currentTarget._beforeCompositionPostProcesses;
@@ -414,7 +414,7 @@ export class PrePassRenderer {
 
         // Activates and renders the chain
         if (postProcessChain.length) {
-            this._scene.postProcessManager._prepareFrame(this._currentTarget.rtWrapper?.texture, postProcessChain);
+            this._scene.postProcessManager._prepareFrame(this._currentTarget.renderTarget?.texture, postProcessChain);
             this._scene.postProcessManager.directRender(postProcessChain, outputTexture, false, faceIndex);
         }
     }
@@ -448,7 +448,7 @@ export class PrePassRenderer {
     private _bindFrameBuffer(prePassRenderTarget: PrePassRenderTarget) {
         if (this._enabled && this._currentTarget.enabled) {
             this._currentTarget._checkSize();
-            var internalTexture = this._currentTarget.rtWrapper;
+            var internalTexture = this._currentTarget.renderTarget;
             if (internalTexture) {
                 this._engine.bindFramebuffer(internalTexture);
             }
@@ -593,7 +593,7 @@ export class PrePassRenderer {
     private _linkInternalTexture(prePassRenderTarget: PrePassRenderTarget, postProcess: Nullable<PostProcess>) {
         if (postProcess) {
             postProcess.autoClear = false;
-            postProcess.inputTexture = prePassRenderTarget.rtWrapper!;
+            postProcess.inputTexture = prePassRenderTarget.renderTarget!;
         }
 
         if (prePassRenderTarget._outputPostProcess !== postProcess) {
