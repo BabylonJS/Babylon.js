@@ -673,7 +673,7 @@ export class NullEngine extends Engine {
     }
 
     /** @hidden */
-    public _createRenderTargetWrapper(isMulti: boolean, isCube: boolean, size: number | { width: number, height: number, layers?: number }): RenderTargetWrapper {
+    public _createHardwareRenderTargetWrapper(isMulti: boolean, isCube: boolean, size: number | { width: number, height: number, layers?: number }): RenderTargetWrapper {
         const rtWrapper = new RenderTargetWrapper(isMulti, isCube, size, this);
         this._renderTargetWrapperCache.push(rtWrapper);
         return rtWrapper;
@@ -686,7 +686,7 @@ export class NullEngine extends Engine {
      * @returns a new render target wrapper
      */
     public createRenderTargetTexture(size: any, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper {
-        const rtWrapper = this._createRenderTargetWrapper(false, false, size);
+        const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, size);
 
         let fullOptions = new RenderTargetCreationOptions();
 

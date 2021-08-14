@@ -36,7 +36,7 @@ Engine.prototype.createMultiviewRenderTargetTexture = function (width: number, h
         throw "Multiview is not supported";
     }
 
-    const rtWrapper = this._createRenderTargetWrapper(false, false, { width, height }) as WebGLRenderTargetWrapper;
+    const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, { width, height }) as WebGLRenderTargetWrapper;
 
     rtWrapper._framebuffer = gl.createFramebuffer();
 

@@ -19,7 +19,7 @@ declare module "../../Engines/thinEngine" {
 }
 
 ThinEngine.prototype.createRenderTargetCubeTexture = function (size: number, options?: Partial<RenderTargetCreationOptions>): RenderTargetWrapper {
-    const rtWrapper = this._createRenderTargetWrapper(false, true, size) as WebGLRenderTargetWrapper;
+    const rtWrapper = this._createHardwareRenderTargetWrapper(false, true, size) as WebGLRenderTargetWrapper;
 
     let fullOptions = {
         generateMipMaps: true,
