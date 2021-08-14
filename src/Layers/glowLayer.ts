@@ -309,11 +309,11 @@ export class GlowLayer extends EffectLayer {
 
         this._mainTexture.samples = this._options.mainTextureSamples!;
         this._mainTexture.onAfterUnbindObservable.add(() => {
-            let rtWrapper = this._blurTexture1.rtWrapper;
-            if (rtWrapper) {
+            let internalTexture = this._blurTexture1.rtWrapper;
+            if (internalTexture) {
                 this._scene.postProcessManager.directRender(
                     this._postProcesses1,
-                    rtWrapper,
+                    internalTexture,
                     true);
 
                 let rtWrapper2 = this._blurTexture2.rtWrapper;
@@ -323,7 +323,7 @@ export class GlowLayer extends EffectLayer {
                         rtWrapper2,
                         true);
                 }
-                this._engine.unBindFramebuffer(rtWrapper2 ?? rtWrapper, true);
+                this._engine.unBindFramebuffer(rtWrapper2 ?? internalTexture, true);
             }
         });
 

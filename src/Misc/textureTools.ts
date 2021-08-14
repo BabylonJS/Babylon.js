@@ -59,12 +59,12 @@ export class TextureTools {
                 effect.setTexture("textureSampler", texture);
             };
 
-            let rtWrapper = rtt.rtWrapper;
+            let internalTexture = rtt.rtWrapper;
 
-            if (rtWrapper) {
-                scene.postProcessManager.directRender([passPostProcess], rtWrapper);
+            if (internalTexture) {
+                scene.postProcessManager.directRender([passPostProcess], internalTexture);
 
-                engine.unBindFramebuffer(rtWrapper);
+                engine.unBindFramebuffer(internalTexture);
                 rtt.disposeFramebufferObjects();
                 passPostProcess.dispose();
 
