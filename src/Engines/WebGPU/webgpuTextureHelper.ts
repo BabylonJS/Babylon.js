@@ -946,7 +946,7 @@ export class WebGPUTextureHelper {
 
         gpuTextureWrapper.textureUsages =
             texture._source === InternalTextureSource.RenderTarget || texture.source === InternalTextureSource.MultiRenderTarget ? WebGPUConstants.TextureUsage.Sampled | WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.RenderAttachment :
-                texture._source === InternalTextureSource.Depth ? WebGPUConstants.TextureUsage.Sampled | WebGPUConstants.TextureUsage.RenderAttachment : -1;
+                texture._source === InternalTextureSource.DepthStencil ? WebGPUConstants.TextureUsage.Sampled | WebGPUConstants.TextureUsage.RenderAttachment : -1;
 
         gpuTextureWrapper.textureAdditionalUsages = (creationFlags ?? 0) & Constants.TEXTURE_CREATIONFLAG_STORAGE ? WebGPUConstants.TextureUsage.Storage : 0;
 

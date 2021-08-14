@@ -64,9 +64,9 @@ export enum InternalTextureSource {
      */
     Raw2DArray,
     /**
-     * Texture content is a depth texture
+     * Texture content is a depth/stencil texture
      */
-    Depth,
+    DepthStencil,
     /**
      * Texture data comes from a raw cube data encoded with RGBD
      */

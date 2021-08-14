@@ -2087,7 +2087,7 @@ export class NativeEngine extends Engine {
 
     public _createDepthStencilTexture(size: RenderTargetTextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
         const nativeRTWrapper = rtWrapper as NativeRenderTargetWrapper;
-        const texture = new InternalTexture(this, InternalTextureSource.Depth);
+        const texture = new InternalTexture(this, InternalTextureSource.DepthStencil);
 
         const width = (<{ width: number, height: number, layers?: number }>size).width || <number>size;
         const height = (<{ width: number, height: number, layers?: number }>size).height || <number>size;
