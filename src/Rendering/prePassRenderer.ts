@@ -403,7 +403,7 @@ export class PrePassRenderer {
 
     private _renderPostProcesses(prePassRenderTarget: PrePassRenderTarget, faceIndex?: number) {
         const firstPP = this._postProcessesSourceForThisPass[0];
-        let outputTexture = firstPP ? firstPP.inputTexture : prePassRenderTarget.renderTargetTexture ? prePassRenderTarget.renderTargetTexture.getInternalTexture() : null;
+        let outputTexture = firstPP ? firstPP.inputTexture : prePassRenderTarget.renderTargetTexture ? prePassRenderTarget.renderTargetTexture.rtWrapper : null;
 
         // Build post process chain for this prepass post draw
         let postProcessChain = this._currentTarget._beforeCompositionPostProcesses;
@@ -414,7 +414,7 @@ export class PrePassRenderer {
 
         // Activates and renders the chain
         if (postProcessChain.length) {
-            this._scene.postProcessManager._prepareFrame(this._currentTarget.getInternalTexture()!, postProcessChain);
+            this._scene.postProcessManager._prepareFrame(this._currentTarget.rtWrapper?.texture, postProcessChain);
             this._scene.postProcessManager.directRender(postProcessChain, outputTexture, false, faceIndex);
         }
     }
@@ -448,9 +448,9 @@ export class PrePassRenderer {
     private _bindFrameBuffer(prePassRenderTarget: PrePassRenderTarget) {
         if (this._enabled && this._currentTarget.enabled) {
             this._currentTarget._checkSize();
-            var internalTexture = this._currentTarget.getInternalTexture();
-            if (internalTexture) {
-                this._engine.bindFramebuffer(internalTexture);
+            var rtWrapper = this._currentTarget.rtWrapper;
+            if (rtWrapper) {
+                this._engine.bindFramebuffer(rtWrapper);
             }
         }
     }
@@ -593,7 +593,7 @@ export class PrePassRenderer {
     private _linkInternalTexture(prePassRenderTarget: PrePassRenderTarget, postProcess: Nullable<PostProcess>) {
         if (postProcess) {
             postProcess.autoClear = false;
-            postProcess.inputTexture = prePassRenderTarget.getInternalTexture()!;
+            postProcess.inputTexture = prePassRenderTarget.rtWrapper!;
         }
 
         if (prePassRenderTarget._outputPostProcess !== postProcess) {

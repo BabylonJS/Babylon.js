@@ -189,18 +189,6 @@ export class InternalTexture {
     /** @hidden */
     public _workingContext: Nullable<ICanvasRenderingContext> = null;
     /** @hidden */
-    public _framebuffer: Nullable<WebGLFramebuffer> = null;
-    /** @hidden */
-    public _depthStencilBuffer: Nullable<WebGLRenderbuffer> = null;
-    /** @hidden */
-    public _MSAAFramebuffer: Nullable<WebGLFramebuffer> = null;
-    /** @hidden */
-    public _MSAARenderBuffer: Nullable<WebGLRenderbuffer> = null;
-    /** @hidden */
-    public _attachments: Nullable<number[]> = null;
-    /** @hidden */
-    public _textureArray: Nullable<InternalTexture[]> = null;
-    /** @hidden */
     public _cachedCoordinatesMode: Nullable<number> = null;
     /** @hidden */
     public _cachedWrapU: Nullable<number> = null;
@@ -215,10 +203,6 @@ export class InternalTexture {
     /** @hidden */
     public _compression: Nullable<string> = null;
     /** @hidden */
-    public _generateStencilBuffer: boolean = false;
-    /** @hidden */
-    public _generateDepthBuffer: boolean = false;
-    /** @hidden */
     public _comparisonFunction: number = 0;
     /** @hidden */
     public _sphericalPolynomial: Nullable<SphericalPolynomial> = null;
@@ -231,15 +215,7 @@ export class InternalTexture {
     /** @hidden */
     public _lodGenerationOffset: number = 0;
     /** @hidden */
-    public _depthStencilTexture: Nullable<InternalTexture>;
-    /** @hidden */
     public _useSRGBBuffer: boolean = false;
-
-    // Multiview
-    /** @hidden */
-    public _colorTextureArray: Nullable<WebGLTexture> = null;
-    /** @hidden */
-    public _depthStencilTextureArray: Nullable<WebGLTexture> = null;
 
     // The following three fields helps sharing generated fixed LODs for texture filtering
     // In environment not supporting the textureLOD extension like EDGE. They are for internal use only.
@@ -557,7 +533,7 @@ export class InternalTexture {
             target._isRGBD = this._isRGBD;
         }
 
-        if (this._framebuffer) {
+        /*if (this._framebuffer) {
             target._framebuffer = this._framebuffer;
         }
 
@@ -567,7 +543,7 @@ export class InternalTexture {
 
         if (swapAll) {
             target._depthStencilTexture = this._depthStencilTexture;
-        }
+        }*/
 
         if (this._lodTextureHigh) {
             if (target._lodTextureHigh) {

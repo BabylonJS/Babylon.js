@@ -68,7 +68,7 @@ export class TextureHelper {
         if (rttInternalTexture && internalTexture) {
             const samplingMode = internalTexture.samplingMode;
             texture.updateSamplingMode(Texture.NEAREST_NEAREST_MIPNEAREST);
-            scene.postProcessManager.directRender([lodPostProcess], rttInternalTexture);
+            scene.postProcessManager.directRender([lodPostProcess], rtt.rtWrapper);
             texture.updateSamplingMode(samplingMode);
 
             // Read the contents of the framebuffer
@@ -147,7 +147,7 @@ export class TextureHelper {
             resolve(data);
 
             // Unbind
-            engine.unBindFramebuffer(rttInternalTexture);
+            engine.unBindFramebuffer(rtt.rtWrapper);
         } else {
             reject();
         }

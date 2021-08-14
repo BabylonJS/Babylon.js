@@ -412,7 +412,6 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
     protected _scene: Nullable<Scene> = null;
 
     /** @hidden */
-    public _texture: Nullable<InternalTexture> = null;
     private _uid: Nullable<string> = null;
 
     /**

@@ -59,16 +59,16 @@ export class TextureTools {
                 effect.setTexture("textureSampler", texture);
             };
 
-            let internalTexture = rtt.getInternalTexture();
+            let rtWrapper = rtt.rtWrapper;
 
-            if (internalTexture) {
-                scene.postProcessManager.directRender([passPostProcess], internalTexture);
+            if (rtWrapper) {
+                scene.postProcessManager.directRender([passPostProcess], rtWrapper);
 
-                engine.unBindFramebuffer(internalTexture);
+                engine.unBindFramebuffer(rtWrapper);
                 rtt.disposeFramebufferObjects();
                 passPostProcess.dispose();
 
-                internalTexture.isReady = true;
+                rtt.getInternalTexture()!.isReady = true;
             }
         });
 
@@ -125,7 +125,6 @@ export class TextureTools {
                 // Cleanup
                 engine.restoreDefaultFramebuffer();
                 engine._releaseTexture(internalTexture);
-                engine._releaseFramebufferObjects(encodedTexture);
                 if (postProcess) {
                     postProcess.dispose();
                 }
