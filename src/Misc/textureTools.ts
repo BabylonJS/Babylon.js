@@ -59,7 +59,7 @@ export class TextureTools {
                 effect.setTexture("textureSampler", texture);
             };
 
-            let internalTexture = rtt.rtWrapper;
+            let internalTexture = rtt.renderTarget;
 
             if (internalTexture) {
                 scene.postProcessManager.directRender([passPostProcess], internalTexture);

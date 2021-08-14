@@ -249,7 +249,7 @@ export class RenderTargetTexture extends Texture {
     protected _samples = 1;
     protected _renderTargetOptions: RenderTargetCreationOptions;
     private _canRescale = true;
-    protected _rtWrapper: Nullable<RenderTargetWrapper> = null;
+    protected _renderTarget: Nullable<RenderTargetWrapper> = null;
     /**
      * Gets render target creation options that were used.
      */
@@ -260,8 +260,8 @@ export class RenderTargetTexture extends Texture {
     /**
      * Gets the render target wrapper associated with this render target
      */
-    public get rtWrapper(): Nullable<RenderTargetWrapper> {
-        return this._rtWrapper;
+    public get renderTarget(): Nullable<RenderTargetWrapper> {
+        return this._renderTarget;
     }
 
     protected _onRatioRescale(): void {
@@ -304,7 +304,7 @@ export class RenderTargetTexture extends Texture {
      * Otherwise, return null.
      */
     public get depthStencilTexture(): Nullable<InternalTexture> {
-        return this._rtWrapper?._depthStencilTexture ?? null;
+        return this._renderTarget?._depthStencilTexture ?? null;
     }
 
     /**
@@ -376,13 +376,13 @@ export class RenderTargetTexture extends Texture {
 
         if (!delayAllocation) {
             if (isCube) {
-                this._rtWrapper = scene.getEngine().createRenderTargetCubeTexture(this.getRenderSize(), this._renderTargetOptions);
+                this._renderTarget = scene.getEngine().createRenderTargetCubeTexture(this.getRenderSize(), this._renderTargetOptions);
                 this.coordinatesMode = Texture.INVCUBIC_MODE;
                 this._textureMatrix = Matrix.Identity();
             } else {
-                this._rtWrapper = scene.getEngine().createRenderTargetTexture(this._size, this._renderTargetOptions);
+                this._renderTarget = scene.getEngine().createRenderTargetTexture(this._size, this._renderTargetOptions);
             }
-            this._texture = this._rtWrapper.texture;
+            this._texture = this._renderTarget.texture;
             if (samples !== undefined) {
                 this.samples = samples;
             }
@@ -398,7 +398,7 @@ export class RenderTargetTexture extends Texture {
      * @param samples sample count of the depth/stencil texture
      */
     public createDepthStencilTexture(comparisonFunction: number = 0, bilinearFiltering: boolean = true, generateStencil: boolean = false, samples: number = 1): void {
-        this._rtWrapper?.createDepthStencilTexture(comparisonFunction, bilinearFiltering, generateStencil, samples);
+        this._renderTarget?.createDepthStencilTexture(comparisonFunction, bilinearFiltering, generateStencil, samples);
     }
 
     private _processSizeParameter(size: number | { width: number, height: number } | { ratio: number }): void {
@@ -419,12 +419,12 @@ export class RenderTargetTexture extends Texture {
      * It defaults to one meaning no MSAA has been enabled.
      */
     public get samples(): number {
-        return this._rtWrapper?.samples ?? this._samples;
+        return this._renderTarget?.samples ?? this._samples;
     }
 
     public set samples(value: number) {
-        if (this._rtWrapper) {
-            this._samples = this._rtWrapper.setSamples(value);
+        if (this._renderTarget) {
+            this._samples = this._renderTarget.setSamples(value);
         }
     }
 
@@ -615,8 +615,8 @@ export class RenderTargetTexture extends Texture {
     public resize(size: number | { width: number, height: number } | { ratio: number }): void {
         var wasCube = this.isCube;
 
-        this._rtWrapper?.dispose();
-        this._rtWrapper = null;
+        this._renderTarget?.dispose();
+        this._renderTarget = null;
 
         let scene = this.getScene();
 
@@ -627,11 +627,11 @@ export class RenderTargetTexture extends Texture {
         this._processSizeParameter(size);
 
         if (wasCube) {
-            this._rtWrapper = scene.getEngine().createRenderTargetCubeTexture(this.getRenderSize(), this._renderTargetOptions);
+            this._renderTarget = scene.getEngine().createRenderTargetCubeTexture(this.getRenderSize(), this._renderTargetOptions);
         } else {
-            this._rtWrapper = scene.getEngine().createRenderTargetTexture(this._size, this._renderTargetOptions);
+            this._renderTarget = scene.getEngine().createRenderTargetTexture(this._size, this._renderTargetOptions);
         }
-        this._texture = this._rtWrapper.texture;
+        this._texture = this._renderTarget.texture;
 
         if (this._renderTargetOptions.samples !== undefined) {
             this.samples = this._renderTargetOptions.samples;
@@ -853,16 +853,16 @@ export class RenderTargetTexture extends Texture {
         }
 
         var engine = scene.getEngine();
-        if (this._rtWrapper) {
-            engine.bindFramebuffer(this._rtWrapper, this.isCube ? faceIndex : undefined, undefined, undefined, this.ignoreCameraViewport, 0, layer);
+        if (this._renderTarget) {
+            engine.bindFramebuffer(this._renderTarget, this.isCube ? faceIndex : undefined, undefined, undefined, this.ignoreCameraViewport, 0, layer);
         }
     }
 
     protected unbindFrameBuffer(engine: Engine, faceIndex: number): void {
-        if (!this._rtWrapper) {
+        if (!this._renderTarget) {
             return;
         }
-        engine.unBindFramebuffer(this._rtWrapper, this.isCube, () => {
+        engine.unBindFramebuffer(this._renderTarget, this.isCube, () => {
             this.onAfterRenderObservable.notifyObservers(faceIndex);
         });
     }
@@ -967,10 +967,10 @@ export class RenderTargetTexture extends Texture {
             // trigger the generation of the final mipmaps
 
             if (this._postProcessManager) {
-                this._postProcessManager._finalizeFrame(false, this._rtWrapper ?? undefined, faceIndex, this._postProcesses, this.ignoreCameraViewport);
+                this._postProcessManager._finalizeFrame(false, this._renderTarget ?? undefined, faceIndex, this._postProcesses, this.ignoreCameraViewport);
             }
             else if (useCameraPostProcess) {
-                scene.postProcessManager._finalizeFrame(false, this._rtWrapper ?? undefined, faceIndex);
+                scene.postProcessManager._finalizeFrame(false, this._renderTarget ?? undefined, faceIndex);
             }
 
             this._texture.generateMipMaps = saveGenerateMipMaps;
@@ -1089,14 +1089,14 @@ export class RenderTargetTexture extends Texture {
      *  This will remove the attached framebuffer objects. The texture will not be able to be used as render target anymore
      */
     public disposeFramebufferObjects(): void {
-        this._rtWrapper?._swapAndDie(null);
+        this._renderTarget?._swapAndDie(null);
     }
 
     /**
      * Release and destroy the underlying lower level texture aka internalTexture.
      */
     public releaseInternalTexture(): void {
-        this._rtWrapper?.releaseTextures();
+        this._renderTarget?.releaseTextures();
         this._texture = null;
     }
 
@@ -1150,8 +1150,8 @@ export class RenderTargetTexture extends Texture {
             }
         }
 
-        this._rtWrapper?.dispose();
-        this._rtWrapper = null;
+        this._renderTarget?.dispose();
+        this._renderTarget = null;
         this._texture = null;
 
         super.dispose();
