@@ -30,9 +30,10 @@ declare module "../../Engines/thinEngine" {
          * This is only available in WebGL 2 or with the depth texture extension available.
          * @param size The size of face edge in the texture.
          * @param options The options defining the texture.
+         * @param rtWrapper The render target wrapper for which the depth/stencil texture must be created
          * @returns The texture
          */
-        createDepthStencilTexture(size: RenderTargetTextureSize, options: DepthTextureCreationOptions): InternalTexture;
+        createDepthStencilTexture(size: RenderTargetTextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture;
 
         /**
          * Updates the sample count of a render target texture
@@ -44,7 +45,7 @@ declare module "../../Engines/thinEngine" {
         updateRenderTargetTextureSampleCount(rtWrapper: Nullable<RenderTargetWrapper>, samples: number): number;
 
         /** @hidden */
-        _createDepthStencilTexture(size: RenderTargetTextureSize, options: DepthTextureCreationOptions): InternalTexture;
+        _createDepthStencilTexture(size: RenderTargetTextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture;
 
         /** @hidden */
         _createHardwareRenderTargetWrapper(isMulti: boolean, isCube: boolean, size: RenderTargetTextureSize): RenderTargetWrapper;
@@ -160,17 +161,17 @@ ThinEngine.prototype.createRenderTargetTexture = function (this: ThinEngine, siz
     return rtWrapper;
 };
 
-ThinEngine.prototype.createDepthStencilTexture = function (size: RenderTargetTextureSize, options: DepthTextureCreationOptions): InternalTexture {
+ThinEngine.prototype.createDepthStencilTexture = function (size: RenderTargetTextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
     if (options.isCube) {
         let width = (<{ width: number, height: number }>size).width || <number>size;
         return this._createDepthStencilCubeTexture(width, options);
     }
     else {
-        return this._createDepthStencilTexture(size, options);
+        return this._createDepthStencilTexture(size, options, rtWrapper);
     }
 };
 
-ThinEngine.prototype._createDepthStencilTexture = function (size: RenderTargetTextureSize, options: DepthTextureCreationOptions): InternalTexture {
+ThinEngine.prototype._createDepthStencilTexture = function (size: RenderTargetTextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
     const gl = this._gl;
     const layers = (<{ width: number, height: number, layers?: number }>size).layers || 0;
     const target = layers !== 0 ? gl.TEXTURE_2D_ARRAY : gl.TEXTURE_2D;
