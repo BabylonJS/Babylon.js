@@ -8,14 +8,14 @@ import { RenderTargetWrapper } from "../../renderTargetWrapper";
 import { WebGPUEngine } from "../../webgpuEngine";
 import { WebGPURenderTargetWrapper } from "../webgpuRenderTargetWrapper";
 
-WebGPUEngine.prototype._createRenderTargetWrapper = function(isMulti: boolean, isCube: boolean, size: RenderTargetTextureSize): RenderTargetWrapper {
+WebGPUEngine.prototype._createHardwareRenderTargetWrapper = function(isMulti: boolean, isCube: boolean, size: RenderTargetTextureSize): RenderTargetWrapper {
     const rtWrapper = new WebGPURenderTargetWrapper(isMulti, isCube, size, this);
     this._renderTargetWrapperCache.push(rtWrapper);
     return rtWrapper;
 };
 
 WebGPUEngine.prototype.createRenderTargetTexture = function (size: RenderTargetTextureSize, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper {
-    const rtWrapper = this._createRenderTargetWrapper(false, false, size) as WebGPURenderTargetWrapper;
+    const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, size) as WebGPURenderTargetWrapper;
 
     let fullOptions = new RenderTargetCreationOptions();
 

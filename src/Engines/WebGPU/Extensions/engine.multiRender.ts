@@ -49,7 +49,7 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: RenderTarget
     let types = new Array<number>();
     let samplingModes = new Array<number>();
 
-    const rtWrapper = this._createRenderTargetWrapper(false, false, size) as WebGPURenderTargetWrapper;
+    const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, size) as WebGPURenderTargetWrapper;
 
     if (options !== undefined) {
         generateMipMaps = options.generateMipMaps === undefined ? false : options.generateMipMaps;

@@ -47,18 +47,18 @@ declare module "../../Engines/thinEngine" {
         _createDepthStencilTexture(size: RenderTargetTextureSize, options: DepthTextureCreationOptions): InternalTexture;
 
         /** @hidden */
-        _createRenderTargetWrapper(isMulti: boolean, isCube: boolean, size: RenderTargetTextureSize): RenderTargetWrapper;
+        _createHardwareRenderTargetWrapper(isMulti: boolean, isCube: boolean, size: RenderTargetTextureSize): RenderTargetWrapper;
     }
 }
 
-ThinEngine.prototype._createRenderTargetWrapper = function(isMulti: boolean, isCube: boolean, size: RenderTargetTextureSize): RenderTargetWrapper {
+ThinEngine.prototype._createHardwareRenderTargetWrapper = function(isMulti: boolean, isCube: boolean, size: RenderTargetTextureSize): RenderTargetWrapper {
     const rtWrapper = new WebGLRenderTargetWrapper(isMulti, isCube, size, this, this._gl);
     this._renderTargetWrapperCache.push(rtWrapper);
     return rtWrapper;
 };
 
 ThinEngine.prototype.createRenderTargetTexture = function (this: ThinEngine, size: RenderTargetTextureSize, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper {
-    const rtWrapper = this._createRenderTargetWrapper(false, false, size) as WebGLRenderTargetWrapper;
+    const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, size) as WebGLRenderTargetWrapper;
 
     const fullOptions = new RenderTargetCreationOptions();
     if (options !== undefined && typeof options === "object") {
