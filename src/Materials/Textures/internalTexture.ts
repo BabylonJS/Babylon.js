@@ -1,10 +1,7 @@
 import { Observable } from "../../Misc/observable";
 import { Nullable, int } from "../../types";
-import { RenderTargetCreationOptions } from "../../Materials/Textures/renderTargetCreationOptions";
-import { Constants } from "../../Engines/constants";
 import { ICanvas, ICanvasRenderingContext } from "../../Engines/ICanvas";
 import { _DevTools } from '../../Misc/devTools';
-import { Engine } from '../../Engines/engine';
 import { HardwareTextureWrapper } from "./hardwareTextureWrapper";
 
 declare type ThinEngine = import("../../Engines/thinEngine").ThinEngine;
@@ -70,7 +67,11 @@ export enum InternalTextureSource {
     /**
      * Texture data comes from a raw cube data encoded with RGBD
      */
-    CubeRawRGBD
+    CubeRawRGBD,
+    /**
+     * Texture content is a depth texture
+     */
+    Depth,
 }
 
 /**
@@ -321,17 +322,6 @@ export class InternalTexture {
         this._cachedWrapR = null;
         this._cachedAnisotropicFilteringLevel = null;
 
-        const rebuildSamples = () => {
-            const samples = this.samples;
-
-            if (samples > 1) {
-                this.samples = 1; // make sure we don't return early inside updateRenderTargetTextureSampleCount
-                this._MSAAFramebuffer = null; // make sure updateRenderTargetTextureSampleCount won't try to delete this object (which is invalid because of the context lost)
-                this._MSAARenderBuffer = null; // same than above
-                (this._engine as Engine).updateRenderTargetTextureSampleCount(this, samples);
-            }
-        };
-
         switch (this.source) {
             case InternalTextureSource.Temp:
                 break;
@@ -339,7 +329,6 @@ export class InternalTexture {
             case InternalTextureSource.Url:
                 proxy = this._engine.createTexture(this._originalUrl ?? this.url, !this.generateMipMaps, this.invertY, null, this.samplingMode, () => {
                     proxy._swapAndDie(this, false);
-                    rebuildSamples();
                     this.isReady = true;
                 }, null, this._buffer, undefined, this.format, this._extension, undefined, undefined, undefined, this._useSRGBBuffer);
                 return;
@@ -376,96 +365,9 @@ export class InternalTexture {
                 // The engine will make sure to update content so no need to flag it as isReady = true
                 break;
 
-            case InternalTextureSource.RenderTarget:
-                let options = new RenderTargetCreationOptions();
-                options.generateDepthBuffer = this._generateDepthBuffer;
-                options.generateMipMaps = this.generateMipMaps;
-                options.generateStencilBuffer = this._generateStencilBuffer;
-                options.samplingMode = this.samplingMode;
-                options.type = this.type;
-
-                if (this.isCube) {
-                    proxy = this._engine.createRenderTargetCubeTexture(this.width, options);
-                } else {
-                    let size = {
-                        width: this.width,
-                        height: this.height,
-                        layers: this.is2DArray ? this.depth : undefined
-                    };
-
-                    proxy = (this._engine as Engine).createRenderTargetTexture(size, options);
-                }
-                proxy._swapAndDie(this, false);
-
-                this.isReady = true;
-                break;
-
-            case InternalTextureSource.MultiRenderTarget:
-                if (this._textureArray && this === this._textureArray[0]) {
-                    let generateDepthTexture = false;
-                    let textureCount = this._textureArray.length;
-
-                    if (this._textureArray[this._textureArray.length - 1]._textureArray === null) {
-                        generateDepthTexture = true;
-                        textureCount--;
-                    }
-
-                    const samplingModes: number[] = [];
-                    const types: number[] = [];
-
-                    for (let i = 0; i < textureCount; ++i) {
-                        const texture = this._textureArray[i];
-
-                        samplingModes.push(texture.samplingMode);
-                        types.push(texture.type);
-                    }
-
-                    const optionsMRT = {
-                        samplingModes,
-                        generateMipMaps: this.generateMipMaps,
-                        generateDepthBuffer: this._generateDepthBuffer,
-                        generateStencilBuffer: this._generateStencilBuffer,
-                        generateDepthTexture,
-                        types,
-                        textureCount,
-                    };
-                    const size = {
-                        width: this.width,
-                        height: this.height,
-                    };
-                    const textures = (this._engine as Engine).createMultipleRenderTarget(size, optionsMRT);
-                    for (let i = 0; i < this._textureArray.length; ++i) {
-                        textures[i]._swapAndDie(this._textureArray[i], false);
-                    }
-
-                }
-                this.isReady = true;
-                break;
-
-            case InternalTextureSource.Depth:
-                let depthTextureOptions = {
-                    bilinearFiltering: (this.samplingMode === Constants.TEXTURE_BILINEAR_SAMPLINGMODE) || (this.samplingMode === Constants.TEXTURE_TRILINEAR_SAMPLINGMODE) || (this.samplingMode === Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST),
-                    comparisonFunction: this._comparisonFunction,
-                    generateStencil: this._generateStencilBuffer,
-                    isCube: this.isCube,
-                    samples: this.samples
-                };
-
-                let size = {
-                    width: this.width,
-                    height: this.height,
-                    layers: this.is2DArray ? this.depth : undefined
-                };
-                proxy = this._engine.createDepthStencilTexture(size, depthTextureOptions);
-                proxy._swapAndDie(this, false);
-
-                this.isReady = true;
-                break;
-
             case InternalTextureSource.Cube:
                 proxy = this._engine.createCubeTexture(this.url, null, this._files, !this.generateMipMaps, () => {
                     proxy._swapAndDie(this, false);
-                    rebuildSamples();
                     this.isReady = true;
                 }, null, this.format, this._extension, false, 0, 0, null, undefined, this._useSRGBBuffer);
                 return;
@@ -480,7 +382,6 @@ export class InternalTexture {
                 proxy = this._engine.createRawCubeTexture(null, this.width, this.format, this.type, this.generateMipMaps, this.invertY, this.samplingMode, this._compression);
                 InternalTexture._UpdateRGBDAsync(proxy, this._bufferViewArrayArray!, this._sphericalPolynomial, this._lodGenerationScale, this._lodGenerationOffset).then(() => {
                     proxy._swapAndDie(this, false);
-                    rebuildSamples();
                     this.isReady = true;
                 });
                 return;
@@ -490,36 +391,11 @@ export class InternalTexture {
                     if (proxy) {
                         proxy._swapAndDie(this, false);
                     }
-
-                    rebuildSamples();
                     this.isReady = true;
                 }, null, this.format, this._extension);
                 proxy._sphericalPolynomial = this._sphericalPolynomial;
                 return;
-
-            case InternalTextureSource.Unknown:
-                if (this._colorTextureArray && this._depthStencilTextureArray && this.isMultiview) {
-                    proxy = (this._engine as Engine).createMultiviewRenderTargetTexture(this.width, this.height);
-                    proxy._swapAndDie(this, false);
-
-                    this.isReady = true;
-                } else if (this.isCube) {
-                    let depthTextureOptions = {
-                        bilinearFiltering: this.samplingMode !== Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
-                        comparisonFunction: this._comparisonFunction,
-                        generateStencil: this._generateStencilBuffer,
-                        isCube: this.isCube,
-                        samples: this.samples
-                    };
-                    proxy = (this._engine as Engine)._createDepthStencilCubeTexture(this.width, depthTextureOptions);
-                    proxy._swapAndDie(this, false);
-
-                    this.isReady = true;
-                }
-                break;
         }
-
-        rebuildSamples();
     }
 
     /** @hidden */

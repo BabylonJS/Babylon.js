@@ -1,5 +1,7 @@
-import { InternalTexture } from "../Materials/Textures/internalTexture";
+import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
+import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
 import { Nullable } from "../types";
+import { Constants } from "./constants";
 import { RenderTargetTextureSize } from "./Extensions/engine.renderTarget";
 import { ThinEngine } from "./thinEngine";
 
@@ -106,6 +108,105 @@ export class RenderTargetWrapper {
         }
         this._textures = null;
         this.dispose(true);
+    }
+
+    protected _cloneRenderTargetWrapper(): Nullable<RenderTargetWrapper> {
+        let rtw: Nullable<RenderTargetWrapper> = null;
+
+        if (this._isMulti) {
+            const textureArray = this.textures;
+            if (textureArray && textureArray.length > 0) {
+                let generateDepthTexture = false;
+                let textureCount = textureArray.length;
+
+                const lastTextureSource = textureArray[textureArray.length - 1]._source;
+                if (lastTextureSource === InternalTextureSource.Depth || lastTextureSource === InternalTextureSource.DepthStencil) {
+                    generateDepthTexture = true;
+                    textureCount--;
+                }
+
+                const samplingModes: number[] = [];
+                const types: number[] = [];
+
+                for (let i = 0; i < textureCount; ++i) {
+                    const texture = textureArray[i];
+
+                    samplingModes.push(texture.samplingMode);
+                    types.push(texture.type);
+                }
+
+                const optionsMRT = {
+                    samplingModes,
+                    generateMipMaps: textureArray[0].generateMipMaps,
+                    generateDepthBuffer: this._generateDepthBuffer,
+                    generateStencilBuffer: this._generateStencilBuffer,
+                    generateDepthTexture,
+                    types,
+                    textureCount,
+                };
+                const size = {
+                    width: this.width,
+                    height: this.height,
+                };
+
+                rtw = this._engine.createMultipleRenderTarget(size, optionsMRT);
+            }
+        } else {
+            let options = new RenderTargetCreationOptions();
+
+            options.generateDepthBuffer = this._generateDepthBuffer;
+            options.generateMipMaps = this.texture?.generateMipMaps ?? false;
+            options.generateStencilBuffer = this._generateStencilBuffer;
+            options.samplingMode = this.texture?.samplingMode;
+            options.type = this.texture?.type;
+            options.format = this.texture?.format;
+
+            if (this.isCube) {
+                rtw = this._engine.createRenderTargetCubeTexture(this.width, options);
+            } else {
+                let size = {
+                    width: this.width,
+                    height: this.height,
+                    layers: this.is2DArray ? this.texture?.depth : undefined
+                };
+
+                rtw = this._engine.createRenderTargetTexture(size, options);
+            }
+            rtw.texture!.isReady = true;
+        }
+
+        return rtw;
+    }
+
+    protected _swapRenderTargetWrapper(target: RenderTargetWrapper): void {
+        target._textures = this._textures;
+        target._depthStencilTexture = this._depthStencilTexture;
+
+        this._textures = null;
+        this._depthStencilTexture = null;
+        
+        this.dispose();
+    }
+
+    /** @hidden */
+    public _rebuild(): void {
+        let rtw = this._cloneRenderTargetWrapper();
+        if (!rtw) {
+            return;
+        }
+
+        if (this._depthStencilTexture) {
+            const samplingMode = this.texture?.samplingMode;
+            const bilinear = (samplingMode === Constants.TEXTURE_BILINEAR_SAMPLINGMODE) || (samplingMode === Constants.TEXTURE_TRILINEAR_SAMPLINGMODE) || (samplingMode === Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST);
+            rtw.createDepthStencilTexture(this.texture?._comparisonFunction, bilinear, this._depthStencilTextureWithStencil, this.samples);
+            rtw._depthStencilTexture!.isReady = true;
+        }
+
+        if (this.samples > 1) {
+            rtw.setSamples(this.samples);
+        }
+
+        rtw._swapRenderTargetWrapper(this);
     }
 
     public releaseTextures(): void {

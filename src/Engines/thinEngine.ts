@@ -926,6 +926,8 @@ export class ThinEngine {
             this._rebuildComputeEffects?.();
             // Rebuild textures
             this._rebuildInternalTextures();
+            // Rebuild textures
+            this._rebuildRenderTargetWrappers();
             // Rebuild buffers
             this._rebuildBuffers();
             // Cache
@@ -971,6 +973,14 @@ export class ThinEngine {
 
         for (var internalTexture of currentState) {
             internalTexture._rebuild();
+        }
+    }
+
+    private _rebuildRenderTargetWrappers(): void {
+        let currentState = this._renderTargetWrapperCache.slice(); // Do a copy because the rebuild will add proxies
+
+        for (const renderTargetWrapper of currentState) {
+            renderTargetWrapper._rebuild();
         }
     }
 
