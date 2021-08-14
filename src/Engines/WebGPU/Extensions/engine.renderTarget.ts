@@ -97,7 +97,7 @@ WebGPUEngine.prototype.createRenderTargetTexture = function (size: RenderTargetT
     return rtWrapper;
 };
 
-WebGPUEngine.prototype._createDepthStencilTexture = function (size: RenderTargetTextureSize, options: DepthTextureCreationOptions): InternalTexture {
+WebGPUEngine.prototype._createDepthStencilTexture = function (size: RenderTargetTextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
     const internalTexture = new InternalTexture(this, InternalTextureSource.Depth);
 
     const internalOptions = {

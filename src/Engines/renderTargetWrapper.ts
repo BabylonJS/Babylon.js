@@ -94,7 +94,7 @@ export class RenderTargetWrapper {
             generateStencil,
             isCube: this._isCube,
             samples
-        });
+        }, this);
 
         return this._depthStencilTexture;
     }
