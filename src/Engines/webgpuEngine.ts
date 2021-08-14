@@ -2530,7 +2530,7 @@ export class WebGPUEngine extends Engine {
 
     /**
      * Binds the frame buffer to the specified texture.
-     * @param rtWrapper The render target wrapper to render to
+     * @param texture The render target wrapper to render to
      * @param faceIndex The face of the texture to render to in case of cube texture
      * @param requiredWidth The width of the target to render to
      * @param requiredHeight The height of the target to render to
@@ -2538,14 +2538,14 @@ export class WebGPUEngine extends Engine {
      * @param lodLevel defines the lod level to bind to the frame buffer
      * @param layer defines the 2d array index to bind to frame buffer to
      */
-    public bindFramebuffer(rtWrapper: RenderTargetWrapper, faceIndex: number = 0, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean, lodLevel = 0, layer = 0): void {
-        const webgpuRTWrapper = rtWrapper as WebGPURenderTargetWrapper;
+    public bindFramebuffer(texture: RenderTargetWrapper, faceIndex: number = 0, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean, lodLevel = 0, layer = 0): void {
+        const webgpuRTWrapper = texture as WebGPURenderTargetWrapper;
 
         const hardwareTexture = webgpuRTWrapper.texture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
 
         if (!hardwareTexture) {
             if (this.dbgSanityChecks) {
-                console.error("bindFramebuffer: Trying to bind a texture that does not have a hardware texture!", webgpuRTWrapper, hardwareTexture);
+                console.error("bindFramebuffer: Trying to bind a texture that does not have a hardware texture!", texture, hardwareTexture);
             }
             return;
         }
@@ -2553,8 +2553,8 @@ export class WebGPUEngine extends Engine {
         if (this._currentRenderTarget) {
             this.unBindFramebuffer(this._currentRenderTarget);
         }
-        this._currentRenderTarget = webgpuRTWrapper;
-        hardwareTexture._currentLayer = webgpuRTWrapper.isCube ? layer * 6 + faceIndex : layer;
+        this._currentRenderTarget = texture;
+        hardwareTexture._currentLayer = texture.isCube ? layer * 6 + faceIndex : layer;
 
         this._rttRenderPassWrapper.colorAttachmentGPUTextures[0] = hardwareTexture;
         this._rttRenderPassWrapper.depthTextureFormat = this._currentRenderTarget._depthStencilTexture ? WebGPUTextureHelper.GetWebGPUTextureFormat(-1, this._currentRenderTarget._depthStencilTexture.format) : undefined;
@@ -2566,7 +2566,7 @@ export class WebGPUEngine extends Engine {
             format: this._colorFormat,
             dimension: WebGPUConstants.TextureViewDimension.E2d,
             mipLevelCount: 1,
-            baseArrayLayer: webgpuRTWrapper.isCube ? layer * 6 + faceIndex : layer,
+            baseArrayLayer: texture.isCube ? layer * 6 + faceIndex : layer,
             baseMipLevel: lodLevel,
             arrayLayerCount: 1,
             aspect: WebGPUConstants.TextureAspect.All
@@ -2576,7 +2576,7 @@ export class WebGPUEngine extends Engine {
             format: this._depthTextureFormat!,
             dimension: WebGPUConstants.TextureViewDimension.E2d,
             mipLevelCount: 1,
-            baseArrayLayer: webgpuRTWrapper.isCube ? layer * 6 + faceIndex : layer,
+            baseArrayLayer: texture.isCube ? layer * 6 + faceIndex : layer,
             baseMipLevel: 0,
             arrayLayerCount: 1,
             aspect: WebGPUConstants.TextureAspect.All
@@ -2585,7 +2585,7 @@ export class WebGPUEngine extends Engine {
         if (this.dbgVerboseLogsForFirstFrames) {
             if ((this as any)._count === undefined) { (this as any)._count = 0; }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                console.log("frame #" + (this as any)._count + " - bindFramebuffer called - internalTexture.uniqueId=", webgpuRTWrapper.texture?.uniqueId, "face=", faceIndex, "lodLevel=", lodLevel, "layer=", layer, this._rttRenderPassWrapper.colorAttachmentViewDescriptor, this._rttRenderPassWrapper.depthAttachmentViewDescriptor);
+                console.log("frame #" + (this as any)._count + " - bindFramebuffer called - internalTexture.uniqueId=", texture.texture?.uniqueId, "face=", faceIndex, "lodLevel=", lodLevel, "layer=", layer, this._rttRenderPassWrapper.colorAttachmentViewDescriptor, this._rttRenderPassWrapper.depthAttachmentViewDescriptor);
             }
         }
 
@@ -2600,13 +2600,13 @@ export class WebGPUEngine extends Engine {
             this.setViewport(this._cachedViewport, requiredWidth, requiredHeight);
         } else {
             if (!requiredWidth) {
-                requiredWidth = webgpuRTWrapper.width;
+                requiredWidth = texture.width;
                 if (lodLevel) {
                     requiredWidth = requiredWidth / Math.pow(2, lodLevel);
                 }
             }
             if (!requiredHeight) {
-                requiredHeight = webgpuRTWrapper.height;
+                requiredHeight = texture.height;
                 if (lodLevel) {
                     requiredHeight = requiredHeight / Math.pow(2, lodLevel);
                 }
@@ -2620,13 +2620,11 @@ export class WebGPUEngine extends Engine {
 
     /**
      * Unbind the current render target texture from the WebGPU context
-     * @param rtWrapper defines the render target wrapper to unbind
+     * @param texture defines the render target wrapper to unbind
      * @param disableGenerateMipMaps defines a boolean indicating that mipmaps must not be generated
      * @param onBeforeUnbind defines a function which will be called before the effective unbind
      */
-    public unBindFramebuffer(rtWrapper: RenderTargetWrapper, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
-        const webgpuRTWrapper = rtWrapper as WebGPURenderTargetWrapper;
-
+    public unBindFramebuffer(texture: RenderTargetWrapper, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
         const saveCRT = this._currentRenderTarget;
 
         this._currentRenderTarget = null; // to be iso with thinEngine, this._currentRenderTarget must be null when onBeforeUnbind is called
@@ -2641,9 +2639,8 @@ export class WebGPUEngine extends Engine {
             this._endRenderTargetRenderPass();
         }
 
-        const texture = webgpuRTWrapper.texture;
-        if (texture?.generateMipMaps && !disableGenerateMipMaps && !webgpuRTWrapper.isCube) {
-            this._generateMipmaps(texture);
+        if (texture.texture?.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
+            this._generateMipmaps(texture.texture);
         }
 
         this._currentRenderTarget = null;
@@ -2653,7 +2650,7 @@ export class WebGPUEngine extends Engine {
         if (this.dbgVerboseLogsForFirstFrames) {
             if ((this as any)._count === undefined) { (this as any)._count = 0; }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                console.log("frame #" + (this as any)._count + " - unBindFramebuffer called - internalTexture.uniqueId=", texture?.uniqueId);
+                console.log("frame #" + (this as any)._count + " - unBindFramebuffer called - internalTexture.uniqueId=", texture.texture?.uniqueId);
             }
         }
 
