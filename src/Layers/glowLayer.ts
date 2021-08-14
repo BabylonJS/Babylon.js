@@ -316,14 +316,14 @@ export class GlowLayer extends EffectLayer {
                     internalTexture,
                     true);
 
-                let rtWrapper2 = this._blurTexture2.rtWrapper;
-                if (rtWrapper2) {
+                let internalTexture2 = this._blurTexture2.rtWrapper;
+                if (internalTexture2) {
                     this._scene.postProcessManager.directRender(
                         this._postProcesses2,
-                        rtWrapper2,
+                        internalTexture2,
                         true);
                 }
-                this._engine.unBindFramebuffer(rtWrapper2 ?? internalTexture, true);
+                this._engine.unBindFramebuffer(internalTexture2 ?? internalTexture, true);
             }
         });
 
