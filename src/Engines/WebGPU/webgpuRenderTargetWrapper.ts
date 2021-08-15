@@ -1,5 +1,5 @@
 import { RenderTargetTextureSize } from "../Extensions/engine.renderTarget";
-import { RenderTargetWrapper } from "../renderTargetWrapper"
+import { RenderTargetWrapper } from "../renderTargetWrapper";
 import { ThinEngine } from "../thinEngine";
 
 /** @hidden */

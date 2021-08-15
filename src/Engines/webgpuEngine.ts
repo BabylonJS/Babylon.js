@@ -2345,7 +2345,7 @@ export class WebGPUEngine extends Engine {
             const internalTexture = rtWrapper.texture!;
             const gpuWrapper = internalTexture._hardwareTexture as WebGPUHardwareTexture;
             const gpuTexture = gpuWrapper.underlyingResource!;
-    
+
             const gpuMSAATexture = gpuWrapper.msaaTexture;
             const colorTextureView = gpuTexture.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
             const colorMSAATextureView = gpuMSAATexture?.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);

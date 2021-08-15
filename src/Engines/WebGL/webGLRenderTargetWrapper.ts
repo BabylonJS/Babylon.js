@@ -16,7 +16,6 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
     public _colorTextureArray: Nullable<WebGLTexture> = null;
     public _depthStencilTextureArray: Nullable<WebGLTexture> = null;
 
-
     constructor(isMulti: boolean, isCube: boolean, size: RenderTargetTextureSize, engine: ThinEngine, context: WebGLRenderingContext) {
         super(isMulti, isCube, size, engine);
 

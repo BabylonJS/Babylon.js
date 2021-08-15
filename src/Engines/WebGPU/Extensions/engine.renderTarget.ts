@@ -73,7 +73,7 @@ WebGPUEngine.prototype.createRenderTargetTexture = function (size: RenderTargetT
     rtWrapper.setTextures(texture);
 
     if (rtWrapper._generateDepthBuffer || rtWrapper._generateStencilBuffer) {
-        rtWrapper.createDepthStencilTexture(0, 
+        rtWrapper.createDepthStencilTexture(0,
                 fullOptions.samplingMode === undefined ||
                 fullOptions.samplingMode === Constants.TEXTURE_BILINEAR_SAMPLINGMODE || fullOptions.samplingMode === Constants.TEXTURE_LINEAR_LINEAR ||
                 fullOptions.samplingMode === Constants.TEXTURE_TRILINEAR_SAMPLINGMODE || fullOptions.samplingMode === Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR ||
