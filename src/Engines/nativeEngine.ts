@@ -2268,8 +2268,8 @@ export class NativeEngine extends Engine {
         const rtWrapper = new NativeRenderTargetWrapper(isMulti, isCube, size, this, this._native);
         this._renderTargetWrapperCache.push(rtWrapper);
         return rtWrapper;
-    };
-    
+    }
+
     public createRenderTargetTexture(size: number | { width: number, height: number }, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper {
         const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, size) as NativeRenderTargetWrapper;
 
