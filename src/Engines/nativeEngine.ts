@@ -2264,6 +2264,7 @@ export class NativeEngine extends Engine {
         return texture;
     }
 
+    /** @hidden */
     public _createHardwareRenderTargetWrapper(isMulti: boolean, isCube: boolean, size: RenderTargetTextureSize): RenderTargetWrapper {
         const rtWrapper = new NativeRenderTargetWrapper(isMulti, isCube, size, this, this._native);
         this._renderTargetWrapperCache.push(rtWrapper);
