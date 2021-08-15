@@ -147,7 +147,7 @@ export class TextureHelper {
             resolve(data);
 
             // Unbind
-            engine.unBindFramebuffer(rtt.renderTarget);
+            engine.unBindFramebuffer(rtt.renderTarget!);
         } else {
             reject();
         }
