@@ -179,13 +179,19 @@ export class RenderTargetWrapper {
     }
 
     protected _swapRenderTargetWrapper(target: RenderTargetWrapper): void {
-        target._textures = this._textures;
-        target._depthStencilTexture = this._depthStencilTexture;
+        if (this._textures && target._textures) {
+            for (let i = 0; i < this._textures.length; ++i) {
+                this._textures[i]._swapAndDie(target._textures[i], false);
+                target._textures[i].isReady = true;
+            }
+        }
+        if (this._depthStencilTexture && target._depthStencilTexture) {
+            this._depthStencilTexture._swapAndDie(target._depthStencilTexture);
+            target._depthStencilTexture.isReady = true;
+        }
 
         this._textures = null;
         this._depthStencilTexture = null;
-        
-        this.dispose();
     }
 
     /** @hidden */
@@ -196,10 +202,9 @@ export class RenderTargetWrapper {
         }
 
         if (this._depthStencilTexture) {
-            const samplingMode = this.texture?.samplingMode;
+            const samplingMode = this._depthStencilTexture.samplingMode;
             const bilinear = (samplingMode === Constants.TEXTURE_BILINEAR_SAMPLINGMODE) || (samplingMode === Constants.TEXTURE_TRILINEAR_SAMPLINGMODE) || (samplingMode === Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST);
-            rtw.createDepthStencilTexture(this.texture?._comparisonFunction, bilinear, this._depthStencilTextureWithStencil, this.samples);
-            rtw._depthStencilTexture!.isReady = true;
+            rtw.createDepthStencilTexture(this._depthStencilTexture._comparisonFunction, bilinear, this._depthStencilTextureWithStencil, this._depthStencilTexture.samples);
         }
 
         if (this.samples > 1) {
@@ -207,6 +212,7 @@ export class RenderTargetWrapper {
         }
 
         rtw._swapRenderTargetWrapper(this);
+        rtw.dispose();
     }
 
     public releaseTextures(): void {
