@@ -48,7 +48,6 @@ import { Observable } from "../Misc/observable";
 import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
 import { TwgslOptions, WebGPUTintWASM } from "./WebGPU/webgpuTintWASM";
 import { RenderTargetWrapper } from "./renderTargetWrapper";
-import { WebGPURenderTargetWrapper } from "./WebGPU/webgpuRenderTargetWrapper";
 
 import "../Shaders/clearQuad.vertex";
 import "../Shaders/clearQuad.fragment";
@@ -2285,7 +2284,7 @@ export class WebGPUEngine extends Engine {
     //                              Render Pass
     //------------------------------------------------------------------------------
 
-    private _startRenderTargetRenderPass(rtWrapper: WebGPURenderTargetWrapper, setClearStates: boolean, clearColor: Nullable<IColor4Like>, clearDepth: boolean, clearStencil: boolean) {
+    private _startRenderTargetRenderPass(rtWrapper: RenderTargetWrapper, setClearStates: boolean, clearColor: Nullable<IColor4Like>, clearDepth: boolean, clearStencil: boolean) {
         const depthStencilTexture = rtWrapper._depthStencilTexture;
         const gpuDepthStencilWrapper = depthStencilTexture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
         const gpuDepthStencilTexture = gpuDepthStencilWrapper?.underlyingResource as Nullable<GPUTexture>;
@@ -2539,9 +2538,7 @@ export class WebGPUEngine extends Engine {
      * @param layer defines the 2d array index to bind to frame buffer to
      */
     public bindFramebuffer(texture: RenderTargetWrapper, faceIndex: number = 0, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean, lodLevel = 0, layer = 0): void {
-        const webgpuRTWrapper = texture as WebGPURenderTargetWrapper;
-
-        const hardwareTexture = webgpuRTWrapper.texture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
+        const hardwareTexture = texture.texture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
 
         if (!hardwareTexture) {
             if (this.dbgSanityChecks) {

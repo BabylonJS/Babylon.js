@@ -6,16 +6,15 @@ import { DepthTextureCreationOptions } from "../../depthTextureCreationOptions";
 import { RenderTargetTextureSize } from "../../Extensions/engine.renderTarget";
 import { RenderTargetWrapper } from "../../renderTargetWrapper";
 import { WebGPUEngine } from "../../webgpuEngine";
-import { WebGPURenderTargetWrapper } from "../webgpuRenderTargetWrapper";
 
 WebGPUEngine.prototype._createHardwareRenderTargetWrapper = function(isMulti: boolean, isCube: boolean, size: RenderTargetTextureSize): RenderTargetWrapper {
-    const rtWrapper = new WebGPURenderTargetWrapper(isMulti, isCube, size, this);
+    const rtWrapper = new RenderTargetWrapper(isMulti, isCube, size, this);
     this._renderTargetWrapperCache.push(rtWrapper);
     return rtWrapper;
 };
 
 WebGPUEngine.prototype.createRenderTargetTexture = function (size: RenderTargetTextureSize, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper {
-    const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, size) as WebGPURenderTargetWrapper;
+    const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, size) as RenderTargetWrapper;
 
     let fullOptions = new RenderTargetCreationOptions();
 
@@ -141,7 +140,7 @@ WebGPUEngine.prototype._setupDepthStencilTexture = function (internalTexture: In
     internalTexture._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
 };
 
-WebGPUEngine.prototype.updateRenderTargetTextureSampleCount = function (rtWrapper: Nullable<WebGPURenderTargetWrapper>, samples: number): number {
+WebGPUEngine.prototype.updateRenderTargetTextureSampleCount = function (rtWrapper: Nullable<RenderTargetWrapper>, samples: number): number {
     if (!rtWrapper || !rtWrapper.texture || rtWrapper.samples === samples) {
         return samples;
     }

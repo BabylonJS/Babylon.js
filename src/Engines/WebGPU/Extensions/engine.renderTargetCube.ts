@@ -3,10 +3,9 @@ import { RenderTargetCreationOptions } from "../../../Materials/Textures/renderT
 import { Constants } from "../../constants";
 import { RenderTargetWrapper } from "../../renderTargetWrapper";
 import { WebGPUEngine } from "../../webgpuEngine";
-import { WebGPURenderTargetWrapper } from "../webgpuRenderTargetWrapper";
 
 WebGPUEngine.prototype.createRenderTargetCubeTexture = function (size: number, options?: Partial<RenderTargetCreationOptions>): RenderTargetWrapper {
-    const rtWrapper = this._createHardwareRenderTargetWrapper(false, true, size) as WebGPURenderTargetWrapper;
+    const rtWrapper = this._createHardwareRenderTargetWrapper(false, true, size);
 
     let fullOptions = {
         generateMipMaps: true,

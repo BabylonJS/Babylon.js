@@ -6,7 +6,6 @@ import { Constants } from "../../constants";
 import { RenderTargetTextureSize } from "../../Extensions/engine.renderTarget";
 import { RenderTargetWrapper } from "../../renderTargetWrapper";
 import { WebGPUEngine } from "../../webgpuEngine";
-import { WebGPURenderTargetWrapper } from "../webgpuRenderTargetWrapper";
 
 WebGPUEngine.prototype.unBindMultiColorAttachmentFramebuffer = function (rtWrapper: RenderTargetWrapper, disableGenerateMipMaps: boolean = false, onBeforeUnbind?: () => void): void {
     if (onBeforeUnbind) {
@@ -49,7 +48,7 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: RenderTarget
     let types = new Array<number>();
     let samplingModes = new Array<number>();
 
-    const rtWrapper = this._createHardwareRenderTargetWrapper(true, false, size) as WebGPURenderTargetWrapper;
+    const rtWrapper = this._createHardwareRenderTargetWrapper(true, false, size);
 
     if (options !== undefined) {
         generateMipMaps = options.generateMipMaps === undefined ? false : options.generateMipMaps;
@@ -132,7 +131,7 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: RenderTarget
     return rtWrapper;
 };
 
-WebGPUEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function (rtWrapper: Nullable<WebGPURenderTargetWrapper>, samples: number): number {
+WebGPUEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function (rtWrapper: Nullable<RenderTargetWrapper>, samples: number): number {
     if (!rtWrapper || !rtWrapper.textures || rtWrapper.textures[0].samples === samples) {
         return samples;
     }
