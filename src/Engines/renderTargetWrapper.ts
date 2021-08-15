@@ -13,11 +13,16 @@ export class RenderTargetWrapper {
     private _isMulti: boolean;
     private _textures: Nullable<InternalTexture[]> = null;
 
+    /** @hidden */
     public _attachments: Nullable<number[]> = null;
+    /** @hidden */
     public _generateStencilBuffer: boolean = false;
+    /** @hidden */
     public _generateDepthBuffer: boolean = false;
 
+    /** @hidden */
     public _depthStencilTexture: Nullable<InternalTexture>;
+    /** @hidden */
     public _depthStencilTextureWithStencil: boolean = false;
 
     public get isCube(): boolean {
