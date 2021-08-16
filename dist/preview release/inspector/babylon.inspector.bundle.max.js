@@ -45916,9 +45916,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/fileButtonLineComponent */ "./sharedUiComponents/lines/fileButtonLineComponent.tsx");
-/* harmony import */ var _graph_canvasGraphComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../graph/canvasGraphComponent */ "./components/graph/canvasGraphComponent.tsx");
-/* harmony import */ var _popupComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../popupComponent */ "./components/popupComponent.tsx");
-/* harmony import */ var _performanceViewerSidebarComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./performanceViewerSidebarComponent */ "./components/actionTabs/tabs/performanceViewer/performanceViewerSidebarComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
+/* harmony import */ var _graph_canvasGraphComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../graph/canvasGraphComponent */ "./components/graph/canvasGraphComponent.tsx");
+/* harmony import */ var _popupComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../popupComponent */ "./components/popupComponent.tsx");
+/* harmony import */ var _performanceViewerSidebarComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./performanceViewerSidebarComponent */ "./components/actionTabs/tabs/performanceViewer/performanceViewerSidebarComponent.tsx");
+
 
 
 
@@ -46032,16 +46034,16 @@ var PerformanceViewerComponent = function (props) {
     }, [recordingState]);
     return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
         isEnabled &&
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "Performance Viewer" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Open Realtime Perf Viewer", onClick: onPerformanceButtonClick }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_3__["FileButtonLineComponent"], { accept: "csv", label: "Load Perf Viewer using CSV", onClick: onLoadClick }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Export Perf to CSV", onClick: onExportClick }),
                 !isOpen && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: recordingState, onClick: onToggleRecording })),
         isOpen &&
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_popupComponent__WEBPACK_IMPORTED_MODULE_5__["PopupComponent"], { id: "perf-viewer", title: "Performance Viewer", size: initialWindowSize, ref: popupRef, onResize: onResize, onClose: onClosePerformanceViewer },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_popupComponent__WEBPACK_IMPORTED_MODULE_6__["PopupComponent"], { id: "perf-viewer", title: "Performance Viewer", size: initialWindowSize, ref: popupRef, onResize: onResize, onClose: onClosePerformanceViewer },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "performance-viewer" }, performanceCollector && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_performanceViewerSidebarComponent__WEBPACK_IMPORTED_MODULE_6__["PerformanceViewerSidebarComponent"], { collector: performanceCollector }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_graph_canvasGraphComponent__WEBPACK_IMPORTED_MODULE_4__["CanvasGraphComponent"], { id: "performance-viewer-graph", layoutObservable: layoutObservable, scene: scene, collector: performanceCollector }))))));
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_performanceViewerSidebarComponent__WEBPACK_IMPORTED_MODULE_7__["PerformanceViewerSidebarComponent"], { collector: performanceCollector }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_graph_canvasGraphComponent__WEBPACK_IMPORTED_MODULE_5__["CanvasGraphComponent"], { id: "performance-viewer-graph", layoutObservable: layoutObservable, scene: scene, collector: performanceCollector }))))));
 };
 
 
@@ -59266,8 +59268,10 @@ var CanvasGraphComponent = function (props) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CanvasGraphService", function() { return CanvasGraphService; });
-/* harmony import */ var babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math.scalar */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./graphSupportingTypes */ "./components/graph/graphSupportingTypes.ts");
+/* harmony import */ var babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.scalar */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__);
+
 
 
 var defaultColor = "#000";
@@ -59309,10 +59313,13 @@ var graphAddonFont = "12px Arial";
 var alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 // Arbitrary maximum used to make some GC optimizations.
 var maximumDatasetsAllowed = 64;
+var msInSecond = 1000;
+var msInMinute = msInSecond * 60;
+var msInHour = msInMinute * 60;
 // time in ms to wait between tooltip draws inside the mouse move.
 var tooltipDebounceTime = 32;
 // time in ms to wait between draws
-var drawDebounceTime = 15;
+var drawThrottleTime = 15;
 /**
  * This function will debounce calls to functions.
  *
@@ -59331,6 +59338,27 @@ function debounce(callback, time) {
     };
 }
 /**
+ * This function will throttle calls to functions.
+ *
+ * @param callback callback to call.
+ * @param time time to wait between calls in ms.
+ */
+function throttle(callback, time) {
+    var lastCalledTime = 0;
+    return function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        var now = Date.now();
+        if (now - lastCalledTime < time) {
+            return;
+        }
+        lastCalledTime = now;
+        callback.apply(void 0, args);
+    };
+}
+/*
  * This class acts as the main API for graphing given a Here is where you will find methods to let the service know new data needs to be drawn,
  * let it know something has been resized, etc!
  */
@@ -59347,7 +59375,7 @@ var CanvasGraphService = /** @class */ (function () {
         /**
          * This method lets the service know it should get ready to update what it is displaying.
          */
-        this.update = debounce(function () { return _this._draw(); }, drawDebounceTime);
+        this.update = throttle(function () { return _this._draw(); }, drawThrottleTime);
         /**
          * Handles what to do when we are hovering over the canvas and not panning.
          *
@@ -59392,7 +59420,7 @@ var CanvasGraphService = /** @class */ (function () {
                 _this._position = null;
             }
             // Bind the zoom between [minZoom, maxZoom]
-            _this._sizeOfWindow = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["Scalar"].Clamp(_this._sizeOfWindow - amount, minZoom, maxZoom);
+            _this._sizeOfWindow = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp(_this._sizeOfWindow - amount, minZoom, maxZoom);
         };
         /**
          * Initializes the panning object and attaches appropriate listener.
@@ -59427,7 +59455,7 @@ var CanvasGraphService = /** @class */ (function () {
             var itemsDelta = pixelDelta / pixelsPerItem | 0;
             var pos = (_a = _this._position) !== null && _a !== void 0 ? _a : (_this._getNumberOfSlices() - 1);
             // update our position without allowing the user to pan more than they need to (approximation) 
-            _this._position = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["Scalar"].Clamp(pos - itemsDelta, Math.floor(_this._sizeOfWindow * scaleFactor), _this._getNumberOfSlices() - Math.floor(_this._sizeOfWindow * (1 - scaleFactor)));
+            _this._position = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp(pos - itemsDelta, Math.floor(_this._sizeOfWindow * scaleFactor), _this._getNumberOfSlices() - Math.floor(_this._sizeOfWindow * (1 - scaleFactor)));
             if (itemsDelta === 0) {
                 _this._panPosition.delta += pixelDelta;
             }
@@ -59547,7 +59575,7 @@ var CanvasGraphService = /** @class */ (function () {
         this._datasetBounds.end = this._getClosestPointToTimestamp(bufferMaximum) + 1;
         // keep track of largest timestamp value in view!
         this._globalTimeMinMax.max = Math.max(this.datasets.data.at(this.datasets.startingIndices.at(this._datasetBounds.end - 1)), this._globalTimeMinMax.max);
-        var updatedScaleFactor = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["Scalar"].Clamp((this._globalTimeMinMax.max - this._globalTimeMinMax.min) / (bufferMaximum - this._globalTimeMinMax.min), scaleFactor, 1);
+        var updatedScaleFactor = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp((this._globalTimeMinMax.max - this._globalTimeMinMax.min) / (bufferMaximum - this._globalTimeMinMax.min), scaleFactor, 1);
         // we will now set the global maximum to the maximum of the buffer.
         this._globalTimeMinMax.max = bufferMaximum;
         this._drawableArea.top = 0;
@@ -59578,11 +59606,11 @@ var CanvasGraphService = /** @class */ (function () {
             ctx.strokeStyle = (_b = (_a = _this.metadata.get(id)) === null || _a === void 0 ? void 0 : _a.color) !== null && _b !== void 0 ? _b : defaultColor;
             var prevPoint;
             for (var pointIndex = _this._datasetBounds.start; pointIndex < _this._datasetBounds.end; pointIndex++) {
-                var numPoints = _this.datasets.data.at(_this.datasets.startingIndices.at(pointIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["PerformanceViewerCollector"].NumberOfPointsOffset);
+                var numPoints = _this.datasets.data.at(_this.datasets.startingIndices.at(pointIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].NumberOfPointsOffset);
                 if (idOffset >= numPoints) {
                     continue;
                 }
-                var valueIndex = _this.datasets.startingIndices.at(pointIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["PerformanceViewerCollector"].SliceDataOffset + idOffset;
+                var valueIndex = _this.datasets.startingIndices.at(pointIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].SliceDataOffset + idOffset;
                 var timestamp = _this.datasets.data.at(_this.datasets.startingIndices.at(pointIndex));
                 var value = _this.datasets.data.at(valueIndex);
                 var drawableTime = _this._getPixelForNumber(timestamp, _this._globalTimeMinMax, left, right - left, false);
@@ -59615,7 +59643,7 @@ var CanvasGraphService = /** @class */ (function () {
                 return;
             }
             var valueMinMax = _this._getMinMax(bounds, idOffset);
-            var latestValue = _this.datasets.data.at(_this.datasets.startingIndices.at(bounds.end - 1) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["PerformanceViewerCollector"].SliceDataOffset + idOffset);
+            var latestValue = _this.datasets.data.at(_this.datasets.startingIndices.at(bounds.end - 1) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].SliceDataOffset + idOffset);
             var text = id + ": " + latestValue.toFixed(2) + " (max: " + valueMinMax.max.toFixed(2) + ", min: " + valueMinMax.min.toFixed(2) + ")";
             if (text.length > longestText.length) {
                 longestText = text;
@@ -59717,6 +59745,7 @@ var CanvasGraphService = /** @class */ (function () {
         ctx.fillStyle = defaultColor;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
+        var timestampUnit = this._getTimestampUnit(this._ticks[this._ticks.length - 1]);
         this._ticks.forEach(function (tick) {
             var position = _this._getPixelForNumber(tick, timeMinMax, drawableArea.left, spaceAvailable, false);
             if (position > spaceAvailable) {
@@ -59724,10 +59753,59 @@ var CanvasGraphService = /** @class */ (function () {
             }
             ctx.moveTo(position, drawableArea.bottom);
             ctx.lineTo(position, drawableArea.bottom + 10);
-            ctx.fillText(tick.toString(), position, drawableArea.bottom + 20);
+            ctx.fillText(_this._parseTimestamp(tick, timestampUnit), position, drawableArea.bottom + 20);
         });
         ctx.stroke();
         ctx.restore();
+    };
+    /**
+     * Given a timestamp (should be the maximum timestamp in view), this function returns the maximum unit the timestamp contains.
+     * This information can be used for formatting purposes.
+     * @param timestamp the maximum timestamp to find the maximum timestamp unit for.
+     * @returns The maximum unit the timestamp has.
+     */
+    CanvasGraphService.prototype._getTimestampUnit = function (timestamp) {
+        if (timestamp / msInHour > 1) {
+            return _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__["TimestampUnit"].Hours;
+        }
+        else if (timestamp / msInMinute > 1) {
+            return _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__["TimestampUnit"].Minutes;
+        }
+        else if (timestamp / msInSecond > 1) {
+            return _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__["TimestampUnit"].Seconds;
+        }
+        else {
+            return _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__["TimestampUnit"].Milliseconds;
+        }
+    };
+    /**
+     * Given a timestamp and the interval unit, this function will parse the timestamp to the appropriate format.
+     * @param timestamp The timestamp to parse
+     * @param intervalUnit The maximum unit of the maximum timestamp in an interval.
+     * @returns a string representing the parsed timestamp.
+     */
+    CanvasGraphService.prototype._parseTimestamp = function (timestamp, intervalUnit) {
+        var parsedTimestamp = "";
+        if (intervalUnit >= _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__["TimestampUnit"].Hours) {
+            var numHours = Math.floor(timestamp / msInHour);
+            timestamp -= numHours * msInHour;
+            parsedTimestamp += numHours.toString().padStart(intervalUnit > _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__["TimestampUnit"].Hours ? 2 : 1, "0") + ":";
+        }
+        if (intervalUnit >= _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__["TimestampUnit"].Minutes) {
+            var numMinutes = Math.floor(timestamp / msInMinute);
+            timestamp -= numMinutes * msInMinute;
+            parsedTimestamp += numMinutes.toString().padStart(intervalUnit > _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__["TimestampUnit"].Minutes ? 2 : 1, "0") + ":";
+        }
+        var numSeconds = Math.floor(timestamp / msInSecond);
+        timestamp -= numSeconds * msInSecond;
+        parsedTimestamp += numSeconds.toString().padStart(intervalUnit > _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__["TimestampUnit"].Seconds ? 2 : 1, "0");
+        if (timestamp > 0) {
+            if (parsedTimestamp.length > 0) {
+                parsedTimestamp += ".";
+            }
+            parsedTimestamp += Math.round(timestamp).toString().padStart(3, "0");
+        }
+        return parsedTimestamp;
     };
     /**
      * Generates a list of ticks given the min and max of the axis, and the space available in the axis.
@@ -59799,11 +59877,11 @@ var CanvasGraphService = /** @class */ (function () {
     CanvasGraphService.prototype._getMinMax = function (bounds, offset) {
         var min = Infinity, max = 0;
         for (var i = bounds.start; i < bounds.end; i++) {
-            var numPoints = this.datasets.data.at(this.datasets.startingIndices.at(i) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["PerformanceViewerCollector"].NumberOfPointsOffset);
+            var numPoints = this.datasets.data.at(this.datasets.startingIndices.at(i) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].NumberOfPointsOffset);
             if (offset >= numPoints) {
                 continue;
             }
-            var itemIndex = this.datasets.startingIndices.at(i) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["PerformanceViewerCollector"].SliceDataOffset + offset;
+            var itemIndex = this.datasets.startingIndices.at(i) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].SliceDataOffset + offset;
             var item = this.datasets.data.at(itemIndex);
             if (item < min) {
                 min = item;
@@ -59891,11 +59969,11 @@ var CanvasGraphService = /** @class */ (function () {
             if (!!((_a = _this.metadata.get(id)) === null || _a === void 0 ? void 0 : _a.hidden)) {
                 return;
             }
-            var numPoints = _this.datasets.data.at(_this.datasets.startingIndices.at(closestIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["PerformanceViewerCollector"].NumberOfPointsOffset);
+            var numPoints = _this.datasets.data.at(_this.datasets.startingIndices.at(closestIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].NumberOfPointsOffset);
             if (idOffset >= numPoints) {
                 return;
             }
-            var valueIndex = _this.datasets.startingIndices.at(closestIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["PerformanceViewerCollector"].SliceDataOffset + idOffset;
+            var valueIndex = _this.datasets.startingIndices.at(closestIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].SliceDataOffset + idOffset;
             actualTimestamp = _this.datasets.data.at(_this.datasets.startingIndices.at(closestIndex));
             var text = id + ": " + _this.datasets.data.at(valueIndex).toFixed(2);
             if (text.length > longestText.length) {
@@ -60048,6 +60126,30 @@ var CanvasGraphService = /** @class */ (function () {
     return CanvasGraphService;
 }());
 
+
+
+/***/ }),
+
+/***/ "./components/graph/graphSupportingTypes.ts":
+/*!**************************************************!*\
+  !*** ./components/graph/graphSupportingTypes.ts ***!
+  \**************************************************/
+/*! exports provided: TimestampUnit */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TimestampUnit", function() { return TimestampUnit; });
+/**
+ * Defines the supported timestamp units.
+ */
+var TimestampUnit;
+(function (TimestampUnit) {
+    TimestampUnit[TimestampUnit["Milliseconds"] = 0] = "Milliseconds";
+    TimestampUnit[TimestampUnit["Seconds"] = 1] = "Seconds";
+    TimestampUnit[TimestampUnit["Minutes"] = 2] = "Minutes";
+    TimestampUnit[TimestampUnit["Hours"] = 3] = "Hours";
+})(TimestampUnit || (TimestampUnit = {}));
 
 
 /***/ }),

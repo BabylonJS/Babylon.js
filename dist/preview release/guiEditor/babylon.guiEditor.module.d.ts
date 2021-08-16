@@ -158,6 +158,7 @@ declare module "babylonjs-gui-editor/globalState" {
         onOutlinesObservable: Observable<void>;
         onResponsiveChangeObservable: Observable<boolean>;
         onParentingChangeObservable: Observable<Nullable<Control>>;
+        onPropertyGridUpdateRequiredObservable: Observable<void>;
         onDraggingEndObservable: Observable<void>;
         draggedControl: Nullable<Control>;
         draggedControlDirection: DragOverLocation;
@@ -888,6 +889,25 @@ declare module "babylonjs-gui-editor/components/propertyTab/propertyGrids/gui/co
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-gui-editor/components/parentingPropertyGridComponent" {
+    import * as React from "react";
+    import { Control } from "babylonjs-gui/2D/controls/control";
+    import { LockObject } from "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject";
+    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
+    import { Observable } from "babylonjs/Misc/observable";
+    interface IParentingPropertyGridComponentProps {
+        control: Control;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class ParentingPropertyGridComponent extends React.Component<IParentingPropertyGridComponentProps> {
+        constructor(props: IParentingPropertyGridComponentProps);
+        _columnNumber: number;
+        _rowNumber: number;
+        updateGridPosition(): void;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-gui-editor/components/propertyTab/propertyTabComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-gui-editor/globalState";
@@ -907,7 +927,6 @@ declare module "babylonjs-gui-editor/components/propertyTab/propertyTabComponent
         private _lockObject;
         private _sizeOption;
         constructor(props: IPropertyTabComponentProps);
-        timerRefresh(): void;
         componentDidMount(): void;
         componentWillUnmount(): void;
         load(file: File): void;
@@ -1229,7 +1248,6 @@ declare module "babylonjs-gui-editor/components/commandBarComponent" {
         constructor(props: ICommandBarComponentProps);
         private updateNodeOutline;
         render(): JSX.Element;
-        onCreate(value: string): void;
     }
 }
 declare module "babylonjs-gui-editor/workbenchEditor" {
@@ -1248,6 +1266,7 @@ declare module "babylonjs-gui-editor/workbenchEditor" {
         private _moveInProgress;
         private _leftWidth;
         private _rightWidth;
+        private _toolBarIconSize;
         private _onWidgetKeyUpPointer;
         private _popUpWindow;
         componentDidMount(): void;
@@ -1266,6 +1285,20 @@ declare module "babylonjs-gui-editor/workbenchEditor" {
         createPopupWindow: (title: string, windowVariableName: string, width?: number, height?: number) => Window | null;
         copyStyles: (sourceDoc: HTMLDocument, targetDoc: HTMLDocument) => void;
         render(): JSX.Element;
+        _items: {
+            label: string;
+            icon?: string;
+            fileButton?: boolean;
+            onClick?: () => void;
+            onCheck?: (value: boolean) => void;
+            storeKey?: string;
+            isActive?: boolean;
+            defaultValue?: boolean | string;
+            subItems?: string[];
+        }[];
+        createItems(): void;
+        onCreate(value: string): void;
+        createToolbar(): JSX.Element;
     }
 }
 declare module "babylonjs-gui-editor/sharedUiComponents/lines/popup" {
@@ -1329,23 +1362,6 @@ declare module "babylonjs-gui-editor/nodeLocationInfo" {
         map?: {
             [key: number]: number;
         };
-    }
-}
-declare module "babylonjs-gui-editor/components/parentingPropertyGridComponent" {
-    import * as React from "react";
-    import { GlobalState } from "babylonjs-gui-editor/globalState";
-    import { Control } from "babylonjs-gui/2D/controls/control";
-    interface IParentingPropertyGridComponentProps {
-        guiNode: Control;
-        guiNodes: Control[];
-        globalState: GlobalState;
-    }
-    export class ParentingPropertyGridComponent extends React.Component<IParentingPropertyGridComponentProps> {
-        constructor(props: IParentingPropertyGridComponentProps);
-        parentIndex: number;
-        addChildGui(childNode: Control, parentNode: Control): void;
-        removeChildGui(childNode: Control, parentNode: Control): void;
-        render(): JSX.Element;
     }
 }
 declare module "babylonjs-gui-editor/sharedUiComponents/lines/draggableLineComponent" {
@@ -2250,6 +2266,7 @@ declare module GUIEDITOR {
         onOutlinesObservable: BABYLON.Observable<void>;
         onResponsiveChangeObservable: BABYLON.Observable<boolean>;
         onParentingChangeObservable: BABYLON.Observable<BABYLON.Nullable<Control>>;
+        onPropertyGridUpdateRequiredObservable: BABYLON.Observable<void>;
         onDraggingEndObservable: BABYLON.Observable<void>;
         draggedControl: BABYLON.Nullable<Control>;
         draggedControlDirection: DragOverLocation;
@@ -2866,6 +2883,20 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
+    interface IParentingPropertyGridComponentProps {
+        control: Control;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class ParentingPropertyGridComponent extends React.Component<IParentingPropertyGridComponentProps> {
+        constructor(props: IParentingPropertyGridComponentProps);
+        _columnNumber: number;
+        _rowNumber: number;
+        updateGridPosition(): void;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
     interface IPropertyTabComponentProps {
         globalState: GlobalState;
     }
@@ -2879,7 +2910,6 @@ declare module GUIEDITOR {
         private _lockObject;
         private _sizeOption;
         constructor(props: IPropertyTabComponentProps);
-        timerRefresh(): void;
         componentDidMount(): void;
         componentWillUnmount(): void;
         load(file: File): void;
@@ -3154,7 +3184,6 @@ declare module GUIEDITOR {
         constructor(props: ICommandBarComponentProps);
         private updateNodeOutline;
         render(): JSX.Element;
-        onCreate(value: string): void;
     }
 }
 declare module GUIEDITOR {
@@ -3170,6 +3199,7 @@ declare module GUIEDITOR {
         private _moveInProgress;
         private _leftWidth;
         private _rightWidth;
+        private _toolBarIconSize;
         private _onWidgetKeyUpPointer;
         private _popUpWindow;
         componentDidMount(): void;
@@ -3188,6 +3218,20 @@ declare module GUIEDITOR {
         createPopupWindow: (title: string, windowVariableName: string, width?: number, height?: number) => Window | null;
         copyStyles: (sourceDoc: HTMLDocument, targetDoc: HTMLDocument) => void;
         render(): JSX.Element;
+        _items: {
+            label: string;
+            icon?: string;
+            fileButton?: boolean;
+            onClick?: () => void;
+            onCheck?: (value: boolean) => void;
+            storeKey?: string;
+            isActive?: boolean;
+            defaultValue?: boolean | string;
+            subItems?: string[];
+        }[];
+        createItems(): void;
+        onCreate(value: string): void;
+        createToolbar(): JSX.Element;
     }
 }
 declare module GUIEDITOR {
@@ -3247,20 +3291,6 @@ declare module GUIEDITOR {
         map?: {
             [key: number]: number;
         };
-    }
-}
-declare module GUIEDITOR {
-    interface IParentingPropertyGridComponentProps {
-        guiNode: Control;
-        guiNodes: Control[];
-        globalState: GlobalState;
-    }
-    export class ParentingPropertyGridComponent extends React.Component<IParentingPropertyGridComponentProps> {
-        constructor(props: IParentingPropertyGridComponentProps);
-        parentIndex: number;
-        addChildGui(childNode: Control, parentNode: Control): void;
-        removeChildGui(childNode: Control, parentNode: Control): void;
-        render(): JSX.Element;
     }
 }
 declare module GUIEDITOR {
