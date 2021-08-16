@@ -77,7 +77,7 @@
         "karma-browserstack-launcher": "^1.6.0",
         "karma-chai": "^0.1.0",
         "karma-chrome-launcher": "^3.1.0",
-        "karma-firefox-launcher": "github:karma-runner/karma-firefox-launcher#master",
+        "karma-firefox-launcher": "github:karma-runner/karma-firefox-launcher#v2.1.1",
         "karma-mocha": "^2.0.1",
         "karma-sinon": "^1.0.5",
         "merge2": "~1.4.1",
