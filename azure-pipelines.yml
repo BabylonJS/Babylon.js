@@ -19,6 +19,7 @@ jobs:
     inputs:
       workingDir: Tools/Gulp
       verbose: false
+      versionSpec: '12.x'
   - script: 'gulp tests-whatsnew --max-old-space-size=8192'
     workingDirectory: Tools/Gulp
     displayName: 'Whats new'
@@ -37,6 +38,7 @@ jobs:
     inputs:
       workingDir: Tools/Gulp
       verbose: false
+      versionSpec: '12.x'
   - script: 'gulp typedoc-check --max-old-space-size=8192'
     workingDirectory: Tools/Gulp
     displayName: 'Typedoc check'
@@ -52,6 +54,7 @@ jobs:
     inputs:
       workingDir: Tools/Gulp
       verbose: false
+      versionSpec: '12.x'
   - script: 'gulp fullLint --max-old-space-size=8192'
     workingDirectory: Tools/Gulp
     displayName: 'Full Lint'
@@ -67,6 +70,7 @@ jobs:
     inputs:
       workingDir: Tools/Gulp
       verbose: false
+      versionSpec: '12.x'
   - script: 'gulp typescript-all --max-old-space-size=8192'
     workingDirectory: Tools/Gulp
     displayName: 'Typescript all'
@@ -90,6 +94,7 @@ jobs:
     inputs:
       workingDir: Tools/Gulp
       verbose: false
+      versionSpec: '12.x'
   - script: 'gulp typescript-all --max-old-space-size=8192'
     workingDirectory: Tools/Gulp
     displayName: 'Typescript all'
@@ -117,6 +122,7 @@ jobs:
     inputs:
       workingDir: Tools/Gulp
       verbose: false
+      versionSpec: '12.x'
   - script: 'gulp typescript-all --max-old-space-size=8192'
     workingDirectory: Tools/Gulp
     displayName: 'Typescript all'
@@ -151,6 +157,7 @@ jobs:
     inputs:
       workingDir: Tools/Gulp
       verbose: false
+      versionSpec: '12.x'
   - script: 'gulp typescript-all --max-old-space-size=8192'
     workingDirectory: Tools/Gulp
     displayName: 'Typescript all'
@@ -185,6 +192,7 @@ jobs:
     inputs:
       workingDir: Tools/Gulp
       verbose: false
+      versionSpec: '12.x'
   - script: 'gulp typescript-all --max-old-space-size=8192'
     workingDirectory: Tools/Gulp
     displayName: 'Typescript all'
