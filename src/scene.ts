@@ -4514,6 +4514,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Releases all held ressources
      */
     public dispose(): void {
+        if (this.isDisposed) {
+            return;
+        }
+
         this.beforeRender = null;
         this.afterRender = null;
         this.metadata = null;
