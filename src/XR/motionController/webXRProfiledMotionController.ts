@@ -30,16 +30,23 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
      */
     public profileId: string;
 
-    constructor(scene: Scene, xrInput: XRInputSource, _profile: IMotionControllerProfile, private _repositoryUrl: string) {
-        super(scene, _profile.layouts[xrInput.handedness || "none"], xrInput.gamepad as any, xrInput.handedness);
+    constructor(scene: Scene, xrInput: XRInputSource, _profile: IMotionControllerProfile, private _repositoryUrl: string,
+        private controllerCache?: Array<{
+            filename: string;
+            path: string;
+            meshes: AbstractMesh[]
+        }>) {
+        super(scene, _profile.layouts[xrInput.handedness || "none"], xrInput.gamepad as any, xrInput.handedness, undefined, controllerCache);
         this.profileId = _profile.profileId;
     }
 
     public dispose() {
         super.dispose();
-        Object.keys(this._touchDots).forEach((visResKey) => {
-            this._touchDots[visResKey].dispose();
-        });
+        if (!this.controllerCache) {
+            Object.keys(this._touchDots).forEach((visResKey) => {
+                this._touchDots[visResKey].dispose();
+            });
+        }
     }
 
     protected _getFilenameAndPath(): { filename: string; path: string } {
