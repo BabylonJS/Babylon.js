@@ -58,8 +58,10 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             });
         });
 
-        this._onPropertyChangedObservable = this.props.globalState.onPropertyChangedObservable.add((event :PropertyChangedEvent) => {
-            if(event.property === "name") {
+        this._onPropertyChangedObservable = this.props.globalState.onPropertyChangedObservable.add((event: PropertyChangedEvent) => {
+            if (event.property === "name" ||
+                event.property === "_columnNumber" ||
+                event.property === "_rowNumber") {
                 this.forceUpdate();
             }
         });
