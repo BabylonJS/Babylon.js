@@ -183,6 +183,10 @@ export class CanvasGraphService {
         drawThrottleTime
     );
 
+    /**
+     * Update the canvas graph service with the new height and width of the canvas.
+     * @param size The new size of the canvas.
+     */
     public resize(size: IPerfLayoutSize) {
         const { _ctx: ctx } = this;
         const { width, height } = size;
@@ -198,6 +202,13 @@ export class CanvasGraphService {
         ctx.canvas.height = height;
 
         this.update();
+    }
+
+    /**
+     * Force resets the position in the data, effectively returning to the most current data.
+     */
+    public resetDataPosition() {
+        this._position = null;
     }
 
     /**
