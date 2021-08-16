@@ -256,12 +256,17 @@ declare module INSPECTOR {
     export interface ICanvasGraphServiceSettings {
         datasets: BABYLON.IPerfDatasets;
     }
+    /**
+     * Defines the supported timestamp units.
+     */
+    export enum TimestampUnit {
+        Milliseconds = 0,
+        Seconds = 1,
+        Minutes = 2,
+        Hours = 3
+    }
 }
 declare module INSPECTOR {
-    /**
-     * This class acts as the main API for graphing given a Here is where you will find methods to let the service know new data needs to be drawn,
-     * let it know something has been resized, etc!
-     */
     export class CanvasGraphService {
         private _ctx;
         private _width;
@@ -320,6 +325,20 @@ declare module INSPECTOR {
          * @param drawableArea the current allocated drawable area.
          */
         private _drawTimeAxis;
+        /**
+         * Given a timestamp (should be the maximum timestamp in view), this function returns the maximum unit the timestamp contains.
+         * This information can be used for formatting purposes.
+         * @param timestamp the maximum timestamp to find the maximum timestamp unit for.
+         * @returns The maximum unit the timestamp has.
+         */
+        private _getTimestampUnit;
+        /**
+         * Given a timestamp and the interval unit, this function will parse the timestamp to the appropriate format.
+         * @param timestamp The timestamp to parse
+         * @param intervalUnit The maximum unit of the maximum timestamp in an interval.
+         * @returns a string representing the parsed timestamp.
+         */
+        private _parseTimestamp;
         /**
          * Generates a list of ticks given the min and max of the axis, and the space available in the axis.
          *
