@@ -84,12 +84,12 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         return (
             <div>
                 <div className="divider">
-                    <CommandButtonComponent tooltip="Left" icon={hAlignLeftIcon} shortcut="" isActive={control.horizontalAlignment === Control.HORIZONTAL_ALIGNMENT_LEFT} onClick={() => { control.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT }} />
-                    <CommandButtonComponent tooltip="Center" icon={hAlignCenterIcon} shortcut="" isActive={control.horizontalAlignment === Control.HORIZONTAL_ALIGNMENT_CENTER} onClick={() => { control.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER }} />
-                    <CommandButtonComponent tooltip="Right" icon={hAlignRightIcon} shortcut="" isActive={control.horizontalAlignment === Control.HORIZONTAL_ALIGNMENT_RIGHT} onClick={() => { control.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT }} />
-                    <CommandButtonComponent tooltip="Top" icon={vAlignTopIcon} shortcut="" isActive={control.verticalAlignment === Control.VERTICAL_ALIGNMENT_TOP} onClick={() => { control.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP }} />
-                    <CommandButtonComponent tooltip="Center" icon={vAlignCenterIcon} shortcut="" isActive={control.verticalAlignment === Control.VERTICAL_ALIGNMENT_CENTER} onClick={() => { control.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER }} />
-                    <CommandButtonComponent tooltip="Center" icon={vAlignBottomIcon} shortcut="" isActive={control.verticalAlignment === Control.VERTICAL_ALIGNMENT_BOTTOM} onClick={() => { control.verticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM }} />
+                    <CommandButtonComponent tooltip="Left" icon={hAlignLeftIcon} shortcut="" isActive={control.horizontalAlignment === Control.HORIZONTAL_ALIGNMENT_LEFT} onClick={() => { control.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT; this.forceUpdate();}} />
+                    <CommandButtonComponent tooltip="Center" icon={hAlignCenterIcon} shortcut="" isActive={control.horizontalAlignment === Control.HORIZONTAL_ALIGNMENT_CENTER} onClick={() => { control.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER; this.forceUpdate(); }} />
+                    <CommandButtonComponent tooltip="Right" icon={hAlignRightIcon} shortcut="" isActive={control.horizontalAlignment === Control.HORIZONTAL_ALIGNMENT_RIGHT} onClick={() => { control.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT; this.forceUpdate(); }} />
+                    <CommandButtonComponent tooltip="Top" icon={vAlignTopIcon} shortcut="" isActive={control.verticalAlignment === Control.VERTICAL_ALIGNMENT_TOP} onClick={() => { control.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP; this.forceUpdate(); }} />
+                    <CommandButtonComponent tooltip="Center" icon={vAlignCenterIcon} shortcut="" isActive={control.verticalAlignment === Control.VERTICAL_ALIGNMENT_CENTER} onClick={() => { control.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER; this.forceUpdate(); }} />
+                    <CommandButtonComponent tooltip="Center" icon={vAlignBottomIcon} shortcut="" isActive={control.verticalAlignment === Control.VERTICAL_ALIGNMENT_BOTTOM} onClick={() => { control.verticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM; this.forceUpdate();}} />
                 </div>
                 <div className="divider">
                     <TextInputLineComponent iconLabel={"Position"} icon={positionIcon} lockObject={this.props.lockObject} label="X" target={control} propertyName="left" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
