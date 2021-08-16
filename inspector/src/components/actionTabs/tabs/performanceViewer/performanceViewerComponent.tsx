@@ -4,6 +4,7 @@ import * as React from "react";
 import { useEffect, useRef, useState } from "react";
 import { ButtonLineComponent } from "../../../../sharedUiComponents/lines/buttonLineComponent";
 import { FileButtonLineComponent } from "../../../../sharedUiComponents/lines/fileButtonLineComponent";
+import { LineContainerComponent } from "../../../../sharedUiComponents/lines/lineContainerComponent";
 import { CanvasGraphComponent } from "../../../graph/canvasGraphComponent";
 import { IPerfLayoutSize } from "../../../graph/graphSupportingTypes";
 import { PopupComponent } from "../../../popupComponent";
@@ -115,7 +116,7 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
     useEffect(() => {
         if (recordingState === RecordingState.Recording) {
             if (performanceCollector?.hasLoadedData) {
-                performanceCollector?.clear();
+                performanceCollector?.clear(true);
                 performanceCollector?.addCollectionStrategies(...defaultStrategies);
             }
             performanceCollector?.start();
@@ -132,12 +133,12 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
         <>
             {
                 isEnabled &&
-                <>
+                <LineContainerComponent title="Performance Viewer">
                     <ButtonLineComponent label="Open Realtime Perf Viewer" onClick={onPerformanceButtonClick} />
                     <FileButtonLineComponent accept="csv" label="Load Perf Viewer using CSV" onClick={onLoadClick} />
                     <ButtonLineComponent label="Export Perf to CSV" onClick={onExportClick} />
                     {!isOpen && <ButtonLineComponent label={recordingState} onClick={onToggleRecording} />}
-                </>
+                </LineContainerComponent>
             }
             {
                 isOpen &&
