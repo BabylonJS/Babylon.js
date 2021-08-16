@@ -18,16 +18,23 @@ export class ParentingPropertyGridComponent extends React.Component<IParentingPr
         super(props);
         const cellInfo = (this.props.control.parent as Grid).getChildCellInfo(this.props.control);
         this._rowNumber = parseInt(cellInfo.substring(0, cellInfo.search(":")));
+        if (isNaN(this._rowNumber)) {
+            this._rowNumber = 0;
+        }
         this._columnNumber = parseInt(cellInfo.substring(cellInfo.search(":") + 1));
+        if (isNaN(this._columnNumber)) {
+            this._columnNumber = 0;
+        }
     }
     _columnNumber: number;
     _rowNumber: number;
 
-    updateGridPosition()
-    {
+    updateGridPosition() {
         const grid = this.props.control.parent as Grid;
-        this.props.control.parent?.removeControl(this.props.control);
-        grid.addControl(this.props.control, this._rowNumber, this._columnNumber);
+        if (grid) {
+            grid.removeControl(this.props.control);
+            grid.addControl(this.props.control, this._rowNumber, this._columnNumber);
+        }
     }
 
     render() {
