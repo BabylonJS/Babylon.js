@@ -5,11 +5,11 @@ interface IPerformancePlayheadButtonProps {
     returnToPlayhead: Observable<void>
 }
 export const PerformancePlayheadButtonComponent: React.FC<IPerformancePlayheadButtonProps> = ({returnToPlayhead}) => {
-    const onReturnToLiveClick = () => {
+    const onReturnToPlayheadClick = () => {
         returnToPlayhead.notifyObservers();
     }
 
     return (
-        <button className="performancePlayheadButton" onClick={onReturnToLiveClick} title="Return to Playhead">Return</button>
+        <button className="performancePlayheadButton" onClick={onReturnToPlayheadClick} title="Return to Playhead">Return</button>
     )
 }
