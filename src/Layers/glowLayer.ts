@@ -529,7 +529,7 @@ export class GlowLayer extends EffectLayer {
      */
     public referenceMeshToUseItsOwnMaterial(mesh: AbstractMesh): void {
         this._meshesUsingTheirOwnMaterials.push(mesh.uniqueId);
-        
+
         mesh.onDisposeObservable.add(() => {
             this._disposeMesh(mesh as Mesh);
         });

@@ -4517,7 +4517,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         if (this.isDisposed) {
             return;
         }
-        
+
         this.beforeRender = null;
         this.afterRender = null;
         this.metadata = null;
