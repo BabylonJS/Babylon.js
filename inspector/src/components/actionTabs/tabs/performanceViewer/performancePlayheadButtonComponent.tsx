@@ -10,6 +10,6 @@ export const PerformancePlayheadButtonComponent: React.FC<IPerformancePlayheadBu
     }
 
     return (
-        <button className="performanceLiveButton" onClick={onReturnToLiveClick}>Return to Playhead</button>
+        <button className="performancePlayheadButton" onClick={onReturnToLiveClick} title="Return to Playhead">Return</button>
     )
 }

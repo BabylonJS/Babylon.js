@@ -1,4 +1,4 @@
-$buttonHeight: 25px;
+$buttonHeight: 30px;
 
 #performance-viewer {
     display: grid;
@@ -8,11 +8,14 @@ $buttonHeight: 25px;
     grid-template-rows: $buttonHeight;
     grid-template-areas: ". liveButton"
                          "sidebar graph";
-    .performanceLiveButton {
+    .performancePlayheadButton {
         grid-area: liveButton;
         height: $buttonHeight;
-        width: 150px;
+        width: 100px;
         justify-self: right;
+        background-color: #dcdfe1;
+        color: #2e3f47;
+        outline: 2px #2e3f47;
         margin: 5px;
     }
 
