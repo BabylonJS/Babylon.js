@@ -14,12 +14,14 @@ jobs:
     vmImage: 'Ubuntu-16.04'
     demands: npm
   steps:
+  - task: NodeTool@0 
+    inputs:
+      versionSpec: '12.x'
   - task: Npm@1
     displayName: 'npm install'
     inputs:
       workingDir: Tools/Gulp
       verbose: false
-      versionSpec: '12.x'
   - script: 'gulp tests-whatsnew --max-old-space-size=8192'
     workingDirectory: Tools/Gulp
     displayName: 'Whats new'
@@ -33,12 +35,14 @@ jobs:
     vmImage: 'Ubuntu-16.04'
     demands: npm
   steps:
+  - task: NodeTool@0 
+    inputs:
+      versionSpec: '12.x'
   - task: Npm@1
     displayName: 'npm install'
     inputs:
       workingDir: Tools/Gulp
       verbose: false
-      versionSpec: '12.x'
   - script: 'gulp typedoc-check --max-old-space-size=8192'
     workingDirectory: Tools/Gulp
     displayName: 'Typedoc check'
@@ -49,12 +53,14 @@ jobs:
     vmImage: 'Ubuntu-16.04'
     demands: npm
   steps:
+  - task: NodeTool@0 
+    inputs:
+      versionSpec: '12.x'
   - task: Npm@1
     displayName: 'npm install'
     inputs:
       workingDir: Tools/Gulp
       verbose: false
-      versionSpec: '12.x'
   - script: 'gulp fullLint --max-old-space-size=8192'
     workingDirectory: Tools/Gulp
     displayName: 'Full Lint'
@@ -65,12 +71,14 @@ jobs:
     vmImage: 'Ubuntu-16.04'
     demands: npm
   steps:
+  - task: NodeTool@0 
+    inputs:
+      versionSpec: '12.x'
   - task: Npm@1
     displayName: 'npm install'
     inputs:
       workingDir: Tools/Gulp
       verbose: false
-      versionSpec: '12.x'
   - script: 'gulp typescript-all --max-old-space-size=8192'
     workingDirectory: Tools/Gulp
     displayName: 'Typescript all'
@@ -89,12 +97,14 @@ jobs:
     vmImage: 'Ubuntu-16.04'
     demands: npm
   steps:
+  - task: NodeTool@0 
+    inputs:
+      versionSpec: '12.x'
   - task: Npm@1
     displayName: 'npm install'
     inputs:
       workingDir: Tools/Gulp
       verbose: false
-      versionSpec: '12.x'
   - script: 'gulp typescript-all --max-old-space-size=8192'
     workingDirectory: Tools/Gulp
     displayName: 'Typescript all'
@@ -117,12 +127,14 @@ jobs:
     vmImage: 'Ubuntu-16.04'
     demands: npm
   steps:
+  - task: NodeTool@0 
+    inputs:
+      versionSpec: '12.x'
   - task: Npm@1
     displayName: 'npm install'
     inputs:
       workingDir: Tools/Gulp
       verbose: false
-      versionSpec: '12.x'
   - script: 'gulp typescript-all --max-old-space-size=8192'
     workingDirectory: Tools/Gulp
     displayName: 'Typescript all'
@@ -152,12 +164,14 @@ jobs:
     vmImage: 'Ubuntu-16.04'
     demands: npm
   steps:
+  - task: NodeTool@0 
+    inputs:
+      versionSpec: '12.x'
   - task: Npm@1
     displayName: 'npm install'
     inputs:
       workingDir: Tools/Gulp
       verbose: false
-      versionSpec: '12.x'
   - script: 'gulp typescript-all --max-old-space-size=8192'
     workingDirectory: Tools/Gulp
     displayName: 'Typescript all'
@@ -187,12 +201,14 @@ jobs:
     vmImage: 'Ubuntu-16.04'
     demands: npm
   steps:
+  - task: NodeTool@0 
+    inputs:
+      versionSpec: '12.x'
   - task: Npm@1
     displayName: 'npm install'
     inputs:
       workingDir: Tools/Gulp
       verbose: false
-      versionSpec: '12.x'
   - script: 'gulp typescript-all --max-old-space-size=8192'
     workingDirectory: Tools/Gulp
     displayName: 'Typescript all'
