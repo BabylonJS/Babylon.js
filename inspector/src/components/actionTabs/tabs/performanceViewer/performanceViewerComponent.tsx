@@ -156,7 +156,7 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
                         {performanceCollector && <>
                             <PerformancePlayheadButtonComponent returnToPlayhead={returnToLiveObservable} />
                             <PerformanceViewerSidebarComponent collector={performanceCollector} />
-                            <CanvasGraphComponent id="performance-viewer-graph" returnToLiveObservable={returnToLiveObservable} layoutObservable={layoutObservable} scene={scene} collector={performanceCollector} />
+                            <CanvasGraphComponent id="performance-viewer-graph" returnToPlayheadObservable={returnToLiveObservable} layoutObservable={layoutObservable} scene={scene} collector={performanceCollector} />
                         </>}
                     </div>
                 </PopupComponent>
