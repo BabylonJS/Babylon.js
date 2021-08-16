@@ -12,10 +12,11 @@ interface ICanvasGraphComponentProps {
     scene: Scene;
     collector: PerformanceViewerCollector
     layoutObservable?: Observable<IPerfLayoutSize>;
+    returnToPlayheadObservable?: Observable<void>;
 }
 
 export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps> = (props: ICanvasGraphComponentProps) => {
-    const { id, collector, scene, layoutObservable } = props;
+    const { id, collector, scene, layoutObservable, returnToPlayheadObservable } = props;
     const canvasRef: React.MutableRefObject<HTMLCanvasElement | null>  = useRef(null);
 
     useEffect(() => {
@@ -53,12 +54,16 @@ export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps> = (props
             cs.metadata = meta;
             cs.update();
         };
+
+        const resetDataPosition = () => {
+            cs?.resetDataPosition();
+        }
         
         scene.onAfterRenderObservable.add(dataUpdated);
         collector.metadataObservable.add(metaUpdated);
 
         layoutObservable?.add(layoutUpdated);
-
+        returnToPlayheadObservable?.add(resetDataPosition);
         return () => {
             cs?.destroy();
             layoutObservable?.removeCallback(layoutUpdated);

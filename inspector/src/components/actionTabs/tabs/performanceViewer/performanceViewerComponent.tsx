@@ -13,6 +13,7 @@ import { PerformanceViewerCollector } from "babylonjs/Misc/PerformanceViewer/per
 import { PerfCollectionStrategy } from "babylonjs/Misc/PerformanceViewer/performanceViewerCollectionStrategies";
 import { Tools } from "babylonjs/Misc/tools";
 import 'babylonjs/Misc/PerformanceViewer/performanceViewerSceneExtension';
+import { PerformancePlayheadButtonComponent } from "./performancePlayheadButtonComponent";
 
 require('./scss/performanceViewer.scss');
 
@@ -24,7 +25,7 @@ interface IPerformanceViewerComponentProps {
 const initialWindowSize = { width: 1024, height: 512 };
 
 // Note this should be false when committed until the feature is fully working.
-const isEnabled = false;
+const isEnabled = true;
 
 // list of strategies to add to perf graph automatically.
 const defaultStrategies = [
@@ -46,6 +47,7 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
     const [recordingState, setRecordingState] = useState(RecordingState.NotRecording);
     const [ performanceCollector, setPerformanceCollector ] = useState<PerformanceViewerCollector | undefined>();
     const [layoutObservable] = useState(new Observable<IPerfLayoutSize>());
+    const [returnToLiveObservable] = useState(new Observable<void>());
     const popupRef = useRef<PopupComponent | null>(null);
 
     // do cleanup when the window is closed
@@ -152,8 +154,9 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
                 >
                     <div id="performance-viewer">
                         {performanceCollector && <>
+                            <PerformancePlayheadButtonComponent returnToPlayhead={returnToLiveObservable} />
                             <PerformanceViewerSidebarComponent collector={performanceCollector} />
-                            <CanvasGraphComponent id="performance-viewer-graph" layoutObservable={layoutObservable} scene={scene} collector={performanceCollector} />
+                            <CanvasGraphComponent id="performance-viewer-graph" returnToLiveObservable={returnToLiveObservable} layoutObservable={layoutObservable} scene={scene} collector={performanceCollector} />
                         </>}
                     </div>
                 </PopupComponent>
