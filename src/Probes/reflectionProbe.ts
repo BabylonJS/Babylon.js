@@ -139,23 +139,18 @@ export class ReflectionProbe {
 
             this.position.addToRef(this._add, this._target);
 
-            if (scene.useRightHandedSystem) {
-                Matrix.LookAtRHToRef(this.position, this._target, Vector3.Up(), this._viewMatrix);
+            const lookAtFunction = scene.useRightHandedSystem ? Matrix.LookAtRHToRef : Matrix.LookAtLHToRef;
+            const perspectiveFunction = scene.useRightHandedSystem ? Matrix.PerspectiveFovRH : Matrix.PerspectiveFovLH;
 
-                if (scene.activeCamera) {
-                    this._projectionMatrix = Matrix.PerspectiveFovRH(Math.PI / 2, 1, useReverseDepthBuffer ? scene.activeCamera.maxZ : scene.activeCamera.minZ, useReverseDepthBuffer ? scene.activeCamera.minZ : scene.activeCamera.maxZ, this._scene.getEngine().isNDCHalfZRange);
-                    scene.setTransformMatrix(this._viewMatrix, this._projectionMatrix);
+            lookAtFunction(this.position, this._target, Vector3.Up(), this._viewMatrix);
+
+            if (scene.activeCamera) {
+                this._projectionMatrix = perspectiveFunction(Math.PI / 2, 1, useReverseDepthBuffer ? scene.activeCamera.maxZ : scene.activeCamera.minZ, useReverseDepthBuffer ? scene.activeCamera.minZ : scene.activeCamera.maxZ, this._scene.getEngine().isNDCHalfZRange);
+                scene.setTransformMatrix(this._viewMatrix, this._projectionMatrix);
+                if (scene.activeCamera.isRigCamera && !this._renderTargetTexture.activeCamera) {
+                    this._renderTargetTexture.activeCamera = scene.activeCamera.rigParent || null;
                 }
             }
-            else {
-                Matrix.LookAtLHToRef(this.position, this._target, Vector3.Up(), this._viewMatrix);
-
-                if (scene.activeCamera) {
-                    this._projectionMatrix = Matrix.PerspectiveFovLH(Math.PI / 2, 1, useReverseDepthBuffer ? scene.activeCamera.maxZ : scene.activeCamera.minZ, useReverseDepthBuffer ? scene.activeCamera.minZ : scene.activeCamera.maxZ, this._scene.getEngine().isNDCHalfZRange);
-                    scene.setTransformMatrix(this._viewMatrix, this._projectionMatrix);
-                }
-            }
-
             scene._forcedViewPosition = this.position;
         });
 
