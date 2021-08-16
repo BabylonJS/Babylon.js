@@ -33,8 +33,8 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
             rows.map((rd, i) => {
                 let newrd = new ValueAndUnit(rd.getValue(grid.host), rd.unit);
                 return (
-                    <div className="divider">
-                        <FloatLineComponent lockObject={this.props.lockObject} key={`c${i}`} label={`Row ${i}`} target={newrd} propertyName={"_value"} digits={rd.unit == 1 ? 0 : 2}
+                    <div className="divider" key={`r${i}`}>
+                        <FloatLineComponent lockObject={this.props.lockObject} label={`Row ${i}`} target={newrd} propertyName={"_value"} digits={rd.unit == 1 ? 0 : 2}
                             onChange={(newValue) => {
                                 grid.setRowDefinition(i, newValue, newrd.isPixel ? true : false);
                             }} />
@@ -60,8 +60,8 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
             cols.map((cd, i) => {
                 let newcd = new ValueAndUnit(cd.getValue(grid.host), cd.unit);
                 return (
-                    <div className="divider">
-                        <FloatLineComponent key={`c${i}`} label={`Column ${i}`} target={newcd} propertyName={"_value"} digits={cd.unit == 1 ? 0 : 2}
+                    <div className="divider" key={`c${i}`} >
+                        <FloatLineComponent label={`Column ${i}`} target={newcd} propertyName={"_value"} digits={cd.unit == 1 ? 0 : 2}
                             onChange={(newValue) => {
                                 grid.setColumnDefinition(i, newValue, newcd.isPixel ? true : false);
                             }} />
