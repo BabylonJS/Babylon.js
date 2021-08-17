@@ -25,46 +25,83 @@ export class RenderTargetWrapper {
     /** @hidden */
     public _depthStencilTextureWithStencil: boolean = false;
 
+    /**
+     * Defines if the render target wrapper is for a cube texture or if false a 2d texture
+     */
     public get isCube(): boolean {
         return this._isCube;
     }
 
+    /**
+     * Defines if the render target wrapper is for a single or multi target render wrapper
+     */
     public get isMulti(): boolean {
         return this._isMulti;
     }
 
+    /**
+     * Defines if the render target wrapper is for a single or an array of textures
+     */
     public get is2DArray(): boolean {
-        return !!(<{ width: number, height: number, layers?: number }>this._size).layers ?? false;
+        return this.layers > 0;
     }
 
+    /**
+     * Gets the size of the render target wrapper (used for cubes, as width=height in this case)
+     */
     public get size(): number {
         return this.width;
     }
 
+    /**
+     * Gets the width of the render target wrapper
+     */
     public get width(): number {
         return ((<{ width: number, height: number }>this._size).width) || <number>this._size;
     }
 
+    /**
+     * Gets the height of the render target wrapper
+     */
     public get height(): number {
         return ((<{ width: number, height: number }>this._size).height) || <number>this._size;
     }
 
+    /**
+     * Gets the number of layers of the render target wrapper (only used if is2DArray is true)
+     */
     public get layers(): number {
         return ((<{ width: number, height: number, layers?: number }>this._size).layers) || 0;
     }
 
+    /**
+     * Gets the render texture. If this is a multi render target, gets the first texture
+     */
     public get texture(): Nullable<InternalTexture> {
         return this._textures?.[0] ?? null;
     }
 
+    /**
+     * Gets the list of render textures. If we are not in a multi render target, the list will be null (use the texture getter instead)
+     */
     public get textures(): Nullable<InternalTexture[]> {
         return this._isMulti ? this._textures : null;
     }
 
+    /**
+     * Gets the sample count of the render target
+     */
     public get samples(): number {
         return this.texture?.samples ?? 1;
     }
 
+    /**
+     * Sets the sample count of the render target
+     * @param value sample count
+     * @param initializeBuffers If set to true, the engine will make an initializing call to drawBuffers (only used when isMulti=true).
+     * @param force true to force calling the update sample count engine function even if the current sample count is equal to value
+     * @returns the sample count that has been set
+     */
     public setSamples(value: number, initializeBuffers = true, force = false): number {
         if (this.samples === value && !force) {
             return value;
@@ -73,6 +110,13 @@ export class RenderTargetWrapper {
         return this._isMulti ? this._engine.updateMultipleRenderTargetTextureSampleCount(this, value, initializeBuffers) : this._engine.updateRenderTargetTextureSampleCount(this, value);
     }
 
+    /**
+     * Initializes the render target wrapper
+     * @param isMulti true if the wrapper is a multi render target
+     * @param isCube true if the wrapper should render to a cube texture
+     * @param size size of the render target (width/height/layers)
+     * @param engine engine used to create the render target
+     */
     constructor(isMulti: boolean, isCube: boolean, size: RenderTargetTextureSize, engine: ThinEngine) {
         this._isMulti = isMulti;
         this._isCube = isCube;
@@ -81,6 +125,10 @@ export class RenderTargetWrapper {
         this._depthStencilTexture = null;
     }
 
+    /**
+     * Sets the render target texture(s)
+     * @param textures texture(s) to set
+     */
     public setTextures(textures: Nullable<InternalTexture> | Nullable<InternalTexture[]>): void {
         if (Array.isArray(textures)) {
             this._textures = textures;
@@ -91,6 +139,14 @@ export class RenderTargetWrapper {
         }
     }
 
+    /**
+     * Creates the depth/stencil texture
+     * @param comparisonFunction Comparison function to use for the texture
+     * @param bilinearFiltering true if bilinear filtering should be used when sampling the texture
+     * @param generateStencil true if the stencil aspect should also be created
+     * @param samples sample count to use when creating the texture
+     * @returns 
+     */
     public createDepthStencilTexture(comparisonFunction: number = 0, bilinearFiltering: boolean = true, generateStencil: boolean = false, samples: number = 1): InternalTexture {
         this._depthStencilTexture?.dispose();
 
@@ -220,6 +276,9 @@ export class RenderTargetWrapper {
         rtw.dispose();
     }
 
+    /**
+     * Releases the internal render textures
+     */
     public releaseTextures(): void {
         if (this._textures) {
             for (let i = 0; i < this._textures?.length ?? 0; ++i) {
@@ -229,6 +288,10 @@ export class RenderTargetWrapper {
         this._textures = null;
     }
 
+    /**
+     * Disposes the whole render target wrapper
+     * @param disposeOnlyFramebuffers true if only the frame buffers should be released (used for the WebGL engine). If false, all the textures will also be released
+     */
     public dispose(disposeOnlyFramebuffers = false): void {
         if (!disposeOnlyFramebuffers) {
             this._depthStencilTexture?.dispose();
