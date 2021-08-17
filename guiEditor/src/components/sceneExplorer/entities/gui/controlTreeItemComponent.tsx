@@ -99,7 +99,7 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
         }
         return (
             <div className="controlTools" onMouseOver={() => this.setState({ isHovered: true })} onMouseLeave={() => this.setState({ isHovered: false })}
-                draggable={true}
+                draggable={control.parent? true : false}
                 onDragStart={event => {
                     this.props.globalState.draggedControl = control;
                 }}
@@ -116,8 +116,8 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
                     this.dragOverHover = false;
                     this.forceUpdate();
                 }}>
-                {(this.dragOverLocation == DragOverLocation.ABOVE) &&
-                    <hr></hr>
+                {(this.dragOverLocation == DragOverLocation.ABOVE && control.parent) &&
+                    <hr className="ge" />
                 }
                 <TreeItemLabelComponent label={name} onClick={() => this.props.onClick()} color="greenyellow" />
                 {(this.dragOverLocation == DragOverLocation.CENTER && this.props.globalState.workbench.isContainer(control)) && <>

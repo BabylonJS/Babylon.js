@@ -4,7 +4,7 @@
 
 #gui-editor-workbench-root {
     display: grid;
-    grid-template-rows: calc(100% - 120px) 120px;
+    grid-template-rows: calc(100% - 55px);
     height: 100%;
     width: 100%;
     background: #e2e2e2;
@@ -32,7 +32,7 @@
 
 #leftGrab {
     grid-row: 1 / span 2;
-    grid-column: 3;
+    grid-column: 2;
     cursor: ew-resize;
 }
 
@@ -46,7 +46,7 @@
 #toolbarGrab {
     background: #333333;
     grid-row: 1 / span 3;
-    grid-column: 2;
+    grid-column: 3;
     height: 100%;
     .toolbar-label {
         color:white;
@@ -317,6 +317,7 @@
 #log-console {
     grid-row: 2;
     grid-column: 4;
+    display: none;
 }
 
 .dialog-container {
