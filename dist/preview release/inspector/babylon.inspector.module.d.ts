@@ -328,7 +328,15 @@ declare module "babylonjs-inspector/components/graph/canvasGraphService" {
          * This method lets the service know it should get ready to update what it is displaying.
          */
         update: (...args: any[]) => void;
+        /**
+         * Update the canvas graph service with the new height and width of the canvas.
+         * @param size The new size of the canvas.
+         */
         resize(size: IPerfLayoutSize): void;
+        /**
+         * Force resets the position in the data, effectively returning to the most current data.
+         */
+        resetDataPosition(): void;
         /**
          * This method draws the data and sets up the appropriate scales.
          */
@@ -504,6 +512,7 @@ declare module "babylonjs-inspector/components/graph/canvasGraphComponent" {
         scene: Scene;
         collector: PerformanceViewerCollector;
         layoutObservable?: Observable<IPerfLayoutSize>;
+        returnToPlayheadObservable?: Observable<void>;
     }
     export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps>;
 }
@@ -643,6 +652,14 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/performanceViewer
         collector: PerformanceViewerCollector;
     }
     export const PerformanceViewerSidebarComponent: (props: IPerformanceViewerSidebarComponentProps) => JSX.Element;
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/performanceViewer/performancePlayheadButtonComponent" {
+    import { Observable } from 'babylonjs/Misc/observable';
+    import * as React from 'react';
+    interface IPerformancePlayheadButtonProps {
+        returnToPlayhead: Observable<void>;
+    }
+    export const PerformancePlayheadButtonComponent: React.FC<IPerformancePlayheadButtonProps>;
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/performanceViewer/performanceViewerComponent" {
     import { Scene } from "babylonjs/scene";
@@ -5113,7 +5130,15 @@ declare module INSPECTOR {
          * This method lets the service know it should get ready to update what it is displaying.
          */
         update: (...args: any[]) => void;
+        /**
+         * Update the canvas graph service with the new height and width of the canvas.
+         * @param size The new size of the canvas.
+         */
         resize(size: IPerfLayoutSize): void;
+        /**
+         * Force resets the position in the data, effectively returning to the most current data.
+         */
+        resetDataPosition(): void;
         /**
          * This method draws the data and sets up the appropriate scales.
          */
@@ -5284,6 +5309,7 @@ declare module INSPECTOR {
         scene: BABYLON.Scene;
         collector: BABYLON.PerformanceViewerCollector;
         layoutObservable?: BABYLON.Observable<IPerfLayoutSize>;
+        returnToPlayheadObservable?: BABYLON.Observable<void>;
     }
     export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps>;
 }
@@ -5415,6 +5441,12 @@ declare module INSPECTOR {
         collector: BABYLON.PerformanceViewerCollector;
     }
     export const PerformanceViewerSidebarComponent: (props: IPerformanceViewerSidebarComponentProps) => JSX.Element;
+}
+declare module INSPECTOR {
+    interface IPerformancePlayheadButtonProps {
+        returnToPlayhead: BABYLON.Observable<void>;
+    }
+    export const PerformancePlayheadButtonComponent: React.FC<IPerformancePlayheadButtonProps>;
 }
 declare module INSPECTOR {
     interface IPerformanceViewerComponentProps {
