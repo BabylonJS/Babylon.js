@@ -1,5 +1,6 @@
 import { Gizmo } from "babylonjs/Gizmos/gizmo";
 import { Matrix, Quaternion, TmpVectors, Vector3 } from "babylonjs/Maths/math.vector";
+import { Scene } from "babylonjs/scene";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { Observer } from "babylonjs/Misc/observable";
@@ -429,7 +430,7 @@ export class SlateGizmo extends Gizmo {
 
     public dispose() {
         this.gizmoLayer.originalScene.onBeforeRenderObservable.remove(this._renderObserver);
-        
+
         // Will dispose rootMesh and all descendants
         super.dispose();
 
