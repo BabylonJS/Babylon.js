@@ -874,7 +874,7 @@ export class NativeEngine extends Engine {
             fragmentDepthSupported: false,
             highPrecisionShaderSupported: true,
             colorBufferFloat: false,
-            textureFloat: false,
+            textureFloat: true,
             textureFloatLinearFiltering: false,
             textureFloatRender: false,
             textureHalfFloat: false,
@@ -1892,6 +1892,7 @@ export class NativeEngine extends Engine {
     public createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
         let texture = new InternalTexture(this, InternalTextureSource.Raw);
 
+        texture.format = format;
         texture.generateMipMaps = generateMipMaps;
         texture.samplingMode = samplingMode;
         texture.invertY = invertY;
@@ -1920,8 +1921,8 @@ export class NativeEngine extends Engine {
         }
 
         if (bufferView && texture._hardwareTexture) {
-            const webGLTexture = texture._hardwareTexture.underlyingResource;
-            this._native.loadRawTexture(webGLTexture, bufferView, texture.width, texture.height, this._getNativeTextureFormat(format, type), texture.generateMipMaps, texture.invertY);
+            const underlyingResource = texture._hardwareTexture.underlyingResource;
+            this._native.loadRawTexture(underlyingResource, bufferView, texture.width, texture.height, this._getNativeTextureFormat(format, type), texture.generateMipMaps, texture.invertY);
         }
 
         texture.isReady = true;
@@ -2504,8 +2505,8 @@ export class NativeEngine extends Engine {
             return;
         }
         if (texture && texture._hardwareTexture) {
-            const webGLTexture = texture._hardwareTexture.underlyingResource;
-            this._native.setTexture(uniform, webGLTexture);
+            const underlyingResource = texture._hardwareTexture.underlyingResource;
+            this._native.setTexture(uniform, underlyingResource);
         }
     }
 

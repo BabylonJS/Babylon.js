@@ -1,4 +1,4 @@
-import { ICanvasGraphServiceSettings, IPerfMinMax, IGraphDrawableArea, IPerfMousePanningPosition, IPerfIndexBounds, IPerfTooltip, IPerfTextMeasureCache, IPerfLayoutSize, IPerfTicker } from "./graphSupportingTypes";
+import { ICanvasGraphServiceSettings, IPerfMinMax, IGraphDrawableArea, IPerfMousePanningPosition, IPerfIndexBounds, IPerfTooltip, IPerfTextMeasureCache, IPerfLayoutSize, IPerfTicker, TimestampUnit } from "./graphSupportingTypes";
 import { IPerfDatasets, IPerfMetadata } from "babylonjs/Misc/interfaces/iPerfViewer";
 import { Scalar } from "babylonjs/Maths/math.scalar";
 import { PerformanceViewerCollector } from "babylonjs/Misc/PerformanceViewer/performanceViewerCollector";
@@ -58,11 +58,15 @@ const alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 // Arbitrary maximum used to make some GC optimizations.
 const maximumDatasetsAllowed = 64;
 
+const msInSecond = 1000;
+const msInMinute = msInSecond * 60;
+const msInHour =  msInMinute * 60;
+
 // time in ms to wait between tooltip draws inside the mouse move.
 const tooltipDebounceTime = 32;
 
 // time in ms to wait between draws
-const drawDebounceTime = 15;
+const drawThrottleTime = 15;
 
 /**
  * This function will debounce calls to functions.
@@ -79,6 +83,24 @@ function debounce(callback: (...args: any[]) => void, time: number) {
 }
 
 /**
+ * This function will throttle calls to functions.
+ * 
+ * @param callback callback to call.
+ * @param time time to wait between calls in ms.
+ */
+ function throttle(callback: (...args: any[]) => void, time: number) {
+    let lastCalledTime: number = 0;
+    return function (...args: any[]) {
+        const now = Date.now();
+        if (now - lastCalledTime < time) {
+            return;
+        }
+        lastCalledTime = now;
+        callback(...args);
+    }
+}
+
+/*
  * This class acts as the main API for graphing given a Here is where you will find methods to let the service know new data needs to be drawn,
  * let it know something has been resized, etc! 
  */
@@ -156,11 +178,15 @@ export class CanvasGraphService {
     /**
      * This method lets the service know it should get ready to update what it is displaying.
      */
-    public update = debounce(
+    public update = throttle(
         () => this._draw(),
-        drawDebounceTime
+        drawThrottleTime
     );
 
+    /**
+     * Update the canvas graph service with the new height and width of the canvas.
+     * @param size The new size of the canvas.
+     */
     public resize(size: IPerfLayoutSize) {
         const { _ctx: ctx } = this;
         const { width, height } = size;
@@ -176,6 +202,13 @@ export class CanvasGraphService {
         ctx.canvas.height = height;
 
         this.update();
+    }
+
+    /**
+     * Force resets the position in the data, effectively returning to the most current data.
+     */
+    public resetDataPosition() {
+        this._position = null;
     }
 
     /**
@@ -440,6 +473,8 @@ export class CanvasGraphService {
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
 
+        const timestampUnit: TimestampUnit = this._getTimestampUnit(this._ticks[this._ticks.length - 1]);
+
         this._ticks.forEach((tick: number) => {
             let position = this._getPixelForNumber(tick, timeMinMax, drawableArea.left, spaceAvailable, false);
             if (position > spaceAvailable) {
@@ -447,10 +482,63 @@ export class CanvasGraphService {
             }
             ctx.moveTo(position, drawableArea.bottom);
             ctx.lineTo(position, drawableArea.bottom + 10);
-            ctx.fillText(tick.toString(), position, drawableArea.bottom + 20);
+            ctx.fillText(this._parseTimestamp(tick, timestampUnit), position, drawableArea.bottom + 20);
         });
         ctx.stroke();
         ctx.restore();
+    }
+
+    /**
+     * Given a timestamp (should be the maximum timestamp in view), this function returns the maximum unit the timestamp contains. 
+     * This information can be used for formatting purposes.
+     * @param timestamp the maximum timestamp to find the maximum timestamp unit for. 
+     * @returns The maximum unit the timestamp has.
+     */
+    private _getTimestampUnit(timestamp: number): TimestampUnit {
+        if (timestamp / msInHour > 1) {
+            return TimestampUnit.Hours;
+        } else if (timestamp / msInMinute > 1) {
+            return TimestampUnit.Minutes;
+        } else if (timestamp / msInSecond > 1) {
+            return TimestampUnit.Seconds;
+        } else {
+            return TimestampUnit.Milliseconds;
+        }
+    }
+
+    /**
+     * Given a timestamp and the interval unit, this function will parse the timestamp to the appropriate format.
+     * @param timestamp The timestamp to parse
+     * @param intervalUnit The maximum unit of the maximum timestamp in an interval.
+     * @returns a string representing the parsed timestamp.
+     */
+    private _parseTimestamp(timestamp: number, intervalUnit: TimestampUnit): string {
+        let parsedTimestamp = "";
+        
+        if (intervalUnit >= TimestampUnit.Hours) {
+            const numHours = Math.floor(timestamp / msInHour);
+            timestamp -= numHours * msInHour;
+            parsedTimestamp += `${numHours.toString().padStart(intervalUnit > TimestampUnit.Hours ? 2 : 1, "0")}:`;
+        }
+
+        if (intervalUnit >= TimestampUnit.Minutes) {
+            const numMinutes = Math.floor(timestamp / msInMinute);
+            timestamp -= numMinutes * msInMinute;
+            parsedTimestamp += `${numMinutes.toString().padStart(intervalUnit > TimestampUnit.Minutes ? 2 : 1, "0")}:`;
+        }
+
+        const numSeconds = Math.floor(timestamp / msInSecond);
+        timestamp -= numSeconds * msInSecond;
+        parsedTimestamp += numSeconds.toString().padStart(intervalUnit > TimestampUnit.Seconds ? 2 : 1, "0");
+
+        if (timestamp > 0) {
+            if (parsedTimestamp.length > 0) {
+                parsedTimestamp += ".";
+            }
+            parsedTimestamp += Math.round(timestamp).toString().padStart(3, "0");
+        }
+
+        return parsedTimestamp;
     }
 
     /**

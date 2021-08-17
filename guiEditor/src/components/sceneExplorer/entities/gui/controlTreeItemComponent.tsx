@@ -5,6 +5,7 @@ import { ExtensionsComponent } from "../../extensionsComponent";
 import * as React from 'react';
 import { DragOverLocation, GlobalState } from "../../../../globalState";
 import { Nullable, Observer } from "babylonjs/Legacy/legacy";
+import { Grid } from "babylonjs-gui/2D/controls/grid";
 
 const visibilityNotActiveIcon: string = require("../../../../../public/imgs/visibilityNotActiveIcon.svg");
 const visibilityActiveIcon: string = require("../../../../../public/imgs/visibilityActiveIcon.svg");
@@ -75,6 +76,7 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
         }
         event.preventDefault();
         this.dragOverHover = true;
+        this.forceUpdate();
     }
 
     drop(): void {
@@ -91,11 +93,13 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
     render() {
         const control = this.props.control;
 
-        const name = `${control.name || "No name"} [${control.getClassName()}]`;
-
+        let name = `${control.name || "No name"} [${control.getClassName()}]`;
+        if(control.parent?.typeName === "Grid"){
+            name += ` [${(control.parent as Grid).getChildCellInfo(this.props.control)}]`;
+        }
         return (
             <div className="controlTools" onMouseOver={() => this.setState({ isHovered: true })} onMouseLeave={() => this.setState({ isHovered: false })}
-                draggable={true}
+                draggable={control.parent? true : false}
                 onDragStart={event => {
                     this.props.globalState.draggedControl = control;
                 }}
@@ -112,8 +116,8 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
                     this.dragOverHover = false;
                     this.forceUpdate();
                 }}>
-                {(this.dragOverLocation == DragOverLocation.ABOVE) &&
-                    <hr></hr>
+                {(this.dragOverLocation == DragOverLocation.ABOVE && control.parent) &&
+                    <hr className="ge" />
                 }
                 <TreeItemLabelComponent label={name} onClick={() => this.props.onClick()} color="greenyellow" />
                 {(this.dragOverLocation == DragOverLocation.CENTER && this.props.globalState.workbench.isContainer(control)) && <>
