@@ -5,6 +5,9 @@ import { Constants } from "./constants";
 import { RenderTargetTextureSize } from "./Extensions/engine.renderTarget";
 import { ThinEngine } from "./thinEngine";
 
+/**
+ * Wrapper around a render target (either single or multi textures)
+ */
 export class RenderTargetWrapper {
 
     protected _engine: ThinEngine;
