@@ -177,19 +177,18 @@ export class SlateGizmo extends Gizmo {
             0
         );
 
+        if (keepAspectRatio) {
+            // Extra logic to ensure the ratio is maintained when the vector has been clamped
+            const ratio = dimensions.x / dimensions.y;
+            clampedDimensions.x = Math.max(clampedDimensions.x, clampedDimensions.y * ratio);
+            clampedDimensions.y = Math.max(clampedDimensions.y, clampedDimensions.x / ratio);
+        }
+
         // Calculating the real impact of vector on clamped dimensions
         impact.copyFrom(clampedDimensions).subtractInPlace(dimensions);
 
-        let factor = TmpVectors.Vector3[2];
-        factor.copyFrom(impact);
-        if (keepAspectRatio) {
-            // We want to keep aspect ratio of vector while clamping so we move by the minimum of the 2 dimensions
-            factor.x = Math.min(Math.abs(clampedDimensions.x - dimensions.x), Math.abs(clampedDimensions.y - dimensions.y));
-            factor.y = factor.x;
-        }
-
-        vector.x = Math.sign(vector.x) * Math.abs(factor.x);
-        vector.y = Math.sign(vector.y) * Math.abs(factor.y);
+        vector.x = Math.sign(vector.x) * Math.abs(impact.x);
+        vector.y = Math.sign(vector.y) * Math.abs(impact.y);
     }
 
     private _moveHandle(originStart: Vector3, dimensionsStart: Vector3, offset: Vector3, masks: HandleMasks, isCorner: boolean) {
