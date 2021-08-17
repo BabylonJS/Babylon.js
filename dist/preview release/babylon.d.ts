@@ -25710,6 +25710,7 @@ declare module BABYLON {
         isAdditive: boolean;
         private _localDelayOffset;
         private _pausedDelay;
+        private _manualJumpDelay;
         private _runtimeAnimations;
         private _paused;
         private _scene;
@@ -33353,6 +33354,10 @@ declare module BABYLON {
          * Sets a callback that will be raised when the node will be disposed
          */
         set onDispose(callback: () => void);
+        /**
+         * An event triggered when the enabled state of the node changes
+         */
+        get onEnabledStateChangedObservable(): Observable<boolean>;
         /**
          * Creates a new Node
          * @param name the name and id to be given to this node
