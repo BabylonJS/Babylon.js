@@ -711,7 +711,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             tmpDistanceSphereToCenter = Vector3.Distance(sphere.center, mesh.getAbsolutePosition());
             if (tmpDistanceSphereToCenter !== -1 && tmpDistanceSurfaceToCenter !== -1 && tmpDistanceSurfaceToCenter > tmpDistanceSphereToCenter) {
                 tmp = 0;
-                tmpVec.set(sphere.center.x, sphere.center.y, sphere.center.z);
+                tmpVec.copyFrom(sphere.center);
             }
 
             if (tmp !== -1 && tmp < distance) {
