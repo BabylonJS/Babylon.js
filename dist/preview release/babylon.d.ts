@@ -13261,7 +13261,7 @@ declare module BABYLON {
          */
         serialize(): any;
         /** @hidden */
-        static _ParseParticleSystem(system: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string): ParticleSystem;
+        static _ParseParticleSystem(system: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart?: boolean): ParticleSystem;
         /**
          * Creates a new SubEmitter from a serialized JSON version
          * @param serializationObject defines the JSON object to read from
