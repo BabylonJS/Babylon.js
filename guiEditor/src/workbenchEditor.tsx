@@ -176,7 +176,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     }
 
     buildColumnLayout() {
-        return `${this._leftWidth}px ${this._toolBarIconSize}px 4px calc(100% - ${this._leftWidth + this._toolBarIconSize + 8 + this._rightWidth}px) 4px ${this._rightWidth}px`;
+        return `${this._leftWidth}px 4px ${this._toolBarIconSize}px calc(100% - ${this._leftWidth + this._toolBarIconSize + 8 + this._rightWidth}px) 4px ${this._rightWidth}px`;
     }
 
     emitNewBlock(event: React.DragEvent<HTMLDivElement>) {
