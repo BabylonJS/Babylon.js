@@ -1,15 +1,30 @@
+$buttonHeight: 30px;
+
 #performance-viewer {
     display: grid;
     height: 100%;
     width: 100%;
     grid-template-columns: 25% 75%;
-    grid-template-areas: "sidebar graph";
+    grid-template-rows: $buttonHeight;
+    grid-template-areas: ". liveButton"
+                         "sidebar graph";
+    .performancePlayheadButton {
+        grid-area: liveButton;
+        height: $buttonHeight;
+        width: 100px;
+        justify-self: right;
+        background-color: #dcdfe1;
+        color: #2e3f47;
+        outline: 2px #2e3f47;
+        margin: 5px;
+    }
+
     #performance-viewer-graph {
-        grid-area: "graph";
+        grid-area: graph;
     }
 
     #performance-viewer-sidebar {
-        grid-area: "sidebar";
+        grid-area: sidebar;
         display: flex;
         flex-direction: column;
         
