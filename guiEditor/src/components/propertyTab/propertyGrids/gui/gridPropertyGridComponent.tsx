@@ -60,8 +60,8 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
             cols.map((cd, i) => {
                 let newcd = new ValueAndUnit(cd.getValue(grid.host), cd.unit);
                 return (
-                    <div className="divider" key={`c${i}`} >
-                        <FloatLineComponent label={`Column ${i}`} target={newcd} propertyName={"_value"} digits={cd.unit == 1 ? 0 : 2}
+                    <div className="divider">
+                        <FloatLineComponent key={`c${i}`} label={`Column ${i}`} target={newcd} propertyName={"_value"} digits={cd.unit == 1 ? 0 : 2}
                             onChange={(newValue) => {
                                 grid.setColumnDefinition(i, newValue, newcd.isPixel ? true : false);
                             }} />
@@ -89,7 +89,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
         return (
             <div className="pane">
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={grid} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <hr />
+                <hr className="ge" />
                 <TextLineComponent tooltip="" label="GRID" value=" " color="grey"></TextLineComponent>
                 <ButtonLineComponent
                     label="ADD ROW"
@@ -108,7 +108,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                 {
                     this.renderRows()
                 }
-                <hr />
+                <hr className="ge" />
                 <ButtonLineComponent
                     label="ADD COLUMN"
                     onClick={() => {
