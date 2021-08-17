@@ -37439,6 +37439,7 @@ declare module BABYLON {
         private _refreshFrustumPlanes;
         private _storedFov;
         private _stateStored;
+        private _absoluteRotation;
         /**
          * Instantiates a new camera object.
          * This should not be used directly but through the inherited cameras: ArcRotate, Free...
@@ -44124,6 +44125,59 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * A wrapper for the experimental compute pressure api which allows a callback to be called whenever certain thresholds are met.
+     */
+    export class ComputePressureObserverWrapper {
+        private _observer;
+        /**
+         * A compute pressure observer will call this callback, whenever these thresholds are met.
+         * @param callback The callback that is called whenever thresholds are met.
+         * @param thresholds An object containing the thresholds used to decide what value to to return for each update property (average of start and end of a threshold boundary).
+         */
+        constructor(callback: (update: IComputePressureData) => void, thresholds: IComputePressureThresholds);
+        /**
+         * Returns true if ComputePressureObserver is available for use, false otherwise.
+         */
+        static get IsAvailable(): boolean;
+        /**
+         * Method that must be called to begin observing changes, and triggering callbacks.
+         */
+        observe(): void;
+        /**
+         * Method that must be called to stop observing changes and triggering callbacks (cleanup function).
+         */
+        unobserve(): void;
+    }
+    /**
+     * An interface defining the shape of the thresholds parameter in the experimental compute pressure api
+     */
+    export interface IComputePressureThresholds {
+        /**
+         * Thresholds to make buckets out of for the cpu utilization, the average between the start and end points of a threshold will be returned to the callback.
+         */
+        cpuUtilizationThresholds: number[];
+        /**
+         * Thresholds to make buckets out of for the cpu speed, the average between the start and end points of a threshold will be returned to the callback.
+         * 0.5 represents base speed.
+         */
+        cpuSpeedThresholds: number[];
+    }
+    /**
+     * An interface defining the shape of the data sent to the callback in the compute pressure observer.
+     */
+    export interface IComputePressureData {
+        /**
+         * The cpu utilization which will be a number between 0.0 and 1.0.
+         */
+        cpuUtilization: number;
+        /**
+         * The cpu speed which will be a number between 0.0 and 1.0.
+         */
+        cpuSpeed: number;
+    }
+}
+declare module BABYLON {
+    /**
      * This class defines the direct association between an animation and a target
      */
     export class TargetedAnimation {
@@ -44441,6 +44495,19 @@ declare module BABYLON {
          */
         hidden?: boolean;
     }
+    /**
+     * Defines the shape of a custom user registered event.
+     */
+    export interface IPerfCustomEvent {
+        /**
+         * The name of the event.
+         */
+        name: string;
+        /**
+         * The value for the event, if set we will use it as the value, otherwise we will count the number of occurences.
+         */
+        value?: number;
+    }
 }
 declare module BABYLON {
     /**
@@ -44659,6 +44726,8 @@ declare module BABYLON {
         private _strategies;
         private _startingTimestamp;
         private _hasLoadedData;
+        private readonly _customEventObservable;
+        private readonly _eventRestoreSet;
         /**
          * Datastructure containing the collected datasets. Warning: you should not modify the values in here, data will be of the form [timestamp, numberOfPoints, value1, value2..., timestamp, etc...]
          */
@@ -44686,6 +44755,24 @@ declare module BABYLON {
          * @param _enabledStrategyCallbacks the list of data to collect with callbacks for initialization purposes.
          */
         constructor(_scene: Scene, _enabledStrategyCallbacks?: PerfStrategyInitialization[]);
+        /**
+         * Registers a custom string event which will be callable via sendEvent. This method returns an event object which will contain the id of the event.
+         * The user can set a value optionally, which will be used in the sendEvent method. If the value is set, we will record this value at the end of each frame,
+         * if not we will increment our counter and record the value of the counter at the end of each frame. The value recorded is 0 if no sendEvent method is called, within a frame.
+         * @param name The name of the event to register
+         * @param forceUpdate if the code should force add an event, and replace the last one.
+         * @returns The event registered, used in sendEvent
+         */
+        registerEvent(name: string, forceUpdate?: boolean): IPerfCustomEvent | undefined;
+        /**
+         * Lets the perf collector handle an event, occurences or event value depending on if the event.value params is set.
+         * @param event the event to handle an occurence for
+         */
+        sendEvent(event: IPerfCustomEvent): void;
+        /**
+         * This event restores all custom string events if necessary.
+         */
+        private _restoreStringEvents;
         /**
          * This method adds additional collection strategies for data collection purposes.
          * @param strategyCallbacks the list of data to collect with callbacks.
@@ -44717,8 +44804,9 @@ declare module BABYLON {
         updateMetadata<T extends keyof IPerfMetadata>(id: string, prop: T, value: IPerfMetadata[T]): void;
         /**
          * Completely clear, data, ids, and strategies saved to this performance collector.
+         * @param preserveStringEventsRestore if it should preserve the string events, by default will clear string events registered when called.
          */
-        clear(): void;
+        clear(preserveStringEventsRestore?: boolean): void;
         /**
          * Accessor which lets the caller know if the performance collector has data loaded from a file or not!
          * Call clear() to reset this value.
@@ -46876,6 +46964,12 @@ declare module BABYLON {
         protected _perfCollector: Nullable<PerformanceViewerCollector>;
         /** @hidden */
         _getPerfCollector(): PerformanceViewerCollector;
+        private _computePressureObserver;
+        /**
+         * An event triggered when the cpu usage/speed meets certain thresholds.
+         * Note: Compute pressure is an experimental API.
+         */
+        onComputePressureChanged: Observable<IComputePressureData>;
     }
 }
 declare module BABYLON {
@@ -51374,6 +51468,7 @@ declare module BABYLON {
          * @hidden
          */
         _doNotLoadControllerMesh: boolean;
+        private _controllerCache?;
         private _initComponent;
         private _modelReady;
         /**
@@ -51406,6 +51501,7 @@ declare module BABYLON {
          * @param gamepadObject The gamepad object correlating to this controller
          * @param handedness handedness (left/right/none) of this controller
          * @param _doNotLoadControllerMesh set this flag to ignore the mesh loading
+         * @param _controllerCache a cache holding controller models already loaded in this session
          */
         constructor(scene: Scene, layout: IMotionControllerLayout, 
         /**
@@ -51419,7 +51515,11 @@ declare module BABYLON {
         /**
          * @hidden
          */
-        _doNotLoadControllerMesh?: boolean);
+        _doNotLoadControllerMesh?: boolean, _controllerCache?: {
+            filename: string;
+            path: string;
+            meshes: AbstractMesh[];
+        }[] | undefined);
         /**
          * Dispose this controller, the model mesh and all its components
          */
@@ -51591,13 +51691,18 @@ declare module BABYLON {
      */
     export class WebXRProfiledMotionController extends WebXRAbstractMotionController {
         private _repositoryUrl;
+        private controllerCache?;
         private _buttonMeshMapping;
         private _touchDots;
         /**
          * The profile ID of this controller. Will be populated when the controller initializes.
          */
         profileId: string;
-        constructor(scene: Scene, xrInput: XRInputSource, _profile: IMotionControllerProfile, _repositoryUrl: string);
+        constructor(scene: Scene, xrInput: XRInputSource, _profile: IMotionControllerProfile, _repositoryUrl: string, controllerCache?: {
+            filename: string;
+            path: string;
+            meshes: AbstractMesh[];
+        }[] | undefined);
         dispose(): void;
         protected _getFilenameAndPath(): {
             filename: string;
@@ -51615,12 +51720,8 @@ declare module BABYLON {
      */
     export type MotionControllerConstructor = (xrInput: XRInputSource, scene: Scene) => WebXRAbstractMotionController;
     /**
-     * The MotionController Manager manages all registered motion controllers and loads the right one when needed.
-     *
-     * When this repository is complete: https://github.com/immersive-web/webxr-input-profiles/tree/master/packages/assets
-     * it should be replaced with auto-loaded controllers.
-     *
-     * When using a model try to stay as generic as possible. Eventually there will be no need in any of the controller classes
+     * Motion controller manager is managing the different webxr profiles and makes sure the right
+     * controller is being loaded.
      */
     export class WebXRMotionControllerManager {
         private static _AvailableControllers;
@@ -51639,6 +51740,11 @@ declare module BABYLON {
          * Use the online repository, or use only locally-defined controllers
          */
         static UseOnlineRepository: boolean;
+        /**
+         * Disable the controller cache and load the models each time a new WebXRProfileMotionController is loaded.
+         * Defaults to true.
+         */
+        static DisableControllerCache: boolean;
         /**
          * Clear the cache used for profile loading and reload when requested again
          */
@@ -51691,8 +51797,84 @@ declare module BABYLON {
         static UpdateProfilesList(): Promise<{
             [profile: string]: string;
         }>;
+        /**
+         * Clear the controller's cache (usually happens at the end of a session)
+         */
+        static ClearControllerCache(): void;
         private static _LoadProfileFromRepository;
         private static _LoadProfilesFromAvailableControllers;
+    }
+}
+declare module BABYLON {
+    /**
+     * WebXR Camera which holds the views for the xrSession
+     * @see https://doc.babylonjs.com/how_to/webxr_camera
+     */
+    export class WebXRCamera extends FreeCamera {
+        private _xrSessionManager;
+        private static _ScaleReadOnly;
+        private _firstFrame;
+        private _referenceQuaternion;
+        private _referencedPosition;
+        private _trackingState;
+        /**
+         * Observable raised before camera teleportation
+         */
+        onBeforeCameraTeleport: Observable<Vector3>;
+        /**
+         *  Observable raised after camera teleportation
+         */
+        onAfterCameraTeleport: Observable<Vector3>;
+        /**
+         * Notifies when the camera's tracking state has changed.
+         * Notice - will also be triggered when tracking has started (at the beginning of the session)
+         */
+        onTrackingStateChanged: Observable<WebXRTrackingState>;
+        /**
+         * Should position compensation execute on first frame.
+         * This is used when copying the position from a native (non XR) camera
+         */
+        compensateOnFirstFrame: boolean;
+        /**
+         * The last XRViewerPose from the current XRFrame
+         * @hidden
+         */
+        _lastXRViewerPose?: XRViewerPose;
+        /**
+         * Creates a new webXRCamera, this should only be set at the camera after it has been updated by the xrSessionManager
+         * @param name the name of the camera
+         * @param scene the scene to add the camera to
+         * @param _xrSessionManager a constructed xr session manager
+         */
+        constructor(name: string, scene: Scene, _xrSessionManager: WebXRSessionManager);
+        /**
+         * Get the current XR tracking state of the camera
+         */
+        get trackingState(): WebXRTrackingState;
+        private _setTrackingState;
+        /**
+         * Return the user's height, unrelated to the current ground.
+         * This will be the y position of this camera, when ground level is 0.
+         */
+        get realWorldHeight(): number;
+        /** @hidden */
+        _updateForDualEyeDebugging(): void;
+        /**
+         * Sets this camera's transformation based on a non-vr camera
+         * @param otherCamera the non-vr camera to copy the transformation from
+         * @param resetToBaseReferenceSpace should XR reset to the base reference space
+         */
+        setTransformationFromNonVRCamera(otherCamera?: Camera, resetToBaseReferenceSpace?: boolean): void;
+        /**
+         * Gets the current instance class name ("WebXRCamera").
+         * @returns the class name
+         */
+        getClassName(): string;
+        dispose(): void;
+        private _rotate180;
+        private _updateFromXRSession;
+        private _updateNumberOfRigCameras;
+        private _updateReferenceSpace;
     }
 }
 declare module BABYLON {
@@ -51794,80 +51976,9 @@ declare module BABYLON {
          * Updates the controller pose based on the given XRFrame
          * @param xrFrame xr frame to update the pose with
          * @param referenceSpace reference space to use
+         * @param xrCamera the xr camera, used for parenting
          */
-        updateFromXRFrame(xrFrame: XRFrame, referenceSpace: XRReferenceSpace): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * WebXR Camera which holds the views for the xrSession
-     * @see https://doc.babylonjs.com/how_to/webxr_camera
-     */
-    export class WebXRCamera extends FreeCamera {
-        private _xrSessionManager;
-        private static _ScaleReadOnly;
-        private _firstFrame;
-        private _referenceQuaternion;
-        private _referencedPosition;
-        private _trackingState;
-        /**
-         * Observable raised before camera teleportation
-         */
-        onBeforeCameraTeleport: Observable<Vector3>;
-        /**
-         *  Observable raised after camera teleportation
-         */
-        onAfterCameraTeleport: Observable<Vector3>;
-        /**
-         * Notifies when the camera's tracking state has changed.
-         * Notice - will also be triggered when tracking has started (at the beginning of the session)
-         */
-        onTrackingStateChanged: Observable<WebXRTrackingState>;
-        /**
-         * Should position compensation execute on first frame.
-         * This is used when copying the position from a native (non XR) camera
-         */
-        compensateOnFirstFrame: boolean;
-        /**
-         * The last XRViewerPose from the current XRFrame
-         * @hidden
-         */
-        _lastXRViewerPose?: XRViewerPose;
-        /**
-         * Creates a new webXRCamera, this should only be set at the camera after it has been updated by the xrSessionManager
-         * @param name the name of the camera
-         * @param scene the scene to add the camera to
-         * @param _xrSessionManager a constructed xr session manager
-         */
-        constructor(name: string, scene: Scene, _xrSessionManager: WebXRSessionManager);
-        /**
-         * Get the current XR tracking state of the camera
-         */
-        get trackingState(): WebXRTrackingState;
-        private _setTrackingState;
-        /**
-         * Return the user's height, unrelated to the current ground.
-         * This will be the y position of this camera, when ground level is 0.
-         */
-        get realWorldHeight(): number;
-        /** @hidden */
-        _updateForDualEyeDebugging(): void;
-        /**
-         * Sets this camera's transformation based on a non-vr camera
-         * @param otherCamera the non-vr camera to copy the transformation from
-         * @param resetToBaseReferenceSpace should XR reset to the base reference space
-         */
-        setTransformationFromNonVRCamera(otherCamera?: Camera, resetToBaseReferenceSpace?: boolean): void;
-        /**
-         * Gets the current instance class name ("WebXRCamera").
-         * @returns the class name
-         */
-        getClassName(): string;
-        dispose(): void;
-        private _rotate180;
-        private _updateFromXRSession;
-        private _updateNumberOfRigCameras;
-        private _updateReferenceSpace;
+        updateFromXRFrame(xrFrame: XRFrame, referenceSpace: XRReferenceSpace, xrCamera: WebXRCamera): void;
     }
 }
 declare module BABYLON {
@@ -52393,6 +52504,11 @@ declare module BABYLON {
          * This is the threshold from when moving starts to be accounted for for to prevent jittering.
          */
         gamepadMoveSensibility: number;
+        /**
+         * Defines the minimum value at which any analog stick input is ignored.
+         * Note: This value should only be a value between 0 and 1.
+         */
+        deadzoneDelta: number;
         private _yAxisScale;
         /**
          * Gets or sets a boolean indicating that Yaxis (for right stick) should be inverted
@@ -61486,10 +61602,41 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /**
+     * Options to load the associated Twgsl library
+     */
+    export interface TwgslOptions {
+        /**
+         * Defines an existing instance of Twgsl (useful in modules who do not access the global instance).
+         */
+        twgsl?: any;
+        /**
+         * Defines the URL of the twgsl JS File.
+         */
+        jsPath?: string;
+        /**
+         * Defines the URL of the twgsl WASM File.
+         */
+        wasmPath?: string;
+    }
+    /** @hidden */
+    export class WebGPUTintWASM {
+        private static readonly _twgslDefaultOptions;
+        private static _TwgslInitedResolve;
+        private static _TwgslInited;
+        private _twgsl;
+        /** @hidden */
+        static _TWGSLModuleInitialized(): void;
+        initTwgsl(twgslOptions?: TwgslOptions): Promise<void>;
+        convertSpirV2WGSL(code: Uint32Array): string;
+    }
+}
+declare module BABYLON {
     /** @hidden */
     export class WebGPUTextureHelper {
         private _device;
         private _glslang;
+        private _tintWASM;
         private _bufferManager;
         private _mipmapSampler;
         private _pipelines;
@@ -61497,7 +61644,7 @@ declare module BABYLON {
         private _deferredReleaseTextures;
         private _commandEncoderForCreation;
         static ComputeNumMipmapLevels(width: number, height: number): number;
-        constructor(device: GPUDevice, glslang: any, bufferManager: WebGPUBufferManager);
+        constructor(device: GPUDevice, glslang: any, tintWASM: Nullable<WebGPUTintWASM>, bufferManager: WebGPUBufferManager);
         private _getPipeline;
         private static _GetTextureTypeFromFormat;
         private static _GetBlockInformationFromFormat;
@@ -62056,9 +62203,13 @@ declare module BABYLON {
          */
         glslangOptions?: GlslangOptions;
         /**
-         * Defines if the engine should no exceed a specified device ratio
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio
+         * Options to load the associated Twgsl library
          */
+        twgslOptions?: TwgslOptions;
+        /**
+        * Defines if the engine should no exceed a specified device ratio
+        * @see https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio
+        */
         limitDeviceRatio?: number;
         /**
          * Defines whether to adapt to the device's viewport characteristics (default: false)
@@ -62086,6 +62237,8 @@ declare module BABYLON {
      */
     export class WebGPUEngine extends Engine {
         private static readonly _glslangDefaultOptions;
+        /** true to enable using TintWASM to convert Spir-V to WGSL */
+        static UseTWGSL: boolean;
         private readonly _uploadEncoderDescriptor;
         private readonly _renderEncoderDescriptor;
         private readonly _renderTargetEncoderDescriptor;
@@ -62100,6 +62253,7 @@ declare module BABYLON {
         /** @hidden */
         _options: WebGPUEngineOptions;
         private _glslang;
+        private _tintWASM;
         private _adapter;
         private _adapterSupportedExtensions;
         /** @hidden */
@@ -62277,9 +62431,10 @@ declare module BABYLON {
         /**
          * Initializes the WebGPU context and dependencies.
          * @param glslangOptions Defines the GLSLang compiler options if necessary
+         * @param twgslOptions Defines the Twgsl compiler options if necessary
          * @returns a promise notifying the readiness of the engine.
          */
-        initAsync(glslangOptions?: GlslangOptions): Promise<void>;
+        initAsync(glslangOptions?: GlslangOptions, twgslOptions?: TwgslOptions): Promise<void>;
         private _initGlslang;
         private _initializeLimits;
         private _initializeContextAndSwapChain;
@@ -75080,19 +75235,19 @@ declare module BABYLON {
         /**
          * Gets the indirect diffuse output component
          */
-        get diffuseIndirect(): NodeMaterialConnectionPoint;
+        get diffuseInd(): NodeMaterialConnectionPoint;
         /**
          * Gets the indirect specular output component
          */
-        get specularIndirect(): NodeMaterialConnectionPoint;
+        get specularInd(): NodeMaterialConnectionPoint;
         /**
          * Gets the indirect clear coat output component
          */
-        get clearcoatIndirect(): NodeMaterialConnectionPoint;
+        get clearcoatInd(): NodeMaterialConnectionPoint;
         /**
          * Gets the indirect sheen output component
          */
-        get sheenIndirect(): NodeMaterialConnectionPoint;
+        get sheenInd(): NodeMaterialConnectionPoint;
         /**
          * Gets the refraction output component
          */
@@ -88341,7 +88496,8 @@ type XRSessionMode = "inline" | "immersive-vr" | "immersive-ar";
 /**
  * Reference space types
  */
-type XRReferenceSpaceType = "viewer" | "local" | "local-floor" | "bounded-floor" | "unbounded";
+type XRReferenceSpaceType = "viewer" | "local" | "local-floor" | "unbounded";
+type XRBoundedReferenceSpaceType = "bounded-floor";
 
 type XREnvironmentBlendMode = "opaque" | "additive" | "alpha-blend";
 
@@ -88558,7 +88714,8 @@ interface XRSession {
      * XRBoundedReferenceSpace which was requested, or throws a NotSupportedError if
      * the requested space type isn't supported by the device.
      */
-    requestReferenceSpace(type: XRReferenceSpaceType): Promise<XRReferenceSpace | XRBoundedReferenceSpace>;
+    requestReferenceSpace(type: XRReferenceSpaceType): Promise<XRReferenceSpace>;
+    requestReferenceSpace(type: XRBoundedReferenceSpaceType): Promise<XRBoundedReferenceSpace>;
 
     updateRenderState(XRRenderStateInit: XRRenderState): Promise<void>;
 
