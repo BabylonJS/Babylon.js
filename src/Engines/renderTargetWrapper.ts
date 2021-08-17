@@ -145,7 +145,7 @@ export class RenderTargetWrapper {
      * @param bilinearFiltering true if bilinear filtering should be used when sampling the texture
      * @param generateStencil true if the stencil aspect should also be created
      * @param samples sample count to use when creating the texture
-     * @returns 
+     * @returns the depth/stencil created texture
      */
     public createDepthStencilTexture(comparisonFunction: number = 0, bilinearFiltering: boolean = true, generateStencil: boolean = false, samples: number = 1): InternalTexture {
         this._depthStencilTexture?.dispose();
