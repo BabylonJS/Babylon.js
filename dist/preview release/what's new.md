@@ -166,6 +166,7 @@
 - Introduced framework support for XR-based eye tracking. XR eye tracking is not yet supported in webXR, but is supported in BabylonNative using OpenXR. ([rickfromwork](https://github.com/rickfromwork))
 - Introduced spectator mode for desktop VR experiences and fixed an issue with XR camera in the activeCameras array ([#10560](https://github.com/BabylonJS/Babylon.js/issues/10560)) ([RaananW](https://github.com/RaananW))
 - Initial support for WebXR camera parenting ([#10593](https://github.com/BabylonJS/Babylon.js/issues/10593)) ([RaananW](https://github.com/RaananW))
+- Fix ReflectionProbe for WebXR ([#10390](https://github.com/BabylonJS/Babylon.js/issues/10390)) ([RaananW](https://github.com/RaananW))
 
 ### Gizmos
 
