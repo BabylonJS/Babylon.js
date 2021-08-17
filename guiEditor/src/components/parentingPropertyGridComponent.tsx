@@ -40,7 +40,7 @@ export class ParentingPropertyGridComponent extends React.Component<IParentingPr
     render() {
         return (
             <div className="pane">
-                <hr />
+                <hr className="ge" />
                 <TextLineComponent tooltip="" label="GRID PARENTING" value=" " color="grey"></TextLineComponent>
                 <div className="divider">
                     <FloatLineComponent label={"Row #"} target={this} propertyName={"_rowNumber"} isInteger={true} min={0}
