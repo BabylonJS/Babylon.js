@@ -19,6 +19,7 @@ import { TouchButton3D } from "./touchButton3D";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SceneLoader } from "babylonjs/Loading/sceneLoader";
 import { DomManagement } from "babylonjs/Misc/domManagement";
+import { Scalar } from "babylonjs/Maths/math.scalar";
 
 /**
  * Class used to create a holographic button in 3D
@@ -226,19 +227,33 @@ export class TouchHolographicButton extends TouchButton3D {
         };
 
         this.pointerDownAnimation = () => {
-            if (this._frontPlate) {
-                this._frontPlate.scaling.z *= 0.2;
+            if (this._frontPlate && !this._isNearPressed) {
+                this._frontPlate.scaling.z = this._frontPlateDepth * 0.2;
                 this._frontPlate.position.z = (this._frontPlateDepth - (0.2 * this._frontPlateDepth)) / 2;
                 this._textPlate.position.z = -(this._backPlateDepth + (0.2 * this._frontPlateDepth)) / 2;
             }
         };
         this.pointerUpAnimation = () => {
             if (this._frontPlate) {
-                this._frontPlate.scaling.z *= 5;
+                this._frontPlate.scaling.z = this._frontPlateDepth;
                 this._frontPlate.position.z = (this._frontPlateDepth - this._frontPlateDepth) / 2;
                 this._textPlate.position.z = -(this._backPlateDepth + this._frontPlateDepth) / 2;
             }
         };
+
+        this.onPointerMoveObservable.add((position) => {
+            if (this._frontPlate && this._isNearPressed) {
+                const scale = Vector3.Zero();
+                if (this._backPlate.getWorldMatrix().decompose(scale, undefined, undefined)) {
+                    let interactionHeight = this._getInteractionHeight(position, this._backPlate.position) / scale.z;
+                    interactionHeight = Scalar.Clamp(interactionHeight - (this._backPlateDepth / 2), 0.2 * this._frontPlateDepth, this._frontPlateDepth);
+
+                    this._frontPlate.scaling.z = interactionHeight;
+                    this._frontPlate.position.z = (this._frontPlateDepth - interactionHeight) / 2;
+                    this._textPlate.position.z = -(this._backPlateDepth + interactionHeight) / 2;
+                }
+            }
+        });
 
         this._pointerHoverObserver = this.onPointerMoveObservable.add((hoverPosition: Vector3) => {
             this._frontMaterial.globalLeftIndexTipPosition = hoverPosition;
