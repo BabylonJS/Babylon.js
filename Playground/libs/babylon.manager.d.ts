@@ -16,6 +16,10 @@ declare module BABYLON {
         static PauseRenderLoop: boolean;
         /** Set the preload auto update progress flag */
         static AutoUpdateProgress: boolean;
+        /** Set the capsule collider shape type */
+        static PhysicsCapsuleShape: number;
+        /** Set the support srgb buffers flag */
+        static SupportSRGBBuffers: boolean;
         /** Is content running in a frame window */
         static IsFrameWindow(): boolean;
         /** Gets the running status of the default audio context */
