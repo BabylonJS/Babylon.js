@@ -1,4 +1,4 @@
-import { ICanvasGraphServiceSettings, IPerfMinMax, IGraphDrawableArea, IPerfMousePanningPosition, IPerfIndexBounds, IPerfTooltip, IPerfTextMeasureCache, IPerfLayoutSize, IPerfTicker, TimestampUnit } from "./graphSupportingTypes";
+import { ICanvasGraphServiceSettings, IPerfMinMax, IGraphDrawableArea, IPerfMousePanningPosition, IPerfIndexBounds, IPerfTooltip, IPerfTextMeasureCache, IPerfLayoutSize, IPerfTicker, TimestampUnit, ITooltipPreprocessedInformation, IPerfTooltipHoverPosition } from "./graphSupportingTypes";
 import { IPerfDatasets, IPerfMetadata } from "babylonjs/Misc/interfaces/iPerfViewer";
 import { Scalar } from "babylonjs/Maths/math.scalar";
 import { PerformanceViewerCollector } from "babylonjs/Misc/PerformanceViewer/performanceViewerCollector";
@@ -17,6 +17,9 @@ const topOfGraphY = 0;
 
 const defaultAlpha = 1;
 const tooltipBackgroundAlpha = 0.8;
+const backgroundLineAlpha = 0.2;
+
+const maxDistanceForHover = 7;
 
 const tooltipHorizontalPadding = 10;
 const spaceBetweenTextAndBox = 5;
@@ -114,13 +117,15 @@ export class CanvasGraphService {
     private _position: number | null;
     private _datasetBounds: IPerfIndexBounds;
     private _globalTimeMinMax: IPerfMinMax;
-    private _hoverPosition: number | null;
+    private _hoverPosition: IPerfTooltipHoverPosition | null;
     private _drawableArea: IGraphDrawableArea;
     private _axisHeight: number;
     private _tooltipItems: IPerfTooltip[];
     private _tooltipTextCache: IPerfTextMeasureCache;
     private _tickerTextCache: IPerfTextMeasureCache;
     private _tickerItems: IPerfTicker[];
+    private _preprocessedTooltipInfo: ITooltipPreprocessedInformation;
+    private _numberOfTickers: number;
 
     private readonly _addonFontLineHeight: number;
     private readonly _defaultLineHeight: number;
@@ -149,6 +154,8 @@ export class CanvasGraphService {
         this._tickerTextCache = {text: "", width: 0};
         this._tooltipItems = [];
         this._tickerItems = [];
+        this._preprocessedTooltipInfo = {focusedId: "", longestText: "", numberOfTooltipItems: 0, xForActualTimestamp: 0}
+        this._numberOfTickers = 0;
 
         for (let i = 0; i < maximumDatasetsAllowed; i++) {
             this._tooltipItems.push({text: "", color: ""});
@@ -284,18 +291,22 @@ export class CanvasGraphService {
         this._drawableArea.bottom = this._height;
         this._drawableArea.right = this._width;
 
-        const numberOfTickers = this._drawTickers(this._drawableArea, this._datasetBounds);
+        this._drawTickers(this._drawableArea, this._datasetBounds);
         this._drawTimeAxis(this._globalTimeMinMax, this._drawableArea);
         this._drawPlayheadRegion(this._drawableArea, updatedScaleFactor);
         this._drawableArea.top += dataPadding;
         this._drawableArea.bottom -= dataPadding;
+
+        // pre-process tooltip info so we can use it in determining opacity of lines.
+        this._preprocessTooltip(this._hoverPosition, this._drawableArea);
+
         const {left, right, bottom, top} = this._drawableArea;
         // process, and then draw our points
         this.datasets.ids.forEach((id, idOffset) => {
             let valueMinMax: IPerfMinMax | undefined;
 
             // we have already calculated  the min and max while getting the tickers, so use those.
-            for (let i = 0; i < numberOfTickers; i++) {
+            for (let i = 0; i < this._numberOfTickers; i++) {
                 if (this._tickerItems[i].id === id) {
                     valueMinMax = this._tickerItems[i];
                 }
@@ -308,6 +319,13 @@ export class CanvasGraphService {
 
             ctx.beginPath();
             ctx.strokeStyle = this.metadata.get(id)?.color ?? defaultColor;
+            // if we are focused on a line and not in live mode handle the opacities appropriately.
+            if (this._preprocessedTooltipInfo.focusedId === id) {
+                ctx.globalAlpha = defaultAlpha;
+            } else if (this._preprocessedTooltipInfo.focusedId !== "") {
+                ctx.globalAlpha = backgroundLineAlpha;
+            }
+
             let prevPoint: [number, number] | undefined;
             for (let pointIndex = this._datasetBounds.start; pointIndex < this._datasetBounds.end; pointIndex++) {
                 const numPoints = this.datasets.data.at(this.datasets.startingIndices.at(pointIndex) + PerformanceViewerCollector.NumberOfPointsOffset);
@@ -335,20 +353,22 @@ export class CanvasGraphService {
             ctx.stroke();
         });
 
+        ctx.globalAlpha = defaultAlpha;
+
         // then draw the tooltip.
         this._drawTooltip(this._hoverPosition, this._drawableArea);
     }
 
-    private _drawTickers(drawableArea: IGraphDrawableArea, bounds: IPerfIndexBounds): number {
+    private _drawTickers(drawableArea: IGraphDrawableArea, bounds: IPerfIndexBounds) {
         const {_ctx: ctx} = this;
 
         if (!ctx) {
-            return 0;
+            return;
         }
 
         // create the ticker objects for each of the non hidden items.
         let longestText: string = "";
-        let numberOfTickers: number = 0;
+        this._numberOfTickers = 0;
         this.datasets.ids.forEach((id, idOffset) => {
             if (!!this.metadata.get(id)?.hidden) {
                 return;
@@ -360,11 +380,11 @@ export class CanvasGraphService {
             if (text.length > longestText.length) {
                 longestText = text;
             }
-            this._tickerItems[numberOfTickers].id = id;
-            this._tickerItems[numberOfTickers].max = valueMinMax.max;
-            this._tickerItems[numberOfTickers].min = valueMinMax.min;
-            this._tickerItems[numberOfTickers].text = text;
-            numberOfTickers++;
+            this._tickerItems[this._numberOfTickers].id = id;
+            this._tickerItems[this._numberOfTickers].max = valueMinMax.max;
+            this._tickerItems[this._numberOfTickers].min = valueMinMax.min;
+            this._tickerItems[this._numberOfTickers].text = text;
+            this._numberOfTickers++;
         });
 
         ctx.save();        
@@ -388,14 +408,12 @@ export class CanvasGraphService {
 
         const x = drawableArea.right + tickerHorizontalPadding;
         let y = drawableArea.top + textHeight;
-        for (let i = 0; i < numberOfTickers; i++) {
+        for (let i = 0; i < this._numberOfTickers; i++) {
             const tickerItem = this._tickerItems[i];
             ctx.fillText(tickerItem.text, x, y);
             y += textHeight;
         }
         ctx.restore();
-
-        return numberOfTickers;
     }
 
     /**
@@ -696,18 +714,19 @@ export class CanvasGraphService {
             return;
         }
 
-        this._hoverPosition = event.clientX;
+        this._hoverPosition = { xPos: event.clientX, yPos: event.clientY };
 
-        // then draw the tooltip.
+        // process and draw the tooltip.
         this._debouncedTooltip(this._hoverPosition, this._drawableArea);
     }
 
     /**
-     * Debounced version of _drawTooltip.
+     * Debounced processing and drawing of tooltip.
      */
     private _debouncedTooltip = debounce(
-        (pixel: number | null, drawableArea: IGraphDrawableArea) => {
-            this._drawTooltip(pixel, drawableArea)
+        (pos: IPerfTooltipHoverPosition | null, drawableArea: IGraphDrawableArea) => {
+            this._preprocessTooltip(pos, drawableArea);
+            this._drawTooltip(pos, drawableArea)
         },
         tooltipDebounceTime
     )
@@ -719,34 +738,33 @@ export class CanvasGraphService {
         this._hoverPosition = null;
     }
 
-    /**
-     * Draws the tooltip given the area it is allowed to draw in and the current pixel position.
-     * 
-     * @param pixel the position of the mouse cursor in pixels. 
-     * @param drawableArea  the available area we can draw in.
-     */
-    private _drawTooltip(pixel: number | null, drawableArea: IGraphDrawableArea) {
+    private _preprocessTooltip(pos: IPerfTooltipHoverPosition | null, drawableArea: IGraphDrawableArea) {
         const { _ctx: ctx } = this;
 
-        if (pixel === null || !ctx || !ctx.canvas || this._getNumberOfSlices() === 0) {
+        if (pos === null || !ctx || !ctx.canvas || this._getNumberOfSlices() === 0) {
             return;
         }
 
-        // first convert the mouse position in pixels to a timestamp.
-        const { left: start } = ctx.canvas.getBoundingClientRect();
-        let adjustedPixel = pixel - start;
-        if (adjustedPixel > drawableArea.right) {
-            adjustedPixel = drawableArea.right;
+        const {left, top} = ctx.canvas.getBoundingClientRect();
+        const adjustedYPos = pos.yPos - top;
+        let adjustedXPos = pos.xPos - left;
+        if (adjustedXPos > drawableArea.right) {
+            adjustedXPos = drawableArea.right;
         }
-        const inferredTimestamp = this._getNumberFromPixel(adjustedPixel, this._globalTimeMinMax, drawableArea.left, drawableArea.right);
+
+        // convert the mouse x position in pixels to a timestamp.
+        const inferredTimestamp = this._getNumberFromPixel(adjustedXPos, this._globalTimeMinMax, drawableArea.left, drawableArea.right);
 
         let longestText: string = "";
         let numberOfTooltipItems = 0;
 
         // get the closest timestamps to the target timestamp, and store the appropriate meta object.
-        const closestIndex = this._getClosestPointToTimestamp(inferredTimestamp);
-
+        const closestIndex = this._getClosestPointToTimestamp(inferredTimestamp);        
         let actualTimestamp: number = 0;
+        let closestYId: string = "";
+        let closestYPos: number = 0;
+        let closestYText: string = "";
+
         this.datasets.ids.forEach((id, idOffset) => {
             if (!!this.metadata.get(id)?.hidden) {
                 return;
@@ -759,9 +777,32 @@ export class CanvasGraphService {
             }
 
             const valueIndex = this.datasets.startingIndices.at(closestIndex) + PerformanceViewerCollector.SliceDataOffset + idOffset;
+            const value = this.datasets.data.at(valueIndex);
+
+            let valueMinMax: IPerfMinMax | undefined;
+
+            // we would have already calculated  the min and max while getting the tickers, so use those, and get first one.
+            for (let i = 0; i < this._numberOfTickers; i++) {
+                if (this._tickerItems[i].id === id) {
+                    valueMinMax = this._tickerItems[i];
+                }
+            }
+
+            if (!valueMinMax) {
+                return;
+            }
+
+            const valueYPos = this._getPixelForNumber(value, valueMinMax, drawableArea.top, drawableArea.bottom - drawableArea.top, true); 
+
             actualTimestamp = this.datasets.data.at(this.datasets.startingIndices.at(closestIndex));
-            const text = `${id}: ${this.datasets.data.at(valueIndex).toFixed(2)}`;
+            const text = `${id}: ${value.toFixed(2)}`;
             
+            if (Math.abs(valueYPos - adjustedYPos) < Math.abs(closestYPos - adjustedYPos)) {
+                closestYId = id;
+                closestYPos = valueYPos;
+                closestYText = text;
+            }
+
             if (text.length > longestText.length) {
                 longestText = text;
             }
@@ -771,7 +812,40 @@ export class CanvasGraphService {
             numberOfTooltipItems++;
         });
 
-        let xForActualTimestamp = this._getPixelForNumber(actualTimestamp, this._globalTimeMinMax, drawableArea.left, drawableArea.right - drawableArea.left, false);
+        const xForActualTimestamp = this._getPixelForNumber(actualTimestamp, this._globalTimeMinMax, drawableArea.left, drawableArea.right - drawableArea.left, false);
+        this._preprocessedTooltipInfo.xForActualTimestamp = xForActualTimestamp;
+
+        // check if hover is within a certain distance, if so it is our only item in our tooltip.
+        if (Math.abs(xForActualTimestamp - (pos.xPos - left)) <= maxDistanceForHover && Math.abs(closestYPos - adjustedYPos) <= maxDistanceForHover && this._position) {
+            this._preprocessedTooltipInfo.focusedId = closestYId;
+            this._preprocessedTooltipInfo.longestText = closestYText;
+            this._preprocessedTooltipInfo.numberOfTooltipItems = 1;
+            this._tooltipItems[0].text = closestYText;
+            this._tooltipItems[0].color = this.metadata.get(closestYId)?.color ?? defaultColor;
+        } else {
+            this._preprocessedTooltipInfo.focusedId = "";
+            this._preprocessedTooltipInfo.longestText = longestText;
+            this._preprocessedTooltipInfo.numberOfTooltipItems = numberOfTooltipItems;
+        }
+
+
+    }
+    /**
+     * Draws the tooltip given the area it is allowed to draw in and the current pixel position.
+     * 
+     * @param pos the position of the mouse cursor in pixels (x, y). 
+     * @param drawableArea  the available area we can draw in.
+     */
+    private _drawTooltip(pos: IPerfTooltipHoverPosition | null, drawableArea: IGraphDrawableArea) {
+        const { _ctx: ctx } = this;
+
+        if (pos === null || !ctx || !ctx.canvas || this._getNumberOfSlices() === 0) {
+            return;
+        }
+
+        const { left, top } = ctx.canvas.getBoundingClientRect();
+        const { numberOfTooltipItems, xForActualTimestamp, longestText } = this._preprocessedTooltipInfo;
+
         ctx.save();
 
         // draw pointer triangle
@@ -784,11 +858,17 @@ export class CanvasGraphService {
         ctx.closePath();
         ctx.fill();
 
-        // draw vertical line
         ctx.strokeStyle = positionIndicatorColor;
         ctx.beginPath();
-        ctx.moveTo(xForActualTimestamp, drawableArea.bottom);
-        ctx.lineTo(xForActualTimestamp, topOfGraphY);
+        // draw vertical or horizontal line depending on if focused on a point on the line.
+        if (this._preprocessedTooltipInfo.focusedId === "") {
+            ctx.moveTo(xForActualTimestamp, drawableArea.bottom);
+            ctx.lineTo(xForActualTimestamp, topOfGraphY);
+        } else {
+            const lineY = pos.yPos - top; 
+            ctx.moveTo(drawableArea.left, lineY);
+            ctx.lineTo(drawableArea.right, lineY);
+        }
         ctx.stroke();
 
         // draw the actual tooltip
@@ -810,7 +890,7 @@ export class CanvasGraphService {
         }
 
         const tooltipHeight = textHeight * (numberOfTooltipItems + 1);
-        let x = pixel - start;
+        let x = pos.xPos - left;
         let y = drawableArea.bottom - tooltipPaddingFromBottom - tooltipHeight;
 
         // We want the tool tip to always be inside the canvas so we adjust which way it is drawn.
