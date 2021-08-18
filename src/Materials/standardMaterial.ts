@@ -887,10 +887,11 @@ export class StandardMaterial extends PushMaterial {
         // PrePass
         // TODO : same as in prePassRenderer.ts, we need a better way to order the pipeline
         // Remove this alpha hack
-        MaterialHelper.PrepareDefinesForPrePass(scene, defines, this.canRenderToMRT && !this.needAlphaBlendingForMesh(mesh));
-        
+        const oit = this.needAlphaBlendingForMesh(mesh) && this.getScene().useOrderIndependentTransparency;
+        MaterialHelper.PrepareDefinesForPrePass(scene, defines, this.canRenderToMRT && !oit);
+
         // Order independant transparency
-        MaterialHelper.PrepareDefinesForOIT(scene, defines, this.needAlphaBlendingForMesh(mesh));
+        MaterialHelper.PrepareDefinesForOIT(scene, defines, oit);
 
         // Textures
         if (defines._areTexturesDirty) {
@@ -1619,7 +1620,6 @@ export class StandardMaterial extends PushMaterial {
             if (this.getScene().useOrderIndependentTransparency && this.needAlphaBlendingForMesh(mesh)) {
                 this.getScene().depthPeelingRenderer!.bind(effect);
             }
-
 
             this.detailMap.bindForSubMesh(ubo, scene, this.isFrozen);
 

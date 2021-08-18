@@ -119,7 +119,9 @@ ThinEngine.prototype.setAlphaMode = function (mode: number, noDepthWriteChange: 
             this._alphaState.alphaBlend = true;
             break;
         case Constants.ALPHA_LAYER_ACCUMULATE:
-            this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA)
+            this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA);
+            this._alphaState.alphaBlend = true;
+            break;
     }
     if (!noDepthWriteChange) {
         this.depthCullingState.depthMask = (mode === Constants.ALPHA_DISABLE);
