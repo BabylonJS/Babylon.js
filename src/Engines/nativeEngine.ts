@@ -125,6 +125,7 @@ interface INativeEngine {
 
     readonly COMMAND_SETMATRICES: number;
     readonly COMMAND_SETTEXTURE: number;
+    readonly COMMAND_BINDVERTEXARRAY: number;
 
     dispose(): void;
 
@@ -1162,7 +1163,8 @@ export class NativeEngine extends Engine {
         }
         this._boundBuffersVertexArray = this._native.createVertexArray();
         this._recordVertexArrayObject(this._boundBuffersVertexArray, vertexBuffers, indexBuffer, effect);
-        this._native.bindVertexArray(this._boundBuffersVertexArray);
+        //this._native.bindVertexArray(this._boundBuffersVertexArray);
+        this.bindVertexArrayObject(this._boundBuffersVertexArray);
     }
 
     public recordVertexArrayObject(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): WebGLVertexArrayObject {
@@ -1172,7 +1174,10 @@ export class NativeEngine extends Engine {
     }
 
     public bindVertexArrayObject(vertexArray: WebGLVertexArrayObject): void {
-        this._native.bindVertexArray(vertexArray);
+        //this._native.bindVertexArray(vertexArray);
+        this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_BINDVERTEXARRAY);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(vertexArray);
+        this._commandBufferEncoder.finishEncodingCommand();
     }
 
     public releaseVertexArrayObject(vertexArray: WebGLVertexArrayObject) {
@@ -1306,7 +1311,7 @@ export class NativeEngine extends Engine {
     }
 
     public _releaseEffect(effect: Effect): void {
-        // TODO
+        // TODO: is this where we can call a deleteProgram function on NativeEngine?
     }
 
     public _deletePipelineContext(pipelineContext: IPipelineContext): void {
