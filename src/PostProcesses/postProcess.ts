@@ -502,7 +502,8 @@ export class PostProcess {
         for (let i = 0; i < this._textureCache.length; i++) {
             if (this._textureCache[i].texture.width === textureSize.width &&
                 this._textureCache[i].texture.height === textureSize.height &&
-                this._textureCache[i].postProcessChannel === channel) {
+                this._textureCache[i].postProcessChannel === channel &&
+                this._textureCache[i].texture._generateDepthBuffer === textureOptions.generateDepthBuffer) {
                 return this._textureCache[i].texture;
             }
         }
