@@ -708,7 +708,7 @@ export class Camera extends Node {
     public detachPostProcess(postProcess: PostProcess): void {
         var idx = this._postProcesses.indexOf(postProcess);
         if (idx !== -1) {
-            this._postProcesses.splice(idx, 1);
+            this._postProcesses[idx] = null;
         }
 
         // Update prePass
