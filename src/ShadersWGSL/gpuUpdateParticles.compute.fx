@@ -44,6 +44,7 @@ struct Particle {
     currentCount : f32;
     timeDelta : f32;
     stopFactor : f32;
+    randomTextureSize: i32;
     lifeTime : vec2<f32>;
     emitPower : vec2<f32>;
 
@@ -127,10 +128,8 @@ struct Particle {
 [[binding(0), group(0)]] var<uniform> params : SimParams;
 [[binding(1), group(0)]] var<storage, read> particlesIn : Particles;
 [[binding(2), group(0)]] var<storage, read_write> particlesOut : Particles;
-[[binding(3), group(0)]] var randomSampler : sampler;
-[[binding(4), group(0)]] var randomTexture : texture_2d<f32>;
-[[binding(5), group(0)]] var randomSampler2 : sampler;
-[[binding(6), group(0)]] var randomTexture2 : texture_2d<f32>;
+[[binding(3), group(0)]] var randomTexture : texture_2d<f32>;
+[[binding(4), group(0)]] var randomTexture2 : texture_2d<f32>;
 
 #ifdef SIZEGRADIENTS
     [[binding(0), group(1)]] var sizeGradientSampler : sampler;
@@ -163,11 +162,11 @@ struct Particle {
 #endif
 
 fn getRandomVec3(offset : f32, vertexID : f32) -> vec3<f32> {
-    return textureSampleLevel(randomTexture2, randomSampler2, vec2<f32>(vertexID * offset / params.currentCount, 0.), 0.).rgb;
+    return textureLoad(randomTexture2, vec2<i32>(i32(vertexID * offset / params.currentCount * f32(params.randomTextureSize)) % params.randomTextureSize, 0), 0).rgb;
 }
 
 fn getRandomVec4(offset : f32, vertexID : f32) -> vec4<f32> {
-    return textureSampleLevel(randomTexture, randomSampler, vec2<f32>(vertexID * offset / params.currentCount, 0.), 0.);
+    return textureLoad(randomTexture, vec2<i32>(i32(vertexID * offset / params.currentCount * f32(params.randomTextureSize)) % params.randomTextureSize, 0), 0);
 }
 
 [[stage(compute), workgroup_size(64)]]
