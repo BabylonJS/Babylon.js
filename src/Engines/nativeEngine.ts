@@ -126,6 +126,7 @@ interface INativeEngine {
     readonly COMMAND_SETMATRICES: number;
     readonly COMMAND_SETTEXTURE: number;
     readonly COMMAND_BINDVERTEXARRAY: number;
+    readonly COMMAND_SETSTATE: number;
 
     dispose(): void;
 
@@ -1374,7 +1375,13 @@ export class NativeEngine extends Engine {
     }
 
     public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false, cullBackFaces?: boolean, stencil?: IStencilState): void {
-        this._native.setState(culling, zOffset, this.cullBackFaces ?? cullBackFaces ?? true, reverseSide);
+        //this._native.setState(culling, zOffset, this.cullBackFaces ?? cullBackFaces ?? true, reverseSide);
+        this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_SETSTATE);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(culling);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(zOffset);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(this.cullBackFaces ?? cullBackFaces ?? true);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(reverseSide);
+        this._commandBufferEncoder.finishEncodingCommand();
     }
 
     /**
