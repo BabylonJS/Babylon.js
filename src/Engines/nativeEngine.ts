@@ -127,6 +127,10 @@ interface INativeEngine {
     readonly COMMAND_SETTEXTURE: number;
     readonly COMMAND_BINDVERTEXARRAY: number;
     readonly COMMAND_SETSTATE: number;
+    readonly COMMAND_SETFLOAT: number;
+    readonly COMMAND_SETFLOAT2: number;
+    readonly COMMAND_SETFLOAT3: number;
+    readonly COMMAND_SETFLOAT4: number;
 
     dispose(): void;
 
@@ -1861,7 +1865,11 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setFloat(uniform, value);
+        //this._native.setFloat(uniform, value);
+        this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_SETFLOAT);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(uniform);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(value);
+        this._commandBufferEncoder.finishEncodingCommand();
         return true;
     }
 
@@ -1870,7 +1878,12 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setFloat2(uniform, x, y);
+        //this._native.setFloat2(uniform, x, y);
+        this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_SETFLOAT2);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(uniform);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(x);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(y);
+        this._commandBufferEncoder.finishEncodingCommand();
         return true;
     }
 
@@ -1879,7 +1892,13 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setFloat3(uniform, x, y, z);
+        //this._native.setFloat3(uniform, x, y, z);
+        this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_SETFLOAT3);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(uniform);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(x);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(y);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(z);
+        this._commandBufferEncoder.finishEncodingCommand();
         return true;
     }
 
@@ -1888,7 +1907,14 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setFloat4(uniform, x, y, z, w);
+        //this._native.setFloat4(uniform, x, y, z, w);
+        this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_SETFLOAT4);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(uniform);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(x);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(y);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(z);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(w);
+        this._commandBufferEncoder.finishEncodingCommand();
         return true;
     }
 
