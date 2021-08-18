@@ -89,8 +89,7 @@ export class GLTFValidation {
      * @param getExternalResource The callback to get external resources for the glTF validator
      * @returns A promise that resolves with the glTF validation results once complete
      */
-    public static ValidateAsync(data: string | ArrayBuffer, rootUrl: string, fileName: string, getExternalResource: (uri: string) => Promise<ArrayBuffer>): Promise<GLTF2.IGLTFValidationResults>
-    {
+    public static ValidateAsync(data: string | ArrayBuffer, rootUrl: string, fileName: string, getExternalResource: (uri: string) => Promise<ArrayBuffer>): Promise<GLTF2.IGLTFValidationResults> {
         if (typeof Worker === "function") {
             return new Promise((resolve, reject) => {
                 const workerContent = `${validateAsync}(${workerFunc})()`;

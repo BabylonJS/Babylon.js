@@ -11,8 +11,8 @@ export interface KeyEntry {
 
 export class Curve {
     public static readonly SampleRate = 50;
-    public keys = new Array<KeyEntry>(); 
-    public animation: Animation;   
+    public keys = new Array<KeyEntry>();
+    public animation: Animation;
     public color: string;
     public onDataUpdatedObservable = new Observable<void>();
     public property?: string;
@@ -31,7 +31,7 @@ export class Curve {
         this.setDefaultOutTangent = setDefaultOutTangent;
     }
 
-    public gePathData(convertX: (x: number) => number, convertY: (y: number) => number, ) {
+    public gePathData(convertX: (x: number) => number, convertY: (y: number) => number,) {
         const keys = this.keys;
         if (keys.length < 2) {
             return "";
@@ -59,15 +59,15 @@ export class Curve {
                 pathData += ` L${convertX(frame)} ${convertY(value)}`;
             }
             pathData += ` L${convertX(currentFrame)} ${convertY(currentValue)}`;
-       }
+        }
 
         return pathData;
     }
 
-    public updateLockedTangentMode(keyIndex: number, enabled: boolean) {        
+    public updateLockedTangentMode(keyIndex: number, enabled: boolean) {
         const keys = this.keys;
         keys[keyIndex].lockedTangent = enabled;
-        
+
         const animationKeys = this.animation.getKeys();
         animationKeys[keyIndex].lockedTangent = enabled;
     }
@@ -88,7 +88,7 @@ export class Curve {
     }
 
     public getOutControlPoint(keyIndex: number) {
-        const keys = this.keys;        
+        const keys = this.keys;
         if (keyIndex === keys.length - 1) {
             return 0;
         }
@@ -103,15 +103,15 @@ export class Curve {
     }
 
     public evaluateOutTangent(keyIndex: number) {
-        const keys = this.keys; 
-        const prevFrame = keys[keyIndex].frame;                
+        const keys = this.keys;
+        const prevFrame = keys[keyIndex].frame;
         const currentFrame = keys[keyIndex + 1].frame;
         return (keys[keyIndex + 1].value - keys[keyIndex].value) / (currentFrame - prevFrame);
     }
 
     public evaluateInTangent(keyIndex: number) {
-        const keys = this.keys; 
-        const prevFrame = keys[keyIndex - 1].frame;                
+        const keys = this.keys;
+        const prevFrame = keys[keyIndex - 1].frame;
         const currentFrame = keys[keyIndex].frame;
         return (keys[keyIndex].value - keys[keyIndex - 1].value) / (currentFrame - prevFrame);
     }
@@ -181,7 +181,7 @@ export class Curve {
             }
 
             this.animation.getKeys()[keyId].outTangent[this.property] = keys[keyId].outTangent;
-        } else {            
+        } else {
             this.animation.getKeys()[keyId].outTangent = keys[keyId].outTangent;
             if (this.animation.getKeys()[keyId + 1].inTangent === undefined) {
                 this.storeDefaultInTangent(keyId + 1);

@@ -70,11 +70,28 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                         }
                         {
                             !inputBlock.isBoolean &&
-                            <FloatLineComponent globalState={this.props.globalState} label="Min" target={inputBlock} propertyName="min" onChange={() => this.forceUpdate()}></FloatLineComponent>
+                            <FloatLineComponent globalState={this.props.globalState} label="Min" target={inputBlock} propertyName="min" onChange={() => {
+                                if (inputBlock.value < inputBlock.min) {
+                                    inputBlock.value = inputBlock.min;
+                                    if (inputBlock.isConstant) {
+                                        this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                                    }
+                                }
+                                this.forceUpdate();                                
+                            }}></FloatLineComponent>
                         }
                         {
                             !inputBlock.isBoolean &&
-                            <FloatLineComponent globalState={this.props.globalState} label="Max" target={inputBlock} propertyName="max" onChange={() => this.forceUpdate()}></FloatLineComponent>
+                            <FloatLineComponent globalState={this.props.globalState} label="Max" target={inputBlock} propertyName="max" onChange={() => {
+                                if (inputBlock.value > inputBlock.max) {
+                                    inputBlock.value = inputBlock.max;
+                                    if (inputBlock.isConstant) {
+                                        this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                                    }
+                                }
+                                this.forceUpdate();
+                            }
+                            }></FloatLineComponent>
                         }
                         {
                             !inputBlock.isBoolean && cantDisplaySlider &&
@@ -197,11 +214,14 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                 ];
                 break;
             case NodeMaterialBlockConnectionPointTypes.Vector4:
-                    attributeOptions = [
-                        { label: "matricesIndices", value: "matricesIndices" },
-                        { label: "matricesWeights", value: "matricesWeights" }
-                    ];
-                    break;
+                attributeOptions = [
+                    { label: "matricesIndices", value: "matricesIndices" },
+                    { label: "matricesWeights", value: "matricesWeights" }
+                ];
+                systemValuesOptions = [
+                    { label: "Camera parameters", value: NodeMaterialSystemValues.CameraParameters }
+                ];
+                break;
         }
 
         var modeOptions = [

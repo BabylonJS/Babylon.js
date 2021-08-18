@@ -102,7 +102,7 @@ class DOMMapper implements IMapper {
         let htmlMapper = new HTMLMapper();
         let config = htmlMapper.map(baseElement);
 
-        let traverseChildren = function(element: HTMLElement, partConfig) {
+        let traverseChildren = function (element: HTMLElement, partConfig) {
             let children = element.children;
             if (children.length) {
                 for (let i = 0; i < children.length; ++i) {

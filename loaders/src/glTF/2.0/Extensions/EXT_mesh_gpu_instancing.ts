@@ -94,7 +94,7 @@ export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
                     }
 
                     for (const babylonMesh of node._primitiveBabylonMeshes!) {
-                            (babylonMesh as Mesh).thinInstanceSetBuffer("matrix", matrices, 16, true);
+                        (babylonMesh as Mesh).thinInstanceSetBuffer("matrix", matrices, 16, true);
                     }
 
                     return babylonTransformNode;

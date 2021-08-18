@@ -126,11 +126,11 @@ export class Measure {
     public transformToRef(transform: Matrix2D, result: Measure) {
         this.addAndTransformToRef(transform, 0, 0, 0, 0, result);
     }
-        /**
-     * Check equality between this measure and another one
-     * @param other defines the other measures
-     * @returns true if both measures are equals
-     */
+    /**
+ * Check equality between this measure and another one
+ * @param other defines the other measures
+ * @returns true if both measures are equals
+ */
     public isEqualsTo(other: Measure): boolean {
 
         if (this.left !== other.left) {

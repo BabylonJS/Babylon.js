@@ -392,7 +392,7 @@ export class Engine extends ThinEngine {
     /**
      * Stores instance of DeviceInputSystem
      */
-     public deviceInputSystem: IDeviceInputSystem;
+    public deviceInputSystem: IDeviceInputSystem;
 
     // Observables
 
@@ -1504,7 +1504,7 @@ export class Engine extends ThinEngine {
         }
 
         this._rescalePostProcess.getEffect().executeWhenCompiled(() => {
-            this._rescalePostProcess.onApply = function(effect) {
+            this._rescalePostProcess.onApply = function (effect) {
                 effect._bindTexture("textureSampler", source);
             };
 
@@ -1723,12 +1723,12 @@ export class Engine extends ThinEngine {
             let check = () => {
                 const res = gl.clientWaitSync(sync, flags, 0);
                 if (res == gl.WAIT_FAILED) {
-                reject();
-                return;
+                    reject();
+                    return;
                 }
                 if (res == gl.TIMEOUT_EXPIRED) {
-                setTimeout(check, interval_ms);
-                return;
+                    setTimeout(check, interval_ms);
+                    return;
                 }
                 resolve();
             };

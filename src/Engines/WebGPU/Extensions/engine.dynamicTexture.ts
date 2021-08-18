@@ -3,7 +3,7 @@ import { Nullable } from "../../../types";
 import { WebGPUEngine } from "../../webgpuEngine";
 import { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 
-WebGPUEngine.prototype.updateDynamicTexture = function(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement | OffscreenCanvas, invertY: boolean, premulAlpha: boolean = false, format?: number, forceBindTexture?: boolean): void {
+WebGPUEngine.prototype.updateDynamicTexture = function (texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement | OffscreenCanvas, invertY: boolean, premulAlpha: boolean = false, format?: number, forceBindTexture?: boolean): void {
     if (!texture) {
         return;
     }

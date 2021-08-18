@@ -1,9 +1,10 @@
-import { Nullable, FloatArray, IndicesArray } from "../types";
-import { Matrix, Vector3, Vector2, Vector4 } from "../Maths/math.vector";
+import { Nullable, FloatArray, IndicesArray, DeepImmutable } from "../types";
+import { Matrix, Vector3, Vector2, Vector4, TmpVectors } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
 import { _DevTools } from '../Misc/devTools';
 import { Color4, Color3 } from '../Maths/math.color';
 import { Logger } from '../Misc/logger';
+import { nativeOverride } from '../Misc/decorators';
 
 declare type Geometry = import("../Meshes/geometry").Geometry;
 declare type Mesh = import("../Meshes/mesh").Mesh;
@@ -401,62 +402,76 @@ export class VertexData {
         return this;
     }
 
+    @nativeOverride.filter((...[coordinates]: Parameters<typeof VertexData._TransformVector3Coordinates>) => !Array.isArray(coordinates))
+    private static _TransformVector3Coordinates(coordinates: FloatArray, transformation: DeepImmutable<Matrix>) {
+        const coordinate = TmpVectors.Vector3[0];
+        const transformedCoordinate = TmpVectors.Vector3[1];
+        for (let index = 0; index < coordinates.length; index += 3) {
+            Vector3.FromArrayToRef(coordinates, index, coordinate);
+            Vector3.TransformCoordinatesToRef(coordinate, transformation, transformedCoordinate);
+            coordinates[index] = transformedCoordinate.x;
+            coordinates[index + 1] = transformedCoordinate.y;
+            coordinates[index + 2] = transformedCoordinate.z;
+        }
+    }
+
+    @nativeOverride.filter((...[normals]: Parameters<typeof VertexData._TransformVector3Normals>) => !Array.isArray(normals))
+    private static _TransformVector3Normals(normals: FloatArray, transformation: DeepImmutable<Matrix>) {
+        const normal = TmpVectors.Vector3[0];
+        const transformedNormal = TmpVectors.Vector3[1];
+        for (let index = 0; index < normals.length; index += 3) {
+            Vector3.FromArrayToRef(normals, index, normal);
+            Vector3.TransformNormalToRef(normal, transformation, transformedNormal);
+            normals[index] = transformedNormal.x;
+            normals[index + 1] = transformedNormal.y;
+            normals[index + 2] = transformedNormal.z;
+        }
+    }
+
+    @nativeOverride.filter((...[normals]: Parameters<typeof VertexData._TransformVector4Normals>) => !Array.isArray(normals))
+    private static _TransformVector4Normals(normals: FloatArray, transformation: DeepImmutable<Matrix>) {
+        const normal = TmpVectors.Vector4[0];
+        const transformedNormal = TmpVectors.Vector4[1];
+        for (let index = 0; index < normals.length; index += 4) {
+            Vector4.FromArrayToRef(normals, index, normal);
+            Vector4.TransformNormalToRef(normal, transformation, transformedNormal);
+            normals[index] = transformedNormal.x;
+            normals[index + 1] = transformedNormal.y;
+            normals[index + 2] = transformedNormal.z;
+            normals[index + 3] = transformedNormal.w;
+        }
+    }
+
+    @nativeOverride.filter((...[indices]: Parameters<typeof VertexData._FlipFaces>) => !Array.isArray(indices))
+    private static _FlipFaces(indices: IndicesArray) {
+        for (let index = 0; index < indices.length; index += 3) {
+            const tmp = indices[index + 1];
+            indices[index + 1] = indices[index + 2];
+            indices[index + 2] = tmp;
+        }
+    }
+
     /**
      * Transforms each position and each normal of the vertexData according to the passed Matrix
      * @param matrix the transforming matrix
      * @returns the VertexData
      */
     public transform(matrix: Matrix): VertexData {
-        var flip = matrix.determinant() < 0;
-        var transformed = Vector3.Zero();
-        var index: number;
+        const flip = matrix.determinant() < 0;
         if (this.positions) {
-            var position = Vector3.Zero();
-
-            for (index = 0; index < this.positions.length; index += 3) {
-                Vector3.FromArrayToRef(this.positions, index, position);
-
-                Vector3.TransformCoordinatesToRef(position, matrix, transformed);
-                this.positions[index] = transformed.x;
-                this.positions[index + 1] = transformed.y;
-                this.positions[index + 2] = transformed.z;
-            }
+            VertexData._TransformVector3Coordinates(this.positions, matrix);
         }
 
         if (this.normals) {
-            var normal = Vector3.Zero();
-
-            for (index = 0; index < this.normals.length; index += 3) {
-                Vector3.FromArrayToRef(this.normals, index, normal);
-
-                Vector3.TransformNormalToRef(normal, matrix, transformed);
-                this.normals[index] = transformed.x;
-                this.normals[index + 1] = transformed.y;
-                this.normals[index + 2] = transformed.z;
-            }
+            VertexData._TransformVector3Normals(this.normals, matrix);
         }
 
         if (this.tangents) {
-            var tangent = Vector4.Zero();
-            var tangentTransformed = Vector4.Zero();
-
-            for (index = 0; index < this.tangents.length; index += 4) {
-                Vector4.FromArrayToRef(this.tangents, index, tangent);
-
-                Vector4.TransformNormalToRef(tangent, matrix, tangentTransformed);
-                this.tangents[index] = tangentTransformed.x;
-                this.tangents[index + 1] = tangentTransformed.y;
-                this.tangents[index + 2] = tangentTransformed.z;
-                this.tangents[index + 3] = tangentTransformed.w;
-            }
+            VertexData._TransformVector4Normals(this.tangents, matrix);
         }
 
         if (flip && this.indices) {
-            for (index = 0; index < this.indices!.length; index += 3) {
-                let tmp = this.indices[index + 1];
-                this.indices[index + 1] = this.indices[index + 2];
-                this.indices[index + 2] = tmp;
-            }
+            VertexData._FlipFaces(this.indices);
         }
 
         return this;
@@ -1068,7 +1083,7 @@ export class VertexData {
      * @returns the VertexData of the Capsule
      */
     public static CreateCapsule(options: ICreateCapsuleOptions = {
-        orientation : Vector3.Up(),
+        orientation: Vector3.Up(),
         subdivisions: 2,
         tessellation: 16,
         height: 1,

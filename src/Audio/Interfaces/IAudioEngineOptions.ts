@@ -1,5 +1,6 @@
 /**
  * Interface used to define options for the Audio Engine
+ * @since 5.0.0
  */
 export interface IAudioEngineOptions {
     /**

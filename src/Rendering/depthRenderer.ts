@@ -158,7 +158,7 @@ export class DepthRenderer {
                 effect.setMatrix("viewProjection", scene.getTransformMatrix());
                 effect.setMatrix("world", effectiveMesh.getWorldMatrix());
 
-                let minZ : number, maxZ: number;
+                let minZ: number, maxZ: number;
 
                 if (cameraIsOrtho) {
                     minZ = !engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : 1;
@@ -229,6 +229,10 @@ export class DepthRenderer {
             if (this.forceDepthWriteTransparentMeshes) {
                 for (index = 0; index < transparentSubMeshes.length; index++) {
                     renderSubMesh(transparentSubMeshes.data[index]);
+                }
+            } else {
+                for (index = 0; index < transparentSubMeshes.length; index++) {
+                    transparentSubMeshes.data[index].getEffectiveMesh()._internalAbstractMeshDataInfo._isActiveIntermediate = false;
                 }
             }
         };

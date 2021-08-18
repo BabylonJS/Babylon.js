@@ -11,6 +11,7 @@ import { PointerInfoBase } from "babylonjs/Events/pointerEvents";
 
 /**
  * Class used to create toggle buttons
+ * @since 5.0.0
  */
 export class ToggleButton extends Rectangle {
     /**

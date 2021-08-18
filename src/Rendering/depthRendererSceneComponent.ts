@@ -29,7 +29,7 @@ declare module "../scene" {
     }
 }
 
-Scene.prototype.enableDepthRenderer = function(camera?: Nullable<Camera>, storeNonLinearDepth = false, force32bitsFloat: boolean = false): DepthRenderer {
+Scene.prototype.enableDepthRenderer = function (camera?: Nullable<Camera>, storeNonLinearDepth = false, force32bitsFloat: boolean = false): DepthRenderer {
     camera = camera || this.activeCamera;
     if (!camera) {
         throw "No camera available to enable depth renderer";
@@ -54,7 +54,7 @@ Scene.prototype.enableDepthRenderer = function(camera?: Nullable<Camera>, storeN
     return this._depthRenderer[camera.id];
 };
 
-Scene.prototype.disableDepthRenderer = function(camera?: Nullable<Camera>): void {
+Scene.prototype.disableDepthRenderer = function (camera?: Nullable<Camera>): void {
     camera = camera || this.activeCamera;
     if (!camera || !this._depthRenderer || !this._depthRenderer[camera.id]) {
         return;

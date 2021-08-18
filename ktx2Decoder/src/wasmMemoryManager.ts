@@ -14,16 +14,16 @@ export class WASMMemoryManager {
         if (this.LoadBinariesFromCurrentThread) {
             return new Promise((resolve, reject) => {
                 fetch(path)
-                .then((response) => {
-                    if (response.ok) {
-                        return response.arrayBuffer();
-                    }
-                    throw new Error(`Could not fetch the wasm component from "${path}": ${response.status} - ${response.statusText}`);
-                })
-                .then((wasmBinary) => resolve(wasmBinary))
-                .catch((reason) => {
-                    reject(reason);
-                });
+                    .then((response) => {
+                        if (response.ok) {
+                            return response.arrayBuffer();
+                        }
+                        throw new Error(`Could not fetch the wasm component from "${path}": ${response.status} - ${response.statusText}`);
+                    })
+                    .then((wasmBinary) => resolve(wasmBinary))
+                    .catch((reason) => {
+                        reject(reason);
+                    });
             });
         }
 

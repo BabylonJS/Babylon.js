@@ -1029,7 +1029,7 @@ export class ColorPicker extends Control {
                 lastVal = "";
                 editSwatches(false);
             });
-            picker.onValueChangedObservable.add(function(value) { // value is a color3
+            picker.onValueChangedObservable.add(function (value) { // value is a color3
                 if (activeField == picker.name) {
                     updateValues(value, picker.name);
                 }

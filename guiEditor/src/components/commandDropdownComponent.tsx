@@ -4,30 +4,30 @@ import { FileButtonLineComponent } from "../sharedUiComponents/lines/fileButtonL
 
 interface ICommandDropdownComponentProps {
     globalState: GlobalState;
-    icon?: string; 
+    icon?: string;
     tooltip: string;
     defaultValue?: string;
     items: {
         label: string,
         icon?: string,
         fileButton?: boolean
-        onClick?: () => void, 
-        onCheck?: (value: boolean) => void, 
-        storeKey?: string, 
+        onClick?: () => void,
+        onCheck?: (value: boolean) => void,
+        storeKey?: string,
         isActive?: boolean,
         defaultValue?: boolean | string;
         subItems?: string[];
     }[];
-    toRight?: boolean;    
+    toRight?: boolean;
 }
 
-export class CommandDropdownComponent extends React.Component<ICommandDropdownComponentProps, {isExpanded: boolean, activeState: string}> {    
-  
+export class CommandDropdownComponent extends React.Component<ICommandDropdownComponentProps, { isExpanded: boolean, activeState: string }> {
+
     public constructor(props: ICommandDropdownComponentProps) {
         super(props);
 
-        this.state = {isExpanded: false, activeState: ""};
-    }    
+        this.state = { isExpanded: false, activeState: "" };
+    }
 
     public render() {
         return (
@@ -35,14 +35,14 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                 {
                     this.state.isExpanded &&
                     <div className="command-dropdown-blocker" onClick={() => {
-                        this.setState({isExpanded: false});
+                        this.setState({ isExpanded: false });
                     }}>
                     </div>
                 }
                 <div className="command-dropdown-root">
-                    <div className={"command-dropdown" + (this.state.isExpanded ? " activated" : "")} title={this.props.tooltip} 
+                    <div className={"command-dropdown" + (this.state.isExpanded ? " activated" : "")} title={this.props.tooltip}
                         onClick={() => {
-                            this.setState({isExpanded: false});;
+                            this.setState({ isExpanded: false });;
                             let newState = !this.state.isExpanded;
                             let pgHost = document.getElementById("embed-host");
 
@@ -50,14 +50,14 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                 pgHost.style.zIndex = newState ? "0" : "10";
                             }
 
-                            this.setState({isExpanded: newState});
+                            this.setState({ isExpanded: newState });
                         }}>
                         {
                             this.props.icon &&
                             <div className="command-dropdown-icon">
-                                <img src={this.props.icon}/>
+                                <img src={this.props.icon} />
                             </div>
-                        }                        
+                        }
                         {
                             !this.props.icon &&
                             <div className="command-dropdown-active">
@@ -65,12 +65,11 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                         }
                     </div>
                     {
-                            this.state.isExpanded &&
-                            <div className={"command-dropdown-content sub1" + (this.props.toRight ? " toRight" : "")}>
-                                {
-                                    this.props.items.map(m => {
-                                        if(!m.fileButton)
-                                        {
+                        this.state.isExpanded &&
+                        <div className={"command-dropdown-content sub1" + (this.props.toRight ? " toRight" : "")}>
+                            {
+                                this.props.items.map(m => {
+                                    if (!m.fileButton) {
                                         return (
                                             <div className={"command-dropdown-label" + (m.isActive ? " active" : "")} key={m.label} onClick={() => {
                                                 if (!m.onClick) {
@@ -79,22 +78,31 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                                 }
                                                 if (!m.subItems) {
                                                     m.onClick();
-                                                    
-                                                    this.setState({isExpanded: false, activeState: m.label});
+
+                                                    this.setState({ isExpanded: false, activeState: m.label });
                                                 }
                                             }} title={m.label}>
-                                                <div className="command-dropdown-label-text">
-                                                    {(m.isActive ? "> " : "") + m.label}
-                                                </div>
                                                 {
-                                                    m.onCheck && 
-                                                    <input type="checkBox" className="command-dropdown-label-check" 
+                                                    !m.icon &&
+                                                    <div className="command-dropdown-label-text">
+                                                        {(m.isActive ? "> " : "") + m.label}
+                                                    </div>
+                                                }
+                                                {
+                                                    m.icon &&
+                                                    <div className="command-dropdown-icon">
+                                                        <img src={m.icon} />
+                                                    </div>
+                                                }
+                                                {
+                                                    m.onCheck &&
+                                                    <input type="checkBox" className="command-dropdown-label-check"
                                                         onChange={(evt) => {
-                                                           
+
                                                             this.forceUpdate();
                                                             m.onCheck!(evt.target.checked);
                                                         }}
-                                                        checked={false}/>
+                                                        checked={false} />
                                                 }
                                                 {
                                                     m.subItems &&
@@ -108,12 +116,12 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                                         {
                                                             m.subItems.map(s => {
                                                                 return (
-                                                                    <div key={s} className={"sub-item"}  
-                                                                    onClick={() => {
-                                                                                                                                               
-                                                                        m.onClick!();
-                                                                        this.setState({isExpanded: false});
-                                                                    }}>
+                                                                    <div key={s} className={"sub-item"}
+                                                                        onClick={() => {
+
+                                                                            m.onClick!();
+                                                                            this.setState({ isExpanded: false });
+                                                                        }}>
                                                                         <div className="sub-item-label">
                                                                             {s}
                                                                         </div>
@@ -125,17 +133,16 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                                 }
                                             </div>
                                         )
-                                        }
-                                        else 
-                                        {
-                                            return (
+                                    }
+                                    else {
+                                        return (
                                             <FileButtonLineComponent label="Load" onClick={(file) => m.onClick} accept=".json" />
-                                            )
-                                        }
-                                    })
-                                }
-                            </div>
-                        }
+                                        )
+                                    }
+                                })
+                            }
+                        </div>
+                    }
                 </div>
             </>
         );

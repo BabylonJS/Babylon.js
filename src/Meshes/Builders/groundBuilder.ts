@@ -9,7 +9,7 @@ import { Nullable } from '../../types';
 import { EngineStore } from '../../Engines/engineStore';
 import { Epsilon } from '../../Maths/math.constants';
 
-VertexData.CreateGround = function(options: { width?: number, height?: number, subdivisions?: number, subdivisionsX?: number, subdivisionsY?: number }): VertexData {
+VertexData.CreateGround = function (options: { width?: number, height?: number, subdivisions?: number, subdivisionsX?: number, subdivisionsY?: number }): VertexData {
     var indices = [];
     var positions = [];
     var normals = [];
@@ -55,7 +55,7 @@ VertexData.CreateGround = function(options: { width?: number, height?: number, s
     return vertexData;
 };
 
-VertexData.CreateTiledGround = function(options: { xmin: number, zmin: number, xmax: number, zmax: number, subdivisions?: { w: number; h: number; }, precision?: { w: number; h: number; } }): VertexData {
+VertexData.CreateTiledGround = function (options: { xmin: number, zmin: number, xmax: number, zmax: number, subdivisions?: { w: number; h: number; }, precision?: { w: number; h: number; } }): VertexData {
     var xmin = (options.xmin !== undefined && options.xmin !== null) ? options.xmin : -1.0;
     var zmin = (options.zmin !== undefined && options.zmin !== null) ? options.zmin : -1.0;
     var xmax = (options.xmax !== undefined && options.xmax !== null) ? options.xmax : 1.0;
@@ -139,7 +139,7 @@ VertexData.CreateTiledGround = function(options: { xmin: number, zmin: number, x
     return vertexData;
 };
 
-VertexData.CreateGroundFromHeightMap = function(options: { width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, colorFilter: Color3, buffer: Uint8Array, bufferWidth: number, bufferHeight: number, alphaFilter: number }): VertexData {
+VertexData.CreateGroundFromHeightMap = function (options: { width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, colorFilter: Color3, buffer: Uint8Array, bufferWidth: number, bufferHeight: number, alphaFilter: number }): VertexData {
     var indices = [];
     var positions = [];
     var normals = [];

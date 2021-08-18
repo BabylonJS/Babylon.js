@@ -117,7 +117,7 @@ export class WebXRControllerComponent implements IDisposable {
         public type: MotionControllerComponentType,
         private _buttonIndex: number = -1,
         private _axesIndices: number[] = []
-    ) {}
+    ) { }
 
     /**
      * The current axes data. If this component has no axes it will still return an object { x: 0, y: 0 }

@@ -13,7 +13,7 @@ import { _DevTools } from '../../Misc/devTools';
 declare type WebRequest = import("../../Misc/webRequest").WebRequest;
 declare type LoadFileError = import("../../Misc/fileTools").LoadFileError;
 declare type IOfflineProvider = import("../../Offline/IOfflineProvider").IOfflineProvider;
-declare type IFileRequest  = import("../../Misc/fileRequest").IFileRequest;
+declare type IFileRequest = import("../../Misc/fileRequest").IFileRequest;
 declare type ThinEngine = import("../thinEngine").ThinEngine;
 
 const regexSE = /defined\s*?\((.+?)\)/g;
@@ -116,16 +116,16 @@ export class ShaderProcessor {
 
                 let operator = c == '&&' ? new ShaderDefineAndOperator() : new ShaderDefineOrOperator();
 
-                if (typeof(v1) === 'string') {
+                if (typeof (v1) === 'string') {
                     v1 = v1.replace(regexSERevert, "defined($1)");
                 }
 
-                if (typeof(v2) === 'string') {
+                if (typeof (v2) === 'string') {
                     v2 = v2.replace(regexSERevert, "defined($1)");
                 }
 
-                operator.leftOperand = typeof(v2) === 'string' ? this._ExtractOperation(v2) : v2;
-                operator.rightOperand = typeof(v1) === 'string' ? this._ExtractOperation(v1) : v1;
+                operator.leftOperand = typeof (v2) === 'string' ? this._ExtractOperation(v2) : v2;
+                operator.rightOperand = typeof (v1) === 'string' ? this._ExtractOperation(v1) : v1;
 
                 stack.push(operator);
             }
@@ -133,13 +133,13 @@ export class ShaderProcessor {
 
         let result = stack[stack.length - 1];
 
-        if (typeof(result) === 'string') {
+        if (typeof (result) === 'string') {
             result = result.replace(regexSERevert, "defined($1)");
         }
 
         // note: stack.length !== 1 if there was an error in the parsing
 
-        return typeof(result) === 'string' ? this._ExtractOperation(result) : result;
+        return typeof (result) === 'string' ? this._ExtractOperation(result) : result;
     }
 
     private static _BuildExpression(line: string, start: number): ShaderCodeTestNode {
@@ -450,6 +450,6 @@ export class ShaderProcessor {
      * @hidden
      */
     public static _FileToolsLoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void): IFileRequest {
-        throw  _DevTools.WarnImport("FileTools");
+        throw _DevTools.WarnImport("FileTools");
     }
 }

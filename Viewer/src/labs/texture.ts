@@ -232,11 +232,11 @@ export class TextureUtils {
             let maxMipLevel = automaticMipmaps ? 0 : textureCube.source.length - 1;
             let texturesUploaded = 0;
 
-            var textureComplete = function() {
+            var textureComplete = function () {
                 return texturesUploaded === ((maxMipLevel + 1) * 6);
             };
 
-            var uploadFace = function(i: number, level: number, face: TextureSource) {
+            var uploadFace = function (i: number, level: number, face: TextureSource) {
                 if (!glTexture) { return; }
 
                 if (i === 0 && level === 0) {

@@ -23,6 +23,7 @@ import { DomManagement } from "babylonjs/Misc/domManagement";
 
 /**
  * Class used to create a holographic slate
+ * @since 5.0.0
  */
 export class HolographicSlate extends ContentDisplay3D {
     /**

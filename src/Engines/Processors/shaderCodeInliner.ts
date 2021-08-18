@@ -218,7 +218,7 @@ export class ShaderCodeInliner {
                 }
             }
 
-            currPos++ ;
+            currPos++;
             if (openMarkers === 0) {
                 break;
             }
@@ -301,7 +301,7 @@ export class ShaderCodeInliner {
                 }
             }
 
-            currPos++ ;
+            currPos++;
         }
 
         return s.join('');
@@ -460,8 +460,8 @@ export class ShaderCodeInliner {
     private _replaceNames(code: string, sources: string[], destinations: string[]): string {
         for (let i = 0; i < sources.length; ++i) {
             const source = new RegExp(this._escapeRegExp(sources[i]), 'g'),
-                  sourceLen = sources[i].length,
-                  destination = destinations[i];
+                sourceLen = sources[i].length,
+                destination = destinations[i];
 
             code = code.replace(source, (match, ...args) => {
                 const offset: number = args[0];

@@ -1,9 +1,9 @@
-import { IPerfDataset } from "babylonjs/Misc/interfaces/iPerfViewer"
+import { IPerfDatasets } from "babylonjs/Misc/interfaces/iPerfViewer"
 
 /**
  * Defines a structure to hold max and min.
  */
- export interface IPerfMinMax {
+export interface IPerfMinMax {
     min: number;
     max: number;
 }
@@ -56,8 +56,26 @@ export interface IGraphDrawableArea {
 }
 
 /**
+ * Defines the structure representing necessary ticker information. 
+ */
+export interface IPerfTicker extends IPerfMinMax {
+    id: string;
+    text: string;
+}
+
+/**
  * Defines what settings our canvas graphing service accepts
  */
 export interface ICanvasGraphServiceSettings {
-    datasets: IPerfDataset[];
+    datasets: IPerfDatasets;
+}
+
+/**
+ * Defines the supported timestamp units.
+ */
+export enum TimestampUnit {
+    Milliseconds = 0,
+    Seconds = 1,
+    Minutes = 2,
+    Hours = 3,
 }

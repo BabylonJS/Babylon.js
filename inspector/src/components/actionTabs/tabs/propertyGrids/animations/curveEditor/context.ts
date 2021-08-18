@@ -5,6 +5,7 @@ import { KeyPointComponent } from "./graph/keyPoint";
 import { Scene } from "babylonjs/scene";
 import { IAnimatable } from "babylonjs/Animations/animatable.interface";
 import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
+import { Animatable } from "babylonjs/Animations/animatable";
 
 export class Context {
     title: string;
@@ -32,7 +33,7 @@ export class Context {
     onHostWindowResized = new Observable<void>();
 
     onActiveKeyFrameChanged = new Observable<number>();
-    
+
     onFrameSet = new Observable<number>();
     onFrameManuallyEntered = new Observable<number>();
 
@@ -69,7 +70,7 @@ export class Context {
     onEditAnimationRequired = new Observable<Animation>();
     onEditAnimationUIClosed = new Observable<void>();
 
-    public prepare() {        
+    public prepare() {
         this.isPlaying = false;
         if (!this.animations || !this.animations.length) {
             return;
@@ -83,7 +84,7 @@ export class Context {
         this.referenceMinFrame = 0;
         this.referenceMaxFrame = this.toKey;
         this.snippetId = animation.snippetId;
-    
+
         if (!animation || !animation.hasRunningRuntimeAnimations) {
             return;
         }
@@ -93,12 +94,16 @@ export class Context {
     public play(forward: boolean) {
         this.isPlaying = true;
         this.scene.stopAnimation(this.target);
+        let animatable: Animatable;
         if (forward) {
-            this.scene.beginAnimation(this.target, this.fromKey, this.toKey, true);
+            animatable = this.scene.beginAnimation(this.target, this.fromKey, this.toKey, true);
         } else {
-            this.scene.beginAnimation(this.target, this.toKey, this.fromKey, true);
+            animatable = this.scene.beginAnimation(this.target, this.toKey, this.fromKey, true);
         }
         this.forwardAnimation = forward;
+
+        // Move
+        animatable.goToFrame(this.activeFrame);
 
         this.onAnimationStateChanged.notifyObservers();
     }
@@ -106,7 +111,7 @@ export class Context {
     public stop() {
         this.isPlaying = false;
         this.scene.stopAnimation(this.target);
-    
+
         this.onAnimationStateChanged.notifyObservers();
     }
 
@@ -118,8 +123,7 @@ export class Context {
         this.activeFrame = frame;
 
         if (!this.isPlaying) {
-            this.scene.beginAnimation(this.target, frame, frame, false);
-            return;
+            this.scene.beginAnimation(this.target, this.fromKey, this.toKey, false);
         }
 
         for (var animationEntry of this.animations) {

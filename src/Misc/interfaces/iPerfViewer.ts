@@ -1,39 +1,50 @@
+import { DynamicFloat32Array } from "../PerformanceViewer/dynamicFloat32Array";
+
 /**
- * Defines what data is needed to graph a point on the performance graph.
+ * Defines the shape of a collection of datasets that our graphing service uses for drawing purposes.
  */
-export interface IPerfPoint {
+ export interface IPerfDatasets {
     /**
-     * The timestamp of the point.
+     * The ids of our dataset.
      */
-    timestamp: number;
+    ids: string[];
 
     /**
-     * The value of the point.
+     * The data to be processed by the performance graph. Each slice will be of the form of [timestamp, numberOfPoints, value1, value2...]
      */
-    value: number;
+    data: DynamicFloat32Array;
+
+    /**
+     * A list of starting indices for each slice of data collected. Used for fast access of an arbitrary slice inside the data array.
+     */
+    startingIndices: DynamicFloat32Array;
 }
 
 /**
- * Defines the shape of a dataset that our graphing service uses for drawing purposes.
+ * Defines the shape of a the metadata the graphing service uses for drawing purposes.
  */
-export interface IPerfDataset {
+ export interface IPerfMetadata {
     /**
      * The color of the line to be drawn.
      */
-    color?: string;
+     color?: string;
 
-    /**
-     * The id of the dataset.
-     */
-    id: string;
+     /**
+      * Specifies if data should be hidden, falsey by default.
+      */
+     hidden?: boolean;
+}
 
-    /**
-     * The data to be processed by the performance graph.
-     */
-    data: IPerfPoint[];
-
-    /**
-     * Specifies if data should be hidden, falsey by default.
-     */
-    hidden?: boolean;
+/**
+ * Defines the shape of a custom user registered event.
+ */
+export interface IPerfCustomEvent {
+   /**
+    * The name of the event.
+    */
+   name: string;
+   /**
+    * The value for the event, if set we will use it as the value, otherwise we will count the number of occurences.
+    */
+   value?: number;
 }

@@ -1,6 +1,6 @@
 
 /** Defines the cross module constantsused by lights to avoid circular dependencies */
- export class LightConstants {
+export class LightConstants {
 
     /**
      * Falloff Default: light is falling off following the material specification:
@@ -102,20 +102,20 @@
         }
         return b.renderPriority - a.renderPriority;
     }
- }
+}
 
- /**
-  * Defines the common interface of sortable lights
-  */
- export interface ISortableLight {
-     /**
-     * Gets or sets whether or not the shadows are enabled for this light. This can help turning off/on shadow without detaching
-     * the current shadow generator.
-     */
-     shadowEnabled: boolean;
-     /**
-     * Defines the rendering priority of the lights. It can help in case of fallback or number of lights
-     * exceeding the number allowed of the materials.
-     */
+/**
+ * Defines the common interface of sortable lights
+ */
+export interface ISortableLight {
+    /**
+    * Gets or sets whether or not the shadows are enabled for this light. This can help turning off/on shadow without detaching
+    * the current shadow generator.
+    */
+    shadowEnabled: boolean;
+    /**
+    * Defines the rendering priority of the lights. It can help in case of fallback or number of lights
+    * exceeding the number allowed of the materials.
+    */
     renderPriority: number;
- }
+}

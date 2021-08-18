@@ -15,6 +15,7 @@ interface IVector2LineComponentProps {
     onChange?: (newvalue: Vector2) => void;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     icon? : string;
+    iconLabel? : string;
 }
 
 export class Vector2LineComponent extends React.Component<IVector2LineComponentProps, { isExpanded: boolean, value: Vector2 }> {
@@ -90,7 +91,7 @@ export class Vector2LineComponent extends React.Component<IVector2LineComponentP
 
         return (
             <div className="vector3Line">
-                {this.props.icon && <img src={this.props.icon} className="icon"/>}
+                {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel}  className="icon"/>}
                 <div className="firstLine" title={this.props.label}>
                     <div className="label">
                         {this.props.label}

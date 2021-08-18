@@ -41,11 +41,11 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
 
     public createUpdateBuffer(defines: string): UniformBufferEffectCommonAccessor {
         const bindingsMapping: ComputeBindingMapping = {
-            "params": { group: 0, binding: 0},
-            "particlesIn": { group: 0, binding: 1},
-            "particlesOut": { group: 0, binding: 2},
-            "randomTexture": { group: 0, binding: 4},
-            "randomTexture2": { group: 0, binding: 6},
+            "params": { group: 0, binding: 0 },
+            "particlesIn": { group: 0, binding: 1 },
+            "particlesOut": { group: 0, binding: 2 },
+            "randomTexture": { group: 0, binding: 4 },
+            "randomTexture2": { group: 0, binding: 6 },
         };
         if (this._parent._sizeGradientsTexture) {
             bindingsMapping["sizeGradientTexture"] = { group: 1, binding: 1 };

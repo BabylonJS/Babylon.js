@@ -6,6 +6,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { Color3 } from 'babylonjs/Maths/math.color';
 import { ColorPickerLineComponent } from './colorPickerComponent';
+import { LockObject } from "../tabs/propertyGrids/lockObject";
+import { TextInputLineComponent } from "./textInputLineComponent";
 
 const copyIcon: string = require("./copy.svg");
 
@@ -16,6 +18,8 @@ export interface IColor3LineComponentProps {
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     isLinear?: boolean;
     icon? : string;
+    lockObject?: LockObject;
+    iconLabel? : string;
 }
 
 export class Color3LineComponent extends React.Component<IColor3LineComponentProps, { isExpanded: boolean, color: Color3 }> {
@@ -135,14 +139,20 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
         element.remove();
     }
 
+    convert(colorString: string) {
+        this.onChange(this._colorString);
+    }
+    
+    private _colorString : string;
     render() {
 
         const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />;
+        this._colorString = this.state.color.toHexString();
 
         return (
             <div className="color3Line">
-                {this.props.icon && <img src={this.props.icon} className="icon"/>}
                 <div className="firstLine" title={this.props.label}>
+                {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel}  className="icon"/>}
                     <div className="label">
                         {this.props.label}
                     </div>
@@ -154,6 +164,10 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
                             this.onChange(color);
                         }} />                             
                     </div>
+                    {(this.props.icon && this.props.lockObject) &&
+                    <TextInputLineComponent lockObject={this.props.lockObject} label="" target={this} propertyName="_colorString" onChange={newValue => this.convert(newValue)}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    }
                     <div className="copy hoverIcon" onClick={() => this.copyToClipboard()} title="Copy to clipboard">
                         <img src={copyIcon} alt=""/>
                     </div>
