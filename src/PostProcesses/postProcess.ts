@@ -502,7 +502,8 @@ export class PostProcess {
         for (let i = 0; i < this._textureCache.length; i++) {
             if (this._textureCache[i].texture.width === textureSize.width &&
                 this._textureCache[i].texture.height === textureSize.height &&
-                this._textureCache[i].postProcessChannel === channel) {
+                this._textureCache[i].postProcessChannel === channel &&
+                this._textureCache[i].texture._generateDepthBuffer === textureOptions.generateDepthBuffer) {
                 return this._textureCache[i].texture;
             }
         }
@@ -542,11 +543,19 @@ export class PostProcess {
         this.width = width;
         this.height = height;
 
+        let firstPP = null;
+        for (let i = 0; i < camera._postProcesses.length; i++) {
+            if (camera._postProcesses[i] !== null) {
+                firstPP = camera._postProcesses[i];
+                break;
+            }
+        }
+
         let textureSize = { width: this.width, height: this.height };
         let textureOptions = {
             generateMipMaps: needMipMaps,
-            generateDepthBuffer: forceDepthStencil || camera._postProcesses.indexOf(this) === 0,
-            generateStencilBuffer: (forceDepthStencil || camera._postProcesses.indexOf(this) === 0) && this._engine.isStencilEnable,
+            generateDepthBuffer: forceDepthStencil || firstPP === this,
+            generateStencilBuffer: (forceDepthStencil || firstPP === this) && this._engine.isStencilEnable,
             samplingMode: this.renderTargetSamplingMode,
             type: this._textureType,
             format: this._textureFormat
