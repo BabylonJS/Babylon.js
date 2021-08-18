@@ -15,12 +15,12 @@ declare module "../scene" {
         /**
          * Flag to indicate if we want to use order independant transparency, despite the performance hit
          */
-        useOrderIndependentTransparency: boolean
+        useOrderIndependentTransparency: boolean;
     }
 }
 
 Object.defineProperty(Scene.prototype, "depthPeelingRenderer", {
-    get: function(this: Scene) {
+    get: function (this: Scene) {
         if (!this._depthPeelingRenderer) {
             let component = this._getComponent(SceneComponentConstants.NAME_DEPTHPEELINGRENDERER) as DepthPeelingSceneComponent;
             if (!component) {
@@ -31,13 +31,12 @@ Object.defineProperty(Scene.prototype, "depthPeelingRenderer", {
 
         return this._depthPeelingRenderer;
     },
-    set: function(this: Scene, value: DepthPeelingRenderer) {
+    set: function (this: Scene, value: DepthPeelingRenderer) {
         this._depthPeelingRenderer = value;
     },
     enumerable: true,
-    configurable: true
+    configurable: true,
 });
-
 
 /**
  * Scene component to render order independant transparency with depth peeling
@@ -66,15 +65,13 @@ export class DepthPeelingSceneComponent implements ISceneComponent {
     /**
      * Registers the component in a given scene
      */
-    public register(): void {
-    }
+    public register(): void {}
 
     /**
      * Rebuilds the elements related to this component in case of
      * context lost for instance.
      */
-    public rebuild(): void {
-    }
+    public rebuild(): void {}
 
     /**
      * Disposes the component and the associated resources.
@@ -83,5 +80,4 @@ export class DepthPeelingSceneComponent implements ISceneComponent {
         this.scene.depthPeelingRenderer?.dispose();
         this.scene.depthPeelingRenderer = null;
     }
-
 }

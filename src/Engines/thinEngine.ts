@@ -1647,7 +1647,7 @@ export class ThinEngine {
         this._bindUnboundFramebuffer(framebuffer);
         const attachment = (<any>gl)[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + attachmentIndex : "COLOR_ATTACHMENT" + attachmentIndex + "_WEBGL"];
         const target = faceIndex !== -1 ? gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex : gl.TEXTURE_2D;
-        
+
         gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, target, texture._hardwareTexture?.underlyingResource, lodLevel);
         this._bindUnboundFramebuffer(currentFB);
     }
