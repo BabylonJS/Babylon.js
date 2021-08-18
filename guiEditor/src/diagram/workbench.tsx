@@ -22,6 +22,7 @@ import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
 import { KeyboardEventTypes, KeyboardInfo } from "babylonjs/Events/keyboardEvents";
 import { Line } from "babylonjs-gui/2D/controls/line";
 import { DataStorage } from "babylonjs/Misc/dataStorage";
+import { Grid } from "babylonjs-gui/2D/controls/grid";
 require("./workbenchCanvas.scss");
 
 export interface IWorkbenchComponentProps {
@@ -43,13 +44,13 @@ export enum ConstraintDirection {
 }
 
 export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps> {
-    public artBoardBackground: Nullable<Rectangle>;
+    public artBoardBackground: Rectangle;
     private _rootContainer: React.RefObject<HTMLCanvasElement>;
     private _setConstraintDirection: boolean;
     private _mouseStartPointX: Nullable<number> = null;
     private _mouseStartPointY: Nullable<number> = null;
     private _textureMesh: Mesh;
-    private _scene: Scene;
+    public _scene: Scene;
     private _selectedGuiNodes: Control[] = [];
     private _ctrlKeyIsPressed = false;
     private _constraintDirection = ConstraintDirection.NONE;
@@ -240,6 +241,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             case "StackPanel":
             case "Rectangle":
             case "Ellipse":
+            case "Grid":
                 return true;
             default:
                 return false;
@@ -297,7 +299,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         if (draggedControlParent && draggedControl) {
             if (this._isNotChildInsert(dropLocationControl, draggedControl)) { //checking to make sure the element is not being inserted into a child
-                
+
                 draggedControlParent.removeControl(draggedControl);
                 if (dropLocationControl != null) { //the control you are dragging onto top
                     if (this.props.globalState.workbench.isContainer(dropLocationControl) && //dropping inside a contrainer control
@@ -386,11 +388,26 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         //convert to percentage
         if (this._responsive) {
-            const left = (guiControl.leftInPixels * 100) / (this._textureMesh.scaling.x);
-            const top = (guiControl.topInPixels * 100) / (this._textureMesh.scaling.z);
+            let ratioX = (this._textureMesh.scaling.x);
+            let ratioY = (this._textureMesh.scaling.z);
+            if (guiControl.parent) {
+                if (guiControl.parent.typeName === "Grid") {
+                    const cellInfo = (guiControl.parent as Grid).getChildCellInfo(guiControl);
+                    const cell = (guiControl.parent as Grid).cells[cellInfo];
+                    ratioX = cell.widthInPixels;
+                    ratioY = cell.heightInPixels;
+                }
+                else {
+                    ratioX = guiControl.parent.widthInPixels;
+                    ratioY = guiControl.parent.heightInPixels;
+                }
+            }
+            const left = (guiControl.leftInPixels * 100) / ratioX;
+            const top = (guiControl.topInPixels * 100) / ratioY;
             guiControl.left = `${left}%`;
             guiControl.top = `${top}%`;
         }
+        this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
         return true;
     }
 
@@ -482,6 +499,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.artBoardBackground.width = "100%"
         this.artBoardBackground.height = "100%";
         this.artBoardBackground.background = "white";
+        this.artBoardBackground.thickness = 0;
 
         this.globalState.guiTexture.addControl(this.artBoardBackground);
         this.addControls(this._scene, camera);

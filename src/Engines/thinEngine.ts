@@ -179,14 +179,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-alpha.33";
+        return "babylonjs@5.0.0-alpha.38";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-alpha.33";
+        return "5.0.0-alpha.38";
     }
 
     /**
@@ -294,6 +294,11 @@ export class ThinEngine {
      * Indicates if the z range in NDC space is 0..1 (value: true) or -1..1 (value: false)
      */
     public readonly isNDCHalfZRange = false;
+
+    /**
+     * Indicates that the origin of the texture/framebuffer space is the bottom left corner. If false, the origin is top left
+     */
+     public readonly hasOriginBottomLeft = true;
 
     /**
      * Gets or sets a boolean indicating that uniform buffers must be disabled even if they are supported
@@ -653,9 +658,9 @@ export class ThinEngine {
      * Create an image to use with canvas
      * @return IImage interface
      */
-     public createCanvasImage(): IImage {
-         return document.createElement("img");
-     }
+    public createCanvasImage(): IImage {
+        return document.createElement("img");
+    }
 
     /**
      * Creates a new engine
@@ -744,7 +749,9 @@ export class ThinEngine {
                 this._checkForMobile();
 
                 // Set up event listener to check when window is resized (used to get emulator activation to work properly)
-                window.addEventListener("resize", this._checkForMobile);
+                if (DomManagement.IsWindowObjectExist()) {
+                    window.addEventListener("resize", this._checkForMobile);
+                }
 
                 let ua = navigator.userAgent;
                 for (var exception of ThinEngine.ExceptionList) {
@@ -1776,6 +1783,21 @@ export class ThinEngine {
         }
     }
 
+    /** @hidden */
+    public _currentFrameBufferIsDefaultFrameBuffer() {
+        return this._currentFramebuffer === null;
+    }
+
+    /**
+     * Generates the mipmaps for a texture
+     * @param texture texture to generate the mipmaps for
+     */
+    public generateMipmaps(texture: InternalTexture): void {
+        this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
+        this._gl.generateMipmap(this._gl.TEXTURE_2D);
+        this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
+    }
+
     /**
      * Unbind the current render target texture from the webGL context
      * @param texture defines the render target texture to unbind
@@ -1801,9 +1823,7 @@ export class ThinEngine {
         }
 
         if (texture.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
-            this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
-            gl.generateMipmap(gl.TEXTURE_2D);
-            this._bindTextureDirectly(gl.TEXTURE_2D, null);
+            this.generateMipmaps(texture);
         }
 
         if (onBeforeUnbind) {
@@ -4958,6 +4978,13 @@ export class ThinEngine {
 
     private static _IsSupported: Nullable<boolean> = null;
     private static _HasMajorPerformanceCaveat: Nullable<boolean> = null;
+
+    /**
+     * Gets a Promise<boolean> indicating if the engine can be instantiated (ie. if a webGL context can be found)
+     */
+    public static get IsSupportedAsync(): Promise<boolean> {
+        return Promise.resolve(this.isSupported());
+    }
 
     /**
      * Gets a boolean indicating if the engine can be instantiated (ie. if a webGL context can be found)

@@ -30,20 +30,20 @@ import { PerturbNormalBlock } from '../Fragment/perturbNormalBlock';
 import { Constants } from '../../../../Engines/constants';
 import { Color3, TmpColors } from '../../../../Maths/math.color';
 
-const mapOutputToVariable: { [name: string] : [string, string] } = {
-    "ambientClr":   ["finalAmbient", ""],
-    "diffuseDir":   ["finalDiffuse", ""],
-    "specularDir":  ["finalSpecularScaled",                         "!defined(UNLIT) && defined(SPECULARTERM)"],
-    "clearcoatDir": ["finalClearCoatScaled",                        "!defined(UNLIT) && defined(CLEARCOAT)"],
-    "sheenDir":     ["finalSheenScaled",                            "!defined(UNLIT) && defined(SHEEN)"],
-    "diffuseInd":   ["finalIrradiance",                             "!defined(UNLIT) && defined(REFLECTION)"],
-    "specularInd":  ["finalRadianceScaled",                         "!defined(UNLIT) && defined(REFLECTION)"],
-    "clearcoatInd": ["clearcoatOut.finalClearCoatRadianceScaled",   "!defined(UNLIT) && defined(REFLECTION) && defined(CLEARCOAT)"],
-    "sheenInd":     ["sheenOut.finalSheenRadianceScaled",           "!defined(UNLIT) && defined(REFLECTION) && defined(SHEEN) && defined(ENVIRONMENTBRDF)"],
-    "refraction":   ["subSurfaceOut.finalRefraction",               "!defined(UNLIT) && defined(SS_REFRACTION)"],
-    "lighting":     ["finalColor.rgb", ""],
-    "shadow":       ["shadow", ""],
-    "alpha":        ["alpha", ""],
+const mapOutputToVariable: { [name: string]: [string, string] } = {
+    "ambientClr": ["finalAmbient", ""],
+    "diffuseDir": ["finalDiffuse", ""],
+    "specularDir": ["finalSpecularScaled", "!defined(UNLIT) && defined(SPECULARTERM)"],
+    "clearcoatDir": ["finalClearCoatScaled", "!defined(UNLIT) && defined(CLEARCOAT)"],
+    "sheenDir": ["finalSheenScaled", "!defined(UNLIT) && defined(SHEEN)"],
+    "diffuseInd": ["finalIrradiance", "!defined(UNLIT) && defined(REFLECTION)"],
+    "specularInd": ["finalRadianceScaled", "!defined(UNLIT) && defined(REFLECTION)"],
+    "clearcoatInd": ["clearcoatOut.finalClearCoatRadianceScaled", "!defined(UNLIT) && defined(REFLECTION) && defined(CLEARCOAT)"],
+    "sheenInd": ["sheenOut.finalSheenRadianceScaled", "!defined(UNLIT) && defined(REFLECTION) && defined(SHEEN) && defined(ENVIRONMENTBRDF)"],
+    "refraction": ["subSurfaceOut.finalRefraction", "!defined(UNLIT) && defined(SS_REFRACTION)"],
+    "lighting": ["finalColor.rgb", ""],
+    "shadow": ["shadow", ""],
+    "alpha": ["alpha", ""],
 };
 
 /**
@@ -116,32 +116,34 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
      * Intensity of the direct lights e.g. the four lights available in your scene.
      * This impacts both the direct diffuse and specular highlights.
      */
-    @editableInPropertyPage("Direct lights", PropertyTypeForEdition.Float, "INTENSITY", { min: 0, max: 1, "notifiers": { "update": true }})
+    @editableInPropertyPage("Direct lights", PropertyTypeForEdition.Float, "INTENSITY", { min: 0, max: 1, "notifiers": { "update": true } })
     public directIntensity: number = 1.0;
 
     /**
      * Intensity of the environment e.g. how much the environment will light the object
      * either through harmonics for rough material or through the reflection for shiny ones.
      */
-    @editableInPropertyPage("Environment lights", PropertyTypeForEdition.Float, "INTENSITY", { min: 0, max: 1, "notifiers": { "update": true }})
+    @editableInPropertyPage("Environment lights", PropertyTypeForEdition.Float, "INTENSITY", { min: 0, max: 1, "notifiers": { "update": true } })
     public environmentIntensity: number = 1.0;
 
     /**
      * This is a special control allowing the reduction of the specular highlights coming from the
      * four lights of the scene. Those highlights may not be needed in full environment lighting.
      */
-    @editableInPropertyPage("Specular highlights", PropertyTypeForEdition.Float, "INTENSITY", { min: 0, max: 1, "notifiers": { "update": true }})
+    @editableInPropertyPage("Specular highlights", PropertyTypeForEdition.Float, "INTENSITY", { min: 0, max: 1, "notifiers": { "update": true } })
     public specularIntensity: number = 1.0;
 
     /**
      * Defines the  falloff type used in this material.
      * It by default is Physical.
      */
-    @editableInPropertyPage("Light falloff", PropertyTypeForEdition.List, "LIGHTING & COLORS", { "notifiers": { "update": true }, "options": [
-        { label: "Physical", value: PBRBaseMaterial.LIGHTFALLOFF_PHYSICAL },
-        { label: "GLTF", value: PBRBaseMaterial.LIGHTFALLOFF_GLTF },
-        { label: "Standard", value: PBRBaseMaterial.LIGHTFALLOFF_STANDARD },
-    ]})
+    @editableInPropertyPage("Light falloff", PropertyTypeForEdition.List, "LIGHTING & COLORS", {
+        "notifiers": { "update": true }, "options": [
+            { label: "Physical", value: PBRBaseMaterial.LIGHTFALLOFF_PHYSICAL },
+            { label: "GLTF", value: PBRBaseMaterial.LIGHTFALLOFF_GLTF },
+            { label: "Standard", value: PBRBaseMaterial.LIGHTFALLOFF_STANDARD },
+        ]
+    })
     public lightFalloff = 0;
 
     /**
@@ -153,7 +155,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     /**
      * Defines the alpha limits in alpha test mode.
      */
-    @editableInPropertyPage("Alpha CutOff", PropertyTypeForEdition.Float, "OPACITY", { min: 0, max: 1, "notifiers": { "update": true }})
+    @editableInPropertyPage("Alpha CutOff", PropertyTypeForEdition.Float, "OPACITY", { min: 0, max: 1, "notifiers": { "update": true } })
     public alphaTestCutoff: number = 0.5;
 
     /**
@@ -166,14 +168,14 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
      * Specifies that the material will keeps the reflection highlights over a transparent surface (only the most luminous ones).
      * A car glass is a good example of that. When the street lights reflects on it you can not see what is behind.
      */
-    @editableInPropertyPage("Radiance over alpha", PropertyTypeForEdition.Boolean, "RENDERING", { "notifiers": { "update": true }})
+    @editableInPropertyPage("Radiance over alpha", PropertyTypeForEdition.Boolean, "RENDERING", { "notifiers": { "update": true } })
     public useRadianceOverAlpha: boolean = true;
 
     /**
      * Specifies that the material will keeps the specular highlights over a transparent surface (only the most luminous ones).
      * A car glass is a good example of that. When sun reflects on it you can not see what is behind.
      */
-    @editableInPropertyPage("Specular over alpha", PropertyTypeForEdition.Boolean, "RENDERING", { "notifiers": { "update": true }})
+    @editableInPropertyPage("Specular over alpha", PropertyTypeForEdition.Boolean, "RENDERING", { "notifiers": { "update": true } })
     public useSpecularOverAlpha: boolean = true;
 
     /**
@@ -181,113 +183,117 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
      * It will both interacts on the Geometry for analytical and IBL lighting.
      * It also prefilter the roughness map based on the bump values.
      */
-    @editableInPropertyPage("Specular anti-aliasing", PropertyTypeForEdition.Boolean, "RENDERING", { "notifiers": { "update": true }})
+    @editableInPropertyPage("Specular anti-aliasing", PropertyTypeForEdition.Boolean, "RENDERING", { "notifiers": { "update": true } })
     public enableSpecularAntiAliasing: boolean = false;
 
     /**
      * Enables realtime filtering on the texture.
      */
-    @editableInPropertyPage("Realtime filtering", PropertyTypeForEdition.Boolean, "RENDERING", { "notifiers": { "update": true }})
+    @editableInPropertyPage("Realtime filtering", PropertyTypeForEdition.Boolean, "RENDERING", { "notifiers": { "update": true } })
     public realTimeFiltering: boolean = false;
 
     /**
      * Quality switch for realtime filtering
      */
-    @editableInPropertyPage("Realtime filtering quality", PropertyTypeForEdition.List, "RENDERING", { "notifiers": { "update": true }, "options": [
-        { label: "Low", value: Constants.TEXTURE_FILTERING_QUALITY_LOW },
-        { label: "Medium", value: Constants.TEXTURE_FILTERING_QUALITY_MEDIUM },
-        { label: "High", value: Constants.TEXTURE_FILTERING_QUALITY_HIGH },
-    ]})
+    @editableInPropertyPage("Realtime filtering quality", PropertyTypeForEdition.List, "RENDERING", {
+        "notifiers": { "update": true }, "options": [
+            { label: "Low", value: Constants.TEXTURE_FILTERING_QUALITY_LOW },
+            { label: "Medium", value: Constants.TEXTURE_FILTERING_QUALITY_MEDIUM },
+            { label: "High", value: Constants.TEXTURE_FILTERING_QUALITY_HIGH },
+        ]
+    })
     public realTimeFilteringQuality = Constants.TEXTURE_FILTERING_QUALITY_LOW;
 
     /**
      * Defines if the material uses energy conservation.
      */
-    @editableInPropertyPage("Energy Conservation", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true }})
+    @editableInPropertyPage("Energy Conservation", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true } })
     public useEnergyConservation: boolean = true;
 
     /**
      * This parameters will enable/disable radiance occlusion by preventing the radiance to lit
      * too much the area relying on ambient texture to define their ambient occlusion.
      */
-    @editableInPropertyPage("Radiance occlusion", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true }})
+    @editableInPropertyPage("Radiance occlusion", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true } })
     public useRadianceOcclusion: boolean = true;
 
     /**
      * This parameters will enable/disable Horizon occlusion to prevent normal maps to look shiny when the normal
      * makes the reflect vector face the model (under horizon).
      */
-    @editableInPropertyPage("Horizon occlusion", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true }})
+    @editableInPropertyPage("Horizon occlusion", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true } })
     public useHorizonOcclusion: boolean = true;
 
     /**
      * If set to true, no lighting calculations will be applied.
      */
-    @editableInPropertyPage("Unlit", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true }})
+    @editableInPropertyPage("Unlit", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true } })
     public unlit: boolean = false;
 
     /**
      * Force normal to face away from face.
      */
-    @editableInPropertyPage("Force normal forward", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true }})
+    @editableInPropertyPage("Force normal forward", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true } })
     public forceNormalForward: boolean = false;
 
     /**
      * Defines the material debug mode.
      * It helps seeing only some components of the material while troubleshooting.
      */
-    @editableInPropertyPage("Debug mode", PropertyTypeForEdition.List, "DEBUG", { "notifiers": { "update": true }, "options": [
-        { label: "None", value: 0 },
-        // Geometry
-        { label: "Normalized position", value: 1 },
-        { label: "Normals", value: 2 },
-        { label: "Tangents", value: 3 },
-        { label: "Bitangents", value: 4 },
-        { label: "Bump Normals", value: 5 },
-        //{ label: "UV1", value: 6 },
-        //{ label: "UV2", value: 7 },
-        { label: "ClearCoat Normals", value: 8 },
-        { label: "ClearCoat Tangents", value: 9 },
-        { label: "ClearCoat Bitangents", value: 10 },
-        { label: "Anisotropic Normals", value: 11 },
-        { label: "Anisotropic Tangents", value: 12 },
-        { label: "Anisotropic Bitangents", value: 13 },
-        // Maps
-        //{ label: "Emissive Map", value: 23 },
-        //{ label: "Light Map", value: 24 },
-        // Env
-        { label: "Env Refraction", value: 40 },
-        { label: "Env Reflection", value: 41 },
-        { label: "Env Clear Coat", value: 42 },
-        // Lighting
-        { label: "Direct Diffuse", value: 50 },
-        { label: "Direct Specular", value: 51 },
-        { label: "Direct Clear Coat", value: 52 },
-        { label: "Direct Sheen", value: 53 },
-        { label: "Env Irradiance", value: 54 },
-        // Lighting Params
-        { label: "Surface Albedo", value: 60 },
-        { label: "Reflectance 0", value: 61 },
-        { label: "Metallic", value: 62 },
-        { label: "Metallic F0", value: 71 },
-        { label: "Roughness", value: 63 },
-        { label: "AlphaG", value: 64 },
-        { label: "NdotV", value: 65 },
-        { label: "ClearCoat Color", value: 66 },
-        { label: "ClearCoat Roughness", value: 67 },
-        { label: "ClearCoat NdotV", value: 68 },
-        { label: "Transmittance", value: 69 },
-        { label: "Refraction Transmittance", value: 70 },
-        // Misc
-        { label: "SEO", value: 80 },
-        { label: "EHO", value: 81 },
-        { label: "Energy Factor", value: 82 },
-        { label: "Specular Reflectance", value: 83 },
-        { label: "Clear Coat Reflectance", value: 84 },
-        { label: "Sheen Reflectance", value: 85 },
-        { label: "Luminance Over Alpha", value: 86 },
-        { label: "Alpha", value: 87 },
-    ]})
+    @editableInPropertyPage("Debug mode", PropertyTypeForEdition.List, "DEBUG", {
+        "notifiers": { "update": true }, "options": [
+            { label: "None", value: 0 },
+            // Geometry
+            { label: "Normalized position", value: 1 },
+            { label: "Normals", value: 2 },
+            { label: "Tangents", value: 3 },
+            { label: "Bitangents", value: 4 },
+            { label: "Bump Normals", value: 5 },
+            //{ label: "UV1", value: 6 },
+            //{ label: "UV2", value: 7 },
+            { label: "ClearCoat Normals", value: 8 },
+            { label: "ClearCoat Tangents", value: 9 },
+            { label: "ClearCoat Bitangents", value: 10 },
+            { label: "Anisotropic Normals", value: 11 },
+            { label: "Anisotropic Tangents", value: 12 },
+            { label: "Anisotropic Bitangents", value: 13 },
+            // Maps
+            //{ label: "Emissive Map", value: 23 },
+            //{ label: "Light Map", value: 24 },
+            // Env
+            { label: "Env Refraction", value: 40 },
+            { label: "Env Reflection", value: 41 },
+            { label: "Env Clear Coat", value: 42 },
+            // Lighting
+            { label: "Direct Diffuse", value: 50 },
+            { label: "Direct Specular", value: 51 },
+            { label: "Direct Clear Coat", value: 52 },
+            { label: "Direct Sheen", value: 53 },
+            { label: "Env Irradiance", value: 54 },
+            // Lighting Params
+            { label: "Surface Albedo", value: 60 },
+            { label: "Reflectance 0", value: 61 },
+            { label: "Metallic", value: 62 },
+            { label: "Metallic F0", value: 71 },
+            { label: "Roughness", value: 63 },
+            { label: "AlphaG", value: 64 },
+            { label: "NdotV", value: 65 },
+            { label: "ClearCoat Color", value: 66 },
+            { label: "ClearCoat Roughness", value: 67 },
+            { label: "ClearCoat NdotV", value: 68 },
+            { label: "Transmittance", value: 69 },
+            { label: "Refraction Transmittance", value: 70 },
+            // Misc
+            { label: "SEO", value: 80 },
+            { label: "EHO", value: 81 },
+            { label: "Energy Factor", value: 82 },
+            { label: "Specular Reflectance", value: 83 },
+            { label: "Clear Coat Reflectance", value: 84 },
+            { label: "Sheen Reflectance", value: 85 },
+            { label: "Luminance Over Alpha", value: 86 },
+            { label: "Alpha", value: 87 },
+        ]
+    })
     public debugMode = 0;
 
     /**
@@ -296,14 +302,14 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
      * It helps with side by side comparison against the final render
      * This defaults to 0
      */
-    @editableInPropertyPage("Split position", PropertyTypeForEdition.Float, "DEBUG", { min: -1, max: 1, "notifiers": { "update": true }})
+    @editableInPropertyPage("Split position", PropertyTypeForEdition.Float, "DEBUG", { min: -1, max: 1, "notifiers": { "update": true } })
     public debugLimit = 0;
 
     /**
      * As the default viewing range might not be enough (if the ambient is really small for instance)
      * You can use the factor to better multiply the final value.
      */
-    @editableInPropertyPage("Output factor", PropertyTypeForEdition.Float, "DEBUG", { min: 0, max: 5, "notifiers": { "update": true }})
+    @editableInPropertyPage("Output factor", PropertyTypeForEdition.Float, "DEBUG", { min: 0, max: 5, "notifiers": { "update": true } })
     public debugFactor = 1;
 
     /**
@@ -522,28 +528,28 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     /**
      * Gets the indirect diffuse output component
      */
-    public get diffuseIndirect(): NodeMaterialConnectionPoint {
+    public get diffuseInd(): NodeMaterialConnectionPoint {
         return this._outputs[5];
     }
 
     /**
      * Gets the indirect specular output component
      */
-    public get specularIndirect(): NodeMaterialConnectionPoint {
+    public get specularInd(): NodeMaterialConnectionPoint {
         return this._outputs[6];
     }
 
     /**
      * Gets the indirect clear coat output component
      */
-    public get clearcoatIndirect(): NodeMaterialConnectionPoint {
+    public get clearcoatInd(): NodeMaterialConnectionPoint {
         return this._outputs[7];
     }
 
     /**
      * Gets the indirect sheen output component
      */
-    public get sheenIndirect(): NodeMaterialConnectionPoint {
+    public get sheenInd(): NodeMaterialConnectionPoint {
         return this._outputs[8];
     }
 
@@ -619,7 +625,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         defines.setValue("AOSTOREINMETALMAPRED", false, true);
         defines.setValue("METALLNESSSTOREINMETALMAPBLUE", false, true);
         defines.setValue("ROUGHNESSSTOREINMETALMAPALPHA", false, true);
-        defines.setValue("ROUGHNESSSTOREINMETALMAPGREEN",  false, true);
+        defines.setValue("ROUGHNESSSTOREINMETALMAPGREEN", false, true);
 
         // Lighting & colors
         if (this.lightFalloff === PBRBaseMaterial.LIGHTFALLOFF_STANDARD) {
@@ -668,7 +674,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             defines.setValue("ENVIRONMENTBRDF", true);
             defines.setValue("ENVIRONMENTBRDF_RGBD", this._environmentBRDFTexture.isRGBD, true);
         } else {
-            defines.setValue("ENVIRONMENTBRDF" , false);
+            defines.setValue("ENVIRONMENTBRDF", false);
             defines.setValue("ENVIRONMENTBRDF_RGBD", false);
         }
 

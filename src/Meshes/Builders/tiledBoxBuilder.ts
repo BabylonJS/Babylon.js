@@ -5,7 +5,7 @@ import { Color4 } from '../../Maths/math.color';
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 
-VertexData.CreateTiledBox = function(options: { pattern?: number, size?: number, width?: number, height?: number, depth: number, tileSize?: number, tileWidth?: number, tileHeight?: number, faceUV?: Vector4[], faceColors?: Color4[], alignHorizontal?: number, alignVertical?: number, sideOrientation?: number }): VertexData {
+VertexData.CreateTiledBox = function (options: { pattern?: number, size?: number, width?: number, height?: number, depth: number, tileSize?: number, tileWidth?: number, tileHeight?: number, faceUV?: Vector4[], faceColors?: Color4[], alignHorizontal?: number, alignVertical?: number, sideOrientation?: number }): VertexData {
     var nbFaces = 6;
 
     var faceUV: Vector4[] = options.faceUV || new Array<Vector4>(6);

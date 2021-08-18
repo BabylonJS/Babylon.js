@@ -2,7 +2,6 @@ import { Container } from "babylonjs-gui/2D/controls/container";
 import { Control } from "babylonjs-gui/2D/controls/control";
 import * as React from "react";
 import { GlobalState } from '../globalState';
-import { GUINodeTools } from "../guiNodeTools";
 import { CommandButtonComponent } from './commandButtonComponent';
 import { CommandDropdownComponent } from './commandDropdownComponent';
 
@@ -11,8 +10,8 @@ const pointerIcon: string = require("../../public/imgs/pointerIcon.svg");
 const handIcon: string = require("../../public/imgs/handIcon.svg");
 const zoomIcon: string = require("../../public/imgs/zoomIcon.svg");
 const guidesIcon: string = require("../../public/imgs/guidesIcon.svg");
-const controlsIcon: string = require("../../public/imgs/sliderIcon.svg");
 const logoIcon: string = require("../../public/imgs/babylonLogo.svg");
+
 
 require("../scss/commandBar.scss");
 
@@ -77,7 +76,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
             <div className={"ge-commands"}>
                 <div className="commands-left">
                     <img src={logoIcon} color="white" className={"active"} />
-                    <CommandDropdownComponent globalState={this.props.globalState} icon={hamburgerIcon} tooltip="Options" items={[
+                    <CommandDropdownComponent globalState={this.props.globalState} toRight={true} icon={hamburgerIcon} tooltip="Options" items={[
                         {
                             label: "Save",
                             onClick: () => { this.props.globalState.onSaveObservable.notifyObservers(); }
@@ -99,84 +98,11 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                         onClick={() => { if(!this._zooming) this.props.globalState.onZoomObservable.notifyObservers(); }} />
                     <CommandButtonComponent tooltip="Toggle Guides" shortcut="R" icon={guidesIcon} isActive={this._outlines}
                         onClick={() => { this.props.globalState.onOutlinesObservable.notifyObservers(); }} />
-                    <CommandDropdownComponent globalState={this.props.globalState} icon={controlsIcon} tooltip="Create" items={[
-                        {
-                            label: "Image",
-                            icon: "zoomIcon",
-                            onClick: () => { this.onCreate("Image") }
-                        }, {
-                            label: "TextButton",
-                            onClick: () => { this.onCreate("TextButton") }
-                        },
-                        {
-                            label: "Slider",
-                            onClick: () => { this.onCreate("Slider") }
-                        },
-                        {
-                            label: "ColorPicker",
-                            onClick: () => { this.onCreate("ColorPicker") }
-                        },
-                        {
-                            label: "ImageButton",
-                            onClick: () => { this.onCreate("ImageButton") }
-                        },
-                        {
-                            label: "Checkbox",
-                            onClick: () => { this.onCreate("Checkbox") }
-                        },
-                        {
-                            label: "VirtualKeyboard",
-                            onClick: () => { this.onCreate("VirtualKeyboard") }
-                        },
-                        {
-                            label: "DisplayGrid",
-                            onClick: () => { this.onCreate("DisplayGrid") }
-                        },
-                        {
-                            label: "Grid",
-                            onClick: () => { this.onCreate("Grid") }
-                        },
-                        {
-                            label: "StackPanel",
-                            onClick: () => { this.onCreate("StackPanel") }
-                        },
-                        {
-                            label: "Ellipse",
-                            onClick: () => { this.onCreate("Ellipse") }
-                        },
-                        {
-                            label: "Line",
-                            onClick: () => { this.onCreate("Line") }
-                        },
-                        {
-                            label: "Rectangle",
-                            onClick: () => { this.onCreate("Rectangle") }
-                        },
-                        {
-                            label: "Text",
-                            onClick: () => { this.onCreate("Text") }
-                        },
-                        {
-                            label: "InputText",
-                            onClick: () => { this.onCreate("InputText") }
-                        },
-                        {
-                            label: "InputPassword",
-                            onClick: () => { this.onCreate("InputPassword") }
-                        }
-
-                    ]} />
                 </div>
                 <div className="commands-right">
 
                 </div>
             </div>
         );
-    }
-    onCreate(value: string): void {
-        let guiElement = GUINodeTools.CreateControlFromString(value);
-        let newGuiNode = this.props.globalState.workbench.appendBlock(guiElement);
-        this.props.globalState.onSelectionChangedObservable.notifyObservers(newGuiNode);
-        this.forceUpdate();
     }
 }

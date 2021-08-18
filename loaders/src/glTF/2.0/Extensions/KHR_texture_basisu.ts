@@ -8,8 +8,7 @@ import { IKHRTextureBasisU } from 'babylonjs-gltf2interface';
 const NAME = "KHR_texture_basisu";
 
 /**
- * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1751)
- * !!! Experimental Extension Subject to Changes !!!
+ * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_texture_basisu)
  */
 export class KHR_texture_basisu implements IGLTFLoaderExtension {
     /** The name of this extension. */

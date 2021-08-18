@@ -132,9 +132,9 @@ export class FreeCamera extends TargetCamera {
         }
     }
 
-     /**
-     * Gets or Set the list of keyboard keys used to control the downward move of the camera.
-     */
+    /**
+    * Gets or Set the list of keyboard keys used to control the downward move of the camera.
+    */
     public get keysDownward(): number[] {
         var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
         if (keyboard) {
@@ -192,7 +192,7 @@ export class FreeCamera extends TargetCamera {
     /**
      * Gets or Set the list of keyboard keys used to control the left rotation move of the camera.
      */
-     public get keysRotateLeft(): number[] {
+    public get keysRotateLeft(): number[] {
         var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             return keyboard.keysRotateLeft;

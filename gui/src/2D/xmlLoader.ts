@@ -23,7 +23,7 @@ export class XmlLoader {
         "stretch": 5,
     };
 
-    private _rootNode : any;
+    private _rootNode: any;
 
     private _parentClass: any;
 
@@ -366,7 +366,6 @@ export class XmlLoader {
      * @param xmlFile defines the xml layout to load
      * @param rootNode defines the node / control to use as a parent for the loaded layout controls.
      * @returns Promise
-
      */
     public async loadLayoutAsync(xmlFile: any, rootNode: any): Promise<any> {
 

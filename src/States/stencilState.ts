@@ -4,7 +4,7 @@ import { IStencilState } from "./IStencilState";
 /**
  * @hidden
  **/
- export class StencilState implements IStencilState {
+export class StencilState implements IStencilState {
 
     /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn */
     public static readonly ALWAYS = Constants.ALWAYS;

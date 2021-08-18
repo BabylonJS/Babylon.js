@@ -890,11 +890,11 @@ declare module "babylonjs-gui/2D/controls/control" {
         */
         onWheelObservable: Observable<Vector2>;
         /**
-        * An event triggered when the pointer move over the control.
+        * An event triggered when the pointer moves over the control.
         */
         onPointerMoveObservable: Observable<Vector2>;
         /**
-        * An event triggered when the pointer move out of the control.
+        * An event triggered when the pointer moves out of the control.
         */
         onPointerOutObservable: Observable<Control>;
         /**
@@ -2665,6 +2665,7 @@ declare module "babylonjs-gui/2D/controls/focusableButton" {
     import { IKeyboardEvent } from "babylonjs/Events/deviceInputEvents";
     /**
      * Class used to create a focusable button that can easily handle keyboard events
+     * @since 5.0.0
      */
     export class FocusableButton extends Button implements IFocusableControl {
         name?: string | undefined;
@@ -3628,6 +3629,7 @@ declare module "babylonjs-gui/2D/controls/toggleButton" {
     import { PointerInfoBase } from "babylonjs/Events/pointerEvents";
     /**
      * Class used to create toggle buttons
+     * @since 5.0.0
      */
     export class ToggleButton extends Rectangle {
         name?: string | undefined;
@@ -4270,11 +4272,11 @@ declare module "babylonjs-gui/3D/controls/control3D" {
         /** Callback used to start pointer up animation */
         pointerUpAnimation: () => void;
         /**
-         * An event triggered when the pointer move over the control
+         * An event triggered when the pointer moves over the control
          */
         onPointerMoveObservable: Observable<Vector3>;
         /**
-         * An event triggered when the pointer move out of the control
+         * An event triggered when the pointer moves out of the control
          */
         onPointerOutObservable: Observable<Control3D>;
         /**
@@ -4738,6 +4740,7 @@ declare module "babylonjs-gui/3D/materials/fluentButton/fluentButtonMaterial" {
     import "babylonjs-gui/3D/materials/fluentButton/shaders/fluentButton.vertex";
     /**
      * Class used to render square buttons with fluent desgin
+     * @since 5.0.0
      */
     export class FluentButtonMaterial extends PushMaterial {
         /**
@@ -4924,6 +4927,7 @@ declare module "babylonjs-gui/3D/controls/touchHolographicButton" {
     import { TouchButton3D } from "babylonjs-gui/3D/controls/touchButton3D";
     /**
      * Class used to create a holographic button in 3D
+     * @since 5.0.0
      */
     export class TouchHolographicButton extends TouchButton3D {
         /**
@@ -5271,6 +5275,7 @@ declare module "babylonjs-gui/3D/behaviors/defaultBehavior" {
     /**
      * Default behavior for 3D UI elements.
      * Handles a FollowBehavior, SixDofBehavior and SurfaceMagnetismBehavior
+     * @since 5.0.0
      */
     export class DefaultBehavior implements Behavior<Mesh> {
         private _scene;
@@ -5517,6 +5522,7 @@ declare module "babylonjs-gui/3D/controls/holographicSlate" {
     import { DefaultBehavior } from "babylonjs-gui/3D/behaviors/defaultBehavior";
     /**
      * Class used to create a holographic slate
+     * @since 5.0.0
      */
     export class HolographicSlate extends ContentDisplay3D {
         /**
@@ -5686,6 +5692,7 @@ declare module "babylonjs-gui/3D/controls/handMenu" {
     import { WebXRExperienceHelper } from "babylonjs/XR/webXRExperienceHelper";
     /**
      * Hand menu that displays buttons and floats around the hand.
+     * @since 5.0.0
      */
     export class HandMenu extends TouchHolographicMenu {
         private _handConstraintBehavior;
@@ -5738,6 +5745,7 @@ declare module "babylonjs-gui/3D/controls/nearMenu" {
     import { TouchHolographicMenu } from "babylonjs-gui/3D/controls/touchHolographicMenu";
     /**
      * NearMenu that displays buttons and follows the camera
+     * @since 5.0.0
      */
     export class NearMenu extends TouchHolographicMenu {
         /**
@@ -5934,6 +5942,7 @@ declare module "babylonjs-gui/3D/controls/touchMeshButton3D" {
     import { TouchButton3D } from "babylonjs-gui/3D/controls/touchButton3D";
     /**
      * Class used to create an interactable object. It's a touchable 3D button using a mesh coming from the current scene
+     * @since 5.0.0
      */
     export class TouchMeshButton3D extends TouchButton3D {
         /** @hidden */
@@ -5994,6 +6003,7 @@ declare module "babylonjs-gui/3D/controls/holographicBackplate" {
     import { Control3D } from "babylonjs-gui/3D/controls/control3D";
     /**
      * Class used to create a holographic backplate in 3D
+     * @since 5.0.0
      */
     export class HolographicBackplate extends Control3D {
         private _shareMaterials;
@@ -6953,11 +6963,11 @@ declare module BABYLON.GUI {
         */
         onWheelObservable: BABYLON.Observable<BABYLON.Vector2>;
         /**
-        * An event triggered when the pointer move over the control.
+        * An event triggered when the pointer moves over the control.
         */
         onPointerMoveObservable: BABYLON.Observable<BABYLON.Vector2>;
         /**
-        * An event triggered when the pointer move out of the control.
+        * An event triggered when the pointer moves out of the control.
         */
         onPointerOutObservable: BABYLON.Observable<Control>;
         /**
@@ -8649,6 +8659,7 @@ declare module BABYLON.GUI {
 declare module BABYLON.GUI {
     /**
      * Class used to create a focusable button that can easily handle keyboard events
+     * @since 5.0.0
      */
     export class FocusableButton extends Button implements IFocusableControl {
         name?: string | undefined;
@@ -9545,6 +9556,7 @@ declare module BABYLON.GUI {
 declare module BABYLON.GUI {
     /**
      * Class used to create toggle buttons
+     * @since 5.0.0
      */
     export class ToggleButton extends Rectangle {
         name?: string | undefined;
@@ -10096,11 +10108,11 @@ declare module BABYLON.GUI {
         /** Callback used to start pointer up animation */
         pointerUpAnimation: () => void;
         /**
-         * An event triggered when the pointer move over the control
+         * An event triggered when the pointer moves over the control
          */
         onPointerMoveObservable: BABYLON.Observable<BABYLON.Vector3>;
         /**
-         * An event triggered when the pointer move out of the control
+         * An event triggered when the pointer moves out of the control
          */
         onPointerOutObservable: BABYLON.Observable<Control3D>;
         /**
@@ -10518,6 +10530,7 @@ declare module BABYLON.GUI {
 declare module BABYLON.GUI {
     /**
      * Class used to render square buttons with fluent desgin
+     * @since 5.0.0
      */
     export class FluentButtonMaterial extends BABYLON.PushMaterial {
         /**
@@ -10696,6 +10709,7 @@ declare module BABYLON.GUI {
 declare module BABYLON.GUI {
     /**
      * Class used to create a holographic button in 3D
+     * @since 5.0.0
      */
     export class TouchHolographicButton extends TouchButton3D {
         /**
@@ -11019,6 +11033,7 @@ declare module BABYLON.GUI {
     /**
      * Default behavior for 3D UI elements.
      * Handles a BABYLON.FollowBehavior, SixDofBehavior and BABYLON.SurfaceMagnetismBehavior
+     * @since 5.0.0
      */
     export class DefaultBehavior implements BABYLON.Behavior<BABYLON.Mesh> {
         private _scene;
@@ -11243,6 +11258,7 @@ declare module BABYLON.GUI {
 declare module BABYLON.GUI {
     /**
      * Class used to create a holographic slate
+     * @since 5.0.0
      */
     export class HolographicSlate extends ContentDisplay3D {
         /**
@@ -11396,6 +11412,7 @@ declare module BABYLON.GUI {
 declare module BABYLON.GUI {
     /**
      * Hand menu that displays buttons and floats around the hand.
+     * @since 5.0.0
      */
     export class HandMenu extends TouchHolographicMenu {
         private _handConstraintBehavior;
@@ -11437,6 +11454,7 @@ declare module BABYLON.GUI {
 declare module BABYLON.GUI {
     /**
      * NearMenu that displays buttons and follows the camera
+     * @since 5.0.0
      */
     export class NearMenu extends TouchHolographicMenu {
         /**
@@ -11609,6 +11627,7 @@ declare module BABYLON.GUI {
 declare module BABYLON.GUI {
     /**
      * Class used to create an interactable object. It's a touchable 3D button using a mesh coming from the current scene
+     * @since 5.0.0
      */
     export class TouchMeshButton3D extends TouchButton3D {
         /** @hidden */
@@ -11657,6 +11676,7 @@ declare module BABYLON.GUI {
 declare module BABYLON.GUI {
     /**
      * Class used to create a holographic backplate in 3D
+     * @since 5.0.0
      */
     export class HolographicBackplate extends Control3D {
         private _shareMaterials;

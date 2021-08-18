@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/@fortawesome/fontawesome-svg-core/index.es.js":
-/*!********************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/@fortawesome/fontawesome-svg-core/index.es.js ***!
-  \********************************************************************************************/
+/*!**************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/@fortawesome/fontawesome-svg-core/index.es.js ***!
+  \**************************************************************************************/
 /*! exports provided: icon, noAuto, config, toHtml, layer, text, counter, library, dom, parse, findIconDefinition */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -2557,9 +2557,9 @@ var autoReplace = function autoReplace() {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/free-regular-svg-icons/index.es.js":
-/*!**********************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/@fortawesome/free-regular-svg-icons/index.es.js ***!
-  \**********************************************************************************************/
+/*!****************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/@fortawesome/free-regular-svg-icons/index.es.js ***!
+  \****************************************************************************************/
 /*! exports provided: far, prefix, faAddressBook, faAddressCard, faAngry, faArrowAltCircleDown, faArrowAltCircleLeft, faArrowAltCircleRight, faArrowAltCircleUp, faBell, faBellSlash, faBookmark, faBuilding, faCalendar, faCalendarAlt, faCalendarCheck, faCalendarMinus, faCalendarPlus, faCalendarTimes, faCaretSquareDown, faCaretSquareLeft, faCaretSquareRight, faCaretSquareUp, faChartBar, faCheckCircle, faCheckSquare, faCircle, faClipboard, faClock, faClone, faClosedCaptioning, faComment, faCommentAlt, faCommentDots, faComments, faCompass, faCopy, faCopyright, faCreditCard, faDizzy, faDotCircle, faEdit, faEnvelope, faEnvelopeOpen, faEye, faEyeSlash, faFile, faFileAlt, faFileArchive, faFileAudio, faFileCode, faFileExcel, faFileImage, faFilePdf, faFilePowerpoint, faFileVideo, faFileWord, faFlag, faFlushed, faFolder, faFolderOpen, faFontAwesomeLogoFull, faFrown, faFrownOpen, faFutbol, faGem, faGrimace, faGrin, faGrinAlt, faGrinBeam, faGrinBeamSweat, faGrinHearts, faGrinSquint, faGrinSquintTears, faGrinStars, faGrinTears, faGrinTongue, faGrinTongueSquint, faGrinTongueWink, faGrinWink, faHandLizard, faHandPaper, faHandPeace, faHandPointDown, faHandPointLeft, faHandPointRight, faHandPointUp, faHandPointer, faHandRock, faHandScissors, faHandSpock, faHandshake, faHdd, faHeart, faHospital, faHourglass, faIdBadge, faIdCard, faImage, faImages, faKeyboard, faKiss, faKissBeam, faKissWinkHeart, faLaugh, faLaughBeam, faLaughSquint, faLaughWink, faLemon, faLifeRing, faLightbulb, faListAlt, faMap, faMeh, faMehBlank, faMehRollingEyes, faMinusSquare, faMoneyBillAlt, faMoon, faNewspaper, faObjectGroup, faObjectUngroup, faPaperPlane, faPauseCircle, faPlayCircle, faPlusSquare, faQuestionCircle, faRegistered, faSadCry, faSadTear, faSave, faShareSquare, faSmile, faSmileBeam, faSmileWink, faSnowflake, faSquare, faStar, faStarHalf, faStickyNote, faStopCircle, faSun, faSurprise, faThumbsDown, faThumbsUp, faTimesCircle, faTired, faTrashAlt, faUser, faUserCircle, faWindowClose, faWindowMaximize, faWindowMinimize, faWindowRestore */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -3641,9 +3641,9 @@ var _iconsCache = {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js":
-/*!********************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
-  \********************************************************************************************/
+/*!**************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
+  \**************************************************************************************/
 /*! exports provided: fas, prefix, faAd, faAddressBook, faAddressCard, faAdjust, faAirFreshener, faAlignCenter, faAlignJustify, faAlignLeft, faAlignRight, faAllergies, faAmbulance, faAmericanSignLanguageInterpreting, faAnchor, faAngleDoubleDown, faAngleDoubleLeft, faAngleDoubleRight, faAngleDoubleUp, faAngleDown, faAngleLeft, faAngleRight, faAngleUp, faAngry, faAnkh, faAppleAlt, faArchive, faArchway, faArrowAltCircleDown, faArrowAltCircleLeft, faArrowAltCircleRight, faArrowAltCircleUp, faArrowCircleDown, faArrowCircleLeft, faArrowCircleRight, faArrowCircleUp, faArrowDown, faArrowLeft, faArrowRight, faArrowUp, faArrowsAlt, faArrowsAltH, faArrowsAltV, faAssistiveListeningSystems, faAsterisk, faAt, faAtlas, faAtom, faAudioDescription, faAward, faBaby, faBabyCarriage, faBackspace, faBackward, faBacon, faBacteria, faBacterium, faBahai, faBalanceScale, faBalanceScaleLeft, faBalanceScaleRight, faBan, faBandAid, faBarcode, faBars, faBaseballBall, faBasketballBall, faBath, faBatteryEmpty, faBatteryFull, faBatteryHalf, faBatteryQuarter, faBatteryThreeQuarters, faBed, faBeer, faBell, faBellSlash, faBezierCurve, faBible, faBicycle, faBiking, faBinoculars, faBiohazard, faBirthdayCake, faBlender, faBlenderPhone, faBlind, faBlog, faBold, faBolt, faBomb, faBone, faBong, faBook, faBookDead, faBookMedical, faBookOpen, faBookReader, faBookmark, faBorderAll, faBorderNone, faBorderStyle, faBowlingBall, faBox, faBoxOpen, faBoxTissue, faBoxes, faBraille, faBrain, faBreadSlice, faBriefcase, faBriefcaseMedical, faBroadcastTower, faBroom, faBrush, faBug, faBuilding, faBullhorn, faBullseye, faBurn, faBus, faBusAlt, faBusinessTime, faCalculator, faCalendar, faCalendarAlt, faCalendarCheck, faCalendarDay, faCalendarMinus, faCalendarPlus, faCalendarTimes, faCalendarWeek, faCamera, faCameraRetro, faCampground, faCandyCane, faCannabis, faCapsules, faCar, faCarAlt, faCarBattery, faCarCrash, faCarSide, faCaravan, faCaretDown, faCaretLeft, faCaretRight, faCaretSquareDown, faCaretSquareLeft, faCaretSquareRight, faCaretSquareUp, faCaretUp, faCarrot, faCartArrowDown, faCartPlus, faCashRegister, faCat, faCertificate, faChair, faChalkboard, faChalkboardTeacher, faChargingStation, faChartArea, faChartBar, faChartLine, faChartPie, faCheck, faCheckCircle, faCheckDouble, faCheckSquare, faCheese, faChess, faChessBishop, faChessBoard, faChessKing, faChessKnight, faChessPawn, faChessQueen, faChessRook, faChevronCircleDown, faChevronCircleLeft, faChevronCircleRight, faChevronCircleUp, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faChild, faChurch, faCircle, faCircleNotch, faCity, faClinicMedical, faClipboard, faClipboardCheck, faClipboardList, faClock, faClone, faClosedCaptioning, faCloud, faCloudDownloadAlt, faCloudMeatball, faCloudMoon, faCloudMoonRain, faCloudRain, faCloudShowersHeavy, faCloudSun, faCloudSunRain, faCloudUploadAlt, faCocktail, faCode, faCodeBranch, faCoffee, faCog, faCogs, faCoins, faColumns, faComment, faCommentAlt, faCommentDollar, faCommentDots, faCommentMedical, faCommentSlash, faComments, faCommentsDollar, faCompactDisc, faCompass, faCompress, faCompressAlt, faCompressArrowsAlt, faConciergeBell, faCookie, faCookieBite, faCopy, faCopyright, faCouch, faCreditCard, faCrop, faCropAlt, faCross, faCrosshairs, faCrow, faCrown, faCrutch, faCube, faCubes, faCut, faDatabase, faDeaf, faDemocrat, faDesktop, faDharmachakra, faDiagnoses, faDice, faDiceD20, faDiceD6, faDiceFive, faDiceFour, faDiceOne, faDiceSix, faDiceThree, faDiceTwo, faDigitalTachograph, faDirections, faDisease, faDivide, faDizzy, faDna, faDog, faDollarSign, faDolly, faDollyFlatbed, faDonate, faDoorClosed, faDoorOpen, faDotCircle, faDove, faDownload, faDraftingCompass, faDragon, faDrawPolygon, faDrum, faDrumSteelpan, faDrumstickBite, faDumbbell, faDumpster, faDumpsterFire, faDungeon, faEdit, faEgg, faEject, faEllipsisH, faEllipsisV, faEnvelope, faEnvelopeOpen, faEnvelopeOpenText, faEnvelopeSquare, faEquals, faEraser, faEthernet, faEuroSign, faExchangeAlt, faExclamation, faExclamationCircle, faExclamationTriangle, faExpand, faExpandAlt, faExpandArrowsAlt, faExternalLinkAlt, faExternalLinkSquareAlt, faEye, faEyeDropper, faEyeSlash, faFan, faFastBackward, faFastForward, faFaucet, faFax, faFeather, faFeatherAlt, faFemale, faFighterJet, faFile, faFileAlt, faFileArchive, faFileAudio, faFileCode, faFileContract, faFileCsv, faFileDownload, faFileExcel, faFileExport, faFileImage, faFileImport, faFileInvoice, faFileInvoiceDollar, faFileMedical, faFileMedicalAlt, faFilePdf, faFilePowerpoint, faFilePrescription, faFileSignature, faFileUpload, faFileVideo, faFileWord, faFill, faFillDrip, faFilm, faFilter, faFingerprint, faFire, faFireAlt, faFireExtinguisher, faFirstAid, faFish, faFistRaised, faFlag, faFlagCheckered, faFlagUsa, faFlask, faFlushed, faFolder, faFolderMinus, faFolderOpen, faFolderPlus, faFont, faFontAwesomeLogoFull, faFootballBall, faForward, faFrog, faFrown, faFrownOpen, faFunnelDollar, faFutbol, faGamepad, faGasPump, faGavel, faGem, faGenderless, faGhost, faGift, faGifts, faGlassCheers, faGlassMartini, faGlassMartiniAlt, faGlassWhiskey, faGlasses, faGlobe, faGlobeAfrica, faGlobeAmericas, faGlobeAsia, faGlobeEurope, faGolfBall, faGopuram, faGraduationCap, faGreaterThan, faGreaterThanEqual, faGrimace, faGrin, faGrinAlt, faGrinBeam, faGrinBeamSweat, faGrinHearts, faGrinSquint, faGrinSquintTears, faGrinStars, faGrinTears, faGrinTongue, faGrinTongueSquint, faGrinTongueWink, faGrinWink, faGripHorizontal, faGripLines, faGripLinesVertical, faGripVertical, faGuitar, faHSquare, faHamburger, faHammer, faHamsa, faHandHolding, faHandHoldingHeart, faHandHoldingMedical, faHandHoldingUsd, faHandHoldingWater, faHandLizard, faHandMiddleFinger, faHandPaper, faHandPeace, faHandPointDown, faHandPointLeft, faHandPointRight, faHandPointUp, faHandPointer, faHandRock, faHandScissors, faHandSparkles, faHandSpock, faHands, faHandsHelping, faHandsWash, faHandshake, faHandshakeAltSlash, faHandshakeSlash, faHanukiah, faHardHat, faHashtag, faHatCowboy, faHatCowboySide, faHatWizard, faHdd, faHeadSideCough, faHeadSideCoughSlash, faHeadSideMask, faHeadSideVirus, faHeading, faHeadphones, faHeadphonesAlt, faHeadset, faHeart, faHeartBroken, faHeartbeat, faHelicopter, faHighlighter, faHiking, faHippo, faHistory, faHockeyPuck, faHollyBerry, faHome, faHorse, faHorseHead, faHospital, faHospitalAlt, faHospitalSymbol, faHospitalUser, faHotTub, faHotdog, faHotel, faHourglass, faHourglassEnd, faHourglassHalf, faHourglassStart, faHouseDamage, faHouseUser, faHryvnia, faICursor, faIceCream, faIcicles, faIcons, faIdBadge, faIdCard, faIdCardAlt, faIgloo, faImage, faImages, faInbox, faIndent, faIndustry, faInfinity, faInfo, faInfoCircle, faItalic, faJedi, faJoint, faJournalWhills, faKaaba, faKey, faKeyboard, faKhanda, faKiss, faKissBeam, faKissWinkHeart, faKiwiBird, faLandmark, faLanguage, faLaptop, faLaptopCode, faLaptopHouse, faLaptopMedical, faLaugh, faLaughBeam, faLaughSquint, faLaughWink, faLayerGroup, faLeaf, faLemon, faLessThan, faLessThanEqual, faLevelDownAlt, faLevelUpAlt, faLifeRing, faLightbulb, faLink, faLiraSign, faList, faListAlt, faListOl, faListUl, faLocationArrow, faLock, faLockOpen, faLongArrowAltDown, faLongArrowAltLeft, faLongArrowAltRight, faLongArrowAltUp, faLowVision, faLuggageCart, faLungs, faLungsVirus, faMagic, faMagnet, faMailBulk, faMale, faMap, faMapMarked, faMapMarkedAlt, faMapMarker, faMapMarkerAlt, faMapPin, faMapSigns, faMarker, faMars, faMarsDouble, faMarsStroke, faMarsStrokeH, faMarsStrokeV, faMask, faMedal, faMedkit, faMeh, faMehBlank, faMehRollingEyes, faMemory, faMenorah, faMercury, faMeteor, faMicrochip, faMicrophone, faMicrophoneAlt, faMicrophoneAltSlash, faMicrophoneSlash, faMicroscope, faMinus, faMinusCircle, faMinusSquare, faMitten, faMobile, faMobileAlt, faMoneyBill, faMoneyBillAlt, faMoneyBillWave, faMoneyBillWaveAlt, faMoneyCheck, faMoneyCheckAlt, faMonument, faMoon, faMortarPestle, faMosque, faMotorcycle, faMountain, faMouse, faMousePointer, faMugHot, faMusic, faNetworkWired, faNeuter, faNewspaper, faNotEqual, faNotesMedical, faObjectGroup, faObjectUngroup, faOilCan, faOm, faOtter, faOutdent, faPager, faPaintBrush, faPaintRoller, faPalette, faPallet, faPaperPlane, faPaperclip, faParachuteBox, faParagraph, faParking, faPassport, faPastafarianism, faPaste, faPause, faPauseCircle, faPaw, faPeace, faPen, faPenAlt, faPenFancy, faPenNib, faPenSquare, faPencilAlt, faPencilRuler, faPeopleArrows, faPeopleCarry, faPepperHot, faPercent, faPercentage, faPersonBooth, faPhone, faPhoneAlt, faPhoneSlash, faPhoneSquare, faPhoneSquareAlt, faPhoneVolume, faPhotoVideo, faPiggyBank, faPills, faPizzaSlice, faPlaceOfWorship, faPlane, faPlaneArrival, faPlaneDeparture, faPlaneSlash, faPlay, faPlayCircle, faPlug, faPlus, faPlusCircle, faPlusSquare, faPodcast, faPoll, faPollH, faPoo, faPooStorm, faPoop, faPortrait, faPoundSign, faPowerOff, faPray, faPrayingHands, faPrescription, faPrescriptionBottle, faPrescriptionBottleAlt, faPrint, faProcedures, faProjectDiagram, faPumpMedical, faPumpSoap, faPuzzlePiece, faQrcode, faQuestion, faQuestionCircle, faQuidditch, faQuoteLeft, faQuoteRight, faQuran, faRadiation, faRadiationAlt, faRainbow, faRandom, faReceipt, faRecordVinyl, faRecycle, faRedo, faRedoAlt, faRegistered, faRemoveFormat, faReply, faReplyAll, faRepublican, faRestroom, faRetweet, faRibbon, faRing, faRoad, faRobot, faRocket, faRoute, faRss, faRssSquare, faRubleSign, faRuler, faRulerCombined, faRulerHorizontal, faRulerVertical, faRunning, faRupeeSign, faSadCry, faSadTear, faSatellite, faSatelliteDish, faSave, faSchool, faScrewdriver, faScroll, faSdCard, faSearch, faSearchDollar, faSearchLocation, faSearchMinus, faSearchPlus, faSeedling, faServer, faShapes, faShare, faShareAlt, faShareAltSquare, faShareSquare, faShekelSign, faShieldAlt, faShieldVirus, faShip, faShippingFast, faShoePrints, faShoppingBag, faShoppingBasket, faShoppingCart, faShower, faShuttleVan, faSign, faSignInAlt, faSignLanguage, faSignOutAlt, faSignal, faSignature, faSimCard, faSink, faSitemap, faSkating, faSkiing, faSkiingNordic, faSkull, faSkullCrossbones, faSlash, faSleigh, faSlidersH, faSmile, faSmileBeam, faSmileWink, faSmog, faSmoking, faSmokingBan, faSms, faSnowboarding, faSnowflake, faSnowman, faSnowplow, faSoap, faSocks, faSolarPanel, faSort, faSortAlphaDown, faSortAlphaDownAlt, faSortAlphaUp, faSortAlphaUpAlt, faSortAmountDown, faSortAmountDownAlt, faSortAmountUp, faSortAmountUpAlt, faSortDown, faSortNumericDown, faSortNumericDownAlt, faSortNumericUp, faSortNumericUpAlt, faSortUp, faSpa, faSpaceShuttle, faSpellCheck, faSpider, faSpinner, faSplotch, faSprayCan, faSquare, faSquareFull, faSquareRootAlt, faStamp, faStar, faStarAndCrescent, faStarHalf, faStarHalfAlt, faStarOfDavid, faStarOfLife, faStepBackward, faStepForward, faStethoscope, faStickyNote, faStop, faStopCircle, faStopwatch, faStopwatch20, faStore, faStoreAlt, faStoreAltSlash, faStoreSlash, faStream, faStreetView, faStrikethrough, faStroopwafel, faSubscript, faSubway, faSuitcase, faSuitcaseRolling, faSun, faSuperscript, faSurprise, faSwatchbook, faSwimmer, faSwimmingPool, faSynagogue, faSync, faSyncAlt, faSyringe, faTable, faTableTennis, faTablet, faTabletAlt, faTablets, faTachometerAlt, faTag, faTags, faTape, faTasks, faTaxi, faTeeth, faTeethOpen, faTemperatureHigh, faTemperatureLow, faTenge, faTerminal, faTextHeight, faTextWidth, faTh, faThLarge, faThList, faTheaterMasks, faThermometer, faThermometerEmpty, faThermometerFull, faThermometerHalf, faThermometerQuarter, faThermometerThreeQuarters, faThumbsDown, faThumbsUp, faThumbtack, faTicketAlt, faTimes, faTimesCircle, faTint, faTintSlash, faTired, faToggleOff, faToggleOn, faToilet, faToiletPaper, faToiletPaperSlash, faToolbox, faTools, faTooth, faTorah, faToriiGate, faTractor, faTrademark, faTrafficLight, faTrailer, faTrain, faTram, faTransgender, faTransgenderAlt, faTrash, faTrashAlt, faTrashRestore, faTrashRestoreAlt, faTree, faTrophy, faTruck, faTruckLoading, faTruckMonster, faTruckMoving, faTruckPickup, faTshirt, faTty, faTv, faUmbrella, faUmbrellaBeach, faUnderline, faUndo, faUndoAlt, faUniversalAccess, faUniversity, faUnlink, faUnlock, faUnlockAlt, faUpload, faUser, faUserAlt, faUserAltSlash, faUserAstronaut, faUserCheck, faUserCircle, faUserClock, faUserCog, faUserEdit, faUserFriends, faUserGraduate, faUserInjured, faUserLock, faUserMd, faUserMinus, faUserNinja, faUserNurse, faUserPlus, faUserSecret, faUserShield, faUserSlash, faUserTag, faUserTie, faUserTimes, faUsers, faUsersCog, faUsersSlash, faUtensilSpoon, faUtensils, faVectorSquare, faVenus, faVenusDouble, faVenusMars, faVial, faVials, faVideo, faVideoSlash, faVihara, faVirus, faVirusSlash, faViruses, faVoicemail, faVolleyballBall, faVolumeDown, faVolumeMute, faVolumeOff, faVolumeUp, faVoteYea, faVrCardboard, faWalking, faWallet, faWarehouse, faWater, faWaveSquare, faWeight, faWeightHanging, faWheelchair, faWifi, faWind, faWindowClose, faWindowMaximize, faWindowMinimize, faWindowRestore, faWineBottle, faWineGlass, faWineGlassAlt, faWonSign, faWrench, faXRay, faYenSign, faYinYang */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -10661,9 +10661,9 @@ var _iconsCache = {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/react-fontawesome/index.es.js":
-/*!*****************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/@fortawesome/react-fontawesome/index.es.js ***!
-  \*****************************************************************************************/
+/*!***********************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/@fortawesome/react-fontawesome/index.es.js ***!
+  \***********************************************************************************/
 /*! exports provided: FontAwesomeIcon */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -11064,9 +11064,9 @@ var convertCurry = convert.bind(null, react__WEBPACK_IMPORTED_MODULE_2___default
 /***/ }),
 
 /***/ "../../node_modules/classnames/index.js":
-/*!******************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/classnames/index.js ***!
-  \******************************************************************/
+/*!************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/classnames/index.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11132,9 +11132,9 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/actionTabs.scss":
-/*!****************************************************************************************************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/actionTabs.scss ***!
-  \****************************************************************************************************************************************************************************/
+/*!****************************************************************************************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/actionTabs.scss ***!
+  \****************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11149,10 +11149,28 @@ module.exports = exports;
 
 /***/ }),
 
+/***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/performanceViewer/scss/performanceViewer.scss":
+/*!***************************************************************************************************************************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/performanceViewer/scss/performanceViewer.scss ***!
+  \***************************************************************************************************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+// Imports
+var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
+exports = ___CSS_LOADER_API_IMPORT___(false);
+// Module
+exports.push([module.i, "#performance-viewer {\n  display: grid;\n  height: 100%;\n  width: 100%;\n  grid-template-columns: 25% 75%;\n  grid-template-rows: 30px;\n  grid-template-areas: \". liveButton\"\r \"sidebar graph\"; }\n  #performance-viewer .performancePlayheadButton {\n    grid-area: liveButton;\n    height: 30px;\n    width: 100px;\n    justify-self: right;\n    background-color: #dcdfe1;\n    color: #2e3f47;\n    outline: 2px #2e3f47;\n    margin: 5px; }\n  #performance-viewer #performance-viewer-graph {\n    grid-area: graph; }\n  #performance-viewer #performance-viewer-sidebar {\n    grid-area: sidebar;\n    display: flex;\n    flex-direction: column; }\n    #performance-viewer #performance-viewer-sidebar .sidebar-item {\n      display: inline-flex;\n      flex-direction: row;\n      width: 100%; }\n      #performance-viewer #performance-viewer-sidebar .sidebar-item .sidebar-item-label {\n        width: 100%; }\n      #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker {\n        height: calc(100% - 8px);\n        margin: 4px;\n        width: 100%; }\n        #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-rect {\n          height: calc(100% - 4px);\n          border: 2px white solid;\n          cursor: pointer;\n          min-height: 18px; }\n        #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-picker-cover {\n          position: fixed;\n          top: 0px;\n          right: 0px;\n          bottom: 0px;\n          left: 0px;\n          z-index: 100; }\n        #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-picker-float {\n          position: absolute; }\n          #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-picker-float .color-picker-container {\n            width: 200px; }\n", ""]);
+// Exports
+module.exports = exports;
+
+
+/***/ }),
+
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/bottomBar.scss":
-/*!**************************************************************************************************************************************************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/bottomBar.scss ***!
-  \**************************************************************************************************************************************************************************************************************************/
+/*!**************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/bottomBar.scss ***!
+  \**************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11168,9 +11186,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/canvas.scss":
-/*!***********************************************************************************************************************************************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/canvas.scss ***!
-  \***********************************************************************************************************************************************************************************************************************/
+/*!***********************************************************************************************************************************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/canvas.scss ***!
+  \***********************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11186,9 +11204,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/curveEditor.scss":
-/*!****************************************************************************************************************************************************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/curveEditor.scss ***!
-  \****************************************************************************************************************************************************************************************************************************/
+/*!****************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/curveEditor.scss ***!
+  \****************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11204,9 +11222,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/sideBar.scss":
-/*!************************************************************************************************************************************************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/sideBar.scss ***!
-  \************************************************************************************************************************************************************************************************************************/
+/*!************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/sideBar.scss ***!
+  \************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11222,9 +11240,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/topBar.scss":
-/*!***********************************************************************************************************************************************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/topBar.scss ***!
-  \***********************************************************************************************************************************************************************************************************************/
+/*!***********************************************************************************************************************************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/topBar.scss ***!
+  \***********************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11240,9 +11258,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/materials/textures/textureEditor.scss":
-/*!*********************************************************************************************************************************************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/materials/textures/textureEditor.scss ***!
-  \*********************************************************************************************************************************************************************************************************************/
+/*!*********************************************************************************************************************************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/materials/textures/textureEditor.scss ***!
+  \*********************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11258,9 +11276,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/embedHost/embedHost.scss":
-/*!**************************************************************************************************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/embedHost/embedHost.scss ***!
-  \**************************************************************************************************************************************************************************/
+/*!**************************************************************************************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/embedHost/embedHost.scss ***!
+  \**************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11276,9 +11294,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/sceneExplorer/sceneExplorer.scss":
-/*!**********************************************************************************************************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/sceneExplorer/sceneExplorer.scss ***!
-  \**********************************************************************************************************************************************************************************/
+/*!**********************************************************************************************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/sceneExplorer/sceneExplorer.scss ***!
+  \**********************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11294,9 +11312,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss":
-/*!**************************************************************************************************************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss ***!
-  \**************************************************************************************************************************************************************************************/
+/*!**************************************************************************************************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss ***!
+  \**************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11312,9 +11330,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/runtime/api.js":
-/*!*****************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/runtime/api.js ***!
-  \*****************************************************************************/
+/*!***********************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/runtime/api.js ***!
+  \***********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11417,9 +11435,9 @@ function toComment(sourceMap) {
 /***/ }),
 
 /***/ "../../node_modules/gif.js.optimized/dist/gif.js":
-/*!***************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/gif.js.optimized/dist/gif.js ***!
-  \***************************************************************************/
+/*!*********************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/gif.js.optimized/dist/gif.js ***!
+  \*********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11429,9 +11447,9 @@ function toComment(sourceMap) {
 /***/ }),
 
 /***/ "../../node_modules/object-assign/index.js":
-/*!*********************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/object-assign/index.js ***!
-  \*********************************************************************/
+/*!***************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/object-assign/index.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11531,9 +11549,9 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 /***/ }),
 
 /***/ "../../node_modules/process/browser.js":
-/*!*****************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/process/browser.js ***!
-  \*****************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/process/browser.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -11726,9 +11744,9 @@ process.umask = function() { return 0; };
 /***/ }),
 
 /***/ "../../node_modules/prop-types/checkPropTypes.js":
-/*!***************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/prop-types/checkPropTypes.js ***!
-  \***************************************************************************/
+/*!*********************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/prop-types/checkPropTypes.js ***!
+  \*********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11840,9 +11858,9 @@ module.exports = checkPropTypes;
 /***/ }),
 
 /***/ "../../node_modules/prop-types/factoryWithTypeCheckers.js":
-/*!************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/prop-types/factoryWithTypeCheckers.js ***!
-  \************************************************************************************/
+/*!******************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/prop-types/factoryWithTypeCheckers.js ***!
+  \******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12443,9 +12461,9 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
 /***/ }),
 
 /***/ "../../node_modules/prop-types/index.js":
-/*!******************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/prop-types/index.js ***!
-  \******************************************************************/
+/*!************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/prop-types/index.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12469,9 +12487,9 @@ if (true) {
 /***/ }),
 
 /***/ "../../node_modules/prop-types/lib/ReactPropTypesSecret.js":
-/*!*************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/prop-types/lib/ReactPropTypesSecret.js ***!
-  \*************************************************************************************/
+/*!*******************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/prop-types/lib/ReactPropTypesSecret.js ***!
+  \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12493,9 +12511,9 @@ module.exports = ReactPropTypesSecret;
 /***/ }),
 
 /***/ "../../node_modules/re-resizable/lib/index.es5.js":
-/*!****************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/re-resizable/lib/index.es5.js ***!
-  \****************************************************************************/
+/*!**********************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/re-resizable/lib/index.es5.js ***!
+  \**********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13242,9 +13260,9 @@ module.exports = Resizable;
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/AbstractMenu.js":
-/*!************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/AbstractMenu.js ***!
-  \************************************************************************************/
+/*!******************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/AbstractMenu.js ***!
+  \******************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -13468,9 +13486,9 @@ var _initialiseProps = function _initialiseProps() {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/ContextMenu.js":
-/*!***********************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/ContextMenu.js ***!
-  \***********************************************************************************/
+/*!*****************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/ContextMenu.js ***!
+  \*****************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -13785,9 +13803,9 @@ ContextMenu.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/ContextMenuTrigger.js":
-/*!******************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/ContextMenuTrigger.js ***!
-  \******************************************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/ContextMenuTrigger.js ***!
+  \************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -13985,9 +14003,9 @@ ContextMenuTrigger.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/MenuItem.js":
-/*!********************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/MenuItem.js ***!
-  \********************************************************************************/
+/*!**************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/MenuItem.js ***!
+  \**************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -14125,9 +14143,9 @@ MenuItem.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/SubMenu.js":
-/*!*******************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/SubMenu.js ***!
-  \*******************************************************************************/
+/*!*************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/SubMenu.js ***!
+  \*************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -14465,9 +14483,9 @@ SubMenu.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/actions.js":
-/*!*******************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/actions.js ***!
-  \*******************************************************************************/
+/*!*************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/actions.js ***!
+  \*************************************************************************/
 /*! exports provided: MENU_SHOW, MENU_HIDE, dispatchGlobalEvent, showMenu, hideMenu */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -14525,9 +14543,9 @@ function hideMenu() {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/connectMenu.js":
-/*!***********************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/connectMenu.js ***!
-  \***********************************************************************************/
+/*!*****************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/connectMenu.js ***!
+  \*****************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -14623,9 +14641,9 @@ var ignoredTriggerProps = [].concat(_toConsumableArray(Object.keys(_ContextMenuT
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/globalEventListener.js":
-/*!*******************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/globalEventListener.js ***!
-  \*******************************************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/globalEventListener.js ***!
+  \*************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -14685,9 +14703,9 @@ var GlobalEventListener = function GlobalEventListener() {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/helpers.js":
-/*!*******************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/helpers.js ***!
-  \*******************************************************************************/
+/*!*************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/helpers.js ***!
+  \*************************************************************************/
 /*! exports provided: callIfExists, hasOwnProp, uniqueId, cssClasses, store, canUseDOM */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -14734,9 +14752,9 @@ var canUseDOM = Boolean(typeof window !== 'undefined' && window.document && wind
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/index.js":
-/*!*****************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/index.js ***!
-  \*****************************************************************************/
+/*!***********************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/index.js ***!
+  \***********************************************************************/
 /*! exports provided: ContextMenu, ContextMenuTrigger, MenuItem, SubMenu, connectMenu, hideMenu, showMenu */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -14772,9 +14790,9 @@ __webpack_require__.r(__webpack_exports__);
 /***/ }),
 
 /***/ "../../node_modules/react-dom/cjs/react-dom.development.js":
-/*!*************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-dom/cjs/react-dom.development.js ***!
-  \*************************************************************************************/
+/*!*******************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/react-dom/cjs/react-dom.development.js ***!
+  \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -39796,9 +39814,9 @@ exports.version = ReactVersion;
 /***/ }),
 
 /***/ "../../node_modules/react-dom/index.js":
-/*!*****************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-dom/index.js ***!
-  \*****************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/react-dom/index.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -39841,9 +39859,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/react-is/cjs/react-is.development.js":
-/*!***********************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-is/cjs/react-is.development.js ***!
-  \***********************************************************************************/
+/*!*****************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/react-is/cjs/react-is.development.js ***!
+  \*****************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -40034,9 +40052,9 @@ exports.typeOf = typeOf;
 /***/ }),
 
 /***/ "../../node_modules/react-is/index.js":
-/*!****************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-is/index.js ***!
-  \****************************************************************/
+/*!**********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/react-is/index.js ***!
+  \**********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -40051,9 +40069,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/react/cjs/react.development.js":
-/*!*****************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react/cjs/react.development.js ***!
-  \*****************************************************************************/
+/*!***********************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/react/cjs/react.development.js ***!
+  \***********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41975,9 +41993,9 @@ exports.version = ReactVersion;
 /***/ }),
 
 /***/ "../../node_modules/react/index.js":
-/*!*************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react/index.js ***!
-  \*************************************************************/
+/*!*******************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/react/index.js ***!
+  \*******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41992,9 +42010,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/scheduler/cjs/scheduler-tracing.development.js":
-/*!*********************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
-  \*********************************************************************************************/
+/*!***************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -42353,9 +42371,9 @@ exports.unstable_wrap = unstable_wrap;
 /***/ }),
 
 /***/ "../../node_modules/scheduler/cjs/scheduler.development.js":
-/*!*************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/scheduler/cjs/scheduler.development.js ***!
-  \*************************************************************************************/
+/*!*******************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/scheduler/cjs/scheduler.development.js ***!
+  \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -43223,9 +43241,9 @@ exports.unstable_wrapCallback = unstable_wrapCallback;
 /***/ }),
 
 /***/ "../../node_modules/scheduler/index.js":
-/*!*****************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/scheduler/index.js ***!
-  \*****************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/scheduler/index.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -43240,9 +43258,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/scheduler/tracing.js":
-/*!*******************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/scheduler/tracing.js ***!
-  \*******************************************************************/
+/*!*************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/scheduler/tracing.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -43257,9 +43275,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/setimmediate/setImmediate.js":
-/*!***************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/setimmediate/setImmediate.js ***!
-  \***************************************************************************/
+/*!*********************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/setimmediate/setImmediate.js ***!
+  \*********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -43455,9 +43473,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/split.js/dist/split.es.js":
-/*!************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/split.js/dist/split.es.js ***!
-  \************************************************************************/
+/*!******************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/split.js/dist/split.es.js ***!
+  \******************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -44227,9 +44245,9 @@ var Split = function (idsOption, options) {
 /***/ }),
 
 /***/ "../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js":
-/*!****************************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js ***!
-  \****************************************************************************************************/
+/*!**********************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js ***!
+  \**********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -44507,9 +44525,9 @@ module.exports = function (list, options) {
 /***/ }),
 
 /***/ "../../node_modules/timers-browserify/main.js":
-/*!************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/timers-browserify/main.js ***!
-  \************************************************************************/
+/*!******************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/timers-browserify/main.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -44582,9 +44600,9 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
 /***/ }),
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!*****************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \*****************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -45882,6 +45900,30 @@ var GradientStepComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./components/actionTabs/tabs/performanceViewer/performancePlayheadButtonComponent.tsx":
+/*!*********************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/performanceViewer/performancePlayheadButtonComponent.tsx ***!
+  \*********************************************************************************************/
+/*! exports provided: PerformancePlayheadButtonComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PerformancePlayheadButtonComponent", function() { return PerformancePlayheadButtonComponent; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+
+var PerformancePlayheadButtonComponent = function (_a) {
+    var returnToPlayhead = _a.returnToPlayhead;
+    var onReturnToPlayheadClick = function () {
+        returnToPlayhead.notifyObservers();
+    };
+    return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("button", { className: "performancePlayheadButton", onClick: onReturnToPlayheadClick, title: "Return to Playhead" }, "Return"));
+};
+
+
+/***/ }),
+
 /***/ "./components/actionTabs/tabs/performanceViewer/performanceViewerComponent.tsx":
 /*!*************************************************************************************!*\
   !*** ./components/actionTabs/tabs/performanceViewer/performanceViewerComponent.tsx ***!
@@ -45892,48 +45934,230 @@ var GradientStepComponent = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PerformanceViewerComponent", function() { return PerformanceViewerComponent; });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
-/* harmony import */ var _graph_canvasGraphComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../graph/canvasGraphComponent */ "./components/graph/canvasGraphComponent.tsx");
-/* harmony import */ var _popupComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../popupComponent */ "./components/popupComponent.tsx");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/fileButtonLineComponent */ "./sharedUiComponents/lines/fileButtonLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
+/* harmony import */ var _graph_canvasGraphComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../graph/canvasGraphComponent */ "./components/graph/canvasGraphComponent.tsx");
+/* harmony import */ var _popupComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../popupComponent */ "./components/popupComponent.tsx");
+/* harmony import */ var _performanceViewerSidebarComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./performanceViewerSidebarComponent */ "./components/actionTabs/tabs/performanceViewer/performanceViewerSidebarComponent.tsx");
+/* harmony import */ var _performancePlayheadButtonComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./performancePlayheadButtonComponent */ "./components/actionTabs/tabs/performanceViewer/performancePlayheadButtonComponent.tsx");
 
 
 
 
 
+
+
+
+
+
+
+
+
+__webpack_require__(/*! ./scss/performanceViewer.scss */ "./components/actionTabs/tabs/performanceViewer/scss/performanceViewer.scss");
 // aribitrary window size
 var initialWindowSize = { width: 1024, height: 512 };
 // Note this should be false when committed until the feature is fully working.
 var isEnabled = false;
+// list of strategies to add to perf graph automatically.
+var defaultStrategies = [
+    babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PerfCollectionStrategy"].GpuFrameTimeStrategy(),
+    babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PerfCollectionStrategy"].FpsStrategy(),
+    babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PerfCollectionStrategy"].DrawCallsStrategy(),
+    babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PerfCollectionStrategy"].ActiveMeshesStrategy(),
+];
+var RecordingState;
+(function (RecordingState) {
+    RecordingState["NotRecording"] = "Begin Recording";
+    RecordingState["Recording"] = "Stop Recording";
+})(RecordingState || (RecordingState = {}));
 var PerformanceViewerComponent = function (props) {
-    var _a = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(false), isOpen = _a[0], setIsOpen = _a[1];
+    var scene = props.scene;
+    var _a = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(false), isOpen = _a[0], setIsOpen = _a[1];
+    var _b = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(false), isLoaded = _b[0], setIsLoaded = _b[1];
+    var _c = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(RecordingState.NotRecording), recordingState = _c[0], setRecordingState = _c[1];
+    var _d = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(), performanceCollector = _d[0], setPerformanceCollector = _d[1];
+    var layoutObservable = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]())[0];
+    var returnToLiveObservable = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]())[0];
+    var popupRef = Object(react__WEBPACK_IMPORTED_MODULE_1__["useRef"])(null);
     // do cleanup when the window is closed
     var onClosePerformanceViewer = function (window) {
         if (window) {
             window.close();
         }
         setIsOpen(false);
+        setIsLoaded(false);
     };
     var onPerformanceButtonClick = function () {
+        setIsLoaded(false);
         setIsOpen(true);
     };
+    var onLoadClick = function (file) {
+        babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Tools"].ReadFile(file, function (data) {
+            // reopen window and load data!
+            setIsOpen(false);
+            setIsLoaded(true);
+            setIsOpen(true);
+            var isValid = performanceCollector === null || performanceCollector === void 0 ? void 0 : performanceCollector.loadFromFileData(data);
+            if (!isValid) {
+                // if our data isnt valid we close the window.
+                setIsOpen(false);
+                setIsLoaded(false);
+            }
+        });
+    };
+    var onExportClick = function () {
+        performanceCollector === null || performanceCollector === void 0 ? void 0 : performanceCollector.exportDataToCsv();
+    };
     var onResize = function () {
-        // do nothing for now.
+        var _a, _b;
+        if (!popupRef.current) {
+            return;
+        }
+        var window = popupRef.current.getWindow();
+        var width = (_a = window === null || window === void 0 ? void 0 : window.innerWidth) !== null && _a !== void 0 ? _a : 0;
+        var height = (_b = window === null || window === void 0 ? void 0 : window.innerHeight) !== null && _b !== void 0 ? _b : 0;
+        layoutObservable.notifyObservers({ width: width, height: height });
     };
-    var canvasServiceCallback = function (canvasService) {
-        canvasService.update();
+    var onToggleRecording = function () {
+        if (recordingState === RecordingState.Recording) {
+            setRecordingState(RecordingState.NotRecording);
+        }
+        else {
+            setRecordingState(RecordingState.Recording);
+        }
     };
-    return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"](react__WEBPACK_IMPORTED_MODULE_0__["Fragment"], null,
+    Object(react__WEBPACK_IMPORTED_MODULE_1__["useEffect"])(function () {
+        var perfCollector = scene._getPerfCollector();
+        perfCollector.addCollectionStrategies.apply(perfCollector, defaultStrategies);
+        setPerformanceCollector(perfCollector);
+    }, []);
+    Object(react__WEBPACK_IMPORTED_MODULE_1__["useEffect"])(function () {
+        if (isOpen && !isLoaded) {
+            setRecordingState(RecordingState.Recording);
+        }
+        else {
+            setRecordingState(RecordingState.NotRecording);
+        }
+    }, [isOpen]);
+    Object(react__WEBPACK_IMPORTED_MODULE_1__["useEffect"])(function () {
+        if (recordingState === RecordingState.Recording) {
+            if (performanceCollector === null || performanceCollector === void 0 ? void 0 : performanceCollector.hasLoadedData) {
+                performanceCollector === null || performanceCollector === void 0 ? void 0 : performanceCollector.clear(true);
+                performanceCollector === null || performanceCollector === void 0 ? void 0 : performanceCollector.addCollectionStrategies.apply(performanceCollector, defaultStrategies);
+            }
+            performanceCollector === null || performanceCollector === void 0 ? void 0 : performanceCollector.start();
+        }
+        else {
+            performanceCollector === null || performanceCollector === void 0 ? void 0 : performanceCollector.stop();
+        }
+        return function () {
+            performanceCollector === null || performanceCollector === void 0 ? void 0 : performanceCollector.stop();
+        };
+    }, [recordingState]);
+    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
         isEnabled &&
-            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_1__["ButtonLineComponent"], { label: "Open Perf Viewer", onClick: onPerformanceButtonClick }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "Performance Viewer" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Open Realtime Perf Viewer", onClick: onPerformanceButtonClick }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_3__["FileButtonLineComponent"], { accept: "csv", label: "Load Perf Viewer using CSV", onClick: onLoadClick }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Export Perf to CSV", onClick: onExportClick }),
+                !isOpen && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: recordingState, onClick: onToggleRecording })),
         isOpen &&
-            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_popupComponent__WEBPACK_IMPORTED_MODULE_3__["PopupComponent"], { id: "perf-viewer", title: "Performance Viewer", size: initialWindowSize, onResize: onResize, onClose: onClosePerformanceViewer },
-                react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { id: "performance-viewer" },
-                    react__WEBPACK_IMPORTED_MODULE_0__["createElement"](react__WEBPACK_IMPORTED_MODULE_0__["Fragment"], null,
-                        react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_graph_canvasGraphComponent__WEBPACK_IMPORTED_MODULE_2__["CanvasGraphComponent"], { id: "myChart", canvasServiceCallback: canvasServiceCallback }))))));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_popupComponent__WEBPACK_IMPORTED_MODULE_6__["PopupComponent"], { id: "perf-viewer", title: "Performance Viewer", size: initialWindowSize, ref: popupRef, onResize: onResize, onClose: onClosePerformanceViewer },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "performance-viewer" }, performanceCollector && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_performancePlayheadButtonComponent__WEBPACK_IMPORTED_MODULE_8__["PerformancePlayheadButtonComponent"], { returnToPlayhead: returnToLiveObservable }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_performanceViewerSidebarComponent__WEBPACK_IMPORTED_MODULE_7__["PerformanceViewerSidebarComponent"], { collector: performanceCollector }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_graph_canvasGraphComponent__WEBPACK_IMPORTED_MODULE_5__["CanvasGraphComponent"], { id: "performance-viewer-graph", returnToPlayheadObservable: returnToLiveObservable, layoutObservable: layoutObservable, scene: scene, collector: performanceCollector }))))));
 };
 
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/performanceViewer/performanceViewerSidebarComponent.tsx":
+/*!********************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/performanceViewer/performanceViewerSidebarComponent.tsx ***!
+  \********************************************************************************************/
+/*! exports provided: PerformanceViewerSidebarComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PerformanceViewerSidebarComponent", function() { return PerformanceViewerSidebarComponent; });
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _sharedUiComponents_lines_colorPickerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/colorPickerComponent */ "./sharedUiComponents/lines/colorPickerComponent.tsx");
+
+
+
+
+var PerformanceViewerSidebarComponent = function (props) {
+    var collector = props.collector;
+    var _a = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])([]), metadata = _a[0], setMetadata = _a[1];
+    Object(react__WEBPACK_IMPORTED_MODULE_1__["useEffect"])(function () {
+        var onUpdateMetadata = function (metadata) {
+            var entries = [];
+            // convert to iterable list of entries
+            metadata.forEach(function (value, key) {
+                entries.push([key, value]);
+            });
+            setMetadata(entries);
+        };
+        collector.metadataObservable.add(onUpdateMetadata);
+        return function () {
+            collector.metadataObservable.removeCallback(onUpdateMetadata);
+        };
+    }, []);
+    var onCheckChange = function (id) { return function (event) {
+        collector.updateMetadata(id, "hidden", !event.currentTarget.checked);
+    }; };
+    var onColorChange = function (id) { return function (color) {
+        collector.updateMetadata(id, "color", color);
+    }; };
+    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "performance-viewer-sidebar" }, metadata.map(function (_a) {
+        var _b;
+        var id = _a[0], metadata = _a[1];
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: "perf-sidebar-item-" + id, className: "sidebar-item" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkbox", checked: !metadata.hidden, onChange: onCheckChange(id) }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("span", { className: "sidebar-item-label" }, id),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_colorPickerComponent__WEBPACK_IMPORTED_MODULE_2__["ColorPickerLineComponent"], { value: babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromHexString((_b = metadata.color) !== null && _b !== void 0 ? _b : "#000"), onColorChanged: onColorChange(id), shouldPopRight: true })));
+    })));
+};
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/performanceViewer/scss/performanceViewer.scss":
+/*!**********************************************************************************!*\
+  !*** ./components/actionTabs/tabs/performanceViewer/scss/performanceViewer.scss ***!
+  \**********************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var api = __webpack_require__(/*! ../../../../../../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js */ "../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js");
+            var content = __webpack_require__(/*! !../../../../../../../node_modules/css-loader/dist/cjs.js!../../../../../../../node_modules/sass-loader/dist/cjs.js!./performanceViewer.scss */ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/performanceViewer/scss/performanceViewer.scss");
+
+            content = content.__esModule ? content.default : content;
+
+            if (typeof content === 'string') {
+              content = [[module.i, content, '']];
+            }
+
+var options = {};
+
+options.insert = "head";
+options.singleton = false;
+
+var update = api(content, options);
+
+
+
+module.exports = content.locals || {};
 
 /***/ }),
 
@@ -47476,13 +47700,16 @@ var Context = /** @class */ (function () {
     Context.prototype.play = function (forward) {
         this.isPlaying = true;
         this.scene.stopAnimation(this.target);
+        var animatable;
         if (forward) {
-            this.scene.beginAnimation(this.target, this.fromKey, this.toKey, true);
+            animatable = this.scene.beginAnimation(this.target, this.fromKey, this.toKey, true);
         }
         else {
-            this.scene.beginAnimation(this.target, this.toKey, this.fromKey, true);
+            animatable = this.scene.beginAnimation(this.target, this.toKey, this.fromKey, true);
         }
         this.forwardAnimation = forward;
+        // Move
+        animatable.goToFrame(this.activeFrame);
         this.onAnimationStateChanged.notifyObservers();
     };
     Context.prototype.stop = function () {
@@ -47496,8 +47723,7 @@ var Context = /** @class */ (function () {
         }
         this.activeFrame = frame;
         if (!this.isPlaying) {
-            this.scene.beginAnimation(this.target, frame, frame, false);
-            return;
+            this.scene.beginAnimation(this.target, this.fromKey, this.toKey, false);
         }
         for (var _i = 0, _a = this.animations; _i < _a.length; _i++) {
             var animationEntry = _a[_i];
@@ -59013,17 +59239,15 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var CanvasGraphComponent = function (props) {
-    var id = props.id, canvasServiceCallback = props.canvasServiceCallback, layoutObservable = props.layoutObservable;
+    var id = props.id, collector = props.collector, scene = props.scene, layoutObservable = props.layoutObservable, returnToPlayheadObservable = props.returnToPlayheadObservable;
     var canvasRef = Object(react__WEBPACK_IMPORTED_MODULE_0__["useRef"])(null);
     Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
         if (!canvasRef.current) {
             return;
         }
         var cs;
-        // temporarily set empty array, will eventually be passed by props!
         try {
-            cs = new _canvasGraphService__WEBPACK_IMPORTED_MODULE_1__["CanvasGraphService"](canvasRef.current, { datasets: [] });
-            canvasServiceCallback(cs);
+            cs = new _canvasGraphService__WEBPACK_IMPORTED_MODULE_1__["CanvasGraphService"](canvasRef.current, { datasets: collector.datasets });
         }
         catch (error) {
             console.error(error);
@@ -59038,10 +59262,28 @@ var CanvasGraphComponent = function (props) {
             newSize.height = newSize.height - top;
             cs === null || cs === void 0 ? void 0 : cs.resize(newSize);
         };
+        var dataUpdated = function () {
+            cs === null || cs === void 0 ? void 0 : cs.update();
+        };
+        var metaUpdated = function (meta) {
+            if (!cs) {
+                return;
+            }
+            cs.metadata = meta;
+            cs.update();
+        };
+        var resetDataPosition = function () {
+            cs === null || cs === void 0 ? void 0 : cs.resetDataPosition();
+        };
+        scene.onAfterRenderObservable.add(dataUpdated);
+        collector.metadataObservable.add(metaUpdated);
         layoutObservable === null || layoutObservable === void 0 ? void 0 : layoutObservable.add(layoutUpdated);
+        returnToPlayheadObservable === null || returnToPlayheadObservable === void 0 ? void 0 : returnToPlayheadObservable.add(resetDataPosition);
         return function () {
             cs === null || cs === void 0 ? void 0 : cs.destroy();
             layoutObservable === null || layoutObservable === void 0 ? void 0 : layoutObservable.removeCallback(layoutUpdated);
+            scene.onAfterRenderObservable.removeCallback(dataUpdated);
+            collector.metadataObservable.removeCallback(metaUpdated);
         };
     }, [canvasRef]);
     return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("canvas", { id: id, ref: canvasRef }));
@@ -59060,21 +59302,35 @@ var CanvasGraphComponent = function (props) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CanvasGraphService", function() { return CanvasGraphService; });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./graphSupportingTypes */ "./components/graph/graphSupportingTypes.ts");
 /* harmony import */ var babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.scalar */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__);
 
 
+
 var defaultColor = "#000";
+var axisColor = "#c0c4c8";
 var futureBoxColor = "#dfe9ed";
 var dividerColor = "#0a3066";
 var playheadColor = "#b9dbef";
-var tooltipBackgroundColor = "#121212";
-var tooltipForegroundColor = "#fff";
+var positionIndicatorColor = "#4d5960";
+var tooltipBackgroundColor = "#566268";
+var tooltipForegroundColor = "#fbfbfb";
+var topOfGraphY = 0;
 var defaultAlpha = 1;
 var tooltipBackgroundAlpha = 0.8;
 var tooltipHorizontalPadding = 10;
 var spaceBetweenTextAndBox = 5;
+var tooltipPaddingFromBottom = 20;
+// height of indicator triangle
+var triangleHeight = 10;
+// width of indicator triangle
+var triangleWidth = 20;
+// padding to indicate how far below the axis line the triangle should be.
+var trianglePaddingFromAxisLine = 3;
+var tickerHorizontalPadding = 10;
+// pixels to pad the top and bottom of data so that it doesn't get cut off by the margins.
+var dataPadding = 2;
 var playheadSize = 8;
 var dividerSize = 2;
 var axisLineLength = 10;
@@ -59085,16 +59341,19 @@ var scaleFactor = 0.8;
 var stopDrawingPlayheadThreshold = 0.95;
 // Threshold for the ratio at which we go from panning mode to live mode.
 var returnToLiveThreshold = 0.998;
-// Font to use on the tooltip!
-var tooltipFont = "12px Arial";
+// Font to use on the addons such as tooltips and tickers!
+var graphAddonFont = "12px Arial";
 // A string containing the alphabet, used in line height calculation for the font.
 var alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 // Arbitrary maximum used to make some GC optimizations.
-var maximumDatasetsAllowed = 32;
+var maximumDatasetsAllowed = 64;
+var msInSecond = 1000;
+var msInMinute = msInSecond * 60;
+var msInHour = msInMinute * 60;
 // time in ms to wait between tooltip draws inside the mouse move.
 var tooltipDebounceTime = 32;
 // time in ms to wait between draws
-var drawDebounceTime = 15;
+var drawThrottleTime = 15;
 /**
  * This function will debounce calls to functions.
  *
@@ -59113,6 +59372,27 @@ function debounce(callback, time) {
     };
 }
 /**
+ * This function will throttle calls to functions.
+ *
+ * @param callback callback to call.
+ * @param time time to wait between calls in ms.
+ */
+function throttle(callback, time) {
+    var lastCalledTime = 0;
+    return function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        var now = Date.now();
+        if (now - lastCalledTime < time) {
+            return;
+        }
+        lastCalledTime = now;
+        callback.apply(void 0, args);
+    };
+}
+/*
  * This class acts as the main API for graphing given a Here is where you will find methods to let the service know new data needs to be drawn,
  * let it know something has been resized, etc!
  */
@@ -59129,7 +59409,7 @@ var CanvasGraphService = /** @class */ (function () {
         /**
          * This method lets the service know it should get ready to update what it is displaying.
          */
-        this.update = debounce(function () { return _this._draw(); }, drawDebounceTime);
+        this.update = throttle(function () { return _this._draw(); }, drawThrottleTime);
         /**
          * Handles what to do when we are hovering over the canvas and not panning.
          *
@@ -59168,13 +59448,10 @@ var CanvasGraphService = /** @class */ (function () {
             }
             var amount = (event.deltaY * -0.01 | 0) * 100;
             var minZoom = 60;
-            // The max zoom is the largest dataset's length.      
-            var maxZoom = _this.datasets.map(function (dataset) { return dataset.data.length; })
-                .reduce(function (maxLengthSoFar, currLength) {
-                return Math.max(currLength, maxLengthSoFar);
-            }, 0);
+            // The max zoom is the number of slices.      
+            var maxZoom = _this._getNumberOfSlices();
             if (_this._shouldBecomeRealtime()) {
-                _this._positions.clear();
+                _this._position = null;
             }
             // Bind the zoom between [minZoom, maxZoom]
             _this._sizeOfWindow = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp(_this._sizeOfWindow - amount, minZoom, maxZoom);
@@ -59203,22 +59480,16 @@ var CanvasGraphService = /** @class */ (function () {
          * @param event The mouse event that contains positional information.
          */
         this._handlePan = function (event) {
-            if (!_this._panPosition) {
+            var _a;
+            if (!_this._panPosition || _this._getNumberOfSlices() === 0) {
                 return;
             }
             var pixelDelta = _this._panPosition.delta + event.clientX - _this._panPosition.xPos;
-            var pixelsPerItem = _this._width / _this._sizeOfWindow;
+            var pixelsPerItem = (_this._drawableArea.right - _this._drawableArea.left) / _this._sizeOfWindow;
             var itemsDelta = pixelDelta / pixelsPerItem | 0;
-            _this.datasets.forEach(function (dataset) {
-                var _a;
-                if (dataset.data.length === 0 || !!dataset.hidden) {
-                    return;
-                }
-                var id = dataset.id;
-                var pos = (_a = _this._positions.get(id)) !== null && _a !== void 0 ? _a : (dataset.data.length - 1);
-                // update our position without allowing the user to pan more than they need to (approximation) 
-                _this._positions.set(id, babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp(pos - itemsDelta, Math.floor(_this._sizeOfWindow * scaleFactor), dataset.data.length - Math.floor(_this._sizeOfWindow * (1 - scaleFactor))));
-            });
+            var pos = (_a = _this._position) !== null && _a !== void 0 ? _a : (_this._getNumberOfSlices() - 1);
+            // update our position without allowing the user to pan more than they need to (approximation) 
+            _this._position = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp(pos - itemsDelta, Math.floor(_this._sizeOfWindow * scaleFactor), _this._getNumberOfSlices() - Math.floor(_this._sizeOfWindow * (1 - scaleFactor)));
             if (itemsDelta === 0) {
                 _this._panPosition.delta += pixelDelta;
             }
@@ -59239,7 +59510,7 @@ var CanvasGraphService = /** @class */ (function () {
             }
             // check if we should return to realtime.
             if (_this._shouldBecomeRealtime()) {
-                _this._positions.clear();
+                _this._position = null;
             }
             var canvas = ctx.canvas;
             canvas.removeEventListener("mousemove", _this._handlePan);
@@ -59251,14 +59522,17 @@ var CanvasGraphService = /** @class */ (function () {
         this._ticks = [];
         this._panPosition = null;
         this._hoverPosition = null;
-        this._positions = new Map();
-        this._datasetBounds = new Map();
+        this._position = null;
+        this._datasetBounds = { start: 0, end: 0 };
         this._globalTimeMinMax = { min: Infinity, max: 0 };
         this._drawableArea = { top: 0, left: 0, right: 0, bottom: 0 };
-        this._textCache = { text: "", width: 0 };
+        this._tooltipTextCache = { text: "", width: 0 };
+        this._tickerTextCache = { text: "", width: 0 };
         this._tooltipItems = [];
+        this._tickerItems = [];
         for (var i = 0; i < maximumDatasetsAllowed; i++) {
             this._tooltipItems.push({ text: "", color: "" });
+            this._tickerItems.push({ text: "", id: "", max: 0, min: 0 });
         }
         if (!this._ctx) {
             throw Error("No canvas context accessible");
@@ -59267,13 +59541,18 @@ var CanvasGraphService = /** @class */ (function () {
         this._defaultLineHeight = defaultMetrics.actualBoundingBoxAscent + defaultMetrics.actualBoundingBoxDescent;
         this._axisHeight = axisLineLength + axisPadding + this._defaultLineHeight + axisPadding;
         this._ctx.save();
-        this._ctx.font = tooltipFont;
+        this._ctx.font = graphAddonFont;
         var fontMetrics = this._ctx.measureText(alphabet);
-        this._tooltipLineHeight = fontMetrics.actualBoundingBoxAscent + fontMetrics.actualBoundingBoxDescent;
+        this._addonFontLineHeight = fontMetrics.actualBoundingBoxAscent + fontMetrics.actualBoundingBoxDescent;
         this._ctx.restore();
         this.datasets = settings.datasets;
+        this.metadata = new Map();
         this._attachEventListeners(canvas);
     }
+    /**
+     * Update the canvas graph service with the new height and width of the canvas.
+     * @param size The new size of the canvas.
+     */
     CanvasGraphService.prototype.resize = function (size) {
         var ctx = this._ctx;
         var width = size.width, height = size.height;
@@ -59287,12 +59566,23 @@ var CanvasGraphService = /** @class */ (function () {
         this.update();
     };
     /**
+     * Force resets the position in the data, effectively returning to the most current data.
+     */
+    CanvasGraphService.prototype.resetDataPosition = function () {
+        this._position = null;
+    };
+    /**
      * This method draws the data and sets up the appropriate scales.
      */
     CanvasGraphService.prototype._draw = function () {
         var _this = this;
+        var _a;
         var ctx = this._ctx;
         if (!ctx) {
+            return;
+        }
+        var numSlices = this._getNumberOfSlices();
+        if (numSlices === 0) {
             return;
         }
         // First we clear the canvas so we can draw our data!
@@ -59300,115 +59590,155 @@ var CanvasGraphService = /** @class */ (function () {
         // Get global min max of time axis (across all datasets).
         this._globalTimeMinMax.min = Infinity;
         this._globalTimeMinMax.max = 0;
-        // First we must get the end positions of each dataset.
-        this.datasets.forEach(function (dataset) {
-            var _a;
-            // skip hidden and empty datasets!
-            if (dataset.data.length === 0 || !!dataset.hidden) {
-                return;
-            }
-            var pos = (_a = _this._positions.get(dataset.id)) !== null && _a !== void 0 ? _a : dataset.data.length - 1;
-            var start = pos - Math.ceil(_this._sizeOfWindow * scaleFactor);
-            var startOverflow = 0;
-            // account for overflow from start.
-            if (start < 0) {
-                startOverflow = 0 - start;
-                start = 0;
-            }
-            var end = Math.ceil(pos + _this._sizeOfWindow * (1 - scaleFactor) + startOverflow);
-            // account for overflow from end.
-            if (end > dataset.data.length) {
-                var endOverflow = end - dataset.data.length;
-                end = dataset.data.length;
-                start = Math.max(start - endOverflow, 0);
-            }
-            var bounds = _this._datasetBounds.get(dataset.id);
-            // update or set the bounds
-            if (bounds) {
-                bounds.start = start;
-                bounds.end = end;
-            }
-            else {
-                _this._datasetBounds.set(dataset.id, { start: start, end: end });
-            }
-        });
+        // First we must get the end positions of our view port.
+        var pos = (_a = this._position) !== null && _a !== void 0 ? _a : (numSlices - 1);
+        var start = pos - Math.ceil(this._sizeOfWindow * scaleFactor);
+        var startOverflow = 0;
+        // account for overflow from start.
+        if (start < 0) {
+            startOverflow = 0 - start;
+            start = 0;
+        }
+        var end = Math.ceil(pos + this._sizeOfWindow * (1 - scaleFactor) + startOverflow);
+        // account for overflow from end.
+        if (end > numSlices) {
+            var endOverflow = end - numSlices;
+            end = numSlices;
+            start = Math.max(start - endOverflow, 0);
+        }
+        // update the bounds
+        this._datasetBounds.start = start;
+        this._datasetBounds.end = end;
         // next we must find the min and max timestamp in bounds. (Timestamps are sorted)
-        this.datasets.forEach(function (dataset) {
-            var bounds = _this._datasetBounds.get(dataset.id);
-            // handles cases we skip!
-            if (!bounds || dataset.data.length === 0 || !!dataset.hidden) {
-                return;
-            }
-            _this._globalTimeMinMax.min = Math.min(dataset.data[bounds.start].timestamp, _this._globalTimeMinMax.min);
-            _this._globalTimeMinMax.max = Math.max(dataset.data[bounds.end - 1].timestamp, _this._globalTimeMinMax.max);
-        });
+        this._globalTimeMinMax.min = this.datasets.data.at(this.datasets.startingIndices.at(this._datasetBounds.start));
+        this._globalTimeMinMax.max = this.datasets.data.at(this.datasets.startingIndices.at(this._datasetBounds.end - 1));
         // set the buffer region maximum by rescaling the max timestamp in bounds.
         var bufferMaximum = Math.ceil((this._globalTimeMinMax.max - this._globalTimeMinMax.min) / scaleFactor + this._globalTimeMinMax.min);
         // we then need to update the end position based on the maximum for the buffer region
-        this.datasets.forEach(function (dataset) {
-            var bounds = _this._datasetBounds.get(dataset.id);
-            // handles cases we skip!
-            if (!bounds || dataset.data.length === 0 || !!dataset.hidden) {
-                return;
-            }
-            // binary search to get closest point to the buffer maximum.
-            bounds.end = _this._getClosestPointToTimestamp(dataset, bufferMaximum) + 1;
-            // keep track of largest timestamp value in view!
-            _this._globalTimeMinMax.max = Math.max(dataset.data[bounds.end - 1].timestamp, _this._globalTimeMinMax.max);
-        });
+        // binary search to get closest point to the buffer maximum.
+        this._datasetBounds.end = this._getClosestPointToTimestamp(bufferMaximum) + 1;
+        // keep track of largest timestamp value in view!
+        this._globalTimeMinMax.max = Math.max(this.datasets.data.at(this.datasets.startingIndices.at(this._datasetBounds.end - 1)), this._globalTimeMinMax.max);
         var updatedScaleFactor = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp((this._globalTimeMinMax.max - this._globalTimeMinMax.min) / (bufferMaximum - this._globalTimeMinMax.min), scaleFactor, 1);
         // we will now set the global maximum to the maximum of the buffer.
         this._globalTimeMinMax.max = bufferMaximum;
-        // TODO: Perhaps see if i can reduce the number of allocations.
-        // Keep only visible and non empty datasets and get a certain window of items.
-        var datasets = this.datasets.map(function (dataset) {
-            var bounds = _this._datasetBounds.get(dataset.id);
-            // handles cases we skip!
-            if (!bounds || dataset.data.length === 0 || !!dataset.hidden) {
-                return dataset;
-            }
-            return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, dataset), { data: dataset.data.slice(bounds.start, bounds.end) });
-        }).filter(function (dataset) { return !dataset.hidden && dataset.data.length > 0; });
         this._drawableArea.top = 0;
         this._drawableArea.left = 0;
         this._drawableArea.bottom = this._height;
         this._drawableArea.right = this._width;
+        var numberOfTickers = this._drawTickers(this._drawableArea, this._datasetBounds);
         this._drawTimeAxis(this._globalTimeMinMax, this._drawableArea);
         this._drawPlayheadRegion(this._drawableArea, updatedScaleFactor);
+        this._drawableArea.top += dataPadding;
+        this._drawableArea.bottom -= dataPadding;
+        var _b = this._drawableArea, left = _b.left, right = _b.right, bottom = _b.bottom, top = _b.top;
         // process, and then draw our points
-        datasets.forEach(function (dataset) {
-            var _a;
-            var valueMinMax = _this._getMinMax(dataset.data.map(function (point) { return point.value; }));
-            var drawablePoints = dataset.data.map(function (point) { return _this._getPixelPointFromDataPoint(point, _this._globalTimeMinMax, valueMinMax, _this._drawableArea); });
-            var prevPoint = drawablePoints[0];
+        this.datasets.ids.forEach(function (id, idOffset) {
+            var _a, _b;
+            var valueMinMax;
+            // we have already calculated  the min and max while getting the tickers, so use those.
+            for (var i = 0; i < numberOfTickers; i++) {
+                if (_this._tickerItems[i].id === id) {
+                    valueMinMax = _this._tickerItems[i];
+                }
+            }
+            // if we could not find the min max object it must be hidden so we skip.
+            if (!valueMinMax) {
+                return;
+            }
             ctx.beginPath();
-            ctx.strokeStyle = (_a = dataset.color) !== null && _a !== void 0 ? _a : defaultColor;
-            drawablePoints.forEach(function (point) {
-                ctx.moveTo(prevPoint.timestamp, prevPoint.value);
-                ctx.lineTo(point.timestamp, point.value);
-                prevPoint = point;
-            });
+            ctx.strokeStyle = (_b = (_a = _this.metadata.get(id)) === null || _a === void 0 ? void 0 : _a.color) !== null && _b !== void 0 ? _b : defaultColor;
+            var prevPoint;
+            for (var pointIndex = _this._datasetBounds.start; pointIndex < _this._datasetBounds.end; pointIndex++) {
+                var numPoints = _this.datasets.data.at(_this.datasets.startingIndices.at(pointIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].NumberOfPointsOffset);
+                if (idOffset >= numPoints) {
+                    continue;
+                }
+                var valueIndex = _this.datasets.startingIndices.at(pointIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].SliceDataOffset + idOffset;
+                var timestamp = _this.datasets.data.at(_this.datasets.startingIndices.at(pointIndex));
+                var value = _this.datasets.data.at(valueIndex);
+                var drawableTime = _this._getPixelForNumber(timestamp, _this._globalTimeMinMax, left, right - left, false);
+                var drawableValue = _this._getPixelForNumber(value, valueMinMax, top, bottom - top, true);
+                if (prevPoint === undefined) {
+                    prevPoint = [drawableTime, drawableValue];
+                }
+                ctx.moveTo(prevPoint[0], prevPoint[1]);
+                ctx.lineTo(drawableTime, drawableValue);
+                prevPoint[0] = drawableTime;
+                prevPoint[1] = drawableValue;
+            }
             ctx.stroke();
         });
         // then draw the tooltip.
         this._drawTooltip(this._hoverPosition, this._drawableArea);
     };
+    CanvasGraphService.prototype._drawTickers = function (drawableArea, bounds) {
+        var _this = this;
+        var ctx = this._ctx;
+        if (!ctx) {
+            return 0;
+        }
+        // create the ticker objects for each of the non hidden items.
+        var longestText = "";
+        var numberOfTickers = 0;
+        this.datasets.ids.forEach(function (id, idOffset) {
+            var _a;
+            if (!!((_a = _this.metadata.get(id)) === null || _a === void 0 ? void 0 : _a.hidden)) {
+                return;
+            }
+            var valueMinMax = _this._getMinMax(bounds, idOffset);
+            var latestValue = _this.datasets.data.at(_this.datasets.startingIndices.at(bounds.end - 1) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].SliceDataOffset + idOffset);
+            var text = id + ": " + latestValue.toFixed(2) + " (max: " + valueMinMax.max.toFixed(2) + ", min: " + valueMinMax.min.toFixed(2) + ")";
+            if (text.length > longestText.length) {
+                longestText = text;
+            }
+            _this._tickerItems[numberOfTickers].id = id;
+            _this._tickerItems[numberOfTickers].max = valueMinMax.max;
+            _this._tickerItems[numberOfTickers].min = valueMinMax.min;
+            _this._tickerItems[numberOfTickers].text = text;
+            numberOfTickers++;
+        });
+        ctx.save();
+        ctx.font = graphAddonFont;
+        ctx.textBaseline = "middle";
+        ctx.textAlign = "left";
+        var width;
+        // if the lengths are the same the estimate should be good enough given the padding.
+        if (this._tickerTextCache.text.length === longestText.length) {
+            width = this._tickerTextCache.width;
+        }
+        else {
+            width = ctx.measureText(longestText).width + 2 * tickerHorizontalPadding;
+            this._tickerTextCache.text = longestText;
+            this._tickerTextCache.width = width;
+        }
+        drawableArea.right -= width;
+        var textHeight = this._addonFontLineHeight + Math.floor(tickerHorizontalPadding / 2);
+        var x = drawableArea.right + tickerHorizontalPadding;
+        var y = drawableArea.top + textHeight;
+        for (var i = 0; i < numberOfTickers; i++) {
+            var tickerItem = this._tickerItems[i];
+            ctx.fillText(tickerItem.text, x, y);
+            y += textHeight;
+        }
+        ctx.restore();
+        return numberOfTickers;
+    };
     /**
-     * Returns the index of the closest time for a dataset.
+     * Returns the index of the closest time for the datasets.
      * Uses a modified binary search to get value.
      *
-     * @param dataset the dataset we want to search in.
      * @param targetTime the time we want to get close to.
      * @returns index of the item with the closest time to the targetTime
      */
-    CanvasGraphService.prototype._getClosestPointToTimestamp = function (dataset, targetTime) {
+    CanvasGraphService.prototype._getClosestPointToTimestamp = function (targetTime) {
         var low = 0;
-        var high = dataset.data.length - 1;
+        var high = this._getNumberOfSlices() - 1;
         var closestIndex = 0;
         while (low <= high) {
             var middle = Math.trunc((low + high) / 2);
-            var middleTimestamp = dataset.data[middle].timestamp;
-            if (Math.abs(middleTimestamp - targetTime) < Math.abs(dataset.data[closestIndex].timestamp - targetTime)) {
+            var middleTimestamp = this.datasets.data.at(this.datasets.startingIndices.at(middle));
+            if (Math.abs(middleTimestamp - targetTime) < Math.abs(this.datasets.data.at(this.datasets.startingIndices.at(closestIndex)) - targetTime)) {
                 closestIndex = middle;
             }
             if (middleTimestamp < targetTime) {
@@ -59422,6 +59752,13 @@ var CanvasGraphService = /** @class */ (function () {
             }
         }
         return closestIndex;
+    };
+    /**
+     * This is a convenience method to get the number of collected slices.
+     * @returns the total number of collected slices.
+     */
+    CanvasGraphService.prototype._getNumberOfSlices = function () {
+        return this.datasets.startingIndices.itemLength;
     };
     /**
      * Draws the time axis, adjusts the drawable area for the graph.
@@ -59439,15 +59776,20 @@ var CanvasGraphService = /** @class */ (function () {
         this._generateTicks(timeMinMax, spaceAvailable);
         // remove the height of the axis from the available drawable area.
         drawableArea.bottom -= this._axisHeight;
-        // draw time axis line
+        // draw axis box.
         ctx.save();
+        ctx.fillStyle = axisColor;
+        ctx.fillRect(drawableArea.left, drawableArea.bottom, spaceAvailable, this._axisHeight);
+        // draw time axis line
         ctx.beginPath();
         ctx.strokeStyle = defaultColor;
         ctx.moveTo(drawableArea.left, drawableArea.bottom);
         ctx.lineTo(drawableArea.right, drawableArea.bottom);
         // draw ticks and text.
+        ctx.fillStyle = defaultColor;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
+        var timestampUnit = this._getTimestampUnit(this._ticks[this._ticks.length - 1]);
         this._ticks.forEach(function (tick) {
             var position = _this._getPixelForNumber(tick, timeMinMax, drawableArea.left, spaceAvailable, false);
             if (position > spaceAvailable) {
@@ -59455,10 +59797,59 @@ var CanvasGraphService = /** @class */ (function () {
             }
             ctx.moveTo(position, drawableArea.bottom);
             ctx.lineTo(position, drawableArea.bottom + 10);
-            ctx.fillText(tick.toString(), position, drawableArea.bottom + 20);
+            ctx.fillText(_this._parseTimestamp(tick, timestampUnit), position, drawableArea.bottom + 20);
         });
         ctx.stroke();
         ctx.restore();
+    };
+    /**
+     * Given a timestamp (should be the maximum timestamp in view), this function returns the maximum unit the timestamp contains.
+     * This information can be used for formatting purposes.
+     * @param timestamp the maximum timestamp to find the maximum timestamp unit for.
+     * @returns The maximum unit the timestamp has.
+     */
+    CanvasGraphService.prototype._getTimestampUnit = function (timestamp) {
+        if (timestamp / msInHour > 1) {
+            return _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__["TimestampUnit"].Hours;
+        }
+        else if (timestamp / msInMinute > 1) {
+            return _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__["TimestampUnit"].Minutes;
+        }
+        else if (timestamp / msInSecond > 1) {
+            return _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__["TimestampUnit"].Seconds;
+        }
+        else {
+            return _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__["TimestampUnit"].Milliseconds;
+        }
+    };
+    /**
+     * Given a timestamp and the interval unit, this function will parse the timestamp to the appropriate format.
+     * @param timestamp The timestamp to parse
+     * @param intervalUnit The maximum unit of the maximum timestamp in an interval.
+     * @returns a string representing the parsed timestamp.
+     */
+    CanvasGraphService.prototype._parseTimestamp = function (timestamp, intervalUnit) {
+        var parsedTimestamp = "";
+        if (intervalUnit >= _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__["TimestampUnit"].Hours) {
+            var numHours = Math.floor(timestamp / msInHour);
+            timestamp -= numHours * msInHour;
+            parsedTimestamp += numHours.toString().padStart(intervalUnit > _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__["TimestampUnit"].Hours ? 2 : 1, "0") + ":";
+        }
+        if (intervalUnit >= _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__["TimestampUnit"].Minutes) {
+            var numMinutes = Math.floor(timestamp / msInMinute);
+            timestamp -= numMinutes * msInMinute;
+            parsedTimestamp += numMinutes.toString().padStart(intervalUnit > _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__["TimestampUnit"].Minutes ? 2 : 1, "0") + ":";
+        }
+        var numSeconds = Math.floor(timestamp / msInSecond);
+        timestamp -= numSeconds * msInSecond;
+        parsedTimestamp += numSeconds.toString().padStart(intervalUnit > _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__["TimestampUnit"].Seconds ? 2 : 1, "0");
+        if (timestamp > 0) {
+            if (parsedTimestamp.length > 0) {
+                parsedTimestamp += ".";
+            }
+            parsedTimestamp += Math.round(timestamp).toString().padStart(3, "0");
+        }
+        return parsedTimestamp;
     };
     /**
      * Generates a list of ticks given the min and max of the axis, and the space available in the axis.
@@ -59527,10 +59918,15 @@ var CanvasGraphService = /** @class */ (function () {
      * @param items the array of numbers to get the min and max for.
      * @returns the min and max of the array.
      */
-    CanvasGraphService.prototype._getMinMax = function (items) {
+    CanvasGraphService.prototype._getMinMax = function (bounds, offset) {
         var min = Infinity, max = 0;
-        for (var _i = 0, items_1 = items; _i < items_1.length; _i++) {
-            var item = items_1[_i];
+        for (var i = bounds.start; i < bounds.end; i++) {
+            var numPoints = this.datasets.data.at(this.datasets.startingIndices.at(i) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].NumberOfPointsOffset);
+            if (offset >= numPoints) {
+                continue;
+            }
+            var itemIndex = this.datasets.startingIndices.at(i) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].SliceDataOffset + offset;
+            var item = this.datasets.data.at(itemIndex);
             if (item < min) {
                 min = item;
             }
@@ -59541,23 +59937,6 @@ var CanvasGraphService = /** @class */ (function () {
         return {
             min: min,
             max: max
-        };
-    };
-    /**
-     * Converts a data point to a point on the canvas (a pixel coordinate).
-     *
-     * @param point The datapoint
-     * @param timeMinMax The minimum and maximum in the time axis.
-     * @param valueMinMax The minimum and maximum in the value axis for the dataset.
-     * @param drawableArea The allowed drawable area.
-     * @returns
-     */
-    CanvasGraphService.prototype._getPixelPointFromDataPoint = function (point, timeMinMax, valueMinMax, drawableArea) {
-        var timestamp = point.timestamp, value = point.value;
-        var top = drawableArea.top, left = drawableArea.left, bottom = drawableArea.bottom, right = drawableArea.right;
-        return {
-            timestamp: this._getPixelForNumber(timestamp, timeMinMax, left, right - left, false),
-            value: this._getPixelForNumber(value, valueMinMax, top, bottom - top, true)
         };
     };
     /**
@@ -59573,7 +59952,7 @@ var CanvasGraphService = /** @class */ (function () {
     CanvasGraphService.prototype._getPixelForNumber = function (num, minMax, startingPixel, spaceAvailable, shouldFlipValue) {
         var min = minMax.min, max = minMax.max;
         // Perform a min-max normalization to rescale the value onto a [0, 1] scale given the min and max of the dataset.
-        var normalizedValue = (num - min) / (max - min);
+        var normalizedValue = max !== min ? (num - min) / (max - min) : 1;
         // if we should make this a [1, 0] range instead (higher numbers = smaller pixel value)
         if (shouldFlipValue) {
             normalizedValue = 1 - normalizedValue;
@@ -59614,54 +59993,83 @@ var CanvasGraphService = /** @class */ (function () {
     CanvasGraphService.prototype._drawTooltip = function (pixel, drawableArea) {
         var _this = this;
         var ctx = this._ctx;
-        if (pixel === null || !ctx || !ctx.canvas) {
+        if (pixel === null || !ctx || !ctx.canvas || this._getNumberOfSlices() === 0) {
             return;
         }
         // first convert the mouse position in pixels to a timestamp.
-        var _a = ctx.canvas.getBoundingClientRect(), start = _a.left, end = _a.right;
-        var inferredTimestamp = this._getNumberFromPixel(pixel, this._globalTimeMinMax, start, end);
+        var start = ctx.canvas.getBoundingClientRect().left;
+        var adjustedPixel = pixel - start;
+        if (adjustedPixel > drawableArea.right) {
+            adjustedPixel = drawableArea.right;
+        }
+        var inferredTimestamp = this._getNumberFromPixel(adjustedPixel, this._globalTimeMinMax, drawableArea.left, drawableArea.right);
         var longestText = "";
         var numberOfTooltipItems = 0;
         // get the closest timestamps to the target timestamp, and store the appropriate meta object.
-        this.datasets.forEach(function (dataset) {
-            var _a;
-            if (!!dataset.hidden || dataset.data.length === 0) {
+        var closestIndex = this._getClosestPointToTimestamp(inferredTimestamp);
+        var actualTimestamp = 0;
+        this.datasets.ids.forEach(function (id, idOffset) {
+            var _a, _b, _c;
+            if (!!((_a = _this.metadata.get(id)) === null || _a === void 0 ? void 0 : _a.hidden)) {
                 return;
             }
-            var closestIndex = _this._getClosestPointToTimestamp(dataset, inferredTimestamp);
-            var text = dataset.id + ": " + dataset.data[closestIndex].value.toFixed(2);
+            var numPoints = _this.datasets.data.at(_this.datasets.startingIndices.at(closestIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].NumberOfPointsOffset);
+            if (idOffset >= numPoints) {
+                return;
+            }
+            var valueIndex = _this.datasets.startingIndices.at(closestIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].SliceDataOffset + idOffset;
+            actualTimestamp = _this.datasets.data.at(_this.datasets.startingIndices.at(closestIndex));
+            var text = id + ": " + _this.datasets.data.at(valueIndex).toFixed(2);
             if (text.length > longestText.length) {
                 longestText = text;
             }
             _this._tooltipItems[numberOfTooltipItems].text = text;
-            _this._tooltipItems[numberOfTooltipItems].color = (_a = dataset.color) !== null && _a !== void 0 ? _a : defaultColor;
+            _this._tooltipItems[numberOfTooltipItems].color = (_c = (_b = _this.metadata.get(id)) === null || _b === void 0 ? void 0 : _b.color) !== null && _c !== void 0 ? _c : defaultColor;
             numberOfTooltipItems++;
         });
-        var x = pixel - start;
-        var y = Math.floor((drawableArea.bottom - drawableArea.top) / 2);
+        var xForActualTimestamp = this._getPixelForNumber(actualTimestamp, this._globalTimeMinMax, drawableArea.left, drawableArea.right - drawableArea.left, false);
         ctx.save();
-        ctx.font = tooltipFont;
+        // draw pointer triangle
+        ctx.fillStyle = positionIndicatorColor;
+        var yTriangle = drawableArea.bottom + trianglePaddingFromAxisLine;
+        ctx.beginPath();
+        ctx.moveTo(xForActualTimestamp, yTriangle);
+        ctx.lineTo(xForActualTimestamp + triangleWidth / 2, yTriangle + triangleHeight);
+        ctx.lineTo(xForActualTimestamp - triangleWidth / 2, yTriangle + triangleHeight);
+        ctx.closePath();
+        ctx.fill();
+        // draw vertical line
+        ctx.strokeStyle = positionIndicatorColor;
+        ctx.beginPath();
+        ctx.moveTo(xForActualTimestamp, drawableArea.bottom);
+        ctx.lineTo(xForActualTimestamp, topOfGraphY);
+        ctx.stroke();
+        // draw the actual tooltip
+        ctx.font = graphAddonFont;
         ctx.textBaseline = "middle";
         ctx.textAlign = "left";
-        var boxLength = this._tooltipLineHeight;
-        var textHeight = this._tooltipLineHeight + Math.floor(tooltipHorizontalPadding / 2);
+        var boxLength = this._addonFontLineHeight;
+        var textHeight = this._addonFontLineHeight + Math.floor(tooltipHorizontalPadding / 2);
         // initialize width with cached value or measure width of longest text and update cache.
         var width;
-        if (longestText === this._textCache.text) {
-            width = this._textCache.width;
+        if (longestText === this._tooltipTextCache.text) {
+            width = this._tooltipTextCache.width;
         }
         else {
             width = ctx.measureText(longestText).width + boxLength + 2 * tooltipHorizontalPadding + spaceBetweenTextAndBox;
-            this._textCache.text = longestText;
-            this._textCache.width = width;
+            this._tooltipTextCache.text = longestText;
+            this._tooltipTextCache.width = width;
         }
+        var tooltipHeight = textHeight * (numberOfTooltipItems + 1);
+        var x = pixel - start;
+        var y = drawableArea.bottom - tooltipPaddingFromBottom - tooltipHeight;
         // We want the tool tip to always be inside the canvas so we adjust which way it is drawn.
         if (x + width > this._width) {
             x -= width;
         }
         ctx.globalAlpha = tooltipBackgroundAlpha;
         ctx.fillStyle = tooltipBackgroundColor;
-        ctx.fillRect(x, y, width, textHeight * (numberOfTooltipItems + 1));
+        ctx.fillRect(x, y, width, tooltipHeight);
         ctx.globalAlpha = defaultAlpha;
         x += tooltipHorizontalPadding;
         y += textHeight;
@@ -59695,29 +60103,19 @@ var CanvasGraphService = /** @class */ (function () {
      * @returns if the data should become realtime or not.
      */
     CanvasGraphService.prototype._shouldBecomeRealtime = function () {
-        if (this.datasets.length === 0) {
+        if (this._getNumberOfSlices() === 0) {
             return false;
         }
-        // We first get the latest dataset, because this is where the real time data is!
-        var latestDataset = this.datasets[0];
-        this.datasets.forEach(function (dataset) {
-            // skip over empty and hidden data!
-            if (dataset.data.length === 0 || !!dataset.hidden) {
-                return;
-            }
-            if (latestDataset.data[latestDataset.data.length - 1].timestamp < dataset.data[dataset.data.length - 1].timestamp) {
-                latestDataset = dataset;
-            }
-        });
-        var pos = this._positions.get(latestDataset.id);
-        var latestElementPos = latestDataset.data.length - 1;
-        if (pos === undefined) {
+        // we need to compare our current slice to the latest slice to see if we should return to realtime mode.
+        var pos = this._position;
+        var latestSlicePos = this._getNumberOfSlices() - 1;
+        if (pos === null) {
             return false;
         }
         // account for overflow on the left side only as it will be the one determining if we have sufficiently caught up to the realtime data.
         var overflow = Math.max(0 - (pos - Math.ceil(this._sizeOfWindow * scaleFactor)), 0);
-        var rightmostPos = Math.min(overflow + pos + Math.ceil(this._sizeOfWindow * (1 - scaleFactor)), latestElementPos);
-        return latestDataset.data[rightmostPos].timestamp / latestDataset.data[latestElementPos].timestamp > returnToLiveThreshold;
+        var rightmostPos = Math.min(overflow + pos + Math.ceil(this._sizeOfWindow * (1 - scaleFactor)), latestSlicePos);
+        return this.datasets.data.at(this.datasets.startingIndices.at(rightmostPos)) / this.datasets.data.at(this.datasets.startingIndices.at(latestSlicePos)) > returnToLiveThreshold;
     };
     /**
      * Will generate a playhead with a futurebox that takes up (1-scalefactor)*100% of the canvas.
@@ -59772,6 +60170,30 @@ var CanvasGraphService = /** @class */ (function () {
     return CanvasGraphService;
 }());
 
+
+
+/***/ }),
+
+/***/ "./components/graph/graphSupportingTypes.ts":
+/*!**************************************************!*\
+  !*** ./components/graph/graphSupportingTypes.ts ***!
+  \**************************************************/
+/*! exports provided: TimestampUnit */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TimestampUnit", function() { return TimestampUnit; });
+/**
+ * Defines the supported timestamp units.
+ */
+var TimestampUnit;
+(function (TimestampUnit) {
+    TimestampUnit[TimestampUnit["Milliseconds"] = 0] = "Milliseconds";
+    TimestampUnit[TimestampUnit["Seconds"] = 1] = "Seconds";
+    TimestampUnit[TimestampUnit["Minutes"] = 2] = "Minutes";
+    TimestampUnit[TimestampUnit["Hours"] = 3] = "Hours";
+})(TimestampUnit || (TimestampUnit = {}));
 
 
 /***/ }),
@@ -63222,7 +63644,7 @@ var BooleanLineComponent = /** @class */ (function (_super) {
         var check = this.props.value ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faCheck"] }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faTimesCircle"] });
         var className = this.props.value ? "value check" : "value uncheck";
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "textLine" },
-            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: className }, check)));
     };
@@ -63256,7 +63678,7 @@ var ButtonLineComponent = /** @class */ (function (_super) {
     ButtonLineComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "buttonLine" },
-            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { onClick: function () { return _this.props.onClick(); } }, this.props.label)));
     };
     return ButtonLineComponent;
@@ -63340,7 +63762,7 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
     CheckBoxLineComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "checkBoxLine" },
-            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "checkBox" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkbox", id: "checkbox" + this._uniqueId, className: "cbx hidden", checked: this.state.isSelected, onChange: function () { return _this.onChange(); }, disabled: !!this.props.disabled }),
@@ -63373,6 +63795,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_5__);
 /* harmony import */ var _colorPickerComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./colorPickerComponent */ "./sharedUiComponents/lines/colorPickerComponent.tsx");
+/* harmony import */ var _textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
+
 
 
 
@@ -63474,17 +63898,23 @@ var Color3LineComponent = /** @class */ (function (_super) {
         document.execCommand('copy');
         element.remove();
     };
+    Color3LineComponent.prototype.convert = function (colorString) {
+        this.onChange(this._colorString);
+    };
     Color3LineComponent.prototype.render = function () {
         var _this = this;
         var chevron = this.state.isExpanded ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faMinus"] }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faPlus"] });
+        this._colorString = this.state.color.toHexString();
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color3Line" },
-            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine", title: this.props.label },
+                this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color3" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorPickerComponent__WEBPACK_IMPORTED_MODULE_6__["ColorPickerLineComponent"], { linearHint: this.props.isLinear, value: this.state.color, onColorChanged: function (color) {
                             _this.onChange(color);
                         } })),
+                (this.props.icon && this.props.lockObject) &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "", target: this, propertyName: "_colorString", onChange: function (newValue) { return _this.convert(newValue); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "copy hoverIcon", onClick: function () { return _this.copyToClipboard(); }, title: "Copy to clipboard" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: copyIcon, alt: "" })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" }, chevron)),
@@ -63644,7 +64074,7 @@ var Color4LineComponent = /** @class */ (function (_super) {
         var chevron = this.state.isExpanded ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_5__["faMinus"] }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_5__["faPlus"] });
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color3Line" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine" },
-                this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
+                this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color3" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorPickerComponent__WEBPACK_IMPORTED_MODULE_6__["ColorPickerLineComponent"], { value: this.state.color, onColorChanged: function (color) {
@@ -63734,7 +64164,7 @@ var ColorPickerLineComponent = /** @class */ (function (_super) {
         var _this = this;
         var color = this.state.color;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker" },
-            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-rect", ref: this._floatHostRef, style: { background: this.state.hex }, onClick: function () { return _this.setState({ pickerEnabled: true }); } }),
             this.state.pickerEnabled &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
@@ -63814,7 +64244,7 @@ var FileButtonLineComponent = /** @class */ (function (_super) {
     FileButtonLineComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "buttonLine" },
-            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "file-upload" + this._id, className: "file-upload" }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: this.uploadInputRef, id: "file-upload" + this._id, type: "file", accept: this.props.accept, onChange: function (evt) { return _this.onChange(evt); } })));
     };
@@ -63859,7 +64289,7 @@ var FileMultipleButtonLineComponent = /** @class */ (function (_super) {
     FileMultipleButtonLineComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "buttonLine" },
-            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "file-upload" + this._id, className: "file-upload" }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: this.uploadInputRef, id: "file-upload" + this._id, type: "file", accept: this.props.accept, onChange: function (evt) { return _this.onChange(evt); }, multiple: true })));
     };
@@ -63988,7 +64418,7 @@ var FloatLineComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             !this.props.useEuler &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine" },
-                    this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
+                    this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
                     (!this.props.icon || this.props.label != "") &&
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: className },
@@ -64145,7 +64575,7 @@ var HexLineComponent = /** @class */ (function (_super) {
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null, !this.props.useEuler &&
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine" },
-                this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
+                this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "string", className: "hex-input", value: valueAsHex, onBlur: function () { return _this.unlock(); }, onFocus: function () { return _this.lock(); }, onChange: function (evt) { return _this.updateValue(evt.target.value, false); }, onKeyDown: function (evt) {
@@ -64436,7 +64866,7 @@ var NumericInputComponent = /** @class */ (function (_super) {
     NumericInputComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "numeric" },
-            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
             this.props.label &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "numeric-label", title: this.props.label }, this.props.label + ": "),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", step: this.props.step, className: "numeric-input", value: this.state.value, onChange: function (evt) { return _this.updateValue(evt); }, onBlur: function () { return _this.onBlur(); } })));
@@ -64531,7 +64961,7 @@ var OptionsLineComponent = /** @class */ (function (_super) {
         var _this = this;
         var _a;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "listLine" },
-            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, color: "black", className: "icon" }),
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, color: "black", className: "icon" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "options" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { onChange: function (evt) { return _this.updateValue(evt.target.value); }, value: (_a = this.state.value) !== null && _a !== void 0 ? _a : "" }, this.props.options.map(function (option, i) {
@@ -64586,7 +65016,7 @@ var RadioButtonLineComponent = /** @class */ (function (_super) {
     RadioButtonLineComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "radioLine" },
-            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "radioContainer" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { id: this.props.label, className: "radio", type: "radio", checked: this.state.isSelected, onChange: function () { return _this.onChange(); } }),
@@ -64694,7 +65124,7 @@ var SliderLineComponent = /** @class */ (function (_super) {
     SliderLineComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "sliderLine" },
-            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
             (!this.props.icon || this.props.label != "") &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.margin ? "label withMargins" : "label", title: this.props.label }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { isInteger: this.props.decimalCount === 0, smallUI: true, label: "", target: this.state, digits: this.props.decimalCount === undefined ? 4 : this.props.decimalCount, propertyName: "value", min: this.props.minimum, max: this.props.maximum, onEnter: function () {
@@ -64776,10 +65206,10 @@ var TextInputLineComponent = /** @class */ (function (_super) {
     TextInputLineComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "textInputLine" },
-            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, color: "black", className: "icon" }),
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, color: "black", className: "icon" }),
             (!this.props.icon || (this.props.icon && this.props.label != "")) &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value" + (this.props.noUnderline === true ? " noUnderline" : "") },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { value: this.state.value, onBlur: function () { return _this.props.lockObject.lock = false; }, onFocus: function () { return _this.props.lockObject.lock = true; }, onChange: function (evt) { return _this.updateValue(evt.target.value); } }))));
     };
     return TextInputLineComponent;
@@ -64830,10 +65260,10 @@ var TextLineComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value", title: this.props.value, style: { color: this.props.color ? this.props.color : "" } }, this.props.value || "no name"));
     };
     TextLineComponent.prototype.render = function () {
-        var _a, _b;
+        var _a, _b, _c;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.underline ? "textLine underline" : "textLine" + (this.props.additionalClass ? " " + this.props.additionalClass : "") },
-            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: (_a = this.props.label) !== null && _a !== void 0 ? _a : "" }, (_b = this.props.label) !== null && _b !== void 0 ? _b : ""),
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: (_b = (_a = this.props.tooltip) !== null && _a !== void 0 ? _a : this.props.label) !== null && _b !== void 0 ? _b : "" }, (_c = this.props.label) !== null && _c !== void 0 ? _c : ""),
             this.renderContent()));
     };
     return TextLineComponent;
@@ -64867,7 +65297,7 @@ var ValueLineComponent = /** @class */ (function (_super) {
         var digits = this.props.fractionDigits !== undefined ? this.props.fractionDigits : 2;
         var value = this.props.value.toFixed(digits) + (this.props.units ? " " + this.props.units : "");
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "textLine" },
-            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value", style: { color: this.props.color ? this.props.color : "" } }, value)));
     };
@@ -64954,7 +65384,7 @@ var Vector2LineComponent = /** @class */ (function (_super) {
         var _this = this;
         var chevron = this.state.isExpanded ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faMinus"] }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faPlus"] });
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector3Line" },
-            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
+            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine", title: this.props.label },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector" }, "X: " + this.state.value.x.toFixed(2) + ", Y: " + this.state.value.y.toFixed(2)),
@@ -65064,7 +65494,7 @@ var Vector3LineComponent = /** @class */ (function (_super) {
         var chevron = this.state.isExpanded ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faMinus"] }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faPlus"] });
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector3Line" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine" },
-                this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
+                this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector" },
                     !this.props.useEuler &&
@@ -65188,7 +65618,7 @@ var Vector4LineComponent = /** @class */ (function (_super) {
         var chevron = this.state.isExpanded ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faMinus"] }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faPlus"] });
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector3Line" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine" },
-                this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, className: "icon" }),
+                this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector" }, "X: " + this.state.value.x.toFixed(2) + ", Y: " + this.state.value.y.toFixed(2) + ", Z: " + this.state.value.z.toFixed(2) + ", W: " + this.state.value.w.toFixed(2)),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" }, chevron)),

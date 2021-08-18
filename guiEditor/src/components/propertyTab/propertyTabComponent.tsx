@@ -43,8 +43,10 @@ import { ControlPropertyGridComponent } from "./propertyGrids/gui/controlPropert
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
 import { Vector2 } from "babylonjs/Maths/math.vector";
 import { OptionsLineComponent } from "../../sharedUiComponents/lines/optionsLineComponent";
-import { TextInputLineComponent } from "../../sharedUiComponents/lines/textInputLineComponent";
 import { FloatLineComponent } from "../../sharedUiComponents/lines/floatLineComponent";
+import { Color3LineComponent } from "../../sharedUiComponents/lines/color3LineComponent";
+import { TextInputLineComponent } from "../../sharedUiComponents/lines/textInputLineComponent";
+import { ParentingPropertyGridComponent } from "../parentingPropertyGridComponent";
 
 require("./propertyTab.scss");
 const adtIcon: string = require("../../../public/imgs/adtIcon.svg");
@@ -72,24 +74,23 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         this.state = { currentNode: null, textureSize: new Vector2(1200, 1200) };
 
         this.props.globalState.onSaveObservable.add(() => {
-            this.save();
+            this.save(this.saveLocally);
         });
         this.props.globalState.onSnippetSaveObservable.add(() => {
-            this.saveToSnippetServer();
+            this.save(this.saveToSnippetServer);
         });
         this.props.globalState.onSnippetLoadObservable.add(() => {
             this.loadFromSnippet();
         });
 
+        this.props.globalState.onPropertyGridUpdateRequiredObservable.add(() => {
+            this.forceUpdate();
+        });
+
     }
 
-    timerRefresh() {
-        if (!this._lockObject.lock) {
-            this.forceUpdate();
-        }
-    }
     componentDidMount() {
-        this._timerIntervalId = window.setInterval(() => this.timerRefresh(), 500);
+
         this.props.globalState.onSelectionChangedObservable.add((selection) => {
             if (selection instanceof Control) {
                 this.setState({ currentNode: selection });
@@ -125,7 +126,20 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         );
     }
 
-    save() {
+    save(saveCallback: () => void) {
+        //removing the art board background from the adt.
+        this.props.globalState.guiTexture.removeControl(this.props.globalState.workbench.artBoardBackground);
+        saveCallback();
+        //readding the art board at the front of the list so it will be the first thing rendered.
+        if (this.props.globalState.guiTexture.getChildren()[0].children.length) {
+            this.props.globalState.guiTexture.getChildren()[0].children.unshift(this.props.globalState.workbench.artBoardBackground);
+        }
+        else {
+            this.props.globalState.guiTexture.getChildren()[0].children.push(this.props.globalState.workbench.artBoardBackground);
+        }
+    }
+
+    saveLocally = () => {
         try {
             const json = JSON.stringify(this.props.globalState.guiTexture.serializeContent());
             StringTools.DownloadAsFile(this.props.globalState.hostDocument, json, "guiTexture.json");
@@ -134,7 +148,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         }
     }
 
-    saveToSnippetServer() {
+    saveToSnippetServer = () => {
         const adt = this.props.globalState.guiTexture;
         const content = JSON.stringify(adt.serializeContent());
 
@@ -266,17 +280,24 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     }
 
     render() {
+
         if (this.state.currentNode) {
             return (
                 <div id="ge-propertyTab">
                     <div id="header">
                         <img id="logo" src={adtIcon} />
-                        <div id="title">{`${this.state.currentNode.name} [${this.state.currentNode.getClassName()}] (ID: ${this.state.currentNode.uniqueId.toString()})`}</div>
+                        <div id="title"> 
+                            <TextInputLineComponent noUnderline={true} lockObject={this._lockObject} label="" target={this.state.currentNode} propertyName="name" onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
+                        </div>
                     </div>
                     {this.renderProperties()}
-                    <hr />
+                    <hr className="ge" />
+                    {
+                        this.state.currentNode?.parent?.typeName === "Grid" && 
+                        <ParentingPropertyGridComponent control={this.state.currentNode} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} lockObject={this._lockObject}></ParentingPropertyGridComponent>
+                    }
                     <ButtonLineComponent
-                        label="REMOVE ELEMENT"
+                        label="DELETE ELEMENT"
                         onClick={() => {
                             this.state.currentNode?.dispose();
                             this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
@@ -290,13 +311,17 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 this.state.currentNode.serialize(serializationObject);
                                 const newControl = Control.Parse(serializationObject, this.props.globalState.guiTexture);
 
-                                if (newControl) { //insert the new control into the adt
+                                if (newControl) { //insert the new control into the adt or parent container
                                     this.props.globalState.workbench.appendBlock(newControl);
+                                    this.props.globalState.guiTexture.removeControl(newControl);
+                                    this.state.currentNode.parent?.addControl(newControl);
+
                                     let index = 1;
-                                    while (this.props.globalState.workbench.nodes.filter(  //search if there are any copies
-                                        control => control.name === newControl.name).length > 1) {
-                                        newControl.name = `${this.state.currentNode.name} Copy ${index++}`;
+                                    while (this.props.globalState.guiTexture.getDescendants(false).filter(  //search if there are any copies
+                                        control => control.name === `${newControl.name} Copy ${index}`).length) { 
+                                        index++;
                                     }
+                                    newControl.name = `${newControl.name} Copy ${index}`;
                                     this.props.globalState.onSelectionChangedObservable.notifyObservers(newControl);
                                 }
                             }
@@ -320,18 +345,19 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             <div id="ge-propertyTab">
                 <div id="header">
                     <img id="logo" src={adtIcon} />
-                    <div id="title">AdvanceDyanamicTexture</div>
+                    <div id="title">AdvancedDynamicTexture</div>
                 </div>
                 <div>
-                    <TextLineComponent label="ART BOARD" value=" " color="grey"></TextLineComponent>
+                    <TextLineComponent tooltip="" label="ART BOARD" value=" " color="grey"></TextLineComponent>
                     {
                         this.props.globalState.workbench.artBoardBackground !== undefined &&
-                        <TextInputLineComponent icon={artboardColorIcon} lockObject={this._lockObject} label="Background" target={this.props.globalState.workbench.artBoardBackground} propertyName="background" onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
+                        <Color3LineComponent iconLabel={"Background Color"} lockObject={this._lockObject} icon={artboardColorIcon} label="" target={this.props.globalState.workbench._scene} propertyName="clearColor" onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
                     }
-                    <hr />
-                    <TextLineComponent label="CANVAS" value=" " color="grey"></TextLineComponent>
+                    <hr className="ge" />
+                    <TextLineComponent tooltip="" label="CANVAS" value=" " color="grey"></TextLineComponent>
                     <CheckBoxLineComponent
-                        label="Responsive"
+                        label="RESPONSIVE"
+                        iconLabel="Responsive"
                         icon={responsiveIcon}
                         isSelected={() => DataStorage.ReadBoolean("Responsive", true)}
                         onSelect={(value: boolean) => {
@@ -340,7 +366,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         }}
                     />
                     <OptionsLineComponent
-                        label="Size"
+                        label=""
+                        iconLabel="Size"
                         options={sizeOptions}
                         icon={canvasSizeIcon}
                         target={this}
@@ -359,6 +386,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         <div className="divider">
                             <FloatLineComponent
                                 icon={canvasSizeIcon}
+                                iconLabel="Canvas Size"
                                 label=" "
                                 target={this.state.textureSize}
                                 propertyName="x"
@@ -377,22 +405,22 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             ></FloatLineComponent>
                         </div>
                     }
-                    <hr />
-                    <TextLineComponent label="FILE" value=" " color="grey"></TextLineComponent>
+                    <hr className="ge" />
+                    <TextLineComponent tooltip="" label="FILE" value=" " color="grey"></TextLineComponent>
                     <FileButtonLineComponent label="Load" onClick={(file) => this.load(file)} accept=".json" />
                     <ButtonLineComponent
                         label="Save"
                         onClick={() => {
-                            this.save();
+                            this.props.globalState.onSaveObservable.notifyObservers();
                         }}
                     />
-                    <hr />
-                    <TextLineComponent label="SNIPPET" value=" " color="grey"></TextLineComponent>
+                    <hr className="ge" />
+                    <TextLineComponent tooltip="" label="SNIPPET" value=" " color="grey"></TextLineComponent>
                     <ButtonLineComponent label="Load from snippet server" onClick={() => this.loadFromSnippet()} />
                     <ButtonLineComponent
                         label="Save to snippet server"
                         onClick={() => {
-                            this.saveToSnippetServer();
+                            this.props.globalState.onSnippetSaveObservable.notifyObservers();
                         }}
                     />
                 </div>

@@ -30,10 +30,10 @@ declare module "../scene" {
 }
 
 Object.defineProperty(Scene.prototype, "geometryBufferRenderer", {
-    get: function(this: Scene) {
+    get: function (this: Scene) {
         return this._geometryBufferRenderer;
     },
-    set: function(this: Scene, value: Nullable<GeometryBufferRenderer>) {
+    set: function (this: Scene, value: Nullable<GeometryBufferRenderer>) {
         if (value && value.isSupported) {
             this._geometryBufferRenderer = value;
         }
@@ -42,7 +42,7 @@ Object.defineProperty(Scene.prototype, "geometryBufferRenderer", {
     configurable: true
 });
 
-Scene.prototype.enableGeometryBufferRenderer = function(ratio: number = 1): Nullable<GeometryBufferRenderer> {
+Scene.prototype.enableGeometryBufferRenderer = function (ratio: number = 1): Nullable<GeometryBufferRenderer> {
     if (this._geometryBufferRenderer) {
         return this._geometryBufferRenderer;
     }
@@ -55,7 +55,7 @@ Scene.prototype.enableGeometryBufferRenderer = function(ratio: number = 1): Null
     return this._geometryBufferRenderer;
 };
 
-Scene.prototype.disableGeometryBufferRenderer = function(): void {
+Scene.prototype.disableGeometryBufferRenderer = function (): void {
     if (!this._geometryBufferRenderer) {
         return;
     }

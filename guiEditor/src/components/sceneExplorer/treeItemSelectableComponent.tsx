@@ -84,6 +84,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
         this._wasSelected = true;
         const entity = this.props.entity;
         this.props.globalState.onSelectionChangedObservable.notifyObservers(entity);
+        this.props.globalState.selectionLock = true;
     }
 
     renderChildren() {
@@ -108,7 +109,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
 
     render() {
         const marginStyle = {
-            paddingLeft: (10 * (this.props.offset + 0.5)) + "px"
+            paddingLeft: (10 * (this.props.offset + 0.5)) -20 + "px"
         };
         const entity = this.props.entity;
 
@@ -153,7 +154,6 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
                     }
                     <TreeItemSpecializedComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} label={entity.name} entity={entity} onClick={() => this.onSelect()} />
                 </div>
-                <div className="spacer"></div>
                 {
                     this.renderChildren()
                 }

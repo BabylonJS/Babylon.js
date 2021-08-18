@@ -1710,6 +1710,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
      * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Vendor/EXT_meshopt_compression)
      *
      * This extension uses a WebAssembly decoder module from https://github.com/zeux/meshoptimizer/tree/master/js
+     * @since 5.0.0
      */
     export class EXT_meshopt_compression implements IGLTFLoaderExtension {
         /**
@@ -1720,12 +1721,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
          * Defines whether this extension is enabled.
          */
         enabled: boolean;
-        /**
-         * Path to decoder module; defaults to https://preview.babylonjs.com/meshopt_decoder.js
-         */
-        static DecoderPath: string;
         private _loader;
-        private static _DecoderPromise?;
         /** @hidden */
         constructor(loader: GLTFLoader);
         /** @hidden */
@@ -1889,7 +1885,6 @@ declare module BABYLON.GLTF2.Loader.Extensions {
     /**
      * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_sheen/README.md)
      * [Playground Sample](https://www.babylonjs-playground.com/frame.html#BNIZX6#4)
-     * !!! Experimental Extension Subject to Changes !!!
      */
     export class KHR_materials_sheen implements IGLTFLoaderExtension {
         /**
@@ -1916,8 +1911,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
     /**
-     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1719)
-     * !!! Experimental Extension Subject to Changes !!!
+     * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_specular)
      */
     export class KHR_materials_specular implements IGLTFLoaderExtension {
         /**
@@ -1944,8 +1938,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
     /**
-     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1718)
-     * !!! Experimental Extension Subject to Changes !!!
+     * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_ior)
      */
     export class KHR_materials_ior implements IGLTFLoaderExtension {
         /**
@@ -2103,8 +2096,8 @@ declare module BABYLON.GLTF2.Loader.Extensions {
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
     /**
-     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1726)
-     * !!! Experimental Extension Subject to Changes !!!
+     * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_volume)
+     * @since 5.0.0
      */
     export class KHR_materials_volume implements IGLTFLoaderExtension {
         /**
@@ -2150,8 +2143,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
     /**
-     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1751)
-     * !!! Experimental Extension Subject to Changes !!!
+     * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_texture_basisu)
      */
     export class KHR_texture_basisu implements IGLTFLoaderExtension {
         /** The name of this extension. */
@@ -2191,8 +2183,8 @@ declare module BABYLON.GLTF2.Loader.Extensions {
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
     /**
-     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1893)
-     * !!! Experimental Extension Subject to Changes !!!
+     * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_xmp_json_ld)
+     * @since 5.0.0
      */
     export class KHR_xmp_json_ld implements IGLTFLoaderExtension {
         /**

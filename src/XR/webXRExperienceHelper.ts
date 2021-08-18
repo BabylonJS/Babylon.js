@@ -7,6 +7,8 @@ import { WebXRCamera } from "./webXRCamera";
 import { WebXRState, WebXRRenderTarget } from "./webXRTypes";
 import { WebXRFeaturesManager } from "./webXRFeaturesManager";
 import { Logger } from "../Misc/logger";
+import { UniversalCamera } from "../Cameras/universalCamera";
+import { Quaternion, Vector3 } from "../Maths/math.vector";
 
 /**
  * Base set of functionality needed to create an XR experience (WebXRSessionManager, Camera, StateManagement, etc.)
@@ -14,8 +16,10 @@ import { Logger } from "../Misc/logger";
  */
 export class WebXRExperienceHelper implements IDisposable {
     private _nonVRCamera: Nullable<Camera> = null;
+    private _spectatorCamera: UniversalCamera;
     private _originalSceneAutoClear = true;
     private _supported = false;
+    private _spectatorMode = false;
 
     /**
      * Camera used to render xr content
@@ -48,7 +52,7 @@ export class WebXRExperienceHelper implements IDisposable {
      */
     private constructor(private scene: Scene) {
         this.sessionManager = new WebXRSessionManager(scene);
-        this.camera = new WebXRCamera("", scene, this.sessionManager);
+        this.camera = new WebXRCamera("webxr", scene, this.sessionManager);
         this.featuresManager = new WebXRFeaturesManager(this.sessionManager);
 
         scene.onDisposeObservable.add(() => {
@@ -84,6 +88,7 @@ export class WebXRExperienceHelper implements IDisposable {
         this.onStateChangedObservable.clear();
         this.onInitialXRPoseSetObservable.clear();
         this.sessionManager.dispose();
+        this._spectatorCamera.dispose();
         if (this._nonVRCamera) {
             this.scene.activeCamera = this._nonVRCamera;
         }
@@ -181,6 +186,42 @@ export class WebXRExperienceHelper implements IDisposable {
         }
         this._setState(WebXRState.EXITING_XR);
         return this.sessionManager.exitXRAsync();
+    }
+
+    /**
+     * Enable spectator mode for desktop VR experiences.
+     * When spectator mode is enabled a camera will be attached to the desktop canvas and will
+     * display the first rig camera's view on the desktop canvas.
+     * Please note that this will degrade performance, as it requires another camera render.
+     * It is also not recommended to enable this in devices like the quest, as it brings no benefit there.
+     */
+    public enableSpectatorMode(): void {
+        if (!this._spectatorMode) {
+            const updateSpectatorCamera = () => {
+                this._spectatorCamera.position.copyFrom(this.camera.rigCameras[0].globalPosition);
+                this._spectatorCamera.rotationQuaternion.copyFrom(this.camera.rigCameras[0].absoluteRotation);
+            };
+            const onStateChanged = () => {
+                if (this.state === WebXRState.IN_XR) {
+                    this._spectatorCamera = new UniversalCamera('webxr-spectator', Vector3.Zero(), this.scene);
+                    this._spectatorCamera.rotationQuaternion = new Quaternion();
+                    this.scene.activeCameras = [this.camera, this._spectatorCamera];
+                    this.sessionManager.onXRFrameObservable.add(updateSpectatorCamera);
+                    this.scene.onAfterRenderCameraObservable.add((camera) => {
+                        if (camera === this.camera) {
+                            // reset the dimensions object for correct resizing
+                            this.scene.getEngine().framebufferDimensionsObject = null;
+                        }
+                    });
+                } else if (this.state === WebXRState.EXITING_XR) {
+                    this.sessionManager.onXRFrameObservable.removeCallback(updateSpectatorCamera);
+                    this.scene.activeCameras = null;
+                }
+            };
+            this._spectatorMode = true;
+            this.onStateChangedObservable.add(onStateChanged);
+            onStateChanged();
+        }
     }
 
     private _nonXRToXRCamera() {

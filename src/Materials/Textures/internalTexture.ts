@@ -365,7 +365,7 @@ export class InternalTexture {
                     proxy._swapAndDie(this, false);
                     rebuildSamples();
                     this.isReady = true;
-                }, null, this._buffer, undefined, this.format, undefined, undefined, undefined, undefined, this._useSRGBBuffer);
+                }, null, this._buffer, undefined, this.format, this._extension, undefined, undefined, undefined, this._useSRGBBuffer);
                 return;
 
             case InternalTextureSource.Raw:
@@ -527,7 +527,7 @@ export class InternalTexture {
                     proxy._swapAndDie(this, false);
 
                     this.isReady = true;
-                 } else if (this.isCube) {
+                } else if (this.isCube) {
                     let depthTextureOptions = {
                         bilinearFiltering: this.samplingMode !== Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
                         comparisonFunction: this._comparisonFunction,
@@ -539,8 +539,8 @@ export class InternalTexture {
                     proxy._swapAndDie(this, false);
 
                     this.isReady = true;
-                 }
-                 break;
+                }
+                break;
         }
 
         rebuildSamples();

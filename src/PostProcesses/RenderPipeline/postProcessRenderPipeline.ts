@@ -198,7 +198,7 @@ export class PostProcessRenderPipeline {
         }
 
         for (var i = 0; i < this._cameras.length; i++) {
-            if (! this._cameras[i]) {
+            if (!this._cameras[i]) {
                 continue;
             }
             var cameraName = this._cameras[i].name;

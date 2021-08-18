@@ -27,7 +27,7 @@ enum StatePosition {
 }
 
 const textureFormatToIndex: { [name: string]: number } = {
-    "" : 0,
+    "": 0,
     "r8unorm": 1,
     "r8snorm": 2,
     "r8uint": 3,
@@ -701,9 +701,9 @@ export abstract class WebGPUCacheRenderPipeline {
         throw new Error(`Invalid Format '${vertexBuffer.getKind()}' - type=${type}, normalized=${normalized}, size=${size}`);
     }
 
-    private _getAphaBlendState(): GPUBlendComponent {
+    private _getAphaBlendState(): Nullable<GPUBlendComponent> {
         if (!this._alphaBlendEnabled) {
-            return { };
+            return null;
         }
 
         return {
@@ -713,9 +713,9 @@ export abstract class WebGPUCacheRenderPipeline {
         };
     }
 
-    private _getColorBlendState(): GPUBlendComponent {
+    private _getColorBlendState(): Nullable<GPUBlendComponent> {
         if (!this._alphaBlendEnabled) {
-            return { };
+            return null;
         }
 
         return {
@@ -784,9 +784,9 @@ export abstract class WebGPUCacheRenderPipeline {
             this._stencilFrontCompare + (this._stencilFrontDepthFailOp << 3) + (this._stencilFrontPassOp << 6) + (this._stencilFrontFailOp << 9);
 
         const depthStencilState =
-                this._depthStencilFormat +
-                ((this._depthTestEnabled ? this._depthCompare : 7 /* ALWAYS */) << 6) +
-                (stencilState << 10); // stencil front - stencil back is the same
+            this._depthStencilFormat +
+            ((this._depthTestEnabled ? this._depthCompare : 7 /* ALWAYS */) << 6) +
+            (stencilState << 10); // stencil front - stencil back is the same
 
         if (this._depthStencilState !== depthStencilState) {
             this._depthStencilState = depthStencilState;
@@ -1063,24 +1063,30 @@ export abstract class WebGPUCacheRenderPipeline {
 
         if (this._mrtAttachments1 > 0) {
             for (let i = 0; i < this._mrtFormats.length; ++i) {
-                colorStates.push({
+                const descr: GPUColorTargetState = {
                     format: this._mrtFormats[i],
-                    blend: {
+                    writeMask: this._writeMask,
+                };
+                if (alphaBlend && colorBlend) {
+                    descr.blend = {
                         alpha: alphaBlend,
                         color: colorBlend,
-                    },
-                    writeMask: this._writeMask,
-                });
+                    };
+                }
+                colorStates.push(descr);
             }
         } else {
-            colorStates.push({
+            const descr: GPUColorTargetState = {
                 format: this._webgpuColorFormat[0],
-                blend: {
+                writeMask: this._writeMask,
+            };
+            if (alphaBlend && colorBlend) {
+                descr.blend = {
                     alpha: alphaBlend,
                     color: colorBlend,
-                },
-                writeMask: this._writeMask,
-            });
+                };
+            }
+            colorStates.push(descr);
         }
 
         const stencilFrontBack: GPUStencilStateFace = {

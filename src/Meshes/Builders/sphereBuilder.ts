@@ -4,7 +4,7 @@ import { VertexData } from "../mesh.vertexData";
 import { Scene } from "../../scene";
 import { Nullable } from '../../types';
 
-VertexData.CreateSphere = function(options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, arc?: number, slice?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, dedupTopBottomIndices?: boolean }): VertexData {
+VertexData.CreateSphere = function (options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, arc?: number, slice?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, dedupTopBottomIndices?: boolean }): VertexData {
     var segments: number = options.segments || 32;
     var diameterX: number = options.diameterX || options.diameter || 1;
     var diameterY: number = options.diameterY || options.diameter || 1;

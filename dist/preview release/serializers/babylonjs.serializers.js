@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!*****************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \*****************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -1560,7 +1560,8 @@ var _GLTFAnimation = /** @class */ (function () {
                                     animationKeys.push(morphTargetAnimation.getKeys()[i]);
                                 }
                                 else {
-                                    animationKeys.push({ frame: animationGroup.from + (animationGroupFrameDiff / numAnimationKeys) * i,
+                                    animationKeys.push({
+                                        frame: animationGroup.from + (animationGroupFrameDiff / numAnimationKeys) * i,
                                         value: morphTarget.influence,
                                         inTangent: sampleAnimationKeys[0].inTangent ? 0 : undefined,
                                         outTangent: sampleAnimationKeys[0].outTangent ? 0 : undefined

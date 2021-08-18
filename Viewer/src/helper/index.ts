@@ -20,7 +20,7 @@ export function isUrl(urlToCheck: string): boolean {
  * @param s string to convert
  */
 export function kebabToCamel(s) {
-    return s.replace(/(\-\w)/g, function(m) { return m[1].toUpperCase(); });
+    return s.replace(/(\-\w)/g, function (m) { return m[1].toUpperCase(); });
 }
 
 //https://gist.github.com/youssman/745578062609e8acac9f
@@ -29,7 +29,7 @@ export function kebabToCamel(s) {
  * @param str string to convert
  */
 export function camelToKebab(str) {
-    return !str ? null : str.replace(/([A-Z])/g, function(g) { return '-' + g[0].toLowerCase(); });
+    return !str ? null : str.replace(/([A-Z])/g, function (g) { return '-' + g[0].toLowerCase(); });
 }
 
 /**
@@ -41,7 +41,7 @@ export function camelToKebab(str) {
  */
 export function extendClassWithConfig(object: any, config: any) {
     if (!config || typeof config !== 'object') { return; }
-    Object.keys(config).forEach(function(key) {
+    Object.keys(config).forEach(function (key) {
         if (key in object && typeof object[key] !== 'function') {
             // if (typeof object[key] === 'function') return;
             // if it is an object, iterate internally until reaching basic types

@@ -37,6 +37,7 @@ export class GlobalState {
     backgroundColor: Color4;
     blockKeyboardEvents = false;
     controlCamera: boolean;
+    selectionLock: boolean;
     workbench: WorkbenchComponent;
     onPropertyChangedObservable = new Observable<PropertyChangedEvent>();
 
@@ -50,6 +51,7 @@ export class GlobalState {
     onOutlinesObservable = new Observable<void>();
     onResponsiveChangeObservable = new Observable<boolean>();
     onParentingChangeObservable = new Observable<Nullable<Control>>();
+    onPropertyGridUpdateRequiredObservable = new Observable<void>();
     onDraggingEndObservable = new Observable<void>();
     draggedControl: Nullable<Control>;
     draggedControlDirection: DragOverLocation;

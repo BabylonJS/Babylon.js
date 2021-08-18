@@ -1342,6 +1342,12 @@
             "excludedEngines": ["webgl1", "webgl2"],
             "referenceImage": "reverseDepthBufferFixFlicker.png",
             "errorRatio": 2
+        },
+        {
+            "title": "Multi cameras and output render target",
+            "renderCount": 2,
+            "playgroundId": "#BCYE7J#17",
+            "referenceImage": "multiCamerasOutputRenderTarget.png"
         }
     ]
 }

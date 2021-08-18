@@ -1046,15 +1046,11 @@ export class ShadowGenerator implements IShadowGenerator {
 
     protected _renderForShadowMap(opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void {
         var index: number;
-        let engine = this._scene.getEngine();
 
-        const colorWrite = engine.getColorWrite();
         if (depthOnlySubMeshes.length) {
-            engine.setColorWrite(false);
             for (index = 0; index < depthOnlySubMeshes.length; index++) {
                 this._renderSubMeshForShadowMap(depthOnlySubMeshes.data[index]);
             }
-            engine.setColorWrite(colorWrite);
         }
 
         for (index = 0; index < opaqueSubMeshes.length; index++) {
@@ -1352,7 +1348,7 @@ export class ShadowGenerator implements IShadowGenerator {
      */
     public isReady(subMesh: SubMesh, useInstances: boolean, isTransparent: boolean): boolean {
         const material = subMesh.getMaterial(),
-              shadowDepthWrapper = material?.shadowDepthWrapper;
+            shadowDepthWrapper = material?.shadowDepthWrapper;
 
         const defines: string[] = [];
 
@@ -1491,8 +1487,8 @@ export class ShadowGenerator implements IShadowGenerator {
 
                 let shaderName = "shadowMap";
                 const uniforms = ["world", "mBones", "viewProjection", "diffuseMatrix", "lightDataSM", "depthValuesSM", "biasAndScaleSM", "morphTargetInfluences", "boneTextureWidth",
-                                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "softTransparentShadowSM",
-                                "morphTargetTextureInfo", "morphTargetTextureIndices"];
+                    "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "softTransparentShadowSM",
+                    "morphTargetTextureInfo", "morphTargetTextureIndices"];
                 const samplers = ["diffuseSampler", "boneSampler", "morphTargets"];
                 const uniformBuffers = ["Scene", "Mesh"];
 
@@ -1859,7 +1855,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
         for (var meshIndex = 0; meshIndex < parsedShadowGenerator.renderList.length; meshIndex++) {
             var meshes = scene.getMeshesById(parsedShadowGenerator.renderList[meshIndex]);
-            meshes.forEach(function(mesh) {
+            meshes.forEach(function (mesh) {
                 if (!shadowMap) {
                     return;
                 }
@@ -1911,12 +1907,12 @@ export class ShadowGenerator implements IShadowGenerator {
         } else if (parsedShadowGenerator.useBlurCloseExponentialShadowMap) {
             shadowGenerator.useBlurCloseExponentialShadowMap = true;
         } else
-        // Backward compat
-        if (parsedShadowGenerator.useVarianceShadowMap) {
-            shadowGenerator.useExponentialShadowMap = true;
-        } else if (parsedShadowGenerator.useBlurVarianceShadowMap) {
-            shadowGenerator.useBlurExponentialShadowMap = true;
-        }
+            // Backward compat
+            if (parsedShadowGenerator.useVarianceShadowMap) {
+                shadowGenerator.useExponentialShadowMap = true;
+            } else if (parsedShadowGenerator.useBlurVarianceShadowMap) {
+                shadowGenerator.useBlurExponentialShadowMap = true;
+            }
 
         if (parsedShadowGenerator.contactHardeningLightSizeUVRatio !== undefined) {
             shadowGenerator.contactHardeningLightSizeUVRatio = parsedShadowGenerator.contactHardeningLightSizeUVRatio;

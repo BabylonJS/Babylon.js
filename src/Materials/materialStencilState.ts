@@ -141,7 +141,7 @@ export class MaterialStencilState implements IStencilState {
     * Get the current class name, useful for serialization or dynamic coding.
     * @returns "MaterialStencilState"
     */
-     public getClassName(): string {
+    public getClassName(): string {
         return "MaterialStencilState";
     }
 
@@ -149,7 +149,7 @@ export class MaterialStencilState implements IStencilState {
      * Makes a duplicate of the current configuration into another one.
      * @param stencilState defines stencil state where to copy the info
      */
-     public copyTo(stencilState: MaterialStencilState): void {
+    public copyTo(stencilState: MaterialStencilState): void {
         SerializationHelper.Clone(() => stencilState, this);
     }
 

@@ -234,24 +234,24 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
         if (this._onKeyboardObserver) {
             this._keys.forEach((keyCode) => {
                 if (this.keysHeightOffsetIncr.indexOf(keyCode) !== -1 &&
-                           this._modifierHeightOffset()) {
+                    this._modifierHeightOffset()) {
                     this.camera.heightOffset += this.heightSensibility;
                 } else if (this.keysHeightOffsetDecr.indexOf(keyCode) !== -1 &&
-                           this._modifierHeightOffset()) {
+                    this._modifierHeightOffset()) {
                     this.camera.heightOffset -= this.heightSensibility;
                 } else if (this.keysRotationOffsetIncr.indexOf(keyCode) !== -1 &&
-                           this._modifierRotationOffset()) {
+                    this._modifierRotationOffset()) {
                     this.camera.rotationOffset += this.rotationSensibility;
                     this.camera.rotationOffset %= 360;
                 } else if (this.keysRotationOffsetDecr.indexOf(keyCode) !== -1 &&
-                           this._modifierRotationOffset()) {
+                    this._modifierRotationOffset()) {
                     this.camera.rotationOffset -= this.rotationSensibility;
                     this.camera.rotationOffset %= 360;
                 } else if (this.keysRadiusIncr.indexOf(keyCode) !== -1 &&
-                           this._modifierRadius()) {
+                    this._modifierRadius()) {
                     this.camera.radius += this.radiusSensibility;
                 } else if (this.keysRadiusDecr.indexOf(keyCode) !== -1 &&
-                           this._modifierRadius()) {
+                    this._modifierRadius()) {
                     this.camera.radius -= this.radiusSensibility;
                 }
             });
@@ -280,8 +280,8 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
      */
     private _modifierHeightOffset(): boolean {
         return (this.keysHeightOffsetModifierAlt === this._altPressed &&
-                this.keysHeightOffsetModifierCtrl === this._ctrlPressed &&
-                this.keysHeightOffsetModifierShift === this._shiftPressed);
+            this.keysHeightOffsetModifierCtrl === this._ctrlPressed &&
+            this.keysHeightOffsetModifierShift === this._shiftPressed);
     }
 
     /**
@@ -290,8 +290,8 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
      */
     private _modifierRotationOffset(): boolean {
         return (this.keysRotationOffsetModifierAlt === this._altPressed &&
-                this.keysRotationOffsetModifierCtrl === this._ctrlPressed &&
-                this.keysRotationOffsetModifierShift === this._shiftPressed);
+            this.keysRotationOffsetModifierCtrl === this._ctrlPressed &&
+            this.keysRotationOffsetModifierShift === this._shiftPressed);
     }
 
     /**
@@ -300,8 +300,8 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
      */
     private _modifierRadius(): boolean {
         return (this.keysRadiusModifierAlt === this._altPressed &&
-                this.keysRadiusModifierCtrl === this._ctrlPressed &&
-                this.keysRadiusModifierShift === this._shiftPressed);
+            this.keysRadiusModifierCtrl === this._ctrlPressed &&
+            this.keysRadiusModifierShift === this._shiftPressed);
     }
 }
 
