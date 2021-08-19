@@ -286,14 +286,14 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 <div id="ge-propertyTab">
                     <div id="header">
                         <img id="logo" src={adtIcon} />
-                        <div id="title"> 
+                        <div id="title">
                             <TextInputLineComponent noUnderline={true} lockObject={this._lockObject} label="" target={this.state.currentNode} propertyName="name" onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
                         </div>
                     </div>
                     {this.renderProperties()}
                     <hr className="ge" />
                     {
-                        this.state.currentNode?.parent?.typeName === "Grid" && 
+                        this.state.currentNode?.parent?.typeName === "Grid" &&
                         <ParentingPropertyGridComponent control={this.state.currentNode} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} lockObject={this._lockObject}></ParentingPropertyGridComponent>
                     }
                     <ButtonLineComponent
@@ -318,7 +318,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
                                     let index = 1;
                                     while (this.props.globalState.guiTexture.getDescendants(false).filter(  //search if there are any copies
-                                        control => control.name === `${newControl.name} Copy ${index}`).length) { 
+                                        control => control.name === `${newControl.name} Copy ${index}`).length) {
                                         index++;
                                     }
                                     newControl.name = `${newControl.name} Copy ${index}`;
@@ -391,16 +391,24 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 target={this.state.textureSize}
                                 propertyName="x"
                                 isInteger={true}
+                                min={1}
+                                max={16384} //2^14
                                 onChange={(newvalue) => {
-                                    this.props.globalState.workbench.resizeGuiTexture(new Vector2(newvalue, this.state.textureSize.y));
+                                    if (!isNaN(newvalue)) {
+                                        this.props.globalState.workbench.resizeGuiTexture(new Vector2(newvalue, this.state.textureSize.y));
+                                    }
                                 }} ></FloatLineComponent>
                             <FloatLineComponent
                                 label=" "
                                 target={this.state.textureSize}
                                 propertyName="y"
                                 isInteger={true}
+                                min={1}
+                                max={16384}
                                 onChange={(newvalue) => {
-                                    this.props.globalState.workbench.resizeGuiTexture(new Vector2(this.state.textureSize.x, newvalue));
+                                    if (!isNaN(newvalue)) {
+                                        this.props.globalState.workbench.resizeGuiTexture(new Vector2(this.state.textureSize.x, newvalue));
+                                    }
                                 }}
                             ></FloatLineComponent>
                         </div>
