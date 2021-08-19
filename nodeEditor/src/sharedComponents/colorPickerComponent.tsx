@@ -75,7 +75,6 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
 
     render() {
         var color = this.state.color;
-        console.log("State", color);
 
         this.props.globalState.blockKeyboardEvents = this.state.pickerEnabled;
 
@@ -95,7 +94,6 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
                                 onColorChanged={(color: Color3 | Color4) => {
                                     const hex = color.toHexString();
                                     this.setState({ hex, color });
-                                    console.log("new", color);
                                     this.props.onColorChanged(hex);
                                 }}
                             />
