@@ -59,7 +59,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
 
     updateAfterTextureLoad() {
         this.props.globalState.onUpdateRequiredObservable.notifyObservers();
-        this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+        this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
         this.forceUpdate();
     }
 
