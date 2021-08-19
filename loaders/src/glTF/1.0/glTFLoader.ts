@@ -1624,8 +1624,6 @@ export class GLTFLoader implements IGLTFLoader {
         GLTFLoader.Extensions[extension.name] = extension;
     }
 
-    public state: Nullable<GLTFLoaderState> = null;
-
     public dispose(): void {
         // do nothing
     }
