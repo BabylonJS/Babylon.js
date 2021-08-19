@@ -37,7 +37,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
 
     forceRebuild() {
         this.props.globalState.onUpdateRequiredObservable.notifyObservers();
-        this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+        this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
     }
 
     deleteStep(step: GradientBlockColorStep) {
@@ -129,7 +129,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
                                 }
                                 this.forceUpdate();
                                 this.props.globalState.onUpdateRequiredObservable.notifyObservers();
-                                this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                                this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                             }} />
                 </LineContainerComponent>
                 <LineContainerComponent title="STEPS">

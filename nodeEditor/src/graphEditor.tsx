@@ -152,9 +152,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             showPreviewPopUp: false
         };
 
-        this.props.globalState.onRebuildRequiredObservable.add(() => {
+        this.props.globalState.onRebuildRequiredObservable.add((autoConfigure) => {
             if (this.props.globalState.nodeMaterial) {
-                this.buildMaterial();
+                this.buildMaterial(autoConfigure);
             }
         });
 
@@ -233,7 +233,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 }
 
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(null);  
-                this.props.globalState.onRebuildRequiredObservable.notifyObservers();  
+                this.props.globalState.onRebuildRequiredObservable.notifyObservers(false);
                 return;
             }
 
@@ -422,14 +422,14 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         this._graphCanvas.zoomToFit();
     }
 
-    buildMaterial() {
+    buildMaterial(autoConfigure = true) {
         if (!this.props.globalState.nodeMaterial) {
             return;
         }
 
         try {
             this.props.globalState.nodeMaterial.options.emitComments = true;
-            this.props.globalState.nodeMaterial.build(true);
+            this.props.globalState.nodeMaterial.build(true, undefined, autoConfigure);
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Node material build successful", false));
         }
         catch (err) {
