@@ -62,6 +62,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _canvas: HTMLCanvasElement;
     private _responsive: boolean;
     private _isOverGUINode = false;
+    private _focused: boolean = false;
 
     public get globalState() {
         return this.props.globalState;
@@ -168,6 +169,14 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this._setConstraintDirection = this._constraintDirection === ConstraintDirection.NONE;
         } else {
             this._constraintDirection = ConstraintDirection.NONE;
+        }
+        if (evt.key === "Delete") {
+            if(this._focused) {
+                this._selectedGuiNodes.forEach(guiNode => {
+                    guiNode.dispose();
+                });
+                this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+            }
         }
     };
 
@@ -717,7 +726,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     render() {
         return (
             <canvas id="workbench-canvas" onPointerMove={(evt) => this.onMove(evt)} onPointerDown={(evt) => this.onDown(evt)} onPointerUp={(evt) => this.onUp(evt)}
-                ref={this._rootContainer}>
+                ref={this._rootContainer}
+                onFocus={() => { this._focused = true;}}
+                onBlur={() => { this._focused = false;}}>
             </canvas>
         );
     }
