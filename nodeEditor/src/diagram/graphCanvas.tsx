@@ -917,7 +917,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             link.onDisposedObservable.clear();
         });
 
-        this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+        this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
     }
 
     processEditorData(editorData: IEditorData) {
