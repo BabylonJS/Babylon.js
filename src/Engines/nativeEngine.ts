@@ -132,6 +132,7 @@ interface INativeEngine {
     readonly COMMAND_SETFLOAT3: number;
     readonly COMMAND_SETFLOAT4: number;
     readonly COMMAND_SETTEXTUREWRAPMODE: number;
+    readonly COMMAND_DRAWINDEXED: number;
 
     dispose(): void;
 
@@ -1215,7 +1216,12 @@ export class NativeEngine extends Engine {
         // if (instancesCount) {
         //     this._gl.drawElementsInstanced(drawMode, indexCount, indexFormat, indexStart * mult, instancesCount);
         // } else {
-        this._native.drawIndexed(fillMode, indexStart, indexCount);
+        //this._native.drawIndexed(fillMode, indexStart, indexCount);
+        this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_DRAWINDEXED);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(indexStart);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(indexCount);
+        this._commandBufferEncoder.finishEncodingCommand();
         // }
     }
 
