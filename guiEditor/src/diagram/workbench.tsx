@@ -46,7 +46,7 @@ export enum ConstraintDirection {
 export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps> {
     public artBoardBackground: Rectangle;
     private _rootContainer: React.RefObject<HTMLCanvasElement>;
-    private _setConstraintDirection: boolean;
+    private _setConstraintDirection: boolean = false;
     private _mouseStartPointX: Nullable<number> = null;
     private _mouseStartPointY: Nullable<number> = null;
     private _textureMesh: Mesh;
@@ -202,6 +202,13 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             }
             this.createNewGuiNode(guiElement);
         });
+
+        if (this.props.globalState.guiTexture.getChildren()[0].children.length) {
+            this.props.globalState.guiTexture.getChildren()[0].children.unshift(this.props.globalState.workbench.artBoardBackground);
+        }
+        else {
+            this.props.globalState.guiTexture.getChildren()[0].children.push(this.props.globalState.workbench.artBoardBackground);
+        }
     }
 
     changeSelectionHighlight(value: boolean) {
@@ -409,8 +416,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             }
             const left = (guiControl.leftInPixels * 100) / ratioX;
             const top = (guiControl.topInPixels * 100) / ratioY;
-            guiControl.left = `${left}%`;
-            guiControl.top = `${top}%`;
+            guiControl.left = `${left.toFixed(2)}%`;
+            guiControl.top = `${top.toFixed(2)}%`;
         }
         this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
         return true;
