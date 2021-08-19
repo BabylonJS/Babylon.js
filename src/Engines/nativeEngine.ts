@@ -131,6 +131,7 @@ interface INativeEngine {
     readonly COMMAND_SETFLOAT2: number;
     readonly COMMAND_SETFLOAT3: number;
     readonly COMMAND_SETFLOAT4: number;
+    readonly COMMAND_SETTEXTUREWRAPMODE: number;
 
     dispose(): void;
 
@@ -2570,7 +2571,12 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setTextureWrapMode(
+        // this._native.setTextureWrapMode(
+        //     internalTexture._hardwareTexture.underlyingResource,
+        //     this._getAddressMode(texture.wrapU),
+        //     this._getAddressMode(texture.wrapV),
+        //     this._getAddressMode(texture.wrapR));
+        this._setTextureWrapMode(
             internalTexture._hardwareTexture.underlyingResource,
             this._getAddressMode(texture.wrapU),
             this._getAddressMode(texture.wrapV),
@@ -2581,6 +2587,15 @@ export class NativeEngine extends Engine {
         this._setTextureCore(uniform, internalTexture._hardwareTexture.underlyingResource);
 
         return true;
+    }
+
+    private _setTextureWrapMode(texture: WebGLTexture, addressModeU: number, addressModeV: number, addressModeW: number) {
+        this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_SETTEXTUREWRAPMODE);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(texture);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(addressModeU);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(addressModeV);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(addressModeW);
+        this._commandBufferEncoder.finishEncodingCommand();
     }
 
     private _setTextureCore(uniform: WebGLUniformLocation, texture: Nullable<WebGLTexture>) {
