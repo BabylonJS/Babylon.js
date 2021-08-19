@@ -134,6 +134,7 @@ interface INativeEngine {
     readonly COMMAND_SETTEXTUREWRAPMODE: number;
     readonly COMMAND_DRAWINDEXED: number;
     readonly COMMAND_CLEAR: number;
+    readonly COMMAND_SETSTENCIL: number;
 
     dispose(): void;
 
@@ -1536,12 +1537,29 @@ export class NativeEngine extends Engine {
     }
 
     private applyStencil(): void {
-        this._native.setStencil(this._stencilMask,
+        // this._native.setStencil(this._stencilMask,
+        //     this._getStencilOpFail(this._stencilOpStencilFail),
+        //     this._getStencilDepthFail(this._stencilOpDepthFail),
+        //     this._getStencilDepthPass(this._stencilOpStencilDepthPass),
+        //     this._getStencilFunc(this._stencilFunc),
+        //     this._stencilFuncRef);
+        this._setStencil(this._stencilMask,
             this._getStencilOpFail(this._stencilOpStencilFail),
             this._getStencilDepthFail(this._stencilOpDepthFail),
             this._getStencilDepthPass(this._stencilOpStencilDepthPass),
             this._getStencilFunc(this._stencilFunc),
             this._stencilFuncRef);
+    }
+
+    private _setStencil(mask: number, stencilOpFail: number, depthOpFail: number, depthOpPass: number, func: number, ref: number) {
+        this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_SETSTENCIL);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(mask);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(stencilOpFail);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(depthOpFail);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(depthOpPass);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(func);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(ref);
+        this._commandBufferEncoder.finishEncodingCommand();
     }
 
     /**
@@ -1553,7 +1571,13 @@ export class NativeEngine extends Engine {
         if (enable) {
             this.applyStencil();
         } else {
-            this._native.setStencil(255,
+            // this._native.setStencil(255,
+            //     this._native.STENCIL_OP_FAIL_S_KEEP,
+            //     this._native.STENCIL_OP_FAIL_Z_KEEP,
+            //     this._native.STENCIL_OP_PASS_Z_KEEP,
+            //     this._native.STENCIL_TEST_ALWAYS,
+            //     0);
+            this._setStencil(255,
                 this._native.STENCIL_OP_FAIL_S_KEEP,
                 this._native.STENCIL_OP_FAIL_Z_KEEP,
                 this._native.STENCIL_OP_PASS_Z_KEEP,
