@@ -45524,11 +45524,15 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                         dropLocationControl.addControl(draggedControl);
                     }
                     else if (dropLocationControl.parent) { //dropping inside the controls parent container
-                        var index = dropLocationControl.parent.children.indexOf(dropLocationControl);
-                        //adjusting index to be before or after based on where the control is over
-                        index = this._adjustParentingIndex(index);
-                        dropLocationControl.parent.children.splice(index, 0, draggedControl);
-                        draggedControl.parent = dropLocationControl.parent;
+                        if (dropLocationControl.parent.typeName != "Grid") {
+                            var index = dropLocationControl.parent.children.indexOf(dropLocationControl);
+                            index = this._adjustParentingIndex(index); //adjusting index to be before or after based on where the control is over
+                            dropLocationControl.parent.children.splice(index, 0, draggedControl);
+                            draggedControl.parent = dropLocationControl.parent;
+                        }
+                        else { //special case for grid
+                            dropLocationControl.parent.addControl(draggedControl);
+                        }
                     }
                     else {
                         this.props.globalState.guiTexture.addControl(draggedControl);
@@ -46549,6 +46553,10 @@ var ColorPicker = /** @class */ (function (_super) {
         _this._hueRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         return _this;
     }
+    ColorPicker.prototype.shouldComponentUpdate = function (nextProps, nextState) {
+        return (nextProps.color.toHexString() !== this.props.color.toHexString() ||
+            nextState.color.toHexString() !== this.props.color.toHexString());
+    };
     ColorPicker.prototype.onSaturationPointerDown = function (evt) {
         this._evaluateSaturation(evt);
         this._isSaturationPointerDown = true;
@@ -46599,7 +46607,7 @@ var ColorPicker = /** @class */ (function (_super) {
             console.log("Hue: " + hue);
         }
         var hsv = this.state.color.toHSV();
-        babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].HSVtoRGBToRef(hue, Math.max(hsv.g, 0.0001), Math.max(hsv.b, 0.0001), this.state.color);
+        babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].HSVtoRGBToRef(hue, Math.max(hsv.g, 0.01), Math.max(hsv.b, 0.01), this.state.color);
         this.setState({ color: this.state.color });
     };
     ColorPicker.prototype.componentDidUpdate = function () {

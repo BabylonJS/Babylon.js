@@ -307,11 +307,16 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                         (dropLocationControl as Container).addControl(draggedControl);
                     }
                     else if (dropLocationControl.parent) { //dropping inside the controls parent container
-                        let index = dropLocationControl.parent.children.indexOf(dropLocationControl);
-                        //adjusting index to be before or after based on where the control is over
-                        index = this._adjustParentingIndex(index);
-                        dropLocationControl.parent.children.splice(index, 0, draggedControl);
-                        draggedControl.parent = dropLocationControl.parent;
+
+                        if (dropLocationControl.parent.typeName != "Grid") {
+                            let index = dropLocationControl.parent.children.indexOf(dropLocationControl);
+                            index = this._adjustParentingIndex(index);  //adjusting index to be before or after based on where the control is over
+                            dropLocationControl.parent.children.splice(index, 0, draggedControl);
+                            draggedControl.parent = dropLocationControl.parent;
+                        }
+                        else { //special case for grid
+                            (dropLocationControl.parent as Container).addControl(draggedControl);
+                        }
                     }
                     else {
                         this.props.globalState.guiTexture.addControl(draggedControl);

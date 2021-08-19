@@ -1,5 +1,6 @@
 import { Gizmo } from "babylonjs/Gizmos/gizmo";
 import { Matrix, Quaternion, TmpVectors, Vector3 } from "babylonjs/Maths/math.vector";
+import { Scene } from "babylonjs/scene";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { Observer } from "babylonjs/Misc/observable";
@@ -23,6 +24,7 @@ type HandleMasks = {
 export class SlateGizmo extends Gizmo {
     private _boundingDimensions = new Vector3(0, 0, 0);
     private _pickedPointObserver: Nullable<Observer<Nullable<AbstractMesh>>>;
+    private _renderObserver: Nullable<Observer<Scene>> = null;
 
     private _tmpQuaternion = new Quaternion();
     private _tmpVector = new Vector3(0, 0, 0);
@@ -45,6 +47,7 @@ export class SlateGizmo extends Gizmo {
      */
     private _margin = 0.35;
     private _attachedSlate: Nullable<HolographicSlate> = null;
+    private _existingSlateScale = new Vector3();
     /**
      * If set, the handles will increase in size based on the distance away from the camera to have a consistent screen size (Default: true)
      */
@@ -96,6 +99,13 @@ export class SlateGizmo extends Gizmo {
 
         this._createNode();
         this.updateScale = false;
+
+        this._renderObserver = this.gizmoLayer.originalScene.onBeforeRenderObservable.add(() => {
+            // Only update the bounding box if scaling has changed
+            if (this.attachedMesh && !this._existingSlateScale.equals(this.attachedMesh.scaling)) {
+                this.updateBoundingBox();
+            }
+        });
     }
 
     private _createNode() {
@@ -168,19 +178,18 @@ export class SlateGizmo extends Gizmo {
             0
         );
 
+        if (keepAspectRatio) {
+            // Extra logic to ensure the ratio is maintained when the vector has been clamped
+            const ratio = dimensions.x / dimensions.y;
+            clampedDimensions.x = Math.max(clampedDimensions.x, clampedDimensions.y * ratio);
+            clampedDimensions.y = Math.max(clampedDimensions.y, clampedDimensions.x / ratio);
+        }
+
         // Calculating the real impact of vector on clamped dimensions
         impact.copyFrom(clampedDimensions).subtractInPlace(dimensions);
 
-        let factor = TmpVectors.Vector3[2];
-        factor.copyFrom(impact);
-        if (keepAspectRatio) {
-            // We want to keep aspect ratio of vector while clamping so we move by the minimum of the 2 dimensions
-            factor.x = Math.min(Math.abs(clampedDimensions.x - dimensions.x), Math.abs(clampedDimensions.y - dimensions.y));
-            factor.y = factor.x;
-        }
-
-        vector.x = Math.sign(vector.x) * Math.abs(factor.x);
-        vector.y = Math.sign(vector.y) * Math.abs(factor.y);
+        vector.x = Math.sign(vector.x) * Math.abs(impact.x);
+        vector.y = Math.sign(vector.y) * Math.abs(impact.y);
     }
 
     private _moveHandle(originStart: Vector3, dimensionsStart: Vector3, offset: Vector3, masks: HandleMasks, isCorner: boolean) {
@@ -372,6 +381,8 @@ export class SlateGizmo extends Gizmo {
             // Restore original parent
             this.attachedMesh.setParent(originalParent);
             this.attachedMesh.computeWorldMatrix(true);
+
+            this._existingSlateScale.copyFrom(this.attachedMesh.scaling);
         }
     }
 
@@ -418,6 +429,8 @@ export class SlateGizmo extends Gizmo {
     }
 
     public dispose() {
+        this.gizmoLayer.originalScene.onBeforeRenderObservable.remove(this._renderObserver);
+
         // Will dispose rootMesh and all descendants
         super.dispose();
 

@@ -21339,8 +21339,9 @@ declare module BABYLON {
          * Build the material and generates the inner effect
          * @param verbose defines if the build should log activity
          * @param updateBuildId defines if the internal build Id should be updated (default is true)
+         * @param autoConfigure defines if the autoConfigure method should be called when initializing blocks (default is true)
          */
-        build(verbose?: boolean, updateBuildId?: boolean): void;
+        build(verbose?: boolean, updateBuildId?: boolean, autoConfigure?: boolean): void;
         /**
          * Runs an otpimization phase to try to improve the shader code
          */
