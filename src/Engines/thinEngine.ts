@@ -742,7 +742,7 @@ export class ThinEngine {
                     let currentUA = navigator.userAgent;
                     this.hostInformation.isMobile = currentUA.indexOf("Mobile") !== -1 ||
                         // Needed for iOS 13+ detection on iPad (inspired by solution from https://stackoverflow.com/questions/9038625/detect-if-device-is-ios)
-                        (currentUA.indexOf("Mac") !== -1 && "ontouchend" in document);
+                        (currentUA.indexOf("Mac") !== -1 && document !== undefined && "ontouchend" in document);
                 };
 
                 // Set initial isMobile value
