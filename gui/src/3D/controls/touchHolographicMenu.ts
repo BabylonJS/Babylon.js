@@ -25,10 +25,25 @@ export class TouchHolographicMenu extends VolumeBasedPanel {
     private _currentMin: Nullable<Vector3>;
     private _currentMax: Nullable<Vector3>;
 
+    private _backPlateMargin = 1.25;
+
     /**
-     * Margin size of the backplate in button size units (setting this to 1, will make the backPlate margin the size of 1 button)
+     * Gets or sets the margin size of the backplate in button size units.
+     * Setting this to 1, will make the backPlate margin the size of 1 button
      */
-    public backPlateMargin = 1.25;
+    public get backPlateMargin(): number {
+        return this._backPlateMargin;
+    }
+
+    public set backPlateMargin(value: number) {
+        this._backPlateMargin = value;
+
+        this.children.forEach((control) => {
+            this._updateCurrentMinMax(control.position);
+        });
+
+        this._updateMargins();
+    }
 
     protected _createNode(scene: Scene): Nullable<TransformNode> {
         const node = new Mesh(`menu_${this.name}`, scene);
@@ -67,6 +82,14 @@ export class TouchHolographicMenu extends VolumeBasedPanel {
 
         control.position = nodePosition.clone();
 
+        this._updateCurrentMinMax(nodePosition);
+    }
+
+    protected _finalProcessing() {
+        this._updateMargins();
+    }
+
+    private _updateCurrentMinMax(nodePosition: Vector3) {
         if (!this._currentMin) {
             this._currentMin = nodePosition.clone();
             this._currentMax = nodePosition.clone();
@@ -76,7 +99,7 @@ export class TouchHolographicMenu extends VolumeBasedPanel {
         this._currentMax!.maximizeInPlace(nodePosition);
     }
 
-    protected _finalProcessing() {
+    private _updateMargins() {
         this._currentMin!.addInPlaceFromFloats(-this._cellWidth / 2, -this._cellHeight / 2, 0);
         this._currentMax!.addInPlaceFromFloats(this._cellWidth / 2, this._cellHeight / 2, 0);
         const extendSize = this._currentMax!.subtract(this._currentMin!);
