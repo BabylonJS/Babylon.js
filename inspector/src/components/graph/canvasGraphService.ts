@@ -19,7 +19,7 @@ const defaultAlpha = 1;
 const tooltipBackgroundAlpha = 0.8;
 const backgroundLineAlpha = 0.2;
 
-const maxDistanceForHover = 7;
+const maxDistanceForHover = 10;
 
 const tooltipHorizontalPadding = 10;
 const spaceBetweenTextAndBox = 5;
@@ -738,6 +738,55 @@ export class CanvasGraphService {
         this._hoverPosition = null;
     }
 
+
+    /**
+     * Given a line defined by P1: (x1, y1) and P2: (x2, y2) get the distance of P0 (x0, y0) from the line.
+     * https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line#Line_defined_by_two_points
+     * @param x1 x position of point P1
+     * @param y1 y position of point P1
+     * @param x2 x position of point P2
+     * @param y2 y position of point P2
+     * @param x0 x position of point P0
+     * @param y0 y position of point P0
+     * @returns distance of P0 from the line defined by P1 and P2
+     */
+    private _getDistanceFromLine(x1: number, y1: number, x2: number, y2: number, x0: number, y0: number): number {
+        // if P1 and P2 are the same we just get the distance between P1 and P0
+        if (x1 === x2 && y1 === y2) {
+            return Math.sqrt(Math.pow(x1 - x0, 2) + Math.pow(y1 - y0, 2));
+        } 
+        
+        // next we want to handle the case where our point is beyond the y position of our line
+        let topX = 0;
+        let topY = 0;
+        let bottomX = 0;
+        let bottomY = 0;
+        if (y1 >= y2) {
+            topX = x1;
+            topY = y1;
+            bottomX = x2;
+            bottomY = y2;
+        } else {
+            topX = x2;
+            topY = y2;
+            bottomX = x1;
+            bottomY = y1;
+        }
+
+        if (y0 < bottomY) {
+            return Math.sqrt(Math.pow(bottomX - x0, 2) + Math.pow(bottomY - y0, 2))
+        }
+
+        if (y0 > topY) {
+            return Math.sqrt(Math.pow(topX - x0, 2) + Math.pow(topY - y0, 2))
+        }
+
+        // the general case!
+        const numerator = Math.abs((x2 - x1) * (y1 - y0) - (x1 - x0) * (y2 - y1));
+        const denominator = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+        return numerator / denominator;
+    }
+
     private _preprocessTooltip(pos: IPerfTooltipHoverPosition | null, drawableArea: IGraphDrawableArea) {
         const { _ctx: ctx } = this;
 
@@ -753,7 +802,7 @@ export class CanvasGraphService {
         }
 
         // convert the mouse x position in pixels to a timestamp.
-        const inferredTimestamp = this._getNumberFromPixel(adjustedXPos, this._globalTimeMinMax, drawableArea.left, drawableArea.right);
+        const inferredTimestamp = this._getNumberFromPixel(adjustedXPos, this._globalTimeMinMax, drawableArea.left, drawableArea.right, false);
 
         let longestText: string = "";
         let numberOfTooltipItems = 0;
@@ -761,9 +810,9 @@ export class CanvasGraphService {
         // get the closest timestamps to the target timestamp, and store the appropriate meta object.
         const closestIndex = this._getClosestPointToTimestamp(inferredTimestamp);        
         let actualTimestamp: number = 0;
-        let closestYId: string = "";
-        let closestYPos: number = 0;
-        let closestYText: string = "";
+        let closestLineId: string = "";
+        let closestLineValueMinMax: IPerfMinMax = {min: 0, max: 0};
+        let closestLineDistance: number = Number.POSITIVE_INFINITY;
 
         this.datasets.ids.forEach((id, idOffset) => {
             if (!!this.metadata.get(id)?.hidden) {
@@ -776,8 +825,8 @@ export class CanvasGraphService {
                 return;
             }
 
-            const valueIndex = this.datasets.startingIndices.at(closestIndex) + PerformanceViewerCollector.SliceDataOffset + idOffset;
-            const value = this.datasets.data.at(valueIndex);
+            const valueAtClosestPointIndex = this.datasets.startingIndices.at(closestIndex) + PerformanceViewerCollector.SliceDataOffset + idOffset;
+            const valueAtClosestPoint = this.datasets.data.at(valueAtClosestPointIndex);
 
             let valueMinMax: IPerfMinMax | undefined;
 
@@ -792,16 +841,11 @@ export class CanvasGraphService {
                 return;
             }
 
-            const valueYPos = this._getPixelForNumber(value, valueMinMax, drawableArea.top, drawableArea.bottom - drawableArea.top, true); 
-
             actualTimestamp = this.datasets.data.at(this.datasets.startingIndices.at(closestIndex));
-            const text = `${id}: ${value.toFixed(2)}`;
-            
-            if (Math.abs(valueYPos - adjustedYPos) < Math.abs(closestYPos - adjustedYPos)) {
-                closestYId = id;
-                closestYPos = valueYPos;
-                closestYText = text;
-            }
+            const valueAtClosestPointYPos = this._getPixelForNumber(valueAtClosestPoint, valueMinMax, drawableArea.top, drawableArea.bottom - drawableArea.top, true); 
+            const xForActualTimestamp = this._getPixelForNumber(actualTimestamp, this._globalTimeMinMax, drawableArea.left, drawableArea.right - drawableArea.left, false);
+
+            const text = `${id}: ${valueAtClosestPoint.toFixed(2)}`;
 
             if (text.length > longestText.length) {
                 longestText = text;
@@ -810,18 +854,56 @@ export class CanvasGraphService {
             this._tooltipItems[numberOfTooltipItems].text = text;
             this._tooltipItems[numberOfTooltipItems].color = this.metadata.get(id)?.color ?? defaultColor;
             numberOfTooltipItems++;
+            // don't process rest if we aren't panned.
+            if (!this._position) {
+                return;
+            }
+
+            // initially distance between closest data point and mouse point.
+            let distance: number = this._getDistanceFromLine(xForActualTimestamp, valueAtClosestPointYPos, xForActualTimestamp, valueAtClosestPointYPos, pos.xPos - left, adjustedYPos);
+
+            // get the shortest distance between the point and the line segment infront, and line segment behind, store the shorter distance (if shorter than distance between closest data point and mouse).
+            if (
+                closestIndex + 1 < this.datasets.data.itemLength || 
+                this.datasets.data.at(this.datasets.startingIndices.at(closestIndex + 1) + PerformanceViewerCollector.NumberOfPointsOffset) > idOffset
+            ) {
+                const secondPointTimestamp = this.datasets.data.at(this.datasets.startingIndices.at(closestIndex + 1));
+                const secondPointX = this._getPixelForNumber(secondPointTimestamp, this._globalTimeMinMax, drawableArea.left, drawableArea.right - drawableArea.left, false);
+                const secondPointValue = this.datasets.data.at(this.datasets.startingIndices.at(closestIndex + 1) + PerformanceViewerCollector.SliceDataOffset + idOffset);
+                const secondPointY = this._getPixelForNumber(secondPointValue, valueMinMax, drawableArea.top, drawableArea.bottom - drawableArea.top, true);
+                distance = Math.min(this._getDistanceFromLine(xForActualTimestamp, valueAtClosestPointYPos, secondPointX, secondPointY, pos.xPos - left, adjustedYPos), distance);
+            }
+
+            if (
+                closestIndex - 1 >= 0 || 
+                this.datasets.data.at(this.datasets.startingIndices.at(closestIndex + 1) + PerformanceViewerCollector.NumberOfPointsOffset) > idOffset
+            ) {
+                const secondPointTimestamp = this.datasets.data.at(this.datasets.startingIndices.at(closestIndex - 1));
+                const secondPointX = this._getPixelForNumber(secondPointTimestamp, this._globalTimeMinMax, drawableArea.left, drawableArea.right - drawableArea.left, false);
+                const secondPointValue = this.datasets.data.at(this.datasets.startingIndices.at(closestIndex - 1) + PerformanceViewerCollector.SliceDataOffset + idOffset);
+                const secondPointY = this._getPixelForNumber(secondPointValue, valueMinMax, drawableArea.top, drawableArea.bottom - drawableArea.top, true);
+                distance = Math.min(this._getDistanceFromLine(xForActualTimestamp, valueAtClosestPointYPos, secondPointX, secondPointY, pos.xPos - left, adjustedYPos), distance);
+            }
+            
+            if (distance < closestLineDistance) {
+                closestLineId = id;
+                closestLineDistance = distance;
+                closestLineValueMinMax = valueMinMax;
+            }
         });
 
         const xForActualTimestamp = this._getPixelForNumber(actualTimestamp, this._globalTimeMinMax, drawableArea.left, drawableArea.right - drawableArea.left, false);
-        this._preprocessedTooltipInfo.xForActualTimestamp = xForActualTimestamp;
 
+        this._preprocessedTooltipInfo.xForActualTimestamp = xForActualTimestamp;
         // check if hover is within a certain distance, if so it is our only item in our tooltip.
-        if (Math.abs(xForActualTimestamp - (pos.xPos - left)) <= maxDistanceForHover && Math.abs(closestYPos - adjustedYPos) <= maxDistanceForHover && this._position) {
-            this._preprocessedTooltipInfo.focusedId = closestYId;
-            this._preprocessedTooltipInfo.longestText = closestYText;
+        if (closestLineDistance <= maxDistanceForHover && this._position) {
+            this._preprocessedTooltipInfo.focusedId = closestLineId;
+            const inferredValue = this._getNumberFromPixel(adjustedYPos, closestLineValueMinMax, drawableArea.top, drawableArea.bottom, true);
+            const closestLineText = `${closestLineId}: ${inferredValue.toFixed(2)}`
+            this._preprocessedTooltipInfo.longestText = closestLineText;
             this._preprocessedTooltipInfo.numberOfTooltipItems = 1;
-            this._tooltipItems[0].text = closestYText;
-            this._tooltipItems[0].color = this.metadata.get(closestYId)?.color ?? defaultColor;
+            this._tooltipItems[0].text = closestLineText;
+            this._tooltipItems[0].color = this.metadata.get(closestLineId)?.color ?? defaultColor;
         } else {
             this._preprocessedTooltipInfo.focusedId = "";
             this._preprocessedTooltipInfo.longestText = longestText;
@@ -928,11 +1010,17 @@ export class CanvasGraphService {
      * @param minMax the minimum and maximum number in the range.
      * @param startingPixel position of the starting pixel in range.
      * @param endingPixel position of ending pixel in range.
+     * @param shouldFlipValue if we should use a [1, 0] scale instead of a [0, 1] scale.
      * @returns number corresponding to pixel position
      */
-    private _getNumberFromPixel(pixel: number, minMax: IPerfMinMax, startingPixel: number, endingPixel: number): number {
+    private _getNumberFromPixel(pixel: number, minMax: IPerfMinMax, startingPixel: number, endingPixel: number, shouldFlip: boolean): number {
         // normalize pixel to range [0, 1].
-        const normalizedPixelPosition = (pixel - startingPixel) / (endingPixel - startingPixel);
+        let normalizedPixelPosition = (pixel - startingPixel) / (endingPixel - startingPixel);
+
+        // we should use a [1, 0] scale instead.
+        if (shouldFlip) {
+            normalizedPixelPosition = 1 - normalizedPixelPosition;
+        }
 
         return minMax.min + normalizedPixelPosition * (minMax.max - minMax.min);
     }
