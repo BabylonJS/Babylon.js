@@ -88,7 +88,7 @@ export class Control {
     private _cachedOffsetX: number;
     private _cachedOffsetY: number;
     private _isVisible = true;
-    private _isHighlighted = false;    
+    private _isHighlighted = false;
     private _highlightColor = "#4affff";
     protected _highlightLineWidth = 2;
     /** @hidden */
