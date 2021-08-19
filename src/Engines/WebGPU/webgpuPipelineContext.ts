@@ -5,6 +5,7 @@ import { Effect } from '../../Materials/effect';
 import { WebGPUShaderProcessingContext } from './webgpuShaderProcessingContext';
 import { UniformBuffer } from "../../Materials/uniformBuffer";
 import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from '../../Maths/math.like';
+import { ShaderLanguage } from "../Processors/shaderProcessingOptions";
 
 const _uniformSizes: { [type: string]: number } = {
     "bool": 1,
@@ -118,8 +119,10 @@ export class WebGPUPipelineContext implements IPipelineContext {
             attributes.push(attr);
         }
 
-        // Build the uniform layout for the left over uniforms.
-        this.buildUniformLayout();
+        if (this.shaderProcessingContext.shaderLanguage === ShaderLanguage.GLSL) {
+            // Build the uniform layout for the left over uniforms.
+            this.buildUniformLayout();
+        }
 
         let attributeNamesFromEffect: string[] = [];
         let attributeLocationsFromEffect: number[] = [];

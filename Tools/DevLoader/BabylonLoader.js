@@ -126,6 +126,7 @@ var BABYLONDEVTOOLS;
 
                 if (BABYLON) {
                     BABYLON.Engine.ShadersRepository = "/src/Shaders/";
+                    BABYLON.ShaderStore.ShadersRepositoryWGSL = "/src/ShadersWGSL/";
                 }
                 if (callback) {
                     callback();

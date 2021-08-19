@@ -17,7 +17,7 @@ export class ShaderCodeNode {
         if (this.line) {
             let value: string = this.line;
             let processor = options.processor;
-            if (processor) {
+            if (processor && !options.disableNodeProcessing) {
                 // This must be done before other replacements to avoid mistakenly changing something that was already changed.
                 if (processor.lineProcessor) {
                     value = processor.lineProcessor(value, options.isFragment, options.processingContext);

@@ -18,7 +18,7 @@ import { WebGPUDataBuffer } from '../Meshes/WebGPU/webgpuDataBuffer';
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { IShaderProcessor } from "./Processors/iShaderProcessor";
 import { WebGPUShaderProcessor } from "./WebGPU/webgpuShaderProcessors";
-import { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
+import { ShaderLanguage, ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import { WebGPUShaderProcessingContext } from "./WebGPU/webgpuShaderProcessingContext";
 import { Tools } from "../Misc/tools";
 import { WebGPUTextureHelper } from './WebGPU/webgpuTextureHelper';
@@ -951,8 +951,8 @@ export class WebGPUEngine extends Engine {
     }
 
     /** @hidden */
-    public _getShaderProcessingContext(): Nullable<ShaderProcessingContext> {
-        return new WebGPUShaderProcessingContext();
+    public _getShaderProcessingContext(shaderLanguage: ShaderLanguage): Nullable<ShaderProcessingContext> {
+        return new WebGPUShaderProcessingContext(shaderLanguage);
     }
 
     //------------------------------------------------------------------------------
@@ -1463,10 +1463,19 @@ export class WebGPUEngine extends Engine {
         return this._compileRawShaderToSpirV(shaderVersion + (defines ? defines + "\n" : "") + source, type);
     }
 
-    private _createPipelineStageDescriptor(vertexShader: Uint32Array, fragmentShader: Uint32Array): IWebGPURenderPipelineStageDescriptor {
-        if (this._tintWASM) {
-            vertexShader = this._tintWASM.convertSpirV2WGSL(vertexShader) as any;
-            fragmentShader = this._tintWASM.convertSpirV2WGSL(fragmentShader) as any;
+    private _getWGSLShader(source: string, type: string, defines: Nullable<string>, shaderVersion: string): string {
+        if (defines) {
+            defines = "//" + defines.split("\n").join("\n//") + "\n";
+        } else {
+            defines = "";
+        }
+        return defines + source;
+    }
+
+    private _createPipelineStageDescriptor(vertexShader: Uint32Array | string, fragmentShader: Uint32Array | string, shaderLanguage: ShaderLanguage): IWebGPURenderPipelineStageDescriptor {
+        if (this._tintWASM && shaderLanguage === ShaderLanguage.GLSL) {
+            vertexShader = this._tintWASM.convertSpirV2WGSL(vertexShader as Uint32Array) as any;
+            fragmentShader = this._tintWASM.convertSpirV2WGSL(fragmentShader as Uint32Array) as any;
         }
 
         return {
@@ -1485,21 +1494,21 @@ export class WebGPUEngine extends Engine {
         };
     }
 
-    private _compileRawPipelineStageDescriptor(vertexCode: string, fragmentCode: string): IWebGPURenderPipelineStageDescriptor {
-        var vertexShader = this._compileRawShaderToSpirV(vertexCode, "vertex");
-        var fragmentShader = this._compileRawShaderToSpirV(fragmentCode, "fragment");
+    private _compileRawPipelineStageDescriptor(vertexCode: string, fragmentCode: string, shaderLanguage: ShaderLanguage): IWebGPURenderPipelineStageDescriptor {
+        var vertexShader = shaderLanguage === ShaderLanguage.GLSL ? this._compileRawShaderToSpirV(vertexCode, "vertex") : vertexCode;
+        var fragmentShader = shaderLanguage === ShaderLanguage.GLSL ? this._compileRawShaderToSpirV(fragmentCode, "fragment") : fragmentCode;
 
-        return this._createPipelineStageDescriptor(vertexShader, fragmentShader);
+        return this._createPipelineStageDescriptor(vertexShader, fragmentShader, shaderLanguage);
     }
 
-    private _compilePipelineStageDescriptor(vertexCode: string, fragmentCode: string, defines: Nullable<string>): IWebGPURenderPipelineStageDescriptor {
+    private _compilePipelineStageDescriptor(vertexCode: string, fragmentCode: string, defines: Nullable<string>, shaderLanguage: ShaderLanguage): IWebGPURenderPipelineStageDescriptor {
         this.onBeforeShaderCompilationObservable.notifyObservers(this);
 
         var shaderVersion = "#version 450\n";
-        var vertexShader = this._compileShaderToSpirV(vertexCode, "vertex", defines, shaderVersion);
-        var fragmentShader = this._compileShaderToSpirV(fragmentCode, "fragment", defines, shaderVersion);
+        var vertexShader = shaderLanguage === ShaderLanguage.GLSL ? this._compileShaderToSpirV(vertexCode, "vertex", defines, shaderVersion) : this._getWGSLShader(vertexCode, "vertex", defines, shaderVersion);
+        var fragmentShader = shaderLanguage === ShaderLanguage.GLSL ? this._compileShaderToSpirV(fragmentCode, "fragment", defines, shaderVersion) : this._getWGSLShader(fragmentCode, "fragment", defines, shaderVersion);
 
-        let program = this._createPipelineStageDescriptor(vertexShader, fragmentShader);
+        let program = this._createPipelineStageDescriptor(vertexShader, fragmentShader, shaderLanguage);
 
         this.onAfterShaderCompilationObservable.notifyObservers(this);
 
@@ -1560,6 +1569,7 @@ export class WebGPUEngine extends Engine {
         transformFeedbackVaryings: Nullable<string[]>,
         key: string) {
         const webGpuContext = pipelineContext as WebGPUPipelineContext;
+        const shaderLanguage = webGpuContext.shaderProcessingContext.shaderLanguage;
 
         if (this.dbgShowShaderCode) {
             console.log(defines);
@@ -1575,10 +1585,9 @@ export class WebGPUEngine extends Engine {
         };
 
         if (createAsRaw) {
-            webGpuContext.stages = this._compileRawPipelineStageDescriptor(vertexSourceCode, fragmentSourceCode);
-        }
-        else {
-            webGpuContext.stages = this._compilePipelineStageDescriptor(vertexSourceCode, fragmentSourceCode, defines);
+            webGpuContext.stages = this._compileRawPipelineStageDescriptor(vertexSourceCode, fragmentSourceCode, shaderLanguage);
+        } else {
+            webGpuContext.stages = this._compilePipelineStageDescriptor(vertexSourceCode, fragmentSourceCode, defines, shaderLanguage);
         }
     }
 

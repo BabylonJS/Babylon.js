@@ -7,7 +7,7 @@ import { ShaderDefineOrOperator } from './Expressions/Operators/shaderDefineOrOp
 import { ShaderDefineAndOperator } from './Expressions/Operators/shaderDefineAndOperator';
 import { ShaderDefineExpression } from './Expressions/shaderDefineExpression';
 import { ShaderDefineArithmeticOperator } from './Expressions/Operators/shaderDefineArithmeticOperator';
-import { ProcessingOptions } from './shaderProcessingOptions';
+import { ProcessingOptions, ShaderLanguage } from './shaderProcessingOptions';
 import { _DevTools } from '../../Misc/devTools';
 
 declare type WebRequest = import("../../Misc/webRequest").WebRequest;
@@ -50,6 +50,10 @@ export class ShaderProcessor {
     }
 
     private static _ProcessPrecision(source: string, options: ProcessingOptions): string {
+        if (options.shaderLanguage === ShaderLanguage.WGSL) {
+            return source;
+        }
+
         const shouldUseHighPrecisionShader = options.shouldUseHighPrecisionShader;
 
         if (source.indexOf("precision highp float") === -1) {
@@ -258,7 +262,7 @@ export class ShaderProcessor {
         return rootNode.process(preprocessors, options);
     }
 
-    private static _PreparePreProcessors(options: ProcessingOptions, engine: ThinEngine, addGLES = true): { [key: string]: string } {
+    private static _PreparePreProcessors(options: ProcessingOptions, engine: ThinEngine): { [key: string]: string } {
         let defines = options.defines;
         let preprocessors: { [key: string]: string } = {};
 
@@ -268,7 +272,7 @@ export class ShaderProcessor {
             preprocessors[split[0]] = split.length > 1 ? split[1] : "";
         }
 
-        if (addGLES) {
+        if (options.shaderLanguage === ShaderLanguage.GLSL) {
             preprocessors["GL_ES"] = "true";
         }
         preprocessors["__VERSION__"] = options.version;
@@ -288,7 +292,7 @@ export class ShaderProcessor {
         }
 
         // Already converted
-        if (preparedSourceCode.indexOf("#version 3") !== -1) {
+        if (options.shaderLanguage === ShaderLanguage.GLSL && preparedSourceCode.indexOf("#version 3") !== -1) {
             return preparedSourceCode.replace("#version 300 es", "");
         }
 
@@ -321,7 +325,7 @@ export class ShaderProcessor {
 
         const defines = options.defines;
 
-        let preprocessors = this._PreparePreProcessors(options, engine, false);
+        let preprocessors = this._PreparePreProcessors(options, engine);
 
         // General pre processing
         if (options.processor?.preProcessor) {
