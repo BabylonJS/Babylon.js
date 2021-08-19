@@ -129,8 +129,15 @@ export class DepthRenderer {
                 return;
             }
 
-            // Culling and reverse (right handed system)
-            engine.setState(material.backFaceCulling, 0, false, scene.useRightHandedSystem, material.cullBackFaces);
+            // Culling
+            const detNeg = effectiveMesh._getWorldMatrixDeterminant() < 0;
+            let sideOrientation = renderingMesh.overrideMaterialSideOrientation ?? material.sideOrientation;
+            if (scene.useRightHandedSystem && !detNeg || !scene.useRightHandedSystem && detNeg) {
+                sideOrientation = sideOrientation === Constants.MATERIAL_ClockWiseSideOrientation ? Constants.MATERIAL_CounterClockWiseSideOrientation : Constants.MATERIAL_ClockWiseSideOrientation;
+            }
+            let reverseSideOrientation = sideOrientation === Constants.MATERIAL_ClockWiseSideOrientation;
+
+            engine.setState(material.backFaceCulling, 0, false, reverseSideOrientation, material.cullBackFaces);
 
             // Managing instances
             var batch = renderingMesh._getInstancesRenderList(subMesh._id, !!subMesh.getReplacementMesh());
