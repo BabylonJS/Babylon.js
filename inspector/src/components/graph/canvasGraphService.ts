@@ -738,7 +738,6 @@ export class CanvasGraphService {
         this._hoverPosition = null;
     }
 
-
     /**
      * Given a line defined by P1: (x1, y1) and P2: (x2, y2) get the distance of P0 (x0, y0) from the line.
      * https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line#Line_defined_by_two_points
@@ -787,6 +786,11 @@ export class CanvasGraphService {
         return numerator / denominator;
     }
 
+    /**
+     * This method does preprocessing calculations for the tooltip.
+     * @param pos the position of our mouse.
+     * @param drawableArea the remaining drawable area.
+     */
     private _preprocessTooltip(pos: IPerfTooltipHoverPosition | null, drawableArea: IGraphDrawableArea) {
         const { _ctx: ctx } = this;
 
