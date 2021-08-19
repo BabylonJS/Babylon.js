@@ -122,10 +122,10 @@ export class Control {
      */
     public uniqueId: number;
 
-    /** 
-     * Gets or sets a boolean indicating if the control is readonly (default: false). 
+    /**
+     * Gets or sets a boolean indicating if the control is readonly (default: false).
      * A readonly control will still raise pointer events but will not react to them
-     */    
+     */
     public get isReadOnly() {
         return this._isReadOnly;
     }
