@@ -102,6 +102,7 @@ export class Control {
     protected _isEnabled = true;
     protected _disabledColor = "#9a9a9a";
     protected _disabledColorItem = "#6a6a6a";
+    protected _isReadOnly = false;
     /** @hidden */
     protected _rebuildLayout = false;
 
@@ -121,6 +122,18 @@ export class Control {
      * Gets or sets the unique id of the node. Please note that this number will be updated when the control is added to a container
      */
     public uniqueId: number;
+
+    /**
+     * Gets or sets a boolean indicating if the control is readonly (default: false).
+     * A readonly control will still raise pointer events but will not react to them
+     */
+    public get isReadOnly() {
+        return this._isReadOnly;
+    }
+
+    public set isReadOnly(value: boolean) {
+        this._isReadOnly = value;
+    }
 
     /**
      * Gets or sets an object used to store user defined information for the node
