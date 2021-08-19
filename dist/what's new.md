@@ -385,6 +385,7 @@
 - Fixed inTangent in animationGroup ([dad72](https://github.com/dad72))
 - Fixed bug in `QuadraticErrorSimplification` not correctly optimizing mesh. ([aWeirdo](https://github.com/aWeirdo))
 - Fixed bug in `ArcRotateCamera` where setting the position would recalculate the alpha value to a value outside the current limits. ([nilss0n](https://github.com/nilss0n))
+- Fixed bug in NME where a link could not be recreated after being deleted ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
