@@ -133,6 +133,7 @@ interface INativeEngine {
     readonly COMMAND_SETFLOAT4: number;
     readonly COMMAND_SETTEXTUREWRAPMODE: number;
     readonly COMMAND_DRAWINDEXED: number;
+    readonly COMMAND_CLEAR: number;
 
     dispose(): void;
 
@@ -1106,7 +1107,18 @@ export class NativeEngine extends Engine {
             throw new Error("reverse depth buffer is not currently implemented");
         }
 
-        this._native.clear(backBuffer && color ? color : undefined, depth ? 1.0 : undefined, stencil ? 0 : undefined);
+        //this._native.clear(backBuffer && color ? color : undefined, depth ? 1.0 : undefined, stencil ? 0 : undefined);
+        this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_CLEAR);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(Boolean(backBuffer && color));
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(color?.r);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(color?.g);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(color?.b);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(color?.a ?? 1);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(depth);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(1);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(stencil);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(0);
+        this._commandBufferEncoder.finishEncodingCommand();
     }
 
     public createIndexBuffer(indices: IndicesArray, updateable?: boolean): NativeDataBuffer {
