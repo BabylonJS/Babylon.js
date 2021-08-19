@@ -3938,6 +3938,7 @@ declare module BABYLON.GUI {
     export class TouchButton3D extends Button3D {
         private _collisionMesh;
         private _collidableFrontDirection;
+        protected _isNearPressed: boolean;
         /**
          * Creates a new touchable button
          * @param name defines the control name
@@ -3959,6 +3960,7 @@ declare module BABYLON.GUI {
          */
         set collisionMesh(collisionMesh: BABYLON.Mesh);
         private _isInteractionInFrontOfButton;
+        protected _getInteractionHeight(interactionPos: BABYLON.Vector3, basePos: BABYLON.Vector3): number;
         /** @hidden */
         _generatePointerEventType(providedType: number, nearMeshPosition: BABYLON.Vector3, activeInteractionCount: number): number;
         protected _getTypeName(): string;
@@ -3983,10 +3985,10 @@ declare module BABYLON.GUI {
         private _enterCount;
         private _downPointerIds;
         private _isVisible;
-        /** Gets or sets the control position  in world space */
+        /** Gets or sets the control position in world space */
         get position(): BABYLON.Vector3;
         set position(value: BABYLON.Vector3);
-        /** Gets or sets the control scaling  in world space */
+        /** Gets or sets the control scaling in world space */
         get scaling(): BABYLON.Vector3;
         set scaling(value: BABYLON.Vector3);
         /** Callback used to start pointer enter animation */
@@ -4621,6 +4623,8 @@ declare module BABYLON.GUI {
         private _plateMaterial;
         private _pickedPointObserver;
         private _pointerHoverObserver;
+        private _frontPlateDepth;
+        private _backPlateDepth;
         private _tooltipFade;
         private _tooltipTextBlock;
         private _tooltipTexture;
@@ -4872,6 +4876,7 @@ declare module BABYLON.GUI {
     export class SlateGizmo extends BABYLON.Gizmo {
         private _boundingDimensions;
         private _pickedPointObserver;
+        private _renderObserver;
         private _tmpQuaternion;
         private _tmpVector;
         private _corners;
@@ -4885,6 +4890,7 @@ declare module BABYLON.GUI {
          */
         private _margin;
         private _attachedSlate;
+        private _existingSlateScale;
         /**
          * If set, the handles will increase in size based on the distance away from the camera to have a consistent screen size (Default: true)
          */
@@ -5265,14 +5271,19 @@ declare module BABYLON.GUI {
         private _pickedPointObserver;
         private _currentMin;
         private _currentMax;
+        private _backPlateMargin;
         /**
-         * Margin size of the backplate in button size units (setting this to 1, will make the backPlate margin the size of 1 button)
+         * Gets or sets the margin size of the backplate in button size units.
+         * Setting this to 1, will make the backPlate margin the size of 1 button
          */
-        backPlateMargin: number;
+        get backPlateMargin(): number;
+        set backPlateMargin(value: number);
         protected _createNode(scene: BABYLON.Scene): BABYLON.Nullable<BABYLON.TransformNode>;
         protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
         protected _mapGridNode(control: Control3D, nodePosition: BABYLON.Vector3): void;
         protected _finalProcessing(): void;
+        private _updateCurrentMinMax;
+        private _updateMargins;
         /**
          * Creates a holographic menu GUI 3D control
          * @param name name of the menu
