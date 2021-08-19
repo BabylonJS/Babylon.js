@@ -53,6 +53,7 @@ const adtIcon: string = require("../../../public/imgs/adtIcon.svg");
 const responsiveIcon: string = require("../../../public/imgs/responsiveIcon.svg");
 const canvasSizeIcon: string = require("../../../public/imgs/canvasSizeIcon.svg");
 const artboardColorIcon: string = require("../../../public/imgs/artboardColorIcon.svg");
+const MAX_TEXTURE_SIZE = 16384; //2^14
 
 interface IPropertyTabComponentProps {
     globalState: GlobalState;
@@ -392,7 +393,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 propertyName="x"
                                 isInteger={true}
                                 min={1}
-                                max={16384} //2^14
+                                max={MAX_TEXTURE_SIZE}
                                 onChange={(newvalue) => {
                                     if (!isNaN(newvalue)) {
                                         this.props.globalState.workbench.resizeGuiTexture(new Vector2(newvalue, this.state.textureSize.y));
@@ -404,7 +405,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 propertyName="y"
                                 isInteger={true}
                                 min={1}
-                                max={16384}
+                                max={MAX_TEXTURE_SIZE}
                                 onChange={(newvalue) => {
                                     if (!isNaN(newvalue)) {
                                         this.props.globalState.workbench.resizeGuiTexture(new Vector2(this.state.textureSize.x, newvalue));
