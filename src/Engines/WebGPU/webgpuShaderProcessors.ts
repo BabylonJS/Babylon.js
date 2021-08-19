@@ -69,10 +69,11 @@ const _isComparisonSamplerByWebGPUSamplerType: { [key: string]: boolean } = {
 /** @hidden */
 export class WebGPUShaderProcessor implements IShaderProcessor {
 
-    protected _shaderLanguage: ShaderLanguage;
     protected _missingVaryings: Array<string> = [];
     protected _textureArrayProcessing: Array<string> = [];
     protected _preProcessors: { [key: string]: string };
+    protected _isWGSL: boolean;
+    protected _attributesWGSL: string[];
 
     private _getArraySize(name: string, preProcessors: { [key: string]: string }): [string, number] {
         let length = 0;
@@ -90,12 +91,20 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
     }
 
     public initializeShaders(processingContext: Nullable<ShaderProcessingContext>): void {
-        this._shaderLanguage = (processingContext as WebGPUShaderProcessingContext).shaderLanguage;
+        this._isWGSL = (processingContext as WebGPUShaderProcessingContext).shaderLanguage === ShaderLanguage.WGSL;
         this._missingVaryings.length = 0;
         this._textureArrayProcessing.length = 0;
+
+        if (this._isWGSL) {
+            this._attributesWGSL = [];
+        }
     }
 
     public varyingProcessor(varying: string, isFragment: boolean, preProcessors: { [key: string]: string }, processingContext: Nullable<ShaderProcessingContext>) {
+        if (this._isWGSL) {
+            return varying;
+        }
+
         this._preProcessors = preProcessors;
 
         const webgpuProcessingContext = processingContext! as WebGPUShaderProcessingContext;
@@ -129,22 +138,31 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
 
         const webgpuProcessingContext = processingContext! as WebGPUShaderProcessingContext;
 
-        const attribRegex = new RegExp(/\s*attribute\s+(\S+)\s+(\S+)\s*;/gm);
+        const attribRegex = this._isWGSL ? new RegExp(/\s*attribute\s+(\S+)\s*:\s*(\S+)\s*;/gm) : new RegExp(/\s*attribute\s+(\S+)\s+(\S+)\s*;/gm);
         const match = attribRegex.exec(attribute);
         if (match != null) {
-            const varyingType = match[1];
-            const name = match[2];
+            const varyingType = this._isWGSL ? match[2] : match[1];
+            const name = this._isWGSL ? match[1] : match[2];
             const location = webgpuProcessingContext.getAttributeNextLocation(varyingType, this._getArraySize(name, preProcessors)[1]);
 
             webgpuProcessingContext.availableAttributes[name] = location;
             webgpuProcessingContext.orderedAttributes[location] = name;
 
-            attribute = attribute.replace(match[0], `layout(location = ${location}) in ${varyingType} ${name};`);
+            if (this._isWGSL) {
+                this._attributesWGSL.push(`[[location(${location})]] ${name} : ${varyingType};`);
+                attribute = "";
+            } else {
+                attribute = attribute.replace(match[0], `layout(location = ${location}) in ${varyingType} ${name};`);
+            }
         }
         return attribute;
     }
 
     public uniformProcessor(uniform: string, isFragment: boolean, preProcessors: { [key: string]: string }, processingContext: Nullable<ShaderProcessingContext>): string {
+        if (this._isWGSL) {
+            return uniform;
+        }
+
         this._preProcessors = preProcessors;
 
         const webgpuProcessingContext = processingContext! as WebGPUShaderProcessingContext;
@@ -292,6 +310,10 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
     }
 
     public uniformBufferProcessor(uniformBuffer: string, isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>): string {
+        if (this._isWGSL) {
+            return uniformBuffer;
+        }
+
         const webgpuProcessingContext = processingContext! as WebGPUShaderProcessingContext;
         const uboRegex = new RegExp(/uniform\s+(\w+)/gm);
 
@@ -344,7 +366,7 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
     }
 
     public postProcessor(code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>, engine: ThinEngine) {
-        if (this._shaderLanguage === ShaderLanguage.WGSL) {
+        if (this._isWGSL) {
             return code;
         }
 
@@ -408,7 +430,7 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
     public finalizeShaders(vertexCode: string, fragmentCode: string, processingContext: Nullable<ShaderProcessingContext>): { vertexCode: string, fragmentCode: string } {
         const webgpuProcessingContext = processingContext! as WebGPUShaderProcessingContext;
 
-        if (this._shaderLanguage === ShaderLanguage.WGSL) {
+        if (this._isWGSL) {
             // TODO WEBGPU. From the shader code:
             //  * extract the ubos
             //  * extract the samplers
@@ -430,10 +452,11 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
                 webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex].usedInVertex = true;
             }
 
-            webgpuProcessingContext.availableAttributes["position"] = 0;
-            webgpuProcessingContext.orderedAttributes[0] = "position";
-
             vertexCode = vertexCode.replace("#define ", "//#define ");
+            if (this._attributesWGSL.length > 0) {
+                vertexCode = "struct VertexInputs {\n" + this._attributesWGSL.join("\n") + "\n};\n" + vertexCode;
+            }
+            console.log(vertexCode);
             //vertexCode = "[[group(1), binding(1)]] var<uniform> mesh : Mesh;\n" + vertexCode;
 
             fragmentCode = fragmentCode.replace("#define ", "//#define ");
