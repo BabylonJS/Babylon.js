@@ -3,7 +3,7 @@ import { IInternalTextureLoader } from '../Materials/Textures/internalTextureLoa
 import { Effect, IEffectCreationOptions } from '../Materials/effect';
 import { _DevTools } from '../Misc/devTools';
 import { IShaderProcessor } from './Processors/iShaderProcessor';
-import { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
+import { ShaderLanguage, ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import { UniformBuffer } from '../Materials/uniformBuffer';
 import { Nullable, DataArray, IndicesArray } from '../types';
 import { EngineCapabilities } from './engineCapabilities';
@@ -958,7 +958,7 @@ export class ThinEngine {
     }
 
     /** @hidden */
-    public _getShaderProcessingContext(): Nullable<ShaderProcessingContext> {
+    public _getShaderProcessingContext(shaderLanguage: ShaderLanguage): Nullable<ShaderProcessingContext> {
         return null;
     }
 

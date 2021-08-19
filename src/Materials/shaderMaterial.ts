@@ -16,6 +16,10 @@ import { Color3, Color4 } from '../Maths/math.color';
 import { EffectFallbacks } from './effectFallbacks';
 import { WebRequest } from '../Misc/webRequest';
 import { Engine } from '../Engines/engine';
+import { ShaderLanguage } from "../Engines/Processors/shaderProcessingOptions";
+
+import "../ShadersWGSL/ShadersInclude/meshUboDeclaration"; // TODO WEBGPU: remove
+import "../ShadersWGSL/ShadersInclude/sceneUboDeclaration"; // TODO WEBGPU: remove
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -62,6 +66,11 @@ export interface IShaderMaterialOptions {
      * Defines if clip planes have to be turned on: true to turn them on, false to turn them off and null to turn them on/off depending on the scene configuration (scene.clipPlaneX)
      */
     useClipPlane: Nullable<boolean>;
+
+    /**
+     * The language the shader is written with (default: GLSL)
+     */
+    shaderLanguage?: ShaderLanguage;
 }
 
 /**
@@ -721,7 +730,8 @@ export class ShaderMaterial extends Material {
                 fallbacks: fallbacks,
                 onCompiled: this.onCompiled,
                 onError: this.onError,
-                indexParameters: { maxSimultaneousMorphTargets: numInfluencers }
+                indexParameters: { maxSimultaneousMorphTargets: numInfluencers },
+                shaderLanguage: this._options.shaderLanguage
             }, engine);
 
             this._drawWrapper.effect = effect;

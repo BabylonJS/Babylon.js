@@ -1,6 +1,6 @@
 import { Nullable } from '../../types';
 import { IShaderProcessor } from '../Processors/iShaderProcessor';
-import { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
+import { ShaderLanguage, ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 import { WebGPUTextureSamplerBindingDescription, WebGPUShaderProcessingContext } from './webgpuShaderProcessingContext';
 import * as WebGPUConstants from './webgpuConstants';
 import { Logger } from '../../Misc/logger';
@@ -69,6 +69,7 @@ const _isComparisonSamplerByWebGPUSamplerType: { [key: string]: boolean } = {
 /** @hidden */
 export class WebGPUShaderProcessor implements IShaderProcessor {
 
+    protected _shaderLanguage: ShaderLanguage;
     protected _missingVaryings: Array<string> = [];
     protected _textureArrayProcessing: Array<string> = [];
     protected _preProcessors: { [key: string]: string };
@@ -89,6 +90,7 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
     }
 
     public initializeShaders(processingContext: Nullable<ShaderProcessingContext>): void {
+        this._shaderLanguage = (processingContext as WebGPUShaderProcessingContext).shaderLanguage;
         this._missingVaryings.length = 0;
         this._textureArrayProcessing.length = 0;
     }
@@ -342,6 +344,10 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
     }
 
     public postProcessor(code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>, engine: ThinEngine) {
+        if (this._shaderLanguage === ShaderLanguage.WGSL) {
+            return code;
+        }
+
         const hasDrawBuffersExtension = code.search(/#extension.+GL_EXT_draw_buffers.+require/) !== -1;
 
         // Remove extensions
@@ -401,6 +407,40 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
 
     public finalizeShaders(vertexCode: string, fragmentCode: string, processingContext: Nullable<ShaderProcessingContext>): { vertexCode: string, fragmentCode: string } {
         const webgpuProcessingContext = processingContext! as WebGPUShaderProcessingContext;
+
+        if (this._shaderLanguage === ShaderLanguage.WGSL) {
+            // TODO WEBGPU. From the shader code:
+            //  * extract the ubos
+            //  * extract the samplers
+            //  * extract the attributes. Set the [[location(X)]] decoration
+            const ubos = ["Scene", "Mesh"];
+
+            webgpuProcessingContext.samplerNames = [];
+
+            for (const name of ubos) {
+                const { setIndex, bindingIndex } = _knownUBOs[name];
+                webgpuProcessingContext.availableUBOs[name] = { setIndex, bindingIndex };
+                if (!webgpuProcessingContext.orderedUBOsAndSamplers[setIndex]) {
+                    webgpuProcessingContext.orderedUBOsAndSamplers[setIndex] = [];
+                }
+                if (!webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex]) {
+                    webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex] = { isSampler: false, isTexture: false, name, usedInVertex: false, usedInFragment: false };
+                }
+                webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex].usedInFragment = true;
+                webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex].usedInVertex = true;
+            }
+
+            webgpuProcessingContext.availableAttributes["position"] = 0;
+            webgpuProcessingContext.orderedAttributes[0] = "position";
+
+            vertexCode = vertexCode.replace("#define ", "//#define ");
+            //vertexCode = "[[group(1), binding(1)]] var<uniform> mesh : Mesh;\n" + vertexCode;
+
+            fragmentCode = fragmentCode.replace("#define ", "//#define ");
+            //fragmentCode = "[[group(1), binding(1)]] var<uniform> mesh : Mesh;\n" + fragmentCode;
+
+            return { vertexCode, fragmentCode };
+        }
 
         // make replacements for texture names in the texture array case
         for (let i = 0; i < this._textureArrayProcessing.length; ++i) {

@@ -1,4 +1,4 @@
-import { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
+import { ShaderLanguage, ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 
 const _maxSets = 4;
 const _maxBindingsPerSet = 16;
@@ -44,6 +44,8 @@ export interface WebGPUBindingDescription {
  * @hidden
  */
 export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
+    public shaderLanguage: ShaderLanguage;
+
     public uboNextBindingIndex: number;
     public freeSetIndex: number;
     public freeBindingIndex: number;
@@ -65,7 +67,9 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
     private _attributeNextLocation: number;
     private _varyingNextLocation: number;
 
-    constructor() {
+    constructor(shaderLanguage: ShaderLanguage) {
+        this.shaderLanguage = shaderLanguage;
+
         this._attributeNextLocation = 0;
         this._varyingNextLocation = 0;
         this.freeSetIndex = 2;

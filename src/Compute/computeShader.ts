@@ -96,10 +96,10 @@ export class ComputeShader {
      * @param name Defines the name of the compute shader in the scene
      * @param engine Defines the engine the compute shader belongs to
      * @param shaderPath Defines  the route to the shader code in one of three ways:
-     *  * object: { compute: "custom" }, used with ShaderStore.ShadersStore["customComputeShader"]
+     *  * object: { compute: "custom" }, used with ShaderStore.ShadersStoreWGSL["customComputeShader"]
      *  * object: { computeElement: "HTMLElementId" }, used with shader code in script tags
      *  * object: { computeSource: "compute shader code string" using with string containing the shader code
-     *  * string: try first to find the code in ShaderStore.ShadersStore[shaderPath + "ComputeShader"]. If not, assumes it is a file with name shaderPath.compute.fx in index.html folder.
+     *  * string: try first to find the code in ShaderStore.ShadersStoreWGSL[shaderPath + "ComputeShader"]. If not, assumes it is a file with name shaderPath.compute.fx in index.html folder.
      * @param options Define the options used to create the shader
      */
     constructor(name: string, engine: ThinEngine, shaderPath: any, options: Partial<IComputeShaderOptions> = {}) {
