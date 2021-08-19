@@ -868,7 +868,7 @@ export class CanvasGraphService {
 
             // get the shortest distance between the point and the line segment infront, and line segment behind, store the shorter distance (if shorter than distance between closest data point and mouse).
             if (
-                closestIndex + 1 < this.datasets.data.itemLength || 
+                closestIndex + 1 < this.datasets.data.itemLength &&
                 this.datasets.data.at(this.datasets.startingIndices.at(closestIndex + 1) + PerformanceViewerCollector.NumberOfPointsOffset) > idOffset
             ) {
                 const secondPointTimestamp = this.datasets.data.at(this.datasets.startingIndices.at(closestIndex + 1));
@@ -879,7 +879,7 @@ export class CanvasGraphService {
             }
 
             if (
-                closestIndex - 1 >= 0 || 
+                closestIndex - 1 >= 0 &&
                 this.datasets.data.at(this.datasets.startingIndices.at(closestIndex + 1) + PerformanceViewerCollector.NumberOfPointsOffset) > idOffset
             ) {
                 const secondPointTimestamp = this.datasets.data.at(this.datasets.startingIndices.at(closestIndex - 1));
