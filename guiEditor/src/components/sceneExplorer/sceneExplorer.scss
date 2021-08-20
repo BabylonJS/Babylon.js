@@ -13,6 +13,17 @@
     display: none;
 }
 
+hr.se {
+    border: 1px solid #527089;
+    margin-block-start: auto;
+    margin-block-end: auto;
+    width: 200%;
+    margin-inline-start: -100%;
+    display: inherit;
+    grid-row: 1;
+    grid-column: 2;
+}
+
 .ge-context-menu {
     background: #e2e2e2;
 
@@ -217,7 +228,8 @@
         grid-template-columns: 20px 1fr;
 
         &:hover {
-            border: 2px solid #527089
+            border: 2px solid #527089;
+            cursor: pointer;
         }
 
         &.selected{
@@ -228,7 +240,6 @@
         .isNotActive {
             opacity: 0.3;
         }
-
         .arrow {
             grid-column: 1;
             color: black;
@@ -387,11 +398,8 @@
                 width: 20px;
                 grid-column: 4;
             }
-
-
         }   
         
-
         .title {
             grid-column: 1;
             background: transparent;
