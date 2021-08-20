@@ -1,14 +1,16 @@
 import { Nullable } from "babylonjs/types";
 import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
 
-import { TreeItemSpecializedComponent } from "./treeItemSpecializedComponent";
 import { Tools } from "../../tools";
 import * as ReactDOM from "react-dom";
 import * as React from "react";
-import { GlobalState } from "../../globalState";
+import { DragOverLocation, GlobalState } from "../../globalState";
+import { ControlTreeItemComponent } from "./entities/gui/controlTreeItemComponent";
+import { Observer } from "babylonjs/Misc/observable";
 
 const expandedIcon: string = require("../../../public/imgs/expandedIcon.svg");
 const collapsedIcon: string = require("../../../public/imgs/collapsedIcon.svg");
+const CONTROL_HEIGHT = 30;
 
 export interface ITreeItemSelectableComponentProps {
     entity: any,
@@ -20,14 +22,25 @@ export interface ITreeItemSelectableComponentProps {
     filter: Nullable<string>
 }
 
-export class TreeItemSelectableComponent extends React.Component<ITreeItemSelectableComponentProps, { isExpanded: boolean, isSelected: boolean }> {
+export class TreeItemSelectableComponent extends React.Component<ITreeItemSelectableComponentProps, { isExpanded: boolean, isSelected: boolean, isHovered: boolean, dragOverLocation: DragOverLocation }> {
     private _wasSelected = false;
     dragOverHover: boolean;
-
+    private _onSelectionChangedObservable: Nullable<Observer<any>>;
+    private _onDraggingEndObservable: Nullable<Observer<any>>;
+    
     constructor(props: ITreeItemSelectableComponentProps) {
         super(props);
 
-        this.state = { isSelected: this.props.entity === this.props.selectedEntity, isExpanded: this.props.mustExpand || Tools.LookForItem(this.props.entity, this.props.selectedEntity) };
+        this.state = { dragOverLocation: DragOverLocation.NONE, isHovered: false, isSelected: this.props.entity === this.props.selectedEntity, isExpanded: this.props.mustExpand || Tools.LookForItem(this.props.entity, this.props.selectedEntity) };
+    
+        this._onSelectionChangedObservable = props.globalState.onSelectionChangedObservable.add((selection) => {
+            this.setState({ isSelected: selection === this.props.entity });
+        });
+
+        this._onDraggingEndObservable = props.globalState.onDraggingEndObservable.add(() => {
+            //this.setState({ dragOverLocation: DragOverLocation.NONE });
+        });
+    
     }
 
     switchExpandedState(): void {
@@ -70,6 +83,10 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
         }
     }
 
+    componentWillUnmount() {
+        this.props.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObservable);
+        this.props.globalState.onParentingChangeObservable.remove(this._onDraggingEndObservable);
+    }
     componentDidUpdate() {
         if (this.state.isSelected && !this._wasSelected) {
             this.scrollIntoView();
@@ -109,7 +126,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
 
     render() {
         const marginStyle = {
-            paddingLeft: (10 * (this.props.offset + 0.5)) -20 + "px"
+            paddingLeft: (10 * (this.props.offset + 0.5)) - 20 + "px"
         };
         const entity = this.props.entity;
 
@@ -145,19 +162,79 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
 
         return (
             <div>
-                <div className={this.state.isSelected ? "itemContainer selected" : "itemContainer"} style={marginStyle} >
+                <div className={this.state.isSelected ? "itemContainer selected" : "itemContainer"} style={marginStyle} draggable={entity.parent ? true : false}
+                    onMouseOver={() => this.setState({ isHovered: true })} onMouseLeave={() => this.setState({ isHovered: false })}
+                    onClick={() => { this.onSelect() }}
+                    onDragStart={event => {
+                        this.props.globalState.draggedControl = entity;
+                    }}
+                    onDrop={event => {
+                        this.drop();
+                    }}
+                    onDragEnd={event => {
+                        this.props.globalState.onDraggingEndObservable.notifyObservers();
+                    }}
+                    onDragOver={event => {
+                        this.dragOver(event);
+                    }}
+                    onDragLeave={event => {
+                        this.dragOverHover = false;
+                        this.forceUpdate();
+                    }}>
                     {
                         hasChildren &&
                         <div className="arrow icon" onClick={() => this.switchExpandedState()}>
                             {chevron}
                         </div>
                     }
-                    <TreeItemSpecializedComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} label={entity.name} entity={entity} onClick={() => this.onSelect()} />
+
+                    {(this.state.dragOverLocation == DragOverLocation.ABOVE && this.props.globalState.draggedControl != null && entity.parent) &&
+                        <hr className="se" />
+                    }
+                    <ControlTreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} control={entity}
+                        onClick={() => { }}
+                        isHovered={this.state.isHovered}
+                        dragOverLocation={this.state.dragOverLocation}
+                    />
                 </div>
                 {
                     this.renderChildren()
                 }
             </div >
         );
+    }
+
+
+    dragOver(event: React.DragEvent<HTMLDivElement>): void {
+        //check the positiions of the mouse cursor.
+        var target = event.target as HTMLElement;
+        const rect = target.getBoundingClientRect();
+        const y = event.clientY - rect.top;
+        if (y < CONTROL_HEIGHT / 3) { // one third
+            //this.dragOverLocation = DragOverLocation.ABOVE;
+            this.setState({ dragOverLocation: DragOverLocation.ABOVE });
+        }
+        else if (y > (2 * (CONTROL_HEIGHT / 3))) { //two thirds
+            //this.state.dragOverLocation = DragOverLocation.BELOW;
+            this.setState({ dragOverLocation: DragOverLocation.BELOW });
+        }
+        else {
+            this.setState({ dragOverLocation: DragOverLocation.CENTER });
+            //this.dragOverLocation = DragOverLocation.CENTER;
+        }
+        event.preventDefault();
+        this.dragOverHover = true;
+        this.forceUpdate();
+    }
+
+    drop(): void {
+        const control = this.props.entity;
+        if (this.props.globalState.draggedControl != control) {
+            this.dragOverHover = false;
+            this.props.globalState.draggedControlDirection = this.state.dragOverLocation;
+            this.props.globalState.onParentingChangeObservable.notifyObservers(this.props.entity);
+        }
+        this.props.globalState.draggedControl = null;
+        this.setState({ dragOverLocation: DragOverLocation.NONE });
     }
 }

@@ -4,57 +4,30 @@ import { TreeItemLabelComponent } from "../../treeItemLabelComponent";
 import { ExtensionsComponent } from "../../extensionsComponent";
 import * as React from 'react';
 import { DragOverLocation, GlobalState } from "../../../../globalState";
-import { Nullable, Observer } from "babylonjs/Legacy/legacy";
 import { Grid } from "babylonjs-gui/2D/controls/grid";
 
 const visibilityNotActiveIcon: string = require("../../../../../public/imgs/visibilityNotActiveIcon.svg");
 const visibilityActiveIcon: string = require("../../../../../public/imgs/visibilityActiveIcon.svg");
 const makeComponentIcon: string = require("../../../../../public/imgs/makeComponentIcon.svg");
 const makeChildOfContainerIcon: string = require("../../../../../public/imgs/makeChildOfContainerIcon.svg");
-const CONTROL_HEIGHT = 30;
 
 interface IControlTreeItemComponentProps {
     control: Control;
     extensibilityGroups?: IExplorerExtensibilityGroup[];
     onClick: () => void;
     globalState: GlobalState;
+    isHovered: boolean;
+    dragOverLocation: DragOverLocation
 }
 
-export class ControlTreeItemComponent extends React.Component<IControlTreeItemComponentProps, { isActive: boolean, isVisible: boolean, isHovered: boolean, isSelected: boolean, dragOverLocation: DragOverLocation }> {
-    dragOverHover: boolean;
-    //dragOverLocation: DragOverLocation = DragOverLocation.NONE;
-    private _onSelectionChangedObservable: Nullable<Observer<any>>;
-    private _onDraggingEndObservable: Nullable<Observer<any>>;
-
+export class ControlTreeItemComponent extends React.Component<IControlTreeItemComponentProps, { isActive: boolean, isVisible: boolean }> {
     constructor(props: IControlTreeItemComponentProps) {
         super(props);
 
         const control = this.props.control;
-        this.dragOverHover = false;
-        this._onSelectionChangedObservable = props.globalState.onSelectionChangedObservable.add((selection) => {
-            this.setState({ isSelected: selection === this.props.control });
-        });
 
-        this._onDraggingEndObservable = props.globalState.onDraggingEndObservable.add(() => {
-            //this.dragOverLocation = DragOverLocation.NONE;
-            this.setState({ dragOverLocation: DragOverLocation.NONE });
-        });
-        this.state = { isActive: control.isHighlighted, isVisible: control.isVisible, isHovered: false, isSelected: false, dragOverLocation: DragOverLocation.NONE };
+        this.state = { isActive: control.isHighlighted, isVisible: control.isVisible };
     }
-
-    componentWillUnmount() {
-        this.props.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObservable);
-        this.props.globalState.onParentingChangeObservable.remove(this._onDraggingEndObservable);
-        this.isSubscribed = false;
-    }
-
-    isSubscribed = true;
-    /*setState = (state: any, callback?: any) => {
-        this.isSubscribed = false;
-       if (this.isSubscribed) {
-         super.setState(state, callback);
-       }
-    }*/
 
     highlight() {
         const control = this.props.control;
@@ -69,76 +42,22 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
         this.props.control.isVisible = newState;
     }
 
-    dragOver(event: React.DragEvent<HTMLDivElement>): void {
-        //check the positiions of the mouse cursor.
-        var target = event.target as HTMLElement;
-        const rect = target.getBoundingClientRect();
-        const y = event.clientY - rect.top;
-        if (y < CONTROL_HEIGHT / 3) { // one third
-            //this.dragOverLocation = DragOverLocation.ABOVE;
-            this.setState({ dragOverLocation: DragOverLocation.ABOVE });
-        }
-        else if (y > (2 * (CONTROL_HEIGHT / 3))) { //two thirds
-            //this.state.dragOverLocation = DragOverLocation.BELOW;
-            this.setState({ dragOverLocation: DragOverLocation.BELOW });
-        }
-        else {
-            this.setState({ dragOverLocation: DragOverLocation.CENTER });
-            //this.dragOverLocation = DragOverLocation.CENTER;
-        }
-        event.preventDefault();
-        this.dragOverHover = true;
-        this.forceUpdate();
-    }
-
-    drop(): void {
-        const control = this.props.control;
-        if (this.props.globalState.draggedControl != control) {
-            this.dragOverHover = false;
-            this.props.globalState.draggedControlDirection = this.state.dragOverLocation;
-            this.props.globalState.onParentingChangeObservable.notifyObservers(this.props.control);
-        }
-        this.props.globalState.draggedControl = null;
-        this.setState({ dragOverLocation: DragOverLocation.NONE });
-        //this.dragOverLocation = DragOverLocation.NONE;
-    }
-
     render() {
         const control = this.props.control;
 
         let name = `${control.name || "No name"} [${control.getClassName()}]`;
-        if(control.parent?.typeName === "Grid"){
+        if (control.parent?.typeName === "Grid") {
             name += ` [${(control.parent as Grid).getChildCellInfo(this.props.control)}]`;
         }
         return (
-            <div className="controlTools" onMouseOver={() => this.setState({ isHovered: true })} onMouseLeave={() => this.setState({ isHovered: false })}
-                draggable={control.parent? true : false}
-                onDragStart={event => {
-                    this.props.globalState.draggedControl = control;
-                }}
-                onDrop={event => {
-                    this.drop();
-                }}
-                onDragEnd={event => {
-                    this.props.globalState.onDraggingEndObservable.notifyObservers();
-                }}
-                onDragOver={event => {
-                    this.dragOver(event);
-                }}
-                onDragLeave={event => {
-                    this.dragOverHover = false;
-                    this.forceUpdate();
-                }}>
-                {(this.state.dragOverLocation == DragOverLocation.ABOVE &&this.props.globalState.draggedControl != null && control.parent) &&
-                    <hr className="ge" />
-                }
+            <div className="controlTools" >
                 <TreeItemLabelComponent label={name} onClick={() => this.props.onClick()} color="greenyellow" />
-                {(this.state.dragOverLocation == DragOverLocation.CENTER && this.props.globalState.workbench.isContainer(control)) && <>
+                {(this.props.dragOverLocation == DragOverLocation.CENTER && this.props.globalState.workbench.isContainer(control)) && <>
                     <div className="makeChild icon" onClick={() => this.highlight()} title="Make Child">
                         <img src={makeChildOfContainerIcon} />
                     </div>
                 </>}
-                {(this.state.isHovered && this.state.dragOverLocation == DragOverLocation.NONE) && <>
+                {(this.props.isHovered && this.props.dragOverLocation == DragOverLocation.NONE) && <>
                     <div className="addComponent icon" onClick={() => this.highlight()} title="Add component (Not Implemented)">
                         <img src={makeComponentIcon} />
                     </div>
