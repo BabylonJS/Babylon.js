@@ -145,7 +145,7 @@ export class CloudPoint {
      * @returns true if it intersects
      */
     public intersectsMesh(target: Mesh, isSphere: boolean): boolean {
-        if (!target._boundingInfo) {
+        if (!target.hasBoundingInfo) {
             return false;
         }
         isSphere = isSphere ? isSphere : false;

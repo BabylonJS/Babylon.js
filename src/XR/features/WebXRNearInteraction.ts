@@ -673,7 +673,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
     public static PickMeshWithSphere(mesh: AbstractMesh, sphere: BoundingSphere, skipBoundingInfo = false): PickingInfo {
         const subMeshes = mesh.subMeshes;
         const pi = new PickingInfo();
-        const boundingInfo = mesh._boundingInfo;
+        const boundingInfo = mesh.getBoundingInfo();
 
         if (!mesh._generatePointsArray()) {
             return pi;

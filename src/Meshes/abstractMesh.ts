@@ -663,8 +663,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /** @hidden */
     public _masterMesh: Nullable<AbstractMesh> = null;
-    /** @hidden */
-    public _boundingInfo: Nullable<BoundingInfo> = null;
+    private _boundingInfo: Nullable<BoundingInfo> = null;
+    private _boundingInfoIsDirty = false;
     /** @hidden */
     public _renderId = 0;
 
@@ -1099,12 +1099,41 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             return this._masterMesh.getBoundingInfo();
         }
 
-        if (!this._boundingInfo) {
-            // this._boundingInfo is being created here
+        if (!this._boundingInfo || this._boundingInfoIsDirty) {
+            this._boundingInfoIsDirty = false;
+            // this._boundingInfo is being created if undefined
             this._updateBoundingInfo();
         }
         // cannot be null.
         return this._boundingInfo!;
+    }
+
+    /**
+     * Overwrite the current bounding info
+     * @param boundingInfo defines the new bounding info
+     * @returns the current mesh
+     */
+    public setBoundingInfo(boundingInfo: BoundingInfo): AbstractMesh {
+        this._boundingInfo = boundingInfo;
+        return this;
+    }
+
+    /**
+     * Returns true if there is already a bounding info
+     */
+    public get hasBoundingInfo(): boolean {
+        return this._boundingInfo !== null;
+    }
+
+    /**
+     * Creates a new bounding info for the mesh
+     * @param minimum min vector of the bounding box/sphere
+     * @param maximum max vector of the bounding box/sphere
+     * @param worldMatrix defines the new world matrix
+     * @returns the new bounding info
+     */
+    public buildBoundingInfo(minimum: DeepImmutable<Vector3>, maximum: DeepImmutable<Vector3>, worldMatrix?: DeepImmutable<Matrix>) {
+        this._boundingInfo = new BoundingInfo(minimum, maximum, worldMatrix);
     }
 
     /**
@@ -1116,15 +1145,6 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      */
     public normalizeToUnitCube(includeDescendants = true, ignoreRotation = false, predicate?: Nullable<(node: AbstractMesh) => boolean>): AbstractMesh {
         return <AbstractMesh>super.normalizeToUnitCube(includeDescendants, ignoreRotation, predicate);
-    }
-    /**
-     * Overwrite the current bounding info
-     * @param boundingInfo defines the new bounding info
-     * @returns the current mesh
-     */
-    public setBoundingInfo(boundingInfo: BoundingInfo): AbstractMesh {
-        this._boundingInfo = boundingInfo;
-        return this;
     }
 
     /** Gets a boolean indicating if this mesh has skinning data and an attached skeleton */
@@ -1432,7 +1452,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             return;
         }
         // Bounding info
-        this._updateBoundingInfo();
+        this._boundingInfoIsDirty = true;
     }
 
     /** @hidden */
@@ -1447,7 +1467,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @returns true if the mesh is in the frustum planes
      */
     public isInFrustum(frustumPlanes: Plane[]): boolean {
-        return this._boundingInfo !== null && this._boundingInfo.isInFrustum(frustumPlanes, this.cullingStrategy);
+        return this.getBoundingInfo().isInFrustum(frustumPlanes, this.cullingStrategy);
     }
 
     /**
@@ -1457,7 +1477,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @returns true if the mesh is completely in the frustum planes
      */
     public isCompletelyInFrustum(frustumPlanes: Plane[]): boolean {
-        return this._boundingInfo !== null && this._boundingInfo.isCompletelyInFrustum(frustumPlanes);
+        return this.getBoundingInfo().isCompletelyInFrustum(frustumPlanes);
     }
 
     /**
@@ -1468,11 +1488,10 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @returns true if there is an intersection
      */
     public intersectsMesh(mesh: AbstractMesh | SolidParticle, precise: boolean = false, includeDescendants?: boolean): boolean {
-        if (!this._boundingInfo || !mesh._boundingInfo) {
-            return false;
-        }
+        const boundingInfo = this.getBoundingInfo();
+        const otherBoundingInfo = mesh.getBoundingInfo();
 
-        if (this._boundingInfo.intersects(mesh._boundingInfo, precise)) {
+        if (boundingInfo.intersects(otherBoundingInfo, precise)) {
             return true;
         }
 
@@ -1493,11 +1512,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @returns true if there is an intersection
      */
     public intersectsPoint(point: Vector3): boolean {
-        if (!this._boundingInfo) {
-            return false;
-        }
-
-        return this._boundingInfo.intersectsPoint(point);
+        return this.getBoundingInfo().intersectsPoint(point);
     }
 
     // Collisions
@@ -1625,7 +1640,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     /** @hidden */
     public _checkCollision(collider: Collider): AbstractMesh {
         // Bounding box test
-        if (!this._boundingInfo || !this._boundingInfo._checkCollision(collider)) {
+        if (!this.getBoundingInfo()._checkCollision(collider)) {
             return this;
         }
 
@@ -1665,8 +1680,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     ): PickingInfo {
         var pickingInfo = new PickingInfo();
         const intersectionThreshold = this.getClassName() === "InstancedLinesMesh" || this.getClassName() === "LinesMesh" ? (this as any).intersectionThreshold : 0;
-        const boundingInfo = this._boundingInfo;
-        if (!this.subMeshes || !boundingInfo) {
+        const boundingInfo = this.getBoundingInfo();
+        if (!this.subMeshes) {
             return pickingInfo;
         }
         if (
