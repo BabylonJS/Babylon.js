@@ -1090,7 +1090,14 @@ export class ShadowGenerator implements IShadowGenerator {
         }
 
         // Culling
-        engine.setState(material.backFaceCulling, undefined, undefined, undefined, material.cullBackFaces);
+        const detNeg = effectiveMesh._getWorldMatrixDeterminant() < 0;
+        let sideOrientation = renderingMesh.overrideMaterialSideOrientation ?? material.sideOrientation;
+        if (scene.useRightHandedSystem && !detNeg || !scene.useRightHandedSystem && detNeg) {
+            sideOrientation = sideOrientation === Constants.MATERIAL_ClockWiseSideOrientation ? Constants.MATERIAL_CounterClockWiseSideOrientation : Constants.MATERIAL_ClockWiseSideOrientation;
+        }
+        let reverseSideOrientation = sideOrientation === Constants.MATERIAL_ClockWiseSideOrientation;
+
+        engine.setState(material.backFaceCulling, undefined, undefined, reverseSideOrientation, material.cullBackFaces);
 
         // Managing instances
         var batch = renderingMesh._getInstancesRenderList(subMesh._id, !!subMesh.getReplacementMesh());

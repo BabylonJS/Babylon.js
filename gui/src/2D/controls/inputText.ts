@@ -477,6 +477,9 @@ export class InputText extends Control implements IFocusableControl {
 
     /** @hidden */
     public processKey(keyCode: number, key?: string, evt?: IKeyboardEvent) {
+        if (this.isReadOnly) {
+            return;
+        }
 
         //return if clipboard event keys (i.e -ctr/cmd + c,v,x)
         if (evt && (evt.ctrlKey || evt.metaKey) && (keyCode === 67 || keyCode === 86 || keyCode === 88)) {
@@ -1042,6 +1045,10 @@ export class InputText extends Control implements IFocusableControl {
             return false;
         }
 
+        if (this.isReadOnly) {
+            return true;
+        }
+
         this._clickedCoordinate = coordinates.x;
         this._isTextHighlightOn = false;
         this._highlightedText = "";
@@ -1062,7 +1069,7 @@ export class InputText extends Control implements IFocusableControl {
         return true;
     }
     public _onPointerMove(target: Control, coordinates: Vector2, pointerId: number, pi: PointerInfoBase): void {
-        if (this._host.focusedControl === this && this._isPointerDown) {
+        if (this._host.focusedControl === this && this._isPointerDown && !this.isReadOnly) {
             this._clickedCoordinate = coordinates.x;
             this._markAsDirty();
             this._updateValueFromCursorIndex(this._cursorOffset);

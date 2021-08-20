@@ -116,6 +116,18 @@ export class Container extends Control {
         return this._children;
     }
 
+    public get isReadOnly() {
+        return this._isReadOnly;
+    }
+
+    public set isReadOnly(value: boolean) {
+        this._isReadOnly = value;
+
+        for (const child of this._children) {
+            child.isReadOnly = value;
+        }
+    }
+
     /**
      * Creates a new Container
      * @param name defines the name of the container

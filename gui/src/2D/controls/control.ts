@@ -89,7 +89,8 @@ export class Control {
     private _cachedOffsetY: number;
     private _isVisible = true;
     private _isHighlighted = false;
-    private _highlightLineWidth = 2;
+    private _highlightColor = "#4affff";
+    protected _highlightLineWidth = 2;
     /** @hidden */
     public _linkedMesh: Nullable<TransformNode>;
     private _fontSet = false;
@@ -101,6 +102,7 @@ export class Control {
     protected _isEnabled = true;
     protected _disabledColor = "#9a9a9a";
     protected _disabledColorItem = "#6a6a6a";
+    protected _isReadOnly = false;
     /** @hidden */
     protected _rebuildLayout = false;
 
@@ -120,6 +122,18 @@ export class Control {
      * Gets or sets the unique id of the node. Please note that this number will be updated when the control is added to a container
      */
     public uniqueId: number;
+
+    /**
+     * Gets or sets a boolean indicating if the control is readonly (default: false).
+     * A readonly control will still raise pointer events but will not react to them
+     */
+    public get isReadOnly() {
+        return this._isReadOnly;
+    }
+
+    public set isReadOnly(value: boolean) {
+        this._isReadOnly = value;
+    }
 
     /**
      * Gets or sets an object used to store user defined information for the node
@@ -365,6 +379,22 @@ export class Control {
         }
 
         this._isHighlighted = value;
+        this._markAsDirty();
+    }
+
+    /**
+     * Gets or sets a string defining the color to use for highlighting this control
+     */
+    public get highlightColor(): string {
+        return this._highlightColor;
+    }
+
+    public set highlightColor(value: string) {
+        if (this._highlightColor === value) {
+            return;
+        }
+
+        this._highlightColor = value;
         this._markAsDirty();
     }
 
@@ -1456,7 +1486,7 @@ export class Control {
         }
 
         context.save();
-        context.strokeStyle = "#4affff";
+        context.strokeStyle = this._highlightColor;
         context.lineWidth = this._highlightLineWidth;
 
         this._renderHighlightSpecific(context);
