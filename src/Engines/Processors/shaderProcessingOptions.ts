@@ -29,5 +29,4 @@ export interface ProcessingOptions {
     isNDCHalfZRange: boolean;
     useReverseDepthBuffer: boolean;
     shaderLanguage: ShaderLanguage;
-    disableNodeProcessing?: boolean;
 }
