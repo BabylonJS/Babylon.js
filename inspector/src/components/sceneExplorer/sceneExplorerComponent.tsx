@@ -67,6 +67,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
     private _onNewSceneAddedObserver: Nullable<Observer<Scene>>;
     private _onNewSceneObserver: Nullable<Observer<Scene>>;
     private sceneExplorerRef: React.RefObject<Resizable>;
+    private _mutationTimeout: Nullable<number> = null;
 
     private _once = true;
     private _hooked = false;
@@ -93,7 +94,15 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             return;
         }
 
-        setTimeout(() => this.forceUpdate());
+        // To avoid perf hits we want to make sure that we are not rebuilding the entire tree on each call
+        if (this._mutationTimeout !== null) {
+            window.clearTimeout(this._mutationTimeout);
+        }
+
+        this._mutationTimeout = window.setTimeout(() => {
+            this._mutationTimeout = null;
+            this.forceUpdate();
+        }, 32);
     }
 
     componentDidMount() {
