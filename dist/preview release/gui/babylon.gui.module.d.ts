@@ -804,7 +804,8 @@ declare module "babylonjs-gui/2D/controls/control" {
         private _cachedOffsetY;
         private _isVisible;
         private _isHighlighted;
-        private _highlightLineWidth;
+        private _highlightColor;
+        protected _highlightLineWidth: number;
         /** @hidden */
         _linkedMesh: Nullable<TransformNode>;
         private _fontSet;
@@ -816,6 +817,7 @@ declare module "babylonjs-gui/2D/controls/control" {
         protected _isEnabled: boolean;
         protected _disabledColor: string;
         protected _disabledColorItem: string;
+        protected _isReadOnly: boolean;
         /** @hidden */
         protected _rebuildLayout: boolean;
         /** @hidden */
@@ -830,6 +832,12 @@ declare module "babylonjs-gui/2D/controls/control" {
          * Gets or sets the unique id of the node. Please note that this number will be updated when the control is added to a container
          */
         uniqueId: number;
+        /**
+         * Gets or sets a boolean indicating if the control is readonly (default: false).
+         * A readonly control will still raise pointer events but will not react to them
+         */
+        get isReadOnly(): boolean;
+        set isReadOnly(value: boolean);
         /**
          * Gets or sets an object used to store user defined information for the node
          */
@@ -957,6 +965,11 @@ declare module "babylonjs-gui/2D/controls/control" {
          */
         get isHighlighted(): boolean;
         set isHighlighted(value: boolean);
+        /**
+         * Gets or sets a string defining the color to use for highlighting this control
+         */
+        get highlightColor(): string;
+        set highlightColor(value: string);
         /** Gets or sets a value indicating the scale factor on X axis (1 by default)
          * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
         */
@@ -1449,6 +1462,8 @@ declare module "babylonjs-gui/2D/controls/container" {
         set background(value: string);
         /** Gets the list of children */
         get children(): Control[];
+        get isReadOnly(): boolean;
+        set isReadOnly(value: boolean);
         /**
          * Creates a new Container
          * @param name defines the name of the container
@@ -2652,6 +2667,7 @@ declare module "babylonjs-gui/2D/controls/ellipse" {
         protected _localDraw(context: ICanvasRenderingContext): void;
         protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void;
         protected _clipForChildren(context: ICanvasRenderingContext): void;
+        _renderHighlightSpecific(context: ICanvasRenderingContext): void;
     }
 }
 declare module "babylonjs-gui/2D/controls/focusableButton" {
@@ -6888,7 +6904,8 @@ declare module BABYLON.GUI {
         private _cachedOffsetY;
         private _isVisible;
         private _isHighlighted;
-        private _highlightLineWidth;
+        private _highlightColor;
+        protected _highlightLineWidth: number;
         /** @hidden */
         _linkedMesh: BABYLON.Nullable<BABYLON.TransformNode>;
         private _fontSet;
@@ -6900,6 +6917,7 @@ declare module BABYLON.GUI {
         protected _isEnabled: boolean;
         protected _disabledColor: string;
         protected _disabledColorItem: string;
+        protected _isReadOnly: boolean;
         /** @hidden */
         protected _rebuildLayout: boolean;
         /** @hidden */
@@ -6914,6 +6932,12 @@ declare module BABYLON.GUI {
          * Gets or sets the unique id of the node. Please note that this number will be updated when the control is added to a container
          */
         uniqueId: number;
+        /**
+         * Gets or sets a boolean indicating if the control is readonly (default: false).
+         * A readonly control will still raise pointer events but will not react to them
+         */
+        get isReadOnly(): boolean;
+        set isReadOnly(value: boolean);
         /**
          * Gets or sets an object used to store user defined information for the node
          */
@@ -7041,6 +7065,11 @@ declare module BABYLON.GUI {
          */
         get isHighlighted(): boolean;
         set isHighlighted(value: boolean);
+        /**
+         * Gets or sets a string defining the color to use for highlighting this control
+         */
+        get highlightColor(): string;
+        set highlightColor(value: string);
         /** Gets or sets a value indicating the scale factor on X axis (1 by default)
          * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
         */
@@ -7526,6 +7555,8 @@ declare module BABYLON.GUI {
         set background(value: string);
         /** Gets the list of children */
         get children(): Control[];
+        get isReadOnly(): boolean;
+        set isReadOnly(value: boolean);
         /**
          * Creates a new Container
          * @param name defines the name of the container
@@ -8665,6 +8696,7 @@ declare module BABYLON.GUI {
         protected _localDraw(context: BABYLON.ICanvasRenderingContext): void;
         protected _additionalProcessing(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         protected _clipForChildren(context: BABYLON.ICanvasRenderingContext): void;
+        _renderHighlightSpecific(context: BABYLON.ICanvasRenderingContext): void;
     }
 }
 declare module BABYLON.GUI {
