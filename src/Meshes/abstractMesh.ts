@@ -664,7 +664,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     /** @hidden */
     public _masterMesh: Nullable<AbstractMesh> = null;
     private _boundingInfo: Nullable<BoundingInfo> = null;
-    private _boundingInfoIsDirty = false;
+    private _boundingInfoIsDirty = true;
     /** @hidden */
     public _renderId = 0;
 
@@ -1099,7 +1099,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             return this._masterMesh.getBoundingInfo();
         }
 
-        if (!this._boundingInfo || this._boundingInfoIsDirty) {
+        if (this._boundingInfoIsDirty) {
             this._boundingInfoIsDirty = false;
             // this._boundingInfo is being created if undefined
             this._updateBoundingInfo();
