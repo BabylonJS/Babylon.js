@@ -315,7 +315,6 @@ export class Effect implements IDisposable {
             isNDCHalfZRange: this._engine.isNDCHalfZRange,
             useReverseDepthBuffer: this._engine.useReverseDepthBuffer,
             shaderLanguage: this._shaderLanguage,
-            disableNodeProcessing: this._shaderLanguage === ShaderLanguage.WGSL,
         };
 
         let shaderCodes: [string | undefined, string | undefined] = [undefined, undefined];

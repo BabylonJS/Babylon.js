@@ -74,19 +74,45 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
     protected _preProcessors: { [key: string]: string };
     protected _isWGSL: boolean;
     protected _attributesWGSL: string[];
+    protected _attributesDeclWGSL: string[];
+    protected _attributeNamesWGSL: string[];
+    protected _varyingsWGSL: string[];
+    protected _varyingsDeclWGSL: string[];
+    protected _varyingNamesWGSL: string[];
 
     private _getArraySize(name: string, preProcessors: { [key: string]: string }): [string, number] {
         let length = 0;
-        const startArray = name.indexOf("[");
-        const endArray = name.indexOf("]");
-        if (startArray > 0 && endArray > 0) {
-            const lengthInString = name.substring(startArray + 1, endArray);
-            length = +(lengthInString);
-            if (isNaN(length)) {
-                length = +(preProcessors[lengthInString.trim()]);
+
+        if (this._isWGSL) {
+            const endArray = name.lastIndexOf(">");
+            if (name.indexOf("array") >= 0 && endArray > 0) {
+                let startArray = endArray;
+                while (startArray > 0 && name.charAt(startArray) !== ' ' && name.charAt(startArray) !== ',') {
+                    startArray--;
+                }
+                const lengthInString = name.substring(startArray + 1, endArray);
+                length = +(lengthInString);
+                if (isNaN(length)) {
+                    length = +(preProcessors[lengthInString.trim()]);
+                }
+                while (startArray > 0 && (name.charAt(startArray) === ' ' || name.charAt(startArray) === ',')) {
+                    startArray--;
+                }
+                name = name.substring(name.indexOf("<") + 1, startArray + 1);
             }
-            name = name.substr(0, startArray);
+        } else {
+            const startArray = name.indexOf("[");
+            const endArray = name.indexOf("]");
+            if (startArray > 0 && endArray > 0) {
+                const lengthInString = name.substring(startArray + 1, endArray);
+                length = +(lengthInString);
+                if (isNaN(length)) {
+                    length = +(preProcessors[lengthInString.trim()]);
+                }
+                name = name.substr(0, startArray);
+            }
         }
+
         return [name, length];
     }
 
@@ -97,23 +123,24 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
 
         if (this._isWGSL) {
             this._attributesWGSL = [];
+            this._attributesDeclWGSL = [];
+            this._attributeNamesWGSL = [];
+            this._varyingsWGSL = [];
+            this._varyingsDeclWGSL = [];
+            this._varyingNamesWGSL = [];
         }
     }
 
     public varyingProcessor(varying: string, isFragment: boolean, preProcessors: { [key: string]: string }, processingContext: Nullable<ShaderProcessingContext>) {
-        if (this._isWGSL) {
-            return varying;
-        }
-
         this._preProcessors = preProcessors;
 
         const webgpuProcessingContext = processingContext! as WebGPUShaderProcessingContext;
 
-        const varyingRegex = new RegExp(/\s*varying\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s+(\S+)\s*;/gm);
+        const varyingRegex = this._isWGSL ? new RegExp(/\s*varying\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s*:\s*(.+)\s*;/gm) : new RegExp(/\s*varying\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s+(\S+)\s*;/gm);
         const match = varyingRegex.exec(varying);
         if (match != null) {
-            const varyingType = match[1];
-            const name = match[2];
+            const varyingType = this._isWGSL ? match[2] : match[1];
+            const name = this._isWGSL ? match[1] : match[2];
             let location: number;
             if (isFragment) {
                 location = webgpuProcessingContext.availableVaryings[name];
@@ -123,12 +150,22 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
                 }
             }
             else {
-                location = webgpuProcessingContext.getVaryingNextLocation(varyingType, this._getArraySize(name, preProcessors)[1]);
+                location = webgpuProcessingContext.getVaryingNextLocation(varyingType, this._getArraySize(this._isWGSL ? varyingType : name, preProcessors)[1]);
                 webgpuProcessingContext.availableVaryings[name] = location;
-                this._missingVaryings[location] = `layout(location = ${location}) in ${varyingType} ${name};`;
+                if (this._isWGSL) {
+                    this._varyingsWGSL.push(`[[location(${location})]] ${name} : ${varyingType};`);
+                    this._varyingsDeclWGSL.push(`var<private> ${name} : ${varyingType};`);
+                    this._varyingNamesWGSL.push(name);
+                } else {
+                    this._missingVaryings[location] = `layout(location = ${location}) in ${varyingType} ${name};`;
+                }
             }
 
-            varying = varying.replace(match[0], location === undefined ? "" : `layout(location = ${location}) ${isFragment ? "in" : "out"} ${varyingType} ${name};`);
+            if (this._isWGSL) {
+                varying = "";
+            } else {
+                varying = varying.replace(match[0], location === undefined ? "" : `layout(location = ${location}) ${isFragment ? "in" : "out"} ${varyingType} ${name};`);
+            }
         }
         return varying;
     }
@@ -138,47 +175,49 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
 
         const webgpuProcessingContext = processingContext! as WebGPUShaderProcessingContext;
 
-        const attribRegex = this._isWGSL ? new RegExp(/\s*attribute\s+(\S+)\s*:\s*(\S+)\s*;/gm) : new RegExp(/\s*attribute\s+(\S+)\s+(\S+)\s*;/gm);
+        const attribRegex = this._isWGSL ? new RegExp(/\s*attribute\s+(\S+)\s*:\s*(.+)\s*;/gm) : new RegExp(/\s*attribute\s+(\S+)\s+(\S+)\s*;/gm);
         const match = attribRegex.exec(attribute);
         if (match != null) {
-            const varyingType = this._isWGSL ? match[2] : match[1];
+            const attributeType = this._isWGSL ? match[2] : match[1];
             const name = this._isWGSL ? match[1] : match[2];
-            const location = webgpuProcessingContext.getAttributeNextLocation(varyingType, this._getArraySize(name, preProcessors)[1]);
+            const location = webgpuProcessingContext.getAttributeNextLocation(attributeType, this._getArraySize(this._isWGSL ? attributeType : name, preProcessors)[1]);
 
             webgpuProcessingContext.availableAttributes[name] = location;
             webgpuProcessingContext.orderedAttributes[location] = name;
 
             if (this._isWGSL) {
-                this._attributesWGSL.push(`[[location(${location})]] ${name} : ${varyingType};`);
+                this._attributesWGSL.push(`[[location(${location})]] ${name} : ${attributeType};`);
+                this._attributesDeclWGSL.push(`var<private> ${name} : ${attributeType};`);
+                this._attributeNamesWGSL.push(name);
                 attribute = "";
             } else {
-                attribute = attribute.replace(match[0], `layout(location = ${location}) in ${varyingType} ${name};`);
+                attribute = attribute.replace(match[0], `layout(location = ${location}) in ${attributeType} ${name};`);
             }
         }
         return attribute;
     }
 
     public uniformProcessor(uniform: string, isFragment: boolean, preProcessors: { [key: string]: string }, processingContext: Nullable<ShaderProcessingContext>): string {
-        if (this._isWGSL) {
-            return uniform;
-        }
-
         this._preProcessors = preProcessors;
 
         const webgpuProcessingContext = processingContext! as WebGPUShaderProcessingContext;
 
-        const uniformRegex = new RegExp(/\s*uniform\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s+(\S+)\s*;/gm);
+        const uniformRegex = this._isWGSL ? new RegExp(/\s*uniform\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s*:\s*(.+)\s*;/gm) : new RegExp(/\s*uniform\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s+(\S+)\s*;/gm);
 
         const match = uniformRegex.exec(uniform);
         if (match != null) {
-            let uniformType = match[1];
-            let name = match[2];
+            let uniformType = this._isWGSL ? match[2] : match[1];
+            let name = this._isWGSL ? match[1] : match[2];
 
             if (uniformType.indexOf("sampler") === 0 || uniformType.indexOf("sampler") === 1) {
                 let samplerInfo = _knownSamplers[name];
                 let arraySize = 0; // 0 means the sampler/texture is not declared as an array
                 if (!samplerInfo) {
-                    [name, arraySize] = this._getArraySize(name, preProcessors);
+                    if (this._isWGSL) {
+                        [uniformType, arraySize] = this._getArraySize(uniformType, preProcessors);
+                    } else {
+                        [name, arraySize] = this._getArraySize(name, preProcessors);
+                    }
                     samplerInfo = webgpuProcessingContext.availableSamplers[name];
                     if (!samplerInfo) {
                         samplerInfo = {
@@ -290,7 +329,11 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
                 // Check the size of the uniform array in case of array.
                 let length = 0;
 
-                [name, length] = this._getArraySize(name, preProcessors);
+                if (this._isWGSL) {
+                    [uniformType, length] = this._getArraySize(uniformType, preProcessors);
+                } else {
+                    [name, length] = this._getArraySize(name, preProcessors);
+                }
 
                 for (let i = 0; i < webgpuProcessingContext.leftOverUniforms.length; i++) {
                     if (webgpuProcessingContext.leftOverUniforms[i].name === name) {
@@ -434,7 +477,6 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
             // TODO WEBGPU. From the shader code:
             //  * extract the ubos
             //  * extract the samplers
-            //  * extract the attributes. Set the [[location(X)]] decoration
             const ubos = ["Scene", "Mesh"];
 
             webgpuProcessingContext.samplerNames = [];
@@ -452,14 +494,164 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
                 webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex].usedInVertex = true;
             }
 
-            vertexCode = vertexCode.replace("#define ", "//#define ");
-            if (this._attributesWGSL.length > 0) {
-                vertexCode = "struct VertexInputs {\n" + this._attributesWGSL.join("\n") + "\n};\n" + vertexCode;
+            // Builds the leftover UBOs.
+            if (webgpuProcessingContext.leftOverUniforms.length) {
+                const name = "LeftOver";
+                let availableUBO = webgpuProcessingContext.availableUBOs[name];
+                if (!availableUBO) {
+                    availableUBO = webgpuProcessingContext.getNextFreeUBOBinding();
+                    webgpuProcessingContext.availableUBOs[name] = availableUBO;
+                    if (!webgpuProcessingContext.orderedUBOsAndSamplers[availableUBO.setIndex]) {
+                        webgpuProcessingContext.orderedUBOsAndSamplers[availableUBO.setIndex] = [];
+                    }
+                    webgpuProcessingContext.orderedUBOsAndSamplers[availableUBO.setIndex][availableUBO.bindingIndex] = { isSampler: false, isTexture: false, usedInVertex: true, usedInFragment: true, name };
+                }
+
+                let ubo = `[[block]] struct ${name} {\n`;
+                for (let leftOverUniform of webgpuProcessingContext.leftOverUniforms) {
+                    if (leftOverUniform.length > 0) {
+                        ubo += `  ${leftOverUniform.name} : array<${leftOverUniform.type}, ${leftOverUniform.length}>;\n`;
+                    }
+                    else {
+                        ubo += `  ${leftOverUniform.name} : ${leftOverUniform.type};\n`;
+                    }
+                }
+                ubo += "};\n";
+
+                ubo += `[[group(${availableUBO.setIndex}), binding(${availableUBO.bindingIndex})]] var<uniform> uniforms : ${name};\n`;
+
+                // Currently set in both vert and frag but could be optim away if necessary.
+                vertexCode = ubo + vertexCode;
+                fragmentCode = ubo + fragmentCode;
             }
+
+            const injectStartingAndEndingCode = (code: string, startingCode?: string, endingCode?: string) => {
+                if (startingCode) {
+                    let idx = code.indexOf("fn main");
+                    if (idx >= 0) {
+                        while (idx++ < code.length && code.charAt(idx) != '{') ;
+                        if (idx < code.length) {
+                            while (idx++ < code.length && code.charAt(idx) != '\n') ;
+                            if (idx < code.length) {
+                                const part1 = code.substring(0, idx + 1);
+                                const part2 = code.substring(idx + 1);
+                                code = part1 + startingCode + part2;
+                            }
+                        }
+                    }
+                }
+
+                if (endingCode) {
+                    const lastClosingCurly = code.lastIndexOf("}");
+                    code = code.substring(0, lastClosingCurly);
+                    code += endingCode + "\n}";
+                }
+
+                return code;
+            };
+
+            // Vertex code
+            vertexCode = vertexCode.replace("#define ", "//#define ");
+
+            let varyingsDecl = this._varyingsDeclWGSL.join("\n") + "\n";
+
+            let vertexBuiltinDecl = "var<private> gl_VertexID : u32;\nvar<private> gl_InstanceID : u32;\nvar<private> gl_Position : vec4<f32>;\n";
+
+            let vertexAttributesDecl = this._attributesDeclWGSL.join("\n") + "\n";
+
+            let vertexInputs = "struct VertexInputs {\n  [[builtin(vertex_index)]] vertexIndex : u32;\n  [[builtin(instance_index)]] instanceIndex : u32;\n";
+            if (this._attributesWGSL.length > 0) {
+                vertexInputs += this._attributesWGSL.join("\n");
+            }
+            vertexInputs += "\n};\n";
+
+            let vertexFragmentInputs = "struct FragmentInputs {\n  [[builtin(position)]] position : vec4<f32>;\n";
+            if (this._varyingsWGSL.length > 0) {
+                vertexFragmentInputs += this._varyingsWGSL.join("\n");
+            }
+            vertexFragmentInputs += "\n};\n";
+
+            vertexCode = vertexBuiltinDecl + vertexInputs + vertexAttributesDecl + vertexFragmentInputs + varyingsDecl + vertexCode;
+
+            let vertexStartingCode = "  var output : FragmentInputs;\n  gl_VertexID = input.vertexIndex;\n  gl_InstanceID = input.instanceIndex;\n";
+
+            for (let i = 0; i < this._attributeNamesWGSL.length; ++i) {
+                const name = this._attributeNamesWGSL[i];
+                vertexStartingCode += `  ${name} = input.${name};\n`;
+            }
+
+            let vertexEndingCode = "  output.position = gl_Position;\n  output.position.y = -output.position.y;\n";
+
+            for (let i = 0; i < this._varyingNamesWGSL.length; ++i) {
+                const name = this._varyingNamesWGSL[i];
+                vertexEndingCode += `  output.${name} = ${name};\n`;
+            }
+
+            vertexEndingCode += "  return output;";
+
+            vertexCode = injectStartingAndEndingCode(vertexCode, vertexStartingCode, vertexEndingCode);
+
             console.log(vertexCode);
             //vertexCode = "[[group(1), binding(1)]] var<uniform> mesh : Mesh;\n" + vertexCode;
 
+            // fragment code
             fragmentCode = fragmentCode.replace("#define ", "//#define ");
+
+            let fragmentBuiltinDecl = "var<private> gl_FragCoord : vec4<f32>;\nvar<private> gl_FrontFacing : bool;\nvar<private> gl_FragColor : vec4<f32>;\nvar<private> gl_FragDepth : f32;\n";
+
+            let fragmentFragmentInputs = "struct FragmentInputs {\n  [[builtin(position)]] position : vec4<f32>;\n  [[builtin(front_facing)]] frontFacing : bool;\n";
+            if (this._varyingsWGSL.length > 0) {
+                fragmentFragmentInputs += this._varyingsWGSL.join("\n");
+            }
+            fragmentFragmentInputs += "\n};\n";
+
+            let fragmentOutputs = "struct FragmentOutputs {\n  [[location(0)]] color : vec4<f32>;\n";
+            
+            let hasFragDepth = false;
+            let idx = 0;
+            while (!hasFragDepth) {
+                idx = fragmentCode.indexOf("gl_FragDepth", idx);
+                if (idx < 0) {
+                    break;
+                }
+                const saveIndex = idx;
+                hasFragDepth = true;
+                while (idx > 1 && fragmentCode.charAt(idx) !== '\n') {
+                    if (fragmentCode.charAt(idx) === '/' && fragmentCode.charAt(idx - 1) === '/') {
+                        hasFragDepth = false;
+                        break;
+                    }
+                    idx--;
+                }
+                idx = saveIndex + 12;
+            }
+
+            if (hasFragDepth) {
+                fragmentOutputs += "  [[builtin(frag_depth)]] fragDepth: f32;\n";
+            }
+
+            fragmentOutputs += "};\n";
+
+            fragmentCode = fragmentBuiltinDecl + fragmentFragmentInputs + varyingsDecl + fragmentOutputs + fragmentCode;
+
+            let fragmentStartingCode = "  var output : FragmentOutputs;\n  gl_FragCoord = input.position;\n  gl_FrontFacing = input.frontFacing;\n";
+
+            for (let i = 0; i < this._varyingNamesWGSL.length; ++i) {
+                const name = this._varyingNamesWGSL[i];
+                fragmentStartingCode += `  ${name} = input.${name};\n`;
+            }
+
+            let fragmentEndingCode = "  output.color = gl_FragColor;\n";
+
+            if (hasFragDepth) {
+                fragmentEndingCode += "  output.fragDepth = gl_FragDepth;\n";
+            }
+
+            fragmentEndingCode += "  return output;";
+
+            fragmentCode = injectStartingAndEndingCode(fragmentCode, fragmentStartingCode, fragmentEndingCode);
+
+            console.log(fragmentCode);
             //fragmentCode = "[[group(1), binding(1)]] var<uniform> mesh : Mesh;\n" + fragmentCode;
 
             return { vertexCode, fragmentCode };

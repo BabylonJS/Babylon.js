@@ -4,10 +4,16 @@ const _maxSets = 4;
 const _maxBindingsPerSet = 16;
 
 // all types not listed are assumed to consume 1 location
-const _webGLTypeToLocationSize: { [key: string]: number } = {
+const _typeToLocationSize: { [key: string]: number } = {
+    // GLSL types
     "mat2": 2,
     "mat3": 3,
     "mat4": 4,
+
+    // WGSL types
+    "mat2x2": 2,
+    "mat3x3": 3,
+    "mat4x4": 4,
 };
 
 /** @hidden */
@@ -90,7 +96,7 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
     public getAttributeNextLocation(dataType: string, arrayLength: number = 0): number {
         const index = this._attributeNextLocation;
 
-        this._attributeNextLocation += (_webGLTypeToLocationSize[dataType] ?? 1) * (arrayLength || 1);
+        this._attributeNextLocation += (_typeToLocationSize[dataType] ?? 1) * (arrayLength || 1);
 
         return index;
     }
@@ -98,7 +104,7 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
     public getVaryingNextLocation(dataType: string, arrayLength: number = 0): number {
         const index = this._varyingNextLocation;
 
-        this._varyingNextLocation += (_webGLTypeToLocationSize[dataType] ?? 1) * (arrayLength || 1);
+        this._varyingNextLocation += (_typeToLocationSize[dataType] ?? 1) * (arrayLength || 1);
 
         return index;
     }
