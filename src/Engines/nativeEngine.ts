@@ -859,6 +859,7 @@ class CommandBufferEncoder {
             throw new Error("Command scope already active.");
         }
 
+        // console.log("COMMAND BUFFER: Begin scope");
         this._isCommandBufferScopeActive = true;
     }
 
@@ -868,26 +869,32 @@ class CommandBufferEncoder {
         }
 
         this._isCommandBufferScopeActive = false;
+        // console.log("COMMAND BUFFER: End scope");
         this._submitCommandBuffer();
     }
 
     public beginEncodingCommand(command: number) {
+        // console.log(`COMMAND BUFFER: Encode command: ${command}`);
         this._commandBuffer.pushValue(command);
     }
 
     public encodeCommandArgAsUInt32(commandArg: unknown) {
+        // console.log(`COMMAND BUFFER:   Encode uint32: ${commandArg}`);
         this._uint32Buffer.pushValue(commandArg as number);
     }
 
     public encodeCommandArgAsUInt32s(commandArg: Uint32Array) {
+        // console.log(`COMMAND BUFFER:   Encode uint32s: ${commandArg}`);
         this._uint32Buffer.pushValues(commandArg);
     }
 
     public encodeCommandArgAsFloat32(commandArg: unknown) {
+        // console.log(`COMMAND BUFFER:   Encode float32: ${commandArg}`);
         this._float32Buffer.pushValue(commandArg as number);
     }
 
     public encodeCommandArgAsFloat32s(commandArg: Float32Array) {
+        // console.log(`COMMAND BUFFER:   Encode float32s: ${commandArg}`);
         this._float32Buffer.pushValues(commandArg);
     }
 
@@ -898,10 +905,12 @@ class CommandBufferEncoder {
     }
 
     public _submitCommandBuffer() {
-        this._nativeEngine.submitCommandBuffer(this._commandBuffer.length);
-        this._commandBuffer.reset();
-        this._uint32Buffer.reset();
-        this._float32Buffer.reset();
+        if (this._commandBuffer.length > 0) {
+            this._nativeEngine.submitCommandBuffer(this._commandBuffer.length);
+            this._commandBuffer.reset();
+            this._uint32Buffer.reset();
+            this._float32Buffer.reset();
+        }
     }
 }
 
@@ -1050,6 +1059,15 @@ export class NativeEngine extends Engine {
 
         // Shader processor
         this._shaderProcessor = new WebGL2ShaderProcessor();
+
+        this.onNewSceneAddedObservable.add((scene) => {
+            scene.onBeforeRenderObservable.add(() => {
+                this._commandBufferEncoder.beginCommandScope();
+            });
+            scene.onAfterRenderObservable.add(() => {
+                this._commandBufferEncoder.endCommandScope();
+            })
+        });
     }
 
     public dispose(): void {
@@ -1118,7 +1136,7 @@ export class NativeEngine extends Engine {
         this._commandBufferEncoder.encodeCommandArgAsUInt32(depth);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(1);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(stencil);
-        this._commandBufferEncoder.encodeCommandArgAsFloat32(0);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(0);
         this._commandBufferEncoder.finishEncodingCommand();
     }
 
