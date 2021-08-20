@@ -124,6 +124,8 @@ interface INativeEngine {
     readonly STENCIL_OP_PASS_Z_INVERT: number;
 
     readonly COMMAND_DELETEVERTEXARRAY: number;
+    readonly COMMAND_DELETEINDEXBUFFER: number;
+    readonly COMMAND_DELETEVERTEXBUFFER: number;
     readonly COMMAND_SETMATRICES: number;
     readonly COMMAND_SETTEXTURE: number;
     readonly COMMAND_BINDVERTEXARRAY: number;
@@ -2720,12 +2722,18 @@ export class NativeEngine extends Engine {
 
     protected _deleteBuffer(buffer: NativeDataBuffer): void {
         if (buffer.nativeIndexBuffer) {
-            this._native.deleteIndexBuffer(buffer.nativeIndexBuffer);
+            //this._native.deleteIndexBuffer(buffer.nativeIndexBuffer);
+            this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_DELETEINDEXBUFFER);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(buffer.nativeIndexBuffer);
+            this._commandBufferEncoder.finishEncodingCommand();
             delete buffer.nativeIndexBuffer;
         }
 
         if (buffer.nativeVertexBuffer) {
-            this._native.deleteVertexBuffer(buffer.nativeVertexBuffer);
+            //this._native.deleteVertexBuffer(buffer.nativeVertexBuffer);
+            this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_DELETEVERTEXBUFFER);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(buffer.nativeVertexBuffer);
+            this._commandBufferEncoder.finishEncodingCommand();
             delete buffer.nativeVertexBuffer;
         }
     }
