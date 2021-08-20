@@ -30,7 +30,7 @@ import { ISceneLoaderAsyncResult, ISceneLoaderProgressEvent } from "babylonjs/Lo
 import { Scene } from "babylonjs/scene";
 
 import { GLTFUtils } from "./glTFLoaderUtils";
-import { GLTFFileLoader, IGLTFLoader, GLTFLoaderState, IGLTFLoaderData } from "../glTFFileLoader";
+import { GLTFFileLoader, IGLTFLoader, IGLTFLoaderData } from "../glTFFileLoader";
 import { Constants } from 'babylonjs/Engines/constants';
 import { AssetContainer } from "babylonjs/assetContainer";
 
