@@ -123,6 +123,7 @@ interface INativeEngine {
     readonly STENCIL_OP_PASS_Z_DECRSAT: number;
     readonly STENCIL_OP_PASS_Z_INVERT: number;
 
+    readonly COMMAND_DELETEVERTEXARRAY: number;
     readonly COMMAND_SETMATRICES: number;
     readonly COMMAND_SETTEXTURE: number;
     readonly COMMAND_BINDVERTEXARRAY: number;
@@ -815,7 +816,7 @@ class Buffer<T extends ArrayLike<number> & {[n: number]: number, set(array: Arra
     private index = 0;
 
     public constructor(typedArray: new (size: number) => T, onBufferChanged: (buffer: T) => void) {
-        this.buffer = new typedArray(1024);
+        this.buffer = new typedArray(10240);
         onBufferChanged(this.buffer);
     }
 
@@ -1073,7 +1074,8 @@ export class NativeEngine extends Engine {
     public dispose(): void {
         super.dispose();
         if (this._boundBuffersVertexArray) {
-            this._native.deleteVertexArray(this._boundBuffersVertexArray);
+            //this._native.deleteVertexArray(this._boundBuffersVertexArray);
+            this._deleteVertexArray(this._boundBuffersVertexArray);
         }
         this._native.dispose();
     }
@@ -1197,7 +1199,8 @@ export class NativeEngine extends Engine {
 
     public bindBuffers(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): void {
         if (this._boundBuffersVertexArray) {
-            this._native.deleteVertexArray(this._boundBuffersVertexArray);
+            //this._native.deleteVertexArray(this._boundBuffersVertexArray);
+            this._deleteVertexArray(this._boundBuffersVertexArray);
         }
         this._boundBuffersVertexArray = this._native.createVertexArray();
         this._recordVertexArrayObject(this._boundBuffersVertexArray, vertexBuffers, indexBuffer, effect);
@@ -1211,6 +1214,12 @@ export class NativeEngine extends Engine {
         return vertexArray;
     }
 
+    private _deleteVertexArray(vertexArray: unknown) {
+        this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_DELETEVERTEXARRAY);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(vertexArray);
+        this._commandBufferEncoder.finishEncodingCommand();
+    }
+
     public bindVertexArrayObject(vertexArray: WebGLVertexArrayObject): void {
         //this._native.bindVertexArray(vertexArray);
         this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_BINDVERTEXARRAY);
@@ -1219,7 +1228,8 @@ export class NativeEngine extends Engine {
     }
 
     public releaseVertexArrayObject(vertexArray: WebGLVertexArrayObject) {
-        this._native.deleteVertexArray(vertexArray);
+        //this._native.deleteVertexArray(vertexArray);
+        this._deleteVertexArray(vertexArray);
     }
 
     public getAttributes(pipelineContext: IPipelineContext, attributesNames: string[]): number[] {
