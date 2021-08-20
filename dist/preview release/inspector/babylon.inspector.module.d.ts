@@ -284,6 +284,19 @@ declare module "babylonjs-inspector/components/graph/graphSupportingTypes" {
         datasets: IPerfDatasets;
     }
     /**
+     * Defines the structure representing the preprocessable tooltip information.
+     */
+    export interface ITooltipPreprocessedInformation {
+        xForActualTimestamp: number;
+        numberOfTooltipItems: number;
+        longestText: string;
+        focusedId: string;
+    }
+    export interface IPerfTooltipHoverPosition {
+        xPos: number;
+        yPos: number;
+    }
+    /**
      * Defines the supported timestamp units.
      */
     export enum TimestampUnit {
@@ -313,6 +326,8 @@ declare module "babylonjs-inspector/components/graph/canvasGraphService" {
         private _tooltipTextCache;
         private _tickerTextCache;
         private _tickerItems;
+        private _preprocessedTooltipInfo;
+        private _numberOfTickers;
         private readonly _addonFontLineHeight;
         private readonly _defaultLineHeight;
         readonly datasets: IPerfDatasets;
@@ -429,7 +444,7 @@ declare module "babylonjs-inspector/components/graph/canvasGraphService" {
          */
         private _handleDataHover;
         /**
-         * Debounced version of _drawTooltip.
+         * Debounced processing and drawing of tooltip.
          */
         private _debouncedTooltip;
         /**
@@ -437,9 +452,27 @@ declare module "babylonjs-inspector/components/graph/canvasGraphService" {
          */
         private _handleStopHover;
         /**
+         * Given a line defined by P1: (x1, y1) and P2: (x2, y2) get the distance of P0 (x0, y0) from the line.
+         * https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line#Line_defined_by_two_points
+         * @param x1 x position of point P1
+         * @param y1 y position of point P1
+         * @param x2 x position of point P2
+         * @param y2 y position of point P2
+         * @param x0 x position of point P0
+         * @param y0 y position of point P0
+         * @returns distance of P0 from the line defined by P1 and P2
+         */
+        private _getDistanceFromLine;
+        /**
+         * This method does preprocessing calculations for the tooltip.
+         * @param pos the position of our mouse.
+         * @param drawableArea the remaining drawable area.
+         */
+        private _preprocessTooltip;
+        /**
          * Draws the tooltip given the area it is allowed to draw in and the current pixel position.
          *
-         * @param pixel the position of the mouse cursor in pixels.
+         * @param pos the position of the mouse cursor in pixels (x, y).
          * @param drawableArea  the available area we can draw in.
          */
         private _drawTooltip;
@@ -450,6 +483,7 @@ declare module "babylonjs-inspector/components/graph/canvasGraphService" {
          * @param minMax the minimum and maximum number in the range.
          * @param startingPixel position of the starting pixel in range.
          * @param endingPixel position of ending pixel in range.
+         * @param shouldFlipValue if we should use a [1, 0] scale instead of a [0, 1] scale.
          * @returns number corresponding to pixel position
          */
         private _getNumberFromPixel;
@@ -5089,6 +5123,19 @@ declare module INSPECTOR {
         datasets: BABYLON.IPerfDatasets;
     }
     /**
+     * Defines the structure representing the preprocessable tooltip information.
+     */
+    export interface ITooltipPreprocessedInformation {
+        xForActualTimestamp: number;
+        numberOfTooltipItems: number;
+        longestText: string;
+        focusedId: string;
+    }
+    export interface IPerfTooltipHoverPosition {
+        xPos: number;
+        yPos: number;
+    }
+    /**
      * Defines the supported timestamp units.
      */
     export enum TimestampUnit {
@@ -5116,6 +5163,8 @@ declare module INSPECTOR {
         private _tooltipTextCache;
         private _tickerTextCache;
         private _tickerItems;
+        private _preprocessedTooltipInfo;
+        private _numberOfTickers;
         private readonly _addonFontLineHeight;
         private readonly _defaultLineHeight;
         readonly datasets: BABYLON.IPerfDatasets;
@@ -5232,7 +5281,7 @@ declare module INSPECTOR {
          */
         private _handleDataHover;
         /**
-         * Debounced version of _drawTooltip.
+         * Debounced processing and drawing of tooltip.
          */
         private _debouncedTooltip;
         /**
@@ -5240,9 +5289,27 @@ declare module INSPECTOR {
          */
         private _handleStopHover;
         /**
+         * Given a line defined by P1: (x1, y1) and P2: (x2, y2) get the distance of P0 (x0, y0) from the line.
+         * https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line#Line_defined_by_two_points
+         * @param x1 x position of point P1
+         * @param y1 y position of point P1
+         * @param x2 x position of point P2
+         * @param y2 y position of point P2
+         * @param x0 x position of point P0
+         * @param y0 y position of point P0
+         * @returns distance of P0 from the line defined by P1 and P2
+         */
+        private _getDistanceFromLine;
+        /**
+         * This method does preprocessing calculations for the tooltip.
+         * @param pos the position of our mouse.
+         * @param drawableArea the remaining drawable area.
+         */
+        private _preprocessTooltip;
+        /**
          * Draws the tooltip given the area it is allowed to draw in and the current pixel position.
          *
-         * @param pixel the position of the mouse cursor in pixels.
+         * @param pos the position of the mouse cursor in pixels (x, y).
          * @param drawableArea  the available area we can draw in.
          */
         private _drawTooltip;
@@ -5253,6 +5320,7 @@ declare module INSPECTOR {
          * @param minMax the minimum and maximum number in the range.
          * @param startingPixel position of the starting pixel in range.
          * @param endingPixel position of ending pixel in range.
+         * @param shouldFlipValue if we should use a [1, 0] scale instead of a [0, 1] scale.
          * @returns number corresponding to pixel position
          */
         private _getNumberFromPixel;

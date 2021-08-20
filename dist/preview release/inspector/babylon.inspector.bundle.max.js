@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/@fortawesome/fontawesome-svg-core/index.es.js":
-/*!**************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/@fortawesome/fontawesome-svg-core/index.es.js ***!
-  \**************************************************************************************/
+/*!***************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/@fortawesome/fontawesome-svg-core/index.es.js ***!
+  \***************************************************************************************************************/
 /*! exports provided: icon, noAuto, config, toHtml, layer, text, counter, library, dom, parse, findIconDefinition */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -2557,9 +2557,9 @@ var autoReplace = function autoReplace() {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/free-regular-svg-icons/index.es.js":
-/*!****************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/@fortawesome/free-regular-svg-icons/index.es.js ***!
-  \****************************************************************************************/
+/*!*****************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/@fortawesome/free-regular-svg-icons/index.es.js ***!
+  \*****************************************************************************************************************/
 /*! exports provided: far, prefix, faAddressBook, faAddressCard, faAngry, faArrowAltCircleDown, faArrowAltCircleLeft, faArrowAltCircleRight, faArrowAltCircleUp, faBell, faBellSlash, faBookmark, faBuilding, faCalendar, faCalendarAlt, faCalendarCheck, faCalendarMinus, faCalendarPlus, faCalendarTimes, faCaretSquareDown, faCaretSquareLeft, faCaretSquareRight, faCaretSquareUp, faChartBar, faCheckCircle, faCheckSquare, faCircle, faClipboard, faClock, faClone, faClosedCaptioning, faComment, faCommentAlt, faCommentDots, faComments, faCompass, faCopy, faCopyright, faCreditCard, faDizzy, faDotCircle, faEdit, faEnvelope, faEnvelopeOpen, faEye, faEyeSlash, faFile, faFileAlt, faFileArchive, faFileAudio, faFileCode, faFileExcel, faFileImage, faFilePdf, faFilePowerpoint, faFileVideo, faFileWord, faFlag, faFlushed, faFolder, faFolderOpen, faFontAwesomeLogoFull, faFrown, faFrownOpen, faFutbol, faGem, faGrimace, faGrin, faGrinAlt, faGrinBeam, faGrinBeamSweat, faGrinHearts, faGrinSquint, faGrinSquintTears, faGrinStars, faGrinTears, faGrinTongue, faGrinTongueSquint, faGrinTongueWink, faGrinWink, faHandLizard, faHandPaper, faHandPeace, faHandPointDown, faHandPointLeft, faHandPointRight, faHandPointUp, faHandPointer, faHandRock, faHandScissors, faHandSpock, faHandshake, faHdd, faHeart, faHospital, faHourglass, faIdBadge, faIdCard, faImage, faImages, faKeyboard, faKiss, faKissBeam, faKissWinkHeart, faLaugh, faLaughBeam, faLaughSquint, faLaughWink, faLemon, faLifeRing, faLightbulb, faListAlt, faMap, faMeh, faMehBlank, faMehRollingEyes, faMinusSquare, faMoneyBillAlt, faMoon, faNewspaper, faObjectGroup, faObjectUngroup, faPaperPlane, faPauseCircle, faPlayCircle, faPlusSquare, faQuestionCircle, faRegistered, faSadCry, faSadTear, faSave, faShareSquare, faSmile, faSmileBeam, faSmileWink, faSnowflake, faSquare, faStar, faStarHalf, faStickyNote, faStopCircle, faSun, faSurprise, faThumbsDown, faThumbsUp, faTimesCircle, faTired, faTrashAlt, faUser, faUserCircle, faWindowClose, faWindowMaximize, faWindowMinimize, faWindowRestore */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -3641,9 +3641,9 @@ var _iconsCache = {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js":
-/*!**************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
-  \**************************************************************************************/
+/*!***************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
+  \***************************************************************************************************************/
 /*! exports provided: fas, prefix, faAd, faAddressBook, faAddressCard, faAdjust, faAirFreshener, faAlignCenter, faAlignJustify, faAlignLeft, faAlignRight, faAllergies, faAmbulance, faAmericanSignLanguageInterpreting, faAnchor, faAngleDoubleDown, faAngleDoubleLeft, faAngleDoubleRight, faAngleDoubleUp, faAngleDown, faAngleLeft, faAngleRight, faAngleUp, faAngry, faAnkh, faAppleAlt, faArchive, faArchway, faArrowAltCircleDown, faArrowAltCircleLeft, faArrowAltCircleRight, faArrowAltCircleUp, faArrowCircleDown, faArrowCircleLeft, faArrowCircleRight, faArrowCircleUp, faArrowDown, faArrowLeft, faArrowRight, faArrowUp, faArrowsAlt, faArrowsAltH, faArrowsAltV, faAssistiveListeningSystems, faAsterisk, faAt, faAtlas, faAtom, faAudioDescription, faAward, faBaby, faBabyCarriage, faBackspace, faBackward, faBacon, faBacteria, faBacterium, faBahai, faBalanceScale, faBalanceScaleLeft, faBalanceScaleRight, faBan, faBandAid, faBarcode, faBars, faBaseballBall, faBasketballBall, faBath, faBatteryEmpty, faBatteryFull, faBatteryHalf, faBatteryQuarter, faBatteryThreeQuarters, faBed, faBeer, faBell, faBellSlash, faBezierCurve, faBible, faBicycle, faBiking, faBinoculars, faBiohazard, faBirthdayCake, faBlender, faBlenderPhone, faBlind, faBlog, faBold, faBolt, faBomb, faBone, faBong, faBook, faBookDead, faBookMedical, faBookOpen, faBookReader, faBookmark, faBorderAll, faBorderNone, faBorderStyle, faBowlingBall, faBox, faBoxOpen, faBoxTissue, faBoxes, faBraille, faBrain, faBreadSlice, faBriefcase, faBriefcaseMedical, faBroadcastTower, faBroom, faBrush, faBug, faBuilding, faBullhorn, faBullseye, faBurn, faBus, faBusAlt, faBusinessTime, faCalculator, faCalendar, faCalendarAlt, faCalendarCheck, faCalendarDay, faCalendarMinus, faCalendarPlus, faCalendarTimes, faCalendarWeek, faCamera, faCameraRetro, faCampground, faCandyCane, faCannabis, faCapsules, faCar, faCarAlt, faCarBattery, faCarCrash, faCarSide, faCaravan, faCaretDown, faCaretLeft, faCaretRight, faCaretSquareDown, faCaretSquareLeft, faCaretSquareRight, faCaretSquareUp, faCaretUp, faCarrot, faCartArrowDown, faCartPlus, faCashRegister, faCat, faCertificate, faChair, faChalkboard, faChalkboardTeacher, faChargingStation, faChartArea, faChartBar, faChartLine, faChartPie, faCheck, faCheckCircle, faCheckDouble, faCheckSquare, faCheese, faChess, faChessBishop, faChessBoard, faChessKing, faChessKnight, faChessPawn, faChessQueen, faChessRook, faChevronCircleDown, faChevronCircleLeft, faChevronCircleRight, faChevronCircleUp, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faChild, faChurch, faCircle, faCircleNotch, faCity, faClinicMedical, faClipboard, faClipboardCheck, faClipboardList, faClock, faClone, faClosedCaptioning, faCloud, faCloudDownloadAlt, faCloudMeatball, faCloudMoon, faCloudMoonRain, faCloudRain, faCloudShowersHeavy, faCloudSun, faCloudSunRain, faCloudUploadAlt, faCocktail, faCode, faCodeBranch, faCoffee, faCog, faCogs, faCoins, faColumns, faComment, faCommentAlt, faCommentDollar, faCommentDots, faCommentMedical, faCommentSlash, faComments, faCommentsDollar, faCompactDisc, faCompass, faCompress, faCompressAlt, faCompressArrowsAlt, faConciergeBell, faCookie, faCookieBite, faCopy, faCopyright, faCouch, faCreditCard, faCrop, faCropAlt, faCross, faCrosshairs, faCrow, faCrown, faCrutch, faCube, faCubes, faCut, faDatabase, faDeaf, faDemocrat, faDesktop, faDharmachakra, faDiagnoses, faDice, faDiceD20, faDiceD6, faDiceFive, faDiceFour, faDiceOne, faDiceSix, faDiceThree, faDiceTwo, faDigitalTachograph, faDirections, faDisease, faDivide, faDizzy, faDna, faDog, faDollarSign, faDolly, faDollyFlatbed, faDonate, faDoorClosed, faDoorOpen, faDotCircle, faDove, faDownload, faDraftingCompass, faDragon, faDrawPolygon, faDrum, faDrumSteelpan, faDrumstickBite, faDumbbell, faDumpster, faDumpsterFire, faDungeon, faEdit, faEgg, faEject, faEllipsisH, faEllipsisV, faEnvelope, faEnvelopeOpen, faEnvelopeOpenText, faEnvelopeSquare, faEquals, faEraser, faEthernet, faEuroSign, faExchangeAlt, faExclamation, faExclamationCircle, faExclamationTriangle, faExpand, faExpandAlt, faExpandArrowsAlt, faExternalLinkAlt, faExternalLinkSquareAlt, faEye, faEyeDropper, faEyeSlash, faFan, faFastBackward, faFastForward, faFaucet, faFax, faFeather, faFeatherAlt, faFemale, faFighterJet, faFile, faFileAlt, faFileArchive, faFileAudio, faFileCode, faFileContract, faFileCsv, faFileDownload, faFileExcel, faFileExport, faFileImage, faFileImport, faFileInvoice, faFileInvoiceDollar, faFileMedical, faFileMedicalAlt, faFilePdf, faFilePowerpoint, faFilePrescription, faFileSignature, faFileUpload, faFileVideo, faFileWord, faFill, faFillDrip, faFilm, faFilter, faFingerprint, faFire, faFireAlt, faFireExtinguisher, faFirstAid, faFish, faFistRaised, faFlag, faFlagCheckered, faFlagUsa, faFlask, faFlushed, faFolder, faFolderMinus, faFolderOpen, faFolderPlus, faFont, faFontAwesomeLogoFull, faFootballBall, faForward, faFrog, faFrown, faFrownOpen, faFunnelDollar, faFutbol, faGamepad, faGasPump, faGavel, faGem, faGenderless, faGhost, faGift, faGifts, faGlassCheers, faGlassMartini, faGlassMartiniAlt, faGlassWhiskey, faGlasses, faGlobe, faGlobeAfrica, faGlobeAmericas, faGlobeAsia, faGlobeEurope, faGolfBall, faGopuram, faGraduationCap, faGreaterThan, faGreaterThanEqual, faGrimace, faGrin, faGrinAlt, faGrinBeam, faGrinBeamSweat, faGrinHearts, faGrinSquint, faGrinSquintTears, faGrinStars, faGrinTears, faGrinTongue, faGrinTongueSquint, faGrinTongueWink, faGrinWink, faGripHorizontal, faGripLines, faGripLinesVertical, faGripVertical, faGuitar, faHSquare, faHamburger, faHammer, faHamsa, faHandHolding, faHandHoldingHeart, faHandHoldingMedical, faHandHoldingUsd, faHandHoldingWater, faHandLizard, faHandMiddleFinger, faHandPaper, faHandPeace, faHandPointDown, faHandPointLeft, faHandPointRight, faHandPointUp, faHandPointer, faHandRock, faHandScissors, faHandSparkles, faHandSpock, faHands, faHandsHelping, faHandsWash, faHandshake, faHandshakeAltSlash, faHandshakeSlash, faHanukiah, faHardHat, faHashtag, faHatCowboy, faHatCowboySide, faHatWizard, faHdd, faHeadSideCough, faHeadSideCoughSlash, faHeadSideMask, faHeadSideVirus, faHeading, faHeadphones, faHeadphonesAlt, faHeadset, faHeart, faHeartBroken, faHeartbeat, faHelicopter, faHighlighter, faHiking, faHippo, faHistory, faHockeyPuck, faHollyBerry, faHome, faHorse, faHorseHead, faHospital, faHospitalAlt, faHospitalSymbol, faHospitalUser, faHotTub, faHotdog, faHotel, faHourglass, faHourglassEnd, faHourglassHalf, faHourglassStart, faHouseDamage, faHouseUser, faHryvnia, faICursor, faIceCream, faIcicles, faIcons, faIdBadge, faIdCard, faIdCardAlt, faIgloo, faImage, faImages, faInbox, faIndent, faIndustry, faInfinity, faInfo, faInfoCircle, faItalic, faJedi, faJoint, faJournalWhills, faKaaba, faKey, faKeyboard, faKhanda, faKiss, faKissBeam, faKissWinkHeart, faKiwiBird, faLandmark, faLanguage, faLaptop, faLaptopCode, faLaptopHouse, faLaptopMedical, faLaugh, faLaughBeam, faLaughSquint, faLaughWink, faLayerGroup, faLeaf, faLemon, faLessThan, faLessThanEqual, faLevelDownAlt, faLevelUpAlt, faLifeRing, faLightbulb, faLink, faLiraSign, faList, faListAlt, faListOl, faListUl, faLocationArrow, faLock, faLockOpen, faLongArrowAltDown, faLongArrowAltLeft, faLongArrowAltRight, faLongArrowAltUp, faLowVision, faLuggageCart, faLungs, faLungsVirus, faMagic, faMagnet, faMailBulk, faMale, faMap, faMapMarked, faMapMarkedAlt, faMapMarker, faMapMarkerAlt, faMapPin, faMapSigns, faMarker, faMars, faMarsDouble, faMarsStroke, faMarsStrokeH, faMarsStrokeV, faMask, faMedal, faMedkit, faMeh, faMehBlank, faMehRollingEyes, faMemory, faMenorah, faMercury, faMeteor, faMicrochip, faMicrophone, faMicrophoneAlt, faMicrophoneAltSlash, faMicrophoneSlash, faMicroscope, faMinus, faMinusCircle, faMinusSquare, faMitten, faMobile, faMobileAlt, faMoneyBill, faMoneyBillAlt, faMoneyBillWave, faMoneyBillWaveAlt, faMoneyCheck, faMoneyCheckAlt, faMonument, faMoon, faMortarPestle, faMosque, faMotorcycle, faMountain, faMouse, faMousePointer, faMugHot, faMusic, faNetworkWired, faNeuter, faNewspaper, faNotEqual, faNotesMedical, faObjectGroup, faObjectUngroup, faOilCan, faOm, faOtter, faOutdent, faPager, faPaintBrush, faPaintRoller, faPalette, faPallet, faPaperPlane, faPaperclip, faParachuteBox, faParagraph, faParking, faPassport, faPastafarianism, faPaste, faPause, faPauseCircle, faPaw, faPeace, faPen, faPenAlt, faPenFancy, faPenNib, faPenSquare, faPencilAlt, faPencilRuler, faPeopleArrows, faPeopleCarry, faPepperHot, faPercent, faPercentage, faPersonBooth, faPhone, faPhoneAlt, faPhoneSlash, faPhoneSquare, faPhoneSquareAlt, faPhoneVolume, faPhotoVideo, faPiggyBank, faPills, faPizzaSlice, faPlaceOfWorship, faPlane, faPlaneArrival, faPlaneDeparture, faPlaneSlash, faPlay, faPlayCircle, faPlug, faPlus, faPlusCircle, faPlusSquare, faPodcast, faPoll, faPollH, faPoo, faPooStorm, faPoop, faPortrait, faPoundSign, faPowerOff, faPray, faPrayingHands, faPrescription, faPrescriptionBottle, faPrescriptionBottleAlt, faPrint, faProcedures, faProjectDiagram, faPumpMedical, faPumpSoap, faPuzzlePiece, faQrcode, faQuestion, faQuestionCircle, faQuidditch, faQuoteLeft, faQuoteRight, faQuran, faRadiation, faRadiationAlt, faRainbow, faRandom, faReceipt, faRecordVinyl, faRecycle, faRedo, faRedoAlt, faRegistered, faRemoveFormat, faReply, faReplyAll, faRepublican, faRestroom, faRetweet, faRibbon, faRing, faRoad, faRobot, faRocket, faRoute, faRss, faRssSquare, faRubleSign, faRuler, faRulerCombined, faRulerHorizontal, faRulerVertical, faRunning, faRupeeSign, faSadCry, faSadTear, faSatellite, faSatelliteDish, faSave, faSchool, faScrewdriver, faScroll, faSdCard, faSearch, faSearchDollar, faSearchLocation, faSearchMinus, faSearchPlus, faSeedling, faServer, faShapes, faShare, faShareAlt, faShareAltSquare, faShareSquare, faShekelSign, faShieldAlt, faShieldVirus, faShip, faShippingFast, faShoePrints, faShoppingBag, faShoppingBasket, faShoppingCart, faShower, faShuttleVan, faSign, faSignInAlt, faSignLanguage, faSignOutAlt, faSignal, faSignature, faSimCard, faSink, faSitemap, faSkating, faSkiing, faSkiingNordic, faSkull, faSkullCrossbones, faSlash, faSleigh, faSlidersH, faSmile, faSmileBeam, faSmileWink, faSmog, faSmoking, faSmokingBan, faSms, faSnowboarding, faSnowflake, faSnowman, faSnowplow, faSoap, faSocks, faSolarPanel, faSort, faSortAlphaDown, faSortAlphaDownAlt, faSortAlphaUp, faSortAlphaUpAlt, faSortAmountDown, faSortAmountDownAlt, faSortAmountUp, faSortAmountUpAlt, faSortDown, faSortNumericDown, faSortNumericDownAlt, faSortNumericUp, faSortNumericUpAlt, faSortUp, faSpa, faSpaceShuttle, faSpellCheck, faSpider, faSpinner, faSplotch, faSprayCan, faSquare, faSquareFull, faSquareRootAlt, faStamp, faStar, faStarAndCrescent, faStarHalf, faStarHalfAlt, faStarOfDavid, faStarOfLife, faStepBackward, faStepForward, faStethoscope, faStickyNote, faStop, faStopCircle, faStopwatch, faStopwatch20, faStore, faStoreAlt, faStoreAltSlash, faStoreSlash, faStream, faStreetView, faStrikethrough, faStroopwafel, faSubscript, faSubway, faSuitcase, faSuitcaseRolling, faSun, faSuperscript, faSurprise, faSwatchbook, faSwimmer, faSwimmingPool, faSynagogue, faSync, faSyncAlt, faSyringe, faTable, faTableTennis, faTablet, faTabletAlt, faTablets, faTachometerAlt, faTag, faTags, faTape, faTasks, faTaxi, faTeeth, faTeethOpen, faTemperatureHigh, faTemperatureLow, faTenge, faTerminal, faTextHeight, faTextWidth, faTh, faThLarge, faThList, faTheaterMasks, faThermometer, faThermometerEmpty, faThermometerFull, faThermometerHalf, faThermometerQuarter, faThermometerThreeQuarters, faThumbsDown, faThumbsUp, faThumbtack, faTicketAlt, faTimes, faTimesCircle, faTint, faTintSlash, faTired, faToggleOff, faToggleOn, faToilet, faToiletPaper, faToiletPaperSlash, faToolbox, faTools, faTooth, faTorah, faToriiGate, faTractor, faTrademark, faTrafficLight, faTrailer, faTrain, faTram, faTransgender, faTransgenderAlt, faTrash, faTrashAlt, faTrashRestore, faTrashRestoreAlt, faTree, faTrophy, faTruck, faTruckLoading, faTruckMonster, faTruckMoving, faTruckPickup, faTshirt, faTty, faTv, faUmbrella, faUmbrellaBeach, faUnderline, faUndo, faUndoAlt, faUniversalAccess, faUniversity, faUnlink, faUnlock, faUnlockAlt, faUpload, faUser, faUserAlt, faUserAltSlash, faUserAstronaut, faUserCheck, faUserCircle, faUserClock, faUserCog, faUserEdit, faUserFriends, faUserGraduate, faUserInjured, faUserLock, faUserMd, faUserMinus, faUserNinja, faUserNurse, faUserPlus, faUserSecret, faUserShield, faUserSlash, faUserTag, faUserTie, faUserTimes, faUsers, faUsersCog, faUsersSlash, faUtensilSpoon, faUtensils, faVectorSquare, faVenus, faVenusDouble, faVenusMars, faVial, faVials, faVideo, faVideoSlash, faVihara, faVirus, faVirusSlash, faViruses, faVoicemail, faVolleyballBall, faVolumeDown, faVolumeMute, faVolumeOff, faVolumeUp, faVoteYea, faVrCardboard, faWalking, faWallet, faWarehouse, faWater, faWaveSquare, faWeight, faWeightHanging, faWheelchair, faWifi, faWind, faWindowClose, faWindowMaximize, faWindowMinimize, faWindowRestore, faWineBottle, faWineGlass, faWineGlassAlt, faWonSign, faWrench, faXRay, faYenSign, faYinYang */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -10661,9 +10661,9 @@ var _iconsCache = {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/react-fontawesome/index.es.js":
-/*!***********************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/@fortawesome/react-fontawesome/index.es.js ***!
-  \***********************************************************************************/
+/*!************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/@fortawesome/react-fontawesome/index.es.js ***!
+  \************************************************************************************************************/
 /*! exports provided: FontAwesomeIcon */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -11064,9 +11064,9 @@ var convertCurry = convert.bind(null, react__WEBPACK_IMPORTED_MODULE_2___default
 /***/ }),
 
 /***/ "../../node_modules/classnames/index.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/classnames/index.js ***!
-  \************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/classnames/index.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11132,9 +11132,9 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/actionTabs.scss":
-/*!****************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/actionTabs.scss ***!
-  \****************************************************************************************************************************************************************/
+/*!******************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/actionTabs.scss ***!
+  \******************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11150,9 +11150,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/performanceViewer/scss/performanceViewer.scss":
-/*!***************************************************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/performanceViewer/scss/performanceViewer.scss ***!
-  \***************************************************************************************************************************************************************************************************/
+/*!*****************************************************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/performanceViewer/scss/performanceViewer.scss ***!
+  \*****************************************************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11168,9 +11168,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/bottomBar.scss":
-/*!**************************************************************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/bottomBar.scss ***!
-  \**************************************************************************************************************************************************************************************************************/
+/*!****************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/bottomBar.scss ***!
+  \****************************************************************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11186,9 +11186,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/canvas.scss":
-/*!***********************************************************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/canvas.scss ***!
-  \***********************************************************************************************************************************************************************************************************/
+/*!*************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/canvas.scss ***!
+  \*************************************************************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11204,9 +11204,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/curveEditor.scss":
-/*!****************************************************************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/curveEditor.scss ***!
-  \****************************************************************************************************************************************************************************************************************/
+/*!******************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/curveEditor.scss ***!
+  \******************************************************************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11222,9 +11222,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/sideBar.scss":
-/*!************************************************************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/sideBar.scss ***!
-  \************************************************************************************************************************************************************************************************************/
+/*!**************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/sideBar.scss ***!
+  \**************************************************************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11240,9 +11240,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/topBar.scss":
-/*!***********************************************************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/topBar.scss ***!
-  \***********************************************************************************************************************************************************************************************************/
+/*!*************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/topBar.scss ***!
+  \*************************************************************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11258,9 +11258,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/materials/textures/textureEditor.scss":
-/*!*********************************************************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/materials/textures/textureEditor.scss ***!
-  \*********************************************************************************************************************************************************************************************************/
+/*!***********************************************************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/materials/textures/textureEditor.scss ***!
+  \***********************************************************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11276,9 +11276,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/embedHost/embedHost.scss":
-/*!**************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/embedHost/embedHost.scss ***!
-  \**************************************************************************************************************************************************************/
+/*!****************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/embedHost/embedHost.scss ***!
+  \****************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11294,9 +11294,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/sceneExplorer/sceneExplorer.scss":
-/*!**********************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/sceneExplorer/sceneExplorer.scss ***!
-  \**********************************************************************************************************************************************************************/
+/*!************************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/sceneExplorer/sceneExplorer.scss ***!
+  \************************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11312,9 +11312,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss":
-/*!**************************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss ***!
-  \**************************************************************************************************************************************************************************/
+/*!****************************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss ***!
+  \****************************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11330,9 +11330,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/runtime/api.js":
-/*!***********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/runtime/api.js ***!
-  \***********************************************************************/
+/*!************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/runtime/api.js ***!
+  \************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11435,9 +11435,9 @@ function toComment(sourceMap) {
 /***/ }),
 
 /***/ "../../node_modules/gif.js.optimized/dist/gif.js":
-/*!*********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/gif.js.optimized/dist/gif.js ***!
-  \*********************************************************************/
+/*!**********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/gif.js.optimized/dist/gif.js ***!
+  \**********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11447,9 +11447,9 @@ function toComment(sourceMap) {
 /***/ }),
 
 /***/ "../../node_modules/object-assign/index.js":
-/*!***************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/object-assign/index.js ***!
-  \***************************************************************/
+/*!****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/object-assign/index.js ***!
+  \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11549,9 +11549,9 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 /***/ }),
 
 /***/ "../../node_modules/process/browser.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/process/browser.js ***!
-  \***********************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/process/browser.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -11744,9 +11744,9 @@ process.umask = function() { return 0; };
 /***/ }),
 
 /***/ "../../node_modules/prop-types/checkPropTypes.js":
-/*!*********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/prop-types/checkPropTypes.js ***!
-  \*********************************************************************/
+/*!**********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/prop-types/checkPropTypes.js ***!
+  \**********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11858,9 +11858,9 @@ module.exports = checkPropTypes;
 /***/ }),
 
 /***/ "../../node_modules/prop-types/factoryWithTypeCheckers.js":
-/*!******************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/prop-types/factoryWithTypeCheckers.js ***!
-  \******************************************************************************/
+/*!*******************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/prop-types/factoryWithTypeCheckers.js ***!
+  \*******************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12461,9 +12461,9 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
 /***/ }),
 
 /***/ "../../node_modules/prop-types/index.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/prop-types/index.js ***!
-  \************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/prop-types/index.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12487,9 +12487,9 @@ if (true) {
 /***/ }),
 
 /***/ "../../node_modules/prop-types/lib/ReactPropTypesSecret.js":
-/*!*******************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/prop-types/lib/ReactPropTypesSecret.js ***!
-  \*******************************************************************************/
+/*!********************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/prop-types/lib/ReactPropTypesSecret.js ***!
+  \********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12511,9 +12511,9 @@ module.exports = ReactPropTypesSecret;
 /***/ }),
 
 /***/ "../../node_modules/re-resizable/lib/index.es5.js":
-/*!**********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/re-resizable/lib/index.es5.js ***!
-  \**********************************************************************/
+/*!***********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/re-resizable/lib/index.es5.js ***!
+  \***********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13260,9 +13260,9 @@ module.exports = Resizable;
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/AbstractMenu.js":
-/*!******************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/AbstractMenu.js ***!
-  \******************************************************************************/
+/*!*******************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/AbstractMenu.js ***!
+  \*******************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -13486,9 +13486,9 @@ var _initialiseProps = function _initialiseProps() {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/ContextMenu.js":
-/*!*****************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/ContextMenu.js ***!
-  \*****************************************************************************/
+/*!******************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/ContextMenu.js ***!
+  \******************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -13803,9 +13803,9 @@ ContextMenu.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/ContextMenuTrigger.js":
-/*!************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/ContextMenuTrigger.js ***!
-  \************************************************************************************/
+/*!*************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/ContextMenuTrigger.js ***!
+  \*************************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -14003,9 +14003,9 @@ ContextMenuTrigger.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/MenuItem.js":
-/*!**************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/MenuItem.js ***!
-  \**************************************************************************/
+/*!***************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/MenuItem.js ***!
+  \***************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -14143,9 +14143,9 @@ MenuItem.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/SubMenu.js":
-/*!*************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/SubMenu.js ***!
-  \*************************************************************************/
+/*!**************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/SubMenu.js ***!
+  \**************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -14483,9 +14483,9 @@ SubMenu.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/actions.js":
-/*!*************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/actions.js ***!
-  \*************************************************************************/
+/*!**************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/actions.js ***!
+  \**************************************************************************************************/
 /*! exports provided: MENU_SHOW, MENU_HIDE, dispatchGlobalEvent, showMenu, hideMenu */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -14543,9 +14543,9 @@ function hideMenu() {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/connectMenu.js":
-/*!*****************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/connectMenu.js ***!
-  \*****************************************************************************/
+/*!******************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/connectMenu.js ***!
+  \******************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -14641,9 +14641,9 @@ var ignoredTriggerProps = [].concat(_toConsumableArray(Object.keys(_ContextMenuT
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/globalEventListener.js":
-/*!*************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/globalEventListener.js ***!
-  \*************************************************************************************/
+/*!**************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/globalEventListener.js ***!
+  \**************************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -14703,9 +14703,9 @@ var GlobalEventListener = function GlobalEventListener() {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/helpers.js":
-/*!*************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/helpers.js ***!
-  \*************************************************************************/
+/*!**************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/helpers.js ***!
+  \**************************************************************************************************/
 /*! exports provided: callIfExists, hasOwnProp, uniqueId, cssClasses, store, canUseDOM */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -14752,9 +14752,9 @@ var canUseDOM = Boolean(typeof window !== 'undefined' && window.document && wind
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/index.js":
-/*!***********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/index.js ***!
-  \***********************************************************************/
+/*!************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/index.js ***!
+  \************************************************************************************************/
 /*! exports provided: ContextMenu, ContextMenuTrigger, MenuItem, SubMenu, connectMenu, hideMenu, showMenu */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -14790,9 +14790,9 @@ __webpack_require__.r(__webpack_exports__);
 /***/ }),
 
 /***/ "../../node_modules/react-dom/cjs/react-dom.development.js":
-/*!*******************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-dom/cjs/react-dom.development.js ***!
-  \*******************************************************************************/
+/*!********************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-dom/cjs/react-dom.development.js ***!
+  \********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -39814,9 +39814,9 @@ exports.version = ReactVersion;
 /***/ }),
 
 /***/ "../../node_modules/react-dom/index.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-dom/index.js ***!
-  \***********************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-dom/index.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -39859,9 +39859,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/react-is/cjs/react-is.development.js":
-/*!*****************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-is/cjs/react-is.development.js ***!
-  \*****************************************************************************/
+/*!******************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-is/cjs/react-is.development.js ***!
+  \******************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -40052,9 +40052,9 @@ exports.typeOf = typeOf;
 /***/ }),
 
 /***/ "../../node_modules/react-is/index.js":
-/*!**********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-is/index.js ***!
-  \**********************************************************/
+/*!***********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-is/index.js ***!
+  \***********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -40069,9 +40069,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/react/cjs/react.development.js":
-/*!***********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react/cjs/react.development.js ***!
-  \***********************************************************************/
+/*!************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react/cjs/react.development.js ***!
+  \************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41993,9 +41993,9 @@ exports.version = ReactVersion;
 /***/ }),
 
 /***/ "../../node_modules/react/index.js":
-/*!*******************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react/index.js ***!
-  \*******************************************************/
+/*!********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react/index.js ***!
+  \********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -42010,9 +42010,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/scheduler/cjs/scheduler-tracing.development.js":
-/*!***************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
-  \***************************************************************************************/
+/*!****************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
+  \****************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -42371,9 +42371,9 @@ exports.unstable_wrap = unstable_wrap;
 /***/ }),
 
 /***/ "../../node_modules/scheduler/cjs/scheduler.development.js":
-/*!*******************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/scheduler/cjs/scheduler.development.js ***!
-  \*******************************************************************************/
+/*!********************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/scheduler/cjs/scheduler.development.js ***!
+  \********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -43241,9 +43241,9 @@ exports.unstable_wrapCallback = unstable_wrapCallback;
 /***/ }),
 
 /***/ "../../node_modules/scheduler/index.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/scheduler/index.js ***!
-  \***********************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/scheduler/index.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -43258,9 +43258,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/scheduler/tracing.js":
-/*!*************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/scheduler/tracing.js ***!
-  \*************************************************************/
+/*!**************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/scheduler/tracing.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -43275,9 +43275,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/setimmediate/setImmediate.js":
-/*!*********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/setimmediate/setImmediate.js ***!
-  \*********************************************************************/
+/*!**********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/setimmediate/setImmediate.js ***!
+  \**********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -43473,9 +43473,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/split.js/dist/split.es.js":
-/*!******************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/split.js/dist/split.es.js ***!
-  \******************************************************************/
+/*!*******************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/split.js/dist/split.es.js ***!
+  \*******************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -44245,9 +44245,9 @@ var Split = function (idsOption, options) {
 /***/ }),
 
 /***/ "../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js":
-/*!**********************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js ***!
-  \**********************************************************************************************/
+/*!***********************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js ***!
+  \***********************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -44525,9 +44525,9 @@ module.exports = function (list, options) {
 /***/ }),
 
 /***/ "../../node_modules/timers-browserify/main.js":
-/*!******************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/timers-browserify/main.js ***!
-  \******************************************************************/
+/*!*******************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/timers-browserify/main.js ***!
+  \*******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -44600,9 +44600,9 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
 /***/ }),
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \***********************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \************************************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -59319,6 +59319,8 @@ var tooltipForegroundColor = "#fbfbfb";
 var topOfGraphY = 0;
 var defaultAlpha = 1;
 var tooltipBackgroundAlpha = 0.8;
+var backgroundLineAlpha = 0.2;
+var maxDistanceForHover = 10;
 var tooltipHorizontalPadding = 10;
 var spaceBetweenTextAndBox = 5;
 var tooltipPaddingFromBottom = 20;
@@ -59420,15 +59422,16 @@ var CanvasGraphService = /** @class */ (function () {
                 // we don't want to do anything if we are in the middle of panning
                 return;
             }
-            _this._hoverPosition = event.clientX;
-            // then draw the tooltip.
+            _this._hoverPosition = { xPos: event.clientX, yPos: event.clientY };
+            // process and draw the tooltip.
             _this._debouncedTooltip(_this._hoverPosition, _this._drawableArea);
         };
         /**
-         * Debounced version of _drawTooltip.
+         * Debounced processing and drawing of tooltip.
          */
-        this._debouncedTooltip = debounce(function (pixel, drawableArea) {
-            _this._drawTooltip(pixel, drawableArea);
+        this._debouncedTooltip = debounce(function (pos, drawableArea) {
+            _this._preprocessTooltip(pos, drawableArea);
+            _this._drawTooltip(pos, drawableArea);
         }, tooltipDebounceTime);
         /**
          * Handles what to do when we stop hovering over the canvas.
@@ -59530,6 +59533,8 @@ var CanvasGraphService = /** @class */ (function () {
         this._tickerTextCache = { text: "", width: 0 };
         this._tooltipItems = [];
         this._tickerItems = [];
+        this._preprocessedTooltipInfo = { focusedId: "", longestText: "", numberOfTooltipItems: 0, xForActualTimestamp: 0 };
+        this._numberOfTickers = 0;
         for (var i = 0; i < maximumDatasetsAllowed; i++) {
             this._tooltipItems.push({ text: "", color: "" });
             this._tickerItems.push({ text: "", id: "", max: 0, min: 0 });
@@ -59626,18 +59631,20 @@ var CanvasGraphService = /** @class */ (function () {
         this._drawableArea.left = 0;
         this._drawableArea.bottom = this._height;
         this._drawableArea.right = this._width;
-        var numberOfTickers = this._drawTickers(this._drawableArea, this._datasetBounds);
+        this._drawTickers(this._drawableArea, this._datasetBounds);
         this._drawTimeAxis(this._globalTimeMinMax, this._drawableArea);
         this._drawPlayheadRegion(this._drawableArea, updatedScaleFactor);
         this._drawableArea.top += dataPadding;
         this._drawableArea.bottom -= dataPadding;
+        // pre-process tooltip info so we can use it in determining opacity of lines.
+        this._preprocessTooltip(this._hoverPosition, this._drawableArea);
         var _b = this._drawableArea, left = _b.left, right = _b.right, bottom = _b.bottom, top = _b.top;
         // process, and then draw our points
         this.datasets.ids.forEach(function (id, idOffset) {
             var _a, _b;
             var valueMinMax;
             // we have already calculated  the min and max while getting the tickers, so use those.
-            for (var i = 0; i < numberOfTickers; i++) {
+            for (var i = 0; i < _this._numberOfTickers; i++) {
                 if (_this._tickerItems[i].id === id) {
                     valueMinMax = _this._tickerItems[i];
                 }
@@ -59648,6 +59655,13 @@ var CanvasGraphService = /** @class */ (function () {
             }
             ctx.beginPath();
             ctx.strokeStyle = (_b = (_a = _this.metadata.get(id)) === null || _a === void 0 ? void 0 : _a.color) !== null && _b !== void 0 ? _b : defaultColor;
+            // if we are focused on a line and not in live mode handle the opacities appropriately.
+            if (_this._preprocessedTooltipInfo.focusedId === id) {
+                ctx.globalAlpha = defaultAlpha;
+            }
+            else if (_this._preprocessedTooltipInfo.focusedId !== "") {
+                ctx.globalAlpha = backgroundLineAlpha;
+            }
             var prevPoint;
             for (var pointIndex = _this._datasetBounds.start; pointIndex < _this._datasetBounds.end; pointIndex++) {
                 var numPoints = _this.datasets.data.at(_this.datasets.startingIndices.at(pointIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].NumberOfPointsOffset);
@@ -59669,6 +59683,7 @@ var CanvasGraphService = /** @class */ (function () {
             }
             ctx.stroke();
         });
+        ctx.globalAlpha = defaultAlpha;
         // then draw the tooltip.
         this._drawTooltip(this._hoverPosition, this._drawableArea);
     };
@@ -59676,11 +59691,11 @@ var CanvasGraphService = /** @class */ (function () {
         var _this = this;
         var ctx = this._ctx;
         if (!ctx) {
-            return 0;
+            return;
         }
         // create the ticker objects for each of the non hidden items.
         var longestText = "";
-        var numberOfTickers = 0;
+        this._numberOfTickers = 0;
         this.datasets.ids.forEach(function (id, idOffset) {
             var _a;
             if (!!((_a = _this.metadata.get(id)) === null || _a === void 0 ? void 0 : _a.hidden)) {
@@ -59692,11 +59707,11 @@ var CanvasGraphService = /** @class */ (function () {
             if (text.length > longestText.length) {
                 longestText = text;
             }
-            _this._tickerItems[numberOfTickers].id = id;
-            _this._tickerItems[numberOfTickers].max = valueMinMax.max;
-            _this._tickerItems[numberOfTickers].min = valueMinMax.min;
-            _this._tickerItems[numberOfTickers].text = text;
-            numberOfTickers++;
+            _this._tickerItems[_this._numberOfTickers].id = id;
+            _this._tickerItems[_this._numberOfTickers].max = valueMinMax.max;
+            _this._tickerItems[_this._numberOfTickers].min = valueMinMax.min;
+            _this._tickerItems[_this._numberOfTickers].text = text;
+            _this._numberOfTickers++;
         });
         ctx.save();
         ctx.font = graphAddonFont;
@@ -59716,13 +59731,12 @@ var CanvasGraphService = /** @class */ (function () {
         var textHeight = this._addonFontLineHeight + Math.floor(tickerHorizontalPadding / 2);
         var x = drawableArea.right + tickerHorizontalPadding;
         var y = drawableArea.top + textHeight;
-        for (var i = 0; i < numberOfTickers; i++) {
+        for (var i = 0; i < this._numberOfTickers; i++) {
             var tickerItem = this._tickerItems[i];
             ctx.fillText(tickerItem.text, x, y);
             y += textHeight;
         }
         ctx.restore();
-        return numberOfTickers;
     };
     /**
      * Returns the index of the closest time for the datasets.
@@ -59985,29 +59999,77 @@ var CanvasGraphService = /** @class */ (function () {
         canvas.ownerDocument.removeEventListener("mouseup", this._handlePanStop);
     };
     /**
-     * Draws the tooltip given the area it is allowed to draw in and the current pixel position.
-     *
-     * @param pixel the position of the mouse cursor in pixels.
-     * @param drawableArea  the available area we can draw in.
+     * Given a line defined by P1: (x1, y1) and P2: (x2, y2) get the distance of P0 (x0, y0) from the line.
+     * https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line#Line_defined_by_two_points
+     * @param x1 x position of point P1
+     * @param y1 y position of point P1
+     * @param x2 x position of point P2
+     * @param y2 y position of point P2
+     * @param x0 x position of point P0
+     * @param y0 y position of point P0
+     * @returns distance of P0 from the line defined by P1 and P2
      */
-    CanvasGraphService.prototype._drawTooltip = function (pixel, drawableArea) {
+    CanvasGraphService.prototype._getDistanceFromLine = function (x1, y1, x2, y2, x0, y0) {
+        // if P1 and P2 are the same we just get the distance between P1 and P0
+        if (x1 === x2 && y1 === y2) {
+            return Math.sqrt(Math.pow(x1 - x0, 2) + Math.pow(y1 - y0, 2));
+        }
+        // next we want to handle the case where our point is beyond the y position of our line
+        var topX = 0;
+        var topY = 0;
+        var bottomX = 0;
+        var bottomY = 0;
+        if (y1 >= y2) {
+            topX = x1;
+            topY = y1;
+            bottomX = x2;
+            bottomY = y2;
+        }
+        else {
+            topX = x2;
+            topY = y2;
+            bottomX = x1;
+            bottomY = y1;
+        }
+        if (y0 < bottomY) {
+            return Math.sqrt(Math.pow(bottomX - x0, 2) + Math.pow(bottomY - y0, 2));
+        }
+        if (y0 > topY) {
+            return Math.sqrt(Math.pow(topX - x0, 2) + Math.pow(topY - y0, 2));
+        }
+        // the general case!
+        var numerator = Math.abs((x2 - x1) * (y1 - y0) - (x1 - x0) * (y2 - y1));
+        var denominator = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+        return numerator / denominator;
+    };
+    /**
+     * This method does preprocessing calculations for the tooltip.
+     * @param pos the position of our mouse.
+     * @param drawableArea the remaining drawable area.
+     */
+    CanvasGraphService.prototype._preprocessTooltip = function (pos, drawableArea) {
         var _this = this;
+        var _a, _b;
         var ctx = this._ctx;
-        if (pixel === null || !ctx || !ctx.canvas || this._getNumberOfSlices() === 0) {
+        if (pos === null || !ctx || !ctx.canvas || this._getNumberOfSlices() === 0) {
             return;
         }
-        // first convert the mouse position in pixels to a timestamp.
-        var start = ctx.canvas.getBoundingClientRect().left;
-        var adjustedPixel = pixel - start;
-        if (adjustedPixel > drawableArea.right) {
-            adjustedPixel = drawableArea.right;
+        var _c = ctx.canvas.getBoundingClientRect(), left = _c.left, top = _c.top;
+        var adjustedYPos = pos.yPos - top;
+        var adjustedXPos = pos.xPos - left;
+        if (adjustedXPos > drawableArea.right) {
+            adjustedXPos = drawableArea.right;
         }
-        var inferredTimestamp = this._getNumberFromPixel(adjustedPixel, this._globalTimeMinMax, drawableArea.left, drawableArea.right);
+        // convert the mouse x position in pixels to a timestamp.
+        var inferredTimestamp = this._getNumberFromPixel(adjustedXPos, this._globalTimeMinMax, drawableArea.left, drawableArea.right, false);
         var longestText = "";
         var numberOfTooltipItems = 0;
         // get the closest timestamps to the target timestamp, and store the appropriate meta object.
         var closestIndex = this._getClosestPointToTimestamp(inferredTimestamp);
         var actualTimestamp = 0;
+        var closestLineId = "";
+        var closestLineValueMinMax = { min: 0, max: 0 };
+        var closestLineDistance = Number.POSITIVE_INFINITY;
         this.datasets.ids.forEach(function (id, idOffset) {
             var _a, _b, _c;
             if (!!((_a = _this.metadata.get(id)) === null || _a === void 0 ? void 0 : _a.hidden)) {
@@ -60017,17 +60079,88 @@ var CanvasGraphService = /** @class */ (function () {
             if (idOffset >= numPoints) {
                 return;
             }
-            var valueIndex = _this.datasets.startingIndices.at(closestIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].SliceDataOffset + idOffset;
+            var valueAtClosestPointIndex = _this.datasets.startingIndices.at(closestIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].SliceDataOffset + idOffset;
+            var valueAtClosestPoint = _this.datasets.data.at(valueAtClosestPointIndex);
+            var valueMinMax;
+            // we would have already calculated  the min and max while getting the tickers, so use those, and get first one.
+            for (var i = 0; i < _this._numberOfTickers; i++) {
+                if (_this._tickerItems[i].id === id) {
+                    valueMinMax = _this._tickerItems[i];
+                }
+            }
+            if (!valueMinMax) {
+                return;
+            }
             actualTimestamp = _this.datasets.data.at(_this.datasets.startingIndices.at(closestIndex));
-            var text = id + ": " + _this.datasets.data.at(valueIndex).toFixed(2);
+            var valueAtClosestPointYPos = _this._getPixelForNumber(valueAtClosestPoint, valueMinMax, drawableArea.top, drawableArea.bottom - drawableArea.top, true);
+            var xForActualTimestamp = _this._getPixelForNumber(actualTimestamp, _this._globalTimeMinMax, drawableArea.left, drawableArea.right - drawableArea.left, false);
+            var text = id + ": " + valueAtClosestPoint.toFixed(2);
             if (text.length > longestText.length) {
                 longestText = text;
             }
             _this._tooltipItems[numberOfTooltipItems].text = text;
             _this._tooltipItems[numberOfTooltipItems].color = (_c = (_b = _this.metadata.get(id)) === null || _b === void 0 ? void 0 : _b.color) !== null && _c !== void 0 ? _c : defaultColor;
             numberOfTooltipItems++;
+            // don't process rest if we aren't panned.
+            if (!_this._position) {
+                return;
+            }
+            // initially distance between closest data point and mouse point.
+            var distance = _this._getDistanceFromLine(xForActualTimestamp, valueAtClosestPointYPos, xForActualTimestamp, valueAtClosestPointYPos, pos.xPos - left, adjustedYPos);
+            // get the shortest distance between the point and the line segment infront, and line segment behind, store the shorter distance (if shorter than distance between closest data point and mouse).
+            if (closestIndex + 1 < _this.datasets.data.itemLength &&
+                _this.datasets.data.at(_this.datasets.startingIndices.at(closestIndex + 1) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].NumberOfPointsOffset) > idOffset) {
+                var secondPointTimestamp = _this.datasets.data.at(_this.datasets.startingIndices.at(closestIndex + 1));
+                var secondPointX = _this._getPixelForNumber(secondPointTimestamp, _this._globalTimeMinMax, drawableArea.left, drawableArea.right - drawableArea.left, false);
+                var secondPointValue = _this.datasets.data.at(_this.datasets.startingIndices.at(closestIndex + 1) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].SliceDataOffset + idOffset);
+                var secondPointY = _this._getPixelForNumber(secondPointValue, valueMinMax, drawableArea.top, drawableArea.bottom - drawableArea.top, true);
+                distance = Math.min(_this._getDistanceFromLine(xForActualTimestamp, valueAtClosestPointYPos, secondPointX, secondPointY, pos.xPos - left, adjustedYPos), distance);
+            }
+            if (closestIndex - 1 >= 0 &&
+                _this.datasets.data.at(_this.datasets.startingIndices.at(closestIndex + 1) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].NumberOfPointsOffset) > idOffset) {
+                var secondPointTimestamp = _this.datasets.data.at(_this.datasets.startingIndices.at(closestIndex - 1));
+                var secondPointX = _this._getPixelForNumber(secondPointTimestamp, _this._globalTimeMinMax, drawableArea.left, drawableArea.right - drawableArea.left, false);
+                var secondPointValue = _this.datasets.data.at(_this.datasets.startingIndices.at(closestIndex - 1) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].SliceDataOffset + idOffset);
+                var secondPointY = _this._getPixelForNumber(secondPointValue, valueMinMax, drawableArea.top, drawableArea.bottom - drawableArea.top, true);
+                distance = Math.min(_this._getDistanceFromLine(xForActualTimestamp, valueAtClosestPointYPos, secondPointX, secondPointY, pos.xPos - left, adjustedYPos), distance);
+            }
+            if (distance < closestLineDistance) {
+                closestLineId = id;
+                closestLineDistance = distance;
+                closestLineValueMinMax = valueMinMax;
+            }
         });
         var xForActualTimestamp = this._getPixelForNumber(actualTimestamp, this._globalTimeMinMax, drawableArea.left, drawableArea.right - drawableArea.left, false);
+        this._preprocessedTooltipInfo.xForActualTimestamp = xForActualTimestamp;
+        // check if hover is within a certain distance, if so it is our only item in our tooltip.
+        if (closestLineDistance <= maxDistanceForHover && this._position) {
+            this._preprocessedTooltipInfo.focusedId = closestLineId;
+            var inferredValue = this._getNumberFromPixel(adjustedYPos, closestLineValueMinMax, drawableArea.top, drawableArea.bottom, true);
+            var closestLineText = closestLineId + ": " + inferredValue.toFixed(2);
+            this._preprocessedTooltipInfo.longestText = closestLineText;
+            this._preprocessedTooltipInfo.numberOfTooltipItems = 1;
+            this._tooltipItems[0].text = closestLineText;
+            this._tooltipItems[0].color = (_b = (_a = this.metadata.get(closestLineId)) === null || _a === void 0 ? void 0 : _a.color) !== null && _b !== void 0 ? _b : defaultColor;
+        }
+        else {
+            this._preprocessedTooltipInfo.focusedId = "";
+            this._preprocessedTooltipInfo.longestText = longestText;
+            this._preprocessedTooltipInfo.numberOfTooltipItems = numberOfTooltipItems;
+        }
+    };
+    /**
+     * Draws the tooltip given the area it is allowed to draw in and the current pixel position.
+     *
+     * @param pos the position of the mouse cursor in pixels (x, y).
+     * @param drawableArea  the available area we can draw in.
+     */
+    CanvasGraphService.prototype._drawTooltip = function (pos, drawableArea) {
+        var ctx = this._ctx;
+        if (pos === null || !ctx || !ctx.canvas || this._getNumberOfSlices() === 0) {
+            return;
+        }
+        var _a = ctx.canvas.getBoundingClientRect(), left = _a.left, top = _a.top;
+        var _b = this._preprocessedTooltipInfo, numberOfTooltipItems = _b.numberOfTooltipItems, xForActualTimestamp = _b.xForActualTimestamp, longestText = _b.longestText;
         ctx.save();
         // draw pointer triangle
         ctx.fillStyle = positionIndicatorColor;
@@ -60038,11 +60171,18 @@ var CanvasGraphService = /** @class */ (function () {
         ctx.lineTo(xForActualTimestamp - triangleWidth / 2, yTriangle + triangleHeight);
         ctx.closePath();
         ctx.fill();
-        // draw vertical line
         ctx.strokeStyle = positionIndicatorColor;
         ctx.beginPath();
-        ctx.moveTo(xForActualTimestamp, drawableArea.bottom);
-        ctx.lineTo(xForActualTimestamp, topOfGraphY);
+        // draw vertical or horizontal line depending on if focused on a point on the line.
+        if (this._preprocessedTooltipInfo.focusedId === "") {
+            ctx.moveTo(xForActualTimestamp, drawableArea.bottom);
+            ctx.lineTo(xForActualTimestamp, topOfGraphY);
+        }
+        else {
+            var lineY = pos.yPos - top;
+            ctx.moveTo(drawableArea.left, lineY);
+            ctx.lineTo(drawableArea.right, lineY);
+        }
         ctx.stroke();
         // draw the actual tooltip
         ctx.font = graphAddonFont;
@@ -60061,7 +60201,7 @@ var CanvasGraphService = /** @class */ (function () {
             this._tooltipTextCache.width = width;
         }
         var tooltipHeight = textHeight * (numberOfTooltipItems + 1);
-        var x = pixel - start;
+        var x = pos.xPos - left;
         var y = drawableArea.bottom - tooltipPaddingFromBottom - tooltipHeight;
         // We want the tool tip to always be inside the canvas so we adjust which way it is drawn.
         if (x + width > this._width) {
@@ -60090,11 +60230,16 @@ var CanvasGraphService = /** @class */ (function () {
      * @param minMax the minimum and maximum number in the range.
      * @param startingPixel position of the starting pixel in range.
      * @param endingPixel position of ending pixel in range.
+     * @param shouldFlipValue if we should use a [1, 0] scale instead of a [0, 1] scale.
      * @returns number corresponding to pixel position
      */
-    CanvasGraphService.prototype._getNumberFromPixel = function (pixel, minMax, startingPixel, endingPixel) {
+    CanvasGraphService.prototype._getNumberFromPixel = function (pixel, minMax, startingPixel, endingPixel, shouldFlip) {
         // normalize pixel to range [0, 1].
         var normalizedPixelPosition = (pixel - startingPixel) / (endingPixel - startingPixel);
+        // we should use a [1, 0] scale instead.
+        if (shouldFlip) {
+            normalizedPixelPosition = 1 - normalizedPixelPosition;
+        }
         return minMax.min + normalizedPixelPosition * (minMax.max - minMax.min);
     };
     /**

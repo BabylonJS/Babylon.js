@@ -60,6 +60,7 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         private _canvas;
         private _responsive;
         private _isOverGUINode;
+        private _focused;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
@@ -2179,6 +2180,7 @@ declare module GUIEDITOR {
         private _canvas;
         private _responsive;
         private _isOverGUINode;
+        private _focused;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];

@@ -167,6 +167,7 @@
 - Introduced spectator mode for desktop VR experiences and fixed an issue with XR camera in the activeCameras array ([#10560](https://github.com/BabylonJS/Babylon.js/issues/10560)) ([RaananW](https://github.com/RaananW))
 - Initial support for WebXR camera parenting ([#10593](https://github.com/BabylonJS/Babylon.js/issues/10593)) ([RaananW](https://github.com/RaananW))
 - Fix ReflectionProbe for WebXR ([#10390](https://github.com/BabylonJS/Babylon.js/issues/10390)) ([RaananW](https://github.com/RaananW))
+- Fix error on XR dispose due to undefined sepectator camera ([Alex-MSFT](https://github.com/Alex-MSFT))
 
 ### Gizmos
 
