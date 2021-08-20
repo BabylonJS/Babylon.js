@@ -3951,6 +3951,7 @@ declare module INSPECTOR {
         private _onNewSceneAddedObserver;
         private _onNewSceneObserver;
         private sceneExplorerRef;
+        private _mutationTimeout;
         private _once;
         private _hooked;
         private sceneMutationFunc;

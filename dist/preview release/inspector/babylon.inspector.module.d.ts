@@ -4716,6 +4716,7 @@ declare module "babylonjs-inspector/components/sceneExplorer/sceneExplorerCompon
         private _onNewSceneAddedObserver;
         private _onNewSceneObserver;
         private sceneExplorerRef;
+        private _mutationTimeout;
         private _once;
         private _hooked;
         private sceneMutationFunc;
@@ -8817,6 +8818,7 @@ declare module INSPECTOR {
         private _onNewSceneAddedObserver;
         private _onNewSceneObserver;
         private sceneExplorerRef;
+        private _mutationTimeout;
         private _once;
         private _hooked;
         private sceneMutationFunc;
