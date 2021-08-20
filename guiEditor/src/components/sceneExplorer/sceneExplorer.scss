@@ -217,11 +217,11 @@
         grid-template-columns: 20px 1fr;
 
         &:hover {
-            background: #bbbbbb;
+            border: 2px solid #527089
         }
 
         &.selected{
-            background: #bbbbbb;
+            background: #bfbebe;
             color: black;
         }
         
