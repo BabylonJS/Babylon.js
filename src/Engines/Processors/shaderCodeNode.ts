@@ -37,7 +37,7 @@ export class ShaderCodeNode {
                         options.lookForClosingBracketForUniformBuffer = true;
                     }
                 } else if ((processor.uniformProcessor || processor.uniformBufferProcessor) && StringTools.StartsWith(this.line, "uniform") && !options.lookForClosingBracketForUniformBuffer) {
-                    let regex = /\s*uniform\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s+(\S+)\s*;/;
+                    let regex = /uniform\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s+(\S+)\s*;/;
 
                     if (regex.test(this.line)) { // uniform
                         if (processor.uniformProcessor) {
