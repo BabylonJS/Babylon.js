@@ -1,73 +1,14 @@
 import { Nullable } from '../../types';
 import { IShaderProcessor, ShaderLanguage } from '../Processors/iShaderProcessor';
 import { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
-import { WebGPUTextureSamplerBindingDescription, WebGPUShaderProcessingContext } from './webgpuShaderProcessingContext';
+import { WebGPUShaderProcessingContext } from './webgpuShaderProcessingContext';
 import * as WebGPUConstants from './webgpuConstants';
 import { Logger } from '../../Misc/logger';
 import { ThinEngine } from "../thinEngine";
-
-const _knownUBOs: { [key: string]: { setIndex: number, bindingIndex: number, varName: string } } = {
-    "Scene": { setIndex: 0, bindingIndex: 0, varName: "scene" },
-    "Light0": { setIndex: 0, bindingIndex: 5, varName: "light0" },
-    "Light1": { setIndex: 0, bindingIndex: 6, varName: "light1" },
-    "Light2": { setIndex: 0, bindingIndex: 7, varName: "light2" },
-    "Light3": { setIndex: 0, bindingIndex: 8, varName: "light3" },
-    "Light4": { setIndex: 0, bindingIndex: 9, varName: "light4" },
-    "Light5": { setIndex: 0, bindingIndex: 10, varName: "light5" },
-    "Light6": { setIndex: 0, bindingIndex: 11, varName: "light6" },
-    "Light7": { setIndex: 0, bindingIndex: 12, varName: "light7" },
-    "Light8": { setIndex: 0, bindingIndex: 13, varName: "light8" },
-    "Material": { setIndex: 1, bindingIndex: 0, varName: "material" },
-    "Mesh": { setIndex: 1, bindingIndex: 1, varName: "mesh" },
-};
-
-const _knownSamplers: { [key: string]: WebGPUTextureSamplerBindingDescription } = {
-    "environmentBrdfSampler": { sampler: { setIndex: 0, bindingIndex: 1 }, isTextureArray: false, textures: [{ setIndex: 0, bindingIndex: 2 }] },
-    // "reflectionSampler": { setIndex: 0, bindingIndex: 3 },
-};
-
-// TODO WEBGPU. sampler3D
-const _samplerFunctionByWebGLSamplerType: { [key: string]: string } = {
-    "sampler2D": "sampler2D",
-    "sampler2DArray": "sampler2DArray",
-    "sampler2DShadow": "sampler2DShadow",
-    "sampler2DArrayShadow": "sampler2DArrayShadow",
-    "samplerCube": "samplerCube",
-    "sampler3D": "sampler3D",
-};
-
-const _textureTypeByWebGLSamplerType: { [key: string]: string } = {
-    "sampler2D": "texture2D",
-    "sampler2DArray": "texture2DArray",
-    "sampler2DShadow": "texture2D",
-    "sampler2DArrayShadow": "texture2DArray",
-    "samplerCube": "textureCube",
-    "samplerCubeArray": "textureCubeArray",
-    "sampler3D": "texture3D",
-};
-
-const _gpuTextureViewDimensionByWebGPUTextureType: { [key: string]: GPUTextureViewDimension } = {
-    "textureCube": WebGPUConstants.TextureViewDimension.Cube,
-    "textureCubeArray": WebGPUConstants.TextureViewDimension.CubeArray,
-    "texture2D": WebGPUConstants.TextureViewDimension.E2d,
-    "texture2DArray": WebGPUConstants.TextureViewDimension.E2dArray,
-    "texture3D": WebGPUConstants.TextureViewDimension.E3d,
-};
-
-// if the webgl sampler type is not listed in this array, "sampler" is taken by default
-const _samplerTypeByWebGLSamplerType: { [key: string]: string } = {
-    "sampler2DShadow": "samplerShadow",
-    "sampler2DArrayShadow": "samplerShadow",
-};
-
-const _isComparisonSamplerByWebGPUSamplerType: { [key: string]: boolean } = {
-    "samplerShadow": true,
-    "samplerArrayShadow": true,
-    "sampler": false,
-};
+import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
 
 /** @hidden */
-export class WebGPUShaderProcessorWGSL implements IShaderProcessor {
+export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements IShaderProcessor {
 
     protected _missingVaryings: Array<string> = [];
     protected _textureArrayProcessing: Array<string> = [];
@@ -186,7 +127,7 @@ export class WebGPUShaderProcessorWGSL implements IShaderProcessor {
             let name = match[1];
 
             if (uniformType.indexOf("sampler") === 0 || uniformType.indexOf("sampler") === 1) {
-                let samplerInfo = _knownSamplers[name];
+                let samplerInfo = WebGPUShaderProcessor._KnownSamplers[name];
                 let arraySize = 0; // 0 means the sampler/texture is not declared as an array
                 if (!samplerInfo) {
                     [uniformType, arraySize] = this._getArraySize(uniformType, preProcessors);
@@ -214,11 +155,11 @@ export class WebGPUShaderProcessorWGSL implements IShaderProcessor {
                 const isTextureArray = arraySize > 0;
                 const samplerSetIndex = samplerInfo.sampler.setIndex;
                 const samplerBindingIndex = samplerInfo.sampler.bindingIndex;
-                const samplerFunction = _samplerFunctionByWebGLSamplerType[uniformType];
-                const samplerType = _samplerTypeByWebGLSamplerType[uniformType] ?? "sampler";
-                const textureType = _textureTypeByWebGLSamplerType[uniformType];
-                const textureDimension = _gpuTextureViewDimensionByWebGPUTextureType[textureType];
-                const isComparisonSampler = !!_isComparisonSamplerByWebGPUSamplerType[samplerType];
+                const samplerFunction = WebGPUShaderProcessor._SamplerFunctionByWebGLSamplerType[uniformType];
+                const samplerType = WebGPUShaderProcessor._SamplerTypeByWebGLSamplerType[uniformType] ?? "sampler";
+                const textureType = WebGPUShaderProcessor._TextureTypeByWebGLSamplerType[uniformType];
+                const textureDimension = WebGPUShaderProcessor._GpuTextureViewDimensionByWebGPUTextureType[textureType];
+                const isComparisonSampler = !!WebGPUShaderProcessor._IsComparisonSamplerByWebGPUSamplerType[samplerType];
 
                 // Manage textures and samplers.
                 if (!isTextureArray) {
@@ -354,7 +295,7 @@ export class WebGPUShaderProcessorWGSL implements IShaderProcessor {
             const visibility = webgpuProcessingContext.availableUBONames[name];
             const visibleFromVertex = visibility & 1;
             const visibleFromFragment = visibility & 2;
-            const knownUBO = _knownUBOs[name];
+            const knownUBO = WebGPUShaderProcessor._KnownUBOs[name];
 
             let setIndex: number;
             let bindingIndex: number;
