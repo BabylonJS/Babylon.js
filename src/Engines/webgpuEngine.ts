@@ -17,7 +17,7 @@ import { DataBuffer } from '../Buffers/dataBuffer';
 import { WebGPUDataBuffer } from '../Meshes/WebGPU/webgpuDataBuffer';
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { IShaderProcessor, ShaderLanguage } from "./Processors/iShaderProcessor";
-import { WebGPUShaderProcessor } from "./WebGPU/webgpuShaderProcessors";
+import { WebGPUShaderProcessorGLSL } from "./WebGPU/webgpuShaderProcessorsGLSL";
 import { WebGPUShaderProcessorWGSL } from "./WebGPU/webgpuShaderProcessorsWGSL";
 import { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import { WebGPUShaderProcessingContext } from "./WebGPU/webgpuShaderProcessingContext";
@@ -548,7 +548,7 @@ export class WebGPUEngine extends Engine {
 
         this._sharedInit(canvas, !!options.doNotHandleTouchAction, options.audioEngine);
 
-        this._shaderProcessor = new WebGPUShaderProcessor();
+        this._shaderProcessor = new WebGPUShaderProcessorGLSL();
         this._shaderProcessorWGSL = new WebGPUShaderProcessorWGSL();
 
         this._invertYFinalFramebuffer = (!!this._options.forceCopyForInvertYFinalFramebuffer || !this._canvas.style) && !this._options.disableCopyForInvertYFinalFramebuffer;
