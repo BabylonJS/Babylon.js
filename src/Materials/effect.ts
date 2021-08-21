@@ -7,11 +7,12 @@ import { IDisposable } from '../scene';
 import { IPipelineContext } from '../Engines/IPipelineContext';
 import { DataBuffer } from '../Buffers/dataBuffer';
 import { ShaderProcessor } from '../Engines/Processors/shaderProcessor';
-import { ProcessingOptions, ShaderLanguage, ShaderProcessingContext } from '../Engines/Processors/shaderProcessingOptions';
+import { ProcessingOptions, ShaderProcessingContext } from '../Engines/Processors/shaderProcessingOptions';
 import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from '../Maths/math.like';
 import { ThinEngine } from '../Engines/thinEngine';
 import { IEffectFallbacks } from './iEffectFallbacks';
 import { ShaderStore as EngineShaderStore, ShaderStore } from '../Engines/shaderStore';
+import { ShaderLanguage } from "../Engines/Processors/iShaderProcessor";
 
 declare type Engine = import("../Engines/engine").Engine;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
@@ -305,7 +306,7 @@ export class Effect implements IDisposable {
             indexParameters: this._indexParameters,
             isFragment: false,
             shouldUseHighPrecisionShader: this._engine._shouldUseHighPrecisionShader,
-            processor: this._engine._shaderProcessor,
+            processor: this._engine._getShaderProcessor(this._shaderLanguage),
             supportsUniformBuffers: this._engine.supportsUniformBuffers,
             shadersRepository: ShaderStore.GetShadersRepository(this._shaderLanguage),
             includesShadersStore: ShaderStore.GetIncludesShadersStore(this._shaderLanguage),
@@ -314,7 +315,6 @@ export class Effect implements IDisposable {
             processingContext: this._processingContext,
             isNDCHalfZRange: this._engine.isNDCHalfZRange,
             useReverseDepthBuffer: this._engine.useReverseDepthBuffer,
-            shaderLanguage: this._shaderLanguage,
         };
 
         let shaderCodes: [string | undefined, string | undefined] = [undefined, undefined];

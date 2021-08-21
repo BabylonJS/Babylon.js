@@ -1,4 +1,4 @@
-import { ProcessingOptions, ShaderLanguage } from './shaderProcessingOptions';
+import { ProcessingOptions } from './shaderProcessingOptions';
 import { StringTools } from '../../Misc/stringTools';
 
 /** @hidden */
@@ -27,8 +27,17 @@ export class ShaderCodeNode {
                     value = processor.attributeProcessor(this.line, preprocessors, options.processingContext);
                 } else if (processor.varyingProcessor && StringTools.StartsWith(this.line, "varying")) {
                     value = processor.varyingProcessor(this.line, options.isFragment, preprocessors, options.processingContext);
+                } else if (processor.uniformProcessor && processor.uniformRegexp && processor.uniformRegexp.test(this.line)) {
+                    if (!options.lookForClosingBracketForUniformBuffer) {
+                        value = processor.uniformProcessor(this.line, options.isFragment, preprocessors, options.processingContext);
+                    }
+                } else if (processor.uniformBufferProcessor && processor.uniformBufferRegexp && processor.uniformBufferRegexp.test(this.line)) {
+                    if (!options.lookForClosingBracketForUniformBuffer) {
+                        value = processor.uniformBufferProcessor(this.line, options.isFragment, options.processingContext);
+                        options.lookForClosingBracketForUniformBuffer = true;
+                    }
                 } else if ((processor.uniformProcessor || processor.uniformBufferProcessor) && StringTools.StartsWith(this.line, "uniform") && !options.lookForClosingBracketForUniformBuffer) {
-                    let regex = options.shaderLanguage === ShaderLanguage.WGSL ? /\s*uniform\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s*:\s*(.+)\s*;/ : /\s*uniform\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s+(\S+)\s*;/;
+                    let regex = /\s*uniform\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s+(\S+)\s*;/;
 
                     if (regex.test(this.line)) { // uniform
                         if (processor.uniformProcessor) {

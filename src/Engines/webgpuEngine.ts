@@ -16,9 +16,10 @@ import { IPipelineContext } from './IPipelineContext';
 import { DataBuffer } from '../Buffers/dataBuffer';
 import { WebGPUDataBuffer } from '../Meshes/WebGPU/webgpuDataBuffer';
 import { BaseTexture } from "../Materials/Textures/baseTexture";
-import { IShaderProcessor } from "./Processors/iShaderProcessor";
+import { IShaderProcessor, ShaderLanguage } from "./Processors/iShaderProcessor";
 import { WebGPUShaderProcessor } from "./WebGPU/webgpuShaderProcessors";
-import { ShaderLanguage, ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
+import { WebGPUShaderProcessorWGSL } from "./WebGPU/webgpuShaderProcessorsWGSL";
+import { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import { WebGPUShaderProcessingContext } from "./WebGPU/webgpuShaderProcessingContext";
 import { Tools } from "../Misc/tools";
 import { WebGPUTextureHelper } from './WebGPU/webgpuTextureHelper';
@@ -547,7 +548,8 @@ export class WebGPUEngine extends Engine {
 
         this._sharedInit(canvas, !!options.doNotHandleTouchAction, options.audioEngine);
 
-        this._shaderProcessor = this._getShaderProcessor();
+        this._shaderProcessor = new WebGPUShaderProcessor();
+        this._shaderProcessorWGSL = new WebGPUShaderProcessorWGSL();
 
         this._invertYFinalFramebuffer = (!!this._options.forceCopyForInvertYFinalFramebuffer || !this._canvas.style) && !this._options.disableCopyForInvertYFinalFramebuffer;
         if (!this._invertYFinalFramebuffer) {
@@ -942,12 +944,14 @@ export class WebGPUEngine extends Engine {
         return true;
     }
 
-    /**
-     * Gets a shader processor implementation fitting with the current engine type.
-     * @returns The shader processor implementation.
-     */
-    protected _getShaderProcessor(): Nullable<IShaderProcessor> {
-        return new WebGPUShaderProcessor();
+    private _shaderProcessorWGSL: Nullable<IShaderProcessor>;
+
+    /** @hidden */
+    public _getShaderProcessor(shaderLanguage: ShaderLanguage): Nullable<IShaderProcessor> {
+        if (shaderLanguage === ShaderLanguage.WGSL) {
+            return this._shaderProcessorWGSL;
+        }
+        return this._shaderProcessor;
     }
 
     /** @hidden */

@@ -1,11 +1,13 @@
 import { Nullable } from '../../types';
-import { IShaderProcessor } from '../Processors/iShaderProcessor';
+import { IShaderProcessor, ShaderLanguage } from '../Processors/iShaderProcessor';
 import { ShaderProcessingContext } from '../Processors/shaderProcessingOptions';
 
 declare type ThinEngine = import("../thinEngine").ThinEngine;
 
 /** @hidden */
 export class WebGLShaderProcessor implements IShaderProcessor {
+    public shaderLanguage = ShaderLanguage.GLSL;
+
     public postProcessor(code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>, engine: ThinEngine) {
 
         // Remove extensions

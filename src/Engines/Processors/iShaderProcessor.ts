@@ -3,8 +3,22 @@ import { ShaderProcessingContext } from "./shaderProcessingOptions";
 
 declare type ThinEngine = import("../thinEngine").ThinEngine;
 
+/**
+ * Language of the shader code
+ */
+ export enum ShaderLanguage {
+    GLSL,
+    WGSL
+}
+
 /** @hidden */
 export interface IShaderProcessor {
+    shaderLanguage: ShaderLanguage;
+
+    uniformRegexp?: RegExp;
+    uniformBufferRegexp?: RegExp;
+    noPrecision?: boolean;
+
     attributeProcessor?: (attribute: string, preProcessors: { [key: string]: string }, processingContext: Nullable<ShaderProcessingContext>) => string;
     varyingProcessor?: (varying: string, isFragment: boolean, preProcessors: { [key: string]: string }, processingContext: Nullable<ShaderProcessingContext>) => string;
     uniformProcessor?: (uniform: string, isFragment: boolean, preProcessors: { [key: string]: string }, processingContext: Nullable<ShaderProcessingContext>) => string;

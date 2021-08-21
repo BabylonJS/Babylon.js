@@ -1,11 +1,13 @@
 import { Nullable } from '../../types';
-import { IShaderProcessor } from '../Processors/iShaderProcessor';
+import { IShaderProcessor, ShaderLanguage } from '../Processors/iShaderProcessor';
 import { ShaderProcessingContext } from '../Processors/shaderProcessingOptions';
 
 declare type ThinEngine = import("../thinEngine").ThinEngine;
 
 /** @hidden */
 export class WebGL2ShaderProcessor implements IShaderProcessor {
+    public shaderLanguage = ShaderLanguage.GLSL;
+
     public attributeProcessor(attribute: string) {
         return attribute.replace("attribute", "in");
     }
