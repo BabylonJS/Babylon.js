@@ -77,7 +77,6 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
 
     private _getArraySize(name: string, preProcessors: { [key: string]: string }): [string, number] {
         let length = 0;
-
         const startArray = name.indexOf("[");
         const endArray = name.indexOf("]");
         if (startArray > 0 && endArray > 0) {
@@ -88,7 +87,6 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
             }
             name = name.substr(0, startArray);
         }
-
         return [name, length];
     }
 
