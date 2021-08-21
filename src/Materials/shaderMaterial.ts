@@ -16,7 +16,7 @@ import { Color3, Color4 } from '../Maths/math.color';
 import { EffectFallbacks } from './effectFallbacks';
 import { WebRequest } from '../Misc/webRequest';
 import { Engine } from '../Engines/engine';
-import { ShaderLanguage } from "../Engines/Processors/shaderProcessingOptions";
+import { ShaderLanguage } from "../Engines/Processors/iShaderProcessor";
 
 import "../ShadersWGSL/ShadersInclude/meshUboDeclaration"; // TODO WEBGPU: remove
 import "../ShadersWGSL/ShadersInclude/sceneUboDeclaration"; // TODO WEBGPU: remove

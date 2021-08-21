@@ -4,8 +4,9 @@ import { Observable } from "../Misc/observable";
 import { IComputePipelineContext } from "./IComputePipelineContext";
 import { DomManagement } from "../Misc/domManagement";
 import { ShaderProcessor } from "../Engines/Processors/shaderProcessor";
-import { ProcessingOptions, ShaderLanguage } from "../Engines/Processors/shaderProcessingOptions";
+import { ProcessingOptions } from "../Engines/Processors/shaderProcessingOptions";
 import { ShaderStore } from '../Engines/shaderStore';
+import { ShaderLanguage } from "../Engines/Processors/iShaderProcessor";
 
 declare type Engine = import("../Engines/engine").Engine;
 
@@ -148,7 +149,6 @@ export class ComputeEffect {
             processingContext: null,
             isNDCHalfZRange: this._engine.isNDCHalfZRange,
             useReverseDepthBuffer: this._engine.useReverseDepthBuffer,
-            shaderLanguage: this._shaderLanguage,
         };
 
         this._loadShader(computeSource, "Compute", "", (computeCode) => {

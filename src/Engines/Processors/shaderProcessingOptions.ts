@@ -1,14 +1,6 @@
 import { IShaderProcessor } from './iShaderProcessor';
 import { Nullable } from '../../types';
 
-/**
- * Language of the shader code
- */
-export enum ShaderLanguage {
-    GLSL,
-    WGSL
-}
-
 /** @hidden */
 export interface ShaderProcessingContext { }
 
@@ -28,5 +20,4 @@ export interface ProcessingOptions {
     processingContext: Nullable<ShaderProcessingContext>;
     isNDCHalfZRange: boolean;
     useReverseDepthBuffer: boolean;
-    shaderLanguage: ShaderLanguage;
 }

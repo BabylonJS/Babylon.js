@@ -7,8 +7,9 @@ import { ShaderDefineOrOperator } from './Expressions/Operators/shaderDefineOrOp
 import { ShaderDefineAndOperator } from './Expressions/Operators/shaderDefineAndOperator';
 import { ShaderDefineExpression } from './Expressions/shaderDefineExpression';
 import { ShaderDefineArithmeticOperator } from './Expressions/Operators/shaderDefineArithmeticOperator';
-import { ProcessingOptions, ShaderLanguage } from './shaderProcessingOptions';
+import { ProcessingOptions } from './shaderProcessingOptions';
 import { _DevTools } from '../../Misc/devTools';
+import { ShaderLanguage } from "./iShaderProcessor";
 
 declare type WebRequest = import("../../Misc/webRequest").WebRequest;
 declare type LoadFileError = import("../../Misc/fileTools").LoadFileError;
@@ -50,7 +51,7 @@ export class ShaderProcessor {
     }
 
     private static _ProcessPrecision(source: string, options: ProcessingOptions): string {
-        if (options.shaderLanguage === ShaderLanguage.WGSL) {
+        if (options.processor?.noPrecision) {
             return source;
         }
 
@@ -272,7 +273,7 @@ export class ShaderProcessor {
             preprocessors[split[0]] = split.length > 1 ? split[1] : "";
         }
 
-        if (options.shaderLanguage === ShaderLanguage.GLSL) {
+        if (options.processor?.shaderLanguage === ShaderLanguage.GLSL) {
             preprocessors["GL_ES"] = "true";
         }
         preprocessors["__VERSION__"] = options.version;
@@ -292,7 +293,7 @@ export class ShaderProcessor {
         }
 
         // Already converted
-        if (options.shaderLanguage === ShaderLanguage.GLSL && preparedSourceCode.indexOf("#version 3") !== -1) {
+        if (options.processor.shaderLanguage === ShaderLanguage.GLSL && preparedSourceCode.indexOf("#version 3") !== -1) {
             return preparedSourceCode.replace("#version 300 es", "");
         }
 

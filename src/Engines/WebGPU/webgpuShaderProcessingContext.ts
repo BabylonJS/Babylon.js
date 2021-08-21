@@ -1,4 +1,5 @@
-import { ShaderLanguage, ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
+import { ShaderLanguage } from "../Processors/iShaderProcessor";
+import { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 
 const _maxSets = 4;
 const _maxBindingsPerSet = 16;
@@ -59,6 +60,7 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
     public availableVaryings: { [key: string]: number };
     public availableAttributes: { [key: string]: number };
     public availableUBOs: { [key: string]: { setIndex: number, bindingIndex: number } };
+    public availableUBONames: { [key: string]: number };
     public availableSamplers: { [key: string]: WebGPUTextureSamplerBindingDescription };
 
     public leftOverUniforms: { name: string, type: string, length: number }[];
@@ -84,6 +86,7 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
         this.availableVaryings = {};
         this.availableAttributes = {};
         this.availableUBOs = {};
+        this.availableUBONames = {};
         this.availableSamplers = {};
 
         this.orderedAttributes = [];

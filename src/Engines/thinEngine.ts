@@ -2,8 +2,8 @@ import { EngineStore } from './engineStore';
 import { IInternalTextureLoader } from '../Materials/Textures/internalTextureLoader';
 import { Effect, IEffectCreationOptions } from '../Materials/effect';
 import { _DevTools } from '../Misc/devTools';
-import { IShaderProcessor } from './Processors/iShaderProcessor';
-import { ShaderLanguage, ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
+import { IShaderProcessor, ShaderLanguage } from './Processors/iShaderProcessor';
+import { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import { UniformBuffer } from '../Materials/uniformBuffer';
 import { Nullable, DataArray, IndicesArray } from '../types';
 import { EngineCapabilities } from './engineCapabilities';
@@ -233,10 +233,12 @@ export class ThinEngine {
         Effect.ShadersRepository = value;
     }
 
-    // Public members
+    protected _shaderProcessor: Nullable<IShaderProcessor>;
 
     /** @hidden */
-    public _shaderProcessor: Nullable<IShaderProcessor>;
+    public _getShaderProcessor(shaderLanguage: ShaderLanguage): Nullable<IShaderProcessor> {
+        return this._shaderProcessor;
+    }
 
     /**
      * Gets or sets a boolean that indicates if textures must be forced to power of 2 size even if not required
@@ -884,7 +886,7 @@ export class ThinEngine {
         }
 
         // Shader processor
-        this._shaderProcessor = this._getShaderProcessor();
+        this._shaderProcessor = this.webGLVersion > 1 ? new WebGL2ShaderProcessor() : new WebGLShaderProcessor();
 
         // Detect if we are running on a faulty buggy OS.
         this._badOS = /iPad/i.test(navigator.userAgent) || /iPhone/i.test(navigator.userAgent);
@@ -947,14 +949,6 @@ export class ThinEngine {
      */
     protected _sharedInit(canvas: HTMLCanvasElement, doNotHandleTouchAction: boolean, audioEngine: boolean) {
         this._renderingCanvas = canvas;
-    }
-
-    /**
-     * Gets a shader processor implementation fitting with the current engine type.
-     * @returns The shader processor implementation.
-     */
-    protected _getShaderProcessor(): Nullable<IShaderProcessor> {
-        return (this.webGLVersion > 1 ? new WebGL2ShaderProcessor() : new WebGLShaderProcessor());
     }
 
     /** @hidden */
