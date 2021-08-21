@@ -67,7 +67,7 @@ const _isComparisonSamplerByWebGPUSamplerType: { [key: string]: boolean } = {
 };
 
 /** @hidden */
-export class WebGPUShaderProcessor implements IShaderProcessor {
+export class WebGPUShaderProcessorGLSL implements IShaderProcessor {
 
     protected _missingVaryings: Array<string> = [];
     protected _textureArrayProcessing: Array<string> = [];
