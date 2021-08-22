@@ -18,12 +18,12 @@ export class WebGPUShaderProcessor {
         "Material": { setIndex: 1, bindingIndex: 0, varName: "material" },
         "Mesh": { setIndex: 1, bindingIndex: 1, varName: "mesh" },
     };
-    
+
     protected static _KnownSamplers: { [key: string]: WebGPUTextureSamplerBindingDescription } = {
         "environmentBrdfSampler": { sampler: { setIndex: 0, bindingIndex: 1 }, isTextureArray: false, textures: [{ setIndex: 0, bindingIndex: 2 }] },
         // "reflectionSampler": { setIndex: 0, bindingIndex: 3 },
     };
-    
+
     // TODO WEBGPU. sampler3D
     protected static _SamplerFunctionByWebGLSamplerType: { [key: string]: string } = {
         "sampler2D": "sampler2D",
@@ -33,7 +33,7 @@ export class WebGPUShaderProcessor {
         "samplerCube": "samplerCube",
         "sampler3D": "sampler3D",
     };
-    
+
     protected static _TextureTypeByWebGLSamplerType: { [key: string]: string } = {
         "sampler2D": "texture2D",
         "sampler2DArray": "texture2DArray",
@@ -43,7 +43,7 @@ export class WebGPUShaderProcessor {
         "samplerCubeArray": "textureCubeArray",
         "sampler3D": "texture3D",
     };
-    
+
     protected static _GpuTextureViewDimensionByWebGPUTextureType: { [key: string]: GPUTextureViewDimension } = {
         "textureCube": WebGPUConstants.TextureViewDimension.Cube,
         "textureCubeArray": WebGPUConstants.TextureViewDimension.CubeArray,
@@ -51,13 +51,13 @@ export class WebGPUShaderProcessor {
         "texture2DArray": WebGPUConstants.TextureViewDimension.E2dArray,
         "texture3D": WebGPUConstants.TextureViewDimension.E3d,
     };
-    
+
     // if the webgl sampler type is not listed in this array, "sampler" is taken by default
     protected static _SamplerTypeByWebGLSamplerType: { [key: string]: string } = {
         "sampler2DShadow": "samplerShadow",
         "sampler2DArrayShadow": "samplerShadow",
     };
-    
+
     protected static _IsComparisonSamplerByWebGPUSamplerType: { [key: string]: boolean } = {
         "samplerShadow": true,
         "samplerArrayShadow": true,

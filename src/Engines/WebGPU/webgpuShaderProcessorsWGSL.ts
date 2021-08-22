@@ -417,7 +417,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
         fragmentFragmentInputs += "\n};\n";
 
         let fragmentOutputs = "struct FragmentOutputs {\n  [[location(0)]] color : vec4<f32>;\n";
-        
+
         let hasFragDepth = false;
         let idx = 0;
         while (!hasFragDepth) {
@@ -490,9 +490,9 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
         if (startingCode) {
             let idx = code.indexOf("fn main");
             if (idx >= 0) {
-                while (idx++ < code.length && code.charAt(idx) != '{') ;
+                while (idx++ < code.length && code.charAt(idx) != '{') { }
                 if (idx < code.length) {
-                    while (idx++ < code.length && code.charAt(idx) != '\n') ;
+                    while (idx++ < code.length && code.charAt(idx) != '\n') { }
                     if (idx < code.length) {
                         const part1 = code.substring(0, idx + 1);
                         const part2 = code.substring(idx + 1);
