@@ -13,6 +13,7 @@ import { ThinEngine } from '../Engines/thinEngine';
 import { IEffectFallbacks } from './iEffectFallbacks';
 import { ShaderStore as EngineShaderStore, ShaderStore } from '../Engines/shaderStore';
 import { ShaderLanguage } from "../Engines/Processors/iShaderProcessor";
+import { CodeStringParsingTools } from "../Misc/codeStringParsingTools";
 
 declare type Engine = import("../Engines/engine").Engine;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
@@ -333,6 +334,9 @@ export class Effect implements IDisposable {
 
         };
         this._loadShader(vertexSource, "Vertex", "", (vertexCode) => {
+            if (processorOptions.processor?.removeCommentsBeforeProcessing) {
+                vertexCode = CodeStringParsingTools.RemoveComments(vertexCode);
+            }
             ShaderProcessor.Initialize(processorOptions);
             ShaderProcessor.Process(vertexCode, processorOptions, (migratedVertexCode) => {
                 this._rawVertexSourceCode = vertexCode;
@@ -344,6 +348,9 @@ export class Effect implements IDisposable {
             }, this._engine);
         });
         this._loadShader(fragmentSource, "Fragment", "Pixel", (fragmentCode) => {
+            if (processorOptions.processor?.removeCommentsBeforeProcessing) {
+                fragmentCode = CodeStringParsingTools.RemoveComments(fragmentCode);
+            }
             this._rawFragmentSourceCode = fragmentCode;
             shaderCodes[1] = fragmentCode;
             shadersLoaded();
