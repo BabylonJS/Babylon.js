@@ -29,7 +29,7 @@ export class ShaderStore {
      * Store of each included file for a shader (WGSL)
      */
     public static IncludesShadersStoreWGSL: { [key: string]: string } = {};
- 
+
     /**
      * Gets the shaders repository path for a given shader language
      * @param shaderLanguage the shader language
