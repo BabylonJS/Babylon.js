@@ -9,6 +9,7 @@ import { TextInputLineComponent } from "../../../../sharedUiComponents/lines/tex
 import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { CommandButtonComponent } from "../../../commandButtonComponent";
 import { Image } from "babylonjs-gui/2D/controls/image";
+import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
 
 const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");
 const verticalMarginIcon: string = require("../../../../sharedUiComponents/imgs/verticalMarginIcon.svg");
@@ -41,23 +42,48 @@ interface ICommonControlPropertyGridComponentProps {
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
+
+
 export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
     constructor(props: ICommonControlPropertyGridComponentProps) {
         super(props);
     }
 
+    updateAlignment(alignment: string, value: number) {
+        const control = this.props.control;
+        if (control.typeName == "TextBlock") {
+            (this.props.control as any)["text" + alignment.charAt(0).toUpperCase() + alignment.slice(1)] = value;
+        }
+        else {
+            (this.props.control as any)[alignment] = value;
+        }
+        this.forceUpdate();
+    }
+
     render() {
         const control = this.props.control;
+        var horizontalAlignment = this.props.control.horizontalAlignment;
+        var verticalAlignment = this.props.control.verticalAlignment;
+        if (control.typeName == "TextBlock") {
+            horizontalAlignment = (this.props.control as TextBlock).textHorizontalAlignment;
+            verticalAlignment = (this.props.control as TextBlock).textVerticalAlignment;
+        }
 
         return (
             <div>
                 <div className="divider">
-                    <CommandButtonComponent tooltip="Left" icon={hAlignLeftIcon} shortcut="" isActive={control.horizontalAlignment === Control.HORIZONTAL_ALIGNMENT_LEFT} onClick={() => { control.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT; this.forceUpdate();}} />
-                    <CommandButtonComponent tooltip="Center" icon={hAlignCenterIcon} shortcut="" isActive={control.horizontalAlignment === Control.HORIZONTAL_ALIGNMENT_CENTER} onClick={() => { control.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER; this.forceUpdate(); }} />
-                    <CommandButtonComponent tooltip="Right" icon={hAlignRightIcon} shortcut="" isActive={control.horizontalAlignment === Control.HORIZONTAL_ALIGNMENT_RIGHT} onClick={() => { control.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT; this.forceUpdate(); }} />
-                    <CommandButtonComponent tooltip="Top" icon={vAlignTopIcon} shortcut="" isActive={control.verticalAlignment === Control.VERTICAL_ALIGNMENT_TOP} onClick={() => { control.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP; this.forceUpdate(); }} />
-                    <CommandButtonComponent tooltip="Center" icon={vAlignCenterIcon} shortcut="" isActive={control.verticalAlignment === Control.VERTICAL_ALIGNMENT_CENTER} onClick={() => { control.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER; this.forceUpdate(); }} />
-                    <CommandButtonComponent tooltip="Center" icon={vAlignBottomIcon} shortcut="" isActive={control.verticalAlignment === Control.VERTICAL_ALIGNMENT_BOTTOM} onClick={() => { control.verticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM; this.forceUpdate();}} />
+                    <CommandButtonComponent tooltip="Left" icon={hAlignLeftIcon} shortcut="" isActive={horizontalAlignment === Control.HORIZONTAL_ALIGNMENT_LEFT}
+                        onClick={() => { this.updateAlignment("horizontalAlignment", Control.HORIZONTAL_ALIGNMENT_LEFT); }} />
+                    <CommandButtonComponent tooltip="Center" icon={hAlignCenterIcon} shortcut="" isActive={horizontalAlignment === Control.HORIZONTAL_ALIGNMENT_CENTER}
+                        onClick={() => { this.updateAlignment("horizontalAlignment", Control.HORIZONTAL_ALIGNMENT_CENTER); }} />
+                    <CommandButtonComponent tooltip="Right" icon={hAlignRightIcon} shortcut="" isActive={horizontalAlignment === Control.HORIZONTAL_ALIGNMENT_RIGHT}
+                        onClick={() => { this.updateAlignment("horizontalAlignment", Control.HORIZONTAL_ALIGNMENT_RIGHT); }} />
+                    <CommandButtonComponent tooltip="Top" icon={vAlignTopIcon} shortcut="" isActive={verticalAlignment === Control.VERTICAL_ALIGNMENT_TOP}
+                        onClick={() => { this.updateAlignment("verticalAlignment", Control.VERTICAL_ALIGNMENT_TOP); }} />
+                    <CommandButtonComponent tooltip="Center" icon={vAlignCenterIcon} shortcut="" isActive={verticalAlignment === Control.VERTICAL_ALIGNMENT_CENTER}
+                        onClick={() => { this.updateAlignment("verticalAlignment", Control.VERTICAL_ALIGNMENT_CENTER); }} />
+                    <CommandButtonComponent tooltip="Center" icon={vAlignBottomIcon} shortcut="" isActive={verticalAlignment === Control.VERTICAL_ALIGNMENT_BOTTOM}
+                        onClick={() => { this.updateAlignment("verticalAlignment", Control.VERTICAL_ALIGNMENT_BOTTOM); }} />
                 </div>
                 <div className="divider">
                     <TextInputLineComponent iconLabel={"Position"} icon={positionIcon} lockObject={this.props.lockObject} label="X" target={control} propertyName="left" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -70,14 +96,14 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                 (control as Image).autoScale = false;
                             };
                         }
-                    }/>
+                        } />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="H" target={control} propertyName="height" onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         onChange={() => {
                             if (control.typeName === "Image") {
                                 (control as Image).autoScale = false;
                             };
                         }
-                    }/>
+                        } />
                 </div>
                 <div className="divider">
                     <TextInputLineComponent iconLabel={"Vertical Margins"} icon={verticalMarginIcon} lockObject={this.props.lockObject} label="B" target={control} propertyName="paddingBottom" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -111,7 +137,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     (control as any).background !== undefined &&
                     <TextInputLineComponent iconLabel={"Background"} icon={fillColorIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="background" onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         onChange={(newValue) => {
-                            if (newValue === "") {  (control as any).background = "Transparent" }
+                            if (newValue === "") { (control as any).background = "Transparent" }
                         }} />
                 }
                 <SliderLineComponent iconLabel={"Alpha"} icon={alphaIcon} label="" target={control} propertyName="alpha" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
