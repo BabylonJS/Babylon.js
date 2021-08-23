@@ -6,26 +6,37 @@ import { Scene } from "babylonjs/scene";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Control3D } from "./control3D";
 import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
-import { CylinderBuilder } from "babylonjs/Meshes/Builders/cylinderBuilder";
 import { PointerDragBehavior } from "babylonjs/Behaviors/Meshes/pointerDragBehavior";
-import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
-import { Color3 } from "babylonjs/Maths/math.color";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { FluentBackplateMaterial } from "../materials/fluentBackplate/fluentBackplateMaterial";
+import { SceneLoader } from "babylonjs/Loading/sceneLoader";
 
 const SLIDER_MIN: number = 0;
 const SLIDER_MAX: number = 100;
 const SLIDER_VAL: number = 50;
 const SLIDER_STEP: number = 0;
 const SLIDER_SCALING: number = 2.0;
+const SLIDER_MARGIN: number = 0.2;
 
 /**
  * Class used to create a slider in 3D
  */
 export class Slider3D extends Control3D {
-    private _sliderBarMaterial: StandardMaterial;
-    private _sliderThumbMaterial: StandardMaterial;
-    private _sliderThumb: Mesh;
-    private _sliderBar: Mesh;
+    /**
+     * Base Url for the models.
+     */
+    public static MODEL_BASE_URL: string = "https://assets.babylonjs.com/meshes/MRTK/";
+    /**
+     * File name for the model.
+     */
+    public static MODEL_FILENAME: string = 'mrtk-fluent-backplate.glb';
+
+    private _sliderBackPlate: AbstractMesh;
+    private _sliderBackPlateMaterial: FluentBackplateMaterial;
+    private _sliderBarMaterial: FluentBackplateMaterial;
+    private _sliderThumbMaterial: FluentBackplateMaterial;
+    private _sliderThumb: AbstractMesh;
+    private _sliderBar: AbstractMesh;
 
     private _minimum: number;
     private _maximum: number;
@@ -39,7 +50,7 @@ export class Slider3D extends Control3D {
      * Creates a new slider
      * @param name defines the control name
      */
-    constructor(name?: string) {
+    constructor(name?: string, private _sliderBackPlateVisible = true) {
         super(name);
 
         this._minimum = SLIDER_MIN;
@@ -119,7 +130,7 @@ export class Slider3D extends Control3D {
             return -SLIDER_SCALING / 2;
         }
 
-        return this._sliderBar.position.x - this._sliderBar.scaling.y / 2;
+        return this._sliderBar.position.x - this._sliderBar.scaling.x / 2;
     }
 
     protected get end(): number {
@@ -127,56 +138,102 @@ export class Slider3D extends Control3D {
             return SLIDER_SCALING / 2;
         }
 
-        return this._sliderBar.position.x + this._sliderBar.scaling.y / 2;
+        return this._sliderBar.position.x + this._sliderBar.scaling.x / 2;
     }
 
     /**
      * Gets the slider bar material used by this control
      */
-    public get sliderBarMaterial(): StandardMaterial {
+    public get sliderBarMaterial(): FluentBackplateMaterial {
         return this._sliderBarMaterial;
     }
 
     /**
      * Gets the slider thumb material used by this control
      */
-    public get sliderThumbMaterial(): StandardMaterial {
+    public get sliderThumbMaterial(): FluentBackplateMaterial {
         return this._sliderThumbMaterial;
     }
 
-    // Mesh association
-    protected _createNode(scene: Scene): TransformNode {
-        const anchor = new TransformNode(`${this.name}_slider`, scene);
-
-        const sliderBar = CylinderBuilder.CreateCylinder(`${this.name}_sliderbar`, { diameter: 0.03, height: 1.0 }, scene);
-        sliderBar.rotation.z = -Math.PI / 2;
-        sliderBar.scaling.y = SLIDER_SCALING;
-        sliderBar.isPickable = false;
-        sliderBar.setParent(anchor);
-
-        const sliderThumb = BoxBuilder.CreateBox(`${this.name}_sliderthumb`, { size: 0.1 }, scene);
-        sliderThumb.scaling = new Vector3(SLIDER_SCALING, SLIDER_SCALING, SLIDER_SCALING);
-        sliderThumb.position.x = this._convertToPosition(this.value);
-        sliderThumb.addBehavior(this._createBehavior());
-        sliderThumb.setParent(anchor);
-
-        this._sliderBar = sliderBar;
-        this._sliderThumb = sliderThumb;
-
-        return anchor;
+    /**
+     * Gets the slider backplate material used by this control
+     */
+    public get sliderBackplateMaterial(): FluentBackplateMaterial {
+        return this._sliderThumbMaterial;
     }
 
-    protected _affectMaterial(mesh: AbstractMesh) {
-        const barMaterial = new StandardMaterial(`${this.name}_sliderbar_material`, mesh.getScene());
-        barMaterial.specularColor = Color3.Black();
-        this._sliderBar.material = barMaterial;
 
-        const thumbMaterial = new StandardMaterial(`${this.name}_sliderthumb_material`, mesh.getScene());
-        thumbMaterial.specularColor = Color3.Black();
-        mesh.material = thumbMaterial;
+    // Mesh association
+    protected _createNode(scene: Scene): TransformNode {
+        const sliderBackplate = BoxBuilder.CreateBox(`${this.name}_sliderbackplate`, {
+            width: 1.0,
+            height: 1.0,
+            depth: 1.0,
+        }, scene);
+        sliderBackplate.isPickable = true;
+        sliderBackplate.visibility = 0;
+        sliderBackplate.scaling = new Vector3(2, 0.5, 0.3);
 
-        this._sliderBarMaterial = barMaterial;
-        this._sliderThumbMaterial = thumbMaterial;
+        SceneLoader.ImportMeshAsync(
+            undefined,
+            Slider3D.MODEL_BASE_URL,
+            Slider3D.MODEL_FILENAME,
+            scene)
+            .then((result) => {
+                const sliderBackplateModel = result.meshes[1];
+                const sliderBarModel = result.meshes[1].clone(`${this.name}_sliderbar`, sliderBackplate);
+                const sliderThumbModel = result.meshes[1].clone(`${this.name}_sliderthumb`, sliderBackplate);
+                sliderBackplateModel.visibility = 0;
+
+                if (this._sliderBackPlateVisible) {
+                    sliderBackplateModel.visibility = 1;
+                    sliderBackplateModel.name = `${this.name}_sliderbackplate`;
+                    sliderBackplateModel.isPickable = false;
+                    sliderBackplateModel.scaling.x = SLIDER_SCALING;
+                    sliderBackplateModel.parent = sliderBackplate;
+                    if (!!this._sliderBackPlateMaterial) {
+                        sliderBackplateModel.material = this._sliderBackPlateMaterial;
+                    }
+                    this._sliderBackPlate = sliderBackplateModel;
+                }
+
+                if (!!sliderBarModel) {
+                    sliderBarModel.parent = sliderBackplate;
+                    sliderBarModel.position.y = -0.1;
+                    sliderBarModel.position.z = -0.5;
+                    sliderBarModel.scaling = new Vector3(SLIDER_SCALING - SLIDER_MARGIN, 0.05, 0.4);
+                    sliderBarModel.isPickable = false;
+                    if (!!this._sliderBarMaterial) {
+                        sliderBarModel.material = this._sliderBarMaterial;
+                    }
+                    this._sliderBar = sliderBarModel;
+                }
+
+                if (!!sliderThumbModel) {
+                    sliderThumbModel.isPickable = true;
+                    sliderThumbModel.position.y = -0.1;
+                    sliderThumbModel.position.z = -0.54;
+                    sliderThumbModel.scaling = new Vector3(0.039, 0.12, 0.3);
+                    sliderThumbModel.position.x = this._convertToPosition(this.value);
+                    sliderThumbModel.addBehavior(this._createBehavior());
+                    if (!!this._sliderThumbMaterial) {
+                        sliderThumbModel.material = this._sliderThumbMaterial;
+                    }
+                    this._sliderThumb = sliderThumbModel;
+                }
+            });
+
+        const sliderThumb = BoxBuilder.CreateBox(`${this.name}_sliderthumb`, { size: 0.03 }, scene);
+        sliderThumb.visibility = 0;
+        this._sliderThumb = sliderThumb;
+
+        return sliderBackplate;
+    }
+
+    protected _affectMaterial(mesh: Mesh) {
+        this._sliderBackPlateMaterial = new FluentBackplateMaterial(this.name + "backPlateMaterial", mesh.getScene());
+        this._sliderBarMaterial = new FluentBackplateMaterial(`${this.name}_sliderbar_material`, mesh.getScene());;
+        this._sliderThumbMaterial = new FluentBackplateMaterial(`${this.name}_sliderthumb_material`, mesh.getScene());
     }
 
     private _createBehavior(): PointerDragBehavior {
@@ -217,5 +274,7 @@ export class Slider3D extends Control3D {
         this._sliderThumb?.dispose();
         this._sliderBarMaterial?.dispose();
         this._sliderThumbMaterial?.dispose();
+        this._sliderBackPlate?.dispose();
+        this._sliderBackPlateMaterial?.dispose();
     }
 }
