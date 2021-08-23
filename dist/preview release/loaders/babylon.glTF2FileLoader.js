@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \***********************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \************************************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -3325,7 +3325,6 @@ var GLTFLoader = /** @class */ (function () {
         /** @hidden */
         this._disableInstancedMesh = 0;
         this._disposed = false;
-        this._state = null;
         this._extensions = new Array();
         this._defaultBabylonMaterialData = {};
         this._parent = parent;
@@ -3355,16 +3354,6 @@ var GLTFLoader = /** @class */ (function () {
         delete GLTFLoader._RegisteredExtensions[name];
         return true;
     };
-    Object.defineProperty(GLTFLoader.prototype, "state", {
-        /**
-         * The loader state.
-         */
-        get: function () {
-            return this._state;
-        },
-        enumerable: false,
-        configurable: true
-    });
     Object.defineProperty(GLTFLoader.prototype, "gltf", {
         /**
          * The object that represents the glTF JSON.
@@ -3495,7 +3484,7 @@ var GLTFLoader = /** @class */ (function () {
             var loadingToCompleteCounterName = _glTFFileLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoaderState"][_glTFFileLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoaderState"].LOADING] + " => " + _glTFFileLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoaderState"][_glTFFileLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoaderState"].COMPLETE];
             _this._parent._startPerformanceCounter(loadingToReadyCounterName);
             _this._parent._startPerformanceCounter(loadingToCompleteCounterName);
-            _this._setState(_glTFFileLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoaderState"].LOADING);
+            _this._parent._setState(_glTFFileLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoaderState"].LOADING);
             _this._extensionsOnLoading();
             var promises = new Array();
             // Block the marking of materials dirty until the scene is loaded.
@@ -3529,7 +3518,7 @@ var GLTFLoader = /** @class */ (function () {
                     _this._rootBabylonMesh.setEnabled(true);
                 }
                 _this._extensionsOnReady();
-                _this._setState(_glTFFileLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoaderState"].READY);
+                _this._parent._setState(_glTFFileLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoaderState"].READY);
                 _this._startAnimations();
                 return resultFunc();
             });
@@ -3539,7 +3528,7 @@ var GLTFLoader = /** @class */ (function () {
                     if (!_this._disposed) {
                         Promise.all(_this._completePromises).then(function () {
                             _this._parent._endPerformanceCounter(loadingToCompleteCounterName);
-                            _this._setState(_glTFFileLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoaderState"].COMPLETE);
+                            _this._parent._setState(_glTFFileLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoaderState"].COMPLETE);
                             _this._parent.onCompleteObservable.notifyObservers(undefined);
                             _this._parent.onCompleteObservable.clear();
                             _this.dispose();
@@ -3637,10 +3626,6 @@ var GLTFLoader = /** @class */ (function () {
                 _loop_1(name_3);
             }
         }
-    };
-    GLTFLoader.prototype._setState = function (state) {
-        this._state = state;
-        this.log(_glTFFileLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoaderState"][this._state]);
     };
     GLTFLoader.prototype._createRootNode = function () {
         this._babylonScene._blockEntityCollection = !!this._assetContainer;
@@ -5742,6 +5727,7 @@ var GLTFFileLoader = /** @class */ (function () {
          */
         this.onValidatedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this._loader = null;
+        this._state = null;
         this._requests = new Array();
         /**
          * Name of the loader ("gltf")
@@ -5752,6 +5738,10 @@ var GLTFFileLoader = /** @class */ (function () {
             ".gltf": { isBinary: false },
             ".glb": { isBinary: true }
         };
+        /**
+         * Observable raised when the loader state changes.
+         */
+        this.onLoaderStateChangedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this._logIndentLevel = 0;
         this._loggingEnabled = false;
         /** @hidden */
@@ -6112,7 +6102,7 @@ var GLTFFileLoader = /** @class */ (function () {
          * The loader state or null if the loader is not active.
          */
         get: function () {
-            return this._loader ? this._loader.state : null;
+            return this._state;
         },
         enumerable: false,
         configurable: true
@@ -6131,6 +6121,15 @@ var GLTFFileLoader = /** @class */ (function () {
                 reject(reason);
             });
         });
+    };
+    /** @hidden */
+    GLTFFileLoader.prototype._setState = function (state) {
+        if (this._state === state) {
+            return;
+        }
+        this._state = state;
+        this.onLoaderStateChangedObservable.notifyObservers(this._state);
+        this._log(GLTFLoaderState[this._state]);
     };
     /** @hidden */
     GLTFFileLoader.prototype._loadFile = function (scene, fileOrUrl, onSuccess, useArrayBuffer, onError, onOpened) {

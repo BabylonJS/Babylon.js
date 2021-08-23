@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \***********************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \************************************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -1834,7 +1834,6 @@ var GLTFLoaderBase = /** @class */ (function () {
 */
 var GLTFLoader = /** @class */ (function () {
     function GLTFLoader() {
-        this.state = null;
     }
     GLTFLoader.RegisterExtension = function (extension) {
         if (GLTFLoader.Extensions[extension.name]) {
@@ -2946,6 +2945,7 @@ var GLTFFileLoader = /** @class */ (function () {
          */
         this.onValidatedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this._loader = null;
+        this._state = null;
         this._requests = new Array();
         /**
          * Name of the loader ("gltf")
@@ -2956,6 +2956,10 @@ var GLTFFileLoader = /** @class */ (function () {
             ".gltf": { isBinary: false },
             ".glb": { isBinary: true }
         };
+        /**
+         * Observable raised when the loader state changes.
+         */
+        this.onLoaderStateChangedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this._logIndentLevel = 0;
         this._loggingEnabled = false;
         /** @hidden */
@@ -3316,7 +3320,7 @@ var GLTFFileLoader = /** @class */ (function () {
          * The loader state or null if the loader is not active.
          */
         get: function () {
-            return this._loader ? this._loader.state : null;
+            return this._state;
         },
         enumerable: false,
         configurable: true
@@ -3335,6 +3339,15 @@ var GLTFFileLoader = /** @class */ (function () {
                 reject(reason);
             });
         });
+    };
+    /** @hidden */
+    GLTFFileLoader.prototype._setState = function (state) {
+        if (this._state === state) {
+            return;
+        }
+        this._state = state;
+        this.onLoaderStateChangedObservable.notifyObservers(this._state);
+        this._log(GLTFLoaderState[this._state]);
     };
     /** @hidden */
     GLTFFileLoader.prototype._loadFile = function (scene, fileOrUrl, onSuccess, useArrayBuffer, onError, onOpened) {
