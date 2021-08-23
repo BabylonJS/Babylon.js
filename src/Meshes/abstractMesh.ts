@@ -1134,6 +1134,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      */
     public buildBoundingInfo(minimum: DeepImmutable<Vector3>, maximum: DeepImmutable<Vector3>, worldMatrix?: DeepImmutable<Matrix>) {
         this._boundingInfo = new BoundingInfo(minimum, maximum, worldMatrix);
+        return this._boundingInfo;
     }
 
     /**
