@@ -17,6 +17,7 @@ import { EffectFallbacks } from './effectFallbacks';
 import { WebRequest } from '../Misc/webRequest';
 import { Engine } from '../Engines/engine';
 import { ShaderLanguage } from "../Engines/Processors/iShaderProcessor";
+import { UniformBuffer } from "./uniformBuffer";
 
 import "../ShadersWGSL/ShadersInclude/meshUboDeclaration"; // TODO WEBGPU: remove
 import "../ShadersWGSL/ShadersInclude/sceneUboDeclaration"; // TODO WEBGPU: remove
@@ -102,6 +103,7 @@ export class ShaderMaterial extends Material {
     private _vectors2Arrays: { [name: string]: number[] } = {};
     private _vectors3Arrays: { [name: string]: number[] } = {};
     private _vectors4Arrays: { [name: string]: number[] } = {};
+    private _uniformBuffers: { [name: string]: UniformBuffer } = {};
     private _cachedWorldViewMatrix = new Matrix();
     private _cachedWorldViewProjectionMatrix = new Matrix();
     private _renderId: number;
@@ -463,6 +465,21 @@ export class ShaderMaterial extends Material {
     public setArray4(name: string, value: number[]): ShaderMaterial {
         this._checkUniform(name);
         this._vectors4Arrays[name] = value;
+
+        return this;
+    }
+
+    /**
+     * Set a vec4 array in the shader from a number array.
+     * @param name Define the name of the uniform as defined in the shader
+     * @param value Define the value to give to the uniform
+     * @return the material itself allowing "fluent" like uniform updates
+     */
+     public setUniformBuffer(name: string, buffer: UniformBuffer): ShaderMaterial {
+        if (this._options.uniformBuffers.indexOf(name) === -1) {
+            this._options.uniformBuffers.push(name);
+        }
+        this._uniformBuffers[name] = buffer;
 
         return this;
     }
@@ -954,6 +971,14 @@ export class ShaderMaterial extends Material {
             // Vector4Array
             for (name in this._vectors4Arrays) {
                 effect.setArray4(name, this._vectors4Arrays[name]);
+            }
+
+            // Uniform buffers
+            for (name in this._uniformBuffers) {
+                const buffer = this._uniformBuffers[name].getBuffer();
+                if (buffer) {
+                    effect.bindUniformBuffer(buffer, name);
+                }
             }
         }
 
