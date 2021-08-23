@@ -37969,6 +37969,10 @@ declare module BABYLON {
         _generateMipMaps: boolean;
         /** @hidden */
         _cleared: boolean;
+        /**
+         * Skip the initial clear of the rtt at the beginning of the frame render loop
+         */
+        skipInitialClear: boolean;
         protected _renderingManager: RenderingManager;
         /** @hidden */
         _waitingRenderList?: string[];
