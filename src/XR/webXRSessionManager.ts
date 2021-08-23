@@ -393,6 +393,7 @@ export class WebXRSessionManager implements IDisposable {
     /**
      * Set the framerate of the session.
      * @param rate the new framerate. This value needs to be in the supportedFrameRates array
+     * @returns a promise that resolves once the framerate has been set
      */
     public updateTargetFrameRate(rate: number): Promise<void> {
         return this.session.updateTargetFrameRate(rate);
