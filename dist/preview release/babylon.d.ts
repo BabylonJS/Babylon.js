@@ -50336,6 +50336,34 @@ declare module BABYLON {
          * Returns true if Babylon.js is using the BabylonNative backend, otherwise false
          */
         get isNative(): boolean;
+        /**
+         * The current frame rate as reported by the device
+         */
+        get currentFrameRate(): number | undefined;
+        /**
+         * A list of supported frame rates (only available in-session!
+         */
+        get supportedFrameRates(): Float32Array | undefined;
+        /**
+         * Set the framerate of the session.
+         * @param rate the new framerate. This value needs to be in the supportedFrameRates array
+         * @returns a promise that resolves once the framerate has been set
+         */
+        updateTargetFrameRate(rate: number): Promise<void>;
+        /**
+         * Check if fixed foveation is supported on this device
+         */
+        get isFixedFoveationSupported(): boolean;
+        /**
+         * Get the fixed foveation currently set, as specified by the webxr specs
+         * If this returns null, then fixed foveation is not supported
+         */
+        get fixedFoveation(): Nullable<number>;
+        /**
+         * Set the fixed foveation to the specified value, as specified by the webxr specs
+         * This value will be normalized to be between 0 and 1, 1 being max foveation, 0 being no foveation
+         */
+        set fixedFoveation(value: Nullable<number>);
         private _createRenderTargetTexture;
         private _destroyRenderTargetTexture;
     }
@@ -88594,6 +88622,7 @@ declare class XRWebGLLayer {
     readonly framebufferWidth: number;
     readonly framebufferHeight: number;
     readonly ignoreDepthValues: boolean;
+    fixedFoveation?: number | null;
     getViewport: (view: XRView) => XRViewport;
 }
 
@@ -88758,6 +88787,10 @@ interface XRSession {
      * Provided when the optional 'dom-overlay' feature is requested.
      */
     readonly domOverlayState?: XRDOMOverlayState;
+
+    readonly frameRate?: number;
+    readonly supportedFrameRates?: Float32Array;
+    updateTargetFrameRate(rate: number): Promise<void>;
 }
 
 interface XRViewerPose extends XRPose {
