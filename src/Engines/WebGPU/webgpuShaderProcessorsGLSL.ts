@@ -243,9 +243,6 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor implements 
             let bindingIndex: number;
             const knownUBO = WebGPUShaderProcessor._KnownUBOs[name];
 
-            const curVisibility = webgpuProcessingContext.availableUBONames[name] ?? 0;
-            webgpuProcessingContext.availableUBONames[name] = curVisibility + (isFragment ? 2 : 1);
-
             if (knownUBO) {
                 setIndex = knownUBO.setIndex;
                 bindingIndex = knownUBO.bindingIndex;
