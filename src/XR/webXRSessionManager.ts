@@ -376,14 +376,24 @@ export class WebXRSessionManager implements IDisposable {
         return this._xrNavigator.xr.native ?? false;
     }
 
+    /**
+     * The current frame rate as reported by the device
+     */
     public get currentFrameRate(): number | undefined {
         return this.session?.frameRate;
     }
 
+    /**
+     * A list of supported frame rates (only available in-session!
+     */
     public get supportedFrameRates(): Float32Array | undefined {
         return this.session?.supportedFrameRates;
     }
 
+    /**
+     * Set the framerate of the session.
+     * @param rate the new framerate. This value needs to be in the supportedFrameRates array
+     */
     public updateTargetFrameRate(rate: number): Promise<void> {
         return this.session.updateTargetFrameRate(rate);
     }
