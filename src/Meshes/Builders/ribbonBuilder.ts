@@ -5,7 +5,6 @@ import { Color4 } from '../../Maths/math.color';
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { VertexData } from "../mesh.vertexData";
-import { BoundingInfo } from "../../Culling/boundingInfo";
 
 VertexData.CreateRibbon = function (options: { pathArray: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, invertUV?: boolean, uvs?: Vector2[], colors?: Color4[] }): VertexData {
     var pathArray: Vector3[][] = options.pathArray;
@@ -320,11 +319,11 @@ export class RibbonBuilder {
             };
             var positions = <FloatArray>instance.getVerticesData(VertexBuffer.PositionKind);
             positionFunction(positions);
-            if (instance._boundingInfo) {
-                instance._boundingInfo.reConstruct(minimum, maximum, instance._worldMatrix);
+            if (instance.hasBoundingInfo) {
+                instance.getBoundingInfo().reConstruct(minimum, maximum, instance._worldMatrix);
             }
             else {
-                instance._boundingInfo = new BoundingInfo(minimum, maximum, instance._worldMatrix);
+                instance.buildBoundingInfo(minimum, maximum, instance._worldMatrix);
             }
             instance.updateVerticesData(VertexBuffer.PositionKind, positions, false, false);
             if (options.colors) {

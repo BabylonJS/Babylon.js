@@ -16,7 +16,6 @@ import { Buffer } from "../Buffers/buffer";
 import { Geometry } from "./geometry";
 import { AbstractMesh } from "./abstractMesh";
 import { SubMesh } from "./subMesh";
-import { BoundingInfo } from "../Culling/boundingInfo";
 import { BoundingSphere } from "../Culling/boundingSphere";
 import { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
@@ -1325,7 +1324,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns the current mesh
      */
     public refreshBoundingInfo(applySkeleton: boolean = false, applyMorph: boolean = true): Mesh {
-        if (this._boundingInfo && this._boundingInfo.isLocked) {
+        if (this.hasBoundingInfo && this.getBoundingInfo().isLocked) {
             return this;
         }
 
@@ -3789,7 +3788,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (parsedMesh.delayLoadingFile) {
             mesh.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
             mesh.delayLoadingFile = rootUrl + parsedMesh.delayLoadingFile;
-            mesh._boundingInfo = new BoundingInfo(Vector3.FromArray(parsedMesh.boundingBoxMinimum), Vector3.FromArray(parsedMesh.boundingBoxMaximum));
+            mesh.buildBoundingInfo(Vector3.FromArray(parsedMesh.boundingBoxMinimum), Vector3.FromArray(parsedMesh.boundingBoxMaximum));
 
             if (parsedMesh._binaryInfo) {
                 mesh._binaryInfo = parsedMesh._binaryInfo;

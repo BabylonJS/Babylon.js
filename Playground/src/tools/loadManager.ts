@@ -75,7 +75,7 @@ export class LoadManager {
                     if (xmlHttp.status === 200) {
                         if (xmlHttp.responseText.indexOf("class Playground") !== -1) {
                             if (this.globalState.language === "JS") {
-                                Utilities.SwitchLanguage("TS", this.globalState);
+                                Utilities.SwitchLanguage("TS", this.globalState, true);
                             }
                         } else {
                             // If we're loading JS content and it's TS page
