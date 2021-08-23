@@ -63,6 +63,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _responsive: boolean;
     private _isOverGUINode = false;
     private _focused: boolean = false;
+    private _clipboard: Control[] = [];
+    private _selectAll: boolean = false;
 
     public get globalState() {
         return this.props.globalState;
@@ -84,19 +86,22 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             if (!selection) {
                 this.changeSelectionHighlight(false);
                 this._selectedGuiNodes = [];
+                this._selectAll = false;
             } else {
                 if (selection instanceof Control) {
                     if (this._ctrlKeyIsPressed) {
                         if (this._selectedGuiNodes.indexOf(selection) === -1) {
                             this._selectedGuiNodes.push(selection);
                         }
-                    } else {
+                    } else if (this._selectedGuiNodes.length <= 1) {
                         this.changeSelectionHighlight(false);
                         this._selectedGuiNodes = [selection];
+                        this._selectAll = false;
                     }
                     this.changeSelectionHighlight(true);
                 }
             }
+
         });
 
         props.globalState.onPanObservable.add(() => {
@@ -170,15 +175,83 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         } else {
             this._constraintDirection = ConstraintDirection.NONE;
         }
+
         if (evt.key === "Delete") {
-            if(this._focused) {
+            if (this._focused) {
                 this._selectedGuiNodes.forEach(guiNode => {
                     guiNode.dispose();
                 });
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
             }
         }
+
+        if (this._ctrlKeyIsPressed) {
+            if (evt.key === "a") {
+                let index = 0;
+                this.nodes.forEach(node => {
+                    if (index++) { //skip the first node, the background
+                        this.selectAllGUI(node)
+                    }
+                })
+            }
+            else if (evt.key === "c") {
+                this.copyToClipboard();
+            }
+            else if (evt.key === "v") {
+                this.globalState.onSelectionChangedObservable.notifyObservers(null);
+                this.pasteFromClipboard();
+            }
+        }
     };
+
+    private copyToClipboard() {
+        if (this._selectAll) {
+            let index = 0;
+            this.nodes.forEach(node => {
+                if (index++) { //skip the first node, the background
+                    this._clipboard.push(node);
+                }
+            })
+        }
+        else {
+            this._clipboard = this.selectedGuiNodes;
+        }
+    }
+
+    private pasteFromClipboard() {
+        this._clipboard.forEach(control => {
+            this.CopyGUIControl(control);
+        });
+    }
+
+    public CopyGUIControl(original: Control) {
+        const serializationObject = {};
+        original.serialize(serializationObject);
+        const newControl = Control.Parse(serializationObject, this.props.globalState.guiTexture);
+
+        if (newControl) { //insert the new control into the adt or parent container
+            this.props.globalState.workbench.appendBlock(newControl);
+            this.props.globalState.guiTexture.removeControl(newControl);
+            original.parent?.addControl(newControl);
+            let index = 1;
+            while (this.props.globalState.guiTexture.getDescendants(false).filter(  //search if there are any copies
+                control => control.name === `${newControl.name} Copy ${index}`).length) {
+                index++;
+            }
+            newControl.name = `${newControl.name} Copy ${index}`;
+            this.props.globalState.onSelectionChangedObservable.notifyObservers(newControl);
+        }
+    }
+
+    private selectAllGUI(node: Control) {
+        this.globalState.onSelectionChangedObservable.notifyObservers(node);
+        if (this.isContainer(node)) {
+            (node as Container).children.forEach(child => {
+                this.selectAllGUI(child);
+            });
+        }
+        this._selectAll = true;
+    }
 
     ctrlFalseEvent = () => {
         this._ctrlKeyIsPressed = false;
@@ -727,8 +800,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         return (
             <canvas id="workbench-canvas" onPointerMove={(evt) => this.onMove(evt)} onPointerDown={(evt) => this.onDown(evt)} onPointerUp={(evt) => this.onUp(evt)}
                 ref={this._rootContainer}
-                onFocus={() => { this._focused = true;}}
-                onBlur={() => { this._focused = false;}}>
+                onFocus={() => { this._focused = true; }}
+                onBlur={() => { this._focused = false; }}>
             </canvas>
         );
     }
