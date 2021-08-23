@@ -31867,10 +31867,7 @@ declare module BABYLON {
          * @hidden Reference to the shape model BoundingInfo object (Internal use)
          */
         _modelBoundingInfo: BoundingInfo;
-        /**
-         * @hidden Particle BoundingInfo object (Internal use)
-         */
-        _boundingInfo: BoundingInfo;
+        private _boundingInfo;
         /**
          * @hidden Reference to the SPS what the particle belongs to (Internal use)
          */
@@ -31911,6 +31908,15 @@ declare module BABYLON {
          * @hidden Internal global position in the SPS.
          */
         _globalPosition: Vector3;
+        /**
+         * Particle BoundingInfo object
+         * @returns a BoundingInfo
+         */
+        getBoundingInfo(): BoundingInfo;
+        /**
+         * Returns true if there is already a bounding info
+         */
+        get hasBoundingInfo(): boolean;
         /**
          * Creates a Solid Particle object.
          * Don't create particles manually, use instead the Solid Particle System internal tools like _addParticle()
@@ -32488,8 +32494,8 @@ declare module BABYLON {
         _edgesRenderer: Nullable<IEdgesRenderer>;
         /** @hidden */
         _masterMesh: Nullable<AbstractMesh>;
-        /** @hidden */
-        _boundingInfo: Nullable<BoundingInfo>;
+        private _boundingInfo;
+        private _boundingInfoIsDirty;
         /** @hidden */
         _renderId: number;
         /**
@@ -32687,6 +32693,24 @@ declare module BABYLON {
          */
         getBoundingInfo(): BoundingInfo;
         /**
+         * Overwrite the current bounding info
+         * @param boundingInfo defines the new bounding info
+         * @returns the current mesh
+         */
+        setBoundingInfo(boundingInfo: BoundingInfo): AbstractMesh;
+        /**
+         * Returns true if there is already a bounding info
+         */
+        get hasBoundingInfo(): boolean;
+        /**
+         * Creates a new bounding info for the mesh
+         * @param minimum min vector of the bounding box/sphere
+         * @param maximum max vector of the bounding box/sphere
+         * @param worldMatrix defines the new world matrix
+         * @returns the new bounding info
+         */
+        buildBoundingInfo(minimum: DeepImmutable<Vector3>, maximum: DeepImmutable<Vector3>, worldMatrix?: DeepImmutable<Matrix>): BoundingInfo;
+        /**
          * Uniformly scales the mesh to fit inside of a unit cube (1 X 1 X 1 units)
          * @param includeDescendants Use the hierarchy's bounding box instead of the mesh's bounding box. Default is false
          * @param ignoreRotation ignore rotation when computing the scale (ie. object will be axis aligned). Default is false
@@ -32694,12 +32718,6 @@ declare module BABYLON {
          * @returns the current mesh
          */
         normalizeToUnitCube(includeDescendants?: boolean, ignoreRotation?: boolean, predicate?: Nullable<(node: AbstractMesh) => boolean>): AbstractMesh;
-        /**
-         * Overwrite the current bounding info
-         * @param boundingInfo defines the new bounding info
-         * @returns the current mesh
-         */
-        setBoundingInfo(boundingInfo: BoundingInfo): AbstractMesh;
         /** Gets a boolean indicating if this mesh has skinning data and an attached skeleton */
         get useBones(): boolean;
         /** @hidden */
