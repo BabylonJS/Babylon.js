@@ -143,6 +143,13 @@ export class SolidParticle {
     }
 
     /**
+     * Returns true if there is already a bounding info
+     */
+    public get hasBoundingInfo(): boolean {
+        return this._boundingInfo !== null;
+    }
+
+    /**
      * Creates a Solid Particle object.
      * Don't create particles manually, use instead the Solid Particle System internal tools like _addParticle()
      * @param particleIndex (integer) is the particle index in the Solid Particle System pool.
@@ -246,7 +253,7 @@ export class SolidParticle {
      * @returns true if it intersects
      */
     public intersectsMesh(target: Mesh | SolidParticle): boolean {
-        if (!this._boundingInfo || !target.getBoundingInfo()) {
+        if (!this._boundingInfo || !target.hasBoundingInfo) {
             return false;
         }
         if (this._sps._bSphereOnly) {
