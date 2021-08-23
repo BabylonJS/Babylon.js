@@ -1,10 +1,8 @@
 import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../../../sharedUiComponents/propertyChangedEvent";
-import { LineContainerComponent } from "../../../../sharedUiComponents/lines/lineContainerComponent";
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
 import { Control } from "babylonjs-gui/2D/controls/control";
-import { Grid } from "babylonjs-gui/2D/controls/grid";
 import { SliderLineComponent } from "../../../../sharedUiComponents/lines/sliderLineComponent";
 import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
 import { TextInputLineComponent } from "../../../../sharedUiComponents/lines/textInputLineComponent";
@@ -46,36 +44,6 @@ interface ICommonControlPropertyGridComponentProps {
 export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
     constructor(props: ICommonControlPropertyGridComponentProps) {
         super(props);
-    }
-
-    renderGridInformation() {
-        const control = this.props.control;
-
-        if (!control.parent) {
-            return null;
-        }
-
-        const gridParent = control.parent;
-
-        if ((gridParent as any).rowCount === undefined) {
-            return null;
-        }
-
-        const grid = gridParent as Grid;
-        const childCellInfo = grid.getChildCellInfo(control);
-
-        if (childCellInfo === undefined) {
-            return null;
-        }
-
-        const cellInfos = childCellInfo.split(":");
-
-        return (
-            <LineContainerComponent title="GRID">
-                <TextLineComponent label={"Row"} value={cellInfos[0]} />
-                <TextLineComponent label={"Column"} value={cellInfos[1]} />
-            </LineContainerComponent>
-        );
     }
 
     render() {
@@ -163,9 +131,6 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     <TextInputLineComponent iconLabel={"Font Weight"} icon={shadowBlurIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="fontWeight" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <TextInputLineComponent iconLabel={"Font Style"} icon={fontStyleIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="fontStyle" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </div>
-                {
-                    this.renderGridInformation()
-                }
             </div>
         );
     }
