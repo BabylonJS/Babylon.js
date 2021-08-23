@@ -62060,6 +62060,7 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SceneExplorerComponent, _super);
     function SceneExplorerComponent(props) {
         var _this = _super.call(this, props) || this;
+        _this._mutationTimeout = null;
         _this._once = true;
         _this._hooked = false;
         _this.state = { filter: null, selectedEntity: null, scene: _this.props.scene };
@@ -62077,7 +62078,14 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
         if (this.props.globalState.blockMutationUpdates) {
             return;
         }
-        setTimeout(function () { return _this.forceUpdate(); });
+        // To avoid perf hits we want to make sure that we are not rebuilding the entire tree on each call
+        if (this._mutationTimeout !== null) {
+            window.clearTimeout(this._mutationTimeout);
+        }
+        this._mutationTimeout = window.setTimeout(function () {
+            _this._mutationTimeout = null;
+            _this.forceUpdate();
+        }, 32);
     };
     SceneExplorerComponent.prototype.componentDidMount = function () {
         var _this = this;

@@ -109,7 +109,6 @@ declare module BABYLON {
     }
     /** @hidden */
     export interface IGLTFLoader extends IDisposable {
-        readonly state: Nullable<GLTFLoaderState>;
         importMeshAsync: (meshesNames: any, scene: Scene, container: Nullable<AssetContainer>, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string) => Promise<ISceneLoaderAsyncResult>;
         loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string) => Promise<void>;
     }
@@ -298,6 +297,7 @@ declare module BABYLON {
          */
         set onValidated(callback: (results: BABYLON.GLTF2.IGLTFValidationResults) => void);
         private _loader;
+        private _state;
         private _progressCallback?;
         private _requests;
         private static magicBase64Encoded;
@@ -337,10 +337,16 @@ declare module BABYLON {
          */
         get loaderState(): Nullable<GLTFLoaderState>;
         /**
+         * Observable raised when the loader state changes.
+         */
+        onLoaderStateChangedObservable: Observable<Nullable<GLTFLoaderState>>;
+        /**
          * Returns a promise that resolves when the asset is completely loaded.
          * @returns a promise that resolves when the asset is completely loaded.
          */
         whenCompleteAsync(): Promise<void>;
+        /** @hidden */
+        _setState(state: GLTFLoaderState): void;
         /** @hidden */
         _loadFile(scene: Scene, fileOrUrl: File | string, onSuccess: (data: string | ArrayBuffer) => void, useArrayBuffer?: boolean, onError?: (request?: WebRequest) => void, onOpened?: (request: WebRequest) => void): IFileRequest;
         private _onProgress;
@@ -862,7 +868,6 @@ declare module BABYLON.GLTF1 {
             [name: string]: GLTFLoaderExtension;
         };
         static RegisterExtension(extension: GLTFLoaderExtension): void;
-        state: Nullable<GLTFLoaderState>;
         dispose(): void;
         private _importMeshAsync;
         /**
@@ -1338,7 +1343,6 @@ declare module BABYLON.GLTF2 {
         _disableInstancedMesh: number;
         private _disposed;
         private _parent;
-        private _state;
         private _extensions;
         private _rootUrl;
         private _fileName;
@@ -1365,10 +1369,6 @@ declare module BABYLON.GLTF2 {
          * @returns A boolean indicating whether the extension has been unregistered
          */
         static UnregisterExtension(name: string): boolean;
-        /**
-         * The loader state.
-         */
-        get state(): Nullable<GLTFLoaderState>;
         /**
          * The object that represents the glTF JSON.
          */
@@ -1402,7 +1402,6 @@ declare module BABYLON.GLTF2 {
         private _setupData;
         private _loadExtensions;
         private _checkExtensions;
-        private _setState;
         private _createRootNode;
         /**
          * Loads a glTF scene.

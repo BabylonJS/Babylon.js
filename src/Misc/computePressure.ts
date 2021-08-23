@@ -1,3 +1,5 @@
+import { DomManagement } from "./domManagement";
+
 /**
  * A wrapper for the experimental compute pressure api which allows a callback to be called whenever certain thresholds are met.
  */
@@ -18,7 +20,7 @@ export class ComputePressureObserverWrapper {
      * Returns true if ComputePressureObserver is available for use, false otherwise.
      */
     public static get IsAvailable() {
-        return 'ComputePressureObserver' in window;
+        return DomManagement.IsWindowObjectExist() && 'ComputePressureObserver' in window;
     }
 
     /**

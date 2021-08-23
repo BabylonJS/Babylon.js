@@ -321,7 +321,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
 
         this._prepareResources();
 
-        if (!this._colorShader.isReady() || !mesh._boundingInfo) {
+        if (!this._colorShader.isReady() || !mesh.hasBoundingInfo) {
             return;
         }
 
@@ -334,7 +334,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
         engine.setColorWrite(false);
         this._colorShader._preBind();
 
-        var boundingBox = mesh._boundingInfo.boundingBox;
+        var boundingBox = mesh.getBoundingInfo().boundingBox;
         var min = boundingBox.minimum;
         var max = boundingBox.maximum;
         var diff = max.subtract(min);
