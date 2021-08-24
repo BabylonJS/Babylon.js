@@ -16,6 +16,12 @@ declare module BABYLON {
         static PauseRenderLoop: boolean;
         /** Set the preload auto update progress flag */
         static AutoUpdateProgress: boolean;
+        /** Set the capsule collider shape type */
+        static PhysicsCapsuleShape: number;
+        /** Set the support srgb buffers flag */
+        static SupportSRGBBuffers: boolean;
+        /** Set the virtual joystick enabled flag */
+        static VirtualJoystickEnabled: boolean;
         /** Is content running in a frame window */
         static IsFrameWindow(): boolean;
         /** Gets the running status of the default audio context */
@@ -302,6 +308,8 @@ declare module BABYLON {
         static CreatePhysicsBoxShape(halfextents: BABYLON.Vector3): any;
         /** Creates a ammo.js physics sphere collision shape */
         static CreatePhysicsSphereShape(radius: number): any;
+        /** Creates a ammo.js physics sphere collision shape */
+        static CreatePhysicsCylinderShape(radius: number, halfheight: number): any;
         /** Creates a ammo.js physics capsule collision shape */
         static CreatePhysicsCapsuleShape(radius: number, height: number): any;
         /** Creates a ammo.js physics compound collision shape */
@@ -352,9 +360,9 @@ declare module BABYLON {
             pointerLock?: boolean;
             preventDefault?: boolean;
             useCapture?: boolean;
-            enableVirtualJoystick?: boolean;
-            disableRightStick?: boolean;
         }): void;
+        static SetLeftJoystickBuffer(leftStickX: number, leftStickY: number, invertY?: boolean): void;
+        static SetRightJoystickBuffer(rightStickX: number, rightStickY: number, invertY?: boolean): void;
         /** Disables user input state in the scene. */
         static DisableUserInput(scene: BABYLON.Scene, useCapture?: boolean): void;
         /** Toggle full screen scene mode. */
@@ -387,14 +395,6 @@ declare module BABYLON {
         static OnPointerPress(button: number, callback: () => void): void;
         /** Get the specified pointer input by button. */
         static GetPointerInput(button: number): boolean;
-        /** Get left virtual joystick. */
-        static GetLeftJoystick(): BABYLON.VirtualJoystick;
-        /** Get right virtual joystick. */
-        static GetRightJoystick(): BABYLON.VirtualJoystick;
-        /** Get joystick button pressed. */
-        static GetJoystickPress(button: number): boolean;
-        /** Dispose virtual joystick setup. */
-        static DisposeVirtualJoysticks(): void;
         /** Set on gamepad button up event handler. */
         static OnGamepadButtonUp(callback: (button: number) => void, player?: BABYLON.PlayerNumber): void;
         /** Set on gamepad button down event handler. */
@@ -476,9 +476,6 @@ declare module BABYLON {
         private static keyButtonPress;
         private static keyButtonDown;
         private static keyButtonUp;
-        private static leftJoystick;
-        private static rightJoystick;
-        private static virtualJoystick;
         private static previousPosition;
         private static preventDefault;
         private static rightHanded;
@@ -533,7 +530,6 @@ declare module BABYLON {
         private static inputPointerDownHandler;
         private static inputPointerUpHandler;
         private static inputPointerMoveHandler;
-        private static inputVirtualJoysticks;
         private static inputOneButtonDownHandler;
         private static inputOneButtonUpHandler;
         private static inputOneXboxDPadDownHandler;
@@ -820,6 +816,27 @@ declare module BABYLON {
         private _attachAfterBind;
     }
     /**
+     * Babylon universal node material pro class
+     * @class UniversalNodeMaterial
+     */
+    class UniversalNodeMaterial extends BABYLON.NodeMaterial {
+        private _textures;
+        private _vectors4;
+        private _floats;
+        protected compile(): void;
+        constructor(name: string, scene?: BABYLON.Scene, options?: Partial<BABYLON.INodeMaterialOptions>);
+        getTexture(name: string): BABYLON.Texture;
+        getVector4(name: string): BABYLON.Vector4;
+        getFloat(name: string): number;
+        setTexture(name: string, texture: BABYLON.Texture, initialize?: boolean): BABYLON.UniversalNodeMaterial;
+        setVector4(name: string, value: BABYLON.Vector4, initialize?: boolean): BABYLON.UniversalNodeMaterial;
+        setFloat(name: string, value: number, initialize?: boolean): BABYLON.UniversalNodeMaterial;
+        dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void;
+        clone(cloneName: string): BABYLON.UniversalNodeMaterial;
+        serialize(): any;
+        static Parse(source: any, scene: BABYLON.Scene, rootUrl: string): BABYLON.UniversalNodeMaterial;
+    }
+    /**
      * Babylon universal terrain material pro class
      * @class UniversalTerrainMaterial
      */
@@ -894,10 +911,6 @@ declare module BABYLON {
         Xbox360 = 1,
         DualShock = 2,
         PoseController = 3
-    }
-    enum JoystickButton {
-        Left = 0,
-        Right = 1
     }
     enum Xbox360Trigger {
         Left = 0,
@@ -1079,10 +1092,6 @@ declare module BABYLON {
         static GamepadRStickYInverted: boolean;
         static GamepadLStickSensibility: number;
         static GamepadRStickSensibility: number;
-        static JoystickRightHandleColor: string;
-        static JoystickLeftSensibility: number;
-        static JoystickRightSensibility: number;
-        static JoystickDeadStickValue: number;
         static PointerAngularSensibility: number;
         static PointerWheelDeadZone: number;
         static PointerMouseDeadZone: number;
@@ -1171,11 +1180,13 @@ declare module BABYLON {
         type: string;
         filename: string;
         base64: string;
+        json: boolean;
     }
     interface IUnityDefaultAsset {
         type: string;
         filename: string;
         base64: string;
+        json: boolean;
     }
     interface IUnityVector2 {
         x: number;
@@ -1242,6 +1253,28 @@ declare module BABYLON {
         private CreateNewInstance;
     }
     /**
+     * Touch Joystick Classes (https://www.cssscript.com/touch-joystick-controller/)
+     * @class TouchJoystickHandler - All rights reserved (c) 2020 Mackey Kinard
+     */
+    class TouchJoystickHandler {
+        private active;
+        private touchId;
+        private dragStart;
+        private maxDistance;
+        private deadZone;
+        private xvalue;
+        private yvalue;
+        private stick;
+        getValueX(): number;
+        getValueY(): number;
+        getStickElement(): HTMLElement;
+        constructor(stickid: string, maxdistance: number, deadzone: number);
+        dispose(): void;
+        protected handleDown(event: any): void;
+        protected handleMove(event: any): void;
+        protected handleUp(event: any): void;
+    }
+    /**
      * Physics Raycast Classes
      * @class RaycastHitResult - All rights reserved (c) 2020 Mackey Kinard
      */
@@ -1303,6 +1336,8 @@ declare module BABYLON {
         static IsLayerMasked(mask: number, layer: number): boolean;
         static GetLoadingState(): number;
         static Approximately(a: number, b: number): boolean;
+        static GetVertexDataFromMesh(mesh: BABYLON.Mesh): BABYLON.VertexData;
+        static UpdateAbstractMeshMaterial(mesh: BABYLON.AbstractMesh, material: BABYLON.Material, materialIndex: number): void;
         static MoveTowardsVector2(current: BABYLON.Vector2, target: BABYLON.Vector2, maxDelta: number): BABYLON.Vector2;
         static MoveTowardsVector2ToRef(current: BABYLON.Vector2, target: BABYLON.Vector2, maxDelta: number, result: BABYLON.Vector2): void;
         static MoveTowardsVector3(current: BABYLON.Vector3, target: BABYLON.Vector3, maxDelta: number): BABYLON.Vector3;
@@ -1328,6 +1363,8 @@ declare module BABYLON {
         static LerpUnclamp(a: number, b: number, t: number): number;
         /** Returns the angle in degrees between the from and to vectors. */
         static GetAngle(from: BABYLON.Vector3, to: BABYLON.Vector3): number;
+        /** Returns the angle in radians between the from and to vectors. */
+        static GetAngleRadians(from: BABYLON.Vector3, to: BABYLON.Vector3): number;
         /** TODO */
         static ClampAngle(angle: number, min: number, max: number): number;
         /** Gradually changes a number towards a desired goal over time. (Note: Uses currentVelocity.x as output variable) */
@@ -1396,6 +1433,10 @@ declare module BABYLON {
         static ProjectVectorOnPlane(vector: BABYLON.Vector3, planenormal: BABYLON.Vector3): BABYLON.Vector3;
         /** Projects a vector onto a plane defined by a normal orthogonal to the plane and sets result */
         static ProjectVectorOnPlaneToRef(vector: BABYLON.Vector3, planenormal: BABYLON.Vector3, result: BABYLON.Vector3): void;
+        /** Checks if two vectors v1 and v2 are equal within a precision of p */
+        static AreVectorsEqual(v1: BABYLON.Vector3, v2: BABYLON.Vector3, p: number): boolean;
+        /** Returns the slope (in degrees) of a vector in the vertical plane */
+        static GetVerticalSlopeAngle(v: BABYLON.Vector3, max?: number): number;
         /** Get an item from window local storage. */
         static GetLocalStorageItem(key: string): string;
         /** Set an item to window local storage. */
@@ -1421,8 +1462,9 @@ declare module BABYLON {
         private static TmpAmmoNormalA;
         private static TmpAmmoNormalB;
         private static TmpAmmoNormalC;
-        static AddMeshVerts(btTriangleMesh: any, topLevelObject: BABYLON.IPhysicsEnabledObject, object: BABYLON.IPhysicsEnabledObject, scaling?: boolean, normals?: boolean): number;
-        static AddHullVerts(btConvexHullShape: any, topLevelObject: BABYLON.IPhysicsEnabledObject, object: BABYLON.IPhysicsEnabledObject, scaling?: boolean): number;
+        private static FindMeshCollider;
+        static AddMeshVerts(btTriangleMesh: any, topLevelObject: BABYLON.IPhysicsEnabledObject, object: BABYLON.IPhysicsEnabledObject, normals?: boolean): number;
+        static AddHullVerts(btConvexHullShape: any, topLevelObject: BABYLON.IPhysicsEnabledObject, object: BABYLON.IPhysicsEnabledObject): number;
         static CreateImpostorCustomShape(scene: BABYLON.Scene, impostor: BABYLON.PhysicsImpostor, type: number, showDebugColliders?: boolean, colliderVisibility?: number, colliderRenderGroup?: number, useTriangleNormals?: boolean): any;
         static UseTriangleNormals(): boolean;
         static ShowDebugColliders(): boolean;
@@ -1538,6 +1580,8 @@ declare module BABYLON {
         static GetLastKeyFrameIndex(animation: BABYLON.Animation): number;
         /** Private internal frame interpolation helper */
         private static InterpolateAnimation;
+        /** Update loop blend root motion metadata settings */
+        static UpdateLoopBlendPositionSettings(animationTrack: BABYLON.AnimationGroup, loopBlendPositionY: boolean, loopBlendPositionXZ: boolean): void;
         /** Initialize default shader material properties */
         static InitializeShaderMaterial(material: BABYLON.ShaderMaterial, binding?: boolean, clipPlanes?: BABYLON.Nullable<boolean>): void;
         /** Transforms position from world space into screen space. */
@@ -1721,6 +1765,7 @@ declare class CVTOOLS_unity_metadata implements BABYLON.GLTF2.IGLTFLoaderExtensi
     private postProcessSceneProperties;
     private _preloadRawMaterialsAsync;
     private _parseMultiMaterialAsync;
+    private _parseNodeMaterialPropertiesAsync;
     private _parseShaderMaterialPropertiesAsync;
     private _parseDiffuseMaterialPropertiesAsync;
     private _parseCommonConstantProperties;

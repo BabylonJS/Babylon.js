@@ -52,10 +52,11 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
             || nextState.hex !== this.state.hex
             || nextState.pickerEnabled !== this.state.pickerEnabled;
 
-        if (result) {
+        if (nextProps.value.toHexString() !== this.props.value.toHexString() ) {
             nextState.color = nextProps.value;
             nextState.hex = nextProps.value.toHexString();
         }
+        
         return result;
     }
 

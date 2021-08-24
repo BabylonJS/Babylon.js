@@ -71,7 +71,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                 storeKey: "version",
                 isActive: activeVersion === key,
                 onClick: () => {
-                    Utilities.StoreStringToStore("engineVersion", key);
+                    Utilities.StoreStringToStore("version", key);
                     window.location.reload();
                 },
             };

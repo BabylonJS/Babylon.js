@@ -69,3 +69,28 @@ export interface IPerfTicker extends IPerfMinMax {
 export interface ICanvasGraphServiceSettings {
     datasets: IPerfDatasets;
 }
+
+/**
+ * Defines the structure representing the preprocessable tooltip information.
+ */
+export interface ITooltipPreprocessedInformation {
+    xForActualTimestamp: number;
+    numberOfTooltipItems: number;
+    longestText: string;
+    focusedId: string;
+}
+
+export interface IPerfTooltipHoverPosition {
+    xPos: number;
+    yPos: number;
+}
+
+/**
+ * Defines the supported timestamp units.
+ */
+export enum TimestampUnit {
+    Milliseconds = 0,
+    Seconds = 1,
+    Minutes = 2,
+    Hours = 3,
+}

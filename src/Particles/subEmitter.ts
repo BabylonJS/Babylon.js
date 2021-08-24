@@ -109,7 +109,7 @@ export class SubEmitter {
     }
 
     /** @hidden */
-    public static _ParseParticleSystem(system: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string): ParticleSystem {
+    public static _ParseParticleSystem(system: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart = false): ParticleSystem {
         throw _DevTools.WarnImport("ParseParticle");
     }
 
@@ -122,7 +122,7 @@ export class SubEmitter {
      */
     public static Parse(serializationObject: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string): SubEmitter {
         let system = serializationObject.particleSystem;
-        let subEmitter = new SubEmitter(SubEmitter._ParseParticleSystem(system, sceneOrEngine, rootUrl));
+        let subEmitter = new SubEmitter(SubEmitter._ParseParticleSystem(system, sceneOrEngine, rootUrl, true));
         subEmitter.type = serializationObject.type;
         subEmitter.inheritDirection = serializationObject.inheritDirection;
         subEmitter.inheritedVelocityAmount = serializationObject.inheritedVelocityAmount;

@@ -4,6 +4,7 @@ import * as React from "react";
 import { useEffect, useRef, useState } from "react";
 import { ButtonLineComponent } from "../../../../sharedUiComponents/lines/buttonLineComponent";
 import { FileButtonLineComponent } from "../../../../sharedUiComponents/lines/fileButtonLineComponent";
+import { LineContainerComponent } from "../../../../sharedUiComponents/lines/lineContainerComponent";
 import { CanvasGraphComponent } from "../../../graph/canvasGraphComponent";
 import { IPerfLayoutSize } from "../../../graph/graphSupportingTypes";
 import { PopupComponent } from "../../../popupComponent";
@@ -12,6 +13,7 @@ import { PerformanceViewerCollector } from "babylonjs/Misc/PerformanceViewer/per
 import { PerfCollectionStrategy } from "babylonjs/Misc/PerformanceViewer/performanceViewerCollectionStrategies";
 import { Tools } from "babylonjs/Misc/tools";
 import 'babylonjs/Misc/PerformanceViewer/performanceViewerSceneExtension';
+import { PerformancePlayheadButtonComponent } from "./performancePlayheadButtonComponent";
 
 require('./scss/performanceViewer.scss');
 
@@ -45,6 +47,7 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
     const [recordingState, setRecordingState] = useState(RecordingState.NotRecording);
     const [ performanceCollector, setPerformanceCollector ] = useState<PerformanceViewerCollector | undefined>();
     const [layoutObservable] = useState(new Observable<IPerfLayoutSize>());
+    const [returnToLiveObservable] = useState(new Observable<void>());
     const popupRef = useRef<PopupComponent | null>(null);
 
     // do cleanup when the window is closed
@@ -132,12 +135,12 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
         <>
             {
                 isEnabled &&
-                <>
+                <LineContainerComponent title="Performance Viewer">
                     <ButtonLineComponent label="Open Realtime Perf Viewer" onClick={onPerformanceButtonClick} />
                     <FileButtonLineComponent accept="csv" label="Load Perf Viewer using CSV" onClick={onLoadClick} />
                     <ButtonLineComponent label="Export Perf to CSV" onClick={onExportClick} />
                     {!isOpen && <ButtonLineComponent label={recordingState} onClick={onToggleRecording} />}
-                </>
+                </LineContainerComponent>
             }
             {
                 isOpen &&
@@ -151,8 +154,9 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
                 >
                     <div id="performance-viewer">
                         {performanceCollector && <>
+                            <PerformancePlayheadButtonComponent returnToPlayhead={returnToLiveObservable} />
                             <PerformanceViewerSidebarComponent collector={performanceCollector} />
-                            <CanvasGraphComponent id="performance-viewer-graph" layoutObservable={layoutObservable} scene={scene} collector={performanceCollector} />
+                            <CanvasGraphComponent id="performance-viewer-graph" returnToPlayheadObservable={returnToLiveObservable} layoutObservable={layoutObservable} scene={scene} collector={performanceCollector} />
                         </>}
                     </div>
                 </PopupComponent>

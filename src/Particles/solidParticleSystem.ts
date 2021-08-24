@@ -850,7 +850,7 @@ export class SolidParticleSystem implements IDisposable {
             var meshNor = model._normals;
             var noNor = (meshNor) ? false : true;
             this.recomputeNormals = (noNor || this.recomputeNormals);
-            var bbInfo = sp._boundingInfo;
+            var bbInfo = sp.getBoundingInfo();
             var newPart = this._insertNewParticle(this.nbParticles, idxInShape, model, shape, meshInd, meshUV, meshCol, meshNor, bbInfo, null, null);
             sp.copyToRef(newPart!);
             idxInShape++;
@@ -1006,7 +1006,7 @@ export class SolidParticleSystem implements IDisposable {
         end = (end >= this.nbParticles) ? this.nbParticles - 1 : end;
         if (this._computeBoundingBox) {
             if (start != 0 || end != this.nbParticles - 1) { // only some particles are updated, then use the current existing BBox basis. Note : it can only increase.
-                const boundingInfo = this.mesh._boundingInfo;
+                const boundingInfo = this.mesh.getBoundingInfo();
                 if (boundingInfo) {
                     minimum.copyFrom(boundingInfo.minimum);
                     maximum.copyFrom(boundingInfo.maximum);
@@ -1225,7 +1225,7 @@ export class SolidParticleSystem implements IDisposable {
 
             // if the particle intersections must be computed : update the bbInfo
             if (this._particlesIntersect) {
-                const bInfo = particle._boundingInfo;
+                const bInfo = particle.getBoundingInfo();
                 const bBox = bInfo.boundingBox;
                 const bSphere = bInfo.boundingSphere;
                 const modelBoundingInfo = particle._modelBoundingInfo;
@@ -1321,11 +1321,11 @@ export class SolidParticleSystem implements IDisposable {
             }
         }
         if (this._computeBoundingBox) {
-            if (mesh._boundingInfo) {
-                mesh._boundingInfo.reConstruct(minimum, maximum, mesh._worldMatrix);
+            if (mesh.hasBoundingInfo) {
+                mesh.getBoundingInfo().reConstruct(minimum, maximum, mesh._worldMatrix);
             }
             else {
-                mesh._boundingInfo = new BoundingInfo(minimum, maximum, mesh._worldMatrix);
+                mesh.buildBoundingInfo(minimum, maximum, mesh._worldMatrix);
             }
         }
         if (this._autoUpdateSubMeshes) {
@@ -1592,7 +1592,7 @@ export class SolidParticleSystem implements IDisposable {
      */
     public setVisibilityBox(size: number): void {
         var vis = size / 2;
-        this.mesh._boundingInfo = new BoundingInfo(new Vector3(-vis, -vis, -vis), new Vector3(vis, vis, vis));
+        this.mesh.buildBoundingInfo(new Vector3(-vis, -vis, -vis), new Vector3(vis, vis, vis));
     }
 
     /**
