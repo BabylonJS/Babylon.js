@@ -564,6 +564,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     "worldMatrixFromCache",
                     "hasThinInstances",
                     "cloneMeshMap",
+                    "hasBoundingInfo",
                 ],
                 ["_poseMatrix"]
             );
@@ -2877,6 +2878,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (forceUpdate) {
             this.setVerticesData(VertexBuffer.PositionKind, positions);
             this.setVerticesData(VertexBuffer.NormalKind, normals);
+            this.setVerticesData(VertexBuffer.UVKind, uvs);
         } else {
             this.updateVerticesData(VertexBuffer.PositionKind, positions);
             this.updateVerticesData(VertexBuffer.NormalKind, normals);
