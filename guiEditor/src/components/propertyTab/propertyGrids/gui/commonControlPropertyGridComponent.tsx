@@ -60,6 +60,28 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         this.forceUpdate();
     }
 
+    checkAndUpdateValues(propertyName : string, value:string)
+    {
+        //check if it contains either a px or a % sign
+        let percentage = false;
+        if(value.charAt(value.length-1) == '%') {
+            percentage = true;
+        }
+        let newValue = value.split('').filter(function(item) {
+            return (!isNaN( parseInt(item))); 
+            }).join('');
+       
+        if(percentage) {
+            newValue += "%";
+        } else {
+            newValue += "px";
+        }
+        (this.props.control as any)[propertyName] = newValue;
+        this.forceUpdate();
+    }
+ 
+    _width = this.props.control.width;
+    _height = this.props.control.height;
     render() {
         const control = this.props.control;
         var horizontalAlignment = this.props.control.horizontalAlignment;
@@ -68,6 +90,8 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
             horizontalAlignment = (this.props.control as TextBlock).textHorizontalAlignment;
             verticalAlignment = (this.props.control as TextBlock).textVerticalAlignment;
         }
+        this._width = this.props.control.width;
+        this._height = this.props.control.height;
 
         return (
             <div>
@@ -86,32 +110,34 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         onClick={() => { this.updateAlignment("verticalAlignment", Control.VERTICAL_ALIGNMENT_BOTTOM); }} />
                 </div>
                 <div className="divider">
-                    <TextInputLineComponent iconLabel={"Position"} icon={positionIcon} lockObject={this.props.lockObject} label="X" target={control} propertyName="left" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="Y" target={control} propertyName="top" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <TextInputLineComponent numbersOnly={true} iconLabel={"Position"} icon={positionIcon} lockObject={this.props.lockObject} label="X" target={control} propertyName="left" onChange={(newValue) => this.checkAndUpdateValues("left",newValue)} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <TextInputLineComponent numbersOnly={true} lockObject={this.props.lockObject} label="Y" target={control} propertyName="top" onChange={(newValue) => this.checkAndUpdateValues("top",newValue)} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </div>
                 <div className="divider">
-                    <TextInputLineComponent iconLabel={"Scale"} icon={sizeIcon} lockObject={this.props.lockObject} label="W" target={control} propertyName="width" onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        onChange={() => {
+                    <TextInputLineComponent numbersOnly={true} iconLabel={"Scale"} icon={sizeIcon} lockObject={this.props.lockObject} label="W" target={this} propertyName="_width" onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        onChange={(newValue) => {
                             if (control.typeName === "Image") {
                                 (control as Image).autoScale = false;
                             };
+                            this.checkAndUpdateValues("width",newValue);
                         }
                         } />
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="H" target={control} propertyName="height" onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        onChange={() => {
+                    <TextInputLineComponent numbersOnly={true} lockObject={this.props.lockObject} label="H" target={this} propertyName="_height" onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        onChange={(newValue) => {
                             if (control.typeName === "Image") {
                                 (control as Image).autoScale = false;
                             };
+                           this.checkAndUpdateValues("height",newValue);
                         }
                         } />
                 </div>
                 <div className="divider">
-                    <TextInputLineComponent iconLabel={"Vertical Margins"} icon={verticalMarginIcon} lockObject={this.props.lockObject} label="B" target={control} propertyName="paddingBottom" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="T" target={control} propertyName="paddingTop" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <TextInputLineComponent numbersOnly={true} iconLabel={"Vertical Margins"} icon={verticalMarginIcon} lockObject={this.props.lockObject} label="B" target={control} propertyName="paddingBottom" onChange={(newValue) => this.checkAndUpdateValues("paddingBottom",newValue)} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <TextInputLineComponent numbersOnly={true} lockObject={this.props.lockObject} label="T" target={control} propertyName="paddingTop" onChange={(newValue) => this.checkAndUpdateValues("paddingTop",newValue)} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </div>
                 <div className="divider">
-                    <TextInputLineComponent iconLabel={"Horizontal Margins"} icon={horizontalMarginIcon} lockObject={this.props.lockObject} label="L" target={control} propertyName="paddingLeft" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="R" target={control} propertyName="paddingRight" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <TextInputLineComponent numbersOnly={true} iconLabel={"Horizontal Margins"} icon={horizontalMarginIcon} lockObject={this.props.lockObject} label="L" target={control} propertyName="paddingLeft" onChange={(newValue) => this.checkAndUpdateValues("paddingLeft",newValue)} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <TextInputLineComponent numbersOnly={true} lockObject={this.props.lockObject} label="R" target={control} propertyName="paddingRight" onChange={(newValue) => this.checkAndUpdateValues("paddingRight",newValue)} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </div>
                 <hr className="ge" />
                 <TextLineComponent tooltip="" label="TRANSFORMATION" value=" " color="grey"></TextLineComponent>
@@ -151,10 +177,10 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 <TextLineComponent tooltip="" label="FONT STYLE" value=" " color="grey"></TextLineComponent>
                 <div className="divider">
                     <TextInputLineComponent iconLabel={"Font Family"} icon={fontFamilyIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="fontFamily" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <TextInputLineComponent iconLabel={"Font Size"} icon={fontSizeIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="fontSize" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <TextInputLineComponent iconLabel={"Font Size"} icon={fontSizeIcon} lockObject={this.props.lockObject} label="" target={control} numbersOnly={true} propertyName="fontSize" onChange={(newValue) => this.checkAndUpdateValues("fontSize",newValue)}  onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </div>
                 <div className="divider">
-                    <TextInputLineComponent iconLabel={"Font Weight"} icon={shadowBlurIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="fontWeight" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <TextInputLineComponent iconLabel={"Font Weight"} icon={shadowBlurIcon} lockObject={this.props.lockObject} label="" target={control} numbersOnly={true} propertyName="fontWeight" onChange={(newValue) => this.checkAndUpdateValues("fontWeight",newValue)}  onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <TextInputLineComponent iconLabel={"Font Style"} icon={fontStyleIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="fontStyle" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </div>
             </div>
