@@ -564,6 +564,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     "worldMatrixFromCache",
                     "hasThinInstances",
                     "cloneMeshMap",
+                    "hasBoundingInfo",
                 ],
                 ["_poseMatrix"]
             );
