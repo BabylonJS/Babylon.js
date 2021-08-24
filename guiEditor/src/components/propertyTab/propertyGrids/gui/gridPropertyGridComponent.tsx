@@ -36,11 +36,11 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                     <div className="divider" key={`r${i}`}>
                         <FloatLineComponent lockObject={this.props.lockObject} label={`Row ${i}`} target={newrd} propertyName={"_value"} digits={rd.unit == 1 ? 0 : 2}
                             onChange={(newValue) => {
-                                grid.setRowDefinition(i, newValue, newrd.isPixel ? true : false);
+                                grid.setRowDefinition(i, newValue, newrd.unit == 1 ? true : false);
                             }} />
                         <CheckBoxLineComponent label="" target={newrd} propertyName={"unit"} onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             onValueChanged={() => {
-                                grid.setRowDefinition(i, newrd.getValue(grid.host), rd.unit == 1 ? false : true);
+                                grid.setRowDefinition(i, newrd.getValue(grid.host), newrd.unit == 1 ? true : false); 
                             }} />
                     </div>
                 )
@@ -63,11 +63,13 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                     <div className="divider">
                         <FloatLineComponent key={`c${i}`} label={`Column ${i}`} target={newcd} propertyName={"_value"} digits={cd.unit == 1 ? 0 : 2}
                             onChange={(newValue) => {
-                                grid.setColumnDefinition(i, newValue, newcd.isPixel ? true : false);
+                                grid.setColumnDefinition(i, newValue, newcd.unit == 1 ? true : false);
+                                this.forceUpdate();
                             }} />
                         <CheckBoxLineComponent label="" target={newcd} propertyName={"unit"} onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             onValueChanged={() => {
-                                grid.setColumnDefinition(i, newcd.getValue(grid.host), cd.unit == 1 ? false : true);
+                                grid.setColumnDefinition(i, newcd.getValue(grid.host), newcd.unit == 1 ? true : false );
+                                this.forceUpdate();
                             }} />
                     </div>
                 )

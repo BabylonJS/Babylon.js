@@ -66,6 +66,7 @@
 - Added support for direct loading [base64 data URLs](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs) for all loader ([CoPrez](https://github.com/CoPrez))
 - Added `DO_NOT_ALTER_FILE_COORDINATES` flag to STL loader ([AlbertoPa](https://github.com/AlbertoPa))
 - Added support for pure geometry files to OBJ loader ([Deltakosh](https://github.com/deltakosh))
+- Added an observable for when loader state changed. ([bghgary](https://github.com/bghgary))
 
 ### Navigation
 
@@ -168,6 +169,8 @@
 - Initial support for WebXR camera parenting ([#10593](https://github.com/BabylonJS/Babylon.js/issues/10593)) ([RaananW](https://github.com/RaananW))
 - Fix ReflectionProbe for WebXR ([#10390](https://github.com/BabylonJS/Babylon.js/issues/10390)) ([RaananW](https://github.com/RaananW))
 - Fix error on XR dispose due to undefined sepectator camera ([Alex-MSFT](https://github.com/Alex-MSFT))
+- Support for WebXR Foveated rendering ([#8920](https://github.com/BabylonJS/Babylon.js/issues/8920)) ([RaananW](https://github.com/RaananW))
+- Support WebXR framerate update ([#10912](https://github.com/BabylonJS/Babylon.js/issues/10912)) ([RaananW](https://github.com/RaananW))
 
 ### Gizmos
 

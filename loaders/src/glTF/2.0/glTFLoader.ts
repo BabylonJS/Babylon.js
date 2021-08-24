@@ -108,7 +108,6 @@ export class GLTFLoader implements IGLTFLoader {
 
     private _disposed = false;
     private _parent: GLTFFileLoader;
-    private _state: Nullable<GLTFLoaderState> = null;
     private _extensions = new Array<IGLTFLoaderExtension>();
     private _rootUrl: string;
     private _fileName: string;
@@ -153,13 +152,6 @@ export class GLTFLoader implements IGLTFLoader {
 
         delete GLTFLoader._RegisteredExtensions[name];
         return true;
-    }
-
-    /**
-     * The loader state.
-     */
-    public get state(): Nullable<GLTFLoaderState> {
-        return this._state;
     }
 
     /**
@@ -293,7 +285,7 @@ export class GLTFLoader implements IGLTFLoader {
             this._parent._startPerformanceCounter(loadingToReadyCounterName);
             this._parent._startPerformanceCounter(loadingToCompleteCounterName);
 
-            this._setState(GLTFLoaderState.LOADING);
+            this._parent._setState(GLTFLoaderState.LOADING);
             this._extensionsOnLoading();
 
             const promises = new Array<Promise<any>>();
@@ -337,7 +329,7 @@ export class GLTFLoader implements IGLTFLoader {
                 }
 
                 this._extensionsOnReady();
-                this._setState(GLTFLoaderState.READY);
+                this._parent._setState(GLTFLoaderState.READY);
 
                 this._startAnimations();
 
@@ -352,7 +344,7 @@ export class GLTFLoader implements IGLTFLoader {
                         Promise.all(this._completePromises).then(() => {
                             this._parent._endPerformanceCounter(loadingToCompleteCounterName);
 
-                            this._setState(GLTFLoaderState.COMPLETE);
+                            this._parent._setState(GLTFLoaderState.COMPLETE);
 
                             this._parent.onCompleteObservable.notifyObservers(undefined);
                             this._parent.onCompleteObservable.clear();
@@ -458,11 +450,6 @@ export class GLTFLoader implements IGLTFLoader {
                 }
             }
         }
-    }
-
-    private _setState(state: GLTFLoaderState): void {
-        this._state = state;
-        this.log(GLTFLoaderState[this._state]);
     }
 
     private _createRootNode(): INode {

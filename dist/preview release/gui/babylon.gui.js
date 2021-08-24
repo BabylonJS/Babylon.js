@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \***********************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \************************************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -1738,7 +1738,7 @@ var Button = /** @class */ (function (_super) {
         if (!_super.prototype._onPointerEnter.call(this, target, pi)) {
             return false;
         }
-        if (this.pointerEnterAnimation) {
+        if (!this.isReadOnly && this.pointerEnterAnimation) {
             this.pointerEnterAnimation();
         }
         return true;
@@ -1746,7 +1746,7 @@ var Button = /** @class */ (function (_super) {
     /** @hidden */
     Button.prototype._onPointerOut = function (target, pi, force) {
         if (force === void 0) { force = false; }
-        if (this.pointerOutAnimation) {
+        if (!this.isReadOnly && this.pointerOutAnimation) {
             this.pointerOutAnimation();
         }
         _super.prototype._onPointerOut.call(this, target, pi, force);
@@ -1756,14 +1756,14 @@ var Button = /** @class */ (function (_super) {
         if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
         }
-        if (this.pointerDownAnimation) {
+        if (!this.isReadOnly && this.pointerDownAnimation) {
             this.pointerDownAnimation();
         }
         return true;
     };
     /** @hidden */
     Button.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick, pi) {
-        if (this.pointerUpAnimation) {
+        if (!this.isReadOnly && this.pointerUpAnimation) {
             this.pointerUpAnimation();
         }
         _super.prototype._onPointerUp.call(this, target, coordinates, pointerId, buttonIndex, notifyClick, pi);
@@ -2007,7 +2007,9 @@ var Checkbox = /** @class */ (function (_super) {
         if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
         }
-        this.isChecked = !this.isChecked;
+        if (!this.isReadOnly) {
+            this.isChecked = !this.isChecked;
+        }
         return true;
     };
     /**
@@ -2398,6 +2400,9 @@ var ColorPicker = /** @class */ (function (_super) {
         if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
         }
+        if (this.isReadOnly) {
+            return true;
+        }
         this._pointerIsDown = true;
         this._pointerStartedOnSquare = false;
         this._pointerStartedOnWheel = false;
@@ -2421,12 +2426,14 @@ var ColorPicker = /** @class */ (function (_super) {
         if (pointerId != this._lastPointerDownId) {
             return;
         }
-        // Invert transform
-        this._invertTransformMatrix.transformCoordinates(coordinates.x, coordinates.y, this._transformedPosition);
-        var x = this._transformedPosition.x;
-        var y = this._transformedPosition.y;
-        if (this._pointerIsDown) {
-            this._updateValueFromPointer(x, y);
+        if (!this.isReadOnly) {
+            // Invert transform
+            this._invertTransformMatrix.transformCoordinates(coordinates.x, coordinates.y, this._transformedPosition);
+            var x = this._transformedPosition.x;
+            var y = this._transformedPosition.y;
+            if (this._pointerIsDown) {
+                this._updateValueFromPointer(x, y);
+            }
         }
         _super.prototype._onPointerMove.call(this, target, coordinates, pointerId, pi);
     };
@@ -3601,6 +3608,20 @@ var Container = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
+    Object.defineProperty(Container.prototype, "isReadOnly", {
+        get: function () {
+            return this._isReadOnly;
+        },
+        set: function (value) {
+            this._isReadOnly = value;
+            for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                var child = _a[_i];
+                child.isReadOnly = value;
+            }
+        },
+        enumerable: false,
+        configurable: true
+    });
     Container.prototype._getTypeName = function () {
         return "Container";
     };
@@ -4081,6 +4102,7 @@ var Control = /** @class */ (function () {
         this._isMatrixDirty = true;
         this._isVisible = true;
         this._isHighlighted = false;
+        this._highlightColor = "#4affff";
         this._highlightLineWidth = 2;
         this._fontSet = false;
         this._dummyVector2 = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector2"].Zero();
@@ -4091,6 +4113,7 @@ var Control = /** @class */ (function () {
         this._isEnabled = true;
         this._disabledColor = "#9a9a9a";
         this._disabledColorItem = "#6a6a6a";
+        this._isReadOnly = false;
         /** @hidden */
         this._rebuildLayout = false;
         /** @hidden */
@@ -4188,6 +4211,20 @@ var Control = /** @class */ (function () {
         this._fixedRatioMasterIsWidth = true;
         this._tmpMeasureA = new _measure__WEBPACK_IMPORTED_MODULE_3__["Measure"](0, 0, 0, 0);
     }
+    Object.defineProperty(Control.prototype, "isReadOnly", {
+        /**
+         * Gets or sets a boolean indicating if the control is readonly (default: false).
+         * A readonly control will still raise pointer events but will not react to them
+         */
+        get: function () {
+            return this._isReadOnly;
+        },
+        set: function (value) {
+            this._isReadOnly = value;
+        },
+        enumerable: false,
+        configurable: true
+    });
     Object.defineProperty(Control.prototype, "shadowOffsetX", {
         /** Gets or sets a value indicating the offset to apply on X axis to render the shadow */
         get: function () {
@@ -4331,6 +4368,23 @@ var Control = /** @class */ (function () {
                 return;
             }
             this._isHighlighted = value;
+            this._markAsDirty();
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Control.prototype, "highlightColor", {
+        /**
+         * Gets or sets a string defining the color to use for highlighting this control
+         */
+        get: function () {
+            return this._highlightColor;
+        },
+        set: function (value) {
+            if (this._highlightColor === value) {
+                return;
+            }
+            this._highlightColor = value;
             this._markAsDirty();
         },
         enumerable: false,
@@ -5372,7 +5426,7 @@ var Control = /** @class */ (function () {
             return;
         }
         context.save();
-        context.strokeStyle = "#4affff";
+        context.strokeStyle = this._highlightColor;
         context.lineWidth = this._highlightLineWidth;
         this._renderHighlightSpecific(context);
         context.restore();
@@ -6486,6 +6540,10 @@ var Ellipse = /** @class */ (function (_super) {
         _control__WEBPACK_IMPORTED_MODULE_2__["Control"].drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, this._currentMeasure.width / 2, this._currentMeasure.height / 2, context);
         context.clip();
     };
+    Ellipse.prototype._renderHighlightSpecific = function (context) {
+        _control__WEBPACK_IMPORTED_MODULE_2__["Control"].drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, this._currentMeasure.width / 2 - this._highlightLineWidth / 2, this._currentMeasure.height / 2 - this._highlightLineWidth / 2, context);
+        context.stroke();
+    };
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_3__["serialize"])()
     ], Ellipse.prototype, "thickness", null);
@@ -6586,8 +6644,10 @@ var FocusableButton = /** @class */ (function (_super) {
     };
     /** @hidden */
     FocusableButton.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex, pi) {
-        // Clicking on button should focus
-        this.focus();
+        if (!this.isReadOnly) {
+            // Clicking on button should focus
+            this.focus();
+        }
         return _super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi);
     };
     /** @hidden */
@@ -8612,6 +8672,9 @@ var InputText = /** @class */ (function (_super) {
     };
     /** @hidden */
     InputText.prototype.processKey = function (keyCode, key, evt) {
+        if (this.isReadOnly) {
+            return;
+        }
         //return if clipboard event keys (i.e -ctr/cmd + c,v,x)
         if (evt && (evt.ctrlKey || evt.metaKey) && (keyCode === 67 || keyCode === 86 || keyCode === 88)) {
             return;
@@ -9143,6 +9206,9 @@ var InputText = /** @class */ (function (_super) {
         if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
         }
+        if (this.isReadOnly) {
+            return true;
+        }
         this._clickedCoordinate = coordinates.x;
         this._isTextHighlightOn = false;
         this._highlightedText = "";
@@ -9162,7 +9228,7 @@ var InputText = /** @class */ (function (_super) {
         return true;
     };
     InputText.prototype._onPointerMove = function (target, coordinates, pointerId, pi) {
-        if (this._host.focusedControl === this && this._isPointerDown) {
+        if (this._host.focusedControl === this && this._isPointerDown && !this.isReadOnly) {
             this._clickedCoordinate = coordinates.x;
             this._markAsDirty();
             this._updateValueFromCursorIndex(this._cursorOffset);
@@ -9982,6 +10048,9 @@ var RadioButton = /** @class */ (function (_super) {
     RadioButton.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex, pi) {
         if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
+        }
+        if (this.isReadOnly) {
+            return true;
         }
         if (!this.isChecked) {
             this.isChecked = true;
@@ -10848,7 +10917,7 @@ var ScrollViewer = /** @class */ (function (_super) {
             return;
         }
         this._onWheelObserver = this.onWheelObservable.add(function (pi) {
-            if (!_this._pointerIsOver) {
+            if (!_this._pointerIsOver || _this.isReadOnly) {
                 return;
             }
             if (_this._verticalBar.isVisible == true) {
@@ -12129,6 +12198,9 @@ var BaseSlider = /** @class */ (function (_super) {
         if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
         }
+        if (this.isReadOnly) {
+            return true;
+        }
         this._pointerIsDown = true;
         this._updateValueFromPointer(coordinates.x, coordinates.y);
         this._host._capturingControl[pointerId] = this;
@@ -12140,7 +12212,7 @@ var BaseSlider = /** @class */ (function (_super) {
         if (pointerId != this._lastPointerDownId) {
             return;
         }
-        if (this._pointerIsDown) {
+        if (this._pointerIsDown && !this.isReadOnly) {
             this._updateValueFromPointer(coordinates.x, coordinates.y);
         }
         _super.prototype._onPointerMove.call(this, target, coordinates, pointerId, pi);
@@ -14269,6 +14341,9 @@ var ToggleButton = /** @class */ (function (_super) {
         if (!_super.prototype._onPointerEnter.call(this, target, pi)) {
             return false;
         }
+        if (this.isReadOnly) {
+            return true;
+        }
         if (this._isActive) {
             if (this.pointerEnterActiveAnimation) {
                 this.pointerEnterActiveAnimation();
@@ -14284,14 +14359,16 @@ var ToggleButton = /** @class */ (function (_super) {
     /** @hidden */
     ToggleButton.prototype._onPointerOut = function (target, pi, force) {
         if (force === void 0) { force = false; }
-        if (this._isActive) {
-            if (this.pointerOutActiveAnimation) {
-                this.pointerOutActiveAnimation();
+        if (!this.isReadOnly) {
+            if (this._isActive) {
+                if (this.pointerOutActiveAnimation) {
+                    this.pointerOutActiveAnimation();
+                }
             }
-        }
-        else {
-            if (this.pointerOutInactiveAnimation) {
-                this.pointerOutInactiveAnimation();
+            else {
+                if (this.pointerOutInactiveAnimation) {
+                    this.pointerOutInactiveAnimation();
+                }
             }
         }
         _super.prototype._onPointerOut.call(this, target, pi, force);
@@ -14300,6 +14377,9 @@ var ToggleButton = /** @class */ (function (_super) {
     ToggleButton.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex, pi) {
         if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
+        }
+        if (this.isReadOnly) {
+            return true;
         }
         if (this._isActive) {
             if (this.pointerDownActiveAnimation) {
@@ -14315,14 +14395,16 @@ var ToggleButton = /** @class */ (function (_super) {
     };
     /** @hidden */
     ToggleButton.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick, pi) {
-        if (this._isActive) {
-            if (this.pointerUpActiveAnimation) {
-                this.pointerUpActiveAnimation();
+        if (!this.isReadOnly) {
+            if (this._isActive) {
+                if (this.pointerUpActiveAnimation) {
+                    this.pointerUpActiveAnimation();
+                }
             }
-        }
-        else {
-            if (this.pointerUpInactiveAnimation) {
-                this.pointerUpInactiveAnimation();
+            else {
+                if (this.pointerUpInactiveAnimation) {
+                    this.pointerUpInactiveAnimation();
+                }
             }
         }
         _super.prototype._onPointerUp.call(this, target, coordinates, pointerId, buttonIndex, notifyClick, pi);
