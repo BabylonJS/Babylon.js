@@ -397,6 +397,10 @@ export class ColorPicker extends Control {
             return false;
         }
 
+        if (this.isReadOnly) {
+            return true;
+        }
+
         this._pointerIsDown = true;
 
         this._pointerStartedOnSquare = false;
@@ -425,14 +429,17 @@ export class ColorPicker extends Control {
         if (pointerId != this._lastPointerDownId) {
             return;
         }
-        // Invert transform
-        this._invertTransformMatrix.transformCoordinates(coordinates.x, coordinates.y, this._transformedPosition);
 
-        let x = this._transformedPosition.x;
-        let y = this._transformedPosition.y;
+        if (!this.isReadOnly) {
+            // Invert transform
+            this._invertTransformMatrix.transformCoordinates(coordinates.x, coordinates.y, this._transformedPosition);
 
-        if (this._pointerIsDown) {
-            this._updateValueFromPointer(x, y);
+            let x = this._transformedPosition.x;
+            let y = this._transformedPosition.y;
+
+            if (this._pointerIsDown) {
+                this._updateValueFromPointer(x, y);
+            }
         }
 
         super._onPointerMove(target, coordinates, pointerId, pi);

@@ -47,12 +47,13 @@ declare module GUIEDITOR {
         private _canvas;
         private _responsive;
         private _isOverGUINode;
+        private _focused;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
         constructor(props: IWorkbenchComponentProps);
-        ctrlEvent: (evt: KeyboardEvent) => void;
-        ctrlFalseEvent: () => void;
+        keyEvent: (evt: KeyboardEvent) => void;
+        blurEvent: () => void;
         componentWillUnmount(): void;
         loadFromJson(serializationObject: any): void;
         loadFromSnippet(snippedId: string): Promise<void>;
@@ -135,6 +136,7 @@ declare module GUIEDITOR {
         onOutlinesObservable: BABYLON.Observable<void>;
         onResponsiveChangeObservable: BABYLON.Observable<boolean>;
         onParentingChangeObservable: BABYLON.Observable<BABYLON.Nullable<Control>>;
+        onPropertyGridUpdateRequiredObservable: BABYLON.Observable<void>;
         onDraggingEndObservable: BABYLON.Observable<void>;
         draggedControl: BABYLON.Nullable<Control>;
         draggedControlDirection: DragOverLocation;
@@ -245,30 +247,6 @@ declare module GUIEDITOR {
          * Gets or set if the lock is engaged
          */
         lock: boolean;
-    }
-}
-declare module GUIEDITOR {
-    export interface ISelectedLineContainer {
-        selectedLineContainerTitles: Array<string>;
-        selectedLineContainerTitlesNoFocus: Array<string>;
-    }
-}
-declare module GUIEDITOR {
-    interface ILineContainerComponentProps {
-        selection?: ISelectedLineContainer;
-        title: string;
-        children: any[] | any;
-        closed?: boolean;
-    }
-    export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
-        isExpanded: boolean;
-        isHighlighted: boolean;
-    }> {
-        constructor(props: ILineContainerComponentProps);
-        switchExpandedState(): void;
-        renderHeader(): JSX.Element;
-        componentDidMount(): void;
-        render(): JSX.Element;
     }
 }
 declare module GUIEDITOR {
@@ -389,7 +367,30 @@ declare module GUIEDITOR {
     }
     export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
         constructor(props: ICommonControlPropertyGridComponentProps);
-        renderGridInformation(): JSX.Element | null;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    export interface ISelectedLineContainer {
+        selectedLineContainerTitles: Array<string>;
+        selectedLineContainerTitlesNoFocus: Array<string>;
+    }
+}
+declare module GUIEDITOR {
+    interface ILineContainerComponentProps {
+        selection?: ISelectedLineContainer;
+        title: string;
+        children: any[] | any;
+        closed?: boolean;
+    }
+    export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
+        isExpanded: boolean;
+        isHighlighted: boolean;
+    }> {
+        constructor(props: ILineContainerComponentProps);
+        switchExpandedState(): void;
+        renderHeader(): JSX.Element;
+        componentDidMount(): void;
         render(): JSX.Element;
     }
 }
@@ -567,6 +568,7 @@ declare module GUIEDITOR {
         private _isSaturationPointerDown;
         private _isHuePointerDown;
         constructor(props: IColorPickerProps);
+        shouldComponentUpdate(nextProps: IColorPickerProps, nextState: IColorPickerState): boolean;
         onSaturationPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
         onSaturationPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
         onSaturationPointerMove(evt: React.PointerEvent<HTMLDivElement>): void;
@@ -751,6 +753,20 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
+    interface IParentingPropertyGridComponentProps {
+        control: Control;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class ParentingPropertyGridComponent extends React.Component<IParentingPropertyGridComponentProps> {
+        constructor(props: IParentingPropertyGridComponentProps);
+        _columnNumber: number;
+        _rowNumber: number;
+        updateGridPosition(): void;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
     interface IPropertyTabComponentProps {
         globalState: GlobalState;
     }
@@ -764,7 +780,6 @@ declare module GUIEDITOR {
         private _lockObject;
         private _sizeOption;
         constructor(props: IPropertyTabComponentProps);
-        timerRefresh(): void;
         componentDidMount(): void;
         componentWillUnmount(): void;
         load(file: File): void;
@@ -1039,7 +1054,6 @@ declare module GUIEDITOR {
         constructor(props: ICommandBarComponentProps);
         private updateNodeOutline;
         render(): JSX.Element;
-        onCreate(value: string): void;
     }
 }
 declare module GUIEDITOR {
@@ -1055,6 +1069,7 @@ declare module GUIEDITOR {
         private _moveInProgress;
         private _leftWidth;
         private _rightWidth;
+        private _toolBarIconSize;
         private _onWidgetKeyUpPointer;
         private _popUpWindow;
         componentDidMount(): void;
@@ -1073,6 +1088,20 @@ declare module GUIEDITOR {
         createPopupWindow: (title: string, windowVariableName: string, width?: number, height?: number) => Window | null;
         copyStyles: (sourceDoc: HTMLDocument, targetDoc: HTMLDocument) => void;
         render(): JSX.Element;
+        _items: {
+            label: string;
+            icon?: string;
+            fileButton?: boolean;
+            onClick?: () => void;
+            onCheck?: (value: boolean) => void;
+            storeKey?: string;
+            isActive?: boolean;
+            defaultValue?: boolean | string;
+            subItems?: string[];
+        }[];
+        createItems(): void;
+        onCreate(value: string): void;
+        createToolbar(): JSX.Element;
     }
 }
 declare module GUIEDITOR {
@@ -1132,20 +1161,6 @@ declare module GUIEDITOR {
         map?: {
             [key: number]: number;
         };
-    }
-}
-declare module GUIEDITOR {
-    interface IParentingPropertyGridComponentProps {
-        guiNode: Control;
-        guiNodes: Control[];
-        globalState: GlobalState;
-    }
-    export class ParentingPropertyGridComponent extends React.Component<IParentingPropertyGridComponentProps> {
-        constructor(props: IParentingPropertyGridComponentProps);
-        parentIndex: number;
-        addChildGui(childNode: Control, parentNode: Control): void;
-        removeChildGui(childNode: Control, parentNode: Control): void;
-        render(): JSX.Element;
     }
 }
 declare module GUIEDITOR {

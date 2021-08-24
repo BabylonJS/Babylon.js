@@ -1,10 +1,8 @@
 import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../../../sharedUiComponents/propertyChangedEvent";
-import { LineContainerComponent } from "../../../../sharedUiComponents/lines/lineContainerComponent";
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
 import { Control } from "babylonjs-gui/2D/controls/control";
-import { Grid } from "babylonjs-gui/2D/controls/grid";
 import { SliderLineComponent } from "../../../../sharedUiComponents/lines/sliderLineComponent";
 import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
 import { TextInputLineComponent } from "../../../../sharedUiComponents/lines/textInputLineComponent";
@@ -48,48 +46,18 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         super(props);
     }
 
-    renderGridInformation() {
-        const control = this.props.control;
-
-        if (!control.parent) {
-            return null;
-        }
-
-        const gridParent = control.parent;
-
-        if ((gridParent as any).rowCount === undefined) {
-            return null;
-        }
-
-        const grid = gridParent as Grid;
-        const childCellInfo = grid.getChildCellInfo(control);
-
-        if (childCellInfo === undefined) {
-            return null;
-        }
-
-        const cellInfos = childCellInfo.split(":");
-
-        return (
-            <LineContainerComponent title="GRID">
-                <TextLineComponent label={"Row"} value={cellInfos[0]} />
-                <TextLineComponent label={"Column"} value={cellInfos[1]} />
-            </LineContainerComponent>
-        );
-    }
-
     render() {
         const control = this.props.control;
 
         return (
             <div>
                 <div className="divider">
-                    <CommandButtonComponent tooltip="Left" icon={hAlignLeftIcon} shortcut="" isActive={control.horizontalAlignment === Control.HORIZONTAL_ALIGNMENT_LEFT} onClick={() => { control.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT }} />
-                    <CommandButtonComponent tooltip="Center" icon={hAlignCenterIcon} shortcut="" isActive={control.horizontalAlignment === Control.HORIZONTAL_ALIGNMENT_CENTER} onClick={() => { control.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER }} />
-                    <CommandButtonComponent tooltip="Right" icon={hAlignRightIcon} shortcut="" isActive={control.horizontalAlignment === Control.HORIZONTAL_ALIGNMENT_RIGHT} onClick={() => { control.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT }} />
-                    <CommandButtonComponent tooltip="Top" icon={vAlignTopIcon} shortcut="" isActive={control.verticalAlignment === Control.VERTICAL_ALIGNMENT_TOP} onClick={() => { control.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP }} />
-                    <CommandButtonComponent tooltip="Center" icon={vAlignCenterIcon} shortcut="" isActive={control.verticalAlignment === Control.VERTICAL_ALIGNMENT_CENTER} onClick={() => { control.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER }} />
-                    <CommandButtonComponent tooltip="Center" icon={vAlignBottomIcon} shortcut="" isActive={control.verticalAlignment === Control.VERTICAL_ALIGNMENT_BOTTOM} onClick={() => { control.verticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM }} />
+                    <CommandButtonComponent tooltip="Left" icon={hAlignLeftIcon} shortcut="" isActive={control.horizontalAlignment === Control.HORIZONTAL_ALIGNMENT_LEFT} onClick={() => { control.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT; this.forceUpdate();}} />
+                    <CommandButtonComponent tooltip="Center" icon={hAlignCenterIcon} shortcut="" isActive={control.horizontalAlignment === Control.HORIZONTAL_ALIGNMENT_CENTER} onClick={() => { control.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER; this.forceUpdate(); }} />
+                    <CommandButtonComponent tooltip="Right" icon={hAlignRightIcon} shortcut="" isActive={control.horizontalAlignment === Control.HORIZONTAL_ALIGNMENT_RIGHT} onClick={() => { control.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT; this.forceUpdate(); }} />
+                    <CommandButtonComponent tooltip="Top" icon={vAlignTopIcon} shortcut="" isActive={control.verticalAlignment === Control.VERTICAL_ALIGNMENT_TOP} onClick={() => { control.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP; this.forceUpdate(); }} />
+                    <CommandButtonComponent tooltip="Center" icon={vAlignCenterIcon} shortcut="" isActive={control.verticalAlignment === Control.VERTICAL_ALIGNMENT_CENTER} onClick={() => { control.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER; this.forceUpdate(); }} />
+                    <CommandButtonComponent tooltip="Center" icon={vAlignBottomIcon} shortcut="" isActive={control.verticalAlignment === Control.VERTICAL_ALIGNMENT_BOTTOM} onClick={() => { control.verticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM; this.forceUpdate();}} />
                 </div>
                 <div className="divider">
                     <TextInputLineComponent iconLabel={"Position"} icon={positionIcon} lockObject={this.props.lockObject} label="X" target={control} propertyName="left" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -112,14 +80,14 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     }/>
                 </div>
                 <div className="divider">
-                    <TextInputLineComponent iconLabel={"Vertical Margins"} icon={verticalMarginIcon} lockObject={this.props.lockObject} label="L" target={control} propertyName="paddingLeft" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <TextInputLineComponent iconLabel={"Vertical Margins"} icon={verticalMarginIcon} lockObject={this.props.lockObject} label="B" target={control} propertyName="paddingBottom" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="T" target={control} propertyName="paddingTop" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </div>
                 <div className="divider">
-                    <TextInputLineComponent iconLabel={"Horizontal Margins"} icon={horizontalMarginIcon} lockObject={this.props.lockObject} label="R" target={control} propertyName="paddingRight" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="B" target={control} propertyName="paddingBottom" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <TextInputLineComponent iconLabel={"Horizontal Margins"} icon={horizontalMarginIcon} lockObject={this.props.lockObject} label="L" target={control} propertyName="paddingLeft" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <TextInputLineComponent lockObject={this.props.lockObject} label="R" target={control} propertyName="paddingRight" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </div>
-                <hr />
+                <hr className="ge" />
                 <TextLineComponent tooltip="" label="TRANSFORMATION" value=" " color="grey"></TextLineComponent>
                 <div className="divider">
                     <FloatLineComponent iconLabel={"Trasnsform Center"} icon={positionIcon} lockObject={this.props.lockObject} label="X" target={control} propertyName="transformCenterX" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -130,7 +98,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     <FloatLineComponent lockObject={this.props.lockObject} label="Y" target={control} propertyName="scaleY" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </div>
                 <SliderLineComponent icon={rotationIcon} label="R" target={control} propertyName="rotation" minimum={0} maximum={2 * Math.PI} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <hr />
+                <hr className="ge" />
                 <TextLineComponent tooltip="" label="APPEARANCE" value=" " color="grey"></TextLineComponent>
                 {
                     (control as any).color !== undefined &&
@@ -152,8 +120,8 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     <FloatLineComponent iconLabel={"Shadow Offset X"} icon={shadowOffsetXIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="shadowOffsetX" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent iconLabel={"Shadow Offset Y"} icon={shadowOffsetYIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="shadowOffsetY" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </div>
-                <FloatLineComponent icon={shadowBlurIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="shadowBlur" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <hr />
+                <FloatLineComponent iconLabel={"Shadow Blur"} icon={shadowBlurIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="shadowBlur" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <hr className="ge" />
                 <TextLineComponent tooltip="" label="FONT STYLE" value=" " color="grey"></TextLineComponent>
                 <div className="divider">
                     <TextInputLineComponent iconLabel={"Font Family"} icon={fontFamilyIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="fontFamily" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -163,9 +131,6 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     <TextInputLineComponent iconLabel={"Font Weight"} icon={shadowBlurIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="fontWeight" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <TextInputLineComponent iconLabel={"Font Style"} icon={fontStyleIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="fontStyle" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </div>
-                {
-                    this.renderGridInformation()
-                }
             </div>
         );
     }

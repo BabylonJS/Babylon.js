@@ -11160,7 +11160,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#performance-viewer {\n  display: grid;\n  height: 100%;\n  width: 100%;\n  grid-template-columns: 25% 75%;\n  grid-template-areas: \"sidebar graph\"; }\n  #performance-viewer #performance-viewer-graph {\n    grid-area: \"graph\"; }\n  #performance-viewer #performance-viewer-sidebar {\n    grid-area: \"sidebar\";\n    display: flex;\n    flex-direction: column; }\n    #performance-viewer #performance-viewer-sidebar .sidebar-item {\n      display: inline-flex;\n      flex-direction: row;\n      width: 100%; }\n      #performance-viewer #performance-viewer-sidebar .sidebar-item .sidebar-item-label {\n        width: 100%; }\n      #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker {\n        height: calc(100% - 8px);\n        margin: 4px;\n        width: 100%; }\n        #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-rect {\n          height: calc(100% - 4px);\n          border: 2px white solid;\n          cursor: pointer;\n          min-height: 18px; }\n        #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-picker-cover {\n          position: fixed;\n          top: 0px;\n          right: 0px;\n          bottom: 0px;\n          left: 0px;\n          z-index: 100; }\n        #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-picker-float {\n          position: absolute; }\n          #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-picker-float .color-picker-container {\n            width: 200px; }\n", ""]);
+exports.push([module.i, "#performance-viewer {\n  display: grid;\n  height: 100%;\n  width: 100%;\n  grid-template-columns: 25% 75%;\n  grid-template-rows: 30px;\n  grid-template-areas: \". liveButton\"\r \"sidebar graph\"; }\n  #performance-viewer .performancePlayheadButton {\n    grid-area: liveButton;\n    height: 30px;\n    width: 100px;\n    justify-self: right;\n    background-color: #dcdfe1;\n    color: #2e3f47;\n    outline: 2px #2e3f47;\n    margin: 5px; }\n  #performance-viewer #performance-viewer-graph {\n    grid-area: graph; }\n  #performance-viewer #performance-viewer-sidebar {\n    grid-area: sidebar;\n    display: flex;\n    flex-direction: column; }\n    #performance-viewer #performance-viewer-sidebar .sidebar-item {\n      display: inline-flex;\n      flex-direction: row;\n      width: 100%; }\n      #performance-viewer #performance-viewer-sidebar .sidebar-item .sidebar-item-label {\n        width: 100%; }\n      #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker {\n        height: calc(100% - 8px);\n        margin: 4px;\n        width: 100%; }\n        #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-rect {\n          height: calc(100% - 4px);\n          border: 2px white solid;\n          cursor: pointer;\n          min-height: 18px; }\n        #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-picker-cover {\n          position: fixed;\n          top: 0px;\n          right: 0px;\n          bottom: 0px;\n          left: 0px;\n          z-index: 100; }\n        #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-picker-float {\n          position: absolute; }\n          #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-picker-float .color-picker-container {\n            width: 200px; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -45900,6 +45900,30 @@ var GradientStepComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./components/actionTabs/tabs/performanceViewer/performancePlayheadButtonComponent.tsx":
+/*!*********************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/performanceViewer/performancePlayheadButtonComponent.tsx ***!
+  \*********************************************************************************************/
+/*! exports provided: PerformancePlayheadButtonComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PerformancePlayheadButtonComponent", function() { return PerformancePlayheadButtonComponent; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+
+var PerformancePlayheadButtonComponent = function (_a) {
+    var returnToPlayhead = _a.returnToPlayhead;
+    var onReturnToPlayheadClick = function () {
+        returnToPlayhead.notifyObservers();
+    };
+    return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("button", { className: "performancePlayheadButton", onClick: onReturnToPlayheadClick, title: "Return to Playhead" }, "Return"));
+};
+
+
+/***/ }),
+
 /***/ "./components/actionTabs/tabs/performanceViewer/performanceViewerComponent.tsx":
 /*!*************************************************************************************!*\
   !*** ./components/actionTabs/tabs/performanceViewer/performanceViewerComponent.tsx ***!
@@ -45916,9 +45940,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/fileButtonLineComponent */ "./sharedUiComponents/lines/fileButtonLineComponent.tsx");
-/* harmony import */ var _graph_canvasGraphComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../graph/canvasGraphComponent */ "./components/graph/canvasGraphComponent.tsx");
-/* harmony import */ var _popupComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../popupComponent */ "./components/popupComponent.tsx");
-/* harmony import */ var _performanceViewerSidebarComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./performanceViewerSidebarComponent */ "./components/actionTabs/tabs/performanceViewer/performanceViewerSidebarComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
+/* harmony import */ var _graph_canvasGraphComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../graph/canvasGraphComponent */ "./components/graph/canvasGraphComponent.tsx");
+/* harmony import */ var _popupComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../popupComponent */ "./components/popupComponent.tsx");
+/* harmony import */ var _performanceViewerSidebarComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./performanceViewerSidebarComponent */ "./components/actionTabs/tabs/performanceViewer/performanceViewerSidebarComponent.tsx");
+/* harmony import */ var _performancePlayheadButtonComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./performancePlayheadButtonComponent */ "./components/actionTabs/tabs/performanceViewer/performancePlayheadButtonComponent.tsx");
+
+
 
 
 
@@ -45954,6 +45982,7 @@ var PerformanceViewerComponent = function (props) {
     var _c = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(RecordingState.NotRecording), recordingState = _c[0], setRecordingState = _c[1];
     var _d = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(), performanceCollector = _d[0], setPerformanceCollector = _d[1];
     var layoutObservable = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]())[0];
+    var returnToLiveObservable = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]())[0];
     var popupRef = Object(react__WEBPACK_IMPORTED_MODULE_1__["useRef"])(null);
     // do cleanup when the window is closed
     var onClosePerformanceViewer = function (window) {
@@ -46032,16 +46061,17 @@ var PerformanceViewerComponent = function (props) {
     }, [recordingState]);
     return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
         isEnabled &&
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "Performance Viewer" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Open Realtime Perf Viewer", onClick: onPerformanceButtonClick }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_3__["FileButtonLineComponent"], { accept: "csv", label: "Load Perf Viewer using CSV", onClick: onLoadClick }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Export Perf to CSV", onClick: onExportClick }),
                 !isOpen && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: recordingState, onClick: onToggleRecording })),
         isOpen &&
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_popupComponent__WEBPACK_IMPORTED_MODULE_5__["PopupComponent"], { id: "perf-viewer", title: "Performance Viewer", size: initialWindowSize, ref: popupRef, onResize: onResize, onClose: onClosePerformanceViewer },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_popupComponent__WEBPACK_IMPORTED_MODULE_6__["PopupComponent"], { id: "perf-viewer", title: "Performance Viewer", size: initialWindowSize, ref: popupRef, onResize: onResize, onClose: onClosePerformanceViewer },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "performance-viewer" }, performanceCollector && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_performanceViewerSidebarComponent__WEBPACK_IMPORTED_MODULE_6__["PerformanceViewerSidebarComponent"], { collector: performanceCollector }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_graph_canvasGraphComponent__WEBPACK_IMPORTED_MODULE_4__["CanvasGraphComponent"], { id: "performance-viewer-graph", layoutObservable: layoutObservable, scene: scene, collector: performanceCollector }))))));
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_performancePlayheadButtonComponent__WEBPACK_IMPORTED_MODULE_8__["PerformancePlayheadButtonComponent"], { returnToPlayhead: returnToLiveObservable }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_performanceViewerSidebarComponent__WEBPACK_IMPORTED_MODULE_7__["PerformanceViewerSidebarComponent"], { collector: performanceCollector }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_graph_canvasGraphComponent__WEBPACK_IMPORTED_MODULE_5__["CanvasGraphComponent"], { id: "performance-viewer-graph", returnToPlayheadObservable: returnToLiveObservable, layoutObservable: layoutObservable, scene: scene, collector: performanceCollector }))))));
 };
 
 
@@ -47670,13 +47700,16 @@ var Context = /** @class */ (function () {
     Context.prototype.play = function (forward) {
         this.isPlaying = true;
         this.scene.stopAnimation(this.target);
+        var animatable;
         if (forward) {
-            this.scene.beginAnimation(this.target, this.fromKey, this.toKey, true);
+            animatable = this.scene.beginAnimation(this.target, this.fromKey, this.toKey, true);
         }
         else {
-            this.scene.beginAnimation(this.target, this.toKey, this.fromKey, true);
+            animatable = this.scene.beginAnimation(this.target, this.toKey, this.fromKey, true);
         }
         this.forwardAnimation = forward;
+        // Move
+        animatable.goToFrame(this.activeFrame);
         this.onAnimationStateChanged.notifyObservers();
     };
     Context.prototype.stop = function () {
@@ -47690,8 +47723,7 @@ var Context = /** @class */ (function () {
         }
         this.activeFrame = frame;
         if (!this.isPlaying) {
-            this.scene.beginAnimation(this.target, frame, frame, false);
-            return;
+            this.scene.beginAnimation(this.target, this.fromKey, this.toKey, false);
         }
         for (var _i = 0, _a = this.animations; _i < _a.length; _i++) {
             var animationEntry = _a[_i];
@@ -59207,7 +59239,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var CanvasGraphComponent = function (props) {
-    var id = props.id, collector = props.collector, scene = props.scene, layoutObservable = props.layoutObservable;
+    var id = props.id, collector = props.collector, scene = props.scene, layoutObservable = props.layoutObservable, returnToPlayheadObservable = props.returnToPlayheadObservable;
     var canvasRef = Object(react__WEBPACK_IMPORTED_MODULE_0__["useRef"])(null);
     Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
         if (!canvasRef.current) {
@@ -59240,9 +59272,13 @@ var CanvasGraphComponent = function (props) {
             cs.metadata = meta;
             cs.update();
         };
+        var resetDataPosition = function () {
+            cs === null || cs === void 0 ? void 0 : cs.resetDataPosition();
+        };
         scene.onAfterRenderObservable.add(dataUpdated);
         collector.metadataObservable.add(metaUpdated);
         layoutObservable === null || layoutObservable === void 0 ? void 0 : layoutObservable.add(layoutUpdated);
+        returnToPlayheadObservable === null || returnToPlayheadObservable === void 0 ? void 0 : returnToPlayheadObservable.add(resetDataPosition);
         return function () {
             cs === null || cs === void 0 ? void 0 : cs.destroy();
             layoutObservable === null || layoutObservable === void 0 ? void 0 : layoutObservable.removeCallback(layoutUpdated);
@@ -59266,8 +59302,10 @@ var CanvasGraphComponent = function (props) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CanvasGraphService", function() { return CanvasGraphService; });
-/* harmony import */ var babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math.scalar */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./graphSupportingTypes */ "./components/graph/graphSupportingTypes.ts");
+/* harmony import */ var babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.scalar */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__);
+
 
 
 var defaultColor = "#000";
@@ -59281,6 +59319,8 @@ var tooltipForegroundColor = "#fbfbfb";
 var topOfGraphY = 0;
 var defaultAlpha = 1;
 var tooltipBackgroundAlpha = 0.8;
+var backgroundLineAlpha = 0.2;
+var maxDistanceForHover = 10;
 var tooltipHorizontalPadding = 10;
 var spaceBetweenTextAndBox = 5;
 var tooltipPaddingFromBottom = 20;
@@ -59309,10 +59349,13 @@ var graphAddonFont = "12px Arial";
 var alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 // Arbitrary maximum used to make some GC optimizations.
 var maximumDatasetsAllowed = 64;
+var msInSecond = 1000;
+var msInMinute = msInSecond * 60;
+var msInHour = msInMinute * 60;
 // time in ms to wait between tooltip draws inside the mouse move.
 var tooltipDebounceTime = 32;
 // time in ms to wait between draws
-var drawDebounceTime = 15;
+var drawThrottleTime = 15;
 /**
  * This function will debounce calls to functions.
  *
@@ -59331,6 +59374,27 @@ function debounce(callback, time) {
     };
 }
 /**
+ * This function will throttle calls to functions.
+ *
+ * @param callback callback to call.
+ * @param time time to wait between calls in ms.
+ */
+function throttle(callback, time) {
+    var lastCalledTime = 0;
+    return function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        var now = Date.now();
+        if (now - lastCalledTime < time) {
+            return;
+        }
+        lastCalledTime = now;
+        callback.apply(void 0, args);
+    };
+}
+/*
  * This class acts as the main API for graphing given a Here is where you will find methods to let the service know new data needs to be drawn,
  * let it know something has been resized, etc!
  */
@@ -59347,7 +59411,7 @@ var CanvasGraphService = /** @class */ (function () {
         /**
          * This method lets the service know it should get ready to update what it is displaying.
          */
-        this.update = debounce(function () { return _this._draw(); }, drawDebounceTime);
+        this.update = throttle(function () { return _this._draw(); }, drawThrottleTime);
         /**
          * Handles what to do when we are hovering over the canvas and not panning.
          *
@@ -59358,15 +59422,16 @@ var CanvasGraphService = /** @class */ (function () {
                 // we don't want to do anything if we are in the middle of panning
                 return;
             }
-            _this._hoverPosition = event.clientX;
-            // then draw the tooltip.
+            _this._hoverPosition = { xPos: event.clientX, yPos: event.clientY };
+            // process and draw the tooltip.
             _this._debouncedTooltip(_this._hoverPosition, _this._drawableArea);
         };
         /**
-         * Debounced version of _drawTooltip.
+         * Debounced processing and drawing of tooltip.
          */
-        this._debouncedTooltip = debounce(function (pixel, drawableArea) {
-            _this._drawTooltip(pixel, drawableArea);
+        this._debouncedTooltip = debounce(function (pos, drawableArea) {
+            _this._preprocessTooltip(pos, drawableArea);
+            _this._drawTooltip(pos, drawableArea);
         }, tooltipDebounceTime);
         /**
          * Handles what to do when we stop hovering over the canvas.
@@ -59392,7 +59457,7 @@ var CanvasGraphService = /** @class */ (function () {
                 _this._position = null;
             }
             // Bind the zoom between [minZoom, maxZoom]
-            _this._sizeOfWindow = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["Scalar"].Clamp(_this._sizeOfWindow - amount, minZoom, maxZoom);
+            _this._sizeOfWindow = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp(_this._sizeOfWindow - amount, minZoom, maxZoom);
         };
         /**
          * Initializes the panning object and attaches appropriate listener.
@@ -59427,7 +59492,7 @@ var CanvasGraphService = /** @class */ (function () {
             var itemsDelta = pixelDelta / pixelsPerItem | 0;
             var pos = (_a = _this._position) !== null && _a !== void 0 ? _a : (_this._getNumberOfSlices() - 1);
             // update our position without allowing the user to pan more than they need to (approximation) 
-            _this._position = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["Scalar"].Clamp(pos - itemsDelta, Math.floor(_this._sizeOfWindow * scaleFactor), _this._getNumberOfSlices() - Math.floor(_this._sizeOfWindow * (1 - scaleFactor)));
+            _this._position = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp(pos - itemsDelta, Math.floor(_this._sizeOfWindow * scaleFactor), _this._getNumberOfSlices() - Math.floor(_this._sizeOfWindow * (1 - scaleFactor)));
             if (itemsDelta === 0) {
                 _this._panPosition.delta += pixelDelta;
             }
@@ -59468,6 +59533,8 @@ var CanvasGraphService = /** @class */ (function () {
         this._tickerTextCache = { text: "", width: 0 };
         this._tooltipItems = [];
         this._tickerItems = [];
+        this._preprocessedTooltipInfo = { focusedId: "", longestText: "", numberOfTooltipItems: 0, xForActualTimestamp: 0 };
+        this._numberOfTickers = 0;
         for (var i = 0; i < maximumDatasetsAllowed; i++) {
             this._tooltipItems.push({ text: "", color: "" });
             this._tickerItems.push({ text: "", id: "", max: 0, min: 0 });
@@ -59487,6 +59554,10 @@ var CanvasGraphService = /** @class */ (function () {
         this.metadata = new Map();
         this._attachEventListeners(canvas);
     }
+    /**
+     * Update the canvas graph service with the new height and width of the canvas.
+     * @param size The new size of the canvas.
+     */
     CanvasGraphService.prototype.resize = function (size) {
         var ctx = this._ctx;
         var width = size.width, height = size.height;
@@ -59498,6 +59569,12 @@ var CanvasGraphService = /** @class */ (function () {
         ctx.canvas.width = width;
         ctx.canvas.height = height;
         this.update();
+    };
+    /**
+     * Force resets the position in the data, effectively returning to the most current data.
+     */
+    CanvasGraphService.prototype.resetDataPosition = function () {
+        this._position = null;
     };
     /**
      * This method draws the data and sets up the appropriate scales.
@@ -59547,25 +59624,27 @@ var CanvasGraphService = /** @class */ (function () {
         this._datasetBounds.end = this._getClosestPointToTimestamp(bufferMaximum) + 1;
         // keep track of largest timestamp value in view!
         this._globalTimeMinMax.max = Math.max(this.datasets.data.at(this.datasets.startingIndices.at(this._datasetBounds.end - 1)), this._globalTimeMinMax.max);
-        var updatedScaleFactor = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["Scalar"].Clamp((this._globalTimeMinMax.max - this._globalTimeMinMax.min) / (bufferMaximum - this._globalTimeMinMax.min), scaleFactor, 1);
+        var updatedScaleFactor = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp((this._globalTimeMinMax.max - this._globalTimeMinMax.min) / (bufferMaximum - this._globalTimeMinMax.min), scaleFactor, 1);
         // we will now set the global maximum to the maximum of the buffer.
         this._globalTimeMinMax.max = bufferMaximum;
         this._drawableArea.top = 0;
         this._drawableArea.left = 0;
         this._drawableArea.bottom = this._height;
         this._drawableArea.right = this._width;
-        var numberOfTickers = this._drawTickers(this._drawableArea, this._datasetBounds);
+        this._drawTickers(this._drawableArea, this._datasetBounds);
         this._drawTimeAxis(this._globalTimeMinMax, this._drawableArea);
         this._drawPlayheadRegion(this._drawableArea, updatedScaleFactor);
         this._drawableArea.top += dataPadding;
         this._drawableArea.bottom -= dataPadding;
+        // pre-process tooltip info so we can use it in determining opacity of lines.
+        this._preprocessTooltip(this._hoverPosition, this._drawableArea);
         var _b = this._drawableArea, left = _b.left, right = _b.right, bottom = _b.bottom, top = _b.top;
         // process, and then draw our points
         this.datasets.ids.forEach(function (id, idOffset) {
             var _a, _b;
             var valueMinMax;
             // we have already calculated  the min and max while getting the tickers, so use those.
-            for (var i = 0; i < numberOfTickers; i++) {
+            for (var i = 0; i < _this._numberOfTickers; i++) {
                 if (_this._tickerItems[i].id === id) {
                     valueMinMax = _this._tickerItems[i];
                 }
@@ -59576,13 +59655,20 @@ var CanvasGraphService = /** @class */ (function () {
             }
             ctx.beginPath();
             ctx.strokeStyle = (_b = (_a = _this.metadata.get(id)) === null || _a === void 0 ? void 0 : _a.color) !== null && _b !== void 0 ? _b : defaultColor;
+            // if we are focused on a line and not in live mode handle the opacities appropriately.
+            if (_this._preprocessedTooltipInfo.focusedId === id) {
+                ctx.globalAlpha = defaultAlpha;
+            }
+            else if (_this._preprocessedTooltipInfo.focusedId !== "") {
+                ctx.globalAlpha = backgroundLineAlpha;
+            }
             var prevPoint;
             for (var pointIndex = _this._datasetBounds.start; pointIndex < _this._datasetBounds.end; pointIndex++) {
-                var numPoints = _this.datasets.data.at(_this.datasets.startingIndices.at(pointIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["PerformanceViewerCollector"].NumberOfPointsOffset);
+                var numPoints = _this.datasets.data.at(_this.datasets.startingIndices.at(pointIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].NumberOfPointsOffset);
                 if (idOffset >= numPoints) {
                     continue;
                 }
-                var valueIndex = _this.datasets.startingIndices.at(pointIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["PerformanceViewerCollector"].SliceDataOffset + idOffset;
+                var valueIndex = _this.datasets.startingIndices.at(pointIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].SliceDataOffset + idOffset;
                 var timestamp = _this.datasets.data.at(_this.datasets.startingIndices.at(pointIndex));
                 var value = _this.datasets.data.at(valueIndex);
                 var drawableTime = _this._getPixelForNumber(timestamp, _this._globalTimeMinMax, left, right - left, false);
@@ -59597,6 +59683,7 @@ var CanvasGraphService = /** @class */ (function () {
             }
             ctx.stroke();
         });
+        ctx.globalAlpha = defaultAlpha;
         // then draw the tooltip.
         this._drawTooltip(this._hoverPosition, this._drawableArea);
     };
@@ -59604,27 +59691,27 @@ var CanvasGraphService = /** @class */ (function () {
         var _this = this;
         var ctx = this._ctx;
         if (!ctx) {
-            return 0;
+            return;
         }
         // create the ticker objects for each of the non hidden items.
         var longestText = "";
-        var numberOfTickers = 0;
+        this._numberOfTickers = 0;
         this.datasets.ids.forEach(function (id, idOffset) {
             var _a;
             if (!!((_a = _this.metadata.get(id)) === null || _a === void 0 ? void 0 : _a.hidden)) {
                 return;
             }
             var valueMinMax = _this._getMinMax(bounds, idOffset);
-            var latestValue = _this.datasets.data.at(_this.datasets.startingIndices.at(bounds.end - 1) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["PerformanceViewerCollector"].SliceDataOffset + idOffset);
+            var latestValue = _this.datasets.data.at(_this.datasets.startingIndices.at(bounds.end - 1) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].SliceDataOffset + idOffset);
             var text = id + ": " + latestValue.toFixed(2) + " (max: " + valueMinMax.max.toFixed(2) + ", min: " + valueMinMax.min.toFixed(2) + ")";
             if (text.length > longestText.length) {
                 longestText = text;
             }
-            _this._tickerItems[numberOfTickers].id = id;
-            _this._tickerItems[numberOfTickers].max = valueMinMax.max;
-            _this._tickerItems[numberOfTickers].min = valueMinMax.min;
-            _this._tickerItems[numberOfTickers].text = text;
-            numberOfTickers++;
+            _this._tickerItems[_this._numberOfTickers].id = id;
+            _this._tickerItems[_this._numberOfTickers].max = valueMinMax.max;
+            _this._tickerItems[_this._numberOfTickers].min = valueMinMax.min;
+            _this._tickerItems[_this._numberOfTickers].text = text;
+            _this._numberOfTickers++;
         });
         ctx.save();
         ctx.font = graphAddonFont;
@@ -59644,13 +59731,12 @@ var CanvasGraphService = /** @class */ (function () {
         var textHeight = this._addonFontLineHeight + Math.floor(tickerHorizontalPadding / 2);
         var x = drawableArea.right + tickerHorizontalPadding;
         var y = drawableArea.top + textHeight;
-        for (var i = 0; i < numberOfTickers; i++) {
+        for (var i = 0; i < this._numberOfTickers; i++) {
             var tickerItem = this._tickerItems[i];
             ctx.fillText(tickerItem.text, x, y);
             y += textHeight;
         }
         ctx.restore();
-        return numberOfTickers;
     };
     /**
      * Returns the index of the closest time for the datasets.
@@ -59717,6 +59803,7 @@ var CanvasGraphService = /** @class */ (function () {
         ctx.fillStyle = defaultColor;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
+        var timestampUnit = this._getTimestampUnit(this._ticks[this._ticks.length - 1]);
         this._ticks.forEach(function (tick) {
             var position = _this._getPixelForNumber(tick, timeMinMax, drawableArea.left, spaceAvailable, false);
             if (position > spaceAvailable) {
@@ -59724,10 +59811,59 @@ var CanvasGraphService = /** @class */ (function () {
             }
             ctx.moveTo(position, drawableArea.bottom);
             ctx.lineTo(position, drawableArea.bottom + 10);
-            ctx.fillText(tick.toString(), position, drawableArea.bottom + 20);
+            ctx.fillText(_this._parseTimestamp(tick, timestampUnit), position, drawableArea.bottom + 20);
         });
         ctx.stroke();
         ctx.restore();
+    };
+    /**
+     * Given a timestamp (should be the maximum timestamp in view), this function returns the maximum unit the timestamp contains.
+     * This information can be used for formatting purposes.
+     * @param timestamp the maximum timestamp to find the maximum timestamp unit for.
+     * @returns The maximum unit the timestamp has.
+     */
+    CanvasGraphService.prototype._getTimestampUnit = function (timestamp) {
+        if (timestamp / msInHour > 1) {
+            return _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__["TimestampUnit"].Hours;
+        }
+        else if (timestamp / msInMinute > 1) {
+            return _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__["TimestampUnit"].Minutes;
+        }
+        else if (timestamp / msInSecond > 1) {
+            return _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__["TimestampUnit"].Seconds;
+        }
+        else {
+            return _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__["TimestampUnit"].Milliseconds;
+        }
+    };
+    /**
+     * Given a timestamp and the interval unit, this function will parse the timestamp to the appropriate format.
+     * @param timestamp The timestamp to parse
+     * @param intervalUnit The maximum unit of the maximum timestamp in an interval.
+     * @returns a string representing the parsed timestamp.
+     */
+    CanvasGraphService.prototype._parseTimestamp = function (timestamp, intervalUnit) {
+        var parsedTimestamp = "";
+        if (intervalUnit >= _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__["TimestampUnit"].Hours) {
+            var numHours = Math.floor(timestamp / msInHour);
+            timestamp -= numHours * msInHour;
+            parsedTimestamp += numHours.toString().padStart(intervalUnit > _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__["TimestampUnit"].Hours ? 2 : 1, "0") + ":";
+        }
+        if (intervalUnit >= _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__["TimestampUnit"].Minutes) {
+            var numMinutes = Math.floor(timestamp / msInMinute);
+            timestamp -= numMinutes * msInMinute;
+            parsedTimestamp += numMinutes.toString().padStart(intervalUnit > _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__["TimestampUnit"].Minutes ? 2 : 1, "0") + ":";
+        }
+        var numSeconds = Math.floor(timestamp / msInSecond);
+        timestamp -= numSeconds * msInSecond;
+        parsedTimestamp += numSeconds.toString().padStart(intervalUnit > _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__["TimestampUnit"].Seconds ? 2 : 1, "0");
+        if (timestamp > 0) {
+            if (parsedTimestamp.length > 0) {
+                parsedTimestamp += ".";
+            }
+            parsedTimestamp += Math.round(timestamp).toString().padStart(3, "0");
+        }
+        return parsedTimestamp;
     };
     /**
      * Generates a list of ticks given the min and max of the axis, and the space available in the axis.
@@ -59799,11 +59935,11 @@ var CanvasGraphService = /** @class */ (function () {
     CanvasGraphService.prototype._getMinMax = function (bounds, offset) {
         var min = Infinity, max = 0;
         for (var i = bounds.start; i < bounds.end; i++) {
-            var numPoints = this.datasets.data.at(this.datasets.startingIndices.at(i) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["PerformanceViewerCollector"].NumberOfPointsOffset);
+            var numPoints = this.datasets.data.at(this.datasets.startingIndices.at(i) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].NumberOfPointsOffset);
             if (offset >= numPoints) {
                 continue;
             }
-            var itemIndex = this.datasets.startingIndices.at(i) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["PerformanceViewerCollector"].SliceDataOffset + offset;
+            var itemIndex = this.datasets.startingIndices.at(i) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].SliceDataOffset + offset;
             var item = this.datasets.data.at(itemIndex);
             if (item < min) {
                 min = item;
@@ -59863,49 +59999,168 @@ var CanvasGraphService = /** @class */ (function () {
         canvas.ownerDocument.removeEventListener("mouseup", this._handlePanStop);
     };
     /**
-     * Draws the tooltip given the area it is allowed to draw in and the current pixel position.
-     *
-     * @param pixel the position of the mouse cursor in pixels.
-     * @param drawableArea  the available area we can draw in.
+     * Given a line defined by P1: (x1, y1) and P2: (x2, y2) get the distance of P0 (x0, y0) from the line.
+     * https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line#Line_defined_by_two_points
+     * @param x1 x position of point P1
+     * @param y1 y position of point P1
+     * @param x2 x position of point P2
+     * @param y2 y position of point P2
+     * @param x0 x position of point P0
+     * @param y0 y position of point P0
+     * @returns distance of P0 from the line defined by P1 and P2
      */
-    CanvasGraphService.prototype._drawTooltip = function (pixel, drawableArea) {
+    CanvasGraphService.prototype._getDistanceFromLine = function (x1, y1, x2, y2, x0, y0) {
+        // if P1 and P2 are the same we just get the distance between P1 and P0
+        if (x1 === x2 && y1 === y2) {
+            return Math.sqrt(Math.pow(x1 - x0, 2) + Math.pow(y1 - y0, 2));
+        }
+        // next we want to handle the case where our point is beyond the y position of our line
+        var topX = 0;
+        var topY = 0;
+        var bottomX = 0;
+        var bottomY = 0;
+        if (y1 >= y2) {
+            topX = x1;
+            topY = y1;
+            bottomX = x2;
+            bottomY = y2;
+        }
+        else {
+            topX = x2;
+            topY = y2;
+            bottomX = x1;
+            bottomY = y1;
+        }
+        if (y0 < bottomY) {
+            return Math.sqrt(Math.pow(bottomX - x0, 2) + Math.pow(bottomY - y0, 2));
+        }
+        if (y0 > topY) {
+            return Math.sqrt(Math.pow(topX - x0, 2) + Math.pow(topY - y0, 2));
+        }
+        // the general case!
+        var numerator = Math.abs((x2 - x1) * (y1 - y0) - (x1 - x0) * (y2 - y1));
+        var denominator = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+        return numerator / denominator;
+    };
+    /**
+     * This method does preprocessing calculations for the tooltip.
+     * @param pos the position of our mouse.
+     * @param drawableArea the remaining drawable area.
+     */
+    CanvasGraphService.prototype._preprocessTooltip = function (pos, drawableArea) {
         var _this = this;
+        var _a, _b;
         var ctx = this._ctx;
-        if (pixel === null || !ctx || !ctx.canvas || this._getNumberOfSlices() === 0) {
+        if (pos === null || !ctx || !ctx.canvas || this._getNumberOfSlices() === 0) {
             return;
         }
-        // first convert the mouse position in pixels to a timestamp.
-        var start = ctx.canvas.getBoundingClientRect().left;
-        var adjustedPixel = pixel - start;
-        if (adjustedPixel > drawableArea.right) {
-            adjustedPixel = drawableArea.right;
+        var _c = ctx.canvas.getBoundingClientRect(), left = _c.left, top = _c.top;
+        var adjustedYPos = pos.yPos - top;
+        var adjustedXPos = pos.xPos - left;
+        if (adjustedXPos > drawableArea.right) {
+            adjustedXPos = drawableArea.right;
         }
-        var inferredTimestamp = this._getNumberFromPixel(adjustedPixel, this._globalTimeMinMax, drawableArea.left, drawableArea.right);
+        // convert the mouse x position in pixels to a timestamp.
+        var inferredTimestamp = this._getNumberFromPixel(adjustedXPos, this._globalTimeMinMax, drawableArea.left, drawableArea.right, false);
         var longestText = "";
         var numberOfTooltipItems = 0;
         // get the closest timestamps to the target timestamp, and store the appropriate meta object.
         var closestIndex = this._getClosestPointToTimestamp(inferredTimestamp);
         var actualTimestamp = 0;
+        var closestLineId = "";
+        var closestLineValueMinMax = { min: 0, max: 0 };
+        var closestLineDistance = Number.POSITIVE_INFINITY;
         this.datasets.ids.forEach(function (id, idOffset) {
             var _a, _b, _c;
             if (!!((_a = _this.metadata.get(id)) === null || _a === void 0 ? void 0 : _a.hidden)) {
                 return;
             }
-            var numPoints = _this.datasets.data.at(_this.datasets.startingIndices.at(closestIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["PerformanceViewerCollector"].NumberOfPointsOffset);
+            var numPoints = _this.datasets.data.at(_this.datasets.startingIndices.at(closestIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].NumberOfPointsOffset);
             if (idOffset >= numPoints) {
                 return;
             }
-            var valueIndex = _this.datasets.startingIndices.at(closestIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["PerformanceViewerCollector"].SliceDataOffset + idOffset;
+            var valueAtClosestPointIndex = _this.datasets.startingIndices.at(closestIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].SliceDataOffset + idOffset;
+            var valueAtClosestPoint = _this.datasets.data.at(valueAtClosestPointIndex);
+            var valueMinMax;
+            // we would have already calculated  the min and max while getting the tickers, so use those, and get first one.
+            for (var i = 0; i < _this._numberOfTickers; i++) {
+                if (_this._tickerItems[i].id === id) {
+                    valueMinMax = _this._tickerItems[i];
+                }
+            }
+            if (!valueMinMax) {
+                return;
+            }
             actualTimestamp = _this.datasets.data.at(_this.datasets.startingIndices.at(closestIndex));
-            var text = id + ": " + _this.datasets.data.at(valueIndex).toFixed(2);
+            var valueAtClosestPointYPos = _this._getPixelForNumber(valueAtClosestPoint, valueMinMax, drawableArea.top, drawableArea.bottom - drawableArea.top, true);
+            var xForActualTimestamp = _this._getPixelForNumber(actualTimestamp, _this._globalTimeMinMax, drawableArea.left, drawableArea.right - drawableArea.left, false);
+            var text = id + ": " + valueAtClosestPoint.toFixed(2);
             if (text.length > longestText.length) {
                 longestText = text;
             }
             _this._tooltipItems[numberOfTooltipItems].text = text;
             _this._tooltipItems[numberOfTooltipItems].color = (_c = (_b = _this.metadata.get(id)) === null || _b === void 0 ? void 0 : _b.color) !== null && _c !== void 0 ? _c : defaultColor;
             numberOfTooltipItems++;
+            // don't process rest if we aren't panned.
+            if (!_this._position) {
+                return;
+            }
+            // initially distance between closest data point and mouse point.
+            var distance = _this._getDistanceFromLine(xForActualTimestamp, valueAtClosestPointYPos, xForActualTimestamp, valueAtClosestPointYPos, pos.xPos - left, adjustedYPos);
+            // get the shortest distance between the point and the line segment infront, and line segment behind, store the shorter distance (if shorter than distance between closest data point and mouse).
+            if (closestIndex + 1 < _this.datasets.data.itemLength &&
+                _this.datasets.data.at(_this.datasets.startingIndices.at(closestIndex + 1) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].NumberOfPointsOffset) > idOffset) {
+                var secondPointTimestamp = _this.datasets.data.at(_this.datasets.startingIndices.at(closestIndex + 1));
+                var secondPointX = _this._getPixelForNumber(secondPointTimestamp, _this._globalTimeMinMax, drawableArea.left, drawableArea.right - drawableArea.left, false);
+                var secondPointValue = _this.datasets.data.at(_this.datasets.startingIndices.at(closestIndex + 1) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].SliceDataOffset + idOffset);
+                var secondPointY = _this._getPixelForNumber(secondPointValue, valueMinMax, drawableArea.top, drawableArea.bottom - drawableArea.top, true);
+                distance = Math.min(_this._getDistanceFromLine(xForActualTimestamp, valueAtClosestPointYPos, secondPointX, secondPointY, pos.xPos - left, adjustedYPos), distance);
+            }
+            if (closestIndex - 1 >= 0 &&
+                _this.datasets.data.at(_this.datasets.startingIndices.at(closestIndex + 1) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].NumberOfPointsOffset) > idOffset) {
+                var secondPointTimestamp = _this.datasets.data.at(_this.datasets.startingIndices.at(closestIndex - 1));
+                var secondPointX = _this._getPixelForNumber(secondPointTimestamp, _this._globalTimeMinMax, drawableArea.left, drawableArea.right - drawableArea.left, false);
+                var secondPointValue = _this.datasets.data.at(_this.datasets.startingIndices.at(closestIndex - 1) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].SliceDataOffset + idOffset);
+                var secondPointY = _this._getPixelForNumber(secondPointValue, valueMinMax, drawableArea.top, drawableArea.bottom - drawableArea.top, true);
+                distance = Math.min(_this._getDistanceFromLine(xForActualTimestamp, valueAtClosestPointYPos, secondPointX, secondPointY, pos.xPos - left, adjustedYPos), distance);
+            }
+            if (distance < closestLineDistance) {
+                closestLineId = id;
+                closestLineDistance = distance;
+                closestLineValueMinMax = valueMinMax;
+            }
         });
         var xForActualTimestamp = this._getPixelForNumber(actualTimestamp, this._globalTimeMinMax, drawableArea.left, drawableArea.right - drawableArea.left, false);
+        this._preprocessedTooltipInfo.xForActualTimestamp = xForActualTimestamp;
+        // check if hover is within a certain distance, if so it is our only item in our tooltip.
+        if (closestLineDistance <= maxDistanceForHover && this._position) {
+            this._preprocessedTooltipInfo.focusedId = closestLineId;
+            var inferredValue = this._getNumberFromPixel(adjustedYPos, closestLineValueMinMax, drawableArea.top, drawableArea.bottom, true);
+            var closestLineText = closestLineId + ": " + inferredValue.toFixed(2);
+            this._preprocessedTooltipInfo.longestText = closestLineText;
+            this._preprocessedTooltipInfo.numberOfTooltipItems = 1;
+            this._tooltipItems[0].text = closestLineText;
+            this._tooltipItems[0].color = (_b = (_a = this.metadata.get(closestLineId)) === null || _a === void 0 ? void 0 : _a.color) !== null && _b !== void 0 ? _b : defaultColor;
+        }
+        else {
+            this._preprocessedTooltipInfo.focusedId = "";
+            this._preprocessedTooltipInfo.longestText = longestText;
+            this._preprocessedTooltipInfo.numberOfTooltipItems = numberOfTooltipItems;
+        }
+    };
+    /**
+     * Draws the tooltip given the area it is allowed to draw in and the current pixel position.
+     *
+     * @param pos the position of the mouse cursor in pixels (x, y).
+     * @param drawableArea  the available area we can draw in.
+     */
+    CanvasGraphService.prototype._drawTooltip = function (pos, drawableArea) {
+        var ctx = this._ctx;
+        if (pos === null || !ctx || !ctx.canvas || this._getNumberOfSlices() === 0) {
+            return;
+        }
+        var _a = ctx.canvas.getBoundingClientRect(), left = _a.left, top = _a.top;
+        var _b = this._preprocessedTooltipInfo, numberOfTooltipItems = _b.numberOfTooltipItems, xForActualTimestamp = _b.xForActualTimestamp, longestText = _b.longestText;
         ctx.save();
         // draw pointer triangle
         ctx.fillStyle = positionIndicatorColor;
@@ -59916,11 +60171,18 @@ var CanvasGraphService = /** @class */ (function () {
         ctx.lineTo(xForActualTimestamp - triangleWidth / 2, yTriangle + triangleHeight);
         ctx.closePath();
         ctx.fill();
-        // draw vertical line
         ctx.strokeStyle = positionIndicatorColor;
         ctx.beginPath();
-        ctx.moveTo(xForActualTimestamp, drawableArea.bottom);
-        ctx.lineTo(xForActualTimestamp, topOfGraphY);
+        // draw vertical or horizontal line depending on if focused on a point on the line.
+        if (this._preprocessedTooltipInfo.focusedId === "") {
+            ctx.moveTo(xForActualTimestamp, drawableArea.bottom);
+            ctx.lineTo(xForActualTimestamp, topOfGraphY);
+        }
+        else {
+            var lineY = pos.yPos - top;
+            ctx.moveTo(drawableArea.left, lineY);
+            ctx.lineTo(drawableArea.right, lineY);
+        }
         ctx.stroke();
         // draw the actual tooltip
         ctx.font = graphAddonFont;
@@ -59939,7 +60201,7 @@ var CanvasGraphService = /** @class */ (function () {
             this._tooltipTextCache.width = width;
         }
         var tooltipHeight = textHeight * (numberOfTooltipItems + 1);
-        var x = pixel - start;
+        var x = pos.xPos - left;
         var y = drawableArea.bottom - tooltipPaddingFromBottom - tooltipHeight;
         // We want the tool tip to always be inside the canvas so we adjust which way it is drawn.
         if (x + width > this._width) {
@@ -59968,11 +60230,16 @@ var CanvasGraphService = /** @class */ (function () {
      * @param minMax the minimum and maximum number in the range.
      * @param startingPixel position of the starting pixel in range.
      * @param endingPixel position of ending pixel in range.
+     * @param shouldFlipValue if we should use a [1, 0] scale instead of a [0, 1] scale.
      * @returns number corresponding to pixel position
      */
-    CanvasGraphService.prototype._getNumberFromPixel = function (pixel, minMax, startingPixel, endingPixel) {
+    CanvasGraphService.prototype._getNumberFromPixel = function (pixel, minMax, startingPixel, endingPixel, shouldFlip) {
         // normalize pixel to range [0, 1].
         var normalizedPixelPosition = (pixel - startingPixel) / (endingPixel - startingPixel);
+        // we should use a [1, 0] scale instead.
+        if (shouldFlip) {
+            normalizedPixelPosition = 1 - normalizedPixelPosition;
+        }
         return minMax.min + normalizedPixelPosition * (minMax.max - minMax.min);
     };
     /**
@@ -60048,6 +60315,30 @@ var CanvasGraphService = /** @class */ (function () {
     return CanvasGraphService;
 }());
 
+
+
+/***/ }),
+
+/***/ "./components/graph/graphSupportingTypes.ts":
+/*!**************************************************!*\
+  !*** ./components/graph/graphSupportingTypes.ts ***!
+  \**************************************************/
+/*! exports provided: TimestampUnit */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TimestampUnit", function() { return TimestampUnit; });
+/**
+ * Defines the supported timestamp units.
+ */
+var TimestampUnit;
+(function (TimestampUnit) {
+    TimestampUnit[TimestampUnit["Milliseconds"] = 0] = "Milliseconds";
+    TimestampUnit[TimestampUnit["Seconds"] = 1] = "Seconds";
+    TimestampUnit[TimestampUnit["Minutes"] = 2] = "Minutes";
+    TimestampUnit[TimestampUnit["Hours"] = 3] = "Hours";
+})(TimestampUnit || (TimestampUnit = {}));
 
 
 /***/ }),
@@ -61769,6 +62060,7 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SceneExplorerComponent, _super);
     function SceneExplorerComponent(props) {
         var _this = _super.call(this, props) || this;
+        _this._mutationTimeout = null;
         _this._once = true;
         _this._hooked = false;
         _this.state = { filter: null, selectedEntity: null, scene: _this.props.scene };
@@ -61786,7 +62078,14 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
         if (this.props.globalState.blockMutationUpdates) {
             return;
         }
-        setTimeout(function () { return _this.forceUpdate(); });
+        // To avoid perf hits we want to make sure that we are not rebuilding the entire tree on each call
+        if (this._mutationTimeout !== null) {
+            window.clearTimeout(this._mutationTimeout);
+        }
+        this._mutationTimeout = window.setTimeout(function () {
+            _this._mutationTimeout = null;
+            _this.forceUpdate();
+        }, 32);
     };
     SceneExplorerComponent.prototype.componentDidMount = function () {
         var _this = this;
@@ -63290,6 +63589,10 @@ var ColorPicker = /** @class */ (function (_super) {
         _this._hueRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         return _this;
     }
+    ColorPicker.prototype.shouldComponentUpdate = function (nextProps, nextState) {
+        return (nextProps.color.toHexString() !== this.props.color.toHexString() ||
+            nextState.color.toHexString() !== this.props.color.toHexString());
+    };
     ColorPicker.prototype.onSaturationPointerDown = function (evt) {
         this._evaluateSaturation(evt);
         this._isSaturationPointerDown = true;
@@ -63340,7 +63643,7 @@ var ColorPicker = /** @class */ (function (_super) {
             console.log("Hue: " + hue);
         }
         var hsv = this.state.color.toHSV();
-        babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].HSVtoRGBToRef(hue, Math.max(hsv.g, 0.0001), Math.max(hsv.b, 0.0001), this.state.color);
+        babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].HSVtoRGBToRef(hue, Math.max(hsv.g, 0.01), Math.max(hsv.b, 0.01), this.state.color);
         this.setState({ color: this.state.color });
     };
     ColorPicker.prototype.componentDidUpdate = function () {

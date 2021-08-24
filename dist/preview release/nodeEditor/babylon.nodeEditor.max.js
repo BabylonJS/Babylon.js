@@ -56841,7 +56841,7 @@ var InputsPropertyTabComponent = /** @class */ (function (_super) {
     InputsPropertyTabComponent.prototype.processInputBlockUpdate = function (ib) {
         this.props.globalState.onUpdateRequiredObservable.notifyObservers();
         if (ib.isConstant) {
-            this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+            this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
         }
     };
     InputsPropertyTabComponent.prototype.renderInputBlock = function (block) {
@@ -56983,7 +56983,7 @@ var FloatPropertyTabComponent = /** @class */ (function (_super) {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_2__["FloatLineComponent"], { globalState: this.props.globalState, label: "Value", target: this.props.inputBlock, propertyName: "value", onChange: function () {
                 if (_this.props.inputBlock.isConstant) {
-                    _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                    _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                 }
                 _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
             } }));
@@ -57277,7 +57277,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
     PropertyTabComponent.prototype.processInputBlockUpdate = function (ib) {
         this.props.globalState.onUpdateRequiredObservable.notifyObservers();
         if (ib.isConstant) {
-            this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+            this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
         }
     };
     PropertyTabComponent.prototype.renderInputBlock = function (block) {
@@ -59178,7 +59178,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
             link.onDisposedObservable.notifyObservers(link);
             link.onDisposedObservable.clear();
         });
-        this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+        this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
     };
     GraphCanvasComponent.prototype.processEditorData = function (editorData) {
         var frames = this._frames.splice(0);
@@ -61498,7 +61498,7 @@ var ConditionalPropertyTabComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "PROPERTIES" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_3__["OptionsLineComponent"], { label: "Condition", options: conditionOptions, target: conditionBlock, propertyName: "condition", onSelect: function (value) {
                         _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
-                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                         _this.forceUpdate();
                     } }))));
     };
@@ -61739,7 +61739,7 @@ var GeneralPropertyTabComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_9__["OptionsLineComponent"], { label: "Target", options: targetOptions, target: this.props.block, propertyName: "target", onSelect: function (value) {
                             _this.forceUpdate();
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
-                            _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                            _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                         } }),
                 (!this.props.block._originalTargetIsNeutral) &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Type", value: babylonjs_Materials_Node_nodeMaterialDecorator__WEBPACK_IMPORTED_MODULE_10__["NodeMaterialBlockTargets"][this.props.block.target] }),
@@ -61760,7 +61760,7 @@ var GenericPropertyTabComponent = /** @class */ (function (_super) {
             this.props.globalState.onUpdateRequiredObservable.notifyObservers();
         }
         if (!notifiers || notifiers.rebuild) {
-            this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+            this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
         }
         if (notifiers === null || notifiers === void 0 ? void 0 : notifiers.activatePreviewCommand) {
             this.props.globalState.onPreviewCommandActivated.notifyObservers(true);
@@ -61873,7 +61873,7 @@ var GradientPropertyTabComponent = /** @class */ (function (_super) {
     };
     GradientPropertyTabComponent.prototype.forceRebuild = function () {
         this.props.globalState.onUpdateRequiredObservable.notifyObservers();
-        this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+        this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
     };
     GradientPropertyTabComponent.prototype.deleteStep = function (step) {
         var gradientBlock = this.props.block;
@@ -61945,7 +61945,7 @@ var GradientPropertyTabComponent = /** @class */ (function (_super) {
                         }
                         _this.forceUpdate();
                         _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
-                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                     } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "STEPS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__["ButtonLineComponent"], { label: "Add new step", onClick: function () { return _this.addNewStep(); } }),
@@ -62116,20 +62116,36 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
                             }, onSelect: function (value) {
                                 inputBlock.value = value ? 1 : 0;
                                 if (inputBlock.isConstant) {
-                                    _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                                    _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                                 }
                                 _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                             } }),
                     !inputBlock.isBoolean &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_2__["FloatLineComponent"], { globalState: this.props.globalState, label: "Min", target: inputBlock, propertyName: "min", onChange: function () { return _this.forceUpdate(); } }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_2__["FloatLineComponent"], { globalState: this.props.globalState, label: "Min", target: inputBlock, propertyName: "min", onChange: function () {
+                                if (inputBlock.value < inputBlock.min) {
+                                    inputBlock.value = inputBlock.min;
+                                    if (inputBlock.isConstant) {
+                                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                                    }
+                                }
+                                _this.forceUpdate();
+                            } }),
                     !inputBlock.isBoolean &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_2__["FloatLineComponent"], { globalState: this.props.globalState, label: "Max", target: inputBlock, propertyName: "max", onChange: function () { return _this.forceUpdate(); } }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_2__["FloatLineComponent"], { globalState: this.props.globalState, label: "Max", target: inputBlock, propertyName: "max", onChange: function () {
+                                if (inputBlock.value > inputBlock.max) {
+                                    inputBlock.value = inputBlock.max;
+                                    if (inputBlock.isConstant) {
+                                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                                    }
+                                }
+                                _this.forceUpdate();
+                            } }),
                     !inputBlock.isBoolean && cantDisplaySlider &&
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_properties_floatPropertyTabComponent__WEBPACK_IMPORTED_MODULE_3__["FloatPropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }),
                     !inputBlock.isBoolean && !cantDisplaySlider &&
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Value", globalState: this.props.globalState, target: inputBlock, propertyName: "value", step: Math.abs(inputBlock.max - inputBlock.min) / 100.0, minimum: Math.min(inputBlock.min, inputBlock.max), maximum: inputBlock.max, onChange: function () {
                                 if (inputBlock.isConstant) {
-                                    _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                                    _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                                 }
                             } })));
             }
@@ -62275,13 +62291,13 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
                             }
                             _this.forceUpdate();
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
-                            _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                            _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                         } }),
                 inputBlock.visibleInInspector &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_14__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Group", propertyName: "groupInInspector", target: this.props.block, onChange: function () {
                             _this.forceUpdate();
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
-                            _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                            _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                         } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_11__["OptionsLineComponent"], { label: "Mode", options: modeOptions, target: inputBlock, noDirectUpdate: true, getSelection: function (block) {
                         if (block.isAttribute) {
@@ -62307,20 +62323,20 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
                         }
                         _this.forceUpdate();
                         _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
-                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                     } }),
                 inputBlock.isAttribute &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_11__["OptionsLineComponent"], { label: "Attribute", valuesAreStrings: true, options: attributeOptions, target: inputBlock, propertyName: "name", onSelect: function (value) {
                             inputBlock.setAsAttribute(value);
                             _this.forceUpdate();
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
-                            _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                            _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                         } }),
                 inputBlock.isUniform && animationOptions.length > 0 &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_11__["OptionsLineComponent"], { label: "Animation type", options: animationOptions, target: inputBlock, propertyName: "animationType", onSelect: function (value) {
                             _this.forceUpdate();
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
-                            _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                            _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                         } }),
                 inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["AnimatedInputBlockTypes"].None &&
                     this.renderValue(this.props.globalState),
@@ -62329,7 +62345,7 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
                             inputBlock.setAsSystemValue(value);
                             _this.forceUpdate();
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
-                            _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                            _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                         } }),
                 inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["AnimatedInputBlockTypes"].None &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_15__["CheckBoxLineComponent"], { label: "Visible on frame", target: this.props.block, propertyName: "visibleOnFrame" }))));
@@ -62380,7 +62396,7 @@ var LightInformationPropertyTabComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_3__["OptionsLineComponent"], { label: "Light", noDirectUpdate: true, valuesAreStrings: true, options: lightOptions, target: lightInformationBlock, propertyName: "name", onSelect: function (name) {
                         lightInformationBlock.light = scene.getLightByName(name);
                         _this.forceUpdate();
-                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                     } }))));
     };
     return LightInformationPropertyTabComponent;
@@ -62435,7 +62451,7 @@ var LightPropertyTabComponent = /** @class */ (function (_super) {
                             lightBlock.light = scene.getLightByName(name);
                         }
                         _this.forceUpdate();
-                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                     } }))));
     };
     return LightPropertyTabComponent;
@@ -62575,7 +62591,7 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
     };
     TexturePropertyTabComponent.prototype.updateAfterTextureLoad = function () {
         this.props.globalState.onUpdateRequiredObservable.notifyObservers();
-        this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+        this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
         this.forceUpdate();
     };
     TexturePropertyTabComponent.prototype.removeTexture = function () {
@@ -62844,7 +62860,7 @@ var TransformPropertyTabComponent = /** @class */ (function (_super) {
                         else {
                             transformBlock.complementW = 1;
                         }
-                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                     }, isSelected: function () { return _this.props.block.complementW === 0; } }))));
     };
     return TransformPropertyTabComponent;
@@ -62913,7 +62929,7 @@ var TrigonometryPropertyTabComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "PROPERTIES" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_3__["OptionsLineComponent"], { label: "Operation", options: operationOptions, target: trigonometryBlock, propertyName: "operation", onSelect: function (value) {
                         _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
-                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                         _this.forceUpdate();
                     } }))));
     };
@@ -63261,9 +63277,9 @@ var GraphEditor = /** @class */ (function (_super) {
         _this.state = {
             showPreviewPopUp: false
         };
-        _this.props.globalState.onRebuildRequiredObservable.add(function () {
+        _this.props.globalState.onRebuildRequiredObservable.add(function (autoConfigure) {
             if (_this.props.globalState.nodeMaterial) {
-                _this.buildMaterial();
+                _this.buildMaterial(autoConfigure);
             }
         });
         _this.props.globalState.onResetRequiredObservable.add(function () {
@@ -63328,7 +63344,7 @@ var GraphEditor = /** @class */ (function (_super) {
                     _this._graphCanvas.selectedFrame.dispose();
                 }
                 _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-                _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                _this.props.globalState.onRebuildRequiredObservable.notifyObservers(false);
                 return;
             }
             if (!evt.ctrlKey || _this.props.globalState.blockKeyboardEvents) {
@@ -63551,13 +63567,14 @@ var GraphEditor = /** @class */ (function (_super) {
     GraphEditor.prototype.zoomToFit = function () {
         this._graphCanvas.zoomToFit();
     };
-    GraphEditor.prototype.buildMaterial = function () {
+    GraphEditor.prototype.buildMaterial = function (autoConfigure) {
+        if (autoConfigure === void 0) { autoConfigure = true; }
         if (!this.props.globalState.nodeMaterial) {
             return;
         }
         try {
             this.props.globalState.nodeMaterial.options.emitComments = true;
-            this.props.globalState.nodeMaterial.build(true);
+            this.props.globalState.nodeMaterial.build(true, undefined, autoConfigure);
             this.props.globalState.onLogRequiredObservable.notifyObservers(new _components_log_logComponent__WEBPACK_IMPORTED_MODULE_5__["LogEntry"]("Node material build successful", false));
         }
         catch (err) {
@@ -64227,7 +64244,8 @@ var Color3LineComponent = /** @class */ (function (_super) {
     };
     Color3LineComponent.prototype.onChange = function (newValue) {
         this._localChange = true;
-        var newColor = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromHexString(newValue);
+        var isColor4 = this.props.target[this.props.propertyName].getClassName() === "Color4";
+        var newColor = isColor4 ? babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"].FromHexString(newValue) : babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromHexString(newValue);
         if (this.props.onPropertyChangedObservable) {
             this.props.onPropertyChangedObservable.notifyObservers({
                 object: this.props.target,
@@ -64236,12 +64254,7 @@ var Color3LineComponent = /** @class */ (function (_super) {
                 initialValue: this.state.color
             });
         }
-        if (this.props.target[this.props.propertyName].getClassName() === "Color4") {
-            this.props.target[this.props.propertyName] = new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"](newColor.r, newColor.g, newColor.b, 1.0);
-        }
-        else {
-            this.props.target[this.props.propertyName] = newColor;
-        }
+        this.props.target[this.props.propertyName] = newColor;
         this.setState({ color: newColor });
         if (this.props.onChange) {
             this.props.onChange();
@@ -64533,7 +64546,7 @@ var ColorPickerLineComponent = /** @class */ (function (_super) {
         var result = nextProps.value.toHexString() !== this.props.value.toHexString()
             || nextState.hex !== this.state.hex
             || nextState.pickerEnabled !== this.state.pickerEnabled;
-        if (result) {
+        if (nextProps.value.toHexString() !== this.props.value.toHexString()) {
             nextState.color = nextProps.value;
             nextState.hex = nextProps.value.toHexString();
         }
@@ -66234,6 +66247,10 @@ var ColorPicker = /** @class */ (function (_super) {
         _this._hueRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         return _this;
     }
+    ColorPicker.prototype.shouldComponentUpdate = function (nextProps, nextState) {
+        return (nextProps.color.toHexString() !== this.props.color.toHexString() ||
+            nextState.color.toHexString() !== this.props.color.toHexString());
+    };
     ColorPicker.prototype.onSaturationPointerDown = function (evt) {
         this._evaluateSaturation(evt);
         this._isSaturationPointerDown = true;
@@ -66284,7 +66301,7 @@ var ColorPicker = /** @class */ (function (_super) {
             console.log("Hue: " + hue);
         }
         var hsv = this.state.color.toHSV();
-        babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].HSVtoRGBToRef(hue, Math.max(hsv.g, 0.0001), Math.max(hsv.b, 0.0001), this.state.color);
+        babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].HSVtoRGBToRef(hue, Math.max(hsv.g, 0.01), Math.max(hsv.b, 0.01), this.state.color);
         this.setState({ color: this.state.color });
     };
     ColorPicker.prototype.componentDidUpdate = function () {

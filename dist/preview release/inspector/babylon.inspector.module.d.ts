@@ -283,14 +283,32 @@ declare module "babylonjs-inspector/components/graph/graphSupportingTypes" {
     export interface ICanvasGraphServiceSettings {
         datasets: IPerfDatasets;
     }
+    /**
+     * Defines the structure representing the preprocessable tooltip information.
+     */
+    export interface ITooltipPreprocessedInformation {
+        xForActualTimestamp: number;
+        numberOfTooltipItems: number;
+        longestText: string;
+        focusedId: string;
+    }
+    export interface IPerfTooltipHoverPosition {
+        xPos: number;
+        yPos: number;
+    }
+    /**
+     * Defines the supported timestamp units.
+     */
+    export enum TimestampUnit {
+        Milliseconds = 0,
+        Seconds = 1,
+        Minutes = 2,
+        Hours = 3
+    }
 }
 declare module "babylonjs-inspector/components/graph/canvasGraphService" {
     import { ICanvasGraphServiceSettings, IPerfLayoutSize } from "babylonjs-inspector/components/graph/graphSupportingTypes";
     import { IPerfDatasets, IPerfMetadata } from "babylonjs/Misc/interfaces/iPerfViewer";
-    /**
-     * This class acts as the main API for graphing given a Here is where you will find methods to let the service know new data needs to be drawn,
-     * let it know something has been resized, etc!
-     */
     export class CanvasGraphService {
         private _ctx;
         private _width;
@@ -308,6 +326,8 @@ declare module "babylonjs-inspector/components/graph/canvasGraphService" {
         private _tooltipTextCache;
         private _tickerTextCache;
         private _tickerItems;
+        private _preprocessedTooltipInfo;
+        private _numberOfTickers;
         private readonly _addonFontLineHeight;
         private readonly _defaultLineHeight;
         readonly datasets: IPerfDatasets;
@@ -323,7 +343,15 @@ declare module "babylonjs-inspector/components/graph/canvasGraphService" {
          * This method lets the service know it should get ready to update what it is displaying.
          */
         update: (...args: any[]) => void;
+        /**
+         * Update the canvas graph service with the new height and width of the canvas.
+         * @param size The new size of the canvas.
+         */
         resize(size: IPerfLayoutSize): void;
+        /**
+         * Force resets the position in the data, effectively returning to the most current data.
+         */
+        resetDataPosition(): void;
         /**
          * This method draws the data and sets up the appropriate scales.
          */
@@ -349,6 +377,20 @@ declare module "babylonjs-inspector/components/graph/canvasGraphService" {
          * @param drawableArea the current allocated drawable area.
          */
         private _drawTimeAxis;
+        /**
+         * Given a timestamp (should be the maximum timestamp in view), this function returns the maximum unit the timestamp contains.
+         * This information can be used for formatting purposes.
+         * @param timestamp the maximum timestamp to find the maximum timestamp unit for.
+         * @returns The maximum unit the timestamp has.
+         */
+        private _getTimestampUnit;
+        /**
+         * Given a timestamp and the interval unit, this function will parse the timestamp to the appropriate format.
+         * @param timestamp The timestamp to parse
+         * @param intervalUnit The maximum unit of the maximum timestamp in an interval.
+         * @returns a string representing the parsed timestamp.
+         */
+        private _parseTimestamp;
         /**
          * Generates a list of ticks given the min and max of the axis, and the space available in the axis.
          *
@@ -402,7 +444,7 @@ declare module "babylonjs-inspector/components/graph/canvasGraphService" {
          */
         private _handleDataHover;
         /**
-         * Debounced version of _drawTooltip.
+         * Debounced processing and drawing of tooltip.
          */
         private _debouncedTooltip;
         /**
@@ -410,9 +452,27 @@ declare module "babylonjs-inspector/components/graph/canvasGraphService" {
          */
         private _handleStopHover;
         /**
+         * Given a line defined by P1: (x1, y1) and P2: (x2, y2) get the distance of P0 (x0, y0) from the line.
+         * https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line#Line_defined_by_two_points
+         * @param x1 x position of point P1
+         * @param y1 y position of point P1
+         * @param x2 x position of point P2
+         * @param y2 y position of point P2
+         * @param x0 x position of point P0
+         * @param y0 y position of point P0
+         * @returns distance of P0 from the line defined by P1 and P2
+         */
+        private _getDistanceFromLine;
+        /**
+         * This method does preprocessing calculations for the tooltip.
+         * @param pos the position of our mouse.
+         * @param drawableArea the remaining drawable area.
+         */
+        private _preprocessTooltip;
+        /**
          * Draws the tooltip given the area it is allowed to draw in and the current pixel position.
          *
-         * @param pixel the position of the mouse cursor in pixels.
+         * @param pos the position of the mouse cursor in pixels (x, y).
          * @param drawableArea  the available area we can draw in.
          */
         private _drawTooltip;
@@ -423,6 +483,7 @@ declare module "babylonjs-inspector/components/graph/canvasGraphService" {
          * @param minMax the minimum and maximum number in the range.
          * @param startingPixel position of the starting pixel in range.
          * @param endingPixel position of ending pixel in range.
+         * @param shouldFlipValue if we should use a [1, 0] scale instead of a [0, 1] scale.
          * @returns number corresponding to pixel position
          */
         private _getNumberFromPixel;
@@ -485,6 +546,7 @@ declare module "babylonjs-inspector/components/graph/canvasGraphComponent" {
         scene: Scene;
         collector: PerformanceViewerCollector;
         layoutObservable?: Observable<IPerfLayoutSize>;
+        returnToPlayheadObservable?: Observable<void>;
     }
     export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps>;
 }
@@ -578,6 +640,7 @@ declare module "babylonjs-inspector/sharedUiComponents/colorPicker/colorPicker" 
         private _isSaturationPointerDown;
         private _isHuePointerDown;
         constructor(props: IColorPickerProps);
+        shouldComponentUpdate(nextProps: IColorPickerProps, nextState: IColorPickerState): boolean;
         onSaturationPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
         onSaturationPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
         onSaturationPointerMove(evt: React.PointerEvent<HTMLDivElement>): void;
@@ -624,6 +687,14 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/performanceViewer
         collector: PerformanceViewerCollector;
     }
     export const PerformanceViewerSidebarComponent: (props: IPerformanceViewerSidebarComponentProps) => JSX.Element;
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/performanceViewer/performancePlayheadButtonComponent" {
+    import { Observable } from 'babylonjs/Misc/observable';
+    import * as React from 'react';
+    interface IPerformancePlayheadButtonProps {
+        returnToPlayhead: Observable<void>;
+    }
+    export const PerformancePlayheadButtonComponent: React.FC<IPerformancePlayheadButtonProps>;
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/performanceViewer/performanceViewerComponent" {
     import { Scene } from "babylonjs/scene";
@@ -4645,6 +4716,7 @@ declare module "babylonjs-inspector/components/sceneExplorer/sceneExplorerCompon
         private _onNewSceneAddedObserver;
         private _onNewSceneObserver;
         private sceneExplorerRef;
+        private _mutationTimeout;
         private _once;
         private _hooked;
         private sceneMutationFunc;
@@ -5051,12 +5123,30 @@ declare module INSPECTOR {
     export interface ICanvasGraphServiceSettings {
         datasets: BABYLON.IPerfDatasets;
     }
+    /**
+     * Defines the structure representing the preprocessable tooltip information.
+     */
+    export interface ITooltipPreprocessedInformation {
+        xForActualTimestamp: number;
+        numberOfTooltipItems: number;
+        longestText: string;
+        focusedId: string;
+    }
+    export interface IPerfTooltipHoverPosition {
+        xPos: number;
+        yPos: number;
+    }
+    /**
+     * Defines the supported timestamp units.
+     */
+    export enum TimestampUnit {
+        Milliseconds = 0,
+        Seconds = 1,
+        Minutes = 2,
+        Hours = 3
+    }
 }
 declare module INSPECTOR {
-    /**
-     * This class acts as the main API for graphing given a Here is where you will find methods to let the service know new data needs to be drawn,
-     * let it know something has been resized, etc!
-     */
     export class CanvasGraphService {
         private _ctx;
         private _width;
@@ -5074,6 +5164,8 @@ declare module INSPECTOR {
         private _tooltipTextCache;
         private _tickerTextCache;
         private _tickerItems;
+        private _preprocessedTooltipInfo;
+        private _numberOfTickers;
         private readonly _addonFontLineHeight;
         private readonly _defaultLineHeight;
         readonly datasets: BABYLON.IPerfDatasets;
@@ -5089,7 +5181,15 @@ declare module INSPECTOR {
          * This method lets the service know it should get ready to update what it is displaying.
          */
         update: (...args: any[]) => void;
+        /**
+         * Update the canvas graph service with the new height and width of the canvas.
+         * @param size The new size of the canvas.
+         */
         resize(size: IPerfLayoutSize): void;
+        /**
+         * Force resets the position in the data, effectively returning to the most current data.
+         */
+        resetDataPosition(): void;
         /**
          * This method draws the data and sets up the appropriate scales.
          */
@@ -5115,6 +5215,20 @@ declare module INSPECTOR {
          * @param drawableArea the current allocated drawable area.
          */
         private _drawTimeAxis;
+        /**
+         * Given a timestamp (should be the maximum timestamp in view), this function returns the maximum unit the timestamp contains.
+         * This information can be used for formatting purposes.
+         * @param timestamp the maximum timestamp to find the maximum timestamp unit for.
+         * @returns The maximum unit the timestamp has.
+         */
+        private _getTimestampUnit;
+        /**
+         * Given a timestamp and the interval unit, this function will parse the timestamp to the appropriate format.
+         * @param timestamp The timestamp to parse
+         * @param intervalUnit The maximum unit of the maximum timestamp in an interval.
+         * @returns a string representing the parsed timestamp.
+         */
+        private _parseTimestamp;
         /**
          * Generates a list of ticks given the min and max of the axis, and the space available in the axis.
          *
@@ -5168,7 +5282,7 @@ declare module INSPECTOR {
          */
         private _handleDataHover;
         /**
-         * Debounced version of _drawTooltip.
+         * Debounced processing and drawing of tooltip.
          */
         private _debouncedTooltip;
         /**
@@ -5176,9 +5290,27 @@ declare module INSPECTOR {
          */
         private _handleStopHover;
         /**
+         * Given a line defined by P1: (x1, y1) and P2: (x2, y2) get the distance of P0 (x0, y0) from the line.
+         * https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line#Line_defined_by_two_points
+         * @param x1 x position of point P1
+         * @param y1 y position of point P1
+         * @param x2 x position of point P2
+         * @param y2 y position of point P2
+         * @param x0 x position of point P0
+         * @param y0 y position of point P0
+         * @returns distance of P0 from the line defined by P1 and P2
+         */
+        private _getDistanceFromLine;
+        /**
+         * This method does preprocessing calculations for the tooltip.
+         * @param pos the position of our mouse.
+         * @param drawableArea the remaining drawable area.
+         */
+        private _preprocessTooltip;
+        /**
          * Draws the tooltip given the area it is allowed to draw in and the current pixel position.
          *
-         * @param pixel the position of the mouse cursor in pixels.
+         * @param pos the position of the mouse cursor in pixels (x, y).
          * @param drawableArea  the available area we can draw in.
          */
         private _drawTooltip;
@@ -5189,6 +5321,7 @@ declare module INSPECTOR {
          * @param minMax the minimum and maximum number in the range.
          * @param startingPixel position of the starting pixel in range.
          * @param endingPixel position of ending pixel in range.
+         * @param shouldFlipValue if we should use a [1, 0] scale instead of a [0, 1] scale.
          * @returns number corresponding to pixel position
          */
         private _getNumberFromPixel;
@@ -5246,6 +5379,7 @@ declare module INSPECTOR {
         scene: BABYLON.Scene;
         collector: BABYLON.PerformanceViewerCollector;
         layoutObservable?: BABYLON.Observable<IPerfLayoutSize>;
+        returnToPlayheadObservable?: BABYLON.Observable<void>;
     }
     export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps>;
 }
@@ -5334,6 +5468,7 @@ declare module INSPECTOR {
         private _isSaturationPointerDown;
         private _isHuePointerDown;
         constructor(props: IColorPickerProps);
+        shouldComponentUpdate(nextProps: IColorPickerProps, nextState: IColorPickerState): boolean;
         onSaturationPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
         onSaturationPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
         onSaturationPointerMove(evt: React.PointerEvent<HTMLDivElement>): void;
@@ -5377,6 +5512,12 @@ declare module INSPECTOR {
         collector: BABYLON.PerformanceViewerCollector;
     }
     export const PerformanceViewerSidebarComponent: (props: IPerformanceViewerSidebarComponentProps) => JSX.Element;
+}
+declare module INSPECTOR {
+    interface IPerformancePlayheadButtonProps {
+        returnToPlayhead: BABYLON.Observable<void>;
+    }
+    export const PerformancePlayheadButtonComponent: React.FC<IPerformancePlayheadButtonProps>;
 }
 declare module INSPECTOR {
     interface IPerformanceViewerComponentProps {
@@ -8677,6 +8818,7 @@ declare module INSPECTOR {
         private _onNewSceneAddedObserver;
         private _onNewSceneObserver;
         private sceneExplorerRef;
+        private _mutationTimeout;
         private _once;
         private _hooked;
         private sceneMutationFunc;
