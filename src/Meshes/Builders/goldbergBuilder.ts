@@ -8,24 +8,35 @@ import { Logger } from "../../Misc/logger";
 import { Primary, GeoData, PolyhedronData} from "../geoMesh"
 import { VertexBuffer } from "../../Buffers";
 
-VertexData.CreateGoldbergSphere= function(options: { size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, goldbergData: PolyhedronData): VertexData {
+VertexData.CreateGoldbergSphere = function(options: { size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, goldbergData: PolyhedronData): VertexData {
 
-    var size = options.size;
-    var sizeX: number = options.sizeX || size || 1;
-    var sizeY: number = options.sizeY || size || 1;
-    var sizeZ: number = options.sizeZ || size || 1;
-    //var data: { vertex: number[][], face: number[][], name?: string, category?: string };
-    //var nbfaces = data.face.length;
-    //var faceUV = options.faceUV || new Array(nbfaces);
-    var faceColors = options.faceColors;
-    var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
+    const size = options.size;
+    const sizeX: number = options.sizeX || size || 1;
+    const sizeY: number = options.sizeY || size || 1;
+    const sizeZ: number = options.sizeZ || size || 1;
+    //const data: { vertex: number[][], face: number[][], name?: string, category?: string };
+    //const nbfaces = data.face.length;
+    //const faceUV = options.faceUV || new Array(nbfaces);
+    const faceColors = options.faceColors;
+    const sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
 
-    var positions = new Array<number>();
-    var indices = new Array<number>();
-    var normals = new Array<number>();
-    var uvs = new Array<number>();
-    var colors = new Array<number>();
-    //var u: number, v: number, ang: number, x: number, y: number, tmp: number;
+    const positions = new Array<number>();
+    const indices = new Array<number>();
+    const normals = new Array<number>();
+    const uvs = new Array<number>();
+    const colors = new Array<number>();
+
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minY = Infinity;
+    let maxY = -Infinity;
+    
+    for (let v = 0; v < goldbergData.vertex.length; v++) {
+        minX = Math.min(minX, goldbergData.vertex[v][0] * sizeX);
+        maxX = Math.max(maxX, goldbergData.vertex[v][0] * sizeX);
+        minY = Math.min(minY, goldbergData.vertex[v][1] * sizeY);
+        maxY = Math.max(maxY, goldbergData.vertex[v][1] * sizeY);
+    }
 
     let index: number = 0;
     for (let f = 0; f < goldbergData.face.length; f++) {
@@ -40,6 +51,7 @@ VertexData.CreateGoldbergSphere= function(options: { size?: number, sizeX?: numb
             normals.push(norm.x, norm.y, norm.z);
             const pdata = goldbergData.vertex[verts[v]];
             positions.push(pdata[0] * sizeX, pdata[1] * sizeY, pdata[2] * sizeZ);
+            uvs.push((pdata[0] * sizeX - minX)/(maxX - minX), (pdata[1] * sizeY - minY)/(maxY - minY));
         }
         for (let v = 0; v < verts.length - 2; v++) {
             indices.push(index, index + v + 2, index + v + 1);
@@ -52,7 +64,7 @@ VertexData.CreateGoldbergSphere= function(options: { size?: number, sizeX?: numb
 
     VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
 
-    var vertexData = new VertexData();
+    const vertexData = new VertexData();
     vertexData.positions = positions;
     vertexData.indices = indices;
     vertexData.normals = normals;
