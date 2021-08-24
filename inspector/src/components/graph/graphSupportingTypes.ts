@@ -71,6 +71,21 @@ export interface ICanvasGraphServiceSettings {
 }
 
 /**
+ * Defines the structure representing the preprocessable tooltip information.
+ */
+export interface ITooltipPreprocessedInformation {
+    xForActualTimestamp: number;
+    numberOfTooltipItems: number;
+    longestText: string;
+    focusedId: string;
+}
+
+export interface IPerfTooltipHoverPosition {
+    xPos: number;
+    yPos: number;
+}
+
+/**
  * Defines the supported timestamp units.
  */
 export enum TimestampUnit {
