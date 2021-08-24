@@ -47,7 +47,6 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
     private _height = this.props.control.height;
     constructor(props: ICommonControlPropertyGridComponentProps) {
         super(props);
-
     }
 
     private _updateAlignment(alignment: string, value: number) {
@@ -114,7 +113,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                             if (control.typeName === "Image") {
                                 (control as Image).autoScale = false;
                             };
-                            this._checkAndUpdateValues("width",this._width.toString());
+                            this._checkAndUpdateValues("width", this._width.toString());
                         }
                         } />
                     <TextInputLineComponent numbersOnly={true} lockObject={this.props.lockObject} label="H" target={this} propertyName="_height" onPropertyChangedObservable={this.props.onPropertyChangedObservable}
