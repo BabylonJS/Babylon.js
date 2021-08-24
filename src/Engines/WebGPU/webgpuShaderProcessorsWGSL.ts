@@ -314,7 +314,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
         }
 
         // Vertex code
-        vertexCode = vertexCode.replace("#define ", "//#define ");
+        vertexCode = vertexCode.replace(/#define /g, "//#define ");
 
         let varyingsDecl = this._varyingsDeclWGSL.join("\n") + "\n";
 
@@ -357,7 +357,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
         console.log(vertexCode);
 
         // fragment code
-        fragmentCode = fragmentCode.replace("#define ", "//#define ");
+        fragmentCode = fragmentCode.replace(/#define /g, "//#define ");
 
         let fragmentBuiltinDecl = `var<private> ${builtInName_position_frag} : vec4<f32>;\nvar<private> ${builtInName_front_facing} : bool;\nvar<private> ${builtInName_FragColor} : vec4<f32>;\nvar<private> ${builtInName_frag_depth} : f32;\n`;
 
