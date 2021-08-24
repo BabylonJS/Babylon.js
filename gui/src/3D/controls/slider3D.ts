@@ -8,8 +8,8 @@ import { Control3D } from "./control3D";
 import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
 import { PointerDragBehavior } from "babylonjs/Behaviors/Meshes/pointerDragBehavior";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-import { FluentBackplateMaterial } from "../materials/fluentBackplate/fluentBackplateMaterial";
 import { SceneLoader } from "babylonjs/Loading/sceneLoader";
+import { MRDLSliderBarMaterial, MRDLSliderThumbMaterial, MRDLBackplateMaterial } from "../materials/mrdl";
 
 const SLIDER_MIN: number = 0;
 const SLIDER_MAX: number = 100;
@@ -25,18 +25,20 @@ export class Slider3D extends Control3D {
     /**
      * Base Url for the models.
      */
-    public static MODEL_BASE_URL: string = "https://assets.babylonjs.com/meshes/MRTK/";
+    public static MODEL_BASE_URL: string = "https://raw.githubusercontent.com/rgerd/TestAssets/master/GLB/"//"https://assets.babylonjs.com/meshes/MRTK/";
     /**
-     * File name for the model.
+     * File name for the models.
      */
-    public static MODEL_FILENAME: string = 'mrtk-fluent-backplate.glb';
+    public static MODEL_FILENAME: string = 'thick_8x4.glb';
+    public static MODEL_FILENAME_: string = 'thick_4x4.glb';
 
-    private _sliderBackPlate: AbstractMesh;
-    private _sliderBackPlateMaterial: FluentBackplateMaterial;
-    private _sliderBarMaterial: FluentBackplateMaterial;
-    private _sliderThumbMaterial: FluentBackplateMaterial;
+    private _sliderBackplate: AbstractMesh;
+    private _sliderBackplateMaterial: MRDLBackplateMaterial;
+    private _sliderBarMaterial: MRDLSliderBarMaterial;
+    private _sliderThumbMaterial: MRDLSliderThumbMaterial;
     private _sliderThumb: AbstractMesh;
     private _sliderBar: AbstractMesh;
+    private _sliderBackplateVisible: boolean;
 
     private _minimum: number;
     private _maximum: number;
@@ -49,9 +51,11 @@ export class Slider3D extends Control3D {
     /**
      * Creates a new slider
      * @param name defines the control name
+     * @param sliderBackplateVisible defines if the control has a backplate, default is false
      */
-    constructor(name?: string, private _sliderBackPlateVisible = true) {
+    constructor(name?: string, sliderBackplateVisible?: boolean) {
         super(name);
+        this._sliderBackplateVisible = sliderBackplateVisible || false;
 
         this._minimum = SLIDER_MIN;
         this._maximum = SLIDER_MAX;
@@ -144,22 +148,22 @@ export class Slider3D extends Control3D {
     /**
      * Gets the slider bar material used by this control
      */
-    public get sliderBarMaterial(): FluentBackplateMaterial {
+    public get sliderBarMaterial(): MRDLSliderBarMaterial {
         return this._sliderBarMaterial;
     }
 
     /**
      * Gets the slider thumb material used by this control
      */
-    public get sliderThumbMaterial(): FluentBackplateMaterial {
+    public get sliderThumbMaterial(): MRDLSliderThumbMaterial {
         return this._sliderThumbMaterial;
     }
 
     /**
      * Gets the slider backplate material used by this control
      */
-    public get sliderBackplateMaterial(): FluentBackplateMaterial {
-        return this._sliderThumbMaterial;
+    public get sliderBackplateMaterial(): MRDLBackplateMaterial {
+        return this._sliderBackplateMaterial;
     }
 
 
@@ -185,21 +189,20 @@ export class Slider3D extends Control3D {
                 const sliderThumbModel = result.meshes[1].clone(`${this.name}_sliderthumb`, sliderBackplate);
                 sliderBackplateModel.visibility = 0;
 
-                if (this._sliderBackPlateVisible) {
+                if (this._sliderBackplateVisible) {
                     sliderBackplateModel.visibility = 1;
                     sliderBackplateModel.name = `${this.name}_sliderbackplate`;
                     sliderBackplateModel.isPickable = false;
                     sliderBackplateModel.scaling.x = SLIDER_SCALING;
                     sliderBackplateModel.parent = sliderBackplate;
-                    if (!!this._sliderBackPlateMaterial) {
-                        sliderBackplateModel.material = this._sliderBackPlateMaterial;
+                    if (!!this._sliderBackplateMaterial) {
+                        sliderBackplateModel.material = this._sliderBackplateMaterial;
                     }
-                    this._sliderBackPlate = sliderBackplateModel;
+                    this._sliderBackplate = sliderBackplateModel;
                 }
 
                 if (!!sliderBarModel) {
                     sliderBarModel.parent = sliderBackplate;
-                    sliderBarModel.position.y = -0.1;
                     sliderBarModel.position.z = -0.5;
                     sliderBarModel.scaling = new Vector3(SLIDER_SCALING - SLIDER_MARGIN, 0.05, 0.4);
                     sliderBarModel.isPickable = false;
@@ -211,9 +214,8 @@ export class Slider3D extends Control3D {
 
                 if (!!sliderThumbModel) {
                     sliderThumbModel.isPickable = true;
-                    sliderThumbModel.position.y = -0.1;
                     sliderThumbModel.position.z = -0.54;
-                    sliderThumbModel.scaling = new Vector3(0.039, 0.12, 0.3);
+                    sliderThumbModel.scaling = new Vector3(0.024, 0.24, 0.8);
                     sliderThumbModel.position.x = this._convertToPosition(this.value);
                     sliderThumbModel.addBehavior(this._createBehavior());
                     if (!!this._sliderThumbMaterial) {
@@ -231,9 +233,9 @@ export class Slider3D extends Control3D {
     }
 
     protected _affectMaterial(mesh: Mesh) {
-        this._sliderBackPlateMaterial = new FluentBackplateMaterial(this.name + "backPlateMaterial", mesh.getScene());
-        this._sliderBarMaterial = new FluentBackplateMaterial(`${this.name}_sliderbar_material`, mesh.getScene());;
-        this._sliderThumbMaterial = new FluentBackplateMaterial(`${this.name}_sliderthumb_material`, mesh.getScene());
+        this._sliderBackplateMaterial = new MRDLBackplateMaterial(`${this.name}_sliderbackplate_material`, mesh.getScene());
+        this._sliderBarMaterial = new MRDLSliderBarMaterial(`${this.name}_sliderbar_material`, mesh.getScene());;
+        this._sliderThumbMaterial = new MRDLSliderThumbMaterial(`${this.name}_sliderthumb_material`, mesh.getScene());
     }
 
     private _createBehavior(): PointerDragBehavior {
@@ -274,7 +276,7 @@ export class Slider3D extends Control3D {
         this._sliderThumb?.dispose();
         this._sliderBarMaterial?.dispose();
         this._sliderThumbMaterial?.dispose();
-        this._sliderBackPlate?.dispose();
-        this._sliderBackPlateMaterial?.dispose();
+        this._sliderBackplate?.dispose();
+        this._sliderBackplateMaterial?.dispose();
     }
 }
