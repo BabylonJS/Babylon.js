@@ -11,7 +11,6 @@ import { DeepCopier } from "../Misc/deepCopier";
 import { TransformNode } from './transformNode';
 import { Light } from '../Lights/light';
 import { VertexBuffer } from '../Buffers/buffer';
-import { BoundingInfo } from '../Culling/boundingInfo';
 import { Tools } from '../Misc/tools';
 
 Mesh._instancedMeshFactory = (name: string, mesh: Mesh): InstancedMesh => {
@@ -298,7 +297,7 @@ export class InstancedMesh extends AbstractMesh {
      * @returns the current mesh
      */
     public refreshBoundingInfo(applySkeleton: boolean = false, applyMorph: boolean = false): InstancedMesh {
-        if (this._boundingInfo && this._boundingInfo.isLocked) {
+        if (this.hasBoundingInfo && this.getBoundingInfo().isLocked) {
             return this;
         }
 
@@ -423,11 +422,11 @@ export class InstancedMesh extends AbstractMesh {
     /** @hidden */
     public _updateBoundingInfo(): AbstractMesh {
         const effectiveMesh = this as AbstractMesh;
-        if (this._boundingInfo) {
-            this._boundingInfo.update(effectiveMesh.worldMatrixFromCache);
+        if (this.hasBoundingInfo) {
+            this.getBoundingInfo().update(effectiveMesh.worldMatrixFromCache);
         }
         else {
-            this._boundingInfo = new BoundingInfo(this.absolutePosition, this.absolutePosition, effectiveMesh.worldMatrixFromCache);
+            this.buildBoundingInfo(this.absolutePosition, this.absolutePosition, effectiveMesh.worldMatrixFromCache);
         }
         this._updateSubMeshesBoundingInfo(effectiveMesh.worldMatrixFromCache);
         return this;

@@ -125,7 +125,7 @@ export class Button extends Rectangle {
             return false;
         }
 
-        if (this.pointerEnterAnimation) {
+        if (!this.isReadOnly && this.pointerEnterAnimation) {
             this.pointerEnterAnimation();
         }
 
@@ -134,7 +134,7 @@ export class Button extends Rectangle {
 
     /** @hidden */
     public _onPointerOut(target: Control, pi: PointerInfoBase, force = false): void {
-        if (this.pointerOutAnimation) {
+        if (!this.isReadOnly && this.pointerOutAnimation) {
             this.pointerOutAnimation();
         }
 
@@ -147,7 +147,7 @@ export class Button extends Rectangle {
             return false;
         }
 
-        if (this.pointerDownAnimation) {
+        if (!this.isReadOnly && this.pointerDownAnimation) {
             this.pointerDownAnimation();
         }
 
@@ -156,7 +156,7 @@ export class Button extends Rectangle {
 
     /** @hidden */
     public _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi: PointerInfoBase): void {
-        if (this.pointerUpAnimation) {
+        if (!this.isReadOnly && this.pointerUpAnimation) {
             this.pointerUpAnimation();
         }
 

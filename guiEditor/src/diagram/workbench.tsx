@@ -46,7 +46,7 @@ export enum ConstraintDirection {
 export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps> {
     public artBoardBackground: Rectangle;
     private _rootContainer: React.RefObject<HTMLCanvasElement>;
-    private _setConstraintDirection: boolean;
+    private _setConstraintDirection: boolean = false;
     private _mouseStartPointX: Nullable<number> = null;
     private _mouseStartPointY: Nullable<number> = null;
     private _textureMesh: Mesh;
@@ -62,6 +62,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _canvas: HTMLCanvasElement;
     private _responsive: boolean;
     private _isOverGUINode = false;
+    private _focused: boolean = false;
 
     public get globalState() {
         return this.props.globalState;
@@ -143,42 +144,52 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         this.props.globalState.hostDocument!.addEventListener(
             "keyup",
-            this.ctrlEvent,
+            this.keyEvent,
             false
         );
 
         // Hotkey shortcuts
         this.props.globalState.hostDocument!.addEventListener(
             "keydown",
-            this.ctrlEvent,
+            this.keyEvent,
             false
         );
         this.props.globalState.hostDocument!.defaultView!.addEventListener(
             "blur",
-            this.ctrlFalseEvent,
+            this.blurEvent,
             false
         );
 
         this.props.globalState.workbench = this;
     }
 
-    ctrlEvent = (evt: KeyboardEvent) => {
+    keyEvent = (evt: KeyboardEvent) => {
         this._ctrlKeyIsPressed = evt.ctrlKey;
         if (evt.shiftKey) {
             this._setConstraintDirection = this._constraintDirection === ConstraintDirection.NONE;
         } else {
+            this._setConstraintDirection = false;
             this._constraintDirection = ConstraintDirection.NONE;
+        }
+        if (evt.key === "Delete") {
+            if(this._focused) {
+                this._selectedGuiNodes.forEach(guiNode => {
+                    guiNode.dispose();
+                });
+                this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+            }
         }
     };
 
-    ctrlFalseEvent = () => {
+    blurEvent = () => {
         this._ctrlKeyIsPressed = false;
+        this._constraintDirection = ConstraintDirection.NONE;
     };
 
     componentWillUnmount() {
-        this.props.globalState.hostDocument!.removeEventListener("keyup", this.ctrlEvent);
-        this.props.globalState.hostDocument!.removeEventListener("keydown", this.ctrlEvent);
-        this.props.globalState.hostDocument!.defaultView!.removeEventListener("blur", this.ctrlFalseEvent);
+        this.props.globalState.hostDocument!.removeEventListener("keyup", this.keyEvent);
+        this.props.globalState.hostDocument!.removeEventListener("keydown", this.keyEvent);
+        this.props.globalState.hostDocument!.defaultView!.removeEventListener("blur", this.blurEvent);
     }
 
     loadFromJson(serializationObject: any) {
@@ -202,6 +213,13 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             }
             this.createNewGuiNode(guiElement);
         });
+
+        if (this.props.globalState.guiTexture.getChildren()[0].children.length) {
+            this.props.globalState.guiTexture.getChildren()[0].children.unshift(this.props.globalState.workbench.artBoardBackground);
+        }
+        else {
+            this.props.globalState.guiTexture.getChildren()[0].children.push(this.props.globalState.workbench.artBoardBackground);
+        }
     }
 
     changeSelectionHighlight(value: boolean) {
@@ -273,6 +291,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 this.createNewGuiNode(child);
             });
         }
+        guiControl.isReadOnly = true;
 
         return guiControl;
     }
@@ -307,11 +326,16 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                         (dropLocationControl as Container).addControl(draggedControl);
                     }
                     else if (dropLocationControl.parent) { //dropping inside the controls parent container
-                        let index = dropLocationControl.parent.children.indexOf(dropLocationControl);
-                        //adjusting index to be before or after based on where the control is over
-                        index = this._adjustParentingIndex(index);
-                        dropLocationControl.parent.children.splice(index, 0, draggedControl);
-                        draggedControl.parent = dropLocationControl.parent;
+
+                        if (dropLocationControl.parent.typeName != "Grid") {
+                            let index = dropLocationControl.parent.children.indexOf(dropLocationControl);
+                            index = this._adjustParentingIndex(index);  //adjusting index to be before or after based on where the control is over
+                            dropLocationControl.parent.children.splice(index, 0, draggedControl);
+                            draggedControl.parent = dropLocationControl.parent;
+                        }
+                        else { //special case for grid
+                            (dropLocationControl.parent as Container).addControl(draggedControl);
+                        }
                     }
                     else {
                         this.props.globalState.guiTexture.addControl(draggedControl);
@@ -404,8 +428,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             }
             const left = (guiControl.leftInPixels * 100) / ratioX;
             const top = (guiControl.topInPixels * 100) / ratioY;
-            guiControl.left = `${left}%`;
-            guiControl.top = `${top}%`;
+            guiControl.left = `${left.toFixed(2)}%`;
+            guiControl.top = `${top.toFixed(2)}%`;
         }
         this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
         return true;
@@ -705,7 +729,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     render() {
         return (
             <canvas id="workbench-canvas" onPointerMove={(evt) => this.onMove(evt)} onPointerDown={(evt) => this.onDown(evt)} onPointerUp={(evt) => this.onUp(evt)}
-                ref={this._rootContainer}>
+                ref={this._rootContainer}
+                onFocus={() => { this._focused = true;}}
+                onBlur={() => { this._focused = false;}}>
             </canvas>
         );
     }
