@@ -17,6 +17,7 @@ interface IControlTreeItemComponentProps {
     onClick: () => void;
     globalState: GlobalState;
     isHovered: boolean;
+    dragOverHover: boolean;
     dragOverLocation: DragOverLocation
 }
 
@@ -49,15 +50,16 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
         if (control.parent?.typeName === "Grid") {
             name += ` [${(control.parent as Grid).getChildCellInfo(this.props.control)}]`;
         }
+        let draggingSelf = this.props.globalState.draggedControl === control;
         return (
             <div className="controlTools" >
                 <TreeItemLabelComponent label={name} onClick={() => this.props.onClick()} color="greenyellow" />
-                {(this.props.dragOverLocation == DragOverLocation.CENTER && this.props.globalState.workbench.isContainer(control)) && <>
+                {(!draggingSelf && this.props.dragOverHover && this.props.dragOverLocation == DragOverLocation.CENTER && this.props.globalState.workbench.isContainer(control)) && <>
                     <div className="makeChild icon" onClick={() => this.highlight()} title="Make Child">
                         <img src={makeChildOfContainerIcon} />
                     </div>
                 </>}
-                {(this.props.isHovered && this.props.dragOverLocation == DragOverLocation.NONE) && <>
+                {(this.props.isHovered && this.props.globalState.draggedControl === null && this.props.dragOverLocation == DragOverLocation.NONE) && <>
                     <div className="addComponent icon" onClick={() => this.highlight()} title="Add component (Not Implemented)">
                         <img src={makeComponentIcon} />
                     </div>
