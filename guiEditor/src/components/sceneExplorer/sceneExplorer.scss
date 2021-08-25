@@ -13,7 +13,7 @@
     display: none;
 }
 
-hr.se {
+hr.seAbove {
     border: 1px solid #527089;
     margin-block-start: auto;
     margin-block-end: auto;
@@ -23,6 +23,18 @@ hr.se {
     grid-row: 1;
     grid-column: 2;
 }
+
+hr.seBelow {
+    border: 1px solid #527089;
+    margin-block-start: auto;
+    margin-block-end: auto;
+    width: 200%;
+    margin-inline-start: -100%;
+    display: inherit;
+    grid-row: 3;
+    grid-column: 2;
+}
+
 
 .ge-context-menu {
     background: #e2e2e2;
@@ -210,10 +222,6 @@ hr.se {
         cursor: pointer;
     }
 
-    .spacer {
-        background: transparent;
-    }
-
     .itemContainer {
         margin-left: 0px;
         color: black;
@@ -227,13 +235,18 @@ hr.se {
         display: grid;
         grid-template-columns: 20px 1fr;
 
-        &:hover {
+        &.hover {
             border: 2px solid #527089;
             cursor: pointer;
         }
 
-        &.selected{
+        &.selected {
             background: #bfbebe;
+            color: black;
+        }
+
+        &.makeChild {
+            background: #ffffff ;
             color: black;
         }
         
