@@ -154,30 +154,31 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         this.props.globalState.hostDocument!.addEventListener(
             "keyup",
-            this.ctrlEvent,
+            this.keyEvent,
             false
         );
 
         // Hotkey shortcuts
         this.props.globalState.hostDocument!.addEventListener(
             "keydown",
-            this.ctrlEvent,
+            this.keyEvent,
             false
         );
         this.props.globalState.hostDocument!.defaultView!.addEventListener(
             "blur",
-            this.ctrlFalseEvent,
+            this.blurEvent,
             false
         );
 
         this.props.globalState.workbench = this;
     }
 
-    ctrlEvent = (evt: KeyboardEvent) => {
+    keyEvent = (evt: KeyboardEvent) => {
         this._ctrlKeyIsPressed = evt.ctrlKey;
         if (evt.shiftKey) {
             this._setConstraintDirection = this._constraintDirection === ConstraintDirection.NONE;
         } else {
+            this._setConstraintDirection = false;
             this._constraintDirection = ConstraintDirection.NONE;
         }
 
@@ -259,14 +260,15 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._selectAll = true;
     }
 
-    ctrlFalseEvent = () => {
+    blurEvent = () => {
         this._ctrlKeyIsPressed = false;
+        this._constraintDirection = ConstraintDirection.NONE;
     };
 
     componentWillUnmount() {
-        this.props.globalState.hostDocument!.removeEventListener("keyup", this.ctrlEvent);
-        this.props.globalState.hostDocument!.removeEventListener("keydown", this.ctrlEvent);
-        this.props.globalState.hostDocument!.defaultView!.removeEventListener("blur", this.ctrlFalseEvent);
+        this.props.globalState.hostDocument!.removeEventListener("keyup", this.keyEvent);
+        this.props.globalState.hostDocument!.removeEventListener("keydown", this.keyEvent);
+        this.props.globalState.hostDocument!.defaultView!.removeEventListener("blur", this.blurEvent);
     }
 
     loadFromJson(serializationObject: any) {
@@ -368,6 +370,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 this.createNewGuiNode(child);
             });
         }
+        guiControl.isReadOnly = true;
 
         return guiControl;
     }
