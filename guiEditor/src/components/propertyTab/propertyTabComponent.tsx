@@ -101,6 +101,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         });
         this.props.globalState.onResizeObservable.add((newSize) => {
             this.setState({ textureSize: newSize });
+            this.props.globalState.workbench.artBoardBackground._markAsDirty(true);
         });
 
         this._onBuiltObserver = this.props.globalState.onBuiltObservable.add(() => {
@@ -388,7 +389,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             <FloatLineComponent
                                 icon={canvasSizeIcon}
                                 iconLabel="Canvas Size"
-                                label=" "
+                                label="X"
                                 target={this.state.textureSize}
                                 propertyName="x"
                                 isInteger={true}
@@ -400,7 +401,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                     }
                                 }} ></FloatLineComponent>
                             <FloatLineComponent
-                                label=" "
+                                                            icon={canvasSizeIcon}
+                                label="Y"
                                 target={this.state.textureSize}
                                 propertyName="y"
                                 isInteger={true}
