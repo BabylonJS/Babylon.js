@@ -1,21 +1,19 @@
 import { Nullable } from "../types";
 import { Observable } from "./observable";
 
-type Coroutine = Iterator<void | Promise<void>, void, void>;
-
 declare module "./observable" {
     export interface Observable<T> {
         /**
          * Internal list of iterators and promise resolvers associated with coroutines.
          */
-        coroutineIterators: Nullable<Array<{ iterator: Coroutine, resolver: () => void, rejecter: () => void, paused: boolean }>>;
+        coroutineIterators: Nullable<Array<{ iterator: Iterator<void | Promise<void>, void, void>, resolver: () => void, rejecter: () => void, paused: boolean }>>;
 
         /**
          * Runs a coroutine asynchronously on this observable
          * @param coroutineIterator the iterator resulting from having started the coroutine
          * @returns a promise which will be resolved when the coroutine finishes or rejected if the coroutine is cancelled
          */
-        runCoroutineAsync(coroutineIterator: Coroutine): Promise<void>;
+        runCoroutineAsync(coroutineIterator: Iterator<void | Promise<void>, void, void>): Promise<void>;
 
         /**
          * Cancels all coroutines currently running on this observable
@@ -24,7 +22,7 @@ declare module "./observable" {
     }
 }
 
-Observable.prototype.runCoroutineAsync = function (coroutineIterator: Coroutine): Promise<void> {
+Observable.prototype.runCoroutineAsync = function (coroutineIterator: Iterator<void | Promise<void>, void, void>): Promise<void> {
     if (!this.coroutineIterators) {
         this.coroutineIterators = [];
 
