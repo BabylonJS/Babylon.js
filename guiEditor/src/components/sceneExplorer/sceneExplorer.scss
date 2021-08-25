@@ -222,6 +222,10 @@ hr.seBelow {
         cursor: pointer;
     }
 
+    .makeChild{
+       grid-column: 3;
+    }
+
     .itemContainer {
         margin-left: 0px;
         color: black;
@@ -245,7 +249,12 @@ hr.seBelow {
             color: black;
         }
 
-        &.makeChild {
+        &.dragged {
+            background: transparent;
+            color: black;
+        }
+
+        &.parent {
             background: #ffffff ;
             color: black;
         }
