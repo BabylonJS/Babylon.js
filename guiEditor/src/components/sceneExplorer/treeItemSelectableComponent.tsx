@@ -206,6 +206,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
                     <ControlTreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} control={entity}
                         onClick={() => { }}
                         isHovered={this.state.isHovered}
+                        dragOverHover={this.dragOverHover}
                         dragOverLocation={this.state.dragOverLocation}
                     />
                 </div>
@@ -218,7 +219,6 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
             </div >
         );
     }
-
 
     dragOver(event: React.DragEvent<HTMLDivElement>): void {
         //check the positiions of the mouse cursor.
