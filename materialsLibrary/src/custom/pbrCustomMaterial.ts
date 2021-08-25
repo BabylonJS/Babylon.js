@@ -115,14 +115,15 @@ export class PBRCustomMaterial extends PBRMaterial {
 
     public Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines | string[], attributes?: string[], options?: ICustomShaderNameResolveOptions): string {
         if (options) {
+            const currentProcessing = options.processFinalCode;
             options.processFinalCode = (type: string, code: string) => {
                 if (type === "vertex") {
-                    return code;
+                    return currentProcessing ? currentProcessing(type, code) : code;
                 }
                 const sci = new ShaderCodeInliner(code);
                 sci.inlineToken = "#define pbr_inline";
                 sci.processCode();
-                return sci.code;
+                return currentProcessing ? currentProcessing(type, sci.code) : sci.code;
             };
         }
 
