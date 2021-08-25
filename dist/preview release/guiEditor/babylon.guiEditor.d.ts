@@ -330,6 +330,7 @@ declare module GUIEDITOR {
         icon?: string;
         iconLabel?: string;
         noUnderline?: boolean;
+        numbersOnly?: boolean;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
@@ -366,7 +367,11 @@ declare module GUIEDITOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
+        private _width;
+        private _height;
         constructor(props: ICommonControlPropertyGridComponentProps);
+        private _updateAlignment;
+        private _checkAndUpdateValues;
         render(): JSX.Element;
     }
 }
@@ -801,7 +806,7 @@ declare module GUIEDITOR {
 }
 declare module GUIEDITOR {
     export class GUINodeTools {
-        static CreateControlFromString(data: string): Rectangle | Line | Grid | Image | Slider | TextBlock | InputText | ColorPicker | StackPanel | Ellipse | Checkbox | DisplayGrid;
+        static CreateControlFromString(data: string): Rectangle | Line | Grid | TextBlock | Image | Slider | InputText | ColorPicker | StackPanel | Ellipse | Checkbox | DisplayGrid;
     }
 }
 declare module GUIEDITOR {

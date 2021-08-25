@@ -952,6 +952,7 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/textInputLineCompon
         icon?: string;
         iconLabel?: string;
         noUnderline?: boolean;
+        numbersOnly?: boolean;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
@@ -5749,6 +5750,7 @@ declare module INSPECTOR {
         icon?: string;
         iconLabel?: string;
         noUnderline?: boolean;
+        numbersOnly?: boolean;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
