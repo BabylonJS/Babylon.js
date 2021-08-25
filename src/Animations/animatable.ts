@@ -139,10 +139,10 @@ export class Animatable {
     /**
      * Synchronize and normalize current Animatable with a source Animatable
      * This is useful when using animation weights and when animations are not of the same length
-     * @param root defines the root Animatable to synchronize with
+     * @param root defines the root Animatable to synchronize with (null to stop synchronizing)
      * @returns the current Animatable
      */
-    public syncWith(root: Animatable): Animatable {
+    public syncWith(root: Nullable<Animatable>): Animatable {
         this._syncRoot = root;
 
         if (root) {
