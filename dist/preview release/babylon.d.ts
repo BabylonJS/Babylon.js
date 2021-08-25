@@ -60747,6 +60747,8 @@ declare module BABYLON {
         camera?: Camera;
         /** Indicates if the destination view canvas should be cleared before copying the parent canvas. Can help if the scene clear color has alpha < 1 */
         clearBeforeCopy?: boolean;
+        /** Indicates if the view is enabled (true by default) */
+        enabled: boolean;
     }
         interface Engine {
             /**
