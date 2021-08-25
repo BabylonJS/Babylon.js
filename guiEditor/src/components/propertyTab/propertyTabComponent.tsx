@@ -282,7 +282,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
     render() {
 
-        if (this.state.currentNode) {
+        if (this.state.currentNode && this.props.globalState.workbench.selectedGuiNodes.length === 1) {
             return (
                 <div id="ge-propertyTab">
                     <div id="header">
