@@ -185,11 +185,11 @@ export abstract class WebGPUCacheRenderPipeline {
     private _overrideVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }>;
     private _indexBuffer: Nullable<DataBuffer>;
     private _textureState: number;
-    private _useTextureStage: boolean;
+    private _useTextureState: boolean;
 
-    constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer, useTextureStage: boolean) {
+    constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer, useTextureState: boolean) {
         this._device = device;
-        this._useTextureStage = useTextureStage;
+        this._useTextureState = useTextureState;
         this._states = new Array(30); // pre-allocate enough room so that no new allocation will take place afterwards
         this._statesLength = 0;
         this._stateDirtyLowestIndex = 0;
@@ -858,8 +858,8 @@ export abstract class WebGPUCacheRenderPipeline {
     }
 
     private _createPipelineLayout(webgpuPipelineContext: WebGPUPipelineContext): GPUPipelineLayout {
-        if (this._useTextureStage) {
-            return this._createPipelineLayoutWithTextureStage(webgpuPipelineContext);
+        if (this._useTextureState) {
+            return this._createPipelineLayoutWithTextureState(webgpuPipelineContext);
         }
 
         const bindGroupLayouts: GPUBindGroupLayout[] = [];
@@ -925,7 +925,7 @@ export abstract class WebGPUCacheRenderPipeline {
         return this._device.createPipelineLayout({ bindGroupLayouts });
     }
 
-    private _createPipelineLayoutWithTextureStage(webgpuPipelineContext: WebGPUPipelineContext): GPUPipelineLayout {
+    private _createPipelineLayoutWithTextureState(webgpuPipelineContext: WebGPUPipelineContext): GPUPipelineLayout {
         const bindGroupEntries: GPUBindGroupLayoutEntry[][] = [];
         const shaderProcessingContext = webgpuPipelineContext.shaderProcessingContext;
 
@@ -966,7 +966,7 @@ export abstract class WebGPUCacheRenderPipeline {
                 } else if (bindingDefinition.isTexture) {
                     let sampleType = bindingDefinition.sampleType;
 
-                    if (this._textureState & bitVal) {
+                    if ((this._textureState & bitVal) && sampleType !== WebGPUConstants.TextureSampleType.Depth) {
                         // The texture is a 32 bits float texture but the system does not support linear filtering for them:
                         // we set the sampler to "non-filtering" and the texture sample type to "unfilterable-float"
                         const samplerTexture = shaderProcessingContext.availableSamplers[bindingDefinition.origName!];
