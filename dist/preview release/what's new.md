@@ -40,6 +40,7 @@
 - Added the ability to load a fullscreen GUI from the snippet server ([PirateJC](https://github.com/piratejc))
 - Updated the gravity parameter in `Scene.enablePhysics()` as optional to fit the current behaviour ([Faber](https://https://github.com/Faber-smythe))
 - Allow the possibility to override the radius delta calculation for mouse wheel event ([RaananW](https://github.com/RaananW))
+- Modified behavior for FreeCamera and ArcRotateCamera so that default mouse dragging movements now account for what button was used to initiate it ([PolygonalSun](https://github.com/PolygonalSun))
 
 ### Engine
 
