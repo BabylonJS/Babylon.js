@@ -14,6 +14,8 @@ export class EngineView {
     camera?: Camera;
     /** Indicates if the destination view canvas should be cleared before copying the parent canvas. Can help if the scene clear color has alpha < 1 */
     clearBeforeCopy?: boolean;
+    /** Indicates if the view is enabled (true by default) */
+    enabled: boolean;
 }
 
 declare module "../../Engines/engine" {
@@ -72,7 +74,7 @@ Engine.prototype.registerView = function (canvas: HTMLCanvasElement, camera?: Ca
         canvas.height = masterCanvas.height;
     }
 
-    let newView = { target: canvas, camera, clearBeforeCopy };
+    let newView = { target: canvas, camera, clearBeforeCopy, enabled: true };
     this.views.push(newView);
 
     if (camera) {
@@ -115,6 +117,9 @@ Engine.prototype._renderViews = function () {
     }
 
     for (var view of this.views) {
+        if (!view.enabled) {
+            continue;
+        }
         let canvas = view.target;
         let context = canvas.getContext("2d");
         if (!context) {
