@@ -401,7 +401,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                     }
                                 }} ></FloatLineComponent>
                             <FloatLineComponent
-                                                            icon={canvasSizeIcon}
+                                icon={canvasSizeIcon}
                                 label="Y"
                                 target={this.state.textureSize}
                                 propertyName="y"
