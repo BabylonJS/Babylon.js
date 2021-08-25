@@ -90,8 +90,13 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             } else {
                 if (selection instanceof Control) {
                     if (this._ctrlKeyIsPressed) {
-                        if (this._selectedGuiNodes.indexOf(selection) === -1) {
+                        let index = this._selectedGuiNodes.indexOf(selection);
+                        if (index === -1) {
                             this._selectedGuiNodes.push(selection);
+                        }
+                        else {
+                            this.changeSelectionHighlight(false);
+                            this._selectedGuiNodes.splice(index,1);
                         }
                     } else if (this._selectedGuiNodes.length <= 1) {
                         this.changeSelectionHighlight(false);
@@ -187,6 +192,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         if (this._ctrlKeyIsPressed) {
             if (evt.key === "a") {
+                this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                 let index = 0;
                 this.nodes.forEach(node => {
                     if (index++) { //skip the first node, the background
