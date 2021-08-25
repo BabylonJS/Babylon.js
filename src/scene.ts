@@ -3993,6 +3993,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             return;
         }
 
+        this.onBeforeCameraRenderObservable.notifyObservers(camera);
+
         var engine = this._engine;
 
         // Use _activeCamera instead of activeCamera to avoid onActiveCameraChanged
@@ -4015,8 +4017,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         } else {
             this.updateTransformMatrix();
         }
-
-        this.onBeforeCameraRenderObservable.notifyObservers(this.activeCamera);
 
         // Meshes
         this._evaluateActiveMeshes();
@@ -4123,7 +4123,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     private _processSubCameras(camera: Camera): void {
         if (camera.cameraRigMode === Constants.RIG_MODE_NONE || (camera.outputRenderTarget && camera.outputRenderTarget.getViewCount() > 1 && this.getEngine().getCaps().multiview)) {
             this._renderForCamera(camera);
-            this.onAfterRenderCameraObservable.notifyObservers(camera);
             return;
         }
 
@@ -4139,7 +4138,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         // Use _activeCamera instead of activeCamera to avoid onActiveCameraChanged
         this._activeCamera = camera;
         this.setTransformMatrix(this._activeCamera.getViewMatrix(), this._activeCamera.getProjectionMatrix());
-        this.onAfterRenderCameraObservable.notifyObservers(camera);
     }
 
     private _checkIntersections(): void {
