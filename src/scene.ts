@@ -5212,7 +5212,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     protected _perfCollector: Nullable<PerformanceViewerCollector> = null;
 
     /**
-     * This method gets the performance collector belonging to the scene. 
+     * This method gets the performance collector belonging to the scene.
      */
     public getPerfCollector(): PerformanceViewerCollector {
         throw _DevTools.WarnImport("performanceViewerSceneExtension");
