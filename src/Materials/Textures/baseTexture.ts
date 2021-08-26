@@ -426,7 +426,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
     /** @hidden */
     public _parentContainer: Nullable<AbstractScene> = null;
 
-    protected _loadingError: boolean;
+    protected _loadingError: boolean = false;
     protected _errorObject?: {
         message?: string;
         exception?: any;
