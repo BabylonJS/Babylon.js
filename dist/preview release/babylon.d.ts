@@ -22183,6 +22183,7 @@ declare module BABYLON {
          * If the camera should be rotated automatically based on pointer movement
          */
         _allowCameraRotation: boolean;
+        private _currentActiveButton;
         /**
          * Manage the mouse inputs to control the movement of a free camera.
          * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -48490,6 +48491,7 @@ declare module BABYLON {
          * https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/buttons
          */
         protected _buttonsPressed: number;
+        private _currentActiveButton;
         /**
          * Defines the buttons associated with the input to handle camera move.
          */

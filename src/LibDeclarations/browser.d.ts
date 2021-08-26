@@ -67,3 +67,11 @@ interface Math {
     imul(a: number, b: number): number;
     log2(x: number): number;
 }
+
+interface OffscreenCanvas extends EventTarget {
+}
+
+declare var OffscreenCanvas: {
+    prototype: OffscreenCanvas;
+    new(width: number, height: number): OffscreenCanvas;
+};

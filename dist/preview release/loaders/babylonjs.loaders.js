@@ -8909,7 +8909,7 @@ var GLTFLoader = /** @class */ (function () {
             return extensionPromise;
         }
         this.logOpen("" + context);
-        if (textureInfo.texCoord >= 2) {
+        if (textureInfo.texCoord >= 6) {
             throw new Error(context + "/texCoord: Invalid value (" + textureInfo.texCoord + ")");
         }
         var texture = ArrayItem.Get(context + "/index", this._gltf.textures, textureInfo.index);
