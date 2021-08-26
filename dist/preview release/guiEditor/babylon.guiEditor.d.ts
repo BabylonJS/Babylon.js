@@ -48,11 +48,17 @@ declare module GUIEDITOR {
         private _responsive;
         private _isOverGUINode;
         private _focused;
+        private _clipboard;
+        private _selectAll;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
         constructor(props: IWorkbenchComponentProps);
         keyEvent: (evt: KeyboardEvent) => void;
+        private copyToClipboard;
+        private pasteFromClipboard;
+        CopyGUIControl(original: Control): void;
+        private selectAllGUI;
         blurEvent: () => void;
         componentWillUnmount(): void;
         loadFromJson(serializationObject: any): void;
@@ -1080,7 +1086,6 @@ declare module GUIEDITOR {
         componentDidMount(): void;
         componentWillUnmount(): void;
         constructor(props: IGraphEditorProps);
-        pasteSelection(copiedNodes: Control[], currentX: number, currentY: number, selectNew?: boolean): Control[];
         showWaitScreen(): void;
         hideWaitScreen(): void;
         onPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
