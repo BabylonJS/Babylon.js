@@ -13,6 +13,9 @@ import { InputPassword } from "babylonjs-gui/2D/controls/inputPassword";
 import { Grid } from "babylonjs-gui/2D/controls/grid";
 import { DisplayGrid } from "babylonjs-gui/2D/controls/displayGrid";
 import { StackPanel } from "babylonjs-gui/2D/controls/stackPanel";
+import { ScrollViewer } from "babylonjs-gui/2D/controls/scrollViewers/scrollViewer";
+import { ImageBasedSlider } from "babylonjs-gui/2D/controls/index";
+import { RadioButton } from "babylonjs-gui/2D/controls/radioButton";
 
 export class GUINodeTools {
     public static CreateControlFromString(data: string) {
@@ -124,6 +127,19 @@ export class GUINodeTools {
                 element.width = "160%";
                 element.height = "100%";
                 return element;
+            case "ScrollViewer":
+                element = new ScrollViewer("ScrollViewer");
+                element.width = 0.4;
+                element.height = 0.4;
+                element.background = "#CCCCCC";
+                return element;
+            case "ImageBasedSlider":
+                element = new ImageBasedSlider("ImageBasedSlider");
+                return element;
+            case "RadioButton":
+                element = new RadioButton("RadioButton");
+                return element;
+        
             default:
                 element = Button.CreateSimpleButton("Button", "Click Me");
                 element.background = "#333333";

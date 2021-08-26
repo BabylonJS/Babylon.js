@@ -384,6 +384,21 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                 label: "InputPassword",
                 icon: passwordFieldIcon,
                 onClick: () => { this.onCreate("InputPassword") }
+            },
+            {   //TODO: Change icons
+                label: "ScrollViewer",
+                icon: textBoxIcon,
+                onClick: () => { this.onCreate("ScrollViewer") }
+            },
+            {
+                label: "ImageBasedSlider",
+                icon: inputFieldIcon,
+                onClick: () => { this.onCreate("ImageBasedSlider") }
+            },
+            {
+                label: "RadioButton",
+                icon: passwordFieldIcon,
+                onClick: () => { this.onCreate("RadioButton") }
             }
 
         ]
