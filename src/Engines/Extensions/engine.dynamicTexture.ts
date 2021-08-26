@@ -79,7 +79,7 @@ ThinEngine.prototype.updateDynamicTexture = function (texture: Nullable<Internal
     const glformat = this._getInternalFormat(format ? format : texture.format);
     const internalFormat = this._getRGBABufferInternalSizedFormat(texture.type, glformat);
 
-    gl.texImage2D(target, 0, internalFormat, glformat, textureType, source);
+    gl.texImage2D(target, 0, internalFormat, glformat, textureType, source as TexImageSource);
 
     if (texture.generateMipMaps) {
         gl.generateMipmap(target);
