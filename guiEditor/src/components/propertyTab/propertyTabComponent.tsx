@@ -283,7 +283,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
     render() {
 
-        if (this.state.currentNode) {
+        if (this.state.currentNode && this.props.globalState.workbench.selectedGuiNodes.length === 1) {
             return (
                 <div id="ge-propertyTab">
                     <div id="header">
@@ -309,23 +309,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         label="COPY ELEMENT"
                         onClick={() => {
                             if (this.state.currentNode) {
-                                const serializationObject = {};
-                                this.state.currentNode.serialize(serializationObject);
-                                const newControl = Control.Parse(serializationObject, this.props.globalState.guiTexture);
-
-                                if (newControl) { //insert the new control into the adt or parent container
-                                    this.props.globalState.workbench.appendBlock(newControl);
-                                    this.props.globalState.guiTexture.removeControl(newControl);
-                                    this.state.currentNode.parent?.addControl(newControl);
-
-                                    let index = 1;
-                                    while (this.props.globalState.guiTexture.getDescendants(false).filter(  //search if there are any copies
-                                        control => control.name === `${newControl.name} Copy ${index}`).length) {
-                                        index++;
-                                    }
-                                    newControl.name = `${newControl.name} Copy ${index}`;
-                                    this.props.globalState.onSelectionChangedObservable.notifyObservers(newControl);
-                                }
+                                this.props.globalState.workbench.CopyGUIControl(this.state.currentNode);
                             }
                         }}
                     />
