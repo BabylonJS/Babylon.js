@@ -39,7 +39,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
 
         this._onDraggingEndObservable = props.globalState.onDraggingEndObservable.add(() => {
             this.setState({ dragOverLocation: DragOverLocation.NONE });
-            
+
         });
         this._onDraggingStartObservable = props.globalState.onDraggingStartObservable.add(() => {
             this.forceUpdate();
@@ -170,12 +170,11 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
         className += this.state.isHovered && this.props.globalState.draggedControl === null ? " hover" : "";
         className += this.dragOverHover && this.state.dragOverLocation == DragOverLocation.CENTER && this.props.globalState.workbench.isContainer(entity) ? " parent" : ""
         className += this.props.globalState.draggedControl === this.props.entity ? " dragged" : "";
+        className += (this.dragOverHover && this.state.dragOverLocation == DragOverLocation.ABOVE && this.props.globalState.draggedControl != null && entity.parent) ? " seAbove" : "";
+        className += (this.dragOverHover && this.state.dragOverLocation == DragOverLocation.BELOW && this.props.globalState.draggedControl != null && entity.parent) ? " seBelow" : "";
 
         return (
             <div>
-                {(this.dragOverHover && this.state.dragOverLocation == DragOverLocation.ABOVE && this.props.globalState.draggedControl != null && entity.parent) &&
-                    <hr className="seAbove" />
-                }
                 <div className={className} style={marginStyle} draggable={entity.parent ? true : false}
                     onMouseOver={() => this.setState({ isHovered: true })} onMouseLeave={() => this.setState({ isHovered: false })}
                     onClick={() => { this.onSelect() }}
@@ -211,9 +210,6 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
                 </div>
                 {
                     this.renderChildren()
-                }
-                {(this.dragOverHover && this.state.dragOverLocation == DragOverLocation.BELOW && this.props.globalState.draggedControl != null && entity.parent) &&
-                    <hr className="seBelow" />
                 }
             </div >
         );

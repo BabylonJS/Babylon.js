@@ -13,29 +13,6 @@
     display: none;
 }
 
-hr.seAbove {
-    border: 1px solid #527089;
-    margin-block-start: auto;
-    margin-block-end: auto;
-    width: 200%;
-    margin-inline-start: -100%;
-    display: inherit;
-    grid-row: 1;
-    grid-column: 2;
-}
-
-hr.seBelow {
-    border: 1px solid #527089;
-    margin-block-start: auto;
-    margin-block-end: auto;
-    width: 200%;
-    margin-inline-start: -100%;
-    display: inherit;
-    grid-row: 3;
-    grid-column: 2;
-}
-
-
 .ge-context-menu {
     background: #e2e2e2;
 
@@ -238,13 +215,23 @@ hr.seBelow {
         user-select: none;         
         display: grid;
         grid-template-columns: 20px 1fr;
-
+        border: 2px solid transparent;
         &.hover {
             border: 2px solid #527089;
             cursor: pointer;
         }
 
+        &.seAbove {
+            border-top: 2px solid #527089;
+            cursor: pointer;
+        }
+        &.seBelow {
+            border-bottom: 2px solid #527089;
+            cursor: pointer;
+        }
+
         &.selected {
+            
             background: #bfbebe;
             color: black;
         }
