@@ -271,7 +271,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             case "Button": {
                 const control = this.state.currentNode as Control;
                 return <ControlPropertyGridComponent key="buttonMenu" control={control} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
-            }
+            }            
         }
 
         if (className !== "") {
