@@ -49,20 +49,24 @@ export class SubEmitter {
         public particleSystem: ParticleSystem
     ) {
         // Create mesh as emitter to support rotation
+        let internalEmitterMesh = false;
         if (!particleSystem.emitter || !(<AbstractMesh>particleSystem.emitter).dispose) {
             const internalClass = _TypeStore.GetClass("BABYLON.AbstractMesh");
             particleSystem.emitter = new internalClass("SubemitterSystemEmitter", particleSystem.getScene());
+            internalEmitterMesh = true;
         }
 
         // Automatically dispose of subemitter when system is disposed
-        particleSystem.onDisposeObservable.add(() => {
-            if (particleSystem.emitter && (<AbstractMesh>particleSystem.emitter).dispose) {
-                // Prevent recursive dispose to break.
-                const disposable = <AbstractMesh>particleSystem.emitter;
-                particleSystem.emitter = Vector3.Zero();
-                disposable.dispose();
-            }
-        });
+        if (internalEmitterMesh && !particleSystem._disposeEmitterOnDispose) {
+            particleSystem.onDisposeObservable.add(() => {
+                if (particleSystem.emitter && (<AbstractMesh>particleSystem.emitter).dispose) {
+                    // Prevent recursive dispose to break.
+                    const disposable = <AbstractMesh>particleSystem.emitter;
+                    particleSystem.emitter = Vector3.Zero();
+                    disposable.dispose();
+                }
+            });
+        }
     }
     /**
      * Clones the sub emitter
@@ -80,7 +84,7 @@ export class SubEmitter {
             emitter = new internalClass("", emitter.getScene());
             (emitter! as any).isVisible = false;
         }
-        var clone = new SubEmitter(this.particleSystem.clone("", emitter));
+        var clone = new SubEmitter(this.particleSystem.clone(this.particleSystem.name, emitter));
 
         // Clone properties
         clone.particleSystem.name += "Clone";
