@@ -8,6 +8,7 @@ hr.ge {
 }
 
 #ge-propertyTab {
+    user-select: none;
     $line-padding-left: 5px;
     $line-padding-bottom: 0px;
     $line-padding-top: 0px;
@@ -177,6 +178,7 @@ hr.ge {
     }
 
     .textInputLine {
+        user-select: none;
         padding-left: $line-padding-left;
         padding-bottom: $line-padding-bottom;
         padding-top: $line-padding-top;
@@ -461,6 +463,7 @@ hr.ge {
     }
 
     .floatLine {
+        user-select: none;
         padding-left: $line-padding-left;
         height: var(--spacingHeight);
         padding-bottom: $line-padding-bottom;

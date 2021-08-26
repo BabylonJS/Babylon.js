@@ -76,6 +76,11 @@ export class Texture extends BaseTexture {
      */
     public static ForceSerializeBuffers = false;
 
+    /**
+     * This observable will notify when any texture had a loading error
+     */
+    public static OnTextureLoadErrorObservable = new Observable<BaseTexture>();
+
     /** @hidden */
     public static _CubeTextureParser = (jsonTexture: any, scene: Scene, rootUrl: string): CubeTexture => {
         throw _DevTools.WarnImport("CubeTexture");
@@ -414,9 +419,18 @@ export class Texture extends BaseTexture {
             }
         };
 
+        const errorHandler = (message?: string, exception?: any) => {
+            this._loadingError = true;
+            this._errorObject = { message, exception };
+            if (onError) {
+                onError(message, exception);
+            }
+            Texture.OnTextureLoadErrorObservable.notifyObservers(this);
+        };
+
         if (!this.url) {
             this._delayedOnLoad = load;
-            this._delayedOnError = onError;
+            this._delayedOnError = errorHandler;
             return;
         }
 
@@ -425,11 +439,9 @@ export class Texture extends BaseTexture {
         if (!this._texture) {
             if (!scene || !scene.useDelayedTextureLoading) {
                 try {
-                    this._texture = engine.createTexture(this.url, noMipmap, invertY, scene, samplingMode, load, onError, this._buffer, undefined, this._format, null, mimeType, loaderOptions, creationFlags, useSRGBBuffer);
+                    this._texture = engine.createTexture(this.url, noMipmap, invertY, scene, samplingMode, load, errorHandler, this._buffer, undefined, this._format, null, mimeType, loaderOptions, creationFlags, useSRGBBuffer);
                 } catch (e) {
-                    if (onError) {
-                        onError(e.message, e);
-                    }
+                    errorHandler("error loading", e);
                     throw e;
                 }
                 if (deleteBuffer) {
@@ -439,7 +451,7 @@ export class Texture extends BaseTexture {
                 this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
 
                 this._delayedOnLoad = load;
-                this._delayedOnError = onError;
+                this._delayedOnError = errorHandler;
             }
         } else {
             if (this._texture.isReady) {
