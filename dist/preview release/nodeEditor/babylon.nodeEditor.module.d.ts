@@ -2189,6 +2189,7 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/textInputLineComp
         icon?: string;
         iconLabel?: string;
         noUnderline?: boolean;
+        numbersOnly?: boolean;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
@@ -4844,6 +4845,7 @@ declare module NODEEDITOR {
         icon?: string;
         iconLabel?: string;
         noUnderline?: boolean;
+        numbersOnly?: boolean;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;

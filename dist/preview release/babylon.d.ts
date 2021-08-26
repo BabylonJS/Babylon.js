@@ -25785,10 +25785,10 @@ declare module BABYLON {
         /**
          * Synchronize and normalize current Animatable with a source Animatable
          * This is useful when using animation weights and when animations are not of the same length
-         * @param root defines the root Animatable to synchronize with
+         * @param root defines the root Animatable to synchronize with (null to stop synchronizing)
          * @returns the current Animatable
          */
-        syncWith(root: Animatable): Animatable;
+        syncWith(root: Nullable<Animatable>): Animatable;
         /**
          * Gets the list of runtime animations
          * @returns an array of RuntimeAnimation
@@ -44394,11 +44394,11 @@ declare module BABYLON {
         setWeightForAllAnimatables(weight: number): AnimationGroup;
         /**
          * Synchronize and normalize all animatables with a source animatable
-         * @param root defines the root animatable to synchronize with
+         * @param root defines the root animatable to synchronize with (null to stop synchronizing)
          * @return the animationGroup
          * @see https://doc.babylonjs.com/babylon101/animations#animation-weights
          */
-        syncAllAnimationsWith(root: Animatable): AnimationGroup;
+        syncAllAnimationsWith(root: Nullable<Animatable>): AnimationGroup;
         /**
          * Goes to a specific frame in this animation group
          * @param frame the frame number to go to
