@@ -40,6 +40,7 @@
 - Added the ability to load a fullscreen GUI from the snippet server ([PirateJC](https://github.com/piratejc))
 - Updated the gravity parameter in `Scene.enablePhysics()` as optional to fit the current behaviour ([Faber](https://https://github.com/Faber-smythe))
 - Allow the possibility to override the radius delta calculation for mouse wheel event ([RaananW](https://github.com/RaananW))
+- Added coroutine capabilities to `Observable`s ([syntheticmagus](https://github.com/syntheticmagus))
 
 ### Engine
 
@@ -169,6 +170,8 @@
 - Initial support for WebXR camera parenting ([#10593](https://github.com/BabylonJS/Babylon.js/issues/10593)) ([RaananW](https://github.com/RaananW))
 - Fix ReflectionProbe for WebXR ([#10390](https://github.com/BabylonJS/Babylon.js/issues/10390)) ([RaananW](https://github.com/RaananW))
 - Fix error on XR dispose due to undefined sepectator camera ([Alex-MSFT](https://github.com/Alex-MSFT))
+- Support for WebXR Foveated rendering ([#8920](https://github.com/BabylonJS/Babylon.js/issues/8920)) ([RaananW](https://github.com/RaananW))
+- Support WebXR framerate update ([#10912](https://github.com/BabylonJS/Babylon.js/issues/10912)) ([RaananW](https://github.com/RaananW))
 
 ### Gizmos
 
