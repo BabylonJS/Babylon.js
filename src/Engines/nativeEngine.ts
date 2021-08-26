@@ -126,8 +126,10 @@ interface INativeEngine {
     readonly COMMAND_DELETEVERTEXARRAY: number;
     readonly COMMAND_DELETEINDEXBUFFER: number;
     readonly COMMAND_RECORDINDEXBUFFER: number;
+    readonly COMMAND_UPDATEDYNAMICINDEXBUFFER: number;
     readonly COMMAND_DELETEVERTEXBUFFER: number;
     readonly COMMAND_RECORDVERTEXBUFFER: number;
+    readonly COMMAND_UPDATEDYNAMICVERTEXBUFFER: number;
     readonly COMMAND_SETMATRIX: number;
     readonly COMMAND_SETINT: number;
     readonly COMMAND_SETINTARRAY: number;
@@ -153,6 +155,18 @@ interface INativeEngine {
     readonly COMMAND_DRAWINDEXED: number;
     readonly COMMAND_CLEAR: number;
     readonly COMMAND_SETSTENCIL: number;
+    readonly COMMAND_BINDFRAMEBUFFER: number;
+    readonly COMMAND_UNBINDFRAMEBUFFER: number;
+    readonly COMMAND_SETDEPTHTEST: number;
+    readonly COMMAND_SETDEPTHWRITE: number;
+    readonly COMMAND_SETCOLORWRITE: number;
+    readonly COMMAND_SETBLENDMODE: number;
+    readonly COMMAND_DELETETEXTURE: number;
+    readonly COMMAND_DELETEFRAMEBUFFER: number;
+    readonly COMMAND_SETTEXTURESAMPLING: number;
+    readonly COMMAND_SETVIEWPORT: number;
+    readonly COMMAND_SETTEXTUREANISOLEVEL: number;
+    readonly COMMAND_DRAW: number;
 
     dispose(): void;
 
@@ -946,6 +960,7 @@ export class NativeEngine extends Engine {
     private readonly INVALID_HANDLE = 65535;
     private _boundBuffersVertexArray: any = null;
     private _currentDepthTest: number = this._native.DEPTH_TEST_LEQUAL;
+    private _currentDepthWrite: boolean = true;
     private _stencilTest = false;
     private _stencilMask: number = 255;
     private _stencilFunc: number = Constants.ALWAYS;
@@ -1124,11 +1139,17 @@ export class NativeEngine extends Engine {
     public _bindUnboundFramebuffer(framebuffer: Nullable<WebGLFramebuffer>) {
         if (this._currentFramebuffer !== framebuffer) {
             if (this._currentFramebuffer) {
-                this._native.unbindFrameBuffer(this._currentFramebuffer!);
+                this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_UNBINDFRAMEBUFFER);
+                this._commandBufferEncoder.encodeCommandArgAsUInt32(this._currentFramebuffer);
+                this._commandBufferEncoder.finishEncodingCommand();
+                // this._native.unbindFrameBuffer(this._currentFramebuffer!);
             }
 
             if (framebuffer) {
-                this._native.bindFrameBuffer(framebuffer);
+                this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_BINDFRAMEBUFFER);
+                this._commandBufferEncoder.encodeCommandArgAsUInt32(framebuffer);
+                this._commandBufferEncoder.finishEncodingCommand();
+                // this._native.bindFrameBuffer(framebuffer);
             }
 
             this._currentFramebuffer = framebuffer;
@@ -1307,7 +1328,12 @@ export class NativeEngine extends Engine {
         // if (instancesCount) {
         //     this._gl.drawArraysInstanced(drawMode, verticesStart, verticesCount, instancesCount);
         // } else {
-        this._native.draw(fillMode, verticesStart, verticesCount);
+        this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_DRAW);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesStart);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesCount);
+        this._commandBufferEncoder.finishEncodingCommand();
+        // this._native.draw(fillMode, verticesStart, verticesCount);
         // }
     }
 
@@ -1429,7 +1455,12 @@ export class NativeEngine extends Engine {
             return;
         }
 
-        this._native.setMatrix(uniform, matrix.toArray() as Float32Array);
+        const matrixArray = matrix.toArray() as Float32Array;
+        this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_SETMATRIX);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(uniform);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(matrixArray.length);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32s(matrixArray);
+        this._commandBufferEncoder.finishEncodingCommand();
     }
 
     public getRenderWidth(useScreen = false): number {
@@ -1450,7 +1481,13 @@ export class NativeEngine extends Engine {
 
     public setViewport(viewport: IViewportLike, requiredWidth?: number, requiredHeight?: number): void {
         this._cachedViewport = viewport;
-        this._native.setViewPort(viewport.x, viewport.y, viewport.width, viewport.height);
+        this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_SETVIEWPORT);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(viewport.x);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(viewport.y);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(viewport.width);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(viewport.height);
+        this._commandBufferEncoder.finishEncodingCommand();
+        // this._native.setViewPort(viewport.x, viewport.y, viewport.width, viewport.height);
     }
 
     public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false, cullBackFaces?: boolean, stencil?: IStencilState): void {
@@ -1500,7 +1537,10 @@ export class NativeEngine extends Engine {
      * @param enable defines the state to set
      */
     public setDepthBuffer(enable: boolean): void {
-        this._native.setDepthTest(enable ? this._currentDepthTest : this._native.DEPTH_TEST_ALWAYS);
+        this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_SETDEPTHTEST);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(enable ? this._currentDepthTest : this._native.DEPTH_TEST_ALWAYS);
+        this._commandBufferEncoder.finishEncodingCommand();
+        // this._native.setDepthTest(enable ? this._currentDepthTest : this._native.DEPTH_TEST_ALWAYS);
     }
 
     /**
@@ -1508,7 +1548,7 @@ export class NativeEngine extends Engine {
      * @returns the current depth writing state
      */
     public getDepthWrite(): boolean {
-        return this._native.getDepthWrite();
+        return this._currentDepthWrite;
     }
 
     public getDepthFunction(): Nullable<number> {
@@ -1563,7 +1603,10 @@ export class NativeEngine extends Engine {
         }
 
         this._currentDepthTest = nativeDepthFunc;
-        this._native.setDepthTest(this._currentDepthTest);
+        this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_SETDEPTHTEST);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(this._currentDepthTest);
+        this._commandBufferEncoder.finishEncodingCommand();
+        // this._native.setDepthTest(this._currentDepthTest);
     }
 
     /**
@@ -1571,7 +1614,11 @@ export class NativeEngine extends Engine {
      * @param enable defines the state to set
      */
     public setDepthWrite(enable: boolean): void {
-        this._native.setDepthWrite(enable);
+        this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_SETDEPTHWRITE);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(enable);
+        this._commandBufferEncoder.finishEncodingCommand();
+        this._currentDepthWrite = enable;
+        // this._native.setDepthWrite(enable);
     }
 
     /**
@@ -1579,7 +1626,10 @@ export class NativeEngine extends Engine {
      * @param enable defines the state to set
      */
     public setColorWrite(enable: boolean): void {
-        this._native.setColorWrite(enable);
+        this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_SETCOLORWRITE);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(enable);
+        this._commandBufferEncoder.finishEncodingCommand();
+        // this._native.setColorWrite(enable);
         this._colorWrite = enable;
     }
 
@@ -1791,7 +1841,9 @@ export class NativeEngine extends Engine {
 
         mode = this._getNativeAlphaMode(mode);
 
-        this._native.setBlendMode(mode);
+        this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_SETBLENDMODE);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(mode);
+        this._commandBufferEncoder.finishEncodingCommand();
 
         if (!noDepthWriteChange) {
             this.setDepthWrite(mode === Constants.ALPHA_DISABLE);
@@ -2113,7 +2165,9 @@ export class NativeEngine extends Engine {
 
     protected _deleteTexture(texture: Nullable<WebGLTexture>): void {
         if (texture) {
-            this._native.deleteTexture(texture);
+            this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_DELETETEXTURE);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(texture);
+            this._commandBufferEncoder.finishEncodingCommand();
         }
     }
 
@@ -2163,6 +2217,13 @@ export class NativeEngine extends Engine {
         }
     }
 
+    private _setTextureSampling(webGLTexture: any, nativeSamplingMode: number) {
+        this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_SETTEXTURESAMPLING);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(webGLTexture);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(nativeSamplingMode);
+        this._commandBufferEncoder.finishEncodingCommand();
+    }
+
     public createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
         let texture = new InternalTexture(this, InternalTextureSource.Raw);
 
@@ -2181,7 +2242,8 @@ export class NativeEngine extends Engine {
         if (texture._hardwareTexture) {
             var webGLTexture = texture._hardwareTexture.underlyingResource;
             var filter = this._getNativeSamplingMode(samplingMode);
-            this._native.setTextureSampling(webGLTexture, filter);
+            this._setTextureSampling(webGLTexture, filter);
+            //this._native.setTextureSampling(webGLTexture, filter);
         }
 
         this._internalTexturesCache.push(texture);
@@ -2319,7 +2381,7 @@ export class NativeEngine extends Engine {
                     texture.isReady = true;
 
                     var filter = this._getNativeSamplingMode(samplingMode);
-                    this._native.setTextureSampling(webGLTexture, filter);
+                    this._setTextureSampling(webGLTexture, filter);
 
                     if (scene) {
                         scene._removePendingData(texture);
@@ -2378,7 +2440,10 @@ export class NativeEngine extends Engine {
 
     public _releaseFramebufferObjects(texture: InternalTexture): void {
         if (texture._framebuffer) {
-            this._native.deleteFrameBuffer(texture._framebuffer);
+            this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_DELETEFRAMEBUFFER);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(texture._framebuffer);
+            this._commandBufferEncoder.finishEncodingCommand();
+            // this._native.deleteFrameBuffer(texture._framebuffer);
             texture._framebuffer = null;
         }
     }
@@ -2607,7 +2672,7 @@ export class NativeEngine extends Engine {
     public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
         if (texture._hardwareTexture) {
             var filter = this._getNativeSamplingMode(samplingMode);
-            this._native.setTextureSampling(texture._hardwareTexture.underlyingResource, filter);
+            this._setTextureSampling(texture._hardwareTexture.underlyingResource, filter);
         }
         texture.samplingMode = samplingMode;
     }
@@ -2652,7 +2717,14 @@ export class NativeEngine extends Engine {
         const buffer = indexBuffer as NativeDataBuffer;
         const data = this._normalizeIndexData(indices);
         buffer.is32Bits = (data.BYTES_PER_ELEMENT === 4);
-        this._native.updateDynamicIndexBuffer(buffer.nativeIndexBuffer, data, offset);
+        this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_UPDATEDYNAMICINDEXBUFFER);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(buffer.nativeIndexBuffer);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(data.length);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32s(new Uint32Array(data)); // Todo: Allow encoding of Uint16's
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(offset);
+        this._commandBufferEncoder.finishEncodingCommand();
+
+        // this._native.updateDynamicIndexBuffer(buffer.nativeIndexBuffer, data, offset);
     }
 
     /**
@@ -2664,12 +2736,22 @@ export class NativeEngine extends Engine {
      */
     public updateDynamicVertexBuffer(vertexBuffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void {
         const buffer = vertexBuffer as NativeDataBuffer;
-        const dataView = ArrayBuffer.isView(data) ? data : new Float32Array(data);
+        const dataView = ArrayBuffer.isView(data) ? (data as Float32Array) : new Float32Array(data);
+
+        this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_UPDATEDYNAMICVERTEXBUFFER);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(buffer.nativeIndexBuffer);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(dataView.length);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32s(dataView);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(byteOffset ?? 0);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(byteLength ?? dataView.byteLength);
+        this._commandBufferEncoder.finishEncodingCommand();
+        /*
         this._native.updateDynamicVertexBuffer(
             buffer.nativeVertexBuffer,
             dataView,
             byteOffset ?? 0,
             byteLength ?? dataView.byteLength);
+        */
     }
 
     // TODO: Refactor to share more logic with base Engine implementation.
@@ -2765,7 +2847,10 @@ export class NativeEngine extends Engine {
         }
 
         if (internalTexture._cachedAnisotropicFilteringLevel !== value) {
-            this._native.setTextureAnisotropicLevel(internalTexture._hardwareTexture.underlyingResource, value);
+            this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_SETTEXTUREANISOLEVEL);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(internalTexture._hardwareTexture.underlyingResource);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(value);
+            this._commandBufferEncoder.finishEncodingCommand();
             internalTexture._cachedAnisotropicFilteringLevel = value;
         }
     }
