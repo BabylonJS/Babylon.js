@@ -210,3 +210,5 @@ interface Window {
 interface Gamepad {
     readonly displayId: number;
 }
+
+declare var VRFrameData: any;
