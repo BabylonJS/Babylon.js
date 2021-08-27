@@ -241,7 +241,7 @@ export class PoseEnabledController extends Gamepad implements PoseControlled {
         if (this.isXR) {
             return;
         }
-        var pose: GamepadPose = this.browserGamepad.pose;
+        var pose: DevicePose = this.browserGamepad.pose;
         this.updateFromDevice(pose);
 
         if (!this._trackPosition && EngineStore.LastCreatedScene && EngineStore.LastCreatedScene.activeCamera && (<WebVRFreeCamera>EngineStore.LastCreatedScene.activeCamera).devicePosition) {

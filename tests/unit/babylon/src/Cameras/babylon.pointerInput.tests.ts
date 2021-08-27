@@ -4,7 +4,7 @@
  * Many PointerEvent properties are read-only so using real "new PointerEvent()"
  * is unpractical.
  */
-interface MockPointerEvent {
+ interface MockPointerEvent {
     target?: HTMLElement;
     type?: string;
     button?: number;
@@ -218,7 +218,7 @@ describe("BaseCameraPointersInput", function () {
 
             // Start moving.
             event.type = "pointermove";
-            event.button = 0;
+            event.button = -1;
             simulateEvent(this.cameraInput, event);
             expect(this.cameraInput.countOnTouch).to.equal(1);
             expect(this.cameraInput.countOnButtonDown).to.equal(1);
@@ -230,7 +230,7 @@ describe("BaseCameraPointersInput", function () {
             // Drag.
             event.type = "pointermove";
             event.clientX = 1000;
-            event.button = 0;
+            event.button = -1;
             simulateEvent(this.cameraInput, event);
             expect(this.cameraInput.countOnTouch).to.equal(2);
             expect(this.cameraInput.countOnButtonDown).to.equal(1);
@@ -270,7 +270,7 @@ describe("BaseCameraPointersInput", function () {
 
             // Start moving.
             event.type = "pointermove";
-            event.button = 0;
+            event.button = -1;
             simulateEvent(this.cameraInput, event);
             expect(this.cameraInput.countOnTouch).to.equal(1);
             expect(this.cameraInput.countOnButtonDown).to.equal(1);
@@ -282,7 +282,7 @@ describe("BaseCameraPointersInput", function () {
             // Drag.
             event.type = "pointermove";
             event.clientX = 1000;
-            event.button = 0;
+            event.button = -1;
             simulateEvent(this.cameraInput, event);
             expect(this.cameraInput.countOnTouch).to.equal(2);
             expect(this.cameraInput.countOnButtonDown).to.equal(1);
@@ -312,7 +312,7 @@ describe("BaseCameraPointersInput", function () {
 
             // Start moving.
             event.type = "pointermove";
-            event.button = 0;
+            event.button = -1;
             simulateEvent(this.cameraInput, event);
             expect(this.cameraInput.countOnTouch).to.equal(3);
             expect(this.cameraInput.countOnButtonDown).to.equal(2);
@@ -324,7 +324,7 @@ describe("BaseCameraPointersInput", function () {
             // Drag again.
             event.type = "pointermove";
             event.clientY = 2000;
-            event.button = 0;
+            event.button = -1;
             simulateEvent(this.cameraInput, event);
             expect(this.cameraInput.countOnTouch).to.equal(4);
             expect(this.cameraInput.countOnButtonDown).to.equal(2);
@@ -791,14 +791,14 @@ describe("ArcRotateCameraInput", function () {
 
             // Start moving.
             event.type = "pointermove";
-            event.button = 0;
+            event.button = -1;
             simulateEvent(this.cameraInput, event);
             expect(verifyChanges(this.camera, this.cameraCachePos, {})).to.be.true;
 
             // Move X coordinate. Drag camera.
             event.type = "pointermove";
             event.clientX = 1000;
-            event.button = 0;
+            event.button = -1;
             simulateEvent(this.cameraInput, event);
             expect(verifyChanges(this.camera, this.cameraCachePos, { inertialAlphaOffset: ValChange.Decrease })).to.be.true;
 
@@ -822,14 +822,14 @@ describe("ArcRotateCameraInput", function () {
 
             // Start moving.
             event.type = "pointermove";
-            event.button = 0;
+            event.button = -1;
             simulateEvent(this.cameraInput, event);
             expect(verifyChanges(this.camera, this.cameraCachePos, {})).to.be.true;
 
             // Move X coordinate. Drag camera.
             event.type = "pointermove";
             event.clientX = 1000;
-            event.button = 0;
+            event.button = -1;
             simulateEvent(this.cameraInput, event);
             expect(verifyChanges(this.camera, this.cameraCachePos, { inertialAlphaOffset: ValChange.Decrease })).to.be.true;
 
@@ -850,14 +850,14 @@ describe("ArcRotateCameraInput", function () {
 
             // Start moving.
             event.type = "pointermove";
-            event.button = 0;
+            event.button = -1;
             simulateEvent(this.cameraInput, event);
             expect(verifyChanges(this.camera, this.cameraCachePos, {})).to.be.true;
 
             // Move Y coordinate. Drag camera.
             event.type = "pointermove";
             event.clientY = 1000;
-            event.button = 0;
+            event.button = -1;
             simulateEvent(this.cameraInput, event);
             expect(verifyChanges(this.camera, this.cameraCachePos, { inertialBetaOffset: ValChange.Decrease })).to.be.true;
 
@@ -884,21 +884,21 @@ describe("ArcRotateCameraInput", function () {
 
             // Start moving.
             event.type = "pointermove";
-            event.button = 0;
+            event.button = -1;
             simulateEvent(this.cameraInput, event);
             expect(verifyChanges(this.camera, this.cameraCachePos, {})).to.be.true;
 
             // Move Y coordinate. Drag camera. (Not panning yet.)
             event.type = "pointermove";
             event.clientY = 1000;
-            event.button = 0;
+            event.button = -1;
             simulateEvent(this.cameraInput, event);
             expect(verifyChanges(this.camera, this.cameraCachePos, { inertialBetaOffset: ValChange.Decrease })).to.be.true;
 
             // Move X coordinate with Ctrl key depressed. Panning now.
             event.type = "pointermove";
             event.clientY = 2000;
-            event.button = 0;
+            event.button = -1;
             event.ctrlKey = true; // Will cause pan motion.
             simulateEvent(this.cameraInput, event);
             expect(verifyChanges(this.camera, this.cameraCachePos, { inertialPanningY: ValChange.Increase })).to.be.true;
@@ -906,7 +906,7 @@ describe("ArcRotateCameraInput", function () {
             // Move X coordinate having released Ctrl.
             event.type = "pointermove";
             event.clientY = 3000;
-            event.button = 0;
+            event.button = -1;
             event.ctrlKey = false; // Will cancel pan motion.
             simulateEvent(this.cameraInput, event);
             expect(verifyChanges(this.camera, this.cameraCachePos, { inertialBetaOffset: ValChange.Decrease })).to.be.true;
@@ -933,14 +933,14 @@ describe("ArcRotateCameraInput", function () {
 
             // Start moving.
             event.type = "pointermove";
-            event.button = 0;
+            event.button = -1;
             simulateEvent(this.cameraInput, event);
             expect(verifyChanges(this.camera, this.cameraCachePos, {})).to.be.true;
 
             // Move Y coordinate. Drag camera.
             event.type = "pointermove";
             event.clientY = 1000;
-            event.button = 0;
+            event.button = -1;
             simulateEvent(this.cameraInput, event);
             expect(verifyChanges(this.camera, this.cameraCachePos, { inertialBetaOffset: ValChange.Decrease })).to.be.true;
 
@@ -948,7 +948,7 @@ describe("ArcRotateCameraInput", function () {
             // Panning disabled so continue regular drag..
             event.type = "pointermove";
             event.clientY = 1500;
-            event.button = 0;
+            event.button = -1;
             event.ctrlKey = true; // Will cause pan motion.
             simulateEvent(this.cameraInput, event);
             expect(verifyChanges(this.camera, this.cameraCachePos, { inertialBetaOffset: ValChange.Decrease })).to.be.true;
@@ -956,7 +956,7 @@ describe("ArcRotateCameraInput", function () {
             // Move X coordinate having released Ctrl.
             event.type = "pointermove";
             event.clientY = 3000;
-            event.button = 0;
+            event.button = -1;
             event.ctrlKey = false;
             simulateEvent(this.cameraInput, event);
             expect(verifyChanges(this.camera, this.cameraCachePos, { inertialBetaOffset: ValChange.Decrease })).to.be.true;

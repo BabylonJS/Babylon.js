@@ -308,6 +308,8 @@ declare module BABYLON {
         static CreatePhysicsBoxShape(halfextents: BABYLON.Vector3): any;
         /** Creates a ammo.js physics sphere collision shape */
         static CreatePhysicsSphereShape(radius: number): any;
+        /** Creates a ammo.js physics ellipsoid collision shape */
+        static CreatePhysicsEllipsoidShape(halfextents: BABYLON.Vector3): any;
         /** Creates a ammo.js physics sphere collision shape */
         static CreatePhysicsCylinderShape(radius: number, halfheight: number): any;
         /** Creates a ammo.js physics capsule collision shape */
@@ -814,6 +816,13 @@ declare module BABYLON {
         private _createShaderChunks;
         private dumpEffect;
         private _attachAfterBind;
+    }
+    /**
+    * Babylon universal shader material pro class
+    * @class UniversalShaderMaterial
+    */
+    class UniversalShaderMaterial extends BABYLON.ShaderMaterial {
+        constructor(name: string, scene?: BABYLON.Scene, options?: Partial<BABYLON.IShaderMaterialOptions>);
     }
     /**
      * Babylon universal node material pro class
