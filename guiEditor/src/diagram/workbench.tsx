@@ -339,6 +339,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             case "Rectangle":
             case "Ellipse":
             case "Grid":
+            case "ScrollViewer":
                 return true;
             default:
                 return false;
