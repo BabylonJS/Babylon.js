@@ -411,7 +411,7 @@ export class WebGPUEngine extends Engine {
      * Gets a Promise<boolean> indicating if the engine can be instantiated (ie. if a WebGPU context can be found)
      */
      public static get IsSupportedAsync(): Promise<boolean> {
-        return !navigator.gpu ? Promise.resolve(false) : navigator.gpu.requestAdapter().then((adapter: GPUAdapter | null) => adapter !== null);
+        return !navigator.gpu ? Promise.resolve(false) : navigator.gpu.requestAdapter().then((adapter: GPUAdapter | null) => !!adapter, (rejected) => false).catch((e) => false);
     }
 
     /**
