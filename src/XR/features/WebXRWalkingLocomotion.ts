@@ -4,6 +4,7 @@ import { Scene } from "../../scene";
 import { Nullable } from "../../types";
 import { WebXRCamera } from "../webXRCamera";
 import { WebXRFeatureName } from "../webXRFeaturesManager";
+import { WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 
 class CircleBuffer {
@@ -338,7 +339,28 @@ export class WebXRWalkingLocomotion extends WebXRAbstractFeature {
      */
     public static readonly Name = WebXRFeatureName.WALKING_LOCOMOTION;
 
-    protected _onXRFrame(_xrFrame: XRFrame): void {
-        throw new Error("Method not implemented.");
+    private _sessionManager: WebXRSessionManager;
+    private _up: Vector3 = new Vector3();
+    private _forwrad: Vector3 = new Vector3();
+
+    public constructor(sessionManager: WebXRSessionManager) {
+        super(sessionManager);
+        this._sessionManager = sessionManager;
+    }
+
+    protected _onXRFrame(frame: XRFrame): void {
+        /*const pose = frame.getViewerPose(this._sessionManager.baseReferenceSpace);
+        if (!pose) {
+            return;
+        }
+        const m = pose.transform.matrix;
+        up.copyFromFloats(m[4], m[5], -m[6]);
+        forward.copyFromFloats(m[8], m[9], -m[10]);
+        position.copyFromFloats(m[12], m[13], -m[14]);
+
+        // Compute the nape position
+        forward.scaleAndAddToRef(0.05, position);
+        up.scaleAndAddToRef(-0.05, position);
+        walker.update(position, forward, xr.baseExperience.camera);*/
     }
 }
