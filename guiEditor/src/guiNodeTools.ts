@@ -14,8 +14,8 @@ import { Grid } from "babylonjs-gui/2D/controls/grid";
 import { DisplayGrid } from "babylonjs-gui/2D/controls/displayGrid";
 import { StackPanel } from "babylonjs-gui/2D/controls/stackPanel";
 import { ScrollViewer } from "babylonjs-gui/2D/controls/scrollViewers/scrollViewer";
-import { ImageBasedSlider } from "babylonjs-gui/2D/controls/index";
 import { RadioButton } from "babylonjs-gui/2D/controls/radioButton";
+import { ImageBasedSlider } from "babylonjs-gui/2D/controls/sliders/imageBasedSlider";
 
 export class GUINodeTools {
     public static CreateControlFromString(data: string) {
