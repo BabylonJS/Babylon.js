@@ -563,7 +563,7 @@ declare module BABYLON {
          * Initiates the request. The optional argument provides the request body. The argument is ignored if request method is GET or HEAD
          * @param body defines an optional request body
          */
-        send(body?: Document | BodyInit | null): void;
+        send(body?: Document | XMLHttpRequestBodyInit | null): void;
         /**
          * Sets the request method, request URL
          * @param method defines the method to use (GET, POST, etc..)
@@ -22183,6 +22183,7 @@ declare module BABYLON {
          * If the camera should be rotated automatically based on pointer movement
          */
         _allowCameraRotation: boolean;
+        private _currentActiveButton;
         /**
          * Manage the mouse inputs to control the movement of a free camera.
          * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -48490,6 +48491,7 @@ declare module BABYLON {
          * https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/buttons
          */
         protected _buttonsPressed: number;
+        private _currentActiveButton;
         /**
          * Defines the buttons associated with the input to handle camera move.
          */
@@ -63410,7 +63412,7 @@ declare module BABYLON {
          * Gets the client rect of native canvas.  Needed for InputManager.
          * @returns a client rectangle
          */
-        getInputElementClientRect(): Nullable<ClientRect>;
+        getInputElementClientRect(): Nullable<DOMRect>;
         /**
          * Set the z offset to apply to current rendering
          * @param value defines the offset to apply
@@ -86997,7 +86999,6 @@ interface Window {
     mozRequestAnimationFrame(callback: FrameRequestCallback): number;
     oRequestAnimationFrame(callback: FrameRequestCallback): number;
     WebGLRenderingContext: WebGLRenderingContext;
-    MSGesture: MSGesture;
     CANNON: any;
     AudioContext: AudioContext;
     webkitAudioContext: AudioContext;
@@ -87007,7 +87008,6 @@ interface Window {
     Float32Array: Float32ArrayConstructor;
     mozURL: typeof URL;
     msURL: typeof URL;
-    VRFrameData: any; // WebVR, from specs 1.1
     DracoDecoderModule: any;
     setImmediate(handler: (...args: any[]) => void): number;
 }
@@ -87039,9 +87039,9 @@ interface MouseEvent {
 
 interface Navigator {
     mozGetVRDevices: (any: any) => any;
-    webkitGetUserMedia(constraints: MediaStreamConstraints, successCallback: NavigatorUserMediaSuccessCallback, errorCallback: NavigatorUserMediaErrorCallback): void;
-    mozGetUserMedia(constraints: MediaStreamConstraints, successCallback: NavigatorUserMediaSuccessCallback, errorCallback: NavigatorUserMediaErrorCallback): void;
-    msGetUserMedia(constraints: MediaStreamConstraints, successCallback: NavigatorUserMediaSuccessCallback, errorCallback: NavigatorUserMediaErrorCallback): void;
+    webkitGetUserMedia(constraints: MediaStreamConstraints, successCallback: any, errorCallback: any): void;
+    mozGetUserMedia(constraints: MediaStreamConstraints, successCallback: any, errorCallback: any): void;
+    msGetUserMedia(constraints: MediaStreamConstraints, successCallback: any, errorCallback: any): void;
 
     webkitGetGamepads(): Gamepad[];
     msGetGamepads(): Gamepad[];
@@ -87057,6 +87057,16 @@ interface Math {
     imul(a: number, b: number): number;
     log2(x: number): number;
 }
+
+interface OffscreenCanvas extends EventTarget {
+    width: number;
+    height: number;
+}
+
+declare var OffscreenCanvas: {
+    prototype: OffscreenCanvas;
+    new(width: number, height: number): OffscreenCanvas;
+};
 interface WebGLRenderingContext {
     drawArraysInstanced(mode: number, first: number, count: number, primcount: number): void;
     drawElementsInstanced(mode: number, count: number, type: number, offset: number, primcount: number): void;
@@ -88591,6 +88601,8 @@ interface Window {
 interface Gamepad {
     readonly displayId: number;
 }
+
+declare var VRFrameData: any;
 /**
  * Available session modes
  */

@@ -293,10 +293,14 @@ function __spreadArrays() {
     return r;
 }
 
-function __spreadArray(to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+function __spreadArray(to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 }
 
 function __await(v) {
@@ -352,19 +356,17 @@ function __importDefault(mod) {
     return (mod && mod.__esModule) ? mod : { default: mod };
 }
 
-function __classPrivateFieldGet(receiver, privateMap) {
-    if (!privateMap.has(receiver)) {
-        throw new TypeError("attempted to get private field on non-instance");
-    }
-    return privateMap.get(receiver);
+function __classPrivateFieldGet(receiver, state, kind, f) {
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 }
 
-function __classPrivateFieldSet(receiver, privateMap, value) {
-    if (!privateMap.has(receiver)) {
-        throw new TypeError("attempted to set private field on non-instance");
-    }
-    privateMap.set(receiver, value);
-    return value;
+function __classPrivateFieldSet(receiver, state, value, kind, f) {
+    if (kind === "m") throw new TypeError("Private method is not writable");
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
 }
 
 
@@ -7705,11 +7707,12 @@ var Image = /** @class */ (function (_super) {
                 var elem_matrix_d = 1;
                 var elem_matrix_e = 0;
                 var elem_matrix_f = 0;
+                var mainMatrix = elem.transform.baseVal.consolidate().matrix;
                 if (elem.transform && elem.transform.baseVal.consolidate()) {
-                    elem_matrix_a = elem.transform.baseVal.consolidate().matrix.a;
-                    elem_matrix_d = elem.transform.baseVal.consolidate().matrix.d;
-                    elem_matrix_e = elem.transform.baseVal.consolidate().matrix.e;
-                    elem_matrix_f = elem.transform.baseVal.consolidate().matrix.f;
+                    elem_matrix_a = mainMatrix.a;
+                    elem_matrix_d = mainMatrix.d;
+                    elem_matrix_e = mainMatrix.e;
+                    elem_matrix_f = mainMatrix.f;
                 }
                 // compute source coordinates and dimensions
                 this.sourceLeft = ((elem_matrix_a * elem_bbox.x + elem_matrix_e) * docwidth) / vb_width;
@@ -14068,7 +14071,7 @@ var TextWrapper = /** @class */ (function () {
         this._text = this._text.slice(0, idxStart) + (insertTxt ? insertTxt : "") + this._text.slice(idxEnd);
         if (this._characters) {
             var newCharacters = insertTxt ? Array.from(insertTxt) : [];
-            (_a = this._characters).splice.apply(_a, Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArray"])([idxStart, idxEnd - idxStart], newCharacters));
+            (_a = this._characters).splice.apply(_a, Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArray"])([idxStart, idxEnd - idxStart], newCharacters, false));
         }
     };
     TextWrapper.prototype.charAt = function (idx) {

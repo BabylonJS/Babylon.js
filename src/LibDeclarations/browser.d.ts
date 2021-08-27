@@ -7,7 +7,6 @@ interface Window {
     mozRequestAnimationFrame(callback: FrameRequestCallback): number;
     oRequestAnimationFrame(callback: FrameRequestCallback): number;
     WebGLRenderingContext: WebGLRenderingContext;
-    MSGesture: MSGesture;
     CANNON: any;
     AudioContext: AudioContext;
     webkitAudioContext: AudioContext;
@@ -17,7 +16,6 @@ interface Window {
     Float32Array: Float32ArrayConstructor;
     mozURL: typeof URL;
     msURL: typeof URL;
-    VRFrameData: any; // WebVR, from specs 1.1
     DracoDecoderModule: any;
     setImmediate(handler: (...args: any[]) => void): number;
 }
@@ -49,9 +47,9 @@ interface MouseEvent {
 
 interface Navigator {
     mozGetVRDevices: (any: any) => any;
-    webkitGetUserMedia(constraints: MediaStreamConstraints, successCallback: NavigatorUserMediaSuccessCallback, errorCallback: NavigatorUserMediaErrorCallback): void;
-    mozGetUserMedia(constraints: MediaStreamConstraints, successCallback: NavigatorUserMediaSuccessCallback, errorCallback: NavigatorUserMediaErrorCallback): void;
-    msGetUserMedia(constraints: MediaStreamConstraints, successCallback: NavigatorUserMediaSuccessCallback, errorCallback: NavigatorUserMediaErrorCallback): void;
+    webkitGetUserMedia(constraints: MediaStreamConstraints, successCallback: any, errorCallback: any): void;
+    mozGetUserMedia(constraints: MediaStreamConstraints, successCallback: any, errorCallback: any): void;
+    msGetUserMedia(constraints: MediaStreamConstraints, successCallback: any, errorCallback: any): void;
 
     webkitGetGamepads(): Gamepad[];
     msGetGamepads(): Gamepad[];
@@ -67,3 +65,13 @@ interface Math {
     imul(a: number, b: number): number;
     log2(x: number): number;
 }
+
+interface OffscreenCanvas extends EventTarget {
+    width: number;
+    height: number;
+}
+
+declare var OffscreenCanvas: {
+    prototype: OffscreenCanvas;
+    new(width: number, height: number): OffscreenCanvas;
+};
