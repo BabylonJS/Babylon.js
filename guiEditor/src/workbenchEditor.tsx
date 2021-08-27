@@ -30,6 +30,9 @@ const inputFieldIcon: string = require("../public/imgs/inputFieldIcon.svg");
 const lineIcon: string = require("../public/imgs/lineIcon.svg");
 const displaygridIcon: string = require("../public/imgs/displaygridIcon.svg");
 const colorPickerIcon: string = require("../public/imgs/colorPickerIcon.svg");
+const scrollbarIcon: string = require("../public/imgs/scrollbarIcon.svg");
+const imageSliderIcon: string = require("../public/imgs/imageSliderIcon.svg");
+const radioButtonIcon: string = require("../public/imgs/radioButtonIcon.svg");
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -385,19 +388,19 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                 icon: passwordFieldIcon,
                 onClick: () => { this.onCreate("InputPassword") }
             },
-            {   //TODO: Change icons
+            {   
                 label: "ScrollViewer",
-                icon: textBoxIcon,
+                icon: scrollbarIcon,
                 onClick: () => { this.onCreate("ScrollViewer") }
             },
             {
                 label: "ImageBasedSlider",
-                icon: inputFieldIcon,
+                icon: imageSliderIcon,
                 onClick: () => { this.onCreate("ImageBasedSlider") }
             },
             {
                 label: "RadioButton",
-                icon: passwordFieldIcon,
+                icon: radioButtonIcon,
                 onClick: () => { this.onCreate("RadioButton") }
             }
 

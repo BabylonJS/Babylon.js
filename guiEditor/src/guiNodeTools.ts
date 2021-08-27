@@ -135,11 +135,23 @@ export class GUINodeTools {
                 return element;
             case "ImageBasedSlider":
                 element = new ImageBasedSlider("ImageBasedSlider");
+                element.isPointerBlocker = true;
+                element.width = "120px";
+                element.height = "30px";
+                element.isThumbClamped = true;
+                element.displayThumb = true;      
+                element.backgroundImage = new Image("Image", "https://playground.babylonjs.com/textures/gui/backgroundImage.png");
+                element.valueBarImage = new Image("Image", "https://playground.babylonjs.com/textures/gui/valueImage.png");
+                element.thumbImage = new Image("Image", "https://playground.babylonjs.com/textures/gui/thumb.png");
                 return element;
             case "RadioButton":
                 element = new RadioButton("RadioButton");
+                element.isPointerBlocker = true;
+                element.width = "20px";
+                element.height = "20px";
+                element.color = "#CCCCCC";
+                element.background = "#333333";     
                 return element;
-        
             default:
                 element = Button.CreateSimpleButton("Button", "Click Me");
                 element.background = "#333333";
