@@ -185,11 +185,11 @@ export abstract class WebGPUCacheRenderPipeline {
     private _overrideVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }>;
     private _indexBuffer: Nullable<DataBuffer>;
     private _textureState: number;
-    private _useTextureState: boolean;
+    private _useTextureStage: boolean;
 
-    constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer, useTextureState: boolean) {
+    constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer, useTextureStage: boolean) {
         this._device = device;
-        this._useTextureState = useTextureState;
+        this._useTextureStage = useTextureStage;
         this._states = new Array(30); // pre-allocate enough room so that no new allocation will take place afterwards
         this._statesLength = 0;
         this._stateDirtyLowestIndex = 0;
@@ -858,8 +858,8 @@ export abstract class WebGPUCacheRenderPipeline {
     }
 
     private _createPipelineLayout(webgpuPipelineContext: WebGPUPipelineContext): GPUPipelineLayout {
-        if (this._useTextureState) {
-            return this._createPipelineLayoutWithTextureState(webgpuPipelineContext);
+        if (this._useTextureStage) {
+            return this._createPipelineLayoutWithTextureStage(webgpuPipelineContext);
         }
 
         const bindGroupLayouts: GPUBindGroupLayout[] = [];
@@ -925,7 +925,7 @@ export abstract class WebGPUCacheRenderPipeline {
         return this._device.createPipelineLayout({ bindGroupLayouts });
     }
 
-    private _createPipelineLayoutWithTextureState(webgpuPipelineContext: WebGPUPipelineContext): GPUPipelineLayout {
+    private _createPipelineLayoutWithTextureStage(webgpuPipelineContext: WebGPUPipelineContext): GPUPipelineLayout {
         const bindGroupEntries: GPUBindGroupLayoutEntry[][] = [];
         const shaderProcessingContext = webgpuPipelineContext.shaderProcessingContext;
 
