@@ -96,7 +96,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                         }
                         else {
                             this.changeSelectionHighlight(false);
-                            this._selectedGuiNodes.splice(index,1);
+                            this._selectedGuiNodes.splice(index, 1);
                         }
                     } else if (this._selectedGuiNodes.length <= 1) {
                         this.changeSelectionHighlight(false);
