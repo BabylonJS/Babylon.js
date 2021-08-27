@@ -139,7 +139,7 @@ export class GUINodeTools {
                 element.width = "120px";
                 element.height = "30px";
                 element.isThumbClamped = true;
-                element.displayThumb = true;      
+                element.displayThumb = true;
                 element.backgroundImage = new Image("Image", "https://playground.babylonjs.com/textures/gui/backgroundImage.png");
                 element.valueBarImage = new Image("Image", "https://playground.babylonjs.com/textures/gui/valueImage.png");
                 element.thumbImage = new Image("Image", "https://playground.babylonjs.com/textures/gui/thumb.png");
@@ -150,7 +150,7 @@ export class GUINodeTools {
                 element.width = "20px";
                 element.height = "20px";
                 element.color = "#CCCCCC";
-                element.background = "#333333";     
+                element.background = "#333333";
                 return element;
             default:
                 element = Button.CreateSimpleButton("Button", "Click Me");

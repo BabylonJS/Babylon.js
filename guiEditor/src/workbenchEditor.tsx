@@ -90,7 +90,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                     return;
                 }
 
-                if(evt.key === "a") //all
+                if (evt.key === "a") //all
                 {
                     evt.preventDefault();
                 }
@@ -388,7 +388,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                 icon: passwordFieldIcon,
                 onClick: () => { this.onCreate("InputPassword") }
             },
-            {   
+            {
                 label: "ScrollViewer",
                 icon: scrollbarIcon,
                 onClick: () => { this.onCreate("ScrollViewer") }
