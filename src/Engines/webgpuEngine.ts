@@ -412,7 +412,7 @@ export class WebGPUEngine extends Engine {
      * Gets a Promise<boolean> indicating if the engine can be instantiated (ie. if a WebGPU context can be found)
      */
      public static get IsSupportedAsync(): Promise<boolean> {
-        return !navigator.gpu ? Promise.resolve(false) : navigator.gpu.requestAdapter().then((adapter: GPUAdapter | null) => adapter !== null);
+        return !navigator.gpu ? Promise.resolve(false) : navigator.gpu.requestAdapter().then((adapter: GPUAdapter | null) => !!adapter, (rejected) => false).catch((e) => false);
     }
 
     /**
@@ -1880,9 +1880,11 @@ export class WebGPUEngine extends Engine {
             const webgpuPipelineContext = this._currentEffect._pipelineContext as WebGPUPipelineContext;
             const availableSampler = webgpuPipelineContext.shaderProcessingContext.availableSamplers[baseName];
             if (availableSampler) {
-                this._currentMaterialContext.samplers[baseName] = {
-                    firstTextureName: name,
-                };
+                if (availableSampler.sampler) {
+                    this._currentMaterialContext.samplers[baseName] = {
+                        firstTextureName: name,
+                    };
+                }
                 this._currentMaterialContext.textures[name] = {
                     texture: internalTexture!,
                     wrapU: internalTexture?._cachedWrapU,

@@ -1,3 +1,4 @@
+import { Nullable } from "../../types";
 import { ShaderLanguage } from "../Processors/iShaderProcessor";
 import { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 
@@ -25,7 +26,7 @@ export interface WebGPUBindingInfo {
 
 /** @hidden */
 export interface WebGPUTextureSamplerBindingDescription {
-    sampler: WebGPUBindingInfo;
+    sampler: Nullable<WebGPUBindingInfo>;
     isTextureArray: boolean;
     textures: Array<WebGPUBindingInfo>;
 }
