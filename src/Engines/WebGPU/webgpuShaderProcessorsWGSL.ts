@@ -7,6 +7,9 @@ import { Logger } from '../../Misc/logger';
 import { ThinEngine } from "../thinEngine";
 import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
 
+import "../../ShadersWGSL/ShadersInclude/meshUboDeclaration";
+import "../../ShadersWGSL/ShadersInclude/sceneUboDeclaration";
+
 const builtInName_vertex_index = "gl_VertexID";
 const builtInName_instance_index = "gl_InstanceID";
 const builtInName_position = "gl_Position";

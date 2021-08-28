@@ -19,9 +19,6 @@ import { Engine } from '../Engines/engine';
 import { ShaderLanguage } from "../Engines/Processors/iShaderProcessor";
 import { UniformBuffer } from "./uniformBuffer";
 
-import "../ShadersWGSL/ShadersInclude/meshUboDeclaration"; // TODO WEBGPU: remove
-import "../ShadersWGSL/ShadersInclude/sceneUboDeclaration"; // TODO WEBGPU: remove
-
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
 /**
@@ -470,9 +467,9 @@ export class ShaderMaterial extends Material {
     }
 
     /**
-     * Set a vec4 array in the shader from a number array.
+     * Set a uniform buffer in the shader
      * @param name Define the name of the uniform as defined in the shader
-     * @param value Define the value to give to the uniform
+     * @param buffer Define the value to give to the uniform
      * @return the material itself allowing "fluent" like uniform updates
      */
      public setUniformBuffer(name: string, buffer: UniformBuffer): ShaderMaterial {

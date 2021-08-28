@@ -30,9 +30,6 @@ declare type Scene = import("../scene").Scene;
 declare type Engine = import("../Engines/engine").Engine;
 declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 
-import "../Shaders/gpuUpdateParticles.fragment";
-import "../Shaders/gpuUpdateParticles.vertex";
-import "../ShadersWGSL/gpuUpdateParticles.compute";
 import "../Shaders/gpuRenderParticles.fragment";
 import "../Shaders/gpuRenderParticles.vertex";
 

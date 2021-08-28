@@ -14,6 +14,8 @@ import { ComputeBindingMapping } from "../Engines/Extensions/engine.computeShade
 import { Effect } from "../Materials/effect";
 import { _TypeStore } from "../Misc/typeStore";
 
+import "../ShadersWGSL/gpuUpdateParticles.compute";
+
 /** @hidden */
 export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
 
