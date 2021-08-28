@@ -1,30 +1,34 @@
 import * as WebGPUConstants from './webgpuConstants';
-import { WebGPUTextureSamplerBindingDescription } from "./webgpuShaderProcessingContext";
+import { WebGPUShaderProcessingContext, WebGPUTextureSamplerBindingDescription } from "./webgpuShaderProcessingContext";
 
 /** @hidden */
-export class WebGPUShaderProcessor {
+export abstract class WebGPUShaderProcessor {
 
     protected static _KnownUBOs: { [key: string]: { setIndex: number, bindingIndex: number, varName: string } } = {
         "Scene": { setIndex: 0, bindingIndex: 0, varName: "scene" },
-        "Light0": { setIndex: 0, bindingIndex: 5, varName: "light0" },
-        "Light1": { setIndex: 0, bindingIndex: 6, varName: "light1" },
-        "Light2": { setIndex: 0, bindingIndex: 7, varName: "light2" },
-        "Light3": { setIndex: 0, bindingIndex: 8, varName: "light3" },
-        "Light4": { setIndex: 0, bindingIndex: 9, varName: "light4" },
-        "Light5": { setIndex: 0, bindingIndex: 10, varName: "light5" },
-        "Light6": { setIndex: 0, bindingIndex: 11, varName: "light6" },
-        "Light7": { setIndex: 0, bindingIndex: 12, varName: "light7" },
-        "Light8": { setIndex: 0, bindingIndex: 13, varName: "light8" },
+        "Light0": { setIndex: 0, bindingIndex: 1, varName: "light0" },
+        "Light1": { setIndex: 0, bindingIndex: 2, varName: "light1" },
+        "Light2": { setIndex: 0, bindingIndex: 3, varName: "light2" },
+        "Light3": { setIndex: 0, bindingIndex: 4, varName: "light3" },
+        "Light4": { setIndex: 0, bindingIndex: 5, varName: "light4" },
+        "Light5": { setIndex: 0, bindingIndex: 6, varName: "light5" },
+        "Light6": { setIndex: 0, bindingIndex: 7, varName: "light6" },
+        "Light7": { setIndex: 0, bindingIndex: 8, varName: "light7" },
+        "Light8": { setIndex: 0, bindingIndex: 9, varName: "light8" },
+        "Light9": { setIndex: 0, bindingIndex: 10, varName: "light9" },
+        "Light10": { setIndex: 0, bindingIndex: 11, varName: "light10" },
+        "Light11": { setIndex: 0, bindingIndex: 12, varName: "light11" },
+        "Light12": { setIndex: 0, bindingIndex: 13, varName: "light12" },
+        "Light13": { setIndex: 0, bindingIndex: 14, varName: "light13" },
+        "Light14": { setIndex: 0, bindingIndex: 15, varName: "light14" },
         "Material": { setIndex: 1, bindingIndex: 0, varName: "material" },
         "Mesh": { setIndex: 1, bindingIndex: 1, varName: "mesh" },
     };
 
     protected static _KnownSamplers: { [key: string]: WebGPUTextureSamplerBindingDescription } = {
-        "environmentBrdfSampler": { sampler: { setIndex: 0, bindingIndex: 1 }, isTextureArray: false, textures: [{ setIndex: 0, bindingIndex: 2 }] },
-        // "reflectionSampler": { setIndex: 0, bindingIndex: 3 },
+        "environmentBrdfSampler": { sampler: { setIndex: 1, bindingIndex: 2 }, isTextureArray: false, textures: [{ setIndex: 1, bindingIndex: 3 }] },
     };
 
-    // TODO WEBGPU. sampler3D
     protected static _SamplerFunctionByWebGLSamplerType: { [key: string]: string } = {
         "sampler2D": "sampler2D",
         "sampler2DArray": "sampler2DArray",
@@ -64,4 +68,133 @@ export class WebGPUShaderProcessor {
         "sampler": false,
     };
 
+    protected webgpuProcessingContext: WebGPUShaderProcessingContext;
+
+    protected abstract _getArraySize(name: string, preProcessors: { [key: string]: string }): [string, number];
+    protected abstract _generateLeftOverUBOCode(name: string, setIndex: number, bindingIndex: number): string;
+
+    protected _addUniformToLeftOverUBO(name: string, uniformType: string, preProcessors: { [key: string]: string }): void {
+        let length = 0;
+
+        [uniformType, length] = this._getArraySize(uniformType, preProcessors);
+
+        for (let i = 0; i < this.webgpuProcessingContext.leftOverUniforms.length; i++) {
+            if (this.webgpuProcessingContext.leftOverUniforms[i].name === name) {
+                return;
+            }
+        }
+
+        this.webgpuProcessingContext.leftOverUniforms.push({
+            name,
+            type: uniformType,
+            length
+        });
+    }
+
+    protected _buildLeftOverUBO(): string {
+        if (!this.webgpuProcessingContext.leftOverUniforms.length) {
+            return "";
+        }
+        const name = "LeftOver";
+        let availableUBO = this.webgpuProcessingContext.availableUBOs[name];
+        if (!availableUBO) {
+            availableUBO = this.webgpuProcessingContext.getNextFreeUBOBinding();
+            this.webgpuProcessingContext.availableUBOs[name] = availableUBO;
+            if (!this.webgpuProcessingContext.orderedUBOsAndSamplers[availableUBO.setIndex]) {
+                this.webgpuProcessingContext.orderedUBOsAndSamplers[availableUBO.setIndex] = [];
+            }
+            this.webgpuProcessingContext.orderedUBOsAndSamplers[availableUBO.setIndex][availableUBO.bindingIndex] = { isSampler: false, isTexture: false, usedInVertex: true, usedInFragment: true, name };
+        }
+
+        return this._generateLeftOverUBOCode(name, availableUBO.setIndex, availableUBO.bindingIndex);
+    }
+
+    protected _collectSamplerAndUBONames(): void {
+        // collect all the buffer names for faster processing later in _getBindGroupsToRender
+        // also collect all the sampler names
+        this.webgpuProcessingContext.samplerNames = [];
+        for (let i = 0; i < this.webgpuProcessingContext.orderedUBOsAndSamplers.length; i++) {
+            const setDefinition = this.webgpuProcessingContext.orderedUBOsAndSamplers[i];
+            if (setDefinition === undefined) {
+                continue;
+            }
+            for (let j = 0; j < setDefinition.length; j++) {
+                const bindingDefinition = this.webgpuProcessingContext.orderedUBOsAndSamplers[i][j];
+                if (bindingDefinition) {
+                    if (bindingDefinition.isTexture) {
+                        this.webgpuProcessingContext.samplerNames.push(bindingDefinition.name);
+                    }
+                    if (!bindingDefinition.isSampler && !bindingDefinition.isTexture) {
+                        this.webgpuProcessingContext.uniformBufferNames.push(bindingDefinition.name);
+                    }
+                }
+            }
+        }
+    }
+
+    protected _addTextureBindingDescription(name: string, origName: string, setIndex: number, bindingIndex: number, sampleType: GPUTextureSampleType, dimension: GPUTextureViewDimension, isVertex: boolean): void {
+        if (!this.webgpuProcessingContext.orderedUBOsAndSamplers[setIndex]) {
+            this.webgpuProcessingContext.orderedUBOsAndSamplers[setIndex] = [];
+        }
+        if (!this.webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex]) {
+            this.webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex] = {
+                isSampler: false,
+                isTexture: true,
+                sampleType,
+                textureDimension: dimension,
+                usedInVertex: false,
+                usedInFragment: false,
+                name,
+                origName,
+            };
+        }
+        if (isVertex) {
+            this.webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex].usedInVertex = true;
+        } else {
+            this.webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex].usedInFragment = true;
+        }
+    }
+
+    protected _addSamplerBindingDescription(name: string, setIndex: number, bindingIndex: number, samplerBindingType: GPUSamplerBindingType, isVertex: boolean): void {
+        if (!this.webgpuProcessingContext.orderedUBOsAndSamplers[setIndex]) {
+            this.webgpuProcessingContext.orderedUBOsAndSamplers[setIndex] = [];
+        }
+        if (!this.webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex]) {
+            this.webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex] = {
+                isSampler: true,
+                isTexture: false,
+                samplerBindingType,
+                usedInVertex: false,
+                usedInFragment: false,
+                name,
+            };
+        }
+
+        if (isVertex) {
+            this.webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex].usedInVertex = true;
+        } else {
+            this.webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex].usedInFragment = true;
+        }
+    }
+
+    protected _addUniformBufferBindingDescription(name: string, setIndex: number, bindingIndex: number, isVertex: boolean): void {
+        if (!this.webgpuProcessingContext.orderedUBOsAndSamplers[setIndex]) {
+            this.webgpuProcessingContext.orderedUBOsAndSamplers[setIndex] = [];
+        }
+        if (!this.webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex]) {
+            this.webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex] = {
+                isSampler: false,
+                isTexture: false,
+                name,
+                usedInVertex: false,
+                usedInFragment: false
+            };
+        }
+
+        if (isVertex) {
+            this.webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex].usedInVertex = true;
+        } else {
+            this.webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex].usedInFragment = true;
+        }
+    }
 }

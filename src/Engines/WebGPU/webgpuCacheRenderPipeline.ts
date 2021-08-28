@@ -971,7 +971,9 @@ export abstract class WebGPUCacheRenderPipeline {
                         // we set the sampler to "non-filtering" and the texture sample type to "unfilterable-float"
                         const samplerTexture = shaderProcessingContext.availableSamplers[bindingDefinition.origName!];
 
-                        bindGroupEntries[samplerTexture.sampler.setIndex][samplerTexture.sampler.bindingIndex].sampler!.type = WebGPUConstants.SamplerBindingType.NonFiltering;
+                        if (samplerTexture.sampler) {
+                            bindGroupEntries[samplerTexture.sampler.setIndex][samplerTexture.sampler.bindingIndex].sampler!.type = WebGPUConstants.SamplerBindingType.NonFiltering;
+                        }
                         sampleType = WebGPUConstants.TextureSampleType.UnfilterableFloat;
                     }
 

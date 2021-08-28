@@ -16,7 +16,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor implements 
 
     public shaderLanguage = ShaderLanguage.GLSL;
 
-    private _getArraySize(name: string, preProcessors: { [key: string]: string }): [string, number] {
+    protected _getArraySize(name: string, preProcessors: { [key: string]: string }): [string, number] {
         let length = 0;
         const startArray = name.indexOf("[");
         const endArray = name.indexOf("]");
@@ -32,14 +32,14 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor implements 
     }
 
     public initializeShaders(processingContext: Nullable<ShaderProcessingContext>): void {
+        this.webgpuProcessingContext = processingContext as WebGPUShaderProcessingContext;
+
         this._missingVaryings.length = 0;
         this._textureArrayProcessing.length = 0;
     }
 
     public varyingProcessor(varying: string, isFragment: boolean, preProcessors: { [key: string]: string }, processingContext: Nullable<ShaderProcessingContext>) {
         this._preProcessors = preProcessors;
-
-        const webgpuProcessingContext = processingContext! as WebGPUShaderProcessingContext;
 
         const varyingRegex = new RegExp(/\s*varying\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s+(\S+)\s*;/gm);
         const match = varyingRegex.exec(varying);
@@ -48,15 +48,15 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor implements 
             const name = match[2];
             let location: number;
             if (isFragment) {
-                location = webgpuProcessingContext.availableVaryings[name];
+                location = this.webgpuProcessingContext.availableVaryings[name];
                 this._missingVaryings[location] = "";
                 if (location === undefined) {
                     Logger.Warn(`Invalid fragment shader: The varying named "${name}" is not declared in the vertex shader! This declaration will be ignored.`);
                 }
             }
             else {
-                location = webgpuProcessingContext.getVaryingNextLocation(varyingType, this._getArraySize(name, preProcessors)[1]);
-                webgpuProcessingContext.availableVaryings[name] = location;
+                location = this.webgpuProcessingContext.getVaryingNextLocation(varyingType, this._getArraySize(name, preProcessors)[1]);
+                this.webgpuProcessingContext.availableVaryings[name] = location;
                 this._missingVaryings[location] = `layout(location = ${location}) in ${varyingType} ${name};`;
             }
 
@@ -68,17 +68,15 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor implements 
     public attributeProcessor(attribute: string, preProcessors: { [key: string]: string }, processingContext: Nullable<ShaderProcessingContext>) {
         this._preProcessors = preProcessors;
 
-        const webgpuProcessingContext = processingContext! as WebGPUShaderProcessingContext;
-
         const attribRegex = new RegExp(/\s*attribute\s+(\S+)\s+(\S+)\s*;/gm);
         const match = attribRegex.exec(attribute);
         if (match != null) {
             const attributeType = match[1];
             const name = match[2];
-            const location = webgpuProcessingContext.getAttributeNextLocation(attributeType, this._getArraySize(name, preProcessors)[1]);
+            const location = this.webgpuProcessingContext.getAttributeNextLocation(attributeType, this._getArraySize(name, preProcessors)[1]);
 
-            webgpuProcessingContext.availableAttributes[name] = location;
-            webgpuProcessingContext.orderedAttributes[location] = name;
+            this.webgpuProcessingContext.availableAttributes[name] = location;
+            this.webgpuProcessingContext.orderedAttributes[location] = name;
 
             attribute = attribute.replace(match[0], `layout(location = ${location}) in ${attributeType} ${name};`);
         }
@@ -87,8 +85,6 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor implements 
 
     public uniformProcessor(uniform: string, isFragment: boolean, preProcessors: { [key: string]: string }, processingContext: Nullable<ShaderProcessingContext>): string {
         this._preProcessors = preProcessors;
-
-        const webgpuProcessingContext = processingContext! as WebGPUShaderProcessingContext;
 
         const uniformRegex = new RegExp(/\s*uniform\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s+(\S+)\s*;/gm);
 
@@ -102,15 +98,15 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor implements 
                 let arraySize = 0; // 0 means the sampler/texture is not declared as an array
                 if (!samplerInfo) {
                     [name, arraySize] = this._getArraySize(name, preProcessors);
-                    samplerInfo = webgpuProcessingContext.availableSamplers[name];
+                    samplerInfo = this.webgpuProcessingContext.availableSamplers[name];
                     if (!samplerInfo) {
                         samplerInfo = {
-                            sampler: webgpuProcessingContext.getNextFreeUBOBinding(),
+                            sampler: this.webgpuProcessingContext.getNextFreeUBOBinding(),
                             isTextureArray: arraySize > 0,
                             textures: [],
                         };
                         for (let i = 0; i < (arraySize || 1); ++i) {
-                            samplerInfo.textures.push(webgpuProcessingContext.getNextFreeUBOBinding());
+                            samplerInfo.textures.push(this.webgpuProcessingContext.getNextFreeUBOBinding());
                         }
                     } else {
                         arraySize = samplerInfo.isTextureArray ? samplerInfo.textures.length : 0;
@@ -124,8 +120,8 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor implements 
                 }
 
                 const isTextureArray = arraySize > 0;
-                const samplerSetIndex = samplerInfo.sampler.setIndex;
-                const samplerBindingIndex = samplerInfo.sampler.bindingIndex;
+                const samplerSetIndex = samplerInfo.sampler!.setIndex;
+                const samplerBindingIndex = samplerInfo.sampler!.bindingIndex;
                 const samplerFunction = WebGPUShaderProcessor._SamplerFunctionByWebGLSamplerType[uniformType];
                 const samplerType = WebGPUShaderProcessor._SamplerTypeByWebGLSamplerType[uniformType] ?? "sampler";
                 const textureType = WebGPUShaderProcessor._TextureTypeByWebGLSamplerType[uniformType];
@@ -154,78 +150,26 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor implements 
                     this._textureArrayProcessing.push(name);
                 }
 
-                webgpuProcessingContext.availableSamplers[name] = samplerInfo;
+                this.webgpuProcessingContext.availableSamplers[name] = samplerInfo;
 
                 const samplerBindingType = isComparisonSampler ? WebGPUConstants.SamplerBindingType.Comparison : WebGPUConstants.SamplerBindingType.Filtering;
 
-                if (!webgpuProcessingContext.orderedUBOsAndSamplers[samplerSetIndex]) {
-                    webgpuProcessingContext.orderedUBOsAndSamplers[samplerSetIndex] = [];
-                }
-                if (!webgpuProcessingContext.orderedUBOsAndSamplers[samplerSetIndex][samplerBindingIndex]) {
-                    webgpuProcessingContext.orderedUBOsAndSamplers[samplerSetIndex][samplerBindingIndex] = {
-                        isSampler: true,
-                        isTexture: false,
-                        samplerBindingType,
-                        usedInVertex: false,
-                        usedInFragment: false,
-                        name,
-                    };
-                }
+                this._addSamplerBindingDescription(name, samplerSetIndex, samplerBindingIndex, samplerBindingType, !isFragment);
 
-                if (isFragment) {
-                    webgpuProcessingContext.orderedUBOsAndSamplers[samplerSetIndex][samplerBindingIndex].usedInFragment = true;
-                } else {
-                    webgpuProcessingContext.orderedUBOsAndSamplers[samplerSetIndex][samplerBindingIndex].usedInVertex = true;
-                }
+                const sampleType =
+                    isComparisonSampler ? WebGPUConstants.TextureSampleType.Depth :
+                    componentType === 'u' ? WebGPUConstants.TextureSampleType.Uint :
+                    componentType === 'i' ? WebGPUConstants.TextureSampleType.Sint : WebGPUConstants.TextureSampleType.Float;
 
                 for (let i = 0; i < arraySize; ++i) {
                     const textureSetIndex = samplerInfo.textures[i].setIndex;
                     const textureBindingIndex = samplerInfo.textures[i].bindingIndex;
 
-                    if (!webgpuProcessingContext.orderedUBOsAndSamplers[textureSetIndex]) {
-                        webgpuProcessingContext.orderedUBOsAndSamplers[textureSetIndex] = [];
-                    }
-                    if (!webgpuProcessingContext.orderedUBOsAndSamplers[textureSetIndex][textureBindingIndex]) {
-                        const sampleType =
-                            isComparisonSampler ? WebGPUConstants.TextureSampleType.Depth :
-                                componentType === 'u' ? WebGPUConstants.TextureSampleType.Uint :
-                                    componentType === 'i' ? WebGPUConstants.TextureSampleType.Sint : WebGPUConstants.TextureSampleType.Float;
-
-                        webgpuProcessingContext.orderedUBOsAndSamplers[textureSetIndex][textureBindingIndex] = {
-                            isSampler: false,
-                            isTexture: true,
-                            sampleType,
-                            textureDimension,
-                            usedInVertex: false,
-                            usedInFragment: false,
-                            name: isTextureArray ? name + i.toString() : name,
-                            origName: name,
-                        };
-                    }
-                    if (isFragment) {
-                        webgpuProcessingContext.orderedUBOsAndSamplers[textureSetIndex][textureBindingIndex].usedInFragment = true;
-                    } else {
-                        webgpuProcessingContext.orderedUBOsAndSamplers[textureSetIndex][textureBindingIndex].usedInVertex = true;
-                    }
+                    this._addTextureBindingDescription(isTextureArray ? name + i.toString() : name, name, textureSetIndex, textureBindingIndex, sampleType, textureDimension, !isFragment);
                 }
             }
             else {
-                // Check the size of the uniform array in case of array.
-                let length = 0;
-
-                [name, length] = this._getArraySize(name, preProcessors);
-
-                for (let i = 0; i < webgpuProcessingContext.leftOverUniforms.length; i++) {
-                    if (webgpuProcessingContext.leftOverUniforms[i].name === name) {
-                        return "";
-                    }
-                }
-
-                webgpuProcessingContext.leftOverUniforms.push({
-                    name,
-                    type: uniformType,
-                    length
-                });
+                this._addUniformToLeftOverUBO(name, uniformType, preProcessors);
                 uniform = "";
             }
         }
@@ -233,7 +177,6 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor implements 
     }
 
     public uniformBufferProcessor(uniformBuffer: string, isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>): string {
-        const webgpuProcessingContext = processingContext! as WebGPUShaderProcessingContext;
         const uboRegex = new RegExp(/uniform\s+(\w+)/gm);
 
         const match = uboRegex.exec(uniformBuffer);
@@ -248,30 +191,21 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor implements 
                 bindingIndex = knownUBO.bindingIndex;
             }
             else {
-                const availableUBO = webgpuProcessingContext.availableUBOs[name];
+                const availableUBO = this.webgpuProcessingContext.availableUBOs[name];
                 if (availableUBO) {
                     setIndex = availableUBO.setIndex;
                     bindingIndex = availableUBO.bindingIndex;
                 }
                 else {
-                    const nextBinding = webgpuProcessingContext.getNextFreeUBOBinding();
+                    const nextBinding = this.webgpuProcessingContext.getNextFreeUBOBinding();
                     setIndex = nextBinding.setIndex;
                     bindingIndex = nextBinding.bindingIndex;
                 }
             }
 
-            webgpuProcessingContext.availableUBOs[name] = { setIndex, bindingIndex };
-            if (!webgpuProcessingContext.orderedUBOsAndSamplers[setIndex]) {
-                webgpuProcessingContext.orderedUBOsAndSamplers[setIndex] = [];
-            }
-            if (!webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex]) {
-                webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex] = { isSampler: false, isTexture: false, name, usedInVertex: false, usedInFragment: false };
-            }
-            if (isFragment) {
-                webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex].usedInFragment = true;
-            } else {
-                webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex].usedInVertex = true;
-            }
+            this.webgpuProcessingContext.availableUBOs[name] = { setIndex, bindingIndex };
+
+            this._addUniformBufferBindingDescription(name, setIndex, bindingIndex, !isFragment);
 
             uniformBuffer = uniformBuffer.replace("uniform", `layout(set = ${setIndex}, binding = ${bindingIndex}) uniform`);
         }
@@ -336,9 +270,22 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor implements 
         return code;
     }
 
-    public finalizeShaders(vertexCode: string, fragmentCode: string, processingContext: Nullable<ShaderProcessingContext>): { vertexCode: string, fragmentCode: string } {
-        const webgpuProcessingContext = processingContext! as WebGPUShaderProcessingContext;
+    protected _generateLeftOverUBOCode(name: string, setIndex: number, bindingIndex: number): string {
+        let ubo = `layout(set = ${setIndex}, binding = ${bindingIndex}) uniform ${name} {\n    `;
+        for (let leftOverUniform of this.webgpuProcessingContext.leftOverUniforms) {
+            if (leftOverUniform.length > 0) {
+                ubo += `    ${leftOverUniform.type} ${leftOverUniform.name}[${leftOverUniform.length}];\n`;
+            }
+            else {
+                ubo += `    ${leftOverUniform.type} ${leftOverUniform.name};\n`;
+            }
+        }
+        ubo += "};\n\n";
 
+        return ubo;
+    }
+
+    public finalizeShaders(vertexCode: string, fragmentCode: string, processingContext: Nullable<ShaderProcessingContext>): { vertexCode: string, fragmentCode: string } {
         // make replacements for texture names in the texture array case
         for (let i = 0; i < this._textureArrayProcessing.length; ++i) {
             const name = this._textureArrayProcessing[i];
@@ -355,54 +302,12 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor implements 
         }
 
         // Builds the leftover UBOs.
-        if (webgpuProcessingContext.leftOverUniforms.length) {
-            const name = "LeftOver";
-            let availableUBO = webgpuProcessingContext.availableUBOs[name];
-            if (!availableUBO) {
-                availableUBO = webgpuProcessingContext.getNextFreeUBOBinding();
-                webgpuProcessingContext.availableUBOs[name] = availableUBO;
-                if (!webgpuProcessingContext.orderedUBOsAndSamplers[availableUBO.setIndex]) {
-                    webgpuProcessingContext.orderedUBOsAndSamplers[availableUBO.setIndex] = [];
-                }
-                webgpuProcessingContext.orderedUBOsAndSamplers[availableUBO.setIndex][availableUBO.bindingIndex] = { isSampler: false, isTexture: false, usedInVertex: true, usedInFragment: true, name };
-            }
+        const leftOverUBO = this._buildLeftOverUBO();
 
-            let ubo = `layout(set = ${availableUBO.setIndex}, binding = ${availableUBO.bindingIndex}) uniform ${name} {\n    `;
-            for (let leftOverUniform of webgpuProcessingContext.leftOverUniforms) {
-                if (leftOverUniform.length > 0) {
-                    ubo += `    ${leftOverUniform.type} ${leftOverUniform.name}[${leftOverUniform.length}];\n`;
-                }
-                else {
-                    ubo += `    ${leftOverUniform.type} ${leftOverUniform.name};\n`;
-                }
-            }
-            ubo += "};\n\n";
+        vertexCode = leftOverUBO + vertexCode;
+        fragmentCode = leftOverUBO + fragmentCode;
 
-            // Currently set in both vert and frag but could be optim away if necessary.
-            vertexCode = ubo + vertexCode;
-            fragmentCode = ubo + fragmentCode;
-        }
-
-        // collect all the buffer names for faster processing later in _getBindGroupsToRender
-        // also collect all the sampler names
-        webgpuProcessingContext.samplerNames = [];
-        for (let i = 0; i < webgpuProcessingContext.orderedUBOsAndSamplers.length; i++) {
-            const setDefinition = webgpuProcessingContext.orderedUBOsAndSamplers[i];
-            if (setDefinition === undefined) {
-                continue;
-            }
-            for (let j = 0; j < setDefinition.length; j++) {
-                const bindingDefinition = webgpuProcessingContext.orderedUBOsAndSamplers[i][j];
-                if (bindingDefinition) {
-                    if (bindingDefinition.isTexture) {
-                        webgpuProcessingContext.samplerNames.push(bindingDefinition.name);
-                    }
-                    if (!bindingDefinition.isSampler && !bindingDefinition.isTexture) {
-                        webgpuProcessingContext.uniformBufferNames.push(bindingDefinition.name);
-                    }
-                }
-            }
-        }
+        this._collectSamplerAndUBONames();
 
         this._preProcessors = null as any;
 
