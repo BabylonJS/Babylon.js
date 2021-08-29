@@ -16,7 +16,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor implements 
 
     public shaderLanguage = ShaderLanguage.GLSL;
 
-    protected _getArraySize(name: string, preProcessors: { [key: string]: string }): [string, number] {
+    protected _getArraySize(name: string, type: string, preProcessors: { [key: string]: string }): [string, string, number] {
         let length = 0;
         const startArray = name.indexOf("[");
         const endArray = name.indexOf("]");
@@ -28,7 +28,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor implements 
             }
             name = name.substr(0, startArray);
         }
-        return [name, length];
+        return [name, type, length];
     }
 
     public initializeShaders(processingContext: Nullable<ShaderProcessingContext>): void {
@@ -55,7 +55,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor implements 
                 }
             }
             else {
-                location = this.webgpuProcessingContext.getVaryingNextLocation(varyingType, this._getArraySize(name, preProcessors)[1]);
+                location = this.webgpuProcessingContext.getVaryingNextLocation(varyingType, this._getArraySize(name, varyingType, preProcessors)[2]);
                 this.webgpuProcessingContext.availableVaryings[name] = location;
                 this._missingVaryings[location] = `layout(location = ${location}) in ${varyingType} ${name};`;
             }
@@ -73,7 +73,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor implements 
         if (match != null) {
             const attributeType = match[1];
             const name = match[2];
-            const location = this.webgpuProcessingContext.getAttributeNextLocation(attributeType, this._getArraySize(name, preProcessors)[1]);
+            const location = this.webgpuProcessingContext.getAttributeNextLocation(attributeType, this._getArraySize(name, attributeType, preProcessors)[2]);
 
             this.webgpuProcessingContext.availableAttributes[name] = location;
             this.webgpuProcessingContext.orderedAttributes[location] = name;
@@ -97,7 +97,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor implements 
                 let samplerInfo = WebGPUShaderProcessor._KnownSamplers[name];
                 let arraySize = 0; // 0 means the sampler/texture is not declared as an array
                 if (!samplerInfo) {
-                    [name, arraySize] = this._getArraySize(name, preProcessors);
+                    [name, uniformType, arraySize] = this._getArraySize(name, uniformType, preProcessors);
                     samplerInfo = this.webgpuProcessingContext.availableSamplers[name];
                     if (!samplerInfo) {
                         samplerInfo = {

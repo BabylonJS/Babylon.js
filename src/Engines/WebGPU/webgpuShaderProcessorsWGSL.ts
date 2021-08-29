@@ -52,27 +52,27 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
     public noPrecision = true;
     public removeCommentsBeforeProcessing = true;
 
-    protected _getArraySize(name: string, preProcessors: { [key: string]: string }): [string, number] {
+    protected _getArraySize(name: string, uniformType: string, preProcessors: { [key: string]: string }): [string, string, number] {
         let length = 0;
 
-        const endArray = name.lastIndexOf(">");
-        if (name.indexOf("array") >= 0 && endArray > 0) {
+        const endArray = uniformType.lastIndexOf(">");
+        if (uniformType.indexOf("array") >= 0 && endArray > 0) {
             let startArray = endArray;
-            while (startArray > 0 && name.charAt(startArray) !== ' ' && name.charAt(startArray) !== ',') {
+            while (startArray > 0 && uniformType.charAt(startArray) !== ' ' && uniformType.charAt(startArray) !== ',') {
                 startArray--;
             }
-            const lengthInString = name.substring(startArray + 1, endArray);
+            const lengthInString = uniformType.substring(startArray + 1, endArray);
             length = +(lengthInString);
             if (isNaN(length)) {
                 length = +(preProcessors[lengthInString.trim()]);
             }
-            while (startArray > 0 && (name.charAt(startArray) === ' ' || name.charAt(startArray) === ',')) {
+            while (startArray > 0 && (uniformType.charAt(startArray) === ' ' || uniformType.charAt(startArray) === ',')) {
                 startArray--;
             }
-            name = name.substring(name.indexOf("<") + 1, startArray + 1);
+            uniformType = uniformType.substring(uniformType.indexOf("<") + 1, startArray + 1);
         }
 
-        return [name, length];
+        return [name, uniformType, length];
     }
 
     public initializeShaders(processingContext: Nullable<ShaderProcessingContext>): void {
@@ -100,7 +100,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
                 }
             }
             else {
-                location = this.webgpuProcessingContext.getVaryingNextLocation(varyingType, this._getArraySize(varyingType, preProcessors)[1]);
+                location = this.webgpuProcessingContext.getVaryingNextLocation(varyingType, this._getArraySize(name, varyingType, preProcessors)[2]);
                 this.webgpuProcessingContext.availableVaryings[name] = location;
                 this._varyingsWGSL.push(`[[location(${location})]] ${name} : ${varyingType};`);
                 this._varyingsDeclWGSL.push(`var<private> ${name} : ${varyingType};`);
@@ -118,7 +118,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
         if (match !== null) {
             const attributeType = match[2];
             const name = match[1];
-            const location = this.webgpuProcessingContext.getAttributeNextLocation(attributeType, this._getArraySize(attributeType, preProcessors)[1]);
+            const location = this.webgpuProcessingContext.getAttributeNextLocation(attributeType, this._getArraySize(name, attributeType, preProcessors)[2]);
 
             this.webgpuProcessingContext.availableAttributes[name] = location;
             this.webgpuProcessingContext.orderedAttributes[location] = name;
@@ -148,7 +148,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
         const match = this.textureRegexp.exec(texture);
         if (match !== null) {
             const name = match[1]; // name of the variable
-            const full = match[2]; // texture_2d<f32> or array<texture_2d_array<f32>, 5> for eg
+            const type = match[2]; // texture_2d<f32> or array<texture_2d_array<f32>, 5> for eg
             const isArrayOfTexture = !!match[3];
             const textureFunc = match[4]; // texture_2d, texture_depth_2d, etc
             const componentType = match[6]; // f32 or i32 or u32 or undefined
@@ -156,7 +156,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
             let samplerInfo = WebGPUShaderProcessor._KnownSamplers[name];
             let arraySize = 0;
             if (!samplerInfo) {
-                arraySize = isArrayOfTexture ? this._getArraySize(full, preProcessors)[1] : 0;
+                arraySize = isArrayOfTexture ? this._getArraySize(name, type, preProcessors)[2] : 0;
                 samplerInfo = this.webgpuProcessingContext.availableSamplers[name];
                 if (!samplerInfo) {
                     samplerInfo = {
