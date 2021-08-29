@@ -70,13 +70,13 @@ export abstract class WebGPUShaderProcessor {
 
     protected webgpuProcessingContext: WebGPUShaderProcessingContext;
 
-    protected abstract _getArraySize(name: string, preProcessors: { [key: string]: string }): [string, number];
+    protected abstract _getArraySize(name: string, type: string, preProcessors: { [key: string]: string }): [string, string, number];
     protected abstract _generateLeftOverUBOCode(name: string, setIndex: number, bindingIndex: number): string;
 
     protected _addUniformToLeftOverUBO(name: string, uniformType: string, preProcessors: { [key: string]: string }): void {
         let length = 0;
 
-        [uniformType, length] = this._getArraySize(uniformType, preProcessors);
+        [name, uniformType, length] = this._getArraySize(name, uniformType, preProcessors);
 
         for (let i = 0; i < this.webgpuProcessingContext.leftOverUniforms.length; i++) {
             if (this.webgpuProcessingContext.leftOverUniforms[i].name === name) {
