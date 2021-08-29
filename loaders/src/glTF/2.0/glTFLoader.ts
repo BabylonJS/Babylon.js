@@ -1686,39 +1686,43 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _loadVertexAccessorAsync(context: string, accessor: IAccessor, kind: string): Promise<VertexBuffer> {
-        if (accessor._babylonVertexBuffer) {
-            return accessor._babylonVertexBuffer;
+        if (accessor._babylonVertexBuffer?.[kind]) {
+            return accessor._babylonVertexBuffer[kind];
+        }
+
+        if (!accessor._babylonVertexBuffer) {
+            accessor._babylonVertexBuffer = {};
         }
 
         if (accessor.sparse) {
-            accessor._babylonVertexBuffer = this._loadFloatAccessorAsync(`/accessors/${accessor.index}`, accessor).then((data) => {
+            accessor._babylonVertexBuffer[kind] = this._loadFloatAccessorAsync(`/accessors/${accessor.index}`, accessor).then((data) => {
                 return new VertexBuffer(this._babylonScene.getEngine(), data, kind, false);
             });
         }
         // HACK: If byte offset is not a multiple of component type byte length then load as a float array instead of using Babylon buffers.
         else if (accessor.byteOffset && accessor.byteOffset % VertexBuffer.GetTypeByteLength(accessor.componentType) !== 0) {
             Logger.Warn("Accessor byte offset is not a multiple of component type byte length");
-            accessor._babylonVertexBuffer = this._loadFloatAccessorAsync(`/accessors/${accessor.index}`, accessor).then((data) => {
+            accessor._babylonVertexBuffer[kind] = this._loadFloatAccessorAsync(`/accessors/${accessor.index}`, accessor).then((data) => {
                 return new VertexBuffer(this._babylonScene.getEngine(), data, kind, false);
             });
         }
         // Load joint indices as a float array since the shaders expect float data but glTF uses unsigned byte/short.
         // This prevents certain platforms (e.g. D3D) from having to convert the data to float on the fly.
         else if (kind === VertexBuffer.MatricesIndicesKind || kind === VertexBuffer.MatricesIndicesExtraKind) {
-            accessor._babylonVertexBuffer = this._loadFloatAccessorAsync(`/accessors/${accessor.index}`, accessor).then((data) => {
+            accessor._babylonVertexBuffer[kind] = this._loadFloatAccessorAsync(`/accessors/${accessor.index}`, accessor).then((data) => {
                 return new VertexBuffer(this._babylonScene.getEngine(), data, kind, false);
             });
         }
         else {
             const bufferView = ArrayItem.Get(`${context}/bufferView`, this._gltf.bufferViews, accessor.bufferView);
-            accessor._babylonVertexBuffer = this._loadVertexBufferViewAsync(bufferView, kind).then((babylonBuffer) => {
+            accessor._babylonVertexBuffer[kind] = this._loadVertexBufferViewAsync(bufferView, kind).then((babylonBuffer) => {
                 const size = GLTFLoader._GetNumComponents(context, accessor.type);
                 return new VertexBuffer(this._babylonScene.getEngine(), babylonBuffer, kind, false, false, bufferView.byteStride,
                     false, accessor.byteOffset, size, accessor.componentType, accessor.normalized, true, 1, true);
             });
         }
 
-        return accessor._babylonVertexBuffer;
+        return accessor._babylonVertexBuffer[kind];
     }
 
     private _loadMaterialMetallicRoughnessPropertiesAsync(context: string, properties: IMaterialPbrMetallicRoughness, babylonMaterial: Material): Promise<void> {
