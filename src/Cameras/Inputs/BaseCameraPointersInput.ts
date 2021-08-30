@@ -32,6 +32,8 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
      */
     protected _buttonsPressed: number;
 
+    private _currentActiveButton: number = -1;
+
     /**
      * Defines the buttons associated with the input to handle camera move.
      */
@@ -118,6 +120,9 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                     };
                 }
 
+                if (this._currentActiveButton === -1 && !isTouch) {
+                    this._currentActiveButton = evt.button;
+                }
                 this.onButtonDown(evt);
 
                 if (!noPreventDefault) {
@@ -126,7 +131,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                 }
             } else if (p.type === PointerEventTypes.POINTERDOUBLETAP) {
                 this.onDoubleTap(evt.pointerType);
-            } else if (p.type === PointerEventTypes.POINTERUP && srcElement) {
+            } else if ((p.type === PointerEventTypes.POINTERMOVE && srcElement && p.event.button === this._currentActiveButton && this._currentActiveButton !== -1 && !isTouch) || (p.type === PointerEventTypes.POINTERUP && srcElement)) {
                 try {
                     srcElement.releasePointerCapture(evt.pointerId);
                 } catch (e) {
@@ -173,6 +178,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                     previousMultiTouchPanPosition = null;
                 }
 
+                this._currentActiveButton = -1;
                 this.onButtonUp(evt);
 
                 if (!noPreventDefault) {
