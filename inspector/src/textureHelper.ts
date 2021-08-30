@@ -62,10 +62,9 @@ export class TextureHelper {
             effect.setFloat("lod", lod);
         };
 
-        const rttInternalTexture = rtt.getInternalTexture();
         const internalTexture = texture.getInternalTexture();
 
-        if (rttInternalTexture && internalTexture) {
+        if (rtt.renderTarget && internalTexture) {
             const samplingMode = internalTexture.samplingMode;
             texture.updateSamplingMode(Texture.NEAREST_NEAREST_MIPNEAREST);
             scene.postProcessManager.directRender([lodPostProcess], rtt.renderTarget);
@@ -147,7 +146,7 @@ export class TextureHelper {
             resolve(data);
 
             // Unbind
-            engine.unBindFramebuffer(rtt.renderTarget!);
+            engine.unBindFramebuffer(rtt.renderTarget);
         } else {
             reject();
         }
