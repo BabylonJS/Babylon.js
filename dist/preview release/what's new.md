@@ -174,6 +174,7 @@
 - Fix error on XR dispose due to undefined sepectator camera ([Alex-MSFT](https://github.com/Alex-MSFT))
 - Support for WebXR Foveated rendering ([#8920](https://github.com/BabylonJS/Babylon.js/issues/8920)) ([RaananW](https://github.com/RaananW))
 - Support WebXR framerate update ([#10912](https://github.com/BabylonJS/Babylon.js/issues/10912)) ([RaananW](https://github.com/RaananW))
+- Detach the non-vr camera from the canvas when entering XR and re-attach when leaving ([RaananW](https://github.com/RaananW))
 
 ### Gizmos
 
