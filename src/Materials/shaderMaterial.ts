@@ -66,7 +66,7 @@ export interface IShaderMaterialOptions {
     useClipPlane: Nullable<boolean>;
 
     /**
-     * The language the shader is written with (default: GLSL)
+     * The language the shader is written in (default: GLSL)
      */
     shaderLanguage?: ShaderLanguage;
 }
