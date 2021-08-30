@@ -3,7 +3,6 @@ import { Observable } from "babylonjs/Misc/observable";
 import { Vector3 } from "babylonjs/Maths/math.vector";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { Scene } from "babylonjs/scene";
-import { Mesh } from "babylonjs/Meshes/mesh";
 import { Control3D } from "./control3D";
 import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
 import { PointerDragBehavior } from "babylonjs/Behaviors/Meshes/pointerDragBehavior";
@@ -25,12 +24,12 @@ export class Slider3D extends Control3D {
     /**
      * Base Url for the models.
      */
-    public static MODEL_BASE_URL: string = "https://raw.githubusercontent.com/rgerd/TestAssets/master/GLB/"//"https://assets.babylonjs.com/meshes/MRTK/";
+    public static MODEL_BASE_URL: string = "https://assets.babylonjs.com/meshes/MRTK/";
+
     /**
-     * File name for the models.
+     * File name for the 8x4 model.
      */
-    public static MODEL_FILENAME: string = 'thick_8x4.glb';
-    public static MODEL_FILENAME_: string = 'thick_4x4.glb';
+    public static MODEL_FILENAME: string = 'mrtk-fluent-backplate.glb';
 
     private _sliderBackplate: AbstractMesh;
     private _sliderBackplateMaterial: MRDLBackplateMaterial;
@@ -232,7 +231,7 @@ export class Slider3D extends Control3D {
         return sliderBackplate;
     }
 
-    protected _affectMaterial(mesh: Mesh) {
+    protected _affectMaterial(mesh: AbstractMesh) {
         this._sliderBackplateMaterial = new MRDLBackplateMaterial(`${this.name}_sliderbackplate_material`, mesh.getScene());
         this._sliderBarMaterial = new MRDLSliderBarMaterial(`${this.name}_sliderbar_material`, mesh.getScene());;
         this._sliderThumbMaterial = new MRDLSliderThumbMaterial(`${this.name}_sliderthumb_material`, mesh.getScene());
