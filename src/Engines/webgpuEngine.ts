@@ -47,7 +47,6 @@ import { WebGPUOcclusionQuery } from "./WebGPU/webgpuOcclusionQuery";
 import { Observable } from "../Misc/observable";
 import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
 import { TwgslOptions, WebGPUTintWASM } from "./WebGPU/webgpuTintWASM";
-import { RenderTargetWrapper } from "./renderTargetWrapper";
 
 import "../Shaders/clearQuad.vertex";
 import "../Shaders/clearQuad.fragment";
@@ -56,6 +55,7 @@ declare function importScripts(...urls: string[]): void;
 
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
+declare type RenderTargetWrapper = import("./renderTargetWrapper").RenderTargetWrapper;
 
 /**
  * Options to load the associated Glslang library
