@@ -7,6 +7,7 @@ import { DataBuffer } from "../../Buffers/dataBuffer";
 import { Nullable } from "../../types";
 import { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
 import { WebGPUPipelineContext } from "./webgpuPipelineContext";
+import { WebGPUBindingInfo } from "./webgpuShaderProcessingContext";
 
 enum StatePosition {
     //DepthBias = 0, // not used, so remove it to improve perf
@@ -929,6 +930,8 @@ export abstract class WebGPUCacheRenderPipeline {
         const bindGroupEntries: GPUBindGroupLayoutEntry[][] = [];
         const shaderProcessingContext = webgpuPipelineContext.shaderProcessingContext;
 
+        const deferred: Array<() => void> = [];
+
         let bitVal = 1;
         for (let i = 0; i < shaderProcessingContext.orderedUBOsAndSamplers.length; i++) {
             const setDefinition = shaderProcessingContext.orderedUBOsAndSamplers[i];
@@ -972,7 +975,11 @@ export abstract class WebGPUCacheRenderPipeline {
                         const samplerTexture = shaderProcessingContext.availableSamplers[bindingDefinition.origName!];
 
                         if (samplerTexture.sampler) {
-                            bindGroupEntries[samplerTexture.sampler.setIndex][samplerTexture.sampler.bindingIndex].sampler!.type = WebGPUConstants.SamplerBindingType.NonFiltering;
+                            // The sampler could be bound after the texture, so bindGroupEntries[sampler.setIndex][sampler.bindingIndex] could not exist yet
+                            // That's why we defer the change for after all bindings have been processed
+                            deferred.push(((sampler: WebGPUBindingInfo) => {
+                                return () => bindGroupEntries[sampler.setIndex][sampler.bindingIndex].sampler!.type = WebGPUConstants.SamplerBindingType.NonFiltering;
+                            })(samplerTexture.sampler));
                         }
                         sampleType = WebGPUConstants.TextureSampleType.UnfilterableFloat;
                     }
@@ -990,6 +997,10 @@ export abstract class WebGPUCacheRenderPipeline {
                     };
                 }
             }
+        }
+
+        for (let i = 0; i < deferred.length; ++i) {
+            deferred[i]();
         }
 
         const bindGroupLayouts: GPUBindGroupLayout[] = [];
