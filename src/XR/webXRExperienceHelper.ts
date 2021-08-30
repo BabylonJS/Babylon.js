@@ -133,6 +133,7 @@ export class WebXRExperienceHelper implements IDisposable {
             this._originalSceneAutoClear = this.scene.autoClear;
             this._nonVRCamera = this.scene.activeCamera;
             this._attachedToElement = !!(this._nonVRCamera?.inputs.attachedToElement);
+            this._nonVRCamera?.detachControl();
 
             this.scene.activeCamera = this.camera;
             // do not compensate when AR session is used
