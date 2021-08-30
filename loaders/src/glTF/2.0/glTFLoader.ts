@@ -1988,7 +1988,7 @@ export class GLTFLoader implements IGLTFLoader {
 
         this.logOpen(`${context}`);
 
-        if (textureInfo.texCoord! >= 2) {
+        if (textureInfo.texCoord! >= 6) {
             throw new Error(`${context}/texCoord: Invalid value (${textureInfo.texCoord})`);
         }
 
