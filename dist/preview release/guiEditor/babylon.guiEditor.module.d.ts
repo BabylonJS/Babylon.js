@@ -61,11 +61,17 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         private _responsive;
         private _isOverGUINode;
         private _focused;
+        private _clipboard;
+        private _selectAll;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
         constructor(props: IWorkbenchComponentProps);
         keyEvent: (evt: KeyboardEvent) => void;
+        private copyToClipboard;
+        private pasteFromClipboard;
+        CopyGUIControl(original: Control): void;
+        private selectAllGUI;
         blurEvent: () => void;
         componentWillUnmount(): void;
         loadFromJson(serializationObject: any): void;
@@ -1259,7 +1265,6 @@ declare module "babylonjs-gui-editor/components/commandBarComponent" {
 declare module "babylonjs-gui-editor/workbenchEditor" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-gui-editor/globalState";
-    import { Control } from "babylonjs-gui/2D/controls/control";
     interface IGraphEditorProps {
         globalState: GlobalState;
     }
@@ -1278,7 +1283,6 @@ declare module "babylonjs-gui-editor/workbenchEditor" {
         componentDidMount(): void;
         componentWillUnmount(): void;
         constructor(props: IGraphEditorProps);
-        pasteSelection(copiedNodes: Control[], currentX: number, currentY: number, selectNew?: boolean): Control[];
         showWaitScreen(): void;
         hideWaitScreen(): void;
         onPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
@@ -2185,11 +2189,17 @@ declare module GUIEDITOR {
         private _responsive;
         private _isOverGUINode;
         private _focused;
+        private _clipboard;
+        private _selectAll;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
         constructor(props: IWorkbenchComponentProps);
         keyEvent: (evt: KeyboardEvent) => void;
+        private copyToClipboard;
+        private pasteFromClipboard;
+        CopyGUIControl(original: Control): void;
+        private selectAllGUI;
         blurEvent: () => void;
         componentWillUnmount(): void;
         loadFromJson(serializationObject: any): void;
@@ -3217,7 +3227,6 @@ declare module GUIEDITOR {
         componentDidMount(): void;
         componentWillUnmount(): void;
         constructor(props: IGraphEditorProps);
-        pasteSelection(copiedNodes: Control[], currentX: number, currentY: number, selectNew?: boolean): Control[];
         showWaitScreen(): void;
         hideWaitScreen(): void;
         onPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;

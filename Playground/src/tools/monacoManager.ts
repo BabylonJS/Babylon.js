@@ -276,7 +276,8 @@ class Playground {
 
             // enhance templates with extra properties
             for (const template of this._templates) {
-                (template.kind = monaco.languages.CompletionItemKind.Snippet), (template.sortText = "!" + template.label); // make sure templates are on top of the completion window
+                template.kind = monaco.languages.CompletionItemKind.Snippet;
+                template.sortText = "!" + template.label; // make sure templates are on top of the completion window
                 template.insertTextRules = monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet;
             }
 
@@ -575,7 +576,7 @@ class Playground {
             const incomplete = (result.incomplete && result.incomplete == true) || owner._deprecatedCandidates.length == 0;
 
             return {
-                suggestions: suggestions,
+                suggestions: JSON.parse(JSON.stringify(suggestions)),
                 incomplete: incomplete,
             };
         };
