@@ -61,11 +61,17 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         private _responsive;
         private _isOverGUINode;
         private _focused;
+        private _clipboard;
+        private _selectAll;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
         constructor(props: IWorkbenchComponentProps);
         keyEvent: (evt: KeyboardEvent) => void;
+        private copyToClipboard;
+        private pasteFromClipboard;
+        CopyGUIControl(original: Control): void;
+        private selectAllGUI;
         blurEvent: () => void;
         componentWillUnmount(): void;
         loadFromJson(serializationObject: any): void;
@@ -370,6 +376,7 @@ declare module "babylonjs-gui-editor/sharedUiComponents/lines/textInputLineCompo
         icon?: string;
         iconLabel?: string;
         noUnderline?: boolean;
+        numbersOnly?: boolean;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
@@ -412,7 +419,11 @@ declare module "babylonjs-gui-editor/components/propertyTab/propertyGrids/gui/co
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     }
     export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
+        private _width;
+        private _height;
         constructor(props: ICommonControlPropertyGridComponentProps);
+        private _updateAlignment;
+        private _checkAndUpdateValues;
         render(): JSX.Element;
     }
 }
@@ -963,7 +974,7 @@ declare module "babylonjs-gui-editor/guiNodeTools" {
     import { DisplayGrid } from "babylonjs-gui/2D/controls/displayGrid";
     import { StackPanel } from "babylonjs-gui/2D/controls/stackPanel";
     export class GUINodeTools {
-        static CreateControlFromString(data: string): Rectangle | Line | Grid | Image | Slider | TextBlock | InputText | ColorPicker | StackPanel | Ellipse | Checkbox | DisplayGrid;
+        static CreateControlFromString(data: string): Rectangle | Line | Grid | TextBlock | Image | Slider | InputText | ColorPicker | StackPanel | Ellipse | Checkbox | DisplayGrid;
     }
 }
 declare module "babylonjs-gui-editor/sharedComponents/messageDialog" {
@@ -1254,7 +1265,6 @@ declare module "babylonjs-gui-editor/components/commandBarComponent" {
 declare module "babylonjs-gui-editor/workbenchEditor" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-gui-editor/globalState";
-    import { Control } from "babylonjs-gui/2D/controls/control";
     interface IGraphEditorProps {
         globalState: GlobalState;
     }
@@ -1273,7 +1283,6 @@ declare module "babylonjs-gui-editor/workbenchEditor" {
         componentDidMount(): void;
         componentWillUnmount(): void;
         constructor(props: IGraphEditorProps);
-        pasteSelection(copiedNodes: Control[], currentX: number, currentY: number, selectNew?: boolean): Control[];
         showWaitScreen(): void;
         hideWaitScreen(): void;
         onPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
@@ -2180,11 +2189,17 @@ declare module GUIEDITOR {
         private _responsive;
         private _isOverGUINode;
         private _focused;
+        private _clipboard;
+        private _selectAll;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
         constructor(props: IWorkbenchComponentProps);
         keyEvent: (evt: KeyboardEvent) => void;
+        private copyToClipboard;
+        private pasteFromClipboard;
+        CopyGUIControl(original: Control): void;
+        private selectAllGUI;
         blurEvent: () => void;
         componentWillUnmount(): void;
         loadFromJson(serializationObject: any): void;
@@ -2462,6 +2477,7 @@ declare module GUIEDITOR {
         icon?: string;
         iconLabel?: string;
         noUnderline?: boolean;
+        numbersOnly?: boolean;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
@@ -2498,7 +2514,11 @@ declare module GUIEDITOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
+        private _width;
+        private _height;
         constructor(props: ICommonControlPropertyGridComponentProps);
+        private _updateAlignment;
+        private _checkAndUpdateValues;
         render(): JSX.Element;
     }
 }
@@ -2933,7 +2953,7 @@ declare module GUIEDITOR {
 }
 declare module GUIEDITOR {
     export class GUINodeTools {
-        static CreateControlFromString(data: string): Rectangle | Line | Grid | Image | Slider | TextBlock | InputText | ColorPicker | StackPanel | Ellipse | Checkbox | DisplayGrid;
+        static CreateControlFromString(data: string): Rectangle | Line | Grid | TextBlock | Image | Slider | InputText | ColorPicker | StackPanel | Ellipse | Checkbox | DisplayGrid;
     }
 }
 declare module GUIEDITOR {
@@ -3207,7 +3227,6 @@ declare module GUIEDITOR {
         componentDidMount(): void;
         componentWillUnmount(): void;
         constructor(props: IGraphEditorProps);
-        pasteSelection(copiedNodes: Control[], currentX: number, currentY: number, selectNew?: boolean): Control[];
         showWaitScreen(): void;
         hideWaitScreen(): void;
         onPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
