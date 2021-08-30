@@ -10,6 +10,9 @@ import { WebGPUCacheRenderPipeline } from "./webgpuCacheRenderPipeline";
 import { WebGPUCacheRenderPipelineTree } from "./webgpuCacheRenderPipelineTree";
 import { WebGPUPipelineContext } from "./webgpuPipelineContext";
 
+import "../../Shaders/clearQuad.vertex";
+import "../../Shaders/clearQuad.fragment";
+
 /** @hidden */
 export class WebGPUClearQuad {
 
