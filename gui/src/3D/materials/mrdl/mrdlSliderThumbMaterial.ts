@@ -38,6 +38,9 @@ class MRDLSliderThumbMaterialDefines extends MaterialDefines {
     }
 }
 
+/**
+ * Class used to render Slider Thumb material with MRDL
+ */
 export class MRDLSliderThumbMaterial extends PushMaterial {
     // TODO: Allow access through member variables
 

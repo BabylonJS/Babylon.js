@@ -36,6 +36,9 @@ class MRDLBackplateMaterialDefines extends MaterialDefines {
     }
 }
 
+/**
+ * Class used to render backplate material with MRDL
+ */
 export class MRDLBackplateMaterial extends PushMaterial {
     // TODO: Allow access through member variables
 

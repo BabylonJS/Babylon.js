@@ -38,6 +38,9 @@ class MRDLSliderBarMaterialDefines extends MaterialDefines {
     }
 }
 
+/**
+ * Class used to render Slider Bar material with MRDL
+ */
 export class MRDLSliderBarMaterial extends PushMaterial {
     // TODO: Allow access through member variables
 
