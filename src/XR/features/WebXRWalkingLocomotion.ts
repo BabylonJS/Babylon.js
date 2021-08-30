@@ -290,7 +290,7 @@ class Walker {
         });
     }
 
-    update(position: Vector3, forward: Vector3, xrCamera: WebXRCamera) {
+    update(position: Vector3, forward: Vector3, movementTarget: Vector3) {
         forward.y = 0;
         forward.normalize();
 
@@ -302,8 +302,8 @@ class Walker {
             }
         }
 
-        xrCamera.position.x += this._movement.x;
-        xrCamera.position.z += this._movement.y;
+        movementTarget.x += this._movement.x;
+        movementTarget.z += this._movement.y;
         this._movement.scaleInPlace(0.96);
     }
 }
@@ -341,7 +341,9 @@ export class WebXRWalkingLocomotion extends WebXRAbstractFeature {
 
     private _sessionManager: WebXRSessionManager;
     private _up: Vector3 = new Vector3();
-    private _forwrad: Vector3 = new Vector3();
+    private _forward: Vector3 = new Vector3();
+    private _position: Vector3 = new Vector3();
+    private _walker: Walker = new Walker();
 
     public constructor(sessionManager: WebXRSessionManager) {
         super(sessionManager);
@@ -349,18 +351,18 @@ export class WebXRWalkingLocomotion extends WebXRAbstractFeature {
     }
 
     protected _onXRFrame(frame: XRFrame): void {
-        /*const pose = frame.getViewerPose(this._sessionManager.baseReferenceSpace);
+        const pose = frame.getViewerPose(this._sessionManager.baseReferenceSpace);
         if (!pose) {
             return;
         }
         const m = pose.transform.matrix;
-        up.copyFromFloats(m[4], m[5], -m[6]);
-        forward.copyFromFloats(m[8], m[9], -m[10]);
-        position.copyFromFloats(m[12], m[13], -m[14]);
+        this._up.copyFromFloats(m[4], m[5], -m[6]);
+        this._forward.copyFromFloats(m[8], m[9], -m[10]);
+        this._position.copyFromFloats(m[12], m[13], -m[14]);
 
         // Compute the nape position
-        forward.scaleAndAddToRef(0.05, position);
-        up.scaleAndAddToRef(-0.05, position);
-        walker.update(position, forward, xr.baseExperience.camera);*/
+        this._forward.scaleAndAddToRef(0.05, this._position);
+        this._up.scaleAndAddToRef(-0.05, this._position);
+        this._walker.update(this._position, this._forward, Vector3.Zero() /* TODO: Pass in the real vector to puppet. */);
     }
 }
