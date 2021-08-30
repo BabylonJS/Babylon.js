@@ -81,7 +81,8 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                             label: "Save",
                             onClick: () => { this.props.globalState.onSaveObservable.notifyObservers(); }
                         }, {
-                            label: "Load",
+                            label: "Load", 
+                            onClick: () => { this.props.globalState.onLoad.notifyObservers(); }
                         }, {
                             label: "Save to snippet",
                             onClick: () => { this.props.globalState.onSnippetSaveObservable.notifyObservers();}
