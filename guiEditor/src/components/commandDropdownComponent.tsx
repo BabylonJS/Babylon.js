@@ -22,6 +22,9 @@ interface ICommandDropdownComponentProps {
 }
 
 export class CommandDropdownComponent extends React.Component<ICommandDropdownComponentProps, { isExpanded: boolean, activeState: string }> {
+    private static _IDGenerator = 0;
+    //private _id = FileButtonLineComponent._IDGenerator++;
+    private uploadInputRef: React.RefObject<HTMLInputElement>;
 
     public constructor(props: ICommandDropdownComponentProps) {
         super(props);
@@ -40,6 +43,7 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                     </div>
                 }
                 <div className="command-dropdown-root">
+                    <input ref={this.uploadInputRef} id={"file-upload"} type="file" accept={".json"} onChange={evt => {}} />
                     <div className={"command-dropdown" + (this.state.isExpanded ? " activated" : "")} title={this.props.tooltip}
                         onClick={() => {
                             this.setState({ isExpanded: false });;
