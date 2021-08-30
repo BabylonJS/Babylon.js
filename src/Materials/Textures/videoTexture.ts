@@ -476,14 +476,14 @@ export class VideoTexture extends Texture {
                 });
         }
         else {
-            navigator.getUserMedia =
-                navigator.getUserMedia ||
+            const getUserMedia =
+                (navigator as any).getUserMedia ||
                 navigator.webkitGetUserMedia ||
                 navigator.mozGetUserMedia ||
                 navigator.msGetUserMedia;
 
-            if (navigator.getUserMedia) {
-                navigator.getUserMedia(
+            if (getUserMedia) {
+                getUserMedia(
                     {
                         video: {
                             deviceId: constraintsDeviceId,
@@ -501,7 +501,7 @@ export class VideoTexture extends Texture {
                     (stream: any) => {
                         return this.CreateFromStreamAsync(scene, stream, constraints);
                     },
-                    function (e: MediaStreamError) {
+                    function (e: any) {
                         Logger.Error(e.name);
                     }
                 );
