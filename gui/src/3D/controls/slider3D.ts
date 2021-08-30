@@ -8,7 +8,9 @@ import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
 import { PointerDragBehavior } from "babylonjs/Behaviors/Meshes/pointerDragBehavior";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SceneLoader } from "babylonjs/Loading/sceneLoader";
-import { MRDLSliderBarMaterial, MRDLSliderThumbMaterial, MRDLBackplateMaterial } from "../materials/mrdl";
+import { MRDLSliderBarMaterial } from "../materials/mrdl/mrdlSliderBarMaterial";
+import { MRDLSliderThumbMaterial } from "../materials/mrdl/mrdlSliderThumbMaterial";
+import { MRDLBackplateMaterial } from "../materials/mrdl/mrdlBackplateMaterial";
 
 const SLIDER_MIN: number = 0;
 const SLIDER_MAX: number = 100;
@@ -165,7 +167,6 @@ export class Slider3D extends Control3D {
         return this._sliderBackplateMaterial;
     }
 
-
     // Mesh association
     protected _createNode(scene: Scene): TransformNode {
         const sliderBackplate = BoxBuilder.CreateBox(`${this.name}_sliderbackplate`, {
@@ -233,7 +234,7 @@ export class Slider3D extends Control3D {
 
     protected _affectMaterial(mesh: AbstractMesh) {
         this._sliderBackplateMaterial = new MRDLBackplateMaterial(`${this.name}_sliderbackplate_material`, mesh.getScene());
-        this._sliderBarMaterial = new MRDLSliderBarMaterial(`${this.name}_sliderbar_material`, mesh.getScene());;
+        this._sliderBarMaterial = new MRDLSliderBarMaterial(`${this.name}_sliderbar_material`, mesh.getScene());
         this._sliderThumbMaterial = new MRDLSliderThumbMaterial(`${this.name}_sliderthumb_material`, mesh.getScene());
     }
 

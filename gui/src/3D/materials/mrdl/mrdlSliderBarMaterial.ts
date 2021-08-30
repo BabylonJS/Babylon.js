@@ -86,7 +86,6 @@ export class MRDLSliderBarMaterial extends PushMaterial {
         // Attribs
         MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, false);
 
-
         // Get correct effect
         if (defines.isDirty) {
             defines.markAsProcessed();
@@ -313,7 +312,6 @@ export class MRDLSliderBarMaterial extends PushMaterial {
         this._activeEffect.setFloat("_Iridescence_Intensity_", 0);
         this._activeEffect.setTexture("_Iridescence_Texture_", new Texture("https://raw.githubusercontent.com/rgerd/TestAssets/master/PNG/BlueGradient.png", this.getScene()));
 
-
         // Global inputs
         this._activeEffect.setFloat("Use_Global_Left_Index", 1.0);
         this._activeEffect.setFloat("Use_Global_Right_Index", 1.0);
@@ -323,10 +321,10 @@ export class MRDLSliderBarMaterial extends PushMaterial {
 
         this._activeEffect.setVector4("Global_Left_Thumb_Tip_Position", new Vector4(0.5, 0.0, -0.55, 1.0));
         this._activeEffect.setVector4("Global_Right_Thumb_Tip_Position", new Vector4(0.0, 0.0, 0.0, 1.0));
-        
+
         this._activeEffect.setVector4("Global_Left_Index_Middle_Position", new Vector4(0.5, 0.0, -0.55, 1.0));
         this._activeEffect.setVector4("Global_Right_Index_Middle_Position", new Vector4(0.0, 0.0, 0.0, 1.0));
-        
+
         this._activeEffect.setFloat("Global_Left_Index_Tip_Proximity", 0.0);
         this._activeEffect.setFloat("Global_Right_Index_Tip_Proximity", 0.0);
 

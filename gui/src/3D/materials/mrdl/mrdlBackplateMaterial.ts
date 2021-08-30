@@ -84,7 +84,6 @@ export class MRDLBackplateMaterial extends PushMaterial {
         // Attribs
         MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, false);
 
-
         // Get correct effect
         if (defines.isDirty) {
             defines.markAsProcessed();
@@ -240,8 +239,6 @@ export class MRDLBackplateMaterial extends PushMaterial {
 
         // "Antialiasing"
         //define SMOOTH_EDGES true;
-
-
 
         this._afterBind(mesh, this._activeEffect);
     }
