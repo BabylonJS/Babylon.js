@@ -41,8 +41,6 @@ import { StencilStateComposer } from "../States/stencilStateComposer";
 import { StorageBuffer } from "../Buffers/storageBuffer";
 import { IAudioEngineOptions } from '../Audio/Interfaces/IAudioEngineOptions';
 import { IStencilState } from "../States/IStencilState";
-import { WebGLRenderTargetWrapper } from "./WebGL/webGLRenderTargetWrapper";
-import { RenderTargetWrapper } from "./renderTargetWrapper";
 
 declare type WebRequest = import("../Misc/webRequest").WebRequest;
 declare type LoadFileError = import("../Misc/fileTools").LoadFileError;
@@ -50,6 +48,8 @@ declare type Observer<T> = import("../Misc/observable").Observer<T>;
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
 declare type Texture = import("../Materials/Textures/texture").Texture;
+declare type RenderTargetWrapper = import("./renderTargetWrapper").RenderTargetWrapper;
+declare type WebGLRenderTargetWrapper = import("./WebGL/webGLRenderTargetWrapper").WebGLRenderTargetWrapper;
 
 /**
  * Defines the interface used by objects working like Scene
