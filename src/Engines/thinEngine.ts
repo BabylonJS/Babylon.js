@@ -179,14 +179,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-alpha.38";
+        return "babylonjs@5.0.0-alpha.40";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-alpha.38";
+        return "5.0.0-alpha.40";
     }
 
     /**
@@ -1023,7 +1023,7 @@ export class ThinEngine {
             maxVaryingVectors: this._gl.getParameter(this._gl.MAX_VARYING_VECTORS),
             maxFragmentUniformVectors: this._gl.getParameter(this._gl.MAX_FRAGMENT_UNIFORM_VECTORS),
             maxVertexUniformVectors: this._gl.getParameter(this._gl.MAX_VERTEX_UNIFORM_VECTORS),
-            parallelShaderCompile: this._gl.getExtension('KHR_parallel_shader_compile'),
+            parallelShaderCompile: this._gl.getExtension('KHR_parallel_shader_compile') || undefined,
             standardDerivatives: this._webGLVersion > 1 || (this._gl.getExtension('OES_standard_derivatives') !== null),
             maxAnisotropy: 1,
             astc: this._gl.getExtension('WEBGL_compressed_texture_astc') || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_astc'),
@@ -1043,7 +1043,7 @@ export class ThinEngine {
             canUseTimestampForTimerQuery: false,
             drawBuffersExtension: false,
             maxMSAASamples: 1,
-            colorBufferFloat: this._webGLVersion > 1 && this._gl.getExtension('EXT_color_buffer_float'),
+            colorBufferFloat: !!(this._webGLVersion > 1 && this._gl.getExtension('EXT_color_buffer_float')),
             textureFloat: (this._webGLVersion > 1 || this._gl.getExtension('OES_texture_float')) ? true : false,
             textureHalfFloat: (this._webGLVersion > 1 || this._gl.getExtension('OES_texture_half_float')) ? true : false,
             textureHalfFloatRender: false,
