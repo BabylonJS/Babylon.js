@@ -7,7 +7,15 @@ import { Logger } from '../../Misc/logger';
 import { ThinEngine } from "../thinEngine";
 import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
 
+import "../../ShadersWGSL/ShadersInclude/bonesDeclaration";
+import "../../ShadersWGSL/ShadersInclude/bonesVertex";
+import "../../ShadersWGSL/ShadersInclude/instancesDeclaration";
+import "../../ShadersWGSL/ShadersInclude/instancesVertex";
 import "../../ShadersWGSL/ShadersInclude/meshUboDeclaration";
+import "../../ShadersWGSL/ShadersInclude/morphTargetsVertex";
+import "../../ShadersWGSL/ShadersInclude/morphTargetsVertexDeclaration";
+import "../../ShadersWGSL/ShadersInclude/morphTargetsVertexGlobal";
+import "../../ShadersWGSL/ShadersInclude/morphTargetsVertexGlobalDeclaration";
 import "../../ShadersWGSL/ShadersInclude/sceneUboDeclaration";
 
 const builtInName_vertex_index = "gl_VertexID";
@@ -331,7 +339,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
         let ubo = `[[block]] struct ${name} {\n`;
         for (let leftOverUniform of this.webgpuProcessingContext.leftOverUniforms) {
             if (leftOverUniform.length > 0) {
-                ubo += `  ${leftOverUniform.name} : array<${leftOverUniform.type}, ${leftOverUniform.length}>;\n`;
+                ubo += `  ${leftOverUniform.name} : [[stride(16)]] array<${leftOverUniform.type}, ${leftOverUniform.length}>;\n`;
             }
             else {
                 ubo += `  ${leftOverUniform.name} : ${leftOverUniform.type};\n`;
