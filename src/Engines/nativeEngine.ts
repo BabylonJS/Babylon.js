@@ -1270,14 +1270,17 @@ export class NativeEngine extends Engine {
      * Gets the client rect of native canvas.  Needed for InputManager.
      * @returns a client rectangle
      */
-    public getInputElementClientRect(): Nullable<ClientRect> {
+    public getInputElementClientRect(): Nullable<DOMRect> {
         const rect = {
             bottom: this.getRenderHeight(),
             height: this.getRenderHeight(),
             left: 0,
             right: this.getRenderWidth(),
             top: 0,
-            width: this.getRenderWidth()
+            width: this.getRenderWidth(),
+            x: 0,
+            y: 0,
+            toJSON: () => {}
         };
         return rect;
     }
