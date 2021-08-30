@@ -78,7 +78,7 @@ export interface IEffectCreationOptions {
      */
     multiTarget?: boolean;
     /**
-     * The language the shader is written with (default: GLSL)
+     * The language the shader is written in (default: GLSL)
      */
     shaderLanguage?: ShaderLanguage;
 }
@@ -218,10 +218,11 @@ export class Effect implements IDisposable {
      * @param onError Callback that will be called if an error occurs during shader compilation.
      * @param indexParameters Parameters to be used with Babylons include syntax to iterate over an array (eg. {lights: 10})
      * @param key Effect Key identifying uniquely compiled shader variants
+     * @param shaderLanguage the language the shader is written in (default: GLSL)
      */
     constructor(baseName: any, attributesNamesOrOptions: string[] | IEffectCreationOptions, uniformsNamesOrEngine: string[] | ThinEngine, samplers: Nullable<string[]> = null,
         engine?: ThinEngine, defines: Nullable<string> = null,
-        fallbacks: Nullable<IEffectFallbacks> = null, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null, indexParameters?: any, key: string = "") {
+        fallbacks: Nullable<IEffectFallbacks> = null, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null, indexParameters?: any, key: string = "", shaderLanguage = ShaderLanguage.GLSL) {
         this.name = baseName;
         this._key = key;
 
@@ -258,7 +259,7 @@ export class Effect implements IDisposable {
             this._samplerList = samplers ? <string[]>samplers.slice() : [];
             this._attributesNames = (<string[]>attributesNamesOrOptions);
             this._uniformBuffersNamesList = [];
-            this._shaderLanguage = ShaderLanguage.GLSL;
+            this._shaderLanguage = shaderLanguage;
 
             this.onError = onError;
             this.onCompiled = onCompiled;
