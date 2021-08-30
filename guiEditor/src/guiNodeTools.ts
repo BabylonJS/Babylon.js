@@ -13,6 +13,9 @@ import { InputPassword } from "babylonjs-gui/2D/controls/inputPassword";
 import { Grid } from "babylonjs-gui/2D/controls/grid";
 import { DisplayGrid } from "babylonjs-gui/2D/controls/displayGrid";
 import { StackPanel } from "babylonjs-gui/2D/controls/stackPanel";
+import { ScrollViewer } from "babylonjs-gui/2D/controls/scrollViewers/scrollViewer";
+import { RadioButton } from "babylonjs-gui/2D/controls/radioButton";
+import { ImageBasedSlider } from "babylonjs-gui/2D/controls/sliders/imageBasedSlider";
 
 export class GUINodeTools {
     public static CreateControlFromString(data: string) {
@@ -123,6 +126,31 @@ export class GUINodeTools {
                 element.isHighlighted = true;
                 element.width = "160%";
                 element.height = "100%";
+                return element;
+            case "ScrollViewer":
+                element = new ScrollViewer("ScrollViewer");
+                element.width = 0.4;
+                element.height = 0.4;
+                element.background = "#CCCCCC";
+                return element;
+            case "ImageBasedSlider":
+                element = new ImageBasedSlider("ImageBasedSlider");
+                element.isPointerBlocker = true;
+                element.width = "120px";
+                element.height = "30px";
+                element.isThumbClamped = true;
+                element.displayThumb = true;
+                element.backgroundImage = new Image("Image", "https://playground.babylonjs.com/textures/gui/backgroundImage.png");
+                element.valueBarImage = new Image("Image", "https://playground.babylonjs.com/textures/gui/valueImage.png");
+                element.thumbImage = new Image("Image", "https://playground.babylonjs.com/textures/gui/thumb.png");
+                return element;
+            case "RadioButton":
+                element = new RadioButton("RadioButton");
+                element.isPointerBlocker = true;
+                element.width = "20px";
+                element.height = "20px";
+                element.color = "#CCCCCC";
+                element.background = "#333333";
                 return element;
             default:
                 element = Button.CreateSimpleButton("Button", "Click Me");

@@ -9,7 +9,6 @@ import { WorkbenchComponent } from "./diagram/workbench";
 import { _TypeStore } from "babylonjs/Misc/typeStore";
 import { MessageDialogComponent } from "./sharedComponents/messageDialog";
 import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorerComponent";
-import { Control } from "babylonjs-gui/2D/controls/control";
 
 import { CommandBarComponent } from "./components/commandBarComponent";
 
@@ -31,6 +30,9 @@ const inputFieldIcon: string = require("../public/imgs/inputFieldIcon.svg");
 const lineIcon: string = require("../public/imgs/lineIcon.svg");
 const displaygridIcon: string = require("../public/imgs/displaygridIcon.svg");
 const colorPickerIcon: string = require("../public/imgs/colorPickerIcon.svg");
+const scrollbarIcon: string = require("../public/imgs/scrollbarIcon.svg");
+const imageSliderIcon: string = require("../public/imgs/imageSliderIcon.svg");
+const radioButtonIcon: string = require("../public/imgs/radioButtonIcon.svg");
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -88,49 +90,14 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                     return;
                 }
 
-                if (evt.key === "c") {
-                    // Copy
-
-                    let selectedItems = this._workbenchCanvas.selectedGuiNodes;
-                    if (!selectedItems.length) {
-                        return;
-                    }
-
-                    let selectedItem = selectedItems[0] as Control;
-
-                    if (!selectedItem) {
-                        return;
-                    }
-                } else if (evt.key === "v") {
-                    // Paste
+                if (evt.key === "a") //all
+                {
+                    evt.preventDefault();
                 }
             },
             false
         );
         this.createItems();
-    }
-
-    pasteSelection(copiedNodes: Control[], currentX: number, currentY: number, selectNew = false) {
-        //let originalNode: Nullable<GUINode> = null;
-
-        let newNodes: Control[] = [];
-
-        // Copy to prevent recursive side effects while creating nodes.
-        copiedNodes = copiedNodes.slice();
-
-        // Cancel selection
-        this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-
-        // Create new nodes
-        for (var node of copiedNodes) {
-            let block = node;
-
-            if (!block) {
-                continue;
-            }
-        }
-
-        return newNodes;
     }
 
     showWaitScreen() {
@@ -420,6 +387,21 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                 label: "InputPassword",
                 icon: passwordFieldIcon,
                 onClick: () => { this.onCreate("InputPassword") }
+            },
+            {
+                label: "ScrollViewer",
+                icon: scrollbarIcon,
+                onClick: () => { this.onCreate("ScrollViewer") }
+            },
+            {
+                label: "ImageBasedSlider",
+                icon: imageSliderIcon,
+                onClick: () => { this.onCreate("ImageBasedSlider") }
+            },
+            {
+                label: "RadioButton",
+                icon: radioButtonIcon,
+                onClick: () => { this.onCreate("RadioButton") }
             }
 
         ]
