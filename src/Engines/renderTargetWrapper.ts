@@ -142,6 +142,11 @@ export class RenderTargetWrapper {
         }
     }
 
+    /**
+     * Set a texture in the textures array
+     * @param texture the texture to set
+     * @param index the index in the textures array to set
+     */
     public setTexture(texture: InternalTexture, index: number = 0): void {
         if (!this._textures) {
             this._textures = [];
