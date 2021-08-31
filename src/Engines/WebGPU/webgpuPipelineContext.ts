@@ -5,30 +5,7 @@ import { Effect } from '../../Materials/effect';
 import { WebGPUShaderProcessingContext } from './webgpuShaderProcessingContext';
 import { UniformBuffer } from "../../Materials/uniformBuffer";
 import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from '../../Maths/math.like';
-
-const _uniformSizes: { [type: string]: number } = {
-    // GLSL types
-    "bool": 1,
-    "int": 1,
-    "float": 1,
-    "vec2": 2,
-    "ivec2": 2,
-    "vec3": 3,
-    "ivec3": 3,
-    "vec4": 4,
-    "ivec4": 4,
-    "mat2": 4,
-    "mat3": 12,
-    "mat4": 16,
-
-    // WGSL types
-    "i32": 1,
-    "u32": 1,
-    "f32": 1,
-    "mat2x2": 4,
-    "mat3x3": 12,
-    "mat4x4": 16
-};
+import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
 
 /** @hidden */
 export interface IWebGPUPipelineContextVertexInputsCache {
@@ -156,7 +133,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
 
         for (let leftOverUniform of this.shaderProcessingContext.leftOverUniforms) {
             const type = leftOverUniform.type.replace(/^(.*?)(<.*>)?$/, "$1");
-            const size = _uniformSizes[type];
+            const size = WebGPUShaderProcessor.UniformSizes[type];
             this.uniformBuffer.addUniform(leftOverUniform.name, size, leftOverUniform.length);
             this._leftOverUniformsByName[leftOverUniform.name] = leftOverUniform.type;
         }

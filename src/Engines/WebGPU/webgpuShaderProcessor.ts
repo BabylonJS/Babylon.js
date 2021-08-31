@@ -4,6 +4,30 @@ import { WebGPUShaderProcessingContext, WebGPUTextureSamplerBindingDescription }
 /** @hidden */
 export abstract class WebGPUShaderProcessor {
 
+    public static UniformSizes: { [type: string]: number } = {
+        // GLSL types
+        "bool": 1,
+        "int": 1,
+        "float": 1,
+        "vec2": 2,
+        "ivec2": 2,
+        "vec3": 3,
+        "ivec3": 3,
+        "vec4": 4,
+        "ivec4": 4,
+        "mat2": 4,
+        "mat3": 12,
+        "mat4": 16,
+    
+        // WGSL types
+        "i32": 1,
+        "u32": 1,
+        "f32": 1,
+        "mat2x2": 4,
+        "mat3x3": 12,
+        "mat4x4": 16
+    };
+
     protected static _KnownUBOs: { [key: string]: { setIndex: number, bindingIndex: number, varName: string } } = {
         "Scene": { setIndex: 0, bindingIndex: 0, varName: "scene" },
         "Light0": { setIndex: 0, bindingIndex: 1, varName: "light0" },
