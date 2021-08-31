@@ -131,7 +131,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                 }
             } else if (p.type === PointerEventTypes.POINTERDOUBLETAP) {
                 this.onDoubleTap(evt.pointerType);
-            } else if ((p.type === PointerEventTypes.POINTERMOVE && srcElement && p.event.button === this._currentActiveButton && this._currentActiveButton !== -1 && !isTouch) || (p.type === PointerEventTypes.POINTERUP && srcElement)) {
+            } else if ((p.type === PointerEventTypes.POINTERMOVE && srcElement && p.event.button === this._currentActiveButton && !isTouch) || (p.type === PointerEventTypes.POINTERUP && srcElement)) {
                 try {
                     srcElement.releasePointerCapture(evt.pointerId);
                 } catch (e) {
