@@ -61,7 +61,7 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
     public availableVaryings: { [key: string]: number };
     public availableAttributes: { [key: string]: number };
     public availableUBOs: { [key: string]: { setIndex: number, bindingIndex: number } };
-    public availableSamplers: { [key: string]: WebGPUTextureSamplerBindingDescription };
+    public availableTextures: { [key: string]: WebGPUTextureSamplerBindingDescription };
 
     public leftOverUniforms: { name: string, type: string, length: number }[];
 
@@ -86,7 +86,7 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
         this.availableVaryings = {};
         this.availableAttributes = {};
         this.availableUBOs = {};
-        this.availableSamplers = {};
+        this.availableTextures = {};
 
         this.orderedAttributes = [];
         this.orderedUBOsAndSamplers = [];

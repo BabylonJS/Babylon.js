@@ -1878,7 +1878,7 @@ export class WebGPUEngine extends Engine {
         baseName = baseName ?? name;
         if (this._currentEffect && !this._currentMaterialContext.setTexture(name, texture)) {
             const webgpuPipelineContext = this._currentEffect._pipelineContext as WebGPUPipelineContext;
-            const availableSampler = webgpuPipelineContext.shaderProcessingContext.availableSamplers[baseName];
+            const availableSampler = webgpuPipelineContext.shaderProcessingContext.availableTextures[baseName];
             if (availableSampler) {
                 if (availableSampler.sampler) {
                     this._currentMaterialContext.samplers[baseName] = {

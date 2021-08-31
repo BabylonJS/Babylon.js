@@ -165,7 +165,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
             let arraySize = 0;
             if (!samplerInfo) {
                 arraySize = isArrayOfTexture ? this._getArraySize(name, type, preProcessors)[2] : 0;
-                samplerInfo = this.webgpuProcessingContext.availableSamplers[name];
+                samplerInfo = this.webgpuProcessingContext.availableTextures[name];
                 if (!samplerInfo) {
                     samplerInfo = {
                         sampler: null,
@@ -181,7 +181,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
                 }
             }
 
-            this.webgpuProcessingContext.availableSamplers[name] = samplerInfo;
+            this.webgpuProcessingContext.availableTextures[name] = samplerInfo;
 
             const isDepthTexture = textureFunc.indexOf("depth") > 0;
             const textureDimension = gpuTextureViewDimensionByWebGPUTextureFunction[textureFunc];
@@ -397,7 +397,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
             const samplerType = match[2]; // sampler or sampler_comparison
             const textureName = name.replace("Sampler", "");
 
-            const samplerInfo = this.webgpuProcessingContext.availableSamplers[textureName];
+            const samplerInfo = this.webgpuProcessingContext.availableTextures[textureName];
 
             if (!samplerInfo) {
                 Logger.Error(`Invalid sampler declaration "${match[0]}": there's not texture declared with name "${textureName}"!`);

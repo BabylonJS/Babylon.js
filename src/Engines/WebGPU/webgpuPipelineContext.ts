@@ -85,7 +85,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
         // this._fragmentSourceCodeOverride = "";
         // this._vertexSourceCodeOverride = "";
 
-        const foundSamplers = this.shaderProcessingContext.availableSamplers;
+        const foundSamplers = this.shaderProcessingContext.availableTextures;
         let index: number;
         for (index = 0; index < samplerList.length; index++) {
             const name = samplerList[index];
