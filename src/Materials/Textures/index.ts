@@ -4,6 +4,7 @@ export * from "./colorGradingTexture";
 export * from "./cubeTexture";
 export * from "./dynamicTexture";
 export * from "./equiRectangularCubeTexture";
+export * from "./externalTexture";
 export * from "./Filtering/hdrFiltering";
 export * from "./hdrCubeTexture";
 export * from "./htmlElementTexture";

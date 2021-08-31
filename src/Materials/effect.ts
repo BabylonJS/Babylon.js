@@ -20,6 +20,7 @@ declare type InternalTexture = import("../Materials/Textures/internalTexture").I
 declare type ThinTexture = import("../Materials/Textures/thinTexture").ThinTexture;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
+declare type ExternalTexture = import("./Textures/externalTexture").ExternalTexture;
 
 /**
  * Options to be used when creating an effect.
@@ -883,6 +884,15 @@ export class Effect implements IDisposable {
         }
 
         this._engine.setTextureArray(this._samplers[channel], this._uniforms[channel], textures, channel);
+    }
+
+    /**
+     * Sets an external texture on the engine to be used in the shader.
+     * @param channel Name of the external texture variable.
+     * @param texture Texture to set.
+     */
+    public setExternalTexture(name: string, texture: ExternalTexture): void {
+        this._engine.setExternalTexture(name, texture);
     }
 
     /**

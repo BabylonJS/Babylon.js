@@ -48,6 +48,7 @@ import { WebGPUOcclusionQuery } from "./WebGPU/webgpuOcclusionQuery";
 import { Observable } from "../Misc/observable";
 import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
 import { TwgslOptions, WebGPUTintWASM } from "./WebGPU/webgpuTintWASM";
+import { ExternalTexture } from "../Materials/Textures/externalTexture";
 
 declare function importScripts(...urls: string[]): void;
 
@@ -1872,9 +1873,9 @@ export class WebGPUEngine extends Engine {
         this._textureHelper.createGPUTextureForInternalTexture(texture, width, height, depth, additionalUsages);
     }
 
-    private _setInternalTexture(name: string, internalTexture: Nullable<InternalTexture>, baseName?: string, textureIndex = 0): void {
+    private _setInternalTexture(name: string, texture: Nullable<InternalTexture | ExternalTexture>, baseName?: string, textureIndex = 0): void {
         baseName = baseName ?? name;
-        if (this._currentEffect && !this._currentMaterialContext.setTexture(name, internalTexture)) {
+        if (this._currentEffect && !this._currentMaterialContext.setTexture(name, texture)) {
             const webgpuPipelineContext = this._currentEffect._pipelineContext as WebGPUPipelineContext;
             const availableSampler = webgpuPipelineContext.shaderProcessingContext.availableSamplers[baseName];
             if (availableSampler) {
@@ -1883,14 +1884,27 @@ export class WebGPUEngine extends Engine {
                         firstTextureName: name,
                     };
                 }
-                this._currentMaterialContext.textures[name] = {
-                    texture: internalTexture!,
-                    wrapU: internalTexture?._cachedWrapU,
-                    wrapV: internalTexture?._cachedWrapV,
-                    wrapR: internalTexture?._cachedWrapR,
-                    anisotropicFilteringLevel: internalTexture?._cachedAnisotropicFilteringLevel,
-                    samplingMode: internalTexture?.samplingMode,
-                };
+                if (texture && ExternalTexture.IsExternalTexture(texture)) {
+                    this._currentMaterialContext.textures[name] = {
+                        texture: texture!,
+                        isExternal: true,
+                        wrapU: texture?.wrapU,
+                        wrapV: texture?.wrapV,
+                        wrapR: texture?.wrapR,
+                        anisotropicFilteringLevel: texture?.anisotropicFilteringLevel,
+                        samplingMode: texture?.samplingMode,
+                    };
+                } else {
+                    this._currentMaterialContext.textures[name] = {
+                        texture: texture!,
+                        isExternal: false,
+                        wrapU: texture?._cachedWrapU,
+                        wrapV: texture?._cachedWrapV,
+                        wrapR: texture?._cachedWrapR,
+                        anisotropicFilteringLevel: texture?._cachedAnisotropicFilteringLevel,
+                        samplingMode: texture?.samplingMode,
+                    };
+                }
             }
         }
     }
@@ -1904,6 +1918,21 @@ export class WebGPUEngine extends Engine {
      */
     public setTexture(channel: number, unused: Nullable<WebGLUniformLocation>, texture: Nullable<BaseTexture>, name: string): void {
         this._setTexture(channel, texture, false, false, name, name);
+    }
+
+    /**
+     * Sets an internal texture to the according uniform.
+     * @param name The name of the uniform in the effect
+     * @param texture The texture to apply
+     */
+    public setExternalTexture(name: string, texture: Nullable<ExternalTexture>): void {
+        if (this._currentEffect) {
+            if (!texture) {
+                this._currentMaterialContext.setTexture(name, null);
+                return;
+            }
+            this._setInternalTexture(name, texture);
+        }
     }
 
     /**

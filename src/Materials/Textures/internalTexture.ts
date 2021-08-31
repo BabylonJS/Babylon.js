@@ -270,7 +270,8 @@ export class InternalTexture {
     private _engine: ThinEngine;
     private _uniqueId: number;
 
-    private static _Counter = 0;
+    /** @hidden */
+    public static _Counter = 0;
 
     /** Gets the unique id of the internal texture */
     public get uniqueId() {

@@ -4,6 +4,7 @@ import "./engine.cubeTexture";
 import "./engine.debugging";
 import "./engine.dynamicBuffer";
 import "./engine.dynamicTexture";
+import "./engine.externalTexture";
 import "./engine.multiRender";
 import "./engine.query";
 import "./engine.rawTexture";
