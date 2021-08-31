@@ -29,6 +29,7 @@ import { IMaterialContext } from "./IMaterialContext";
 import { IDrawContext } from "./IDrawContext";
 import { ICanvas, IImage } from "./ICanvas";
 import { IStencilState } from "../States/IStencilState";
+import { RenderTargetWrapper } from "./renderTargetWrapper";
 
 interface INativeCamera {
     createVideo(constraints: MediaTrackConstraints): any;
@@ -759,6 +760,31 @@ class NativePipelineContext implements IPipelineContext {
                 this._valueCache[uniformName] = null;
             }
         }
+    }
+}
+
+class NativeRenderTargetWrapper extends RenderTargetWrapper {
+    private readonly _native: INativeEngine;
+
+    public _framebuffer: Nullable<WebGLFramebuffer> = null;
+    public _framebufferDepthStencil: Nullable<WebGLFramebuffer> = null;
+
+    constructor(isMulti: boolean, isCube: boolean, size: RenderTargetTextureSize, engine: NativeEngine, native: INativeEngine) {
+        super(isMulti, isCube, size, engine);
+        this._native = native;
+    }
+
+    public dispose(disposeOnlyFramebuffers = false): void {
+        if (this._framebuffer) {
+            this._native.deleteFrameBuffer(this._framebuffer);
+            this._framebuffer = null;
+        }
+        if (this._framebufferDepthStencil) {
+            this._native.deleteFrameBuffer(this._framebufferDepthStencil);
+            this._framebufferDepthStencil = null;
+        }
+
+        super.dispose(disposeOnlyFramebuffers);
     }
 }
 
@@ -2063,8 +2089,9 @@ export class NativeEngine extends Engine {
         return texture;
     }
 
-    public _createDepthStencilTexture(size: RenderTargetTextureSize, options: DepthTextureCreationOptions): InternalTexture {
-        const texture = new InternalTexture(this, InternalTextureSource.Depth);
+    public _createDepthStencilTexture(size: RenderTargetTextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
+        const nativeRTWrapper = rtWrapper as NativeRenderTargetWrapper;
+        const texture = new InternalTexture(this, InternalTextureSource.DepthStencil);
 
         const width = (<{ width: number, height: number, layers?: number }>size).width || <number>size;
         const height = (<{ width: number, height: number, layers?: number }>size).height || <number>size;
@@ -2077,15 +2104,8 @@ export class NativeEngine extends Engine {
             false,
             true,
             false);
-        texture._framebuffer = framebuffer;
+        nativeRTWrapper._framebufferDepthStencil = framebuffer;
         return texture;
-    }
-
-    public _releaseFramebufferObjects(texture: InternalTexture): void {
-        if (texture._framebuffer) {
-            this._native.deleteFrameBuffer(texture._framebuffer);
-            texture._framebuffer = null;
-        }
     }
 
     /**
@@ -2248,7 +2268,16 @@ export class NativeEngine extends Engine {
         return texture;
     }
 
-    public createRenderTargetTexture(size: number | { width: number, height: number }, options: boolean | RenderTargetCreationOptions): InternalTexture {
+    /** @hidden */
+    public _createHardwareRenderTargetWrapper(isMulti: boolean, isCube: boolean, size: RenderTargetTextureSize): RenderTargetWrapper {
+        const rtWrapper = new NativeRenderTargetWrapper(isMulti, isCube, size, this, this._native);
+        this._renderTargetWrapperCache.push(rtWrapper);
+        return rtWrapper;
+    }
+
+    public createRenderTargetTexture(size: number | { width: number, height: number }, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper {
+        const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, size) as NativeRenderTargetWrapper;
+
         const fullOptions = new RenderTargetCreationOptions();
 
         if (options !== undefined && typeof options === "object") {
@@ -2294,7 +2323,10 @@ export class NativeEngine extends Engine {
             fullOptions.generateDepthBuffer,
             fullOptions.generateMipMaps ? true : false);
 
-        texture._framebuffer = framebuffer;
+        rtWrapper._framebuffer = framebuffer;
+        rtWrapper._generateDepthBuffer = fullOptions.generateDepthBuffer;
+        rtWrapper._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
+
         texture.baseWidth = width;
         texture.baseHeight = height;
         texture.width = width;
@@ -2305,12 +2337,11 @@ export class NativeEngine extends Engine {
         texture.samplingMode = fullOptions.samplingMode;
         texture.type = fullOptions.type;
         texture.format = fullOptions.format;
-        texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
-        texture._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
 
         this._internalTexturesCache.push(texture);
+        rtWrapper.setTextures(texture);
 
-        return texture;
+        return rtWrapper;
     }
 
     public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
@@ -2321,7 +2352,9 @@ export class NativeEngine extends Engine {
         texture.samplingMode = samplingMode;
     }
 
-    public bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void {
+    public bindFramebuffer(texture: RenderTargetWrapper, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void {
+        const nativeRTWrapper = texture as NativeRenderTargetWrapper;
+
         if (faceIndex) {
             throw new Error("Cuboid frame buffers are not yet supported in NativeEngine.");
         }
@@ -2334,14 +2367,14 @@ export class NativeEngine extends Engine {
             //Not supported yet but don't stop rendering
         }
 
-        if (texture._depthStencilTexture) {
-            this._bindUnboundFramebuffer(texture._depthStencilTexture._framebuffer);
+        if (nativeRTWrapper._framebufferDepthStencil) {
+            this._bindUnboundFramebuffer(nativeRTWrapper._framebufferDepthStencil);
         } else {
-            this._bindUnboundFramebuffer(texture._framebuffer);
+            this._bindUnboundFramebuffer(nativeRTWrapper._framebuffer);
         }
     }
 
-    public unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
+    public unBindFramebuffer(texture: RenderTargetWrapper, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
         // NOTE: Disabling mipmap generation is not yet supported in NativeEngine.
 
         if (onBeforeUnbind) {

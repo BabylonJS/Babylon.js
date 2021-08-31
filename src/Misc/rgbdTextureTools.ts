@@ -75,7 +75,6 @@ export class RGBDTextureTools {
                     // Cleanup
                     engine.restoreDefaultFramebuffer();
                     engine._releaseTexture(internalTexture);
-                    engine._releaseFramebufferObjects(expandedTexture);
                     if (rgbdPostProcess) {
                         rgbdPostProcess.dispose();
                     }

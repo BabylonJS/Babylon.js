@@ -3,14 +3,16 @@ import { IMultiRenderTargetOptions } from "../../../Materials/Textures/multiRend
 import { Logger } from "../../../Misc/logger";
 import { Nullable } from "../../../types";
 import { Constants } from "../../constants";
+import { RenderTargetTextureSize } from "../../Extensions/engine.renderTarget";
+import { RenderTargetWrapper } from "../../renderTargetWrapper";
 import { WebGPUEngine } from "../../webgpuEngine";
 
-WebGPUEngine.prototype.unBindMultiColorAttachmentFramebuffer = function (textures: InternalTexture[], disableGenerateMipMaps: boolean = false, onBeforeUnbind?: () => void): void {
+WebGPUEngine.prototype.unBindMultiColorAttachmentFramebuffer = function (rtWrapper: RenderTargetWrapper, disableGenerateMipMaps: boolean = false, onBeforeUnbind?: () => void): void {
     if (onBeforeUnbind) {
         onBeforeUnbind();
     }
 
-    const attachments = textures[0]._attachments!;
+    const attachments = rtWrapper._attachments!;
     const count = attachments.length;
 
     if (this._currentRenderPass && this._currentRenderPass !== this._mainRenderPassWrapper.renderPass) {
@@ -18,7 +20,7 @@ WebGPUEngine.prototype.unBindMultiColorAttachmentFramebuffer = function (texture
     }
 
     for (let i = 0; i < count; i++) {
-        const texture = textures[i];
+        const texture = rtWrapper.textures![i];
         if (texture.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
             this._generateMipmaps(texture);
         }
@@ -33,7 +35,7 @@ WebGPUEngine.prototype.unBindMultiColorAttachmentFramebuffer = function (texture
     this._setColorFormat(this._mainRenderPassWrapper);
 };
 
-WebGPUEngine.prototype.createMultipleRenderTarget = function (size: any, options: IMultiRenderTargetOptions): InternalTexture[] {
+WebGPUEngine.prototype.createMultipleRenderTarget = function (size: RenderTargetTextureSize, options: IMultiRenderTargetOptions, initializeBuffers?: boolean): RenderTargetWrapper {
     let generateMipMaps = false;
     let generateDepthBuffer = true;
     let generateStencilBuffer = false;
@@ -45,6 +47,8 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: any, options
 
     let types = new Array<number>();
     let samplingModes = new Array<number>();
+
+    const rtWrapper = this._createHardwareRenderTargetWrapper(true, false, size);
 
     if (options !== undefined) {
         generateMipMaps = options.generateMipMaps === undefined ? false : options.generateMipMaps;
@@ -62,22 +66,20 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: any, options
 
     }
 
-    const width = size.width || size;
-    const height = size.height || size;
+    const width = (<{ width: number, height: number }>size).width || <number>size;
+    const height = (<{ width: number, height: number }>size).height || <number>size;
 
     let depthStencilTexture = null;
     if (generateDepthBuffer || generateStencilBuffer || generateDepthTexture) {
-        depthStencilTexture = this.createDepthStencilTexture({ width, height }, {
-            bilinearFiltering: false,
-            comparisonFunction: 0,
-            generateStencil: generateStencilBuffer,
-            isCube: false,
-            samples: 1,
-        });
+        depthStencilTexture = rtWrapper.createDepthStencilTexture(0, false, generateStencilBuffer, 1);
     }
 
-    const textures = [];
-    const attachments = [];
+    const textures: InternalTexture[] = [];
+    const attachments: number[] = [];
+
+    rtWrapper._generateDepthBuffer = generateDepthBuffer;
+    rtWrapper._generateStencilBuffer = generateStencilBuffer;
+    rtWrapper._attachments = attachments;
 
     for (let i = 0; i < textureCount; i++) {
         let samplingMode = samplingModes[i] || defaultSamplingMode;
@@ -102,9 +104,6 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: any, options
         textures.push(texture);
         attachments.push(i + 1);
 
-        texture._depthStencilTexture = i === 0 ? depthStencilTexture : null;
-        texture._framebuffer = {};
-        texture._depthStencilBuffer = {};
         texture.baseWidth = width;
         texture.baseHeight = height;
         texture.width = width;
@@ -114,10 +113,6 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: any, options
         texture.generateMipMaps = generateMipMaps;
         texture.samplingMode = samplingMode;
         texture.type = type;
-        texture._generateDepthBuffer = generateDepthBuffer;
-        texture._generateStencilBuffer = generateStencilBuffer ? true : false;
-        texture._attachments = attachments;
-        texture._textureArray = textures;
         texture._cachedWrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         texture._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
 
@@ -131,12 +126,20 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: any, options
         this._internalTexturesCache.push(depthStencilTexture);
     }
 
-    return textures;
+    rtWrapper.setTextures(textures);
+
+    return rtWrapper;
 };
 
-WebGPUEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function (textures: Nullable<InternalTexture[]>, samples: number): number {
-    if (!textures || textures[0].samples === samples) {
+WebGPUEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function (rtWrapper: Nullable<RenderTargetWrapper>, samples: number): number {
+    if (!rtWrapper || !rtWrapper.textures || rtWrapper.textures[0].samples === samples) {
         return samples;
+    }
+
+    const count = rtWrapper._attachments!.length;
+
+    if (count === 0) {
+        return 1;
     }
 
     samples = Math.min(samples, this.getCaps().maxMSAASamples);
@@ -146,12 +149,18 @@ WebGPUEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function (
         samples = 4;
     }
 
-    // Note that the last texture of textures is the depth texture (if the depth texture has been generated by the MRT class) and so the MSAA texture
-    // will be recreated for this texture too. As a consequence, there's no need to explicitly recreate the MSAA texture for textures[0]._depthStencilTexture
-    for (let i = 0; i < textures.length; ++i) {
-        const texture = textures[i];
+    for (let i = 0; i < count; ++i) {
+        const texture = rtWrapper.textures[i];
         this._textureHelper.createMSAATexture(texture, samples);
         texture.samples = samples;
+    }
+
+    // Note that the last texture of textures is the depth texture if the depth texture has been generated by the MRT class and so the MSAA texture
+    // will be recreated for this texture by the loop above: in that case, there's no need to create the MSAA texture for framebuffer._depthStencilTexture
+    // because framebuffer._depthStencilTexture is the same texture than the depth texture
+    if (rtWrapper._depthStencilTexture && rtWrapper._depthStencilTexture !== rtWrapper.textures[rtWrapper.textures.length - 1]) {
+        this._textureHelper.createMSAATexture(rtWrapper._depthStencilTexture, samples);
+        rtWrapper._depthStencilTexture.samples = samples;
     }
 
     return samples;
