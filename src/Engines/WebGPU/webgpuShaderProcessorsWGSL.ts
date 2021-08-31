@@ -338,8 +338,15 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
     protected _generateLeftOverUBOCode(name: string, setIndex: number, bindingIndex: number): string {
         let ubo = `[[block]] struct ${name} {\n`;
         for (let leftOverUniform of this.webgpuProcessingContext.leftOverUniforms) {
+            const type = leftOverUniform.type.replace(/^(.*?)(<.*>)?$/, "$1");
+            const size = WebGPUShaderProcessor.UniformSizes[type];
+
             if (leftOverUniform.length > 0) {
-                ubo += `  ${leftOverUniform.name} : [[stride(16)]] array<${leftOverUniform.type}, ${leftOverUniform.length}>;\n`;
+                if (size <= 2) {
+                    ubo += ` [[align(16)]] ${leftOverUniform.name} : [[stride(16)]] array<${leftOverUniform.type}, ${leftOverUniform.length}>;\n`;
+                } else {
+                    ubo += ` ${leftOverUniform.name} : array<${leftOverUniform.type}, ${leftOverUniform.length}>;\n`;
+                }
             }
             else {
                 ubo += `  ${leftOverUniform.name} : ${leftOverUniform.type};\n`;
