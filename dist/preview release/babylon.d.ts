@@ -6712,6 +6712,12 @@ declare module BABYLON {
          */
         setTextures(textures: Nullable<InternalTexture> | Nullable<InternalTexture[]>): void;
         /**
+         * Set a texture in the textures array
+         * @param texture the texture to set
+         * @param index the index in the textures array to set
+         */
+        setTexture(texture: InternalTexture, index?: number): void;
+        /**
          * Creates the depth/stencil texture
          * @param comparisonFunction Comparison function to use for the texture
          * @param bilinearFiltering true if bilinear filtering should be used when sampling the texture
