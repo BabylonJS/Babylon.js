@@ -109,7 +109,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                     if (engine.isPointerLock && this._onMouseMove) {
                         this._onMouseMove(p.event);
                     }
-                } else if ((p.type === PointerEventTypes.POINTERMOVE && srcElement && p.event.button === this._currentActiveButton && this._currentActiveButton !== -1) || (p.type === PointerEventTypes.POINTERUP && srcElement)) {
+                } else if (p.type === PointerEventTypes.POINTERUP && srcElement) {
                     try {
                         srcElement.releasePointerCapture(evt.pointerId);
                     } catch (e) {
