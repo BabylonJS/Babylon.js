@@ -54,6 +54,7 @@ declare function importScripts(...urls: string[]): void;
 
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
+declare type RenderTargetWrapper = import("./renderTargetWrapper").RenderTargetWrapper;
 
 /**
  * Options to load the associated Glslang library
@@ -2325,11 +2326,8 @@ export class WebGPUEngine extends Engine {
     //                              Render Pass
     //------------------------------------------------------------------------------
 
-    private _startRenderTargetRenderPass(internalTexture: InternalTexture, setClearStates: boolean, clearColor: Nullable<IColor4Like>, clearDepth: boolean, clearStencil: boolean) {
-        const gpuWrapper = internalTexture._hardwareTexture as WebGPUHardwareTexture;
-        const gpuTexture = gpuWrapper.underlyingResource!;
-
-        const depthStencilTexture = internalTexture._depthStencilTexture;
+    private _startRenderTargetRenderPass(rtWrapper: RenderTargetWrapper, setClearStates: boolean, clearColor: Nullable<IColor4Like>, clearDepth: boolean, clearStencil: boolean) {
+        const depthStencilTexture = rtWrapper._depthStencilTexture;
         const gpuDepthStencilWrapper = depthStencilTexture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
         const gpuDepthStencilTexture = gpuDepthStencilWrapper?.underlyingResource as Nullable<GPUTexture>;
         const gpuDepthStencilMSAATexture = gpuDepthStencilWrapper?.msaaTexture;
@@ -2347,7 +2345,7 @@ export class WebGPUEngine extends Engine {
         const depthClearValue = !setClearStates ? WebGPUConstants.LoadOp.Load : clearDepth ? (this.useReverseDepthBuffer ? this._clearReverseDepthValue : this._clearDepthValue) : WebGPUConstants.LoadOp.Load;
         const stencilClearValue = !setClearStates ? WebGPUConstants.LoadOp.Load : clearStencil ? this._clearStencilValue : WebGPUConstants.LoadOp.Load;
 
-        if (internalTexture._attachments && internalTexture._textureArray) {
+        if (rtWrapper._attachments && rtWrapper.isMulti) {
             // multi render targets
             // We bind a texture only if this._mrtAttachments[i] !== 0
             // It does work in the current state of Babylon (because we use _mrtAttachments only to include/exclude
@@ -2355,14 +2353,14 @@ export class WebGPUEngine extends Engine {
             // We should instead bind all textures but "disable" the textures for which this._mrtAttachments[i] == 0
             // but it's not possible to do that in WebGPU (at least not as of 2021/03/03).
             if (!this._mrtAttachments || this._mrtAttachments.length === 0) {
-                this._mrtAttachments = internalTexture._attachments;
+                this._mrtAttachments = rtWrapper._attachments;
             }
             for (let i = 0; i < this._mrtAttachments.length; ++i) {
                 const index = this._mrtAttachments[i];
                 if (index === 0) {
                     continue;
                 }
-                const mrtTexture = internalTexture._textureArray[index - 1];
+                const mrtTexture = rtWrapper.textures![index - 1];
                 const gpuMRTWrapper = mrtTexture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
                 const gpuMRTTexture = gpuMRTWrapper?.underlyingResource;
                 if (gpuMRTWrapper && gpuMRTTexture) {
@@ -2382,9 +2380,13 @@ export class WebGPUEngine extends Engine {
                     });
                 }
             }
-            this._cacheRenderPipeline.setMRTAttachments(this._mrtAttachments, internalTexture._textureArray);
+            this._cacheRenderPipeline.setMRTAttachments(this._mrtAttachments, rtWrapper.textures!);
         } else {
             // single render target
+            const internalTexture = rtWrapper.texture!;
+            const gpuWrapper = internalTexture._hardwareTexture as WebGPUHardwareTexture;
+            const gpuTexture = gpuWrapper.underlyingResource!;
+
             const gpuMSAATexture = gpuWrapper.msaaTexture;
             const colorTextureView = gpuTexture.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
             const colorMSAATextureView = gpuMSAATexture?.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
@@ -2403,9 +2405,9 @@ export class WebGPUEngine extends Engine {
             colorAttachments,
             depthStencilAttachment: depthStencilTexture && gpuDepthStencilTexture ? {
                 view: depthMSAATextureView ? depthMSAATextureView : depthTextureView!,
-                depthLoadValue: depthStencilTexture._generateDepthBuffer ? depthClearValue : WebGPUConstants.LoadOp.Load,
+                depthLoadValue: true /* depth always generated for the depth/stencil texture */ ? depthClearValue : WebGPUConstants.LoadOp.Load,
                 depthStoreOp: WebGPUConstants.StoreOp.Store,
-                stencilLoadValue: depthStencilTexture._generateStencilBuffer ? stencilClearValue : WebGPUConstants.LoadOp.Load,
+                stencilLoadValue: rtWrapper._depthStencilTextureWithStencil ? stencilClearValue : WebGPUConstants.LoadOp.Load,
                 stencilStoreOp: WebGPUConstants.StoreOp.Store,
             } : undefined,
             occlusionQuerySet: this._occlusionQuery?.hasQueries ? this._occlusionQuery.querySet : undefined,
@@ -2415,6 +2417,7 @@ export class WebGPUEngine extends Engine {
         if (this.dbgVerboseLogsForFirstFrames) {
             if ((this as any)._count === undefined) { (this as any)._count = 0; }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
+                const internalTexture = rtWrapper.texture!;
                 console.log("frame #" + (this as any)._count + " - render target begin pass - internalTexture.uniqueId=", internalTexture.uniqueId, "width=", internalTexture.width, "height=", internalTexture.height, this._rttRenderPassWrapper.renderPassDescriptor);
             }
         }
@@ -2432,7 +2435,7 @@ export class WebGPUEngine extends Engine {
     /** @hidden */
     public _endRenderTargetRenderPass() {
         if (this._currentRenderPass) {
-            const gpuWrapper = this._currentRenderTarget!._hardwareTexture as WebGPUHardwareTexture;
+            const gpuWrapper = this._currentRenderTarget!.texture!._hardwareTexture as WebGPUHardwareTexture;
             if (this._snapshotRenderingPlayBundles) {
                 gpuWrapper._bundleLists[gpuWrapper._currentLayer]?.run(this._currentRenderPass);
                 if (this._snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST) {
@@ -2453,7 +2456,7 @@ export class WebGPUEngine extends Engine {
             if (this.dbgVerboseLogsForFirstFrames) {
                 if ((this as any)._count === undefined) { (this as any)._count = 0; }
                 if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                    console.log("frame #" + (this as any)._count + " - render target end pass - internalTexture.uniqueId=", this._currentRenderTarget?.uniqueId);
+                    console.log("frame #" + (this as any)._count + " - render target end pass - internalTexture.uniqueId=", this._currentRenderTarget?.texture?.uniqueId);
                 }
             }
             this._debugPopGroup?.(1);
@@ -2568,7 +2571,7 @@ export class WebGPUEngine extends Engine {
 
     /**
      * Binds the frame buffer to the specified texture.
-     * @param texture The texture to render to or null for the default canvas
+     * @param texture The render target wrapper to render to
      * @param faceIndex The face of the texture to render to in case of cube texture
      * @param requiredWidth The width of the target to render to
      * @param requiredHeight The height of the target to render to
@@ -2576,13 +2579,12 @@ export class WebGPUEngine extends Engine {
      * @param lodLevel defines the lod level to bind to the frame buffer
      * @param layer defines the 2d array index to bind to frame buffer to
      */
-    public bindFramebuffer(texture: InternalTexture, faceIndex: number = 0, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean, lodLevel = 0, layer = 0): void {
-        const hardwareTexture = texture._hardwareTexture as Nullable<WebGPUHardwareTexture>;
-        const gpuTexture = hardwareTexture?.underlyingResource as Nullable<GPUTexture>;
+    public bindFramebuffer(texture: RenderTargetWrapper, faceIndex: number = 0, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean, lodLevel = 0, layer = 0): void {
+        const hardwareTexture = texture.texture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
 
-        if (!hardwareTexture || !gpuTexture) {
+        if (!hardwareTexture) {
             if (this.dbgSanityChecks) {
-                console.error("bindFramebuffer: Trying to bind a texture that does not have a hardware texture or that has a webgpu texture empty!", texture, hardwareTexture, gpuTexture);
+                console.error("bindFramebuffer: Trying to bind a texture that does not have a hardware texture!", texture, hardwareTexture);
             }
             return;
         }
@@ -2622,7 +2624,7 @@ export class WebGPUEngine extends Engine {
         if (this.dbgVerboseLogsForFirstFrames) {
             if ((this as any)._count === undefined) { (this as any)._count = 0; }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                console.log("frame #" + (this as any)._count + " - bindFramebuffer called - internalTexture.uniqueId=", texture.uniqueId, "face=", faceIndex, "lodLevel=", lodLevel, "layer=", layer, this._rttRenderPassWrapper.colorAttachmentViewDescriptor, this._rttRenderPassWrapper.depthAttachmentViewDescriptor);
+                console.log("frame #" + (this as any)._count + " - bindFramebuffer called - internalTexture.uniqueId=", texture.texture?.uniqueId, "face=", faceIndex, "lodLevel=", lodLevel, "layer=", layer, this._rttRenderPassWrapper.colorAttachmentViewDescriptor, this._rttRenderPassWrapper.depthAttachmentViewDescriptor);
             }
         }
 
@@ -2657,11 +2659,11 @@ export class WebGPUEngine extends Engine {
 
     /**
      * Unbind the current render target texture from the WebGPU context
-     * @param texture defines the render target texture to unbind
+     * @param texture defines the render target wrapper to unbind
      * @param disableGenerateMipMaps defines a boolean indicating that mipmaps must not be generated
      * @param onBeforeUnbind defines a function which will be called before the effective unbind
      */
-    public unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
+    public unBindFramebuffer(texture: RenderTargetWrapper, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
         const saveCRT = this._currentRenderTarget;
 
         this._currentRenderTarget = null; // to be iso with thinEngine, this._currentRenderTarget must be null when onBeforeUnbind is called
@@ -2676,8 +2678,8 @@ export class WebGPUEngine extends Engine {
             this._endRenderTargetRenderPass();
         }
 
-        if (texture.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
-            this._generateMipmaps(texture);
+        if (texture.texture?.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
+            this._generateMipmaps(texture.texture);
         }
 
         this._currentRenderTarget = null;
@@ -2687,7 +2689,7 @@ export class WebGPUEngine extends Engine {
         if (this.dbgVerboseLogsForFirstFrames) {
             if ((this as any)._count === undefined) { (this as any)._count = 0; }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                console.log("frame #" + (this as any)._count + " - unBindFramebuffer called - internalTexture.uniqueId=", texture.uniqueId);
+                console.log("frame #" + (this as any)._count + " - unBindFramebuffer called - internalTexture.uniqueId=", texture.texture?.uniqueId);
             }
         }
 

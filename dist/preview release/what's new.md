@@ -20,6 +20,7 @@
 - Added ability to enable/disable `ArcRotateCamera` zoom on multiTouch event ([NicolasBuecher](https://github.com/NicolasBuecher))
 - Moving button to shared uI folder.([msDestiny14](https://github.com/msDestiny14))
 - Added `collisionRetryCount` to improved collision detection ([CedricGuillemet](https://github.com/CedricGuillemet))
+- Added sleepBody support for ammojs ([CedricGuillemet](https://github.com/CedricGuillemet)
 - Moved sharedUI component to shared UI folder. ([msDestiny14](https://github.com/msDestiny14))
 - Added `encapsulate` and `encapsulateBoundingInfo` methods to `BoundingInfo`. ([Tolo789](https://github.com/Tolo789))
 - Added `onLoadObservable` to the `TextureDome` class(es) ([RaananW](https://github.com/RaananW))
@@ -313,3 +314,4 @@
 - Properties in `IWebXRHandTrackingOptions` related to hand and joint meshes have been moved into `jointMeshes` and `handMeshes` members, respectively ([rgerd](https://github.com/rgerd))
 - `IWebXRHandTrackingOptions.jointMeshes.onHandJointMeshGenerated()` provides a `hand` instead of a `controllerId` in the parameters, since the tracked joint meshes are pre-generated ([rgerd](https://github.com/rgerd))
 - You should now access joint meshes from `WebXRHand` through the `getJointMesh()` function ([rgerd](https://github.com/rgerd))
+- Rework of the inner working of render targets. Those are mostly internal changes. From the end user standpoint, the most visible change is that the `PostProcess` class is now dealing with `RenderTargetWrapper` instead of `InternalTexture` objects. So, if you are directly updating the `inputTexture` property with a render target texture that you previously rendered, you will need to pass a `RenderTargetWrapper` instead of an `InternalTexture`: you will get it by doing `rtt.renderTarget`, where `rtt` is the instance of your `RenderTargetTexture`. ([Popov72](https://github.com/Popov72))

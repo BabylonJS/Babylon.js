@@ -19,6 +19,7 @@ import { DataBuffer } from '../Buffers/dataBuffer';
 import { PerfCounter } from '../Misc/perfCounter';
 import { WebGLDataBuffer } from '../Meshes/WebGL/webGLDataBuffer';
 import { Logger } from '../Misc/logger';
+import { RenderTargetWrapper } from "./renderTargetWrapper";
 
 import "./Extensions/engine.alpha";
 import "./Extensions/engine.readTexture";
@@ -1193,7 +1194,7 @@ export class Engine extends ThinEngine {
             }
         }
 
-        this._bindTexture(channel, postProcessInput, name);
+        this._bindTexture(channel, postProcessInput?.texture ?? null, name);
     }
 
     /**
@@ -1203,7 +1204,7 @@ export class Engine extends ThinEngine {
      * @param name name of the channel
      */
     public setTextureFromPostProcessOutput(channel: number, postProcess: Nullable<PostProcess>, name: string): void {
-        this._bindTexture(channel, postProcess ? postProcess._outputTexture : null, name);
+        this._bindTexture(channel, postProcess?._outputTexture?.texture ?? null, name);
     }
 
     protected _rebuildBuffers(): void {
@@ -1450,20 +1451,26 @@ export class Engine extends ThinEngine {
         return shaderProgram;
     }
 
+    /** @hidden */
     public _releaseTexture(texture: InternalTexture): void {
         super._releaseTexture(texture);
+    }
 
-        // Set output texture of post process to null if the texture has been released/disposed
+    /** @hidden */
+    public _releaseRenderTargetWrapper(rtWrapper: RenderTargetWrapper): void {
+        super._releaseRenderTargetWrapper(rtWrapper);
+
+        // Set output texture of post process to null if the framebuffer has been released/disposed
         this.scenes.forEach((scene) => {
             scene.postProcesses.forEach((postProcess) => {
-                if (postProcess._outputTexture == texture) {
+                if (postProcess._outputTexture === rtWrapper) {
                     postProcess._outputTexture = null;
                 }
             });
             scene.cameras.forEach((camera) => {
                 camera._postProcesses.forEach((postProcess) => {
                     if (postProcess) {
-                        if (postProcess._outputTexture == texture) {
+                        if (postProcess._outputTexture === rtWrapper) {
                             postProcess._outputTexture = null;
                         }
                     }
@@ -1519,7 +1526,7 @@ export class Engine extends ThinEngine {
             this._gl.copyTexImage2D(this._gl.TEXTURE_2D, 0, internalFormat, 0, 0, destination.width, destination.height, 0);
 
             this.unBindFramebuffer(rtt);
-            this._releaseTexture(rtt);
+            rtt.dispose();
 
             if (onComplete) {
                 onComplete();
@@ -1571,76 +1578,6 @@ export class Engine extends ThinEngine {
 
         gl.texImage2D(target, lod, internalFormat, format, textureType, image);
         this._bindTextureDirectly(bindTarget, null, true);
-    }
-
-    /**
-     * Updates the sample count of a render target texture
-     * @see https://doc.babylonjs.com/features/webgl2#multisample-render-targets
-     * @param texture defines the texture to update
-     * @param samples defines the sample count to set
-     * @returns the effective sample count (could be 0 if multisample render targets are not supported)
-     */
-    public updateRenderTargetTextureSampleCount(texture: Nullable<InternalTexture>, samples: number): number {
-        if (this.webGLVersion < 2 || !texture) {
-            return 1;
-        }
-
-        if (texture.samples === samples) {
-            return samples;
-        }
-
-        var gl = this._gl;
-
-        samples = Math.min(samples, this.getCaps().maxMSAASamples);
-
-        // Dispose previous render buffers
-        if (texture._depthStencilBuffer) {
-            gl.deleteRenderbuffer(texture._depthStencilBuffer);
-            texture._depthStencilBuffer = null;
-        }
-
-        if (texture._MSAAFramebuffer) {
-            gl.deleteFramebuffer(texture._MSAAFramebuffer);
-            texture._MSAAFramebuffer = null;
-        }
-
-        if (texture._MSAARenderBuffer) {
-            gl.deleteRenderbuffer(texture._MSAARenderBuffer);
-            texture._MSAARenderBuffer = null;
-        }
-
-        if (samples > 1 && gl.renderbufferStorageMultisample) {
-            let framebuffer = gl.createFramebuffer();
-
-            if (!framebuffer) {
-                throw new Error("Unable to create multi sampled framebuffer");
-            }
-
-            texture._MSAAFramebuffer = framebuffer;
-            this._bindUnboundFramebuffer(texture._MSAAFramebuffer);
-
-            var colorRenderbuffer = gl.createRenderbuffer();
-
-            if (!colorRenderbuffer) {
-                throw new Error("Unable to create multi sampled framebuffer");
-            }
-
-            gl.bindRenderbuffer(gl.RENDERBUFFER, colorRenderbuffer);
-            gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, this._getRGBAMultiSampleBufferFormat(texture.type), texture.width, texture.height);
-
-            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, colorRenderbuffer);
-
-            texture._MSAARenderBuffer = colorRenderbuffer;
-        } else {
-            this._bindUnboundFramebuffer(texture._framebuffer);
-        }
-
-        texture.samples = samples;
-        texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(texture._generateStencilBuffer, texture._generateDepthBuffer, texture.width, texture.height, samples);
-
-        this._bindUnboundFramebuffer(null);
-
-        return samples;
     }
 
     /**
