@@ -8,6 +8,7 @@ import { WebXRRenderTarget } from "./webXRTypes";
 import { WebXRManagedOutputCanvas, WebXRManagedOutputCanvasOptions } from "./webXRManagedOutputCanvas";
 import { Engine } from "../Engines/engine";
 import { Color4 } from "../Maths/math.color";
+import { WebGLRenderTargetWrapper } from "../Engines/WebGL/webGLRenderTargetWrapper";
 
 interface IRenderTargetProvider {
     getRenderTargetForEye(eye: XREye): Nullable<RenderTargetTexture>;
@@ -434,10 +435,12 @@ export class WebXRSessionManager implements IDisposable {
         const internalTexture = new InternalTexture(this._engine, InternalTextureSource.Unknown, true);
         internalTexture.width = width;
         internalTexture.height = height;
-        internalTexture._framebuffer = framebuffer;
 
         // Create render target texture from the internal texture
-        const renderTargetTexture = new RenderTargetTexture("XR renderTargetTexture", { width: width, height: height }, this.scene, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true);
+        const renderTargetTexture = new RenderTargetTexture("XR renderTargetTexture", { width: width, height: height }, this.scene);
+        const webglRTWrapper = renderTargetTexture.renderTarget as WebGLRenderTargetWrapper;
+        webglRTWrapper.setTexture(internalTexture, 0);
+        webglRTWrapper._framebuffer = framebuffer;
         renderTargetTexture._texture = internalTexture;
         renderTargetTexture.disableRescaling();
         if (this._sessionMode === 'immersive-ar') {

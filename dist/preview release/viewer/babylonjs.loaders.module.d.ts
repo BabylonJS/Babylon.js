@@ -1041,7 +1041,9 @@ declare module "babylonjs-loaders/glTF/2.0/glTFLoaderInterfaces" {
         /** @hidden */
         _data?: Promise<ArrayBufferView>;
         /** @hidden */
-        _babylonVertexBuffer?: Promise<VertexBuffer>;
+        _babylonVertexBuffer?: {
+            [kind: string]: Promise<VertexBuffer>;
+        };
     }
     /**
      * Loader interface with additional members.
@@ -4110,7 +4112,9 @@ declare module BABYLON.GLTF2.Loader {
         /** @hidden */
         _data?: Promise<ArrayBufferView>;
         /** @hidden */
-        _babylonVertexBuffer?: Promise<VertexBuffer>;
+        _babylonVertexBuffer?: {
+            [kind: string]: Promise<VertexBuffer>;
+        };
     }
     /**
      * Loader interface with additional members.

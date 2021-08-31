@@ -24,6 +24,7 @@ import { RenderTargetTextureSize } from '../../../Engines/Extensions/engine.rend
 import { EngineStore } from '../../../Engines/engineStore';
 import { Constants } from '../../../Engines/constants';
 import { DrawWrapper } from "../../drawWrapper";
+import { RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
 
 /**
  * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes calmpler' images.
@@ -104,6 +105,8 @@ export class ProceduralTexture extends Texture {
     private _contentUpdateId = -1;
     private _contentData: Nullable<Promise<ArrayBufferView>>;
 
+    private _rtWrapper: Nullable<RenderTargetWrapper> = null;
+
     /**
      * Instantiates a new procedural texture.
      * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes called 'refMaps' or 'sampler' images.
@@ -143,12 +146,13 @@ export class ProceduralTexture extends Texture {
         this._fallbackTexture = fallbackTexture;
 
         if (isCube) {
-            this._texture = this._fullEngine.createRenderTargetCubeTexture(size as number, { generateMipMaps: generateMipMaps, generateDepthBuffer: false, generateStencilBuffer: false, type: textureType });
+            this._rtWrapper = this._fullEngine.createRenderTargetCubeTexture(size as number, { generateMipMaps: generateMipMaps, generateDepthBuffer: false, generateStencilBuffer: false, type: textureType });
             this.setFloat("face", 0);
         }
         else {
-            this._texture = this._fullEngine.createRenderTargetTexture(size, { generateMipMaps: generateMipMaps, generateDepthBuffer: false, generateStencilBuffer: false, type: textureType });
+            this._rtWrapper = this._fullEngine.createRenderTargetTexture(size, { generateMipMaps: generateMipMaps, generateDepthBuffer: false, generateStencilBuffer: false, type: textureType });
         }
+        this._texture = this._rtWrapper.texture;
 
         // VBO
         var vertices = [];
@@ -280,7 +284,8 @@ export class ProceduralTexture extends Texture {
                 this._uniforms,
                 this._samplers,
                 defines, undefined, undefined, () => {
-                    this.releaseInternalTexture();
+                    this._rtWrapper?.dispose();
+                    this._rtWrapper = this._texture = null;
 
                     if (this._fallbackTexture) {
                         this._texture = this._fallbackTexture._texture;
@@ -375,8 +380,9 @@ export class ProceduralTexture extends Texture {
             return;
         }
 
-        this.releaseInternalTexture();
-        this._texture = this._fullEngine.createRenderTargetTexture(size, { generateMipMaps, generateDepthBuffer: false, generateStencilBuffer: false, type: this._textureType });
+        this._rtWrapper?.dispose();
+        this._rtWrapper = this._fullEngine.createRenderTargetTexture(size, { generateMipMaps, generateDepthBuffer: false, generateStencilBuffer: false, type: this._textureType });
+        this._texture = this._rtWrapper.texture;
 
         // Update properties
         this._size = size;
@@ -574,7 +580,7 @@ export class ProceduralTexture extends Texture {
             }
         }
 
-        if (!this._texture) {
+        if (!this._texture || !this._rtWrapper) {
             return;
         }
 
@@ -582,7 +588,7 @@ export class ProceduralTexture extends Texture {
 
         if (this.isCube) {
             for (var face = 0; face < 6; face++) {
-                engine.bindFramebuffer(this._texture, face, undefined, undefined, true);
+                engine.bindFramebuffer(this._rtWrapper, face, undefined, undefined, true);
 
                 // VBOs
                 engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._drawWrapper.effect!);
@@ -598,7 +604,7 @@ export class ProceduralTexture extends Texture {
                 engine.drawElementsType(Material.TriangleFillMode, 0, 6);
             }
         } else {
-            engine.bindFramebuffer(this._texture, 0, undefined, undefined, true);
+            engine.bindFramebuffer(this._rtWrapper, 0, undefined, undefined, true);
 
             // VBOs
             engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._drawWrapper.effect!);
@@ -613,7 +619,7 @@ export class ProceduralTexture extends Texture {
         }
 
         // Unbind
-        engine.unBindFramebuffer(this._texture, this.isCube);
+        engine.unBindFramebuffer(this._rtWrapper, this.isCube);
 
         // Mipmaps
         if (this.isCube) {
