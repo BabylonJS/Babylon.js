@@ -48,6 +48,7 @@ declare type Observer<T> = import("../Misc/observable").Observer<T>;
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
 declare type Texture = import("../Materials/Textures/texture").Texture;
+declare type ExternalTexture = import("../Materials/Textures/externalTexture").ExternalTexture;
 
 /**
  * Defines the interface used by objects working like Scene
@@ -4237,6 +4238,15 @@ export class ThinEngine {
         }
 
         this._setTexture(channel, texture);
+    }
+
+    /**
+     * Sets an internal texture to the according uniform.
+     * @param name The name of the uniform in the effect
+     * @param texture The texture to apply
+     */
+    public setExternalTexture(name: string, texture: Nullable<ExternalTexture>): void {
+        // not supported by WebGL
     }
 
     private _bindSamplerUniformToChannel(sourceSlot: number, destination: number) {

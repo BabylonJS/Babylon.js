@@ -19,6 +19,8 @@ import { Engine } from '../Engines/engine';
 import { ShaderLanguage } from "../Engines/Processors/iShaderProcessor";
 import { UniformBuffer } from "./uniformBuffer";
 
+declare type ExternalTexture = import("../Materials/Textures/externalTexture").ExternalTexture;
+
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
 /**
@@ -51,11 +53,16 @@ export interface IShaderMaterialOptions {
     uniformBuffers: string[];
 
     /**
-     * The list of sampler names used in the shader
+     * The list of sampler (texture) names used in the shader
      */
     samplers: string[];
 
     /**
+     * The list of external texture names used in the shader
+     */
+    externalTextures: string[];
+
+     /**
      * The list of defines used in the shader
      */
     defines: string[];
@@ -83,6 +90,7 @@ export class ShaderMaterial extends Material {
     private _options: IShaderMaterialOptions;
     private _textures: { [name: string]: BaseTexture } = {};
     private _textureArrays: { [name: string]: BaseTexture[] } = {};
+    private _externalTextures: { [name: string]: ExternalTexture } = {};
     private _floats: { [name: string]: number } = {};
     private _ints: { [name: string]: number } = {};
     private _floatsArrays: { [name: string]: number[] } = {};
@@ -138,6 +146,7 @@ export class ShaderMaterial extends Material {
             uniforms: ["worldViewProjection"],
             uniformBuffers: [],
             samplers: [],
+            externalTextures: [],
             defines: [],
             useClipPlane: false,
             ...options
@@ -228,6 +237,21 @@ export class ShaderMaterial extends Material {
         this._checkUniform(name);
 
         this._textureArrays[name] = textures;
+
+        return this;
+    }
+
+    /**
+     * Set an internal texture in the shader.
+     * @param name Define the name of the uniform samplers as defined in the shader
+     * @param texture Define the texture to bind to this sampler
+     * @return the material itself allowing "fluent" like uniform updates
+     */
+    public setExternalTexture(name: string, texture: ExternalTexture): ShaderMaterial {
+        if (this._options.externalTextures.indexOf(name) === -1) {
+            this._options.externalTextures.push(name);
+        }
+        this._externalTextures[name] = texture;
 
         return this;
     }
@@ -884,6 +908,11 @@ export class ShaderMaterial extends Material {
                 effect.setTextureArray(name, this._textureArrays[name]);
             }
 
+            // External texture
+            for (name in this._externalTextures) {
+                effect.setExternalTexture(name, this._externalTextures[name]);
+            }
+
             // Int
             for (name in this._ints) {
                 effect.setInt(name, this._ints[name]);
@@ -1082,6 +1111,21 @@ export class ShaderMaterial extends Material {
             result.setTexture(key, this._textures[key]);
         }
 
+        // TextureArray
+        for (var key in this._textureArrays) {
+            result.setTextureArray(key, this._textureArrays[key]);
+        }
+
+        // External texture
+        for (var key in this._externalTextures) {
+            result.setExternalTexture(key, this._externalTextures[key]);
+        }
+
+        // Int
+        for (var key in this._ints) {
+            result.setInt(key, this._ints[key]);
+        }
+
         // Float
         for (var key in this._floats) {
             result.setFloat(key, this._floats[key]);
@@ -1097,9 +1141,19 @@ export class ShaderMaterial extends Material {
             result.setColor3(key, this._colors3[key]);
         }
 
+        // Color3Array
+        for (var key in this._colors3Arrays) {
+            result._colors3Arrays[key] = this._colors3Arrays[key];
+        }
+
         // Color4
         for (var key in this._colors4) {
             result.setColor4(key, this._colors4[key]);
+        }
+
+        // Color4Array
+        for (var key in this._colors4Arrays) {
+            result._colors4Arrays[key] = this._colors4Arrays[key];
         }
 
         // Vector2
@@ -1122,6 +1176,11 @@ export class ShaderMaterial extends Material {
             result.setMatrix(key, this._matrices[key]);
         }
 
+        // MatrixArray
+        for (var key in this._matrixArrays) {
+            result._matrixArrays[key] = this._matrixArrays[key].slice();
+        }
+
         // Matrix 3x3
         for (var key in this._matrices3x3) {
             result.setMatrix3x3(key, this._matrices3x3[key]);
@@ -1130,6 +1189,26 @@ export class ShaderMaterial extends Material {
         // Matrix 2x2
         for (var key in this._matrices2x2) {
             result.setMatrix2x2(key, this._matrices2x2[key]);
+        }
+
+        // Vector2Array
+        for (var key in this._vectors2Arrays) {
+            result.setArray2(key, this._vectors2Arrays[key]);
+        }
+
+        // Vector3Array
+        for (var key in this._vectors3Arrays) {
+            result.setArray3(key, this._vectors3Arrays[key]);
+        }
+
+        // Vector4Array
+        for (var key in this._vectors4Arrays) {
+            result.setArray4(key, this._vectors4Arrays[key]);
+        }
+
+        // Uniform buffers
+        for (var key in this._uniformBuffers) {
+            result.setUniformBuffer(key, this._uniformBuffers[key]);
         }
 
         return result;
@@ -1192,6 +1271,12 @@ export class ShaderMaterial extends Material {
             for (var index = 0; index < array.length; index++) {
                 serializationObject.textureArrays[name].push(array[index].serialize());
             }
+        }
+
+        // Int
+        serializationObject.ints = {};
+        for (name in this._ints) {
+            serializationObject.ints[name] = this._ints[name];
         }
 
         // Float
@@ -1326,12 +1411,17 @@ export class ShaderMaterial extends Material {
             material.setTextureArray(name, textureArray);
         }
 
+        // Int
+        for (name in source.ints) {
+            material.setInt(name, source.ints[name]);
+        }
+
         // Float
         for (name in source.floats) {
             material.setFloat(name, source.floats[name]);
         }
 
-        // Float s
+        // Floats
         for (name in source.floatsArrays) {
             material.setFloats(name, source.floatsArrays[name]);
         }

@@ -262,7 +262,7 @@ declare class GPUExternalTexture implements GPUObjectBase {
 
 interface GPUExternalTextureDescriptor extends GPUObjectDescriptorBase {
     source: HTMLVideoElement;
-    colorSpace: GPUPredefinedColorSpace; /* default="srgb" */
+    colorSpace?: GPUPredefinedColorSpace; /* default="srgb" */
 }
 
 declare class GPUSampler implements GPUObjectBase {
