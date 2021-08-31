@@ -18,6 +18,7 @@ import { WebRequest } from '../Misc/webRequest';
 import { Engine } from '../Engines/engine';
 import { ShaderLanguage } from "../Engines/Processors/iShaderProcessor";
 import { UniformBuffer } from "./uniformBuffer";
+import { Sampler } from "./Textures/sampler";
 
 declare type ExternalTexture = import("../Materials/Textures/externalTexture").ExternalTexture;
 
@@ -62,7 +63,12 @@ export interface IShaderMaterialOptions {
      */
     externalTextures: string[];
 
-     /**
+    /**
+     * The list of sampler object names used in the shader
+     */
+    samplerObjects: string[];
+
+    /**
      * The list of defines used in the shader
      */
     defines: string[];
@@ -109,6 +115,7 @@ export class ShaderMaterial extends Material {
     private _vectors3Arrays: { [name: string]: number[] } = {};
     private _vectors4Arrays: { [name: string]: number[] } = {};
     private _uniformBuffers: { [name: string]: UniformBuffer } = {};
+    private _samplers: { [name: string]: Sampler } = {};
     private _cachedWorldViewMatrix = new Matrix();
     private _cachedWorldViewProjectionMatrix = new Matrix();
     private _renderId: number;
@@ -147,6 +154,7 @@ export class ShaderMaterial extends Material {
             uniformBuffers: [],
             samplers: [],
             externalTextures: [],
+            samplerObjects: [],
             defines: [],
             useClipPlane: false,
             ...options
@@ -496,11 +504,26 @@ export class ShaderMaterial extends Material {
      * @param buffer Define the value to give to the uniform
      * @return the material itself allowing "fluent" like uniform updates
      */
-     public setUniformBuffer(name: string, buffer: UniformBuffer): ShaderMaterial {
+    public setUniformBuffer(name: string, buffer: UniformBuffer): ShaderMaterial {
         if (this._options.uniformBuffers.indexOf(name) === -1) {
             this._options.uniformBuffers.push(name);
         }
         this._uniformBuffers[name] = buffer;
+
+        return this;
+    }
+
+    /**
+     * Set a sampler in the shader
+     * @param name Define the name of the uniform as defined in the shader
+     * @param buffer Define the value to give to the uniform
+     * @return the material itself allowing "fluent" like uniform updates
+     */
+    public setSampler(name: string, sampler: Sampler): ShaderMaterial {
+        if (this._options.samplerObjects.indexOf(name) === -1) {
+            this._options.samplerObjects.push(name);
+        }
+        this._samplers[name] = sampler;
 
         return this;
     }
@@ -1006,6 +1029,12 @@ export class ShaderMaterial extends Material {
                     effect.bindUniformBuffer(buffer, name);
                 }
             }
+
+            // Samplers
+            for (name in this._samplers) {
+                effect.setSampler(name, this._samplers[name]);
+            }
+
         }
 
         if (effect && mesh && (mustRebind || !this.isFrozen)) {
@@ -1209,6 +1238,11 @@ export class ShaderMaterial extends Material {
         // Uniform buffers
         for (var key in this._uniformBuffers) {
             result.setUniformBuffer(key, this._uniformBuffers[key]);
+        }
+
+        // Samplers
+        for (var key in this._samplers) {
+            result.setSampler(key, this._samplers[key]);
         }
 
         return result;

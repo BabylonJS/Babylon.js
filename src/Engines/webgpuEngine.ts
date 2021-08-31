@@ -49,6 +49,7 @@ import { Observable } from "../Misc/observable";
 import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
 import { TwgslOptions, WebGPUTintWASM } from "./WebGPU/webgpuTintWASM";
 import { ExternalTexture } from "../Materials/Textures/externalTexture";
+import { Sampler } from "../Materials/Textures/sampler";
 
 declare function importScripts(...urls: string[]): void;
 
@@ -1934,6 +1935,14 @@ export class WebGPUEngine extends Engine {
             }
             this._setInternalTexture(name, texture);
         }
+    }
+
+    /**
+     * Sets a sampler to the according uniform.
+     * @param name The name of the uniform in the effect
+     * @param sampler The sampler to apply
+     */
+    public setSampler(name: string, texture: Nullable<Sampler>): void {
     }
 
     /**
