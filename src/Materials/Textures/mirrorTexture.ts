@@ -202,7 +202,7 @@ export class MirrorTexture extends RenderTargetTexture {
             this._blurX.autoClear = false;
 
             if (this._blurRatio === 1 && this.samples < 2 && this._texture) {
-                this._blurX.inputTexture = this._texture;
+                this._blurX.inputTexture = this._renderTarget!;
             } else {
                 this._blurX.alwaysForcePOT = true;
             }

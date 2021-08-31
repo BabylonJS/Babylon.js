@@ -717,8 +717,23 @@ export class Texture extends BaseTexture {
      * @returns the cloned texture
      */
     public clone(): Texture {
+        const options: ITextureCreationOptions = {
+            noMipmap: this._noMipmap,
+            invertY: this._invertY,
+            samplingMode: this.samplingMode,
+            onLoad: undefined,
+            onError: undefined,
+            buffer: this._texture ? this._texture._buffer : undefined,
+            deleteBuffer: this._deleteBuffer,
+            format: this.textureFormat,
+            mimeType: this.mimeType,
+            loaderOptions: this._loaderOptions,
+            creationFlags: this._creationFlags,
+            useSRGBBuffer: this._useSRGBBuffer,
+        };
+
         return SerializationHelper.Clone(() => {
-            return new Texture(this._texture ? this._texture.url : null, this.getScene(), this._noMipmap, this._invertY, this.samplingMode, undefined, undefined, this._texture ? this._texture._buffer : undefined);
+            return new Texture(this._texture ? this._texture.url : null, this.getScene(), options);
         }, this);
     }
 

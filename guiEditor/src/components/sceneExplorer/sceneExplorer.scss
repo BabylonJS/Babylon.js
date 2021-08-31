@@ -199,8 +199,8 @@
         cursor: pointer;
     }
 
-    .spacer {
-        background: transparent;
+    .makeChild{
+       grid-column: 3;
     }
 
     .itemContainer {
@@ -215,20 +215,40 @@
         user-select: none;         
         display: grid;
         grid-template-columns: 20px 1fr;
-
-        &:hover {
-            background: #bbbbbb;
+        border: 2px solid transparent;
+        &.hover {
+            border: 2px solid #527089;
+            cursor: pointer;
         }
 
-        &.selected{
-            background: #bbbbbb;
+        &.seAbove {
+            border-top: 2px solid #527089;
+            cursor: pointer;
+        }
+        &.seBelow {
+            border-bottom: 2px solid #527089;
+            cursor: pointer;
+        }
+
+        &.selected {
+            
+            background: #bfbebe;
+            color: black;
+        }
+
+        &.dragged {
+            background: transparent;
+            color: black;
+        }
+
+        &.parent {
+            background: #ffffff ;
             color: black;
         }
         
         .isNotActive {
             opacity: 0.3;
         }
-
         .arrow {
             grid-column: 1;
             color: black;
@@ -387,11 +407,8 @@
                 width: 20px;
                 grid-column: 4;
             }
-
-
         }   
         
-
         .title {
             grid-column: 1;
             background: transparent;
