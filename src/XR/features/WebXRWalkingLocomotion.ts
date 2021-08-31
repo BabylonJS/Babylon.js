@@ -1,9 +1,7 @@
 import { Vector2, Vector3 } from "../../Maths";
 import { Observable } from "../../Misc";
-import { Scene } from "../../scene";
 import { Nullable } from "../../types";
-import { WebXRCamera } from "../webXRCamera";
-import { WebXRFeatureName } from "../webXRFeaturesManager";
+import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
 import { WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 
@@ -308,26 +306,8 @@ class Walker {
     }
 }
 
-// Helper class for conveniently making frame-dependent logic (as is used in Walker)
-// more resilient to framerate variations.
-class FixedUpdateProvider {
-    onFixedUpdateObservable: Observable<void>;
-
-    constructor (scene: Scene, framerate: number) {
-        this.onFixedUpdateObservable = new Observable<void>();
-        const updateIntervalMs = 1000 / framerate;
-        let elapsedTime = 0;
-        const beforeRenderObserver = scene.onBeforeRenderObservable.add(() => {
-            elapsedTime += scene.deltaTime;
-            for (; elapsedTime >= updateIntervalMs; elapsedTime -= updateIntervalMs) {
-                this.onFixedUpdateObservable.notifyObservers();
-            }
-        });
-        const disposeObserver = scene.onDisposeObservable.add(function () {
-            scene.onBeforeRenderObservable.remove(beforeRenderObserver);
-            scene.onDisposeObservable.remove(disposeObserver);
-        });
-    }
+export interface IWebXRWalkingLocomotionOptions {
+    locomotionTarget: Vector3;
 }
 
 /**
@@ -337,17 +317,25 @@ export class WebXRWalkingLocomotion extends WebXRAbstractFeature {
     /**
      * The module's name
      */
-    public static readonly Name = WebXRFeatureName.WALKING_LOCOMOTION;
+    public static get Name(): string {
+        return WebXRFeatureName.WALKING_LOCOMOTION;
+    }
+
+    public static get Version(): number {
+        return 0.01;
+    }
 
     private _sessionManager: WebXRSessionManager;
     private _up: Vector3 = new Vector3();
     private _forward: Vector3 = new Vector3();
     private _position: Vector3 = new Vector3();
     private _walker: Walker = new Walker();
+    private _locomotionTarget: Vector3;
 
-    public constructor(sessionManager: WebXRSessionManager) {
+    public constructor(sessionManager: WebXRSessionManager, options: IWebXRWalkingLocomotionOptions) {
         super(sessionManager);
         this._sessionManager = sessionManager;
+        this._locomotionTarget = options.locomotionTarget;
     }
 
     protected _onXRFrame(frame: XRFrame): void {
@@ -363,6 +351,16 @@ export class WebXRWalkingLocomotion extends WebXRAbstractFeature {
         // Compute the nape position
         this._forward.scaleAndAddToRef(0.05, this._position);
         this._up.scaleAndAddToRef(-0.05, this._position);
-        this._walker.update(this._position, this._forward, Vector3.Zero() /* TODO: Pass in the real vector to puppet. */);
+        this._walker.update(this._position, this._forward, this._locomotionTarget);
     }
 }
+
+//register the plugin
+WebXRFeaturesManager.AddWebXRFeature(
+    WebXRWalkingLocomotion.Name,
+    (xrSessionManager, options) => {
+        return () => new WebXRWalkingLocomotion(xrSessionManager, options);
+    },
+    WebXRWalkingLocomotion.Version,
+    false
+);
