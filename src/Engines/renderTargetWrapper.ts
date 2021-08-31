@@ -88,7 +88,7 @@ export class RenderTargetWrapper {
      * Gets the list of render textures. If we are not in a multi render target, the list will be null (use the texture getter instead)
      */
     public get textures(): Nullable<InternalTexture[]> {
-        return this._isMulti ? this._textures : null;
+        return this._textures;
     }
 
     /**
@@ -140,6 +140,17 @@ export class RenderTargetWrapper {
         } else {
             this._textures = null;
         }
+    }
+
+    public setTexture(texture: InternalTexture, index: number = 0): void {
+        if (!this._textures) {
+            this._textures = [];
+        }
+        if (this._textures[index]) {
+            this._textures[index].dispose();
+        }
+
+        this._textures[index] = texture;
     }
 
     /**
