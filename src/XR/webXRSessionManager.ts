@@ -437,9 +437,9 @@ export class WebXRSessionManager implements IDisposable {
         internalTexture.height = height;
 
         // Create render target texture from the internal texture
-        const renderTargetTexture = new RenderTargetTexture("XR renderTargetTexture", { width: width, height: height }, this.scene, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true);
+        const renderTargetTexture = new RenderTargetTexture("XR renderTargetTexture", { width: width, height: height }, this.scene);
         const webglRTWrapper = renderTargetTexture.renderTarget as WebGLRenderTargetWrapper;
-        webglRTWrapper.textures![0] = internalTexture;
+        webglRTWrapper.setTexture(internalTexture, 0);
         webglRTWrapper._framebuffer = framebuffer;
         renderTargetTexture._texture = internalTexture;
         renderTargetTexture.disableRescaling();
