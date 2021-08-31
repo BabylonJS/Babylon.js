@@ -284,7 +284,7 @@ export class CubeTexture extends BaseTexture {
      * @param onLoad callback called when the texture is loaded  (defaults to null)
      * @param prefiltered Defines whether the updated texture is prefiltered or not
      */
-    public updateURL(url: string, forcedExtension?: string, onLoad?: () => void, prefiltered: boolean = false): void {
+    public updateURL(url: string, forcedExtension?: string, onLoad?: () => void, prefiltered: boolean = false, extensions: Nullable<string[]> = null): void {
         if (this.url) {
             this.releaseInternalTexture();
             this.getScene()?.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
@@ -294,13 +294,44 @@ export class CubeTexture extends BaseTexture {
             this.name = url;
         }
         this.url = url;
-        this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
-        this._prefiltered = prefiltered;
-        if (this._prefiltered) {
+
+        const lastDot = url.lastIndexOf(".");
+        const extension = forcedExtension ? forcedExtension : (lastDot > -1 ? url.substring(lastDot).toLowerCase() : "");
+        const isDDS = (extension.indexOf(".dds") === 0);
+        const isEnv = (extension.indexOf(".env") === 0);
+
+        if (isEnv) {
             this.gammaSpace = false;
+            this._prefiltered = false;
             this.anisotropicFilteringLevel = 1;
         }
-        this._forcedExtension = forcedExtension || null;
+        else {
+            this._prefiltered = prefiltered;
+
+            if (prefiltered) {
+                this.gammaSpace = false;
+                this.anisotropicFilteringLevel = 1;
+            }
+        }
+        if (this._files) {
+            this._files.length = 0;
+        } else {
+            this._files = [];
+        }
+
+        if (!isEnv && !isDDS && !extensions) {
+            extensions = ["_px.jpg", "_py.jpg", "_pz.jpg", "_nx.jpg", "_ny.jpg", "_nz.jpg"];
+        }
+
+        if (extensions) {
+
+            for (var index = 0; index < extensions.length; index++) {
+                this._files.push(url + extensions[index]);
+            }
+            this._extensions = extensions;
+        }
+
+        this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
 
         if (onLoad) {
             this._delayedOnLoad = onLoad;
