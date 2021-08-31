@@ -983,7 +983,9 @@ declare module BABYLON.GLTF2.Loader {
         /** @hidden */
         _data?: Promise<ArrayBufferView>;
         /** @hidden */
-        _babylonVertexBuffer?: Promise<VertexBuffer>;
+        _babylonVertexBuffer?: {
+            [kind: string]: Promise<VertexBuffer>;
+        };
     }
     /**
      * Loader interface with additional members.
