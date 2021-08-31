@@ -12,6 +12,7 @@ import { UniqueIdGenerator } from "../Misc/uniqueIdGenerator";
 import { IComputeContext } from "./IComputeContext";
 import { StorageBuffer } from "../Buffers/storageBuffer";
 import { Logger } from "../Misc/logger";
+import { Sampler } from "../Materials/Textures/sampler";
 
 /**
  * Defines the options associated with the creation of a compute shader.
@@ -39,8 +40,6 @@ export interface IComputeShaderOptions {
      */
     processFinalCode?: Nullable<(code: string) => string>;
 }
-
-type Sampler = { wrapU: number, wrapV: number, wrapR: number, anisotropicFilteringLevel: number, samplingMode: number };
 
 /**
  * The ComputeShader object lets you execute a compute shader on your GPU (if supported by the engine)
@@ -259,14 +258,6 @@ export class ComputeShader {
         return true;
     }
 
-    private _compareSampler(texture: BaseTexture, sampler: Sampler): boolean {
-        return texture.wrapU === sampler.wrapU &&
-            texture.wrapV === sampler.wrapV &&
-            texture.wrapR === sampler.wrapR &&
-            texture.anisotropicFilteringLevel === sampler.anisotropicFilteringLevel &&
-            texture._texture?.samplingMode === sampler.samplingMode;
-    }
-
     /**
      * Dispatches (executes) the compute shader
      * @param x Number of workgroups to execute on the X dimension
@@ -295,14 +286,15 @@ export class ComputeShader {
             const sampler = this._samplers[key];
             const texture = binding.object as BaseTexture;
 
-            if (!sampler || !this._compareSampler(texture, sampler)) {
-                this._samplers[key] = {
-                    wrapU: texture.wrapU,
-                    wrapV: texture.wrapV,
-                    wrapR: texture.wrapR,
-                    anisotropicFilteringLevel: texture.anisotropicFilteringLevel,
-                    samplingMode: texture._texture!.samplingMode,
-                };
+            if (!sampler || !texture._texture || !sampler.compareSampler(texture._texture)) {
+                this._samplers[key] = new Sampler().set(
+                    texture.wrapU,
+                    texture.wrapV,
+                    texture.wrapR,
+                    texture.anisotropicFilteringLevel,
+                    texture._texture!.samplingMode,
+                    texture._texture?._comparisonFunction,
+                );
                 this._contextIsDirty = true;
             }
         }

@@ -14,6 +14,7 @@ import { IEffectFallbacks } from './iEffectFallbacks';
 import { ShaderStore as EngineShaderStore, ShaderStore } from '../Engines/shaderStore';
 import { ShaderLanguage } from "../Engines/Processors/iShaderProcessor";
 import { CodeStringParsingTools } from "../Misc/codeStringParsingTools";
+import { Sampler } from "./Textures/sampler";
 
 declare type Engine = import("../Engines/engine").Engine;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
@@ -888,11 +889,20 @@ export class Effect implements IDisposable {
 
     /**
      * Sets an external texture on the engine to be used in the shader.
-     * @param channel Name of the external texture variable.
+     * @param name Name of the external texture variable.
      * @param texture Texture to set.
      */
-    public setExternalTexture(name: string, texture: ExternalTexture): void {
+    public setExternalTexture(name: string, texture: Nullable<ExternalTexture>): void {
         this._engine.setExternalTexture(name, texture);
+    }
+
+    /**
+     * Sets a sampler on the engine to be used in the shader.
+     * @param name Name of the sampler variable.
+     * @param sampler Sampler to set.
+     */
+    public setSampler(name: string, sampler: Nullable<Sampler>): void {
+        this._engine.setSampler(name, sampler);
     }
 
     /**

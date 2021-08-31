@@ -3,6 +3,7 @@ import { Nullable, int } from "../../types";
 import { ICanvas, ICanvasRenderingContext } from "../../Engines/ICanvas";
 import { _DevTools } from '../../Misc/devTools';
 import { HardwareTextureWrapper } from "./hardwareTextureWrapper";
+import { Sampler } from "./sampler";
 
 declare type ThinEngine = import("../../Engines/thinEngine").ThinEngine;
 declare type BaseTexture = import("../../Materials/Textures/baseTexture").BaseTexture;
@@ -78,7 +79,7 @@ export enum InternalTextureSource {
  * Class used to store data associated with WebGL texture data for the engine
  * This class should not be used directly
  */
-export class InternalTexture {
+export class InternalTexture extends Sampler {
 
     /** @hidden */
     public static _UpdateRGBDAsync = (internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial>, lodScale: number, lodOffset: number): Promise<void> => {
@@ -112,13 +113,16 @@ export class InternalTexture {
     /** @hidden */
     public _originalUrl: string; // not empty only if different from url
     /**
-     * Gets the sampling mode of the texture
-     */
-    public samplingMode: number = -1;
-    /**
      * Gets a boolean indicating if the texture needs mipmaps generation
      */
     public generateMipMaps: boolean = false;
+    /**
+     * Gets a boolean indicating if the texture uses mipmaps
+     * @TODO implements useMipMaps separately from generateMipMaps
+     */
+    public get useMipMaps() {
+        return this.generateMipMaps;
+    }
     /**
      * Gets the number of samples used by the texture (WebGL2+ only)
      */
@@ -192,19 +196,9 @@ export class InternalTexture {
     /** @hidden */
     public _cachedCoordinatesMode: Nullable<number> = null;
     /** @hidden */
-    public _cachedWrapU: Nullable<number> = null;
-    /** @hidden */
-    public _cachedWrapV: Nullable<number> = null;
-    /** @hidden */
-    public _cachedWrapR: Nullable<number> = null;
-    /** @hidden */
-    public _cachedAnisotropicFilteringLevel: Nullable<number> = null;
-    /** @hidden */
     public _isDisabled: boolean = false;
     /** @hidden */
     public _compression: Nullable<string> = null;
-    /** @hidden */
-    public _comparisonFunction: number = 0;
     /** @hidden */
     public _sphericalPolynomial: Nullable<SphericalPolynomial> = null;
     /** @hidden */
@@ -277,6 +271,8 @@ export class InternalTexture {
      * @param delayAllocation if the texture allocation should be delayed (default: false)
      */
     constructor(engine: ThinEngine, source: InternalTextureSource, delayAllocation = false) {
+        super();
+
         this._engine = engine;
         this._source = source;
         this._uniqueId = InternalTexture._Counter++;
