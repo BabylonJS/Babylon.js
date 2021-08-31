@@ -98,7 +98,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor implements 
                 let arraySize = 0; // 0 means the sampler/texture is not declared as an array
                 if (!samplerInfo) {
                     [name, uniformType, arraySize] = this._getArraySize(name, uniformType, preProcessors);
-                    samplerInfo = this.webgpuProcessingContext.availableSamplers[name];
+                    samplerInfo = this.webgpuProcessingContext.availableTextures[name];
                     if (!samplerInfo) {
                         samplerInfo = {
                             sampler: this.webgpuProcessingContext.getNextFreeUBOBinding(),
@@ -150,7 +150,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor implements 
                     this._textureArrayProcessing.push(name);
                 }
 
-                this.webgpuProcessingContext.availableSamplers[name] = samplerInfo;
+                this.webgpuProcessingContext.availableTextures[name] = samplerInfo;
 
                 const samplerBindingType = isComparisonSampler ? WebGPUConstants.SamplerBindingType.Comparison : WebGPUConstants.SamplerBindingType.Filtering;
 

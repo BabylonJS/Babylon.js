@@ -972,7 +972,7 @@ export abstract class WebGPUCacheRenderPipeline {
                     if ((this._textureState & bitVal) && sampleType !== WebGPUConstants.TextureSampleType.Depth) {
                         // The texture is a 32 bits float texture but the system does not support linear filtering for them:
                         // we set the sampler to "non-filtering" and the texture sample type to "unfilterable-float"
-                        const samplerTexture = shaderProcessingContext.availableSamplers[bindingDefinition.origName!];
+                        const samplerTexture = shaderProcessingContext.availableTextures[bindingDefinition.origName!];
 
                         if (samplerTexture.sampler) {
                             // The sampler could be bound after the texture, so bindGroupEntries[sampler.setIndex][sampler.bindingIndex] could not exist yet
