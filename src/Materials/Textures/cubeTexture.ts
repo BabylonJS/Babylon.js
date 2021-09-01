@@ -19,6 +19,8 @@ import { Observable } from '../../Misc/observable';
 export class CubeTexture extends BaseTexture {
     private _delayedOnLoad: Nullable<() => void>;
     private _delayedOnError: Nullable<(message?: string, exception?: any) => void>;
+    private _lodScale: number = 0.8;
+    private _lodOffset: number = 0;
 
     /**
      * Observable triggered once the texture has been loaded.
@@ -188,6 +190,8 @@ export class CubeTexture extends BaseTexture {
         this._forcedExtension = forcedExtension;
         this._loaderOptions = loaderOptions;
         this._useSRGBBuffer = useSRGBBuffer;
+        this._lodScale = lodScale;
+        this._lodOffset = lodOffset;
 
         if (!rootUrl && !files) {
             return;
@@ -334,10 +338,10 @@ export class CubeTexture extends BaseTexture {
 
         if (!this._texture) {
             if (this._prefiltered) {
-                this._texture = this._getEngine()!.createPrefilteredCubeTexture(this.url, scene, 0.8, 0, onLoad, errorHandler, this._format, this._forcedExtension, this._createPolynomials);
+                this._texture = this._getEngine()!.createPrefilteredCubeTexture(this.url, scene, this._lodScale, this._lodOffset, onLoad, errorHandler, this._format, this._forcedExtension, this._createPolynomials);
             }
             else {
-                this._texture = this._getEngine()!.createCubeTexture(this.url, scene, this._files, this._noMipmap, onLoad, errorHandler, this._format, this._forcedExtension, false, 0, 0, null, this._loaderOptions, !!this._useSRGBBuffer);
+                this._texture = this._getEngine()!.createCubeTexture(this.url, scene, this._files, this._noMipmap, onLoad, errorHandler, this._format, this._forcedExtension, false, this._lodScale, this._lodOffset, null, this._loaderOptions, !!this._useSRGBBuffer);
             }
 
             this._texture?.onLoadedObservable.add(() => this.onLoadObservable.notifyObservers(this));
