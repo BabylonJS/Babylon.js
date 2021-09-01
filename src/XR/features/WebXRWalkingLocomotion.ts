@@ -1,5 +1,5 @@
-import { Vector2, Vector3 } from "../../Maths";
-import { Observable } from "../../Misc";
+import { Vector2, Vector3 } from "../../Maths/math.vector";
+import { Observable } from "../../Misc/observable";
 import { Nullable } from "../../types";
 import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
 import { WebXRSessionManager } from "../webXRSessionManager";
@@ -18,7 +18,7 @@ class CircleBuffer {
     get length() {
         return this._samples.length;
     }
-    
+
     push(x: number, y: number) {
         this._idx = (this._idx + this._samples.length - 1) % this._samples.length;
         this.at(0).copyFromFloats(x, y);
@@ -112,7 +112,7 @@ class FirstStepDetector {
             axis.scaleAndAddToRef(this._axisToApexExtendFactor, leftApex);
             axis.scaleAndAddToRef(this._axisToApexShrinkFactor, rightApex);
         }
-        this.onFirstStepDetected.notifyObservers({ 
+        this.onFirstStepDetected.notifyObservers({
             leftApex: leftApex,
             rightApex: rightApex,
             currentPosition: origin,
@@ -183,7 +183,7 @@ class WalkingTracker {
         this._leftApex.copyFrom(leftApex);
         this._rightApex.copyFrom(rightApex);
         this._steppingLeft = steppingLeft;
-        
+
         if (this._steppingLeft) {
             this._leftApex.subtractToRef(this._rightApex, this._axis);
             this._forward.copyFromFloats(-this._axis.y, this._axis.x);
@@ -225,7 +225,7 @@ class WalkingTracker {
 
         const priorT = this._t;
         this._updateTAndVitality(x, y);
-        
+
         if (this._t > this._maxT) {
             this._maxT = this._t;
             this._maxTPosition.copyFromFloats(x, y);
