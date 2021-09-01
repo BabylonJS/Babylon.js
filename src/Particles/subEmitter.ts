@@ -49,23 +49,9 @@ export class SubEmitter {
         public particleSystem: ParticleSystem
     ) {
         // Create mesh as emitter to support rotation
-        let internalEmitterMesh = false;
         if (!particleSystem.emitter || !(<AbstractMesh>particleSystem.emitter).dispose) {
             const internalClass = _TypeStore.GetClass("BABYLON.AbstractMesh");
             particleSystem.emitter = new internalClass("SubemitterSystemEmitter", particleSystem.getScene());
-            internalEmitterMesh = true;
-        }
-
-        // Automatically dispose of subemitter when system is disposed
-        if (internalEmitterMesh && !particleSystem._disposeEmitterOnDispose) {
-            particleSystem.onDisposeObservable.add(() => {
-                if (particleSystem.emitter && (<AbstractMesh>particleSystem.emitter).dispose) {
-                    // Prevent recursive dispose to break.
-                    const disposable = <AbstractMesh>particleSystem.emitter;
-                    particleSystem.emitter = Vector3.Zero();
-                    disposable.dispose();
-                }
-            });
         }
     }
     /**

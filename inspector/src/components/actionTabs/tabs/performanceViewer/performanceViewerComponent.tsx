@@ -102,7 +102,7 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
     }
 
     useEffect(() => {
-        const perfCollector = scene._getPerfCollector();
+        const perfCollector = scene.getPerfCollector();
         perfCollector.addCollectionStrategies(...defaultStrategies);
         setPerformanceCollector(perfCollector);
     }, []);

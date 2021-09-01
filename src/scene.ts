@@ -4139,7 +4139,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         // Finalize frame
         if (this.postProcessManager && !camera._multiviewTexture) {
             // if the camera has an output render target, render the post process to the render target
-            const texture = camera.outputRenderTarget ? camera.outputRenderTarget.getInternalTexture()! : undefined;
+            const texture = camera.outputRenderTarget ? camera.outputRenderTarget.renderTarget! : undefined;
             this.postProcessManager._finalizeFrame(camera.isIntermediate, texture);
         }
 
@@ -5212,8 +5212,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     protected _perfCollector: Nullable<PerformanceViewerCollector> = null;
 
-    /** @hidden */
-    public _getPerfCollector(): PerformanceViewerCollector {
+    /**
+     * This method gets the performance collector belonging to the scene, which is generally shared with the inspector.
+     * @returns the perf collector belonging to the scene.
+     */
+    public getPerfCollector(): PerformanceViewerCollector {
         throw _DevTools.WarnImport("performanceViewerSceneExtension");
     }
 

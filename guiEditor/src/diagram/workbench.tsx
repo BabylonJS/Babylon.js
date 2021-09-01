@@ -346,7 +346,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }
     }
 
-    createNewGuiNode(guiControl: Control) {
+    createNewGuiNode(
+        guiControl: Control) {
         this.enableEditorProperties(guiControl);
         guiControl.onPointerUpObservable.add((evt) => {
             this.clicked = false;

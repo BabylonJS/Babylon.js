@@ -774,8 +774,8 @@ export class Tools {
      * @param fileName defines the name of the downloaded file
      */
     public static Download(blob: Blob, fileName: string): void {
-        if (navigator && navigator.msSaveBlob) {
-            navigator.msSaveBlob(blob, fileName);
+        if (navigator && (navigator as any).msSaveBlob) {
+            (navigator as any).msSaveBlob(blob, fileName);
             return;
         }
 
