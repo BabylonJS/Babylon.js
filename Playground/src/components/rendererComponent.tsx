@@ -14,6 +14,7 @@ interface IRenderingComponentProps {
 }
 
 declare const Ammo: any;
+declare const Recast: any;
 
 export class RenderingComponent extends React.Component<IRenderingComponentProps> {
     private _engine: Nullable<Engine>;
@@ -190,6 +191,12 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 ammoInit = "await Ammo();";
             }
 
+            // Check for Recast.js
+            let recastInit = "";
+            if (code.indexOf("RecastJSPlugin") > -1 && typeof Recast === "function") {
+                recastInit = "await Recast();";
+            }
+
             // Check for Unity Toolkit
             if ((location.href.indexOf("UnityToolkit") !== -1 || Utilities.ReadBoolFromStore("unity-toolkit", false)) && !this._unityToolkitWasLoaded) {
                 await this._loadScriptAsync("/libs/babylon.manager.js");
@@ -233,6 +240,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 code += `
                 window.initFunction = async function() {
                     ${ammoInit}
+                    ${recastInit}
                     var asyncEngineCreation = async function() {
                         try {
                         return ${createEngineFunction}();
