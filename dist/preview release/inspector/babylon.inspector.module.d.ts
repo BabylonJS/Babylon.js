@@ -1540,6 +1540,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         private _invertX;
         private _convertY;
         private _invertY;
+        private _buildFrameIntervalAxis;
         private _buildYAxis;
         private _frame;
         private _dropKeyFrames;
@@ -6276,6 +6277,7 @@ declare module INSPECTOR {
         private _invertX;
         private _convertY;
         private _invertY;
+        private _buildFrameIntervalAxis;
         private _buildYAxis;
         private _frame;
         private _dropKeyFrames;
