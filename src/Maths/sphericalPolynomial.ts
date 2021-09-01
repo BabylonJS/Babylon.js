@@ -159,7 +159,7 @@ export class SphericalHarmonics {
         colorVector.scaleToRef(deltaSolidAngle, c);
 
         c.scaleToRef(applySH3(0, direction), TmpVectors.Vector3[2]);
-        this.l00 = this.l00.addInPlace(TmpVectors.Vector3[2]);
+        this.l00.addInPlace(TmpVectors.Vector3[2]);
 
         c.scaleToRef(applySH3(1, direction), TmpVectors.Vector3[2]);
         this.l1_1.addInPlace(TmpVectors.Vector3[2]);
