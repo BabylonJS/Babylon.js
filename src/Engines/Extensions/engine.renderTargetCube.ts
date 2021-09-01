@@ -3,20 +3,24 @@ import { Logger } from '../../Misc/logger';
 import { RenderTargetCreationOptions } from '../../Materials/Textures/renderTargetCreationOptions';
 import { Constants } from '../constants';
 import { ThinEngine } from '../thinEngine';
+import { RenderTargetWrapper } from "../renderTargetWrapper";
+import { WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
         /**
-         * Creates a new render target cube texture
+         * Creates a new render target cube wrapper
          * @param size defines the size of the texture
          * @param options defines the options used to create the texture
-         * @returns a new render target cube texture stored in an InternalTexture
+         * @returns a new render target cube wrapper
          */
-        createRenderTargetCubeTexture(size: number, options?: Partial<RenderTargetCreationOptions>): InternalTexture;
+        createRenderTargetCubeTexture(size: number, options?: Partial<RenderTargetCreationOptions>): RenderTargetWrapper;
     }
 }
 
-ThinEngine.prototype.createRenderTargetCubeTexture = function (size: number, options?: Partial<RenderTargetCreationOptions>): InternalTexture {
+ThinEngine.prototype.createRenderTargetCubeTexture = function (size: number, options?: Partial<RenderTargetCreationOptions>): RenderTargetWrapper {
+    const rtWrapper = this._createHardwareRenderTargetWrapper(false, true, size) as WebGLRenderTargetWrapper;
+
     let fullOptions = {
         generateMipMaps: true,
         generateDepthBuffer: true,
@@ -61,7 +65,7 @@ ThinEngine.prototype.createRenderTargetCubeTexture = function (size: number, opt
     var framebuffer = gl.createFramebuffer();
     this._bindUnboundFramebuffer(framebuffer);
 
-    texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(fullOptions.generateStencilBuffer, fullOptions.generateDepthBuffer, size, size);
+    rtWrapper._depthStencilBuffer = this._setupFramebufferDepthAttachments(fullOptions.generateStencilBuffer, fullOptions.generateDepthBuffer, size, size);
 
     // MipMaps
     if (fullOptions.generateMipMaps) {
@@ -72,7 +76,10 @@ ThinEngine.prototype.createRenderTargetCubeTexture = function (size: number, opt
     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
     this._bindUnboundFramebuffer(null);
 
-    texture._framebuffer = framebuffer;
+    rtWrapper._framebuffer = framebuffer;
+    rtWrapper._generateDepthBuffer = fullOptions.generateDepthBuffer;
+    rtWrapper._generateStencilBuffer = fullOptions.generateStencilBuffer;
+
     texture.width = size;
     texture.height = size;
     texture.isReady = true;
@@ -82,10 +89,9 @@ ThinEngine.prototype.createRenderTargetCubeTexture = function (size: number, opt
     texture.samplingMode = fullOptions.samplingMode;
     texture.type = fullOptions.type;
     texture.format = fullOptions.format;
-    texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
-    texture._generateStencilBuffer = fullOptions.generateStencilBuffer;
 
     this._internalTexturesCache.push(texture);
+    rtWrapper.setTextures(texture);
 
-    return texture;
+    return rtWrapper;
 };

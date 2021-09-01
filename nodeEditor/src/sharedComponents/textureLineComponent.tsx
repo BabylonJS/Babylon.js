@@ -101,7 +101,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
             effect.setTexture("textureSampler", texture);
         };
 
-        let internalTexture = rtt.getInternalTexture();
+        let internalTexture = rtt.renderTarget;
 
         if (internalTexture) {
             scene.postProcessManager.directRender([passPostProcess], internalTexture);

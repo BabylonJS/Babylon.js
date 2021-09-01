@@ -7,6 +7,8 @@ export class WebGLHardwareTexture implements HardwareTextureWrapper {
     private _webGLTexture: WebGLTexture;
     private _context: WebGLRenderingContext;
 
+    public _MSAARenderBuffer: Nullable<WebGLRenderbuffer> = null;
+
     public get underlyingResource(): Nullable<WebGLTexture> {
         return this._webGLTexture;
     }
@@ -31,9 +33,15 @@ export class WebGLHardwareTexture implements HardwareTextureWrapper {
 
     public reset() {
         this._webGLTexture = null as any;
+        this._MSAARenderBuffer = null;
     }
 
     public release() {
+        if (this._MSAARenderBuffer) {
+            this._context.deleteRenderbuffer(this._MSAARenderBuffer);
+            this._MSAARenderBuffer = null;
+        }
+
         if (this._webGLTexture) {
             this._context.deleteTexture(this._webGLTexture);
         }

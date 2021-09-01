@@ -963,9 +963,8 @@ export class ShadowGenerator implements IShadowGenerator {
             let shadowMap = this.getShadowMapForRendering();
 
             if (shadowMap) {
-                const texture = shadowMap.getInternalTexture()!;
-                this._scene.postProcessManager.directRender(this._blurPostProcesses, texture, true);
-                engine.unBindFramebuffer(texture, true);
+                this._scene.postProcessManager.directRender(this._blurPostProcesses, shadowMap.renderTarget, true);
+                engine.unBindFramebuffer(shadowMap.renderTarget!, true);
                 engine._debugPopGroup?.(1);
             }
         });
