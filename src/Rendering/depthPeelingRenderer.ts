@@ -17,7 +17,6 @@ import { Logger } from "../Misc/logger";
 import "../Shaders/postprocess.vertex";
 import "../Shaders/oitFinal.fragment";
 import "../Shaders/oitBackBlend.fragment";
-import { WebGLRenderTargetWrapper } from "../Engines/WebGL/webGLRenderTargetWrapper";
 
 class DepthPeelingEffectConfiguration implements PrePassEffectConfiguration {
     /**
@@ -77,11 +76,11 @@ export class DepthPeelingRenderer {
         }
 
         this._prePassEffectConfiguration = new DepthPeelingEffectConfiguration();
-        this._createTexturesAndFramebuffers();
+        this._createTextures();
         this._createEffects();
     }
 
-    private _createTexturesAndFramebuffers() {
+    private _createTextures() {
         const size = {
             width: this._engine.getRenderWidth(),
             height: this._engine.getRenderHeight(),
@@ -123,7 +122,7 @@ export class DepthPeelingRenderer {
         }
     }
 
-    private _disposeTexturesAndFramebuffers() {
+    private _disposeTextures() {
         for (let i = 0; i < this._thinTextures.length; i++) {
             if (i === 6) {
                 // Do not dispose the shared texture with the prepass
@@ -145,8 +144,8 @@ export class DepthPeelingRenderer {
 
     private _updateTextures() {
         if (this._depthMrts[0].getSize().width !== this._engine.getRenderWidth() || this._depthMrts[0].getSize().height !== this._engine.getRenderHeight()) {
-            this._disposeTexturesAndFramebuffers();
-            this._createTexturesAndFramebuffers();
+            this._disposeTextures();
+            this._createTextures();
         }
         return this._updateTextureReferences();
     }
@@ -174,13 +173,6 @@ export class DepthPeelingRenderer {
                 this._thinTextures[6].dispose();
             }
             this._thinTextures[6] = new ThinTexture(this._blendBackTexture);
-
-            // We bind the opaque depth buffer to correctly occlude fragments that are behind opaque geometry
-            const depthStencilBuffer = (prePassRenderer.defaultRT.renderTarget! as WebGLRenderTargetWrapper)._depthStencilBuffer;
-            const framebuffer = this._depthMrts[0]._getFrameBuffer();
-            if (!depthStencilBuffer || !framebuffer) {
-                return false;
-            }
 
             this._engine.shareDepth(prePassRenderer.defaultRT.renderTarget!, this._depthMrts[0].renderTarget!);
         }
@@ -248,7 +240,7 @@ export class DepthPeelingRenderer {
     }
 
     private _finalCompose(writeId: number) {
-        this._engine._bindUnboundFramebuffer(null);
+        this._engine.bindRenderTarget(null);
 
         this._engine.setAlphaMode(Constants.ALPHA_SRC_DSTONEMINUSSRCALPHA);
         this._engine._alphaState.alphaBlend = false;
@@ -282,24 +274,24 @@ export class DepthPeelingRenderer {
         (this._scene.prePassRenderer! as any)._enabled = false;
 
         // Clears
-        this._engine._bindUnboundFramebuffer(this._depthMrts[0]._getFrameBuffer());
+        this._engine.bindRenderTarget(this._depthMrts[0].renderTarget);
         let attachments = this._engine.buildTextureLayout([true]);
         this._engine.bindAttachments(attachments);
         this._engine.clear(new Color4(DEPTH_CLEAR_VALUE, DEPTH_CLEAR_VALUE, 0, 0), true, false, false);
 
-        this._engine._bindUnboundFramebuffer(this._depthMrts[1]._getFrameBuffer());
+        this._engine.bindRenderTarget(this._depthMrts[1].renderTarget);
         this._engine.clear(new Color4(-MIN_DEPTH, MAX_DEPTH, 0, 0), true, false, false);
 
-        this._engine._bindUnboundFramebuffer(this._colorMrts[0]._getFrameBuffer());
+        this._engine.bindRenderTarget(this._colorMrts[0].renderTarget);
         attachments = this._engine.buildTextureLayout([true, true]);
         this._engine.bindAttachments(attachments);
         this._engine.clear(new Color4(0, 0, 0, 0), true, false, false);
 
-        this._engine._bindUnboundFramebuffer(this._colorMrts[1]._getFrameBuffer());
+        this._engine.bindRenderTarget(this._colorMrts[1].renderTarget);
         this._engine.clear(new Color4(0, 0, 0, 0), true, false, false);
 
         // Draw depth for first pass
-        this._engine._bindUnboundFramebuffer(this._depthMrts[0]._getFrameBuffer());
+        this._engine.bindRenderTarget(this._depthMrts[0].renderTarget);
         attachments = this._engine.buildTextureLayout([true]);
         this._engine.bindAttachments(attachments);
 
@@ -324,17 +316,17 @@ export class DepthPeelingRenderer {
             this._currentPingPongState = readId;
 
             // Clears
-            this._engine._bindUnboundFramebuffer(this._depthMrts[writeId]._getFrameBuffer());
+            this._engine.bindRenderTarget(this._depthMrts[writeId].renderTarget);
             attachments = this._engine.buildTextureLayout([true]);
             this._engine.bindAttachments(attachments);
             this._engine.clear(new Color4(DEPTH_CLEAR_VALUE, DEPTH_CLEAR_VALUE, 0, 0), true, false, false);
 
-            this._engine._bindUnboundFramebuffer(this._colorMrts[writeId]._getFrameBuffer());
+            this._engine.bindRenderTarget(this._colorMrts[writeId].renderTarget);
             attachments = this._engine.buildTextureLayout([true, true]);
             this._engine.bindAttachments(attachments);
             this._engine.clear(new Color4(0, 0, 0, 0), true, false, false);
 
-            this._engine._bindUnboundFramebuffer(this._depthMrts[writeId]._getFrameBuffer());
+            this._engine.bindRenderTarget(this._depthMrts[writeId].renderTarget);
             attachments = this._engine.buildTextureLayout([true, true, true]);
             this._engine.bindAttachments(attachments);
 
@@ -346,7 +338,7 @@ export class DepthPeelingRenderer {
             this._renderSubMeshes(transparentSubMeshes);
 
             // Back color
-            this._engine._bindUnboundFramebuffer(this._blendBackMrt._getFrameBuffer());
+            this._engine.bindRenderTarget(this._blendBackMrt.renderTarget);
             attachments = this._engine.buildTextureLayout([true]);
             this._engine.bindAttachments(attachments);
             this._engine.setAlphaEquation(Constants.ALPHA_EQUATION_ADD);
@@ -370,7 +362,7 @@ export class DepthPeelingRenderer {
      * Disposes the depth peeling renderer and associated ressources
      */
     public dispose() {
-        this._disposeTexturesAndFramebuffers();
+        this._disposeTextures();
         this._blendBackEffectWrapper.dispose();
         this._finalEffectWrapper.dispose();
         this._effectRenderer.dispose();
