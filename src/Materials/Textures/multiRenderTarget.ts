@@ -65,7 +65,6 @@ export class MultiRenderTarget extends RenderTargetTexture {
     private _multiRenderTargetOptions: IMultiRenderTargetOptions;
     private _count: number;
     private _drawOnlyOnFirstAttachmentByDefault: boolean;
-    private _framebuffer: WebGLFramebuffer;
 
     /**
      * Get if draw buffers are currently supported by the used hardware and browser.
@@ -268,15 +267,6 @@ export class MultiRenderTarget extends RenderTargetTexture {
         this._count = this.renderTarget.textures ? this.renderTarget.textures.length : 0;
 
         // TODO : update types and samplingModes
-    }
-
-    /**
-     * Retrieves the underlying framebuffer associated with this texture
-     * @returns The framebuffer
-     * @hidden
-     */
-    public _getFrameBuffer(): WebGLFramebuffer {
-        return this._framebuffer;
     }
 
     /**

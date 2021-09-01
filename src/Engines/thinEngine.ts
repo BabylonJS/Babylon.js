@@ -1647,44 +1647,6 @@ export class ThinEngine {
     }
 
     /**
-     * Binds a texture to a render target on a specific attachment
-     * @param renderTarget The renderTarget
-     * @param texture The texture to bind to the framebuffer
-     * @param attachmentIndex Index of the attachment
-     * @param faceIndex The face of the texture to render to in case of cube texture
-     * @param lodLevel defines the lod level to bind to the frame buffer
-     */
-    public bindTextureRenderTarget(renderTarget: RenderTargetWrapper, texture: InternalTexture, attachmentIndex: number = 0, faceIndex: number = -1, lodLevel: number = 0) {
-        const gl = this._gl;
-        const framebuffer = (renderTarget as WebGLRenderTargetWrapper)._framebuffer;
-
-        const currentFB = this._currentFramebuffer;
-        this._bindUnboundFramebuffer(framebuffer);
-        const attachment = (<any>gl)[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + attachmentIndex : "COLOR_ATTACHMENT" + attachmentIndex + "_WEBGL"];
-        const target = faceIndex !== -1 ? gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex : gl.TEXTURE_2D;
-
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, target, texture._hardwareTexture?.underlyingResource, lodLevel);
-        this._bindUnboundFramebuffer(currentFB);
-    }
-
-    /**
-     * Shares a single depth buffer between 2 RenderTargetWrapper.
-     * Depth buffer of renderTarget0 is used, and gets bound to renderTarget1.
-     * *
-     * @param renderTarget0
-     * @param renderTarget1
-     */
-    public shareDepth(renderTarget0: RenderTargetWrapper, renderTarget1: RenderTargetWrapper) {
-        const gl = this._gl;
-        const depthbuffer = (renderTarget0 as WebGLRenderTargetWrapper)._depthStencilBuffer;
-        const framebuffer = (renderTarget1 as WebGLRenderTargetWrapper)._framebuffer;
-
-        this._bindUnboundFramebuffer(framebuffer);
-        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthbuffer);
-        this._bindUnboundFramebuffer(null);
-    }
-
-    /**
      * Binds the frame buffer to the specified texture.
      * @param texture The render target wrapper to render to
      * @param faceIndex The face of the texture to render to in case of cube texture
