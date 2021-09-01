@@ -450,6 +450,8 @@ export class Container extends Control {
 
         this._localDraw(contextToDrawTo);
 
+        context.save();
+
         if (this.clipChildren) {
             this._clipForChildren(contextToDrawTo);
         }
@@ -471,6 +473,8 @@ export class Container extends Control {
             context.drawImage(contextToDrawTo.canvas, this._currentMeasure.left, this._currentMeasure.top);
             context.restore();
         }
+
+        context.restore();
     }
 
     public getDescendantsToRef(results: Control[], directDescendantsOnly: boolean = false, predicate?: (control: Control) => boolean): void {
