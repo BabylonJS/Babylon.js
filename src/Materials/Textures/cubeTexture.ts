@@ -18,6 +18,7 @@ import { Observable } from '../../Misc/observable';
  */
 export class CubeTexture extends BaseTexture {
     private _delayedOnLoad: Nullable<() => void>;
+    private _delayedOnError: Nullable<(message?: string, exception?: any) => void>;
 
     /**
      * Observable triggered once the texture has been loaded.
@@ -173,15 +174,6 @@ export class CubeTexture extends BaseTexture {
         lodScale: number = 0.8, lodOffset: number = 0, loaderOptions?: any, useSRGBBuffer?: boolean) {
         super(sceneOrEngine);
 
-        const errorHandler = (message?: string, exception?: any) => {
-            this._loadingError = true;
-            this._errorObject = { message, exception };
-            if (onError) {
-                onError(message, exception);
-            }
-            Texture.OnTextureLoadErrorObservable.notifyObservers(this);
-        };
-
         this.name = rootUrl;
         this.url = rootUrl;
         this._noMipmap = noMipmap;
@@ -201,72 +193,7 @@ export class CubeTexture extends BaseTexture {
             return;
         }
 
-        const lastDot = rootUrl.lastIndexOf(".");
-        const extension = forcedExtension ? forcedExtension : (lastDot > -1 ? rootUrl.substring(lastDot).toLowerCase() : "");
-        const isDDS = (extension.indexOf(".dds") === 0);
-        const isEnv = (extension.indexOf(".env") === 0);
-
-        if (isEnv) {
-            this.gammaSpace = false;
-            this._prefiltered = false;
-            this.anisotropicFilteringLevel = 1;
-        }
-        else {
-            this._prefiltered = prefiltered;
-
-            if (prefiltered) {
-                this.gammaSpace = false;
-                this.anisotropicFilteringLevel = 1;
-            }
-        }
-
-        this._texture = this._getFromCache(rootUrl, noMipmap, undefined, undefined, useSRGBBuffer);
-
-        if (!files) {
-            if (!isEnv && !isDDS && !extensions) {
-                extensions = ["_px.jpg", "_py.jpg", "_pz.jpg", "_nx.jpg", "_ny.jpg", "_nz.jpg"];
-            }
-
-            files = [];
-
-            if (extensions) {
-
-                for (var index = 0; index < extensions.length; index++) {
-                    files.push(rootUrl + extensions[index]);
-                }
-            }
-        }
-
-        this._files = files;
-
-        let onLoadProcessing = () => {
-            this.onLoadObservable.notifyObservers(this);
-            if (onLoad) {
-                onLoad();
-            }
-        };
-
-        if (!this._texture) {
-            const scene = this.getScene();
-            if (!scene?.useDelayedTextureLoading) {
-                if (prefiltered) {
-                    this._texture = this._getEngine()!.createPrefilteredCubeTexture(rootUrl, scene, lodScale, lodOffset, onLoad, errorHandler, format, forcedExtension, this._createPolynomials);
-                }
-                else {
-                    this._texture = this._getEngine()!.createCubeTexture(rootUrl, scene, files, noMipmap, onLoad, errorHandler, this._format, forcedExtension, false, lodScale, lodOffset, null, loaderOptions, !!this._useSRGBBuffer);
-                }
-                this._texture?.onLoadedObservable.add(() => this.onLoadObservable.notifyObservers(this));
-
-            } else {
-                this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
-            }
-        } else {
-            if (this._texture.isReady) {
-                Tools.SetImmediate(() => onLoadProcessing());
-            } else {
-                this._texture.onLoadedObservable.add(() => onLoadProcessing());
-            }
-        }
+        this.updateURL(rootUrl, forcedExtension, onLoad, prefiltered, onError, extensions, this.getScene()?.useDelayedTextureLoading);
     }
 
     /**
@@ -284,12 +211,7 @@ export class CubeTexture extends BaseTexture {
      * @param onLoad callback called when the texture is loaded  (defaults to null)
      * @param prefiltered Defines whether the updated texture is prefiltered or not
      */
-    public updateURL(url: string, forcedExtension?: string, onLoad?: () => void, prefiltered: boolean = false, extensions: Nullable<string[]> = null): void {
-        if (this.url) {
-            this.releaseInternalTexture();
-            this.getScene()?.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
-        }
-
+    public updateURL(url: string, forcedExtension?: string, onLoad: Nullable<() => void> = null, prefiltered: boolean = false, onError: Nullable<(message?: string, exception?: any) => void> = null, extensions: Nullable<string[]> = null, delayLoad = true): void {
         if (!this.name || StringTools.StartsWith(this.name, "data:")) {
             this.name = url;
         }
@@ -330,14 +252,16 @@ export class CubeTexture extends BaseTexture {
             }
             this._extensions = extensions;
         }
+        if (delayLoad) {
 
-        this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
-
-        if (onLoad) {
+            this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
             this._delayedOnLoad = onLoad;
-        }
+            this._delayedOnError = onError;
 
-        this.delayLoad(forcedExtension);
+        } else {
+            this.loadTexture(onLoad, onError);
+
+        }
     }
 
     /**
@@ -348,21 +272,12 @@ export class CubeTexture extends BaseTexture {
         if (this.delayLoadState !== Constants.DELAYLOADSTATE_NOTLOADED) {
             return;
         }
+        if (forcedExtension) {
+            this._forcedExtension = forcedExtension;
+        }
 
         this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
-        this._texture = this._getFromCache(this.url, this._noMipmap, undefined, undefined, this._useSRGBBuffer);
-
-        if (!this._texture) {
-            const scene = this.getScene();
-            if (this._prefiltered) {
-                this._texture = this._getEngine()!.createPrefilteredCubeTexture(this.url, scene, 0.8, 0, this._delayedOnLoad, undefined, this._format, forcedExtension, this._createPolynomials);
-            }
-            else {
-                this._texture = this._getEngine()!.createCubeTexture(this.url, scene, this._files, this._noMipmap, this._delayedOnLoad, null, this._format, forcedExtension, false, 0, 0, null, this._loaderOptions, !!this._useSRGBBuffer);
-            }
-
-            this._texture?.onLoadedObservable.add(() => this.onLoadObservable.notifyObservers(this));
-        }
+        this.loadTexture(this._delayedOnLoad, this._delayedOnError);
     }
 
     /**
@@ -387,6 +302,48 @@ export class CubeTexture extends BaseTexture {
         }
 
         this._textureMatrix = value;
+    }
+
+    private loadTexture(onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null) {
+        const scene = this.getScene();
+        const oldTexture = this._texture;
+        this._texture = this._getFromCache(this.url, this._noMipmap, undefined, undefined, this._useSRGBBuffer);
+
+        let onLoadProcessing = () => {
+            this.onLoadObservable.notifyObservers(this);
+            if (oldTexture) {
+                oldTexture.dispose();
+            }
+            if (onLoad) {
+                onLoad();
+            }
+        };
+
+        const errorHandler = (message?: string, exception?: any) => {
+            this._loadingError = true;
+            this._errorObject = { message, exception };
+            if (onError) {
+                onError(message, exception);
+            }
+            Texture.OnTextureLoadErrorObservable.notifyObservers(this);
+        };
+
+        if (!this._texture) {
+            if (this._prefiltered) {
+                this._texture = this._getEngine()!.createPrefilteredCubeTexture(this.url, scene, 0.8, 0, onLoad, errorHandler, this._format, this._forcedExtension, this._createPolynomials);
+            }
+            else {
+                this._texture = this._getEngine()!.createCubeTexture(this.url, scene, this._files, this._noMipmap, onLoad, errorHandler, this._format, this._forcedExtension, false, 0, 0, null, this._loaderOptions, !!this._useSRGBBuffer);
+            }
+
+            this._texture?.onLoadedObservable.add(() => this.onLoadObservable.notifyObservers(this));
+        } else {
+            if (this._texture.isReady) {
+                Tools.SetImmediate(() => onLoadProcessing());
+            } else {
+                this._texture.onLoadedObservable.add(() => onLoadProcessing());
+            }
+        }
     }
 
     /**
