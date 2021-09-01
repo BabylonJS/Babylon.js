@@ -185,6 +185,7 @@
 - Exposed `scaleRatio` for `GizmoManager` ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Added constructor parameters to customize colors for rotation gizmos on `RotationGizmo` ([jekelija](https://github.com/jekelija))
 - Added constructor parameters to allow turning off `updateScale` on RotationGizmo ([jekelija](https://github.com/jekelija))
+- Fixed wrong matrix with nodes having pivot point ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Gizmos that have draggable components now support near interactions via `WebXRNearInteraction` ([rickfromwork](https://github.com/rickfromwork)) 
 
 ### Viewer
