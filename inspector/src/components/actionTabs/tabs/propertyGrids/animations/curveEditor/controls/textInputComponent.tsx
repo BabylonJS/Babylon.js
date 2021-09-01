@@ -40,7 +40,7 @@ ITextInputComponentState
                     this.props.onValueAsNumberChanged(valueAsNumber);
                 }
                 this._lastKnownGoodValue = valueAsNumber.toString();
-            } else {
+            } else if (value !== "-") {
                 return;
             }
         }
