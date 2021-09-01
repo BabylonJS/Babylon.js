@@ -88,6 +88,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             this.forceUpdate();
         });
 
+        this.props.globalState.onLoadObservable.add((file) => this.load(file));
+
     }
 
     componentDidMount() {
@@ -343,7 +345,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     <TextLineComponent tooltip="" label="CANVAS" value=" " color="grey"></TextLineComponent>
                     <CheckBoxLineComponent
                         label="RESPONSIVE"
-                        iconLabel="Responsive"
+                        iconLabel="Use pixels or pecentage when dragging with the mouse"
                         icon={responsiveIcon}
                         isSelected={() => DataStorage.ReadBoolean("Responsive", true)}
                         onSelect={(value: boolean) => {
