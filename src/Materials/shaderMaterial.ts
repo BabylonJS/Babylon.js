@@ -20,7 +20,7 @@ import { ShaderLanguage } from "../Engines/Processors/iShaderProcessor";
 import { UniformBuffer } from "./uniformBuffer";
 import { Sampler } from "./Textures/sampler";
 
-declare type ExternalTexture = import("../Materials/Textures/externalTexture").ExternalTexture;
+declare type ExternalTexture = import("./Textures/externalTexture").ExternalTexture;
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
