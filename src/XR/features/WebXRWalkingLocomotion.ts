@@ -270,9 +270,11 @@ class WalkingTracker {
 }
 
 class Walker {
-    _detector = new FirstStepDetector();
-    _walker: Nullable<WalkingTracker> = null;
-    _movement = new Vector2();
+    private _detector = new FirstStepDetector();
+    private _walker: Nullable<WalkingTracker> = null;
+    private _movement = new Vector2();
+
+    public movementThisFrame: Vector3 = Vector3.Zero();
 
     constructor() {
         this._detector.onFirstStepDetected.add((event) => {
@@ -288,7 +290,7 @@ class Walker {
         });
     }
 
-    update(position: Vector3, forward: Vector3, movementTarget: Vector3) {
+    update(position: Vector3, forward: Vector3) {
         forward.y = 0;
         forward.normalize();
 
@@ -300,8 +302,7 @@ class Walker {
             }
         }
 
-        movementTarget.x += this._movement.x;
-        movementTarget.z += this._movement.y;
+        this.movementThisFrame.set(this._movement.x, 0, this._movement.y);
         this._movement.scaleInPlace(0.96);
     }
 }
@@ -400,7 +401,8 @@ export class WebXRWalkingLocomotion extends WebXRAbstractFeature {
         // Compute the nape position
         this._forward.scaleAndAddToRef(0.05, this._position);
         this._up.scaleAndAddToRef(-0.05, this._position);
-        this._walker!.update(this._position, this._forward, this.locomotionTarget);
+        this._walker!.update(this._position, this._forward);
+        this.locomotionTarget.addInPlace(this._walker!.movementThisFrame);
     }
 }
 
