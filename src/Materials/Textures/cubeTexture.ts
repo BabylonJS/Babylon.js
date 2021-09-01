@@ -259,7 +259,7 @@ export class CubeTexture extends BaseTexture {
             this._delayedOnError = onError;
 
         } else {
-            this.loadTexture(onLoad, onError);
+            this._loadTexture(onLoad, onError);
 
         }
     }
@@ -277,7 +277,7 @@ export class CubeTexture extends BaseTexture {
         }
 
         this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
-        this.loadTexture(this._delayedOnLoad, this._delayedOnError);
+        this._loadTexture(this._delayedOnLoad, this._delayedOnError);
     }
 
     /**
@@ -304,7 +304,7 @@ export class CubeTexture extends BaseTexture {
         this._textureMatrix = value;
     }
 
-    private loadTexture(onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null) {
+    private _loadTexture(onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null) {
         const scene = this.getScene();
         const oldTexture = this._texture;
         this._texture = this._getFromCache(this.url, this._noMipmap, undefined, undefined, this._useSRGBBuffer);
@@ -313,6 +313,7 @@ export class CubeTexture extends BaseTexture {
             this.onLoadObservable.notifyObservers(this);
             if (oldTexture) {
                 oldTexture.dispose();
+                this.getScene()?.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
             }
             if (onLoad) {
                 onLoad();
