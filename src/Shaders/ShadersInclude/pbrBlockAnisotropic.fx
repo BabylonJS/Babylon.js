@@ -12,13 +12,13 @@
 
     #define pbr_inline
     void anisotropicBlock(
-        const in vec3 vAnisotropy,
+        in vec3 vAnisotropy,
     #ifdef ANISOTROPIC_TEXTURE
-        const in vec3 anisotropyMapData,
+        in vec3 anisotropyMapData,
     #endif
-        const in mat3 TBN,
-        const in vec3 normalW,
-        const in vec3 viewDirectionW,
+        in mat3 TBN,
+        in vec3 normalW,
+        in vec3 viewDirectionW,
         out anisotropicOutParams outParams
     )
     {
