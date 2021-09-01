@@ -6,18 +6,18 @@ struct albedoOpacityOutParams
 
 #define pbr_inline
 void albedoOpacityBlock(
-    const in vec4 vAlbedoColor,
+    in vec4 vAlbedoColor,
 #ifdef ALBEDO
-    const in vec4 albedoTexture,
-    const in vec2 albedoInfos,
+    in vec4 albedoTexture,
+    in vec2 albedoInfos,
 #endif
 #ifdef OPACITY
-    const in vec4 opacityMap,
-    const in vec2 vOpacityInfos,
+    in vec4 opacityMap,
+    in vec2 vOpacityInfos,
 #endif
 #ifdef DETAIL
-    const in vec4 detailColor,
-    const in vec4 vDetailInfos,
+    in vec4 detailColor,
+    in vec4 vDetailInfos,
 #endif
     out albedoOpacityOutParams outParams
 )
