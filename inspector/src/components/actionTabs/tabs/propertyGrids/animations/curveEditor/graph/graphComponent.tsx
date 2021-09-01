@@ -581,6 +581,53 @@ IGraphComponentState
         return ((this._GraphAbsoluteHeight - y) / this._GraphAbsoluteHeight) * diff + this._minValue;
     }
 
+    private _buildFrameIntervalAxis() {
+        if (!this.props.context.activeAnimation) {
+            return null;
+        }
+
+        let maxFrame = this.props.context.referenceMaxFrame;
+
+        let range = maxFrame;
+        let offset = this.props.context.activeAnimation.framePerSecond;
+        let convertRatio = range / this._GraphAbsoluteWidth;
+
+        let steps = [];
+
+        if (offset === 0) {
+            offset = 1;
+        }
+
+        let startPosition = this._offsetX * convertRatio;
+        let start = -((startPosition / offset) | 0) * offset;
+        let end = start + ((this._viewWidth - 40) * this._viewScale ) * convertRatio;
+
+        for (var step = start - offset; step <= end + offset; step += offset) {
+            steps.push(step);
+        }
+
+        return (
+            steps.map((s, i) => {
+                let x = s / convertRatio;
+                return (
+                    <g key={"axis" + s}>
+                        <line
+                            key={"line" + s}
+                            x1={x}
+                            y1={0}
+                            x2={x}
+                            y2={this._viewHeight* this._viewScale}
+                            style={{
+                                stroke: "#666666",
+                                strokeWidth: 1,
+                            }}>
+                        </line>
+                    </g>
+                )
+            })
+        )
+    }
+
     private _buildYAxis() {
         if (!this.props.context.activeAnimation) {
             return null;
@@ -599,6 +646,9 @@ IGraphComponentState
 
         for (var step = start - offset; step <= end + offset; step += offset) {
             steps.push(step);
+            if (step < 0 && step + offset > 0) {
+                steps.push(0);
+            }
         }
 
         let precision = 2;
@@ -619,8 +669,8 @@ IGraphComponentState
                             x2={this._viewWidth * this._viewScale}
                             y2={y}
                             style={{
-                                stroke: "#333333",
-                                strokeWidth: 0.5,
+                                stroke: s === 0 ? "#666666" : "#333333",
+                                strokeWidth: s === 0 ? 1.0 : 0.5,
                             }}>
                         </line>
                         <text
@@ -829,6 +879,7 @@ IGraphComponentState
         const scale = this._viewScale;
         const viewBoxScalingCurves = `${-this._offsetX} ${-this._offsetY} ${Math.round(scale * this._viewCurveWidth)} ${Math.round(scale * this._viewHeight)}`;
         const viewBoxScalingGrid = `0 ${-this._offsetY} ${Math.round(scale * this._viewWidth)} ${Math.round(scale * this._viewHeight)}`;
+        const viewBoxHorizontal = `${-this._offsetX} 0 ${Math.round((this._viewWidth - 40) * this._viewScale)}  ${Math.round(scale * this._viewHeight)}`;
 
         let activeBoxLeft = 0;
         let activeBoxRight = 0;
@@ -865,6 +916,14 @@ IGraphComponentState
                         this._buildYAxis()
                     }
                 </svg>
+                <svg
+                        id="svg-graph-horizontal"
+                        viewBox={viewBoxHorizontal}
+                        >
+                        {
+                            this._buildFrameIntervalAxis()
+                        }
+                    </svg>
                 <svg
                     ref={this._svgHost2}
                     id="svg-graph-curves"
