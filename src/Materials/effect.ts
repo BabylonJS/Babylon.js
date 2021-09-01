@@ -11,7 +11,7 @@ import { ProcessingOptions, ShaderProcessingContext } from '../Engines/Processor
 import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from '../Maths/math.like';
 import { ThinEngine } from '../Engines/thinEngine';
 import { IEffectFallbacks } from './iEffectFallbacks';
-import { ShaderStore as EngineShaderStore, ShaderStore } from '../Engines/shaderStore';
+import { ShaderStore as EngineShaderStore } from '../Engines/shaderStore';
 import { ShaderLanguage } from "../Engines/Processors/iShaderProcessor";
 import { CodeStringParsingTools } from "../Misc/codeStringParsingTools";
 import { Sampler } from "./Textures/sampler";
@@ -312,8 +312,8 @@ export class Effect implements IDisposable {
             shouldUseHighPrecisionShader: this._engine._shouldUseHighPrecisionShader,
             processor: this._engine._getShaderProcessor(this._shaderLanguage),
             supportsUniformBuffers: this._engine.supportsUniformBuffers,
-            shadersRepository: ShaderStore.GetShadersRepository(this._shaderLanguage),
-            includesShadersStore: ShaderStore.GetIncludesShadersStore(this._shaderLanguage),
+            shadersRepository: EngineShaderStore.GetShadersRepository(this._shaderLanguage),
+            includesShadersStore: EngineShaderStore.GetIncludesShadersStore(this._shaderLanguage),
             version: (this._engine.version * 100).toString(),
             platformName: this._engine.shaderPlatformName,
             processingContext: this._processingContext,
