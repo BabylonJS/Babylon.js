@@ -55,8 +55,8 @@ declare module "../../Engines/thinEngine" {
         /**
          * Binds the renderTarget
          * Internally, it binds the framebuffer associated to the renderTarget
-         * 
-         * @param renderTarget 
+         *
+         * @param renderTarget
          */
         bindRenderTarget(renderTarget: Nullable<RenderTargetWrapper>): void;
 
@@ -241,7 +241,7 @@ ThinEngine.prototype.shareDepth = function (renderTarget0: RenderTargetWrapper, 
 
 ThinEngine.prototype.bindRenderTarget = function(renderTarget: Nullable<RenderTargetWrapper>) {
     this._bindUnboundFramebuffer(renderTarget ? (renderTarget as WebGLRenderTargetWrapper)._framebuffer : null);
-}
+};
 
 ThinEngine.prototype.createDepthStencilTexture = function (size: RenderTargetTextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
     if (options.isCube) {

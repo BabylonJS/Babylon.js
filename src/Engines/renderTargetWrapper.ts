@@ -146,6 +146,7 @@ export class RenderTargetWrapper {
      * Set a texture in the textures array
      * @param texture the texture to set
      * @param index the index in the textures array to set
+     * @param disposePrevious If this function should dispose the previous texture
      */
     public setTexture(texture: InternalTexture, index: number = 0, disposePrevious: boolean = true): void {
         if (!this._textures) {
