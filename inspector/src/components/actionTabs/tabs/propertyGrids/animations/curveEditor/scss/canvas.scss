@@ -30,6 +30,20 @@
             z-index: 1;
         }
 
+        #svg-graph-horizontal {
+            grid-column: 1;
+            grid-row: 1;
+            margin-left: 40px;
+            width: calc(100% - 40px);
+            height: 100%;            
+            pointer-events: none;
+
+            &:focus {
+                outline: none;
+            }
+            z-index: 1;
+        }
+
         #dark-rectangle {
             grid-column: 1;
             grid-row: 1;
