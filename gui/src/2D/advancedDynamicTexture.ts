@@ -333,7 +333,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         if (!scene || !this._texture) {
             return;
         }
-        this._rootElement = scene.getEngine()!.getInputElement()!;
+        this._rootElement = scene.getEngine().getInputElement()!;
         this._renderObserver = scene.onBeforeCameraRenderObservable.add((camera: Camera) => this._checkUpdate(camera));
         this._preKeyboardObserver = scene.onPreKeyboardObservable.add((info) => {
             if (!this._focusedControl) {
@@ -660,7 +660,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         var textureSize = this.getSize();
         if (this._isFullscreen) {
             let camera = scene.cameraToUseForPointers || scene.activeCamera;
-            let viewport = camera!.viewport;
+            if (!camera) { return; }
+            let viewport = camera.viewport;
             x = x * (textureSize.width / (engine.getRenderWidth() * viewport.width));
             y = y * (textureSize.height / (engine.getRenderHeight() * viewport.height));
         }
@@ -706,7 +707,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
     /** Attach to all scene events required to support pointer events */
     public attach(): void {
-        var scene = this.getScene();
+        const scene = this.getScene();
         if (!scene) {
             return;
         }
@@ -714,16 +715,13 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         let tempViewport = new Viewport(0, 0, 0, 0);
 
         this._pointerMoveObserver = scene.onPrePointerObservable.add((pi, state) => {
-            if (scene!.isPointerCaptured((<IPointerEvent>(pi.event)).pointerId)) {
+            if (scene.isPointerCaptured((<IPointerEvent>(pi.event)).pointerId)) {
                 return;
             }
             if (pi.type !== PointerEventTypes.POINTERMOVE
                 && pi.type !== PointerEventTypes.POINTERUP
                 && pi.type !== PointerEventTypes.POINTERDOWN
                 && pi.type !== PointerEventTypes.POINTERWHEEL) {
-                return;
-            }
-            if (!scene) {
                 return;
             }
 
