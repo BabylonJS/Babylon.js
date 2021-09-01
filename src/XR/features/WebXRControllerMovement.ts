@@ -422,7 +422,6 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
             // move according to forward direction based on camera speed
             Vector3.TransformCoordinatesToRef(this._tmpTranslationDirection, this._tmpRotationMatrix, this._tmpMovementTranslation);
             this._tmpMovementTranslation.scaleInPlace(this._xrInput.xrCamera._computeLocalCameraSpeed() * this._featureContext.movementSpeed);
-            this._tmpMovementTranslation.y = 0;
 
             this._xrInput.xrCamera.cameraDirection.addInPlace(this._tmpMovementTranslation);
         }

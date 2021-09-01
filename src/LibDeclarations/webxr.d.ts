@@ -94,6 +94,7 @@ declare class XRWebGLLayer {
     readonly framebufferWidth: number;
     readonly framebufferHeight: number;
     readonly ignoreDepthValues: boolean;
+    fixedFoveation?: number | null;
     getViewport: (view: XRView) => XRViewport;
 }
 
@@ -258,6 +259,10 @@ interface XRSession {
      * Provided when the optional 'dom-overlay' feature is requested.
      */
     readonly domOverlayState?: XRDOMOverlayState;
+
+    readonly frameRate?: number;
+    readonly supportedFrameRates?: Float32Array;
+    updateTargetFrameRate(rate: number): Promise<void>;
 }
 
 interface XRViewerPose extends XRPose {

@@ -19,7 +19,7 @@ export interface IColor3LineComponentProps {
     globalState: GlobalState;
 }
 
-export class Color3LineComponent extends React.Component<IColor3LineComponentProps, { isExpanded: boolean, color: Color3 }> {
+export class Color3LineComponent extends React.Component<IColor3LineComponentProps, { isExpanded: boolean, color: Color3 | Color4 }> {
     private _localChange = false;
     constructor(props: IColor3LineComponentProps) {
         super(props);
@@ -27,7 +27,7 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
         this.state = { isExpanded: false, color: this.props.target[this.props.propertyName].clone() };
     }
 
-    shouldComponentUpdate(nextProps: IColor3LineComponentProps, nextState: { color: Color3 }) {
+    shouldComponentUpdate(nextProps: IColor3LineComponentProps, nextState: { color: Color3 | Color4 }) {
         const currentState = nextProps.target[nextProps.propertyName];
 
         if (!currentState.equals(nextState.color) || this._localChange) {
@@ -40,7 +40,8 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
 
     onChange(newValue: string) {
         this._localChange = true;
-        const newColor = Color3.FromHexString(newValue);
+        const isColor4 = this.props.target[this.props.propertyName].getClassName() === "Color4";
+        const newColor = isColor4 ? Color4.FromHexString(newValue) : Color3.FromHexString(newValue);
 
         if (this.props.onPropertyChangedObservable) {
             this.props.onPropertyChangedObservable.notifyObservers({
@@ -51,11 +52,7 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
             });
         }
 
-        if (this.props.target[this.props.propertyName].getClassName() === "Color4") {
-            this.props.target[this.props.propertyName] = new Color4(newColor.r, newColor.g, newColor.b, 1.0);
-        } else {
-            this.props.target[this.props.propertyName] = newColor;
-        }
+        this.props.target[this.props.propertyName] = newColor;
 
         this.setState({ color: newColor });
 
@@ -69,7 +66,7 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
         this.setState({ isExpanded: !this.state.isExpanded });
     }
 
-    raiseOnPropertyChanged(previousValue: Color3) {
+    raiseOnPropertyChanged(previousValue: Color3 | Color4) {
         if (this.props.onChange) {
             this.props.onChange();
         }

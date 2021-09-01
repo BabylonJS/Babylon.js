@@ -757,6 +757,7 @@ declare module "babylonjs-node-editor/sharedUiComponents/colorPicker/colorPicker
         private _isSaturationPointerDown;
         private _isHuePointerDown;
         constructor(props: IColorPickerProps);
+        shouldComponentUpdate(nextProps: IColorPickerProps, nextState: IColorPickerState): boolean;
         onSaturationPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
         onSaturationPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
         onSaturationPointerMove(evt: React.PointerEvent<HTMLDivElement>): void;
@@ -799,7 +800,7 @@ declare module "babylonjs-node-editor/sharedComponents/colorPickerComponent" {
 declare module "babylonjs-node-editor/sharedComponents/color3LineComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
-    import { Color3 } from "babylonjs/Maths/math.color";
+    import { Color3, Color4 } from "babylonjs/Maths/math.color";
     import { PropertyChangedEvent } from "babylonjs-node-editor/sharedComponents/propertyChangedEvent";
     import { GlobalState } from "babylonjs-node-editor/globalState";
     export interface IColor3LineComponentProps {
@@ -812,16 +813,16 @@ declare module "babylonjs-node-editor/sharedComponents/color3LineComponent" {
     }
     export class Color3LineComponent extends React.Component<IColor3LineComponentProps, {
         isExpanded: boolean;
-        color: Color3;
+        color: Color3 | Color4;
     }> {
         private _localChange;
         constructor(props: IColor3LineComponentProps);
         shouldComponentUpdate(nextProps: IColor3LineComponentProps, nextState: {
-            color: Color3;
+            color: Color3 | Color4;
         }): boolean;
         onChange(newValue: string): void;
         switchExpandState(): void;
-        raiseOnPropertyChanged(previousValue: Color3): void;
+        raiseOnPropertyChanged(previousValue: Color3 | Color4): void;
         updateStateR(value: number): void;
         updateStateG(value: number): void;
         updateStateB(value: number): void;
@@ -1607,7 +1608,7 @@ declare module "babylonjs-node-editor/globalState" {
         hostDocument: HTMLDocument;
         hostWindow: Window;
         onSelectionChangedObservable: Observable<Nullable<GraphFrame | GraphNode | NodePort | NodeLink | FramePortData>>;
-        onRebuildRequiredObservable: Observable<void>;
+        onRebuildRequiredObservable: Observable<boolean>;
         onBuiltObservable: Observable<void>;
         onResetRequiredObservable: Observable<void>;
         onUpdateRequiredObservable: Observable<void>;
@@ -1985,7 +1986,7 @@ declare module "babylonjs-node-editor/graphEditor" {
         reconnectNewNodes(nodeIndex: number, newNodes: GraphNode[], sourceNodes: GraphNode[], done: boolean[]): void;
         pasteSelection(copiedNodes: GraphNode[], currentX: number, currentY: number, selectNew?: boolean): GraphNode[] | undefined;
         zoomToFit(): void;
-        buildMaterial(): void;
+        buildMaterial(autoConfigure?: boolean): void;
         build(): void;
         loadGraph(): void;
         showWaitScreen(): void;
@@ -2188,6 +2189,7 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/textInputLineComp
         icon?: string;
         iconLabel?: string;
         noUnderline?: boolean;
+        numbersOnly?: boolean;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
@@ -3611,6 +3613,7 @@ declare module NODEEDITOR {
         private _isSaturationPointerDown;
         private _isHuePointerDown;
         constructor(props: IColorPickerProps);
+        shouldComponentUpdate(nextProps: IColorPickerProps, nextState: IColorPickerState): boolean;
         onSaturationPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
         onSaturationPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
         onSaturationPointerMove(evt: React.PointerEvent<HTMLDivElement>): void;
@@ -3658,16 +3661,16 @@ declare module NODEEDITOR {
     }
     export class Color3LineComponent extends React.Component<IColor3LineComponentProps, {
         isExpanded: boolean;
-        color: BABYLON.Color3;
+        color: BABYLON.Color3 | BABYLON.Color4;
     }> {
         private _localChange;
         constructor(props: IColor3LineComponentProps);
         shouldComponentUpdate(nextProps: IColor3LineComponentProps, nextState: {
-            color: BABYLON.Color3;
+            color: BABYLON.Color3 | BABYLON.Color4;
         }): boolean;
         onChange(newValue: string): void;
         switchExpandState(): void;
-        raiseOnPropertyChanged(previousValue: BABYLON.Color3): void;
+        raiseOnPropertyChanged(previousValue: BABYLON.Color3 | BABYLON.Color4): void;
         updateStateR(value: number): void;
         updateStateG(value: number): void;
         updateStateB(value: number): void;
@@ -4324,7 +4327,7 @@ declare module NODEEDITOR {
         hostDocument: HTMLDocument;
         hostWindow: Window;
         onSelectionChangedObservable: BABYLON.Observable<BABYLON.Nullable<GraphFrame | GraphNode | NodePort | NodeLink | FramePortData>>;
-        onRebuildRequiredObservable: BABYLON.Observable<void>;
+        onRebuildRequiredObservable: BABYLON.Observable<boolean>;
         onBuiltObservable: BABYLON.Observable<void>;
         onResetRequiredObservable: BABYLON.Observable<void>;
         onUpdateRequiredObservable: BABYLON.Observable<void>;
@@ -4659,7 +4662,7 @@ declare module NODEEDITOR {
         reconnectNewNodes(nodeIndex: number, newNodes: GraphNode[], sourceNodes: GraphNode[], done: boolean[]): void;
         pasteSelection(copiedNodes: GraphNode[], currentX: number, currentY: number, selectNew?: boolean): GraphNode[] | undefined;
         zoomToFit(): void;
-        buildMaterial(): void;
+        buildMaterial(autoConfigure?: boolean): void;
         build(): void;
         loadGraph(): void;
         showWaitScreen(): void;
@@ -4842,6 +4845,7 @@ declare module NODEEDITOR {
         icon?: string;
         iconLabel?: string;
         noUnderline?: boolean;
+        numbersOnly?: boolean;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;

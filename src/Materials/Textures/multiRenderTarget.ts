@@ -1,11 +1,11 @@
 import { Scene } from "../../scene";
 import { Engine } from "../../Engines/engine";
-import { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { Texture } from "../../Materials/Textures/texture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import { Constants } from "../../Engines/constants";
 
 import "../../Engines/Extensions/engine.multiRender";
+import { InternalTexture } from "./internalTexture";
 
 /**
  * Creation options of the multi render target texture.
@@ -61,7 +61,6 @@ export interface IMultiRenderTargetOptions {
  */
 export class MultiRenderTarget extends RenderTargetTexture {
 
-    private _internalTextures: InternalTexture[];
     private _textures: Texture[];
     private _multiRenderTargetOptions: IMultiRenderTargetOptions;
     private _count: number;
@@ -210,22 +209,20 @@ export class MultiRenderTarget extends RenderTargetTexture {
             this._createTextures(textureNames);
         }
 
-        for (var i = 0; i < this._internalTextures.length; i++) {
+        const internalTextures = this._renderTarget!.textures!;
+        for (var i = 0; i < internalTextures.length; i++) {
             var texture = this._textures[i];
-            texture._texture = this._internalTextures[i];
+            texture._texture = internalTextures[i];
         }
 
         if (this.samples !== 1) {
-            this._getEngine()!.updateMultipleRenderTargetTextureSampleCount(this._internalTextures, this.samples, !this._drawOnlyOnFirstAttachmentByDefault);
+            this._renderTarget!.setSamples(this.samples, !this._drawOnlyOnFirstAttachmentByDefault, true);
         }
     }
 
     private _createInternalTextures(): void {
-        this._internalTextures = this._getEngine()!.createMultipleRenderTarget(this._size, this._multiRenderTargetOptions, !this._drawOnlyOnFirstAttachmentByDefault);
-
-        // Keeps references to frame buffer and stencil/depth buffer
-        this._texture = this._internalTextures[0];
-        this._framebuffer = this._internalTextures[0]._framebuffer!;
+        this._renderTarget = this._getEngine()!.createMultipleRenderTarget(this._size, this._multiRenderTargetOptions, !this._drawOnlyOnFirstAttachmentByDefault);
+        this._texture = this._renderTarget.texture;
     }
 
     private _releaseTextures(): void {
@@ -238,13 +235,14 @@ export class MultiRenderTarget extends RenderTargetTexture {
     }
 
     private _createTextures(textureNames?: string[]): void {
+        const internalTextures = this._renderTarget!.textures!;
         this._textures = [];
-        for (var i = 0; i < this._internalTextures.length; i++) {
+        for (var i = 0; i < internalTextures.length; i++) {
             var texture = new Texture(null, this.getScene());
             if (textureNames?.[i]) {
                 texture.name = textureNames[i];
             }
-            texture._texture = this._internalTextures[i];
+            texture._texture = internalTextures[i];
             this._textures.push(texture);
         }
     }
@@ -253,25 +251,22 @@ export class MultiRenderTarget extends RenderTargetTexture {
      * Replaces an internal texture within the MRT. Useful to share textures between MultiRenderTarget.
      * @param texture The new texture to set in the MRT
      * @param index The index of the texture to replace
-     * @param attachmentIndex Texture attachment index
      * @param disposePrevious Set to true if the previous internal texture should be disposed
      */
-    public setInternalTexture(texture: InternalTexture, index: number, attachmentIndex: number = 0, disposePrevious: boolean = true) {
-        if (disposePrevious && this._internalTextures[index] && index !== 0) {
-            this._internalTextures[index].dispose();
+    public setInternalTexture(texture: InternalTexture, index: number, disposePrevious: boolean = true) {
+        if (!this.renderTarget) {
+            return;
         }
 
-        this._internalTextures[index] = texture;
+        this.renderTarget.setTexture(texture, index, disposePrevious);
+
         if (!this.textures[index]) {
             this.textures[index] = new Texture(null, this.getScene());
         }
         this.textures[index]._texture = texture;
 
-        if (this._engine && this._texture) {
-            this._engine.bindTextureFramebuffer(this._framebuffer!, texture, attachmentIndex);
-        }
+        this._count = this.renderTarget.textures ? this.renderTarget.textures.length : 0;
 
-        this._count = this._internalTextures.length;
         // TODO : update types and samplingModes
     }
 
@@ -292,12 +287,8 @@ export class MultiRenderTarget extends RenderTargetTexture {
     }
 
     public set samples(value: number) {
-        if (this._samples === value) {
-            return;
-        }
-
-        if (this._internalTextures) {
-            this._samples = this._getEngine()!.updateMultipleRenderTargetTextureSampleCount(this._internalTextures, value);
+        if (this._renderTarget) {
+            this._samples = this._renderTarget.setSamples(value);
         } else {
             // In case samples are set with 0 textures created, we must save the desired samples value
             this._samples = value;
@@ -335,9 +326,11 @@ export class MultiRenderTarget extends RenderTargetTexture {
     }
 
     protected unbindFrameBuffer(engine: Engine, faceIndex: number): void {
-        engine.unBindMultiColorAttachmentFramebuffer(this._internalTextures, this.isCube, () => {
-            this.onAfterRenderObservable.notifyObservers(faceIndex);
-        });
+        if (this._renderTarget) {
+            engine.unBindMultiColorAttachmentFramebuffer(this._renderTarget, this.isCube, () => {
+                this.onAfterRenderObservable.notifyObservers(faceIndex);
+            });
+        }
     }
 
     /**
@@ -358,16 +351,17 @@ export class MultiRenderTarget extends RenderTargetTexture {
      * Release all the underlying texture used as draw buffers.
      */
     public releaseInternalTextures(): void {
-        if (!this._internalTextures) {
+        const internalTextures = this._renderTarget?.textures;
+
+        if (!internalTextures) {
             return;
         }
 
-        for (var i = this._internalTextures.length - 1; i >= 0; i--) {
-            if (this._internalTextures[i] !== undefined) {
-                this._internalTextures[i].dispose();
-                this._internalTextures.splice(i, 1);
-            }
+        for (var i = internalTextures.length - 1; i >= 0; i--) {
             this._textures[i]._texture = null;
         }
+
+        this._renderTarget?.dispose();
+        this._renderTarget = null;
     }
 }

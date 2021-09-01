@@ -624,7 +624,7 @@ export abstract class EffectLayer {
         // Handle size changes.
         var size = this._mainTexture.getSize();
         this._setMainTextureSize();
-        if (size.width !== this._mainTextureDesiredSize.width || size.height !== this._mainTextureDesiredSize.height) {
+        if ((size.width !== this._mainTextureDesiredSize.width || size.height !== this._mainTextureDesiredSize.height) && this._mainTextureDesiredSize.width !== 0 && this._mainTextureDesiredSize.height !== 0) {
             // Recreate RTT and post processes on size change.
             this.onSizeChangedObservable.notifyObservers(this);
             this._disposeTextureAndPostProcesses();

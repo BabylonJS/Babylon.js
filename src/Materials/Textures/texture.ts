@@ -76,6 +76,11 @@ export class Texture extends BaseTexture {
      */
     public static ForceSerializeBuffers = false;
 
+    /**
+     * This observable will notify when any texture had a loading error
+     */
+    public static OnTextureLoadErrorObservable = new Observable<BaseTexture>();
+
     /** @hidden */
     public static _CubeTextureParser = (jsonTexture: any, scene: Scene, rootUrl: string): CubeTexture => {
         throw _DevTools.WarnImport("CubeTexture");
@@ -414,9 +419,18 @@ export class Texture extends BaseTexture {
             }
         };
 
+        const errorHandler = (message?: string, exception?: any) => {
+            this._loadingError = true;
+            this._errorObject = { message, exception };
+            if (onError) {
+                onError(message, exception);
+            }
+            Texture.OnTextureLoadErrorObservable.notifyObservers(this);
+        };
+
         if (!this.url) {
             this._delayedOnLoad = load;
-            this._delayedOnError = onError;
+            this._delayedOnError = errorHandler;
             return;
         }
 
@@ -425,11 +439,9 @@ export class Texture extends BaseTexture {
         if (!this._texture) {
             if (!scene || !scene.useDelayedTextureLoading) {
                 try {
-                    this._texture = engine.createTexture(this.url, noMipmap, invertY, scene, samplingMode, load, onError, this._buffer, undefined, this._format, null, mimeType, loaderOptions, creationFlags, useSRGBBuffer);
+                    this._texture = engine.createTexture(this.url, noMipmap, invertY, scene, samplingMode, load, errorHandler, this._buffer, undefined, this._format, null, mimeType, loaderOptions, creationFlags, useSRGBBuffer);
                 } catch (e) {
-                    if (onError) {
-                        onError(e.message, e);
-                    }
+                    errorHandler("error loading", e);
                     throw e;
                 }
                 if (deleteBuffer) {
@@ -439,7 +451,7 @@ export class Texture extends BaseTexture {
                 this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
 
                 this._delayedOnLoad = load;
-                this._delayedOnError = onError;
+                this._delayedOnError = errorHandler;
             }
         } else {
             if (this._texture.isReady) {
@@ -705,8 +717,23 @@ export class Texture extends BaseTexture {
      * @returns the cloned texture
      */
     public clone(): Texture {
+        const options: ITextureCreationOptions = {
+            noMipmap: this._noMipmap,
+            invertY: this._invertY,
+            samplingMode: this.samplingMode,
+            onLoad: undefined,
+            onError: undefined,
+            buffer: this._texture ? this._texture._buffer : undefined,
+            deleteBuffer: this._deleteBuffer,
+            format: this.textureFormat,
+            mimeType: this.mimeType,
+            loaderOptions: this._loaderOptions,
+            creationFlags: this._creationFlags,
+            useSRGBBuffer: this._useSRGBBuffer,
+        };
+
         return SerializationHelper.Clone(() => {
-            return new Texture(this._texture ? this._texture.url : null, this.getScene(), this._noMipmap, this._invertY, this.samplingMode, undefined, undefined, this._texture ? this._texture._buffer : undefined);
+            return new Texture(this._texture ? this._texture.url : null, this.getScene(), options);
         }, this);
     }
 

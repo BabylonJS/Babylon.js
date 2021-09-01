@@ -150,7 +150,9 @@ export class Checkbox extends Control {
             return false;
         }
 
-        this.isChecked = !this.isChecked;
+        if (!this.isReadOnly) {
+            this.isChecked = !this.isChecked;
+        }
 
         return true;
     }

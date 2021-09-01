@@ -500,11 +500,11 @@ export class AnimationGroup implements IDisposable {
 
     /**
      * Synchronize and normalize all animatables with a source animatable
-     * @param root defines the root animatable to synchronize with
+     * @param root defines the root animatable to synchronize with (null to stop synchronizing)
      * @return the animationGroup
      * @see https://doc.babylonjs.com/babylon101/animations#animation-weights
      */
-    public syncAllAnimationsWith(root: Animatable): AnimationGroup {
+    public syncAllAnimationsWith(root: Nullable<Animatable>): AnimationGroup {
         for (var index = 0; index < this._animatables.length; index++) {
             let animatable = this._animatables[index];
             animatable.syncWith(root);

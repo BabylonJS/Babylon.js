@@ -88,5 +88,10 @@ export class Ellipse extends Container {
 
         context.clip();
     }
+
+    public _renderHighlightSpecific(context: ICanvasRenderingContext): void {
+        Control.drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, this._currentMeasure.width / 2 - this._highlightLineWidth / 2, this._currentMeasure.height / 2 - this._highlightLineWidth / 2, context);
+        context.stroke();
+    }
 }
 _TypeStore.RegisteredTypes["BABYLON.GUI.Ellipse"] = Ellipse;
