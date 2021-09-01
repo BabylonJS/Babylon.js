@@ -122,6 +122,7 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: RenderTarget
     }
 
     if (depthStencilTexture) {
+        depthStencilTexture.incrementReferences();
         textures.push(depthStencilTexture);
         this._internalTexturesCache.push(depthStencilTexture);
     }
