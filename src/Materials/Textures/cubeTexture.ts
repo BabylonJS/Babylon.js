@@ -210,8 +210,11 @@ export class CubeTexture extends BaseTexture {
      * @param forcedExtension defines the extension to use
      * @param onLoad callback called when the texture is loaded  (defaults to null)
      * @param prefiltered Defines whether the updated texture is prefiltered or not
+     * @param onError callback called if there was an error during the loading process (defaults to null)
+     * @param extensions defines the suffixes add to the picture name in case six images are in use like _px.jpg...
+     * @param delayLoad defines if the texture should be loaded now (false by default)
      */
-    public updateURL(url: string, forcedExtension?: string, onLoad: Nullable<() => void> = null, prefiltered: boolean = false, onError: Nullable<(message?: string, exception?: any) => void> = null, extensions: Nullable<string[]> = null, delayLoad = true): void {
+    public updateURL(url: string, forcedExtension?: string, onLoad: Nullable<() => void> = null, prefiltered: boolean = false, onError: Nullable<(message?: string, exception?: any) => void> = null, extensions: Nullable<string[]> = null, delayLoad = false): void {
         if (!this.name || StringTools.StartsWith(this.name, "data:")) {
             this.name = url;
         }
