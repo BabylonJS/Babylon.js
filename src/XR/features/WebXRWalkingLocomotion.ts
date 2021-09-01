@@ -306,36 +306,84 @@ class Walker {
     }
 }
 
+/**
+ * Options for the walking locomotion feature.
+ */
 export interface IWebXRWalkingLocomotionOptions {
-    locomotionTarget: Vector3;
+    locomotionTarget: Nullable<Vector3>;
 }
 
 /**
- * A module that will enable VR locomotion by detecting when the user walks in place
+ * A module that will enable VR locomotion by detecting when the user walks in place.
  */
 export class WebXRWalkingLocomotion extends WebXRAbstractFeature {
     /**
-     * The module's name
+     * The module's name.
      */
     public static get Name(): string {
         return WebXRFeatureName.WALKING_LOCOMOTION;
     }
-
+    
+    /**
+     * The (Babylon) version of this module.
+     * This is an integer representing the implementation version.
+     * This number has no external basis.
+     */
     public static get Version(): number {
-        return 0.01;
+        return 1;
     }
 
     private _sessionManager: WebXRSessionManager;
     private _up: Vector3 = new Vector3();
     private _forward: Vector3 = new Vector3();
     private _position: Vector3 = new Vector3();
-    private _walker: Walker = new Walker();
-    private _locomotionTarget: Vector3;
+    private _walker: Nullable<Walker>;
 
+    /**
+     * The Vector3 to be articulated by walking locomotion.
+     * When the walking locomotion feature detects walking in place, this vector's
+     * X and Z coordinates will be modified to reflect locomotion. This vector is
+     * assumed to be in the base XR space and will be articulated accordingly.
+     */
+    public locomotionTarget: Vector3;
+
+    /**
+     * Construct a new Walking Locomotion feature.
+     * @param sessionManager manager for the current XR session
+     * @param options creation options, prominently including the vector target for locomotion
+     */
     public constructor(sessionManager: WebXRSessionManager, options: IWebXRWalkingLocomotionOptions) {
         super(sessionManager);
         this._sessionManager = sessionManager;
-        this._locomotionTarget = options.locomotionTarget;
+        this.locomotionTarget = options.locomotionTarget ?? new Vector3();
+    }
+
+    /**
+     * Attaches the feature.
+     * Typically called automatically by the features manager.
+     * @returns true if attach succeeded, false otherwise
+     */
+    public attach(): boolean {
+        if (!super.attach()) {
+            return false;
+        }
+
+        this._walker = new Walker();
+        return true;
+    }
+
+    /**
+     * Detaches the feature.
+     * Typically called automatically by the features manager.
+     * @returns true if detach succeeded, false otherwise
+     */
+    public detach(): boolean {
+        if (!super.detach()) {
+            return false;
+        }
+
+        this._walker = null;
+        return true;
     }
 
     protected _onXRFrame(frame: XRFrame): void {
@@ -343,6 +391,7 @@ export class WebXRWalkingLocomotion extends WebXRAbstractFeature {
         if (!pose) {
             return;
         }
+        
         const m = pose.transform.matrix;
         this._up.copyFromFloats(m[4], m[5], -m[6]);
         this._forward.copyFromFloats(m[8], m[9], -m[10]);
@@ -351,7 +400,7 @@ export class WebXRWalkingLocomotion extends WebXRAbstractFeature {
         // Compute the nape position
         this._forward.scaleAndAddToRef(0.05, this._position);
         this._up.scaleAndAddToRef(-0.05, this._position);
-        this._walker.update(this._position, this._forward, this._locomotionTarget);
+        this._walker!.update(this._position, this._forward, this.locomotionTarget);
     }
 }
 
