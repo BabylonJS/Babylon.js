@@ -3,10 +3,11 @@
 ## Major updates
 
 - Infinite Morph Targets: When supported (WebGL2+) you are no more limited to 4 morph targets per mesh ([Deltakosh](https://github.com/deltakosh))
+- Added Animation Curve Editor to allow easy animation creation and update ([Deltakosh](https://github.com/deltakosh))
 - Added support for ConditionalBlock for NodeMaterial ([Deltakosh](https://github.com/deltakosh))
 - Improved performance when using the shadow / cascacaded shadow generator ([Popov72](https://github.com/Popov72))
 - Add support for up to 6 uv sets in the standard, PBR and node materials ([Popov72](https://github.com/Popov72))
-- Added GUI Editor ([msDestiny14](https://github.com/msDestiny14))
+- Added GUI Editor to easily build GUI controls ([msDestiny14](https://github.com/msDestiny14))
 
 ## Updates
 
@@ -175,6 +176,7 @@
 - Fix error on XR dispose due to undefined sepectator camera ([Alex-MSFT](https://github.com/Alex-MSFT))
 - Support for WebXR Foveated rendering ([#8920](https://github.com/BabylonJS/Babylon.js/issues/8920)) ([RaananW](https://github.com/RaananW))
 - Support WebXR framerate update ([#10912](https://github.com/BabylonJS/Babylon.js/issues/10912)) ([RaananW](https://github.com/RaananW))
+- Detach the non-vr camera from the canvas when entering XR and re-attach when leaving ([RaananW](https://github.com/RaananW))
 
 ### Gizmos
 

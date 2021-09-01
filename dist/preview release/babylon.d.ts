@@ -601,31 +601,382 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Define options used to create a render target texture
+     * Class used to abstract a canvas
      */
-    export class RenderTargetCreationOptions {
+    export interface ICanvas {
         /**
-         * Specifies if mipmaps must be created. If undefined, the value from generateMipMaps is taken instead
+         * Canvas width.
          */
-        createMipMaps?: boolean;
+        width: number;
         /**
-         * Specifies if mipmaps must be generated
+         * Canvas height.
          */
-        generateMipMaps?: boolean;
-        /** Specifies whether or not a depth should be allocated in the texture (true by default) */
-        generateDepthBuffer?: boolean;
-        /** Specifies whether or not a stencil should be allocated in the texture (false by default)*/
-        generateStencilBuffer?: boolean;
-        /** Defines texture type (int by default) */
-        type?: number;
-        /** Defines sampling mode (trilinear by default) */
-        samplingMode?: number;
-        /** Defines format (RGBA by default) */
-        format?: number;
-        /** Defines sample count (1 by default) */
-        samples?: number;
-        /** Texture creation flags */
-        creationFlags?: number;
+        height: number;
+        /**
+         * returns a drawing context on the canvas.
+         * @param contextType context identifier.
+         * @param contextAttributes context attributes.
+         * @returns ICanvasRenderingContext object.
+         */
+        getContext(contextType: string, contextAttributes?: any): ICanvasRenderingContext;
+        /**
+         * returns a data URI containing a representation of the image in the format specified by the type parameter.
+         * @param mime the image format.
+         * @returns string containing the requested data URI.
+         */
+        toDataURL(mime: string): string;
+    }
+    /**
+     * Class used to abstract am image to use with the canvas and its context
+     */
+    export interface IImage {
+        /**
+         * onload callback.
+         */
+        onload: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+        /**
+         * Image source.
+         */
+        src: string;
+        /**
+         * Image width.
+         */
+        readonly width: number;
+        /**
+         * Image height.
+         */
+        readonly height: number;
+        /**
+         * The original height of the image resource before sizing.
+         */
+        readonly naturalHeight: number;
+        /**
+         * The original width of the image resource before sizing.
+         */
+        readonly naturalWidth: number;
+        /**
+         * provides support for CORS, defining how the element handles crossorigin requests,
+         * thereby enabling the configuration of the CORS requests for the element's fetched data.
+         */
+        crossOrigin: string | null;
+    }
+    /**
+     * Class used to abstract a canvas gradient
+     */
+    export interface ICanvasGradient {
+        /**
+         * adds a new color stop, defined by an offset and a color, to a given canvas gradient.
+         * @param offset A number between 0 and 1, inclusive, representing the position of the color stop. 0 represents the start of the gradient and 1 represents the end.
+         * @param color value representing the color of the stop.
+         */
+        addColorStop(offset: number, color: string): void;
+    }
+    /**
+     * Class used to abstract a text measurement
+     */
+    export interface ITextMetrics {
+        /**
+         * Text width.
+         */
+        readonly width: number;
+    }
+    /**
+     * Class used to abstract canvas rendering
+     */
+    export interface ICanvasRenderingContext {
+        /**
+         * Defines the type of corners where two lines meet. Possible values: round, bevel, miter (default).
+         */
+        lineJoin: string;
+        /**
+         * Miter limit ratio. Default 10.
+         */
+        miterLimit: number;
+        /**
+         * Font setting. Default value 10px sans-serif.
+         */
+        font: string;
+        /**
+         * Color or style to use for the lines around shapes. Default #000 (black).
+         */
+        strokeStyle: string;
+        /**
+         * Color or style to use inside shapes. Default #000 (black).
+         */
+        fillStyle: string | ICanvasGradient;
+        /**
+         * Alpha value that is applied to shapes and images before they are composited onto the canvas. Default 1.0 (opaque).
+         */
+        globalAlpha: number;
+        /**
+         * Color of the shadow. Default: fully-transparent black.
+         */
+        shadowColor: string;
+        /**
+         * Specifies the blurring effect. Default: 0.
+         */
+        shadowBlur: number;
+        /**
+         * Horizontal distance the shadow will be offset. Default: 0.
+         */
+        shadowOffsetX: number;
+        /**
+         * Vertical distance the shadow will be offset. Default: 0.
+         */
+        shadowOffsetY: number;
+        /**
+         * Width of lines. Default 1.0.
+         */
+        lineWidth: number;
+        /**
+         * canvas is a read-only reference to ICanvas.
+         */
+        readonly canvas: ICanvas;
+        /**
+         * Sets all pixels in the rectangle defined by starting point (x, y) and size (width, height) to transparent black, erasing any previously drawn content.
+         * @param x The x-axis coordinate of the rectangle's starting point.
+         * @param y The y-axis coordinate of the rectangle's starting point.
+         * @param width The rectangle's width. Positive values are to the right, and negative to the left.
+         * @param height The rectangle's height. Positive values are down, and negative are up.
+         */
+        clearRect(x: number, y: number, width: number, height: number): void;
+        /**
+         * Saves the current drawing style state using a stack so you can revert any change you make to it using restore().
+         */
+        save(): void;
+        /**
+         * Restores the drawing style state to the last element on the 'state stack' saved by save().
+         */
+        restore(): void;
+        /**
+         * Draws a filled rectangle at (x, y) position whose size is determined by width and height.
+         * @param x The x-axis coordinate of the rectangle's starting point.
+         * @param y The y-axis coordinate of the rectangle's starting point.
+         * @param width The rectangle's width. Positive values are to the right, and negative to the left.
+         * @param height The rectangle's height. Positive values are down, and negative are up.
+         */
+        fillRect(x: number, y: number, width: number, height: number): void;
+        /**
+         * Adds a scaling transformation to the canvas units by x horizontally and by y vertically.
+         * @param x Scaling factor in the horizontal direction. A negative value flips pixels across the vertical axis. A value of 1 results in no horizontal scaling.
+         * @param y Scaling factor in the vertical direction. A negative value flips pixels across the horizontal axis. A value of 1 results in no vertical scaling.
+         */
+        scale(x: number, y: number): void;
+        /**
+         * Adds a rotation to the transformation matrix. The angle argument represents a clockwise rotation angle and is expressed in radians.
+         * @param angle The rotation angle, clockwise in radians. You can use degree * Math.PI / 180 to calculate a radian from a degree.
+         */
+        rotate(angle: number): void;
+        /**
+         * Adds a translation transformation by moving the canvas and its origin x horzontally and y vertically on the grid.
+         * @param x Distance to move in the horizontal direction. Positive values are to the right, and negative to the left.
+         * @param y Distance to move in the vertical direction. Positive values are down, and negative are up.
+         */
+        translate(x: number, y: number): void;
+        /**
+         * Paints a rectangle which has a starting point at (x, y) and has a w width and an h height onto the canvas, using the current stroke style.
+         * @param x The x-axis coordinate of the rectangle's starting point.
+         * @param y The y-axis coordinate of the rectangle's starting point.
+         * @param width The rectangle's width. Positive values are to the right, and negative to the left.
+         * @param height The rectangle's height. Positive values are down, and negative are up.
+         */
+        strokeRect(x: number, y: number, width: number, height: number): void;
+        /**
+         * Creates a path for a rectangle at position (x, y) with a size that is determined by width and height.
+         * @param x The x-axis coordinate of the rectangle's starting point.
+         * @param y The y-axis coordinate of the rectangle's starting point.
+         * @param width The rectangle's width. Positive values are to the right, and negative to the left.
+         * @param height The rectangle's height. Positive values are down, and negative are up.
+         */
+        rect(x: number, y: number, width: number, height: number): void;
+        /**
+         * Creates a clipping path from the current sub-paths. Everything drawn after clip() is called appears inside the clipping path only.
+         */
+        clip(): void;
+        /**
+         * Paints data from the given ImageData object onto the bitmap. If a dirty rectangle is provided, only the pixels from that rectangle are painted.
+         * @param imageData An ImageData object containing the array of pixel values.
+         * @param dx Horizontal position (x coordinate) at which to place the image data in the destination canvas.
+         * @param dy Vertical position (y coordinate) at which to place the image data in the destination canvas.
+         */
+        putImageData(imageData: ImageData, dx: number, dy: number): void;
+        /**
+         * Adds a circular arc to the current path.
+         * @param x The horizontal coordinate of the arc's center.
+         * @param y The vertical coordinate of the arc's center.
+         * @param radius The arc's radius. Must be positive.
+         * @param startAngle The angle at which the arc starts in radians, measured from the positive x-axis.
+         * @param endAngle The angle at which the arc ends in radians, measured from the positive x-axis.
+         * @param anticlockwise An optional Boolean. If true, draws the arc counter-clockwise between the start and end angles. The default is false (clockwise).
+         */
+        arc(x: number, y: number, radius: number, startAngle: number, endAngle: number, anticlockwise?: boolean): void;
+        /**
+         * Starts a new path by emptying the list of sub-paths. Call this method when you want to create a new path.
+         */
+        beginPath(): void;
+        /**
+         * Causes the point of the pen to move back to the start of the current sub-path. It tries to draw a straight line from the current point to the start.
+         * If the shape has already been closed or has only one point, this function does nothing.
+         */
+        closePath(): void;
+        /**
+         * Moves the starting point of a new sub-path to the (x, y) coordinates.
+         * @param x The x-axis (horizontal) coordinate of the point.
+         * @param y The y-axis (vertical) coordinate of the point.
+         */
+        moveTo(x: number, y: number): void;
+        /**
+         * Connects the last point in the current sub-path to the specified (x, y) coordinates with a straight line.
+         * @param x The x-axis coordinate of the line's end point.
+         * @param y The y-axis coordinate of the line's end point.
+         */
+        lineTo(x: number, y: number): void;
+        /**
+         * Adds a quadratic Bézier curve to the current path.
+         * @param cpx The x-axis coordinate of the control point.
+         * @param cpy The y-axis coordinate of the control point.
+         * @param x The x-axis coordinate of the end point.
+         * @param y The y-axis coordinate of the end point.
+         */
+        quadraticCurveTo(cpx: number, cpy: number, x: number, y: number): void;
+        /**
+         * Returns a TextMetrics object.
+         * @param text The text String to measure.
+         * @returns ITextMetrics A ITextMetrics object.
+         */
+        measureText(text: string): ITextMetrics;
+        /**
+         * Strokes the current sub-paths with the current stroke style.
+         */
+        stroke(): void;
+        /**
+         * Fills the current sub-paths with the current fill style.
+         */
+        fill(): void;
+        /**
+         * Draws the specified image. This method is available in multiple formats, providing a great deal of flexibility in its use.
+         * @param image An element to draw into the context.
+         * @param sx The x-axis coordinate of the top left corner of the sub-rectangle of the source image to draw into the destination context.
+         * @param sy The y-axis coordinate of the top left corner of the sub-rectangle of the source image to draw into the destination context.
+         * @param sWidth The width of the sub-rectangle of the source image to draw into the destination context. If not specified, the entire rectangle from the coordinates specified by sx and sy to the bottom-right corner of the image is used.
+         * @param sHeight The height of the sub-rectangle of the source image to draw into the destination context.
+         * @param dx The x-axis coordinate in the destination canvas at which to place the top-left corner of the source image.
+         * @param dy The y-axis coordinate in the destination canvas at which to place the top-left corner of the source image.
+         * @param dWidth The width to draw the image in the destination canvas. This allows scaling of the drawn image. If not specified, the image is not scaled in width when drawn.
+         * @param dHeight The height to draw the image in the destination canvas. This allows scaling of the drawn image. If not specified, the image is not scaled in height when drawn.
+         */
+        drawImage(image: any, sx: number, sy: number, sWidth: number, sHeight: number, dx: number, dy: number, dWidth: number, dHeight: number): void;
+        /**
+         * Draws the specified image. This method is available in multiple formats, providing a great deal of flexibility in its use.
+         * @param image An element to draw into the context.
+         * @param dx The x-axis coordinate in the destination canvas at which to place the top-left corner of the source image.
+         * @param dy The y-axis coordinate in the destination canvas at which to place the top-left corner of the source image.
+         * @param dWidth The width to draw the image in the destination canvas. This allows scaling of the drawn image. If not specified, the image is not scaled in width when drawn.
+         * @param dHeight The height to draw the image in the destination canvas. This allows scaling of the drawn image. If not specified, the image is not scaled in height when drawn.
+         */
+        drawImage(image: any, dx: number, dy: number, dWidth: number, dHeight: number): void;
+        /**
+         * Draws the specified image. This method is available in multiple formats, providing a great deal of flexibility in its use.
+         * @param image An element to draw into the context.
+         * @param dx The x-axis coordinate in the destination canvas at which to place the top-left corner of the source image.
+         * @param dy The y-axis coordinate in the destination canvas at which to place the top-left corner of the source image.
+         */
+        drawImage(image: any, dx: number, dy: number): void;
+        /**
+         * Returns an ImageData object representing the underlying pixel data for the area of the canvas denoted by the rectangle which starts at (sx, sy) and has an sw width and sh height.
+         * @param sx The x-axis coordinate of the top-left corner of the rectangle from which the ImageData will be extracted.
+         * @param sy The y-axis coordinate of the top-left corner of the rectangle from which the ImageData will be extracted.
+         * @param sw The width of the rectangle from which the ImageData will be extracted. Positive values are to the right, and negative to the left.
+         * @param sh The height of the rectangle from which the ImageData will be extracted. Positive values are down, and negative are up.
+         * @returns ImageData An ImageData object containing the image data for the rectangle of the canvas specified.
+         */
+        getImageData(sx: number, sy: number, sw: number, sh: number): ImageData;
+        /**
+         * Sets the current line dash pattern.
+         * @param segments An Array of numbers that specify distances to alternately draw a line and a gap (in coordinate space units).
+         */
+        setLineDash(segments: Array<number>): void;
+        /**
+         * Draws (fills) a given text at the given (x, y) position.
+         * @param text A String specifying the text string to render into the context. The text is rendered using the settings specified by font, textAlign, textBaseline, and direction.
+         * @param x The x-axis coordinate of the point at which to begin drawing the text, in pixels.
+         * @param y The y-axis coordinate of the baseline on which to begin drawing the text, in pixels.
+         * @param maxWidth The maximum number of pixels wide the text may be once rendered. If not specified, there is no limit to the width of the text.
+         */
+        fillText(text: string, x: number, y: number, maxWidth?: number): void;
+        /**
+         * Draws (strokes) a given text at the given (x, y) position.
+         * @param text A String specifying the text string to render into the context. The text is rendered using the settings specified by font, textAlign, textBaseline, and direction.
+         * @param x The x-axis coordinate of the point at which to begin drawing the text, in pixels.
+         * @param y The y-axis coordinate of the baseline on which to begin drawing the text, in pixels.
+         * @param maxWidth The maximum number of pixels wide the text may be once rendered. If not specified, there is no limit to the width of the text.
+         */
+        strokeText(text: string, x: number, y: number, maxWidth?: number): void;
+        /**
+         * Creates a linear gradient along the line given by the coordinates represented by the parameters.
+         * @param x0 The x-axis coordinate of the start point.
+         * @param y0 The y-axis coordinate of the start point.
+         * @param x1 The x-axis coordinate of the end point.
+         * @param y1 The y-axis coordinate of the end point.
+         * @returns ICanvasGradient A linear ICanvasGradient initialized with the specified line.
+         */
+        createLinearGradient(x0: number, y0: number, x1: number, y1: number): ICanvasGradient;
+        /**
+         * Resets the current transform to matrix composed with a, b, c, d, e, f.
+         * @param a Horizontal scaling. A value of 1 results in no scaling.
+         * @param b Vertical skewing.
+         * @param c Horizontal skewing.
+         * @param d Vertical scaling. A value of 1 results in no scaling.
+         * @param e Horizontal translation (moving).
+         * @param f Vertical translation (moving).
+         */
+        setTransform(a: number, b: number, c: number, d: number, e: number, f: number): void;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export interface HardwareTextureWrapper {
+        underlyingResource: any;
+        set(hardwareTexture: any): void;
+        setUsage(textureSource: number, generateMipMaps: boolean, isCube: boolean, width: number, height: number): void;
+        reset(): void;
+        release(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * This represents the required contract to create a new type of texture loader.
+     */
+    export interface IInternalTextureLoader {
+        /**
+         * Defines whether the loader supports cascade loading the different faces.
+         */
+        supportCascades: boolean;
+        /**
+         * This returns if the loader support the current file information.
+         * @param extension defines the file extension of the file being loaded
+         * @param mimeType defines the optional mime type of the file being loaded
+         * @returns true if the loader can load the specified file
+         */
+        canLoad(extension: string, mimeType?: string): boolean;
+        /**
+         * Uploads the cube texture data to the WebGL texture. It has already been bound.
+         * @param data contains the texture data
+         * @param texture defines the BabylonJS internal texture
+         * @param createPolynomials will be true if polynomials have been requested
+         * @param onLoad defines the callback to trigger once the texture is ready
+         * @param onError defines the callback to trigger in case of error
+         * @param options options to be passed to the loader
+         */
+        loadCubeData(data: ArrayBufferView | ArrayBufferView[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>, options?: any): void;
+        /**
+         * Uploads the 2D texture data to the WebGL texture. It has already been bound once in the callback.
+         * @param data contains the texture data
+         * @param texture defines the BabylonJS internal texture
+         * @param callback defines the method to call once ready to upload
+         * @param options options to be passed to the loader
+         */
+        loadData(data: ArrayBufferView, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed?: boolean) => void, options?: any): void;
     }
 }
 declare module BABYLON {
@@ -1274,386 +1625,6 @@ declare module BABYLON {
          * Maximum number of uv sets supported
          */
         static readonly MAX_SUPPORTED_UV_SETS: number;
-    }
-}
-declare module BABYLON {
-    /**
-     * Class used to abstract a canvas
-     */
-    export interface ICanvas {
-        /**
-         * Canvas width.
-         */
-        width: number;
-        /**
-         * Canvas height.
-         */
-        height: number;
-        /**
-         * returns a drawing context on the canvas.
-         * @param contextType context identifier.
-         * @param contextAttributes context attributes.
-         * @returns ICanvasRenderingContext object.
-         */
-        getContext(contextType: string, contextAttributes?: any): ICanvasRenderingContext;
-        /**
-         * returns a data URI containing a representation of the image in the format specified by the type parameter.
-         * @param mime the image format.
-         * @returns string containing the requested data URI.
-         */
-        toDataURL(mime: string): string;
-    }
-    /**
-     * Class used to abstract am image to use with the canvas and its context
-     */
-    export interface IImage {
-        /**
-         * onload callback.
-         */
-        onload: ((this: GlobalEventHandlers, ev: Event) => any) | null;
-        /**
-         * Image source.
-         */
-        src: string;
-        /**
-         * Image width.
-         */
-        readonly width: number;
-        /**
-         * Image height.
-         */
-        readonly height: number;
-        /**
-         * The original height of the image resource before sizing.
-         */
-        readonly naturalHeight: number;
-        /**
-         * The original width of the image resource before sizing.
-         */
-        readonly naturalWidth: number;
-        /**
-         * provides support for CORS, defining how the element handles crossorigin requests,
-         * thereby enabling the configuration of the CORS requests for the element's fetched data.
-         */
-        crossOrigin: string | null;
-    }
-    /**
-     * Class used to abstract a canvas gradient
-     */
-    export interface ICanvasGradient {
-        /**
-         * adds a new color stop, defined by an offset and a color, to a given canvas gradient.
-         * @param offset A number between 0 and 1, inclusive, representing the position of the color stop. 0 represents the start of the gradient and 1 represents the end.
-         * @param color value representing the color of the stop.
-         */
-        addColorStop(offset: number, color: string): void;
-    }
-    /**
-     * Class used to abstract a text measurement
-     */
-    export interface ITextMetrics {
-        /**
-         * Text width.
-         */
-        readonly width: number;
-    }
-    /**
-     * Class used to abstract canvas rendering
-     */
-    export interface ICanvasRenderingContext {
-        /**
-         * Defines the type of corners where two lines meet. Possible values: round, bevel, miter (default).
-         */
-        lineJoin: string;
-        /**
-         * Miter limit ratio. Default 10.
-         */
-        miterLimit: number;
-        /**
-         * Font setting. Default value 10px sans-serif.
-         */
-        font: string;
-        /**
-         * Color or style to use for the lines around shapes. Default #000 (black).
-         */
-        strokeStyle: string;
-        /**
-         * Color or style to use inside shapes. Default #000 (black).
-         */
-        fillStyle: string | ICanvasGradient;
-        /**
-         * Alpha value that is applied to shapes and images before they are composited onto the canvas. Default 1.0 (opaque).
-         */
-        globalAlpha: number;
-        /**
-         * Color of the shadow. Default: fully-transparent black.
-         */
-        shadowColor: string;
-        /**
-         * Specifies the blurring effect. Default: 0.
-         */
-        shadowBlur: number;
-        /**
-         * Horizontal distance the shadow will be offset. Default: 0.
-         */
-        shadowOffsetX: number;
-        /**
-         * Vertical distance the shadow will be offset. Default: 0.
-         */
-        shadowOffsetY: number;
-        /**
-         * Width of lines. Default 1.0.
-         */
-        lineWidth: number;
-        /**
-         * canvas is a read-only reference to ICanvas.
-         */
-        readonly canvas: ICanvas;
-        /**
-         * Sets all pixels in the rectangle defined by starting point (x, y) and size (width, height) to transparent black, erasing any previously drawn content.
-         * @param x The x-axis coordinate of the rectangle's starting point.
-         * @param y The y-axis coordinate of the rectangle's starting point.
-         * @param width The rectangle's width. Positive values are to the right, and negative to the left.
-         * @param height The rectangle's height. Positive values are down, and negative are up.
-         */
-        clearRect(x: number, y: number, width: number, height: number): void;
-        /**
-         * Saves the current drawing style state using a stack so you can revert any change you make to it using restore().
-         */
-        save(): void;
-        /**
-         * Restores the drawing style state to the last element on the 'state stack' saved by save().
-         */
-        restore(): void;
-        /**
-         * Draws a filled rectangle at (x, y) position whose size is determined by width and height.
-         * @param x The x-axis coordinate of the rectangle's starting point.
-         * @param y The y-axis coordinate of the rectangle's starting point.
-         * @param width The rectangle's width. Positive values are to the right, and negative to the left.
-         * @param height The rectangle's height. Positive values are down, and negative are up.
-         */
-        fillRect(x: number, y: number, width: number, height: number): void;
-        /**
-         * Adds a scaling transformation to the canvas units by x horizontally and by y vertically.
-         * @param x Scaling factor in the horizontal direction. A negative value flips pixels across the vertical axis. A value of 1 results in no horizontal scaling.
-         * @param y Scaling factor in the vertical direction. A negative value flips pixels across the horizontal axis. A value of 1 results in no vertical scaling.
-         */
-        scale(x: number, y: number): void;
-        /**
-         * Adds a rotation to the transformation matrix. The angle argument represents a clockwise rotation angle and is expressed in radians.
-         * @param angle The rotation angle, clockwise in radians. You can use degree * Math.PI / 180 to calculate a radian from a degree.
-         */
-        rotate(angle: number): void;
-        /**
-         * Adds a translation transformation by moving the canvas and its origin x horzontally and y vertically on the grid.
-         * @param x Distance to move in the horizontal direction. Positive values are to the right, and negative to the left.
-         * @param y Distance to move in the vertical direction. Positive values are down, and negative are up.
-         */
-        translate(x: number, y: number): void;
-        /**
-         * Paints a rectangle which has a starting point at (x, y) and has a w width and an h height onto the canvas, using the current stroke style.
-         * @param x The x-axis coordinate of the rectangle's starting point.
-         * @param y The y-axis coordinate of the rectangle's starting point.
-         * @param width The rectangle's width. Positive values are to the right, and negative to the left.
-         * @param height The rectangle's height. Positive values are down, and negative are up.
-         */
-        strokeRect(x: number, y: number, width: number, height: number): void;
-        /**
-         * Creates a path for a rectangle at position (x, y) with a size that is determined by width and height.
-         * @param x The x-axis coordinate of the rectangle's starting point.
-         * @param y The y-axis coordinate of the rectangle's starting point.
-         * @param width The rectangle's width. Positive values are to the right, and negative to the left.
-         * @param height The rectangle's height. Positive values are down, and negative are up.
-         */
-        rect(x: number, y: number, width: number, height: number): void;
-        /**
-         * Creates a clipping path from the current sub-paths. Everything drawn after clip() is called appears inside the clipping path only.
-         */
-        clip(): void;
-        /**
-         * Paints data from the given ImageData object onto the bitmap. If a dirty rectangle is provided, only the pixels from that rectangle are painted.
-         * @param imageData An ImageData object containing the array of pixel values.
-         * @param dx Horizontal position (x coordinate) at which to place the image data in the destination canvas.
-         * @param dy Vertical position (y coordinate) at which to place the image data in the destination canvas.
-         */
-        putImageData(imageData: ImageData, dx: number, dy: number): void;
-        /**
-         * Adds a circular arc to the current path.
-         * @param x The horizontal coordinate of the arc's center.
-         * @param y The vertical coordinate of the arc's center.
-         * @param radius The arc's radius. Must be positive.
-         * @param startAngle The angle at which the arc starts in radians, measured from the positive x-axis.
-         * @param endAngle The angle at which the arc ends in radians, measured from the positive x-axis.
-         * @param anticlockwise An optional Boolean. If true, draws the arc counter-clockwise between the start and end angles. The default is false (clockwise).
-         */
-        arc(x: number, y: number, radius: number, startAngle: number, endAngle: number, anticlockwise?: boolean): void;
-        /**
-         * Starts a new path by emptying the list of sub-paths. Call this method when you want to create a new path.
-         */
-        beginPath(): void;
-        /**
-         * Causes the point of the pen to move back to the start of the current sub-path. It tries to draw a straight line from the current point to the start.
-         * If the shape has already been closed or has only one point, this function does nothing.
-         */
-        closePath(): void;
-        /**
-         * Moves the starting point of a new sub-path to the (x, y) coordinates.
-         * @param x The x-axis (horizontal) coordinate of the point.
-         * @param y The y-axis (vertical) coordinate of the point.
-         */
-        moveTo(x: number, y: number): void;
-        /**
-         * Connects the last point in the current sub-path to the specified (x, y) coordinates with a straight line.
-         * @param x The x-axis coordinate of the line's end point.
-         * @param y The y-axis coordinate of the line's end point.
-         */
-        lineTo(x: number, y: number): void;
-        /**
-         * Adds a quadratic Bézier curve to the current path.
-         * @param cpx The x-axis coordinate of the control point.
-         * @param cpy The y-axis coordinate of the control point.
-         * @param x The x-axis coordinate of the end point.
-         * @param y The y-axis coordinate of the end point.
-         */
-        quadraticCurveTo(cpx: number, cpy: number, x: number, y: number): void;
-        /**
-         * Returns a TextMetrics object.
-         * @param text The text String to measure.
-         * @returns ITextMetrics A ITextMetrics object.
-         */
-        measureText(text: string): ITextMetrics;
-        /**
-         * Strokes the current sub-paths with the current stroke style.
-         */
-        stroke(): void;
-        /**
-         * Fills the current sub-paths with the current fill style.
-         */
-        fill(): void;
-        /**
-         * Draws the specified image. This method is available in multiple formats, providing a great deal of flexibility in its use.
-         * @param image An element to draw into the context.
-         * @param sx The x-axis coordinate of the top left corner of the sub-rectangle of the source image to draw into the destination context.
-         * @param sy The y-axis coordinate of the top left corner of the sub-rectangle of the source image to draw into the destination context.
-         * @param sWidth The width of the sub-rectangle of the source image to draw into the destination context. If not specified, the entire rectangle from the coordinates specified by sx and sy to the bottom-right corner of the image is used.
-         * @param sHeight The height of the sub-rectangle of the source image to draw into the destination context.
-         * @param dx The x-axis coordinate in the destination canvas at which to place the top-left corner of the source image.
-         * @param dy The y-axis coordinate in the destination canvas at which to place the top-left corner of the source image.
-         * @param dWidth The width to draw the image in the destination canvas. This allows scaling of the drawn image. If not specified, the image is not scaled in width when drawn.
-         * @param dHeight The height to draw the image in the destination canvas. This allows scaling of the drawn image. If not specified, the image is not scaled in height when drawn.
-         */
-        drawImage(image: any, sx: number, sy: number, sWidth: number, sHeight: number, dx: number, dy: number, dWidth: number, dHeight: number): void;
-        /**
-         * Draws the specified image. This method is available in multiple formats, providing a great deal of flexibility in its use.
-         * @param image An element to draw into the context.
-         * @param dx The x-axis coordinate in the destination canvas at which to place the top-left corner of the source image.
-         * @param dy The y-axis coordinate in the destination canvas at which to place the top-left corner of the source image.
-         * @param dWidth The width to draw the image in the destination canvas. This allows scaling of the drawn image. If not specified, the image is not scaled in width when drawn.
-         * @param dHeight The height to draw the image in the destination canvas. This allows scaling of the drawn image. If not specified, the image is not scaled in height when drawn.
-         */
-        drawImage(image: any, dx: number, dy: number, dWidth: number, dHeight: number): void;
-        /**
-         * Draws the specified image. This method is available in multiple formats, providing a great deal of flexibility in its use.
-         * @param image An element to draw into the context.
-         * @param dx The x-axis coordinate in the destination canvas at which to place the top-left corner of the source image.
-         * @param dy The y-axis coordinate in the destination canvas at which to place the top-left corner of the source image.
-         */
-        drawImage(image: any, dx: number, dy: number): void;
-        /**
-         * Returns an ImageData object representing the underlying pixel data for the area of the canvas denoted by the rectangle which starts at (sx, sy) and has an sw width and sh height.
-         * @param sx The x-axis coordinate of the top-left corner of the rectangle from which the ImageData will be extracted.
-         * @param sy The y-axis coordinate of the top-left corner of the rectangle from which the ImageData will be extracted.
-         * @param sw The width of the rectangle from which the ImageData will be extracted. Positive values are to the right, and negative to the left.
-         * @param sh The height of the rectangle from which the ImageData will be extracted. Positive values are down, and negative are up.
-         * @returns ImageData An ImageData object containing the image data for the rectangle of the canvas specified.
-         */
-        getImageData(sx: number, sy: number, sw: number, sh: number): ImageData;
-        /**
-         * Sets the current line dash pattern.
-         * @param segments An Array of numbers that specify distances to alternately draw a line and a gap (in coordinate space units).
-         */
-        setLineDash(segments: Array<number>): void;
-        /**
-         * Draws (fills) a given text at the given (x, y) position.
-         * @param text A String specifying the text string to render into the context. The text is rendered using the settings specified by font, textAlign, textBaseline, and direction.
-         * @param x The x-axis coordinate of the point at which to begin drawing the text, in pixels.
-         * @param y The y-axis coordinate of the baseline on which to begin drawing the text, in pixels.
-         * @param maxWidth The maximum number of pixels wide the text may be once rendered. If not specified, there is no limit to the width of the text.
-         */
-        fillText(text: string, x: number, y: number, maxWidth?: number): void;
-        /**
-         * Draws (strokes) a given text at the given (x, y) position.
-         * @param text A String specifying the text string to render into the context. The text is rendered using the settings specified by font, textAlign, textBaseline, and direction.
-         * @param x The x-axis coordinate of the point at which to begin drawing the text, in pixels.
-         * @param y The y-axis coordinate of the baseline on which to begin drawing the text, in pixels.
-         * @param maxWidth The maximum number of pixels wide the text may be once rendered. If not specified, there is no limit to the width of the text.
-         */
-        strokeText(text: string, x: number, y: number, maxWidth?: number): void;
-        /**
-         * Creates a linear gradient along the line given by the coordinates represented by the parameters.
-         * @param x0 The x-axis coordinate of the start point.
-         * @param y0 The y-axis coordinate of the start point.
-         * @param x1 The x-axis coordinate of the end point.
-         * @param y1 The y-axis coordinate of the end point.
-         * @returns ICanvasGradient A linear ICanvasGradient initialized with the specified line.
-         */
-        createLinearGradient(x0: number, y0: number, x1: number, y1: number): ICanvasGradient;
-        /**
-         * Resets the current transform to matrix composed with a, b, c, d, e, f.
-         * @param a Horizontal scaling. A value of 1 results in no scaling.
-         * @param b Vertical skewing.
-         * @param c Horizontal skewing.
-         * @param d Vertical scaling. A value of 1 results in no scaling.
-         * @param e Horizontal translation (moving).
-         * @param f Vertical translation (moving).
-         */
-        setTransform(a: number, b: number, c: number, d: number, e: number, f: number): void;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export interface HardwareTextureWrapper {
-        underlyingResource: any;
-        set(hardwareTexture: any): void;
-        setUsage(textureSource: number, generateMipMaps: boolean, isCube: boolean, width: number, height: number): void;
-        reset(): void;
-        release(): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * This represents the required contract to create a new type of texture loader.
-     */
-    export interface IInternalTextureLoader {
-        /**
-         * Defines whether the loader supports cascade loading the different faces.
-         */
-        supportCascades: boolean;
-        /**
-         * This returns if the loader support the current file information.
-         * @param extension defines the file extension of the file being loaded
-         * @param mimeType defines the optional mime type of the file being loaded
-         * @returns true if the loader can load the specified file
-         */
-        canLoad(extension: string, mimeType?: string): boolean;
-        /**
-         * Uploads the cube texture data to the WebGL texture. It has already been bound.
-         * @param data contains the texture data
-         * @param texture defines the BabylonJS internal texture
-         * @param createPolynomials will be true if polynomials have been requested
-         * @param onLoad defines the callback to trigger once the texture is ready
-         * @param onError defines the callback to trigger in case of error
-         * @param options options to be passed to the loader
-         */
-        loadCubeData(data: ArrayBufferView | ArrayBufferView[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>, options?: any): void;
-        /**
-         * Uploads the 2D texture data to the WebGL texture. It has already been bound once in the callback.
-         * @param data contains the texture data
-         * @param texture defines the BabylonJS internal texture
-         * @param callback defines the method to call once ready to upload
-         * @param options options to be passed to the loader
-         */
-        loadData(data: ArrayBufferView, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed?: boolean) => void, options?: any): void;
     }
 }
 declare module BABYLON {
@@ -5503,7 +5474,6 @@ declare module BABYLON {
         set onDispose(callback: () => void);
         protected _scene: Nullable<Scene>;
         /** @hidden */
-        _texture: Nullable<InternalTexture>;
         private _uid;
         /**
          * Define if the texture is preventing a material to render or not.
@@ -6625,11 +6595,182 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /**
+     * Define options used to create a render target texture
+     */
+    export class RenderTargetCreationOptions {
+        /**
+         * Specifies if mipmaps must be created. If undefined, the value from generateMipMaps is taken instead
+         */
+        createMipMaps?: boolean;
+        /**
+         * Specifies if mipmaps must be generated
+         */
+        generateMipMaps?: boolean;
+        /** Specifies whether or not a depth should be allocated in the texture (true by default) */
+        generateDepthBuffer?: boolean;
+        /** Specifies whether or not a stencil should be allocated in the texture (false by default)*/
+        generateStencilBuffer?: boolean;
+        /** Defines texture type (int by default) */
+        type?: number;
+        /** Defines sampling mode (trilinear by default) */
+        samplingMode?: number;
+        /** Defines format (RGBA by default) */
+        format?: number;
+        /** Defines sample count (1 by default) */
+        samples?: number;
+        /** Texture creation flags */
+        creationFlags?: number;
+    }
+}
+declare module BABYLON {
     /** @hidden */
     export var postprocessVertexShader: {
         name: string;
         shader: string;
     };
+}
+declare module BABYLON {
+    /**
+     * Wrapper around a render target (either single or multi textures)
+     */
+    export class RenderTargetWrapper {
+        protected _engine: ThinEngine;
+        private _size;
+        private _isCube;
+        private _isMulti;
+        private _textures;
+        /** @hidden */
+        _attachments: Nullable<number[]>;
+        /** @hidden */
+        _generateStencilBuffer: boolean;
+        /** @hidden */
+        _generateDepthBuffer: boolean;
+        /** @hidden */
+        _depthStencilTexture: Nullable<InternalTexture>;
+        /** @hidden */
+        _depthStencilTextureWithStencil: boolean;
+        /**
+         * Defines if the render target wrapper is for a cube texture or if false a 2d texture
+         */
+        get isCube(): boolean;
+        /**
+         * Defines if the render target wrapper is for a single or multi target render wrapper
+         */
+        get isMulti(): boolean;
+        /**
+         * Defines if the render target wrapper is for a single or an array of textures
+         */
+        get is2DArray(): boolean;
+        /**
+         * Gets the size of the render target wrapper (used for cubes, as width=height in this case)
+         */
+        get size(): number;
+        /**
+         * Gets the width of the render target wrapper
+         */
+        get width(): number;
+        /**
+         * Gets the height of the render target wrapper
+         */
+        get height(): number;
+        /**
+         * Gets the number of layers of the render target wrapper (only used if is2DArray is true)
+         */
+        get layers(): number;
+        /**
+         * Gets the render texture. If this is a multi render target, gets the first texture
+         */
+        get texture(): Nullable<InternalTexture>;
+        /**
+         * Gets the list of render textures. If we are not in a multi render target, the list will be null (use the texture getter instead)
+         */
+        get textures(): Nullable<InternalTexture[]>;
+        /**
+         * Gets the sample count of the render target
+         */
+        get samples(): number;
+        /**
+         * Sets the sample count of the render target
+         * @param value sample count
+         * @param initializeBuffers If set to true, the engine will make an initializing call to drawBuffers (only used when isMulti=true).
+         * @param force true to force calling the update sample count engine function even if the current sample count is equal to value
+         * @returns the sample count that has been set
+         */
+        setSamples(value: number, initializeBuffers?: boolean, force?: boolean): number;
+        /**
+         * Initializes the render target wrapper
+         * @param isMulti true if the wrapper is a multi render target
+         * @param isCube true if the wrapper should render to a cube texture
+         * @param size size of the render target (width/height/layers)
+         * @param engine engine used to create the render target
+         */
+        constructor(isMulti: boolean, isCube: boolean, size: RenderTargetTextureSize, engine: ThinEngine);
+        /**
+         * Sets the render target texture(s)
+         * @param textures texture(s) to set
+         */
+        setTextures(textures: Nullable<InternalTexture> | Nullable<InternalTexture[]>): void;
+        /**
+         * Set a texture in the textures array
+         * @param texture the texture to set
+         * @param index the index in the textures array to set
+         */
+        setTexture(texture: InternalTexture, index?: number): void;
+        /**
+         * Creates the depth/stencil texture
+         * @param comparisonFunction Comparison function to use for the texture
+         * @param bilinearFiltering true if bilinear filtering should be used when sampling the texture
+         * @param generateStencil true if the stencil aspect should also be created
+         * @param samples sample count to use when creating the texture
+         * @returns the depth/stencil created texture
+         */
+        createDepthStencilTexture(comparisonFunction?: number, bilinearFiltering?: boolean, generateStencil?: boolean, samples?: number): InternalTexture;
+        /** @hidden */
+        _swapAndDie(target: Nullable<InternalTexture>): void;
+        protected _cloneRenderTargetWrapper(): Nullable<RenderTargetWrapper>;
+        protected _swapRenderTargetWrapper(target: RenderTargetWrapper): void;
+        /** @hidden */
+        _rebuild(): void;
+        /**
+         * Releases the internal render textures
+         */
+        releaseTextures(): void;
+        /**
+         * Disposes the whole render target wrapper
+         * @param disposeOnlyFramebuffers true if only the frame buffers should be released (used for the WebGL engine). If false, all the textures will also be released
+         */
+        dispose(disposeOnlyFramebuffers?: boolean): void;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
+        private _context;
+        _framebuffer: Nullable<WebGLFramebuffer>;
+        _depthStencilBuffer: Nullable<WebGLRenderbuffer>;
+        _MSAAFramebuffer: Nullable<WebGLFramebuffer>;
+        _colorTextureArray: Nullable<WebGLTexture>;
+        _depthStencilTextureArray: Nullable<WebGLTexture>;
+        constructor(isMulti: boolean, isCube: boolean, size: RenderTargetTextureSize, engine: ThinEngine, context: WebGLRenderingContext);
+        protected _cloneRenderTargetWrapper(): Nullable<RenderTargetWrapper>;
+        protected _swapRenderTargetWrapper(target: WebGLRenderTargetWrapper): void;
+        dispose(disposeOnlyFramebuffers?: boolean): void;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class WebGLHardwareTexture implements HardwareTextureWrapper {
+        private _webGLTexture;
+        private _context;
+        _MSAARenderBuffer: Nullable<WebGLRenderbuffer>;
+        get underlyingResource(): Nullable<WebGLTexture>;
+        constructor(existingTexture: Nullable<WebGLTexture> | undefined, context: WebGLRenderingContext);
+        setUsage(textureSource: number, generateMipMaps: boolean, isCube: boolean, width: number, height: number): void;
+        set(hardwareTexture: WebGLTexture): void;
+        reset(): void;
+        release(): void;
+    }
 }
 declare module BABYLON {
     /**
@@ -6645,19 +6786,30 @@ declare module BABYLON {
              * Creates a new render target texture
              * @param size defines the size of the texture
              * @param options defines the options used to create the texture
-             * @returns a new render target texture stored in an InternalTexture
+             * @returns a new render target wrapper ready to render texture
              */
-            createRenderTargetTexture(size: RenderTargetTextureSize, options: boolean | RenderTargetCreationOptions): InternalTexture;
+            createRenderTargetTexture(size: RenderTargetTextureSize, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper;
             /**
              * Creates a depth stencil texture.
              * This is only available in WebGL 2 or with the depth texture extension available.
              * @param size The size of face edge in the texture.
              * @param options The options defining the texture.
+             * @param rtWrapper The render target wrapper for which the depth/stencil texture must be created
              * @returns The texture
              */
-            createDepthStencilTexture(size: RenderTargetTextureSize, options: DepthTextureCreationOptions): InternalTexture;
+            createDepthStencilTexture(size: RenderTargetTextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture;
+            /**
+             * Updates the sample count of a render target texture
+             * @see https://doc.babylonjs.com/features/webgl2#multisample-render-targets
+             * @param rtWrapper defines the render target wrapper to update
+             * @param samples defines the sample count to set
+             * @returns the effective sample count (could be 0 if multisample render targets are not supported)
+             */
+            updateRenderTargetTextureSampleCount(rtWrapper: Nullable<RenderTargetWrapper>, samples: number): number;
             /** @hidden */
-            _createDepthStencilTexture(size: RenderTargetTextureSize, options: DepthTextureCreationOptions): InternalTexture;
+            _createDepthStencilTexture(size: RenderTargetTextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture;
+            /** @hidden */
+            _createHardwareRenderTargetWrapper(isMulti: boolean, isCube: boolean, size: RenderTargetTextureSize): RenderTargetWrapper;
         }
 }
 declare module BABYLON {
@@ -12505,12 +12657,12 @@ declare module BABYLON {
 declare module BABYLON {
         interface ThinEngine {
             /**
-             * Creates a new render target cube texture
+             * Creates a new render target cube wrapper
              * @param size defines the size of the texture
              * @param options defines the options used to create the texture
-             * @returns a new render target cube texture stored in an InternalTexture
+             * @returns a new render target cube wrapper
              */
-            createRenderTargetCubeTexture(size: number, options?: Partial<RenderTargetCreationOptions>): InternalTexture;
+            createRenderTargetCubeTexture(size: number, options?: Partial<RenderTargetCreationOptions>): RenderTargetWrapper;
         }
 }
 declare module BABYLON {
@@ -12583,6 +12735,7 @@ declare module BABYLON {
         private _cachedDefines;
         private _contentUpdateId;
         private _contentData;
+        private _rtWrapper;
         /**
          * Instantiates a new procedural texture.
          * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes called 'refMaps' or 'sampler' images.
@@ -17654,29 +17807,29 @@ declare module BABYLON {
             /**
              * Unbind a list of render target textures from the webGL context
              * This is used only when drawBuffer extension or webGL2 are active
-             * @param textures defines the render target textures to unbind
+             * @param rtWrapper defines the render target wrapper to unbind
              * @param disableGenerateMipMaps defines a boolean indicating that mipmaps must not be generated
              * @param onBeforeUnbind defines a function which will be called before the effective unbind
              */
-            unBindMultiColorAttachmentFramebuffer(textures: InternalTexture[], disableGenerateMipMaps: boolean, onBeforeUnbind?: () => void): void;
+            unBindMultiColorAttachmentFramebuffer(rtWrapper: RenderTargetWrapper, disableGenerateMipMaps: boolean, onBeforeUnbind?: () => void): void;
             /**
              * Create a multi render target texture
              * @see https://doc.babylonjs.com/features/webgl2#multiple-render-target
              * @param size defines the size of the texture
              * @param options defines the creation options
              * @param initializeBuffers if set to true, the engine will make an initializing call of drawBuffers
-             * @returns the cube texture as an InternalTexture
+             * @returns a new render target wrapper ready to render textures
              */
-            createMultipleRenderTarget(size: any, options: IMultiRenderTargetOptions, initializeBuffers?: boolean): InternalTexture[];
+            createMultipleRenderTarget(size: RenderTargetTextureSize, options: IMultiRenderTargetOptions, initializeBuffers?: boolean): RenderTargetWrapper;
             /**
              * Update the sample count for a given multiple render target texture
              * @see https://doc.babylonjs.com/features/webgl2#multisample-render-targets
-             * @param textures defines the textures to update
+             * @param rtWrapper defines the render target wrapper to update
              * @param samples defines the sample count to set
              * @param initializeBuffers if set to true, the engine will make an initializing call of drawBuffers
              * @returns the effective sample count (could be 0 if multisample render targets are not supported)
              */
-            updateMultipleRenderTargetTextureSampleCount(textures: Nullable<InternalTexture[]>, samples: number, initializeBuffers?: boolean): number;
+            updateMultipleRenderTargetTextureSampleCount(rtWrapper: Nullable<RenderTargetWrapper>, samples: number, initializeBuffers?: boolean): number;
             /**
              * Select a subsets of attachments to draw to.
              * @param attachments gl attachments
@@ -17753,7 +17906,6 @@ declare module BABYLON {
      * just one color from a single pass.
      */
     export class MultiRenderTarget extends RenderTargetTexture {
-        private _internalTextures;
         private _textures;
         private _multiRenderTargetOptions;
         private _count;
@@ -23359,14 +23511,14 @@ declare module BABYLON {
              * Creates a new multiview render target
              * @param width defines the width of the texture
              * @param height defines the height of the texture
-             * @returns the created multiview texture
+             * @returns the created multiview render target wrapper
              */
-            createMultiviewRenderTargetTexture(width: number, height: number): InternalTexture;
+            createMultiviewRenderTargetTexture(width: number, height: number): RenderTargetWrapper;
             /**
-             * Binds a multiview framebuffer to be drawn to
-             * @param multiviewTexture texture to bind
+             * Binds a multiview render target wrapper to be drawn to
+             * @param multiviewTexture render target wrapper to bind
              */
-            bindMultiviewFramebuffer(multiviewTexture: InternalTexture): void;
+            bindMultiviewFramebuffer(multiviewTexture: RenderTargetWrapper): void;
         }
         interface Camera {
             /**
@@ -23851,7 +24003,7 @@ declare module BABYLON {
         * Internal, reference to the location where this postprocess was output to. (Typically the texture on the next postprocess in the chain)
         * @hidden
         */
-        _outputTexture: Nullable<InternalTexture>;
+        _outputTexture: Nullable<RenderTargetWrapper>;
         /**
         * Sampling mode used by the shader
         * See https://doc.babylonjs.com/classes/3.1/texture
@@ -23929,7 +24081,7 @@ declare module BABYLON {
         * Smart array of input and output textures for the post process.
         * @hidden
         */
-        _textures: SmartArray<InternalTexture>;
+        _textures: SmartArray<RenderTargetWrapper>;
         /**
         * Smart array of input and output textures for the post process.
         * @hidden
@@ -23951,7 +24103,7 @@ declare module BABYLON {
         private _shareOutputWithPostProcess;
         private _texelSize;
         /** @hidden */
-        _forcedOutputTexture: Nullable<InternalTexture>;
+        _forcedOutputTexture: Nullable<RenderTargetWrapper>;
         /**
         * Prepass configuration in case this post process needs a texture from prepass
         * @hidden
@@ -24011,8 +24163,8 @@ declare module BABYLON {
         * The input texture for this post process and the output texture of the previous post process. When added to a pipeline the previous post process will
         * render it's output into this texture and this texture will be used as textureSampler in the fragment shader of this post process.
         */
-        get inputTexture(): InternalTexture;
-        set inputTexture(value: InternalTexture);
+        get inputTexture(): RenderTargetWrapper;
+        set inputTexture(value: RenderTargetWrapper);
         /**
         * Since inputTexture should always be defined, if we previously manually set `inputTexture`,
         * the only way to unset it is to use this function to restore its internal state
@@ -24101,9 +24253,9 @@ declare module BABYLON {
          * @param camera The camera that will be used in the post process. This camera will be used when calling onActivateObservable.
          * @param sourceTexture The source texture to be inspected to get the width and height if not specified in the post process constructor. (default: null)
          * @param forceDepthStencil If true, a depth and stencil buffer will be generated. (default: false)
-         * @returns The target texture that was bound to be written to.
+         * @returns The render target wrapper that was bound to be written to.
          */
-        activate(camera: Nullable<Camera>, sourceTexture?: Nullable<InternalTexture>, forceDepthStencil?: boolean): InternalTexture;
+        activate(camera: Nullable<Camera>, sourceTexture?: Nullable<InternalTexture>, forceDepthStencil?: boolean): RenderTargetWrapper;
         /**
          * If the post process is supported.
          */
@@ -37839,23 +37991,23 @@ declare module BABYLON {
          * Manually render a set of post processes to a texture.
          * Please note, the frame buffer won't be unbound after the call in case you have more render to do.
          * @param postProcesses An array of post processes to be run.
-         * @param targetTexture The target texture to render to.
+         * @param targetTexture The render target wrapper to render to.
          * @param forceFullscreenViewport force gl.viewport to be full screen eg. 0,0,textureWidth,textureHeight
          * @param faceIndex defines the face to render to if a cubemap is defined as the target
          * @param lodLevel defines which lod of the texture to render to
          * @param doNotBindFrambuffer If set to true, assumes that the framebuffer has been bound previously
          */
-        directRender(postProcesses: PostProcess[], targetTexture?: Nullable<InternalTexture>, forceFullscreenViewport?: boolean, faceIndex?: number, lodLevel?: number, doNotBindFrambuffer?: boolean): void;
+        directRender(postProcesses: PostProcess[], targetTexture?: Nullable<RenderTargetWrapper>, forceFullscreenViewport?: boolean, faceIndex?: number, lodLevel?: number, doNotBindFrambuffer?: boolean): void;
         /**
          * Finalize the result of the output of the postprocesses.
          * @param doNotPresent If true the result will not be displayed to the screen.
-         * @param targetTexture The target texture to render to.
+         * @param targetTexture The render target wrapper to render to.
          * @param faceIndex The index of the face to bind the target texture to.
          * @param postProcesses The array of post processes to render.
          * @param forceFullscreenViewport force gl.viewport to be full screen eg. 0,0,textureWidth,textureHeight (default: false)
          * @hidden
          */
-        _finalizeFrame(doNotPresent?: boolean, targetTexture?: InternalTexture, faceIndex?: number, postProcesses?: Array<PostProcess>, forceFullscreenViewport?: boolean): void;
+        _finalizeFrame(doNotPresent?: boolean, targetTexture?: RenderTargetWrapper, faceIndex?: number, postProcesses?: Array<PostProcess>, forceFullscreenViewport?: boolean): void;
         /**
          * Disposes of the post process manager.
          */
@@ -37992,11 +38144,7 @@ declare module BABYLON {
          * Define the clear color of the Render Target if it should be different from the scene.
          */
         clearColor: Color4;
-        protected _size: number | {
-            width: number;
-            height: number;
-            layers?: number;
-        };
+        protected _size: RenderTargetTextureSize;
         protected _initialSizeParameter: number | {
             width: number;
             height: number;
@@ -38022,10 +38170,15 @@ declare module BABYLON {
         protected _samples: number;
         protected _renderTargetOptions: RenderTargetCreationOptions;
         private _canRescale;
+        protected _renderTarget: Nullable<RenderTargetWrapper>;
         /**
          * Gets render target creation options that were used.
          */
         get renderTargetOptions(): RenderTargetCreationOptions;
+        /**
+         * Gets the render target wrapper associated with this render target
+         */
+        get renderTarget(): Nullable<RenderTargetWrapper>;
         protected _onRatioRescale(): void;
         /**
          * Gets or sets the center of the bounding box associated with the texture (when in cube mode)
@@ -38221,6 +38374,10 @@ declare module BABYLON {
          *  This will remove the attached framebuffer objects. The texture will not be able to be used as render target anymore
          */
         disposeFramebufferObjects(): void;
+        /**
+         * Release and destroy the underlying lower level texture aka internalTexture.
+         */
+        releaseInternalTexture(): void;
         /**
          * Dispose the texture and release its associated resources.
          */
@@ -39167,19 +39324,6 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    /** @hidden */
-    export class WebGLHardwareTexture implements HardwareTextureWrapper {
-        private _webGLTexture;
-        private _context;
-        get underlyingResource(): Nullable<WebGLTexture>;
-        constructor(existingTexture: Nullable<WebGLTexture> | undefined, context: WebGLRenderingContext);
-        setUsage(textureSource: number, generateMipMaps: boolean, isCube: boolean, width: number, height: number): void;
-        set(hardwareTexture: WebGLTexture): void;
-        reset(): void;
-        release(): void;
-    }
-}
-declare module BABYLON {
     /**
      * @hidden
      **/
@@ -39739,6 +39883,8 @@ declare module BABYLON {
         /** @hidden */
         _internalTexturesCache: InternalTexture[];
         /** @hidden */
+        _renderTargetWrapperCache: RenderTargetWrapper[];
+        /** @hidden */
         protected _activeChannel: number;
         private _currentTextureChannel;
         /** @hidden */
@@ -39763,7 +39909,7 @@ declare module BABYLON {
         /** @hidden */
         protected _cachedEffectForVertexBuffers: Nullable<Effect>;
         /** @hidden */
-        _currentRenderTarget: Nullable<InternalTexture>;
+        _currentRenderTarget: Nullable<RenderTargetWrapper>;
         private _uintIndicesCurrentlySet;
         protected _currentBoundBuffer: Nullable<WebGLBuffer>[];
         /** @hidden */
@@ -39899,6 +40045,7 @@ declare module BABYLON {
         /** @hidden */
         _getShaderProcessingContext(): Nullable<ShaderProcessingContext>;
         private _rebuildInternalTextures;
+        private _rebuildRenderTargetWrappers;
         private _rebuildEffects;
         /**
          * Gets a boolean indicating if all created effects are ready
@@ -40056,7 +40203,7 @@ declare module BABYLON {
         setSize(width: number, height: number, forceSetSize?: boolean): boolean;
         /**
          * Binds the frame buffer to the specified texture.
-         * @param texture The texture to render to or null for the default canvas
+         * @param texture The render target wrapper to render to
          * @param faceIndex The face of the texture to render to in case of cube texture
          * @param requiredWidth The width of the target to render to
          * @param requiredHeight The height of the target to render to
@@ -40064,7 +40211,7 @@ declare module BABYLON {
          * @param lodLevel defines the lod level to bind to the frame buffer
          * @param layer defines the 2d array index to bind to frame buffer to
          */
-        bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean, lodLevel?: number, layer?: number): void;
+        bindFramebuffer(texture: RenderTargetWrapper, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean, lodLevel?: number, layer?: number): void;
         /**
          * Set various states to the webGL context
          * @param culling defines culling state: true to enable culling, false to disable it
@@ -40096,11 +40243,11 @@ declare module BABYLON {
         generateMipmaps(texture: InternalTexture): void;
         /**
          * Unbind the current render target texture from the webGL context
-         * @param texture defines the render target texture to unbind
+         * @param texture defines the render target wrapper to unbind
          * @param disableGenerateMipMaps defines a boolean indicating that mipmaps must not be generated
          * @param onBeforeUnbind defines a function which will be called before the effective unbind
          */
-        unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps?: boolean, onBeforeUnbind?: () => void): void;
+        unBindFramebuffer(texture: RenderTargetWrapper, disableGenerateMipMaps?: boolean, onBeforeUnbind?: () => void): void;
         /**
          * Force a webGL flush (ie. a flush of all waiting webGL commands)
          */
@@ -40679,11 +40826,12 @@ declare module BABYLON {
         private _prepareWebGLTexture;
         /** @hidden */
         _setupFramebufferDepthAttachments(generateStencilBuffer: boolean, generateDepthBuffer: boolean, width: number, height: number, samples?: number): Nullable<WebGLRenderbuffer>;
-        private _getDepthStencilBuffer;
         /** @hidden */
-        _releaseFramebufferObjects(texture: InternalTexture): void;
+        _createRenderBuffer(width: number, height: number, samples: number, internalFormat: number, msInternalFormat: number, attachment: number, unbindBuffer?: boolean): Nullable<WebGLRenderbuffer>;
         /** @hidden */
         _releaseTexture(texture: InternalTexture): void;
+        /** @hidden */
+        _releaseRenderTargetWrapper(rtWrapper: RenderTargetWrapper): void;
         protected _deleteTexture(texture: Nullable<WebGLTexture>): void;
         protected _setProgram(program: WebGLProgram): void;
         protected _boundUniforms: {
@@ -41083,13 +41231,17 @@ declare module BABYLON {
          */
         Raw2DArray = 11,
         /**
-         * Texture content is a depth texture
+         * Texture content is a depth/stencil texture
          */
-        Depth = 12,
+        DepthStencil = 12,
         /**
          * Texture data comes from a raw cube data encoded with RGBD
          */
-        CubeRawRGBD = 13
+        CubeRawRGBD = 13,
+        /**
+         * Texture content is a depth texture
+         */
+        Depth = 14
     }
     /**
      * Class used to store data associated with WebGL texture data for the engine
@@ -41201,18 +41353,6 @@ declare module BABYLON {
         /** @hidden */
         _workingContext: Nullable<ICanvasRenderingContext>;
         /** @hidden */
-        _framebuffer: Nullable<WebGLFramebuffer>;
-        /** @hidden */
-        _depthStencilBuffer: Nullable<WebGLRenderbuffer>;
-        /** @hidden */
-        _MSAAFramebuffer: Nullable<WebGLFramebuffer>;
-        /** @hidden */
-        _MSAARenderBuffer: Nullable<WebGLRenderbuffer>;
-        /** @hidden */
-        _attachments: Nullable<number[]>;
-        /** @hidden */
-        _textureArray: Nullable<InternalTexture[]>;
-        /** @hidden */
         _cachedCoordinatesMode: Nullable<number>;
         /** @hidden */
         _cachedWrapU: Nullable<number>;
@@ -41227,10 +41367,6 @@ declare module BABYLON {
         /** @hidden */
         _compression: Nullable<string>;
         /** @hidden */
-        _generateStencilBuffer: boolean;
-        /** @hidden */
-        _generateDepthBuffer: boolean;
-        /** @hidden */
         _comparisonFunction: number;
         /** @hidden */
         _sphericalPolynomial: Nullable<SphericalPolynomial>;
@@ -41243,13 +41379,7 @@ declare module BABYLON {
         /** @hidden */
         _lodGenerationOffset: number;
         /** @hidden */
-        _depthStencilTexture: Nullable<InternalTexture>;
-        /** @hidden */
         _useSRGBBuffer: boolean;
-        /** @hidden */
-        _colorTextureArray: Nullable<WebGLTexture>;
-        /** @hidden */
-        _depthStencilTextureArray: Nullable<WebGLTexture>;
         /** @hidden */
         _lodTextureHigh: Nullable<BaseTexture>;
         /** @hidden */
@@ -42808,7 +42938,10 @@ declare module BABYLON {
         _deletePipelineContext(pipelineContext: IPipelineContext): void;
         createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext, transformFeedbackVaryings?: Nullable<string[]>): WebGLProgram;
         protected _createShaderProgram(pipelineContext: WebGLPipelineContext, vertexShader: WebGLShader, fragmentShader: WebGLShader, context: WebGLRenderingContext, transformFeedbackVaryings?: Nullable<string[]>): WebGLProgram;
+        /** @hidden */
         _releaseTexture(texture: InternalTexture): void;
+        /** @hidden */
+        _releaseRenderTargetWrapper(rtWrapper: RenderTargetWrapper): void;
         /**
          * @hidden
          * Rescales a texture
@@ -42832,14 +42965,6 @@ declare module BABYLON {
         private _measureFps;
         /** @hidden */
         _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement | ImageBitmap, faceIndex?: number, lod?: number): void;
-        /**
-         * Updates the sample count of a render target texture
-         * @see https://doc.babylonjs.com/features/webgl2#multisample-render-targets
-         * @param texture defines the texture to update
-         * @param samples defines the sample count to set
-         * @returns the effective sample count (could be 0 if multisample render targets are not supported)
-         */
-        updateRenderTargetTextureSampleCount(texture: Nullable<InternalTexture>, samples: number): number;
         /**
          * Updates a depth texture Comparison Mode and Function.
          * If the comparison Function is equal to 0, the mode will be set to none.
@@ -43917,7 +44042,7 @@ declare module BABYLON {
         private _isUsingFirefox;
         private _activeTouchIds;
         private _rollingTouchId;
-        private _pointerWheelClearObserver;
+        private _pointerInputClearObserver;
         private _gamepadConnectedEvent;
         private _gamepadDisconnectedEvent;
         /** Max number of keycodes */
@@ -47013,8 +47138,11 @@ declare module BABYLON {
          * Marked as protected to allow sharing between prototype extensions, but disallow access at toplevel.
          */
         protected _perfCollector: Nullable<PerformanceViewerCollector>;
-        /** @hidden */
-        _getPerfCollector(): PerformanceViewerCollector;
+        /**
+         * This method gets the performance collector belonging to the scene, which is generally shared with the inspector.
+         * @returns the perf collector belonging to the scene.
+         */
+        getPerfCollector(): PerformanceViewerCollector;
         private _computePressureObserver;
         /**
          * An event triggered when the cpu usage/speed meets certain thresholds.
@@ -53337,6 +53465,7 @@ declare module BABYLON {
     export class WebXRExperienceHelper implements IDisposable {
         private scene;
         private _nonVRCamera;
+        private _attachedToElement;
         private _spectatorCamera;
         private _originalSceneAutoClear;
         private _supported;
@@ -60450,13 +60579,19 @@ declare module BABYLON {
          * @returns a InternalTexture for assignment back into BABYLON.Texture
          */
         createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string): InternalTexture;
+        /** @hidden */
+        _createHardwareRenderTargetWrapper(isMulti: boolean, isCube: boolean, size: number | {
+            width: number;
+            height: number;
+            layers?: number;
+        }): RenderTargetWrapper;
         /**
-         * Creates a new render target texture
+         * Creates a new render target wrapper
          * @param size defines the size of the texture
          * @param options defines the options used to create the texture
-         * @returns a new render target texture stored in an InternalTexture
+         * @returns a new render target wrapper
          */
-        createRenderTargetTexture(size: any, options: boolean | RenderTargetCreationOptions): InternalTexture;
+        createRenderTargetTexture(size: any, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper;
         /**
          * Update the sampling mode of a given texture
          * @param samplingMode defines the required sampling mode
@@ -60465,21 +60600,21 @@ declare module BABYLON {
         updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void;
         /**
          * Binds the frame buffer to the specified texture.
-         * @param texture The texture to render to or null for the default canvas
+         * @param rtWrapper The render target wrapper to render to
          * @param faceIndex The face of the texture to render to in case of cube texture
          * @param requiredWidth The width of the target to render to
          * @param requiredHeight The height of the target to render to
          * @param forceFullscreenViewport Forces the viewport to be the entire texture/screen if true
          * @param lodLevel defines le lod level to bind to the frame buffer
          */
-        bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void;
+        bindFramebuffer(rtWrapper: RenderTargetWrapper, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void;
         /**
          * Unbind the current render target texture from the webGL context
-         * @param texture defines the render target texture to unbind
+         * @param rtWrapper defines the render target wrapper to unbind
          * @param disableGenerateMipMaps defines a boolean indicating that mipmaps must not be generated
          * @param onBeforeUnbind defines a function which will be called before the effective unbind
          */
-        unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps?: boolean, onBeforeUnbind?: () => void): void;
+        unBindFramebuffer(rtWrapper: RenderTargetWrapper, disableGenerateMipMaps?: boolean, onBeforeUnbind?: () => void): void;
         /**
          * Creates a dynamic vertex buffer
          * @param vertices the data for the dynamic vertex buffer
@@ -62842,7 +62977,7 @@ declare module BABYLON {
         private _endMainRenderPass;
         /**
          * Binds the frame buffer to the specified texture.
-         * @param texture The texture to render to or null for the default canvas
+         * @param texture The render target wrapper to render to
          * @param faceIndex The face of the texture to render to in case of cube texture
          * @param requiredWidth The width of the target to render to
          * @param requiredHeight The height of the target to render to
@@ -62850,14 +62985,14 @@ declare module BABYLON {
          * @param lodLevel defines the lod level to bind to the frame buffer
          * @param layer defines the 2d array index to bind to frame buffer to
          */
-        bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean, lodLevel?: number, layer?: number): void;
+        bindFramebuffer(texture: RenderTargetWrapper, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean, lodLevel?: number, layer?: number): void;
         /**
          * Unbind the current render target texture from the WebGPU context
-         * @param texture defines the render target texture to unbind
+         * @param texture defines the render target wrapper to unbind
          * @param disableGenerateMipMaps defines a boolean indicating that mipmaps must not be generated
          * @param onBeforeUnbind defines a function which will be called before the effective unbind
          */
-        unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps?: boolean, onBeforeUnbind?: () => void): void;
+        unBindFramebuffer(texture: RenderTargetWrapper, disableGenerateMipMaps?: boolean, onBeforeUnbind?: () => void): void;
         /**
          * Unbind the current render target and bind the default framebuffer
          */
@@ -63019,6 +63154,33 @@ declare module BABYLON {
         }
 }
 declare module BABYLON {
+    /** @hidden */
+    export var rgbdDecodePixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /**
+     * Class used to host RGBD texture specific utilities
+     */
+    export class RGBDTextureTools {
+        /**
+         * Expand the RGBD Texture from RGBD to Half Float if possible.
+         * @param texture the texture to expand.
+         */
+        static ExpandRGBDTexture(texture: Texture): void;
+        /**
+         * Encode the texture to RGBD if possible.
+         * @param internalTexture the texture to encode
+         * @param scene the scene hosting the texture
+         * @param outputTextureType type of the texture in which the encoding is performed
+         * @return a promise with the internalTexture having its texture replaced by the result of the processing
+         */
+        static EncodeTextureToRGBD(internalTexture: InternalTexture, scene: Scene, outputTextureType?: number): Promise<InternalTexture>;
+    }
+}
+declare module BABYLON {
     /**
      * CubeMap information grouping all the data for each faces as well as the cubemap size.
      */
@@ -63146,33 +63308,6 @@ declare module BABYLON {
         name: string;
         shader: string;
     };
-}
-declare module BABYLON {
-    /** @hidden */
-    export var rgbdDecodePixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /**
-     * Class used to host RGBD texture specific utilities
-     */
-    export class RGBDTextureTools {
-        /**
-         * Expand the RGBD Texture from RGBD to Half Float if possible.
-         * @param texture the texture to expand.
-         */
-        static ExpandRGBDTexture(texture: Texture): void;
-        /**
-         * Encode the texture to RGBD if possible.
-         * @param internalTexture the texture to encode
-         * @param scene the scene hosting the texture
-         * @param outputTextureType type of the texture in which the encoding is performed
-         * @return a promise with the internalTexture having its texture replaced by the result of the processing
-         */
-        static EncodeTextureToRGBD(internalTexture: InternalTexture, scene: Scene, outputTextureType?: number): Promise<InternalTexture>;
-    }
 }
 declare module BABYLON {
     /**
@@ -63614,8 +63749,7 @@ declare module BABYLON {
          * @returns a InternalTexture for assignment back into BABYLON.Texture
          */
         createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string, loaderOptions?: any, creationFlags?: number, useSRGBBuffer?: boolean): InternalTexture;
-        _createDepthStencilTexture(size: RenderTargetTextureSize, options: DepthTextureCreationOptions): InternalTexture;
-        _releaseFramebufferObjects(texture: InternalTexture): void;
+        _createDepthStencilTexture(size: RenderTargetTextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture;
         /**
          * Engine abstraction for createImageBitmap
          * @param image source for image
@@ -63650,13 +63784,15 @@ declare module BABYLON {
          * @returns the cube texture as an InternalTexture
          */
         createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad?: Nullable<(data?: any) => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, forcedExtension?: any, createPolynomials?: boolean, lodScale?: number, lodOffset?: number, fallback?: Nullable<InternalTexture>, loaderOptions?: any, useSRGBBuffer?: boolean): InternalTexture;
+        /** @hidden */
+        _createHardwareRenderTargetWrapper(isMulti: boolean, isCube: boolean, size: RenderTargetTextureSize): RenderTargetWrapper;
         createRenderTargetTexture(size: number | {
             width: number;
             height: number;
-        }, options: boolean | RenderTargetCreationOptions): InternalTexture;
+        }, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper;
         updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void;
-        bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void;
-        unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps?: boolean, onBeforeUnbind?: () => void): void;
+        bindFramebuffer(texture: RenderTargetWrapper, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void;
+        unBindFramebuffer(texture: RenderTargetWrapper, disableGenerateMipMaps?: boolean, onBeforeUnbind?: () => void): void;
         createDynamicVertexBuffer(data: DataArray): DataBuffer;
         updateDynamicIndexBuffer(indexBuffer: DataBuffer, indices: IndicesArray, offset?: number): void;
         /**
@@ -70676,7 +70812,7 @@ declare module BABYLON {
          * @param effectWrapper the effect to renderer
          * @param outputTexture texture to draw to, if null it will render to the screen.
          */
-        render(effectWrapper: EffectWrapper, outputTexture?: Nullable<InternalTexture | RenderTargetTexture>): void;
+        render(effectWrapper: EffectWrapper, outputTexture?: Nullable<RenderTargetWrapper | RenderTargetTexture>): void;
         /**
          * Disposes of the effect renderer
          */
