@@ -4001,7 +4001,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             const rtt = camera.outputRenderTarget;
             if (rtt.onClearObservable.hasObservers()) {
                 rtt.onClearObservable.notifyObservers(this._engine);
-            } else {
+            } else if (!rtt.skipInitialClear) {
                 this._engine.clear(rtt.clearColor || this.clearColor, !rtt._cleared, true, true);
                 rtt._cleared = true;
             }
@@ -4139,7 +4139,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         // Finalize frame
         if (this.postProcessManager && !camera._multiviewTexture) {
             // if the camera has an output render target, render the post process to the render target
-            const texture = camera.outputRenderTarget ? camera.outputRenderTarget.getInternalTexture()! : undefined;
+            const texture = camera.outputRenderTarget ? camera.outputRenderTarget.renderTarget! : undefined;
             this.postProcessManager._finalizeFrame(camera.isIntermediate, texture);
         }
 
@@ -4937,9 +4937,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Force the value of meshUnderPointer
      * @param mesh defines the mesh to use
      * @param pointerId optional pointer id when using more than one pointer
+     * @param pickResult optional pickingInfo data used to find mesh
      */
-    public setPointerOverMesh(mesh: Nullable<AbstractMesh>, pointerId?: number): void {
-        this._inputManager.setPointerOverMesh(mesh, pointerId);
+    public setPointerOverMesh(mesh: Nullable<AbstractMesh>, pointerId?: number, pickResult?: Nullable<PickingInfo>): void {
+        this._inputManager.setPointerOverMesh(mesh, pointerId, pickResult);
     }
 
     /**
@@ -5211,8 +5212,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     protected _perfCollector: Nullable<PerformanceViewerCollector> = null;
 
-    /** @hidden */
-    public _getPerfCollector(): PerformanceViewerCollector {
+    /**
+     * This method gets the performance collector belonging to the scene, which is generally shared with the inspector.
+     * @returns the perf collector belonging to the scene.
+     */
+    public getPerfCollector(): PerformanceViewerCollector {
         throw _DevTools.WarnImport("performanceViewerSceneExtension");
     }
 

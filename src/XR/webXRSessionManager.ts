@@ -8,6 +8,7 @@ import { WebXRRenderTarget } from "./webXRTypes";
 import { WebXRManagedOutputCanvas, WebXRManagedOutputCanvasOptions } from "./webXRManagedOutputCanvas";
 import { Engine } from "../Engines/engine";
 import { Color4 } from "../Maths/math.color";
+import { WebGLRenderTargetWrapper } from "../Engines/WebGL/webGLRenderTargetWrapper";
 
 interface IRenderTargetProvider {
     getRenderTargetForEye(eye: XREye): Nullable<RenderTargetTexture>;
@@ -376,6 +377,55 @@ export class WebXRSessionManager implements IDisposable {
         return this._xrNavigator.xr.native ?? false;
     }
 
+    /**
+     * The current frame rate as reported by the device
+     */
+    public get currentFrameRate(): number | undefined {
+        return this.session?.frameRate;
+    }
+
+    /**
+     * A list of supported frame rates (only available in-session!
+     */
+    public get supportedFrameRates(): Float32Array | undefined {
+        return this.session?.supportedFrameRates;
+    }
+
+    /**
+     * Set the framerate of the session.
+     * @param rate the new framerate. This value needs to be in the supportedFrameRates array
+     * @returns a promise that resolves once the framerate has been set
+     */
+    public updateTargetFrameRate(rate: number): Promise<void> {
+        return this.session.updateTargetFrameRate(rate);
+    }
+
+    /**
+     * Check if fixed foveation is supported on this device
+     */
+    public get isFixedFoveationSupported(): boolean {
+        return !!this._baseLayer?.fixedFoveation !== null;
+    }
+
+    /**
+     * Get the fixed foveation currently set, as specified by the webxr specs
+     * If this returns null, then fixed foveation is not supported
+     */
+    public get fixedFoveation(): Nullable<number> {
+        return this._baseLayer?.fixedFoveation !== undefined ? this._baseLayer.fixedFoveation : null;
+    }
+
+    /**
+     * Set the fixed foveation to the specified value, as specified by the webxr specs
+     * This value will be normalized to be between 0 and 1, 1 being max foveation, 0 being no foveation
+     */
+    public set fixedFoveation(value: Nullable<number>) {
+        const val = Math.max(0, Math.min(1, value || 0));
+        if (this._baseLayer?.fixedFoveation !== undefined) {
+            this._baseLayer.fixedFoveation = val;
+        }
+    }
+
     private _createRenderTargetTexture(width: number, height: number, framebuffer: WebGLFramebuffer): RenderTargetTexture {
         if (!this._engine) {
             throw new Error("Engine is disposed");
@@ -385,10 +435,12 @@ export class WebXRSessionManager implements IDisposable {
         const internalTexture = new InternalTexture(this._engine, InternalTextureSource.Unknown, true);
         internalTexture.width = width;
         internalTexture.height = height;
-        internalTexture._framebuffer = framebuffer;
 
         // Create render target texture from the internal texture
-        const renderTargetTexture = new RenderTargetTexture("XR renderTargetTexture", { width: width, height: height }, this.scene, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true);
+        const renderTargetTexture = new RenderTargetTexture("XR renderTargetTexture", { width: width, height: height }, this.scene);
+        const webglRTWrapper = renderTargetTexture.renderTarget as WebGLRenderTargetWrapper;
+        webglRTWrapper.setTexture(internalTexture, 0);
+        webglRTWrapper._framebuffer = framebuffer;
         renderTargetTexture._texture = internalTexture;
         renderTargetTexture.disableRescaling();
         if (this._sessionMode === 'immersive-ar') {

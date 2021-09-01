@@ -412,7 +412,6 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
     protected _scene: Nullable<Scene> = null;
 
     /** @hidden */
-    public _texture: Nullable<InternalTexture> = null;
     private _uid: Nullable<string> = null;
 
     /**
@@ -425,6 +424,29 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
 
     /** @hidden */
     public _parentContainer: Nullable<AbstractScene> = null;
+
+    protected _loadingError: boolean = false;
+    protected _errorObject?: {
+        message?: string;
+        exception?: any;
+    };
+
+    /**
+     * Was there any loading error?
+     */
+    public get loadingError(): boolean {
+        return this._loadingError;
+    }
+
+    /**
+     * If a loading error occurred this object will be populated with information about the error.
+     */
+    public get errorObject(): {
+        message?: string;
+        exception?: any;
+    } | undefined {
+        return this._errorObject;
+    }
 
     /**
      * Instantiates a new BaseTexture.
@@ -497,10 +519,10 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
 
     /**
      * Get if the texture is ready to be consumed (either it is ready or it is not blocking)
-     * @returns true if ready or not blocking
+     * @returns true if ready, not blocking or if there was an error loading the texture
      */
     public isReadyOrNotBlocking(): boolean {
-        return !this.isBlocking || this.isReady();
+        return !this.isBlocking || this.isReady() || this.loadingError;
     }
 
     /**

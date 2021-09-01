@@ -48,6 +48,8 @@ declare type Observer<T> = import("../Misc/observable").Observer<T>;
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
 declare type Texture = import("../Materials/Textures/texture").Texture;
+declare type RenderTargetWrapper = import("./renderTargetWrapper").RenderTargetWrapper;
+declare type WebGLRenderTargetWrapper = import("./WebGL/webGLRenderTargetWrapper").WebGLRenderTargetWrapper;
 
 /**
  * Defines the interface used by objects working like Scene
@@ -179,14 +181,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-alpha.38";
+        return "babylonjs@5.0.0-alpha.40";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-alpha.38";
+        return "5.0.0-alpha.40";
     }
 
     /**
@@ -444,6 +446,8 @@ export class ThinEngine {
     /** @hidden */
     public _internalTexturesCache = new Array<InternalTexture>();
     /** @hidden */
+    public _renderTargetWrapperCache = new Array<RenderTargetWrapper>();
+    /** @hidden */
     protected _activeChannel = 0;
     private _currentTextureChannel = -1;
     /** @hidden */
@@ -464,7 +468,7 @@ export class ThinEngine {
     /** @hidden */
     protected _cachedEffectForVertexBuffers: Nullable<Effect>;
     /** @hidden */
-    public _currentRenderTarget: Nullable<InternalTexture>;
+    public _currentRenderTarget: Nullable<RenderTargetWrapper>;
     private _uintIndicesCurrentlySet = false;
     protected _currentBoundBuffer = new Array<Nullable<WebGLBuffer>>();
     /** @hidden */
@@ -742,7 +746,7 @@ export class ThinEngine {
                     let currentUA = navigator.userAgent;
                     this.hostInformation.isMobile = currentUA.indexOf("Mobile") !== -1 ||
                         // Needed for iOS 13+ detection on iPad (inspired by solution from https://stackoverflow.com/questions/9038625/detect-if-device-is-ios)
-                        (currentUA.indexOf("Mac") !== -1 && "ontouchend" in document);
+                        (currentUA.indexOf("Mac") !== -1 && document !== undefined && "ontouchend" in document);
                 };
 
                 // Set initial isMobile value
@@ -922,6 +926,8 @@ export class ThinEngine {
             this._rebuildComputeEffects?.();
             // Rebuild textures
             this._rebuildInternalTextures();
+            // Rebuild textures
+            this._rebuildRenderTargetWrappers();
             // Rebuild buffers
             this._rebuildBuffers();
             // Cache
@@ -967,6 +973,14 @@ export class ThinEngine {
 
         for (var internalTexture of currentState) {
             internalTexture._rebuild();
+        }
+    }
+
+    private _rebuildRenderTargetWrappers(): void {
+        let currentState = this._renderTargetWrapperCache.slice(); // Do a copy because the rebuild will add proxies
+
+        for (const renderTargetWrapper of currentState) {
+            renderTargetWrapper._rebuild();
         }
     }
 
@@ -1023,7 +1037,7 @@ export class ThinEngine {
             maxVaryingVectors: this._gl.getParameter(this._gl.MAX_VARYING_VECTORS),
             maxFragmentUniformVectors: this._gl.getParameter(this._gl.MAX_FRAGMENT_UNIFORM_VECTORS),
             maxVertexUniformVectors: this._gl.getParameter(this._gl.MAX_VERTEX_UNIFORM_VECTORS),
-            parallelShaderCompile: this._gl.getExtension('KHR_parallel_shader_compile'),
+            parallelShaderCompile: this._gl.getExtension('KHR_parallel_shader_compile') || undefined,
             standardDerivatives: this._webGLVersion > 1 || (this._gl.getExtension('OES_standard_derivatives') !== null),
             maxAnisotropy: 1,
             astc: this._gl.getExtension('WEBGL_compressed_texture_astc') || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_astc'),
@@ -1043,7 +1057,7 @@ export class ThinEngine {
             canUseTimestampForTimerQuery: false,
             drawBuffersExtension: false,
             maxMSAASamples: 1,
-            colorBufferFloat: this._webGLVersion > 1 && this._gl.getExtension('EXT_color_buffer_float'),
+            colorBufferFloat: !!(this._webGLVersion > 1 && this._gl.getExtension('EXT_color_buffer_float')),
             textureFloat: (this._webGLVersion > 1 || this._gl.getExtension('OES_texture_float')) ? true : false,
             textureHalfFloat: (this._webGLVersion > 1 || this._gl.getExtension('OES_texture_half_float')) ? true : false,
             textureHalfFloatRender: false,
@@ -1633,15 +1647,16 @@ export class ThinEngine {
     }
 
     /**
-     * Binds a texture to a framebuffer on a specific attachment
-     * @param framebuffer The framebuffer
+     * Binds a texture to a render target on a specific attachment
+     * @param renderTarget The renderTarget
      * @param texture The texture to bind to the framebuffer
      * @param attachmentIndex Index of the attachment
      * @param faceIndex The face of the texture to render to in case of cube texture
      * @param lodLevel defines the lod level to bind to the frame buffer
      */
-    public bindTextureFramebuffer(framebuffer: WebGLFramebuffer, texture: InternalTexture, attachmentIndex: number = 0, faceIndex: number = -1, lodLevel: number = 0) {
+    public bindTextureRenderTarget(renderTarget: RenderTargetWrapper, texture: InternalTexture, attachmentIndex: number = 0, faceIndex: number = -1, lodLevel: number = 0) {
         const gl = this._gl;
+        const framebuffer = (renderTarget as WebGLRenderTargetWrapper)._framebuffer;
 
         const currentFB = this._currentFramebuffer;
         this._bindUnboundFramebuffer(framebuffer);
@@ -1653,12 +1668,16 @@ export class ThinEngine {
     }
 
     /**
-     * Binds a depth buffer (as a renderbuffer) onto a framebuffer
-     * @param framebuffer The framebuffer
-     * @param depthbuffer The depth buffer
+     * Shares a single depth buffer between 2 RenderTargetWrapper.
+     * Depth buffer of renderTarget0 is used, and gets bound to renderTarget1.
+     * *
+     * @param renderTarget0
+     * @param renderTarget1
      */
-    public bindDepthBuffer(framebuffer: WebGLFramebuffer, depthbuffer: WebGLRenderbuffer) {
+    public shareDepth(renderTarget0: RenderTargetWrapper, renderTarget1: RenderTargetWrapper) {
         const gl = this._gl;
+        const depthbuffer = (renderTarget0 as WebGLRenderTargetWrapper)._depthStencilBuffer;
+        const framebuffer = (renderTarget1 as WebGLRenderTargetWrapper)._framebuffer;
 
         this._bindUnboundFramebuffer(framebuffer);
         gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthbuffer);
@@ -1667,7 +1686,7 @@ export class ThinEngine {
 
     /**
      * Binds the frame buffer to the specified texture.
-     * @param texture The texture to render to or null for the default canvas
+     * @param texture The render target wrapper to render to
      * @param faceIndex The face of the texture to render to in case of cube texture
      * @param requiredWidth The width of the target to render to
      * @param requiredHeight The height of the target to render to
@@ -1675,24 +1694,26 @@ export class ThinEngine {
      * @param lodLevel defines the lod level to bind to the frame buffer
      * @param layer defines the 2d array index to bind to frame buffer to
      */
-    public bindFramebuffer(texture: InternalTexture, faceIndex: number = 0, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean, lodLevel = 0, layer = 0): void {
+    public bindFramebuffer(texture: RenderTargetWrapper, faceIndex: number = 0, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean, lodLevel = 0, layer = 0): void {
+        const webglRTWrapper = texture as WebGLRenderTargetWrapper;
+
         if (this._currentRenderTarget) {
             this.unBindFramebuffer(this._currentRenderTarget);
         }
         this._currentRenderTarget = texture;
-        this._bindUnboundFramebuffer(texture._MSAAFramebuffer ? texture._MSAAFramebuffer : texture._framebuffer);
+        this._bindUnboundFramebuffer(webglRTWrapper._MSAAFramebuffer ? webglRTWrapper._MSAAFramebuffer : webglRTWrapper._framebuffer);
 
         const gl = this._gl;
         if (texture.is2DArray) {
-            gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, texture._hardwareTexture?.underlyingResource, lodLevel, layer);
+            gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, texture.texture!._hardwareTexture?.underlyingResource, lodLevel, layer);
         }
         else if (texture.isCube) {
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture._hardwareTexture?.underlyingResource, lodLevel);
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture.texture!._hardwareTexture?.underlyingResource, lodLevel);
         }
 
         const depthStencilTexture = texture._depthStencilTexture;
         if (depthStencilTexture) {
-            const attachment = (depthStencilTexture._generateStencilBuffer) ? gl.DEPTH_STENCIL_ATTACHMENT : gl.DEPTH_ATTACHMENT;
+            const attachment = (texture._depthStencilTextureWithStencil) ? gl.DEPTH_STENCIL_ATTACHMENT : gl.DEPTH_ATTACHMENT;
             if (texture.is2DArray) {
                 gl.framebufferTextureLayer(gl.FRAMEBUFFER, attachment, depthStencilTexture._hardwareTexture?.underlyingResource, lodLevel, layer);
             }
@@ -1800,36 +1821,38 @@ export class ThinEngine {
 
     /**
      * Unbind the current render target texture from the webGL context
-     * @param texture defines the render target texture to unbind
+     * @param texture defines the render target wrapper to unbind
      * @param disableGenerateMipMaps defines a boolean indicating that mipmaps must not be generated
      * @param onBeforeUnbind defines a function which will be called before the effective unbind
      */
-    public unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
+    public unBindFramebuffer(texture: RenderTargetWrapper, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
+        const webglRTWrapper = texture as WebGLRenderTargetWrapper;
+
         this._currentRenderTarget = null;
 
         // If MSAA, we need to bitblt back to main texture
         var gl = this._gl;
-        if (texture._MSAAFramebuffer) {
-            if (texture._textureArray) {
+        if (webglRTWrapper._MSAAFramebuffer) {
+            if (texture.isMulti) {
                 // This texture is part of a MRT texture, we need to treat all attachments
-                this.unBindMultiColorAttachmentFramebuffer(texture._textureArray!, disableGenerateMipMaps, onBeforeUnbind);
+                this.unBindMultiColorAttachmentFramebuffer(texture, disableGenerateMipMaps, onBeforeUnbind);
                 return;
             }
-            gl.bindFramebuffer(gl.READ_FRAMEBUFFER, texture._MSAAFramebuffer);
-            gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, texture._framebuffer);
+            gl.bindFramebuffer(gl.READ_FRAMEBUFFER, webglRTWrapper._MSAAFramebuffer);
+            gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, webglRTWrapper._framebuffer);
             gl.blitFramebuffer(0, 0, texture.width, texture.height,
                 0, 0, texture.width, texture.height,
                 gl.COLOR_BUFFER_BIT, gl.NEAREST);
         }
 
-        if (texture.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
-            this.generateMipmaps(texture);
+        if (texture.texture?.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
+            this.generateMipmaps(texture.texture);
         }
 
         if (onBeforeUnbind) {
-            if (texture._MSAAFramebuffer) {
+            if (webglRTWrapper._MSAAFramebuffer) {
                 // Bind the correct framebuffer
-                this._bindUnboundFramebuffer(texture._framebuffer);
+                this._bindUnboundFramebuffer(webglRTWrapper._framebuffer);
             }
             onBeforeUnbind();
         }
@@ -3858,8 +3881,6 @@ export class ThinEngine {
         internalTexture.isReady = true;
         internalTexture.samples = samples;
         internalTexture.generateMipMaps = false;
-        internalTexture._generateDepthBuffer = true;
-        internalTexture._generateStencilBuffer = generateStencil;
         internalTexture.samplingMode = bilinearFiltering ? Constants.TEXTURE_BILINEAR_SAMPLINGMODE : Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         internalTexture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
         internalTexture._comparisonFunction = comparisonFunction;
@@ -4058,7 +4079,7 @@ export class ThinEngine {
 
         // Create the depth/stencil buffer
         if (generateStencilBuffer && generateDepthBuffer) {
-            return this._getDepthStencilBuffer(width, height, samples, gl.DEPTH_STENCIL, gl.DEPTH24_STENCIL8, gl.DEPTH_STENCIL_ATTACHMENT);
+            return this._createRenderBuffer(width, height, samples, gl.DEPTH_STENCIL, gl.DEPTH24_STENCIL8, gl.DEPTH_STENCIL_ATTACHMENT);
         }
         if (generateDepthBuffer) {
             let depthFormat = gl.DEPTH_COMPONENT16;
@@ -4066,20 +4087,21 @@ export class ThinEngine {
                 depthFormat = gl.DEPTH_COMPONENT32F;
             }
 
-            return this._getDepthStencilBuffer(width, height, samples, depthFormat, depthFormat, gl.DEPTH_ATTACHMENT);
+            return this._createRenderBuffer(width, height, samples, depthFormat, depthFormat, gl.DEPTH_ATTACHMENT);
         }
         if (generateStencilBuffer) {
-            return this._getDepthStencilBuffer(width, height, samples, gl.STENCIL_INDEX8, gl.STENCIL_INDEX8, gl.STENCIL_ATTACHMENT);
+            return this._createRenderBuffer(width, height, samples, gl.STENCIL_INDEX8, gl.STENCIL_INDEX8, gl.STENCIL_ATTACHMENT);
         }
 
         return null;
     }
 
-    private _getDepthStencilBuffer = (width: number, height: number, samples: number, internalFormat: number, msInternalFormat: number, attachment: number) => {
-        var gl = this._gl;
-        const depthStencilBuffer = gl.createRenderbuffer();
+    /** @hidden */
+    public _createRenderBuffer(width: number, height: number, samples: number, internalFormat: number, msInternalFormat: number, attachment: number, unbindBuffer = true): Nullable<WebGLRenderbuffer> {
+        const gl = this._gl;
+        const renderBuffer = gl.createRenderbuffer();
 
-        gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
+        gl.bindRenderbuffer(gl.RENDERBUFFER, renderBuffer);
 
         if (samples > 1 && gl.renderbufferStorageMultisample) {
             gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, msInternalFormat, width, height);
@@ -4087,42 +4109,17 @@ export class ThinEngine {
             gl.renderbufferStorage(gl.RENDERBUFFER, internalFormat, width, height);
         }
 
-        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, attachment, gl.RENDERBUFFER, depthStencilBuffer);
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, attachment, gl.RENDERBUFFER, renderBuffer);
 
-        gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-
-        return depthStencilBuffer;
-    }
-
-    /** @hidden */
-    public _releaseFramebufferObjects(texture: InternalTexture): void {
-        var gl = this._gl;
-
-        if (texture._framebuffer) {
-            gl.deleteFramebuffer(texture._framebuffer);
-            texture._framebuffer = null;
+        if (unbindBuffer) {
+            gl.bindRenderbuffer(gl.RENDERBUFFER, null);
         }
 
-        if (texture._depthStencilBuffer) {
-            gl.deleteRenderbuffer(texture._depthStencilBuffer);
-            texture._depthStencilBuffer = null;
-        }
-
-        if (texture._MSAAFramebuffer) {
-            gl.deleteFramebuffer(texture._MSAAFramebuffer);
-            texture._MSAAFramebuffer = null;
-        }
-
-        if (texture._MSAARenderBuffer) {
-            gl.deleteRenderbuffer(texture._MSAARenderBuffer);
-            texture._MSAARenderBuffer = null;
-        }
+        return renderBuffer;
     }
 
     /** @hidden */
     public _releaseTexture(texture: InternalTexture): void {
-        this._releaseFramebufferObjects(texture);
-
         this._deleteTexture(texture._hardwareTexture?.underlyingResource);
 
         // Unbind channels
@@ -4148,8 +4145,14 @@ export class ThinEngine {
         if (texture._irradianceTexture) {
             texture._irradianceTexture.dispose();
         }
+    }
 
-        texture._depthStencilTexture?.dispose();
+    /** @hidden */
+    public _releaseRenderTargetWrapper(rtWrapper: RenderTargetWrapper): void {
+        const index = this._renderTargetWrapperCache.indexOf(rtWrapper);
+        if (index !== -1) {
+            this._renderTargetWrapperCache.splice(index, 1);
+        }
     }
 
     protected _deleteTexture(texture: Nullable<WebGLTexture>): void {
@@ -4206,7 +4209,9 @@ export class ThinEngine {
             this._activateCurrentTexture();
 
             if (texture && texture.isMultiview) {
-                this._gl.bindTexture(target, texture ? texture._colorTextureArray : null);
+                //this._gl.bindTexture(target, texture ? texture._colorTextureArray : null);
+                console.error(target, texture);
+                throw "_bindTextureDirectly called with a multiview texture!";
             } else {
                 this._gl.bindTexture(target, texture?._hardwareTexture?.underlyingResource ?? null);
             }

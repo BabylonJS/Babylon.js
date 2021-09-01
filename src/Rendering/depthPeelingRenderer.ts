@@ -17,6 +17,7 @@ import { Logger } from "../Misc/logger";
 import "../Shaders/postprocess.vertex";
 import "../Shaders/oitFinal.fragment";
 import "../Shaders/oitBackBlend.fragment";
+import { WebGLRenderTargetWrapper } from "../Engines/WebGL/webGLRenderTargetWrapper";
 
 class DepthPeelingEffectConfiguration implements PrePassEffectConfiguration {
     /**
@@ -111,12 +112,12 @@ export class DepthPeelingRenderer {
             const frontColorTexture = this._engine._createInternalTexture(size, optionsArray[1]);
             const backColorTexture = this._engine._createInternalTexture(size, optionsArray[1]);
 
-            this._depthMrts[i].setInternalTexture(depthTexture, 0, 0);
-            this._depthMrts[i].setInternalTexture(frontColorTexture, 1, 1);
-            this._depthMrts[i].setInternalTexture(backColorTexture, 2, 2);
+            this._depthMrts[i].setInternalTexture(depthTexture, 0);
+            this._depthMrts[i].setInternalTexture(frontColorTexture, 1);
+            this._depthMrts[i].setInternalTexture(backColorTexture, 2);
 
-            this._colorMrts[i].setInternalTexture(frontColorTexture, 0, 0);
-            this._colorMrts[i].setInternalTexture(backColorTexture, 1, 1);
+            this._colorMrts[i].setInternalTexture(frontColorTexture, 0);
+            this._colorMrts[i].setInternalTexture(backColorTexture, 1);
 
             this._thinTextures.push(new ThinTexture(depthTexture), new ThinTexture(frontColorTexture), new ThinTexture(backColorTexture));
         }
@@ -167,7 +168,7 @@ export class DepthPeelingRenderer {
 
         if (this._blendBackTexture !== prePassTexture) {
             this._blendBackTexture = prePassTexture;
-            this._blendBackMrt.setInternalTexture(this._blendBackTexture, 0, 0);
+            this._blendBackMrt.setInternalTexture(this._blendBackTexture, 0);
 
             if (this._thinTextures[6]) {
                 this._thinTextures[6].dispose();
@@ -175,13 +176,13 @@ export class DepthPeelingRenderer {
             this._thinTextures[6] = new ThinTexture(this._blendBackTexture);
 
             // We bind the opaque depth buffer to correctly occlude fragments that are behind opaque geometry
-            const depthStencilBuffer = prePassTexture._depthStencilBuffer;
+            const depthStencilBuffer = (prePassRenderer.defaultRT.renderTarget! as WebGLRenderTargetWrapper)._depthStencilBuffer;
             const framebuffer = this._depthMrts[0]._getFrameBuffer();
             if (!depthStencilBuffer || !framebuffer) {
                 return false;
             }
 
-            this._engine.bindDepthBuffer(framebuffer, depthStencilBuffer);
+            this._engine.shareDepth(prePassRenderer.defaultRT.renderTarget!, this._depthMrts[0].renderTarget!);
         }
 
         return true;

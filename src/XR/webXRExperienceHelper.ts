@@ -16,7 +16,8 @@ import { Quaternion, Vector3 } from "../Maths/math.vector";
  */
 export class WebXRExperienceHelper implements IDisposable {
     private _nonVRCamera: Nullable<Camera> = null;
-    private _spectatorCamera: UniversalCamera;
+    private _attachedToElement: boolean = false;
+    private _spectatorCamera: Nullable<UniversalCamera> = null;
     private _originalSceneAutoClear = true;
     private _supported = false;
     private _spectatorMode = false;
@@ -88,7 +89,7 @@ export class WebXRExperienceHelper implements IDisposable {
         this.onStateChangedObservable.clear();
         this.onInitialXRPoseSetObservable.clear();
         this.sessionManager.dispose();
-        this._spectatorCamera.dispose();
+        this._spectatorCamera?.dispose();
         if (this._nonVRCamera) {
             this.scene.activeCamera = this._nonVRCamera;
         }
@@ -131,6 +132,8 @@ export class WebXRExperienceHelper implements IDisposable {
             // Cache pre xr scene settings
             this._originalSceneAutoClear = this.scene.autoClear;
             this._nonVRCamera = this.scene.activeCamera;
+            this._attachedToElement = !!(this._nonVRCamera?.inputs.attachedToElement);
+            this._nonVRCamera?.detachControl();
 
             this.scene.activeCamera = this.camera;
             // do not compensate when AR session is used
@@ -151,6 +154,9 @@ export class WebXRExperienceHelper implements IDisposable {
                 // Restore scene settings
                 this.scene.autoClear = this._originalSceneAutoClear;
                 this.scene.activeCamera = this._nonVRCamera;
+                if (this._attachedToElement && this._nonVRCamera) {
+                    this._nonVRCamera.attachControl(!!(this._nonVRCamera.inputs.noPreventDefault));
+                }
                 if (sessionMode !== "immersive-ar" && this.camera.compensateOnFirstFrame) {
                     if ((<any>this._nonVRCamera).setPosition) {
                         (<any>this._nonVRCamera).setPosition(this.camera.position);
@@ -198,8 +204,10 @@ export class WebXRExperienceHelper implements IDisposable {
     public enableSpectatorMode(): void {
         if (!this._spectatorMode) {
             const updateSpectatorCamera = () => {
-                this._spectatorCamera.position.copyFrom(this.camera.rigCameras[0].globalPosition);
-                this._spectatorCamera.rotationQuaternion.copyFrom(this.camera.rigCameras[0].absoluteRotation);
+                if (this._spectatorCamera) {
+                    this._spectatorCamera.position.copyFrom(this.camera.rigCameras[0].globalPosition);
+                    this._spectatorCamera.rotationQuaternion.copyFrom(this.camera.rigCameras[0].absoluteRotation);
+                }
             };
             const onStateChanged = () => {
                 if (this.state === WebXRState.IN_XR) {

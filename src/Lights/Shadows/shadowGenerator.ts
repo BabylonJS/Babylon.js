@@ -963,9 +963,8 @@ export class ShadowGenerator implements IShadowGenerator {
             let shadowMap = this.getShadowMapForRendering();
 
             if (shadowMap) {
-                const texture = shadowMap.getInternalTexture()!;
-                this._scene.postProcessManager.directRender(this._blurPostProcesses, texture, true);
-                engine.unBindFramebuffer(texture, true);
+                this._scene.postProcessManager.directRender(this._blurPostProcesses, shadowMap.renderTarget, true);
+                engine.unBindFramebuffer(shadowMap.renderTarget!, true);
                 engine._debugPopGroup?.(1);
             }
         });
@@ -1090,7 +1089,14 @@ export class ShadowGenerator implements IShadowGenerator {
         }
 
         // Culling
-        engine.setState(material.backFaceCulling, undefined, undefined, undefined, material.cullBackFaces);
+        const detNeg = effectiveMesh._getWorldMatrixDeterminant() < 0;
+        let sideOrientation = renderingMesh.overrideMaterialSideOrientation ?? material.sideOrientation;
+        if (scene.useRightHandedSystem && !detNeg || !scene.useRightHandedSystem && detNeg) {
+            sideOrientation = sideOrientation === Constants.MATERIAL_ClockWiseSideOrientation ? Constants.MATERIAL_CounterClockWiseSideOrientation : Constants.MATERIAL_ClockWiseSideOrientation;
+        }
+        let reverseSideOrientation = sideOrientation === Constants.MATERIAL_ClockWiseSideOrientation;
+
+        engine.setState(material.backFaceCulling, undefined, undefined, reverseSideOrientation, material.cullBackFaces);
 
         // Managing instances
         var batch = renderingMesh._getInstancesRenderList(subMesh._id, !!subMesh.getReplacementMesh());

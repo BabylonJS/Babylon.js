@@ -309,6 +309,10 @@ export class BaseSlider extends Control {
             return false;
         }
 
+        if (this.isReadOnly) {
+            return true;
+        }
+
         this._pointerIsDown = true;
 
         this._updateValueFromPointer(coordinates.x, coordinates.y);
@@ -323,7 +327,7 @@ export class BaseSlider extends Control {
             return;
         }
 
-        if (this._pointerIsDown) {
+        if (this._pointerIsDown && !this.isReadOnly) {
             this._updateValueFromPointer(coordinates.x, coordinates.y);
         }
 
