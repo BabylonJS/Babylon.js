@@ -22,58 +22,58 @@
     #define pbr_inline
     #define inline
     void sheenBlock(
-        const in vec4 vSheenColor,
+        in vec4 vSheenColor,
     #ifdef SHEEN_ROUGHNESS
-        const in float vSheenRoughness,
+        in float vSheenRoughness,
         #if defined(SHEEN_TEXTURE_ROUGHNESS) && !defined(SHEEN_TEXTURE_ROUGHNESS_IDENTICAL) && !defined(SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE)
-            const in vec4 sheenMapRoughnessData,
+            in vec4 sheenMapRoughnessData,
         #endif
     #endif
-        const in float roughness,
+        in float roughness,
     #ifdef SHEEN_TEXTURE
-        const in vec4 sheenMapData,
-        const in float sheenMapLevel,
+        in vec4 sheenMapData,
+        in float sheenMapLevel,
     #endif
-        const in float reflectance,
+        in float reflectance,
     #ifdef SHEEN_LINKWITHALBEDO
-        const in vec3 baseColor,
-        const in vec3 surfaceAlbedo,
+        in vec3 baseColor,
+        in vec3 surfaceAlbedo,
     #endif
     #ifdef ENVIRONMENTBRDF
-        const in float NdotV,
-        const in vec3 environmentBrdf,
+        in float NdotV,
+        in vec3 environmentBrdf,
     #endif
     #if defined(REFLECTION) && defined(ENVIRONMENTBRDF)
-        const in vec2 AARoughnessFactors,
-        const in vec3 vReflectionMicrosurfaceInfos,
-        const in vec2 vReflectionInfos,
-        const in vec3 vReflectionColor,
-        const in vec4 vLightingIntensity,
+        in vec2 AARoughnessFactors,
+        in vec3 vReflectionMicrosurfaceInfos,
+        in vec2 vReflectionInfos,
+        in vec3 vReflectionColor,
+        in vec4 vLightingIntensity,
         #ifdef REFLECTIONMAP_3D
-            const in samplerCube reflectionSampler,
-            const in vec3 reflectionCoords,
+            in samplerCube reflectionSampler,
+            in vec3 reflectionCoords,
         #else
-            const in sampler2D reflectionSampler,
-            const in vec2 reflectionCoords,
+            in sampler2D reflectionSampler,
+            in vec2 reflectionCoords,
         #endif
-        const in float NdotVUnclamped,
+        in float NdotVUnclamped,
         #ifndef LODBASEDMICROSFURACE
             #ifdef REFLECTIONMAP_3D
-                const in samplerCube reflectionSamplerLow,
-                const in samplerCube reflectionSamplerHigh,
+                in samplerCube reflectionSamplerLow,
+                in samplerCube reflectionSamplerHigh,
             #else
-                const in sampler2D reflectionSamplerLow,
-                const in sampler2D reflectionSamplerHigh,
+                in sampler2D reflectionSamplerLow,
+                in sampler2D reflectionSamplerHigh,
             #endif
         #endif
         #ifdef REALTIME_FILTERING
-            const in vec2 vReflectionFilteringInfo,
+            in vec2 vReflectionFilteringInfo,
         #endif
         #if !defined(REFLECTIONMAP_SKYBOX) && defined(RADIANCEOCCLUSION)
-            const in float seo,
+            in float seo,
         #endif
         #if !defined(REFLECTIONMAP_SKYBOX) && defined(HORIZONOCCLUSION) && defined(BUMP) && defined(REFLECTIONMAP_3D)
-            const in float eho,
+            in float eho,
         #endif
     #endif
         out sheenOutParams outParams
