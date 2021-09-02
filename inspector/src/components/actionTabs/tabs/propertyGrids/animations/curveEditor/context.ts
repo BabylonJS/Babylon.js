@@ -152,4 +152,9 @@ export class Context {
 
         this.moveToFrame(this.activeFrame);
     }
+
+    public clearSelection() {
+        this.activeKeyPoints = [];
+        this.onActiveKeyPointChanged.notifyObservers();
+    }
 }
