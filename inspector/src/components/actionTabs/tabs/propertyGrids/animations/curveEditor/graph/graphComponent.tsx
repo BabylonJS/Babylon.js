@@ -871,6 +871,10 @@ IGraphComponentState
         evt.currentTarget.releasePointerCapture(evt.pointerId);
 
         this._selectionRectangle.current!.style.visibility = "hidden";
+
+        if (!this._inSelectionMode) {
+            this.props.context.clearSelection();
+        }
     }
 
     private _onWheel(evt: React.WheelEvent) {
