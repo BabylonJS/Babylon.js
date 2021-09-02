@@ -112,6 +112,12 @@ export class NearMenu extends TouchHolographicMenu {
         return this;
     }
 
+    public setFollowDistance(distance: number) {
+        this._defaultBehavior.followBehavior.minimumDistance = distance * 3/4;
+        this._defaultBehavior.followBehavior.defaultDistance = distance;
+        this._defaultBehavior.followBehavior.maximumDistance = distance * 3/2;
+    }
+
     protected _createNode(scene: Scene): Nullable<TransformNode> {
         const node = super._createNode(scene)! as Mesh;
 
@@ -121,9 +127,7 @@ export class NearMenu extends TouchHolographicMenu {
         this._defaultBehavior.attach(node, [this._backPlate]);
         this._defaultBehavior.followBehavior.ignoreCameraPitchAndRoll = true;
         this._defaultBehavior.followBehavior.pitchOffset = -15;
-        this._defaultBehavior.followBehavior.minimumDistance = 0.3;
-        this._defaultBehavior.followBehavior.defaultDistance = 0.4;
-        this._defaultBehavior.followBehavior.maximumDistance = 0.6;
+        this.setFollowDistance(0.4);
 
         this._backPlate.isNearGrabbable = true;
         node.isVisible = false;
