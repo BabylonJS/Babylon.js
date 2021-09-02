@@ -296,7 +296,10 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         Object.keys(this._controllers).forEach((id) => {
             // only do this for the selected pointer
             const controllerData = this._controllers[id];
-            if (!this._options.enableNearInteractionOnAllControllers && id !== this._attachedController) {
+            // If near interaction is not enabled/available for this controller, return early
+            if ((!this._options.enableNearInteractionOnAllControllers && id !== this._attachedController) ||
+                !controllerData.xrController ||
+                !controllerData.xrController.inputSource.hand) {
                 controllerData.pick = null;
                 return;
             }
@@ -465,7 +468,9 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             pointerType: "xr",
         };
         controllerData.onFrameObserver = this._xrSessionManager.onXRFrameObservable.add(() => {
-            if (!this._options.enableNearInteractionOnAllControllers && xrController.uniqueId !== this._attachedController) {
+            if ((!this._options.enableNearInteractionOnAllControllers && xrController.uniqueId !== this._attachedController) ||
+                !controllerData.xrController ||
+                !controllerData.xrController.inputSource.hand) {
                 return;
             }
             if (controllerData.pick) {
