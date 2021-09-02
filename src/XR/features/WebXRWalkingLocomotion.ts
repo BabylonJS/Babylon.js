@@ -1,5 +1,5 @@
 import { Vector2, Vector3 } from "../../Maths/math.vector";
-import { TransformNode } from "../../Meshes";
+import { TransformNode } from "../../Meshes/transformNode";
 import { Observable } from "../../Misc/observable";
 import { Nullable } from "../../types";
 import { WebXRCamera } from "../webXRCamera";
@@ -326,7 +326,7 @@ export class WebXRWalkingLocomotion extends WebXRAbstractFeature {
     public static get Name(): string {
         return WebXRFeatureName.WALKING_LOCOMOTION;
     }
-    
+
     /**
      * The (Babylon) version of this module.
      * This is an integer representing the implementation version.
@@ -397,7 +397,7 @@ export class WebXRWalkingLocomotion extends WebXRAbstractFeature {
         }
 
         const handednessScalar = this.locomotionTarget.getScene().useRightHandedSystem ? 1 : -1;
-        
+
         const m = pose.transform.matrix;
         this._up.copyFromFloats(m[4], m[5], handednessScalar * m[6]);
         this._forward.copyFromFloats(m[8], m[9], handednessScalar * m[10]);
