@@ -11,3 +11,13 @@ WebGPUEngine.prototype.createExternalTexture = function (video: HTMLVideoElement
     );
     return texture;
 };
+
+WebGPUEngine.prototype.setExternalTexture = function (name: string, texture: Nullable<ExternalTexture>): void {
+    if (this._currentEffect) {
+        if (!texture) {
+            this._currentMaterialContext.setTexture(name, null);
+            return;
+        }
+        this._setInternalTexture(name, texture);
+    }
+};
