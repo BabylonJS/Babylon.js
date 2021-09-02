@@ -1,4 +1,4 @@
-import { Matrix, Vector2, Vector3 } from "../../Maths/math.vector";
+import { Vector2, Vector3 } from "../../Maths/math.vector";
 import { TransformNode } from "../../Meshes";
 import { Observable } from "../../Misc/observable";
 import { Nullable } from "../../types";
