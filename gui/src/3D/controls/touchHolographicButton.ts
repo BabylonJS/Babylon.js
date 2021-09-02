@@ -186,6 +186,7 @@ export class TouchHolographicButton extends TouchButton3D {
     public get backMaterial(): StandardMaterial {
         return this._backMaterial;
     }
+
     /**
      * Gets the front material used by this button
      */
