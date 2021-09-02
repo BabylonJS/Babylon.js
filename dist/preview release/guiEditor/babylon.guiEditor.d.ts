@@ -135,7 +135,7 @@ declare module GUIEDITOR {
         onZoomObservable: BABYLON.Observable<void>;
         onPanObservable: BABYLON.Observable<void>;
         onSelectionButtonObservable: BABYLON.Observable<void>;
-        onLoadObservable: BABYLON.Observable<void>;
+        onLoadObservable: BABYLON.Observable<File>;
         onSaveObservable: BABYLON.Observable<void>;
         onSnippetLoadObservable: BABYLON.Observable<void>;
         onSnippetSaveObservable: BABYLON.Observable<void>;
