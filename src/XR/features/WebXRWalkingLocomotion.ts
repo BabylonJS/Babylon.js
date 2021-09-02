@@ -315,7 +315,7 @@ class Walker {
  */
 export interface IWebXRWalkingLocomotionOptions {
     /**
-     * The target to be moved by walking locomotion. This should be the transform node 
+     * The target to be moved by walking locomotion. This should be the transform node
      * which is the root of the XR space (i.e., the WebXRCamera's parent node). However,
      * for simple cases and legacy purposes, articulating the WebXRCamera itself is also
      * supported as a deprecated feature.
