@@ -47417,20 +47417,20 @@ var MediaPlayerComponent = /** @class */ (function (_super) {
         this.props.context.onMoveToFrameRequired.notifyObservers(this.props.context.fromKey);
     };
     MediaPlayerComponent.prototype._onPrevKey = function () {
-        if (!this.props.context.animations || !this.props.context.animations.length) {
+        if (!this.props.context.animations || !this.props.context.animations.length || !this.props.context.activeAnimation) {
             return;
         }
         var prevKey = -Number.MAX_VALUE;
-        for (var _i = 0, _a = this.props.context.animations; _i < _a.length; _i++) {
-            var animation = _a[_i];
-            var keys = this.props.context.useTargetAnimations ? animation.animation.getKeys() : animation.getKeys();
-            for (var _b = 0, keys_1 = keys; _b < keys_1.length; _b++) {
-                var key = keys_1[_b];
-                if (key.frame < this.props.context.activeFrame && key.frame > prevKey) {
-                    prevKey = key.frame;
-                }
+        //for (var animation of this.props.context.animations) {
+        var animation = this.props.context.activeAnimation;
+        var keys = animation.getKeys();
+        for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
+            var key = keys_1[_i];
+            if (key.frame < this.props.context.activeFrame && key.frame > prevKey) {
+                prevKey = key.frame;
             }
         }
+        //}
         if (prevKey === -Number.MAX_VALUE) {
             prevKey = this.props.context.fromKey;
         }
@@ -64002,7 +64002,7 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "checkBoxLine" },
             this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.iconLabel }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "checkBox" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkbox", id: "checkbox" + this._uniqueId, className: "cbx hidden", checked: this.state.isSelected, onChange: function () { return _this.onChange(); }, disabled: !!this.props.disabled }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "checkbox" + this._uniqueId, className: "lbl" + (!!this.props.disabled ? ' disabled' : '') }))));
