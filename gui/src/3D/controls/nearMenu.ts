@@ -148,6 +148,8 @@ export class NearMenu extends TouchHolographicMenu {
         this._dragObserver = this._defaultBehavior.sixDofDragBehavior.onDragObservable.add(() => {
             this.isPinned = true;
         });
+
+        this.backPlateMargin = 1;
     }
 
     /**
