@@ -17,6 +17,11 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
     public camera: ArcRotateCamera;
 
     /**
+     * The minimum radius used for pinch, to avoid radius lock at 0
+     */
+    public static MinimumRadiusForPinch: number = 0.001;
+
+    /**
      * Gets the class name of the current input.
      * @returns the class name
      */
@@ -125,13 +130,14 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
         previousPinchSquaredDistance: number,
         pinchSquaredDistance: number
     ): void {
+        const radius = (this.camera.radius || ArcRotateCameraPointersInput.MinimumRadiusForPinch);
         if (this.useNaturalPinchZoom) {
-            this.camera.radius = this.camera.radius *
+            this.camera.radius = radius *
                 Math.sqrt(previousPinchSquaredDistance) / Math.sqrt(pinchSquaredDistance);
         } else if (this.pinchDeltaPercentage) {
             this.camera.inertialRadiusOffset +=
                 (pinchSquaredDistance - previousPinchSquaredDistance) * 0.001 *
-                this.camera.radius * this.pinchDeltaPercentage;
+                radius * this.pinchDeltaPercentage;
         }
         else {
             this.camera.inertialRadiusOffset +=
