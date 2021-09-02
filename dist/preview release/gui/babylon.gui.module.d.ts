@@ -4962,6 +4962,7 @@ declare module "babylonjs-gui/3D/controls/touchHolographicButton" {
         private _text;
         private _imageUrl;
         private _shareMaterials;
+        private _isBackplateVisible;
         private _frontMaterial;
         private _backMaterial;
         private _plateMaterial;
@@ -5012,6 +5013,10 @@ declare module "babylonjs-gui/3D/controls/touchHolographicButton" {
          * Gets a boolean indicating if this button shares its material with other HolographicButtons
          */
         get shareMaterials(): boolean;
+        /**
+         * Sets whether the backplate is visible or hidden. Hiding the backplate is not recommended without some sort of replacement
+         */
+        set isBackplateVisible(isVisible: boolean);
         /**
          * Creates a new button
          * @param name defines the control name
@@ -10771,6 +10776,7 @@ declare module BABYLON.GUI {
         private _text;
         private _imageUrl;
         private _shareMaterials;
+        private _isBackplateVisible;
         private _frontMaterial;
         private _backMaterial;
         private _plateMaterial;
@@ -10821,6 +10827,10 @@ declare module BABYLON.GUI {
          * Gets a boolean indicating if this button shares its material with other HolographicButtons
          */
         get shareMaterials(): boolean;
+        /**
+         * Sets whether the backplate is visible or hidden. Hiding the backplate is not recommended without some sort of replacement
+         */
+        set isBackplateVisible(isVisible: boolean);
         /**
          * Creates a new button
          * @param name defines the control name

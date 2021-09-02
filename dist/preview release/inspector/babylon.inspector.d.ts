@@ -1171,6 +1171,8 @@ declare module INSPECTOR {
         play(forward: boolean): void;
         stop(): void;
         moveToFrame(frame: number): void;
+        refreshTarget(): void;
+        clearSelection(): void;
     }
 }
 declare module INSPECTOR {

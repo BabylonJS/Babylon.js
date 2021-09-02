@@ -66,21 +66,22 @@ IMediaPlayerComponentState
     }
 
     private _onPrevKey() {
-        if (!this.props.context.animations || !this.props.context.animations.length) {
+        if (!this.props.context.animations || !this.props.context.animations.length || !this.props.context.activeAnimation) {
             return;
         }
 
         let prevKey = -Number.MAX_VALUE;
 
-        for (var animation of this.props.context.animations) {
-            const keys = this.props.context.useTargetAnimations ? (animation as TargetedAnimation).animation.getKeys() : (animation as Animation).getKeys();
+        //for (var animation of this.props.context.animations) {
+            const animation = this.props.context.activeAnimation;
+            const keys = animation.getKeys();
 
             for (var key of keys) {
                 if (key.frame < this.props.context.activeFrame && key.frame > prevKey) {
                     prevKey = key.frame;
                 }
             }
-        }
+        //}
 
         if (prevKey === -Number.MAX_VALUE) {
             prevKey = this.props.context.fromKey;

@@ -11196,7 +11196,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#canvas-zone {\n  display: grid;\n  grid-template-columns: 100%;\n  grid-template-rows: 1fr 30px 10px 40px;\n  overflow: hidden;\n  position: relative; }\n  #canvas-zone #graph {\n    grid-column: 1;\n    grid-row: 1;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 100%;\n    overflow: hidden;\n    position: relative; }\n    #canvas-zone #graph #svg-graph-grid {\n      grid-column: 1;\n      grid-row: 1;\n      width: 100%;\n      height: 100%;\n      pointer-events: none;\n      z-index: 1; }\n      #canvas-zone #graph #svg-graph-grid:focus {\n        outline: none; }\n    #canvas-zone #graph #svg-graph-horizontal {\n      grid-column: 1;\n      grid-row: 1;\n      margin-left: 40px;\n      width: calc(100% - 40px);\n      height: 100%;\n      pointer-events: none;\n      z-index: 1; }\n      #canvas-zone #graph #svg-graph-horizontal:focus {\n        outline: none; }\n    #canvas-zone #graph #dark-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      margin-left: 40px;\n      width: calc(100% - 40px);\n      height: 100%;\n      background: #111111;\n      opacity: 0.2;\n      pointer-events: none;\n      position: absolute; }\n    #canvas-zone #graph #block-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      width: 40px;\n      height: 100%;\n      background: #222222;\n      z-index: 1; }\n    #canvas-zone #graph #svg-graph-curves {\n      grid-column: 1;\n      grid-row: 1;\n      margin-left: 40px;\n      width: calc(100% - 40px);\n      height: 100%; }\n      #canvas-zone #graph #svg-graph-curves:focus {\n        outline: none; }\n    #canvas-zone #graph #selection-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      width: calc(100% - 40px);\n      height: 100%;\n      pointer-events: none;\n      position: absolute;\n      left: 40px;\n      visibility: hidden;\n      border: 1px dashed white; }\n  #canvas-zone #range-frame-bar {\n    grid-column: 1;\n    grid-row: 4;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    pointer-events: none;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%;\n    pointer-events: none;\n    user-select: none; }\n    #canvas-zone #range-frame-bar #svg-range-frames {\n      grid-column: 1;\n      grid-row: 1;\n      width: 100%;\n      height: 100%; }\n  #canvas-zone #frame-bar {\n    grid-column: 1;\n    grid-row: 2;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    pointer-events: none;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 40px 1fr; }\n    #canvas-zone #frame-bar #angle-unit {\n      grid-column: 1;\n      grid-row: 1;\n      background: #111111; }\n    #canvas-zone #frame-bar #frames {\n      grid-column: 1 / 3;\n      grid-row: 1;\n      width: 100%;\n      height: 100%;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%; }\n      #canvas-zone #frame-bar #frames #svg-frames {\n        margin-left: 40px;\n        grid-column: 1;\n        grid-row: 1;\n        width: calc(100% - 40px);\n        height: 100%; }\n  #canvas-zone #play-head-control {\n    grid-column: 1;\n    grid-row: 2;\n    position: absolute;\n    height: 30px;\n    left: 40px;\n    width: calc(100% - 40px); }\n  #canvas-zone #play-head {\n    grid-column: 1;\n    grid-row: 1 / 3;\n    position: absolute;\n    top: 0;\n    height: calc(100% - 5px);\n    width: 22px;\n    margin-left: 40px;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 1fr 22px;\n    transform: translateX(-50%);\n    pointer-events: none; }\n    #canvas-zone #play-head #play-head-bar {\n      grid-row: 1;\n      grid-column: 1;\n      justify-self: center;\n      width: 1.5px;\n      background: #ffffff;\n      height: 100%;\n      pointer-events: none; }\n    #canvas-zone #play-head #play-head-circle {\n      grid-row: 2;\n      grid-column: 1;\n      width: 22px;\n      height: 22px;\n      border-radius: 50%;\n      background: #FFFFFF;\n      font-family: 'acumin-pro-condensed';\n      font-size: 8pt;\n      display: grid;\n      align-content: center;\n      justify-content: center;\n      color: #555555;\n      cursor: pointer; }\n  #canvas-zone #angle-mode {\n    grid-column: 1;\n    grid-row: 2;\n    width: 40px;\n    height: 100%;\n    z-index: 1;\n    background: black; }\n", ""]);
+exports.push([module.i, "#canvas-zone {\n  display: grid;\n  grid-template-columns: 100%;\n  grid-template-rows: 1fr 30px 10px 40px;\n  overflow: hidden;\n  position: relative; }\n  #canvas-zone #graph {\n    grid-column: 1;\n    grid-row: 1;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 100%;\n    overflow: hidden;\n    position: relative; }\n    #canvas-zone #graph #svg-graph-grid {\n      grid-column: 1;\n      grid-row: 1;\n      width: 100%;\n      height: 100%;\n      pointer-events: none;\n      z-index: 1; }\n      #canvas-zone #graph #svg-graph-grid:focus {\n        outline: none; }\n    #canvas-zone #graph #svg-graph-horizontal {\n      grid-column: 1;\n      grid-row: 1;\n      margin-left: 40px;\n      width: calc(100% - 40px);\n      height: 100%;\n      pointer-events: none;\n      z-index: 1; }\n      #canvas-zone #graph #svg-graph-horizontal:focus {\n        outline: none; }\n    #canvas-zone #graph #dark-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      margin-left: 40px;\n      width: calc(100% - 40px);\n      height: 100%;\n      background: #111111;\n      opacity: 0.2;\n      pointer-events: none;\n      position: absolute; }\n    #canvas-zone #graph #block-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      width: 40px;\n      height: 100%;\n      background: #222222;\n      z-index: 1; }\n    #canvas-zone #graph #svg-graph-curves {\n      grid-column: 1;\n      grid-row: 1;\n      margin-left: 40px;\n      width: calc(100% - 40px);\n      height: 100%;\n      z-index: 2; }\n      #canvas-zone #graph #svg-graph-curves:focus {\n        outline: none; }\n    #canvas-zone #graph #selection-rectangle {\n      grid-column: 1;\n      grid-row: 1;\n      width: calc(100% - 40px);\n      height: 100%;\n      pointer-events: none;\n      position: absolute;\n      left: 40px;\n      visibility: hidden;\n      border: 1px dashed white; }\n  #canvas-zone #range-frame-bar {\n    grid-column: 1;\n    grid-row: 4;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    pointer-events: none;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%;\n    pointer-events: none;\n    user-select: none; }\n    #canvas-zone #range-frame-bar #svg-range-frames {\n      grid-column: 1;\n      grid-row: 1;\n      width: 100%;\n      height: 100%; }\n  #canvas-zone #frame-bar {\n    grid-column: 1;\n    grid-row: 2;\n    width: 100%;\n    height: 100%;\n    background: #222222;\n    pointer-events: none;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 40px 1fr; }\n    #canvas-zone #frame-bar #angle-unit {\n      grid-column: 1;\n      grid-row: 1;\n      background: #111111; }\n    #canvas-zone #frame-bar #frames {\n      grid-column: 1 / 3;\n      grid-row: 1;\n      width: 100%;\n      height: 100%;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%; }\n      #canvas-zone #frame-bar #frames #svg-frames {\n        margin-left: 40px;\n        grid-column: 1;\n        grid-row: 1;\n        width: calc(100% - 40px);\n        height: 100%; }\n  #canvas-zone #play-head-control {\n    grid-column: 1;\n    grid-row: 2;\n    position: absolute;\n    height: 30px;\n    left: 40px;\n    width: calc(100% - 40px); }\n  #canvas-zone #play-head {\n    grid-column: 1;\n    grid-row: 1 / 3;\n    position: absolute;\n    top: 0;\n    height: calc(100% - 5px);\n    width: 22px;\n    margin-left: 40px;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 1fr 22px;\n    transform: translateX(-50%);\n    pointer-events: none;\n    z-index: 3; }\n    #canvas-zone #play-head #play-head-bar {\n      grid-row: 1;\n      grid-column: 1;\n      justify-self: center;\n      width: 1.5px;\n      background: #ffffff;\n      height: 100%;\n      pointer-events: none; }\n    #canvas-zone #play-head #play-head-circle {\n      grid-row: 2;\n      grid-column: 1;\n      width: 22px;\n      height: 22px;\n      border-radius: 50%;\n      background: #FFFFFF;\n      font-family: 'acumin-pro-condensed';\n      font-size: 8pt;\n      display: grid;\n      align-content: center;\n      justify-content: center;\n      color: #555555;\n      cursor: pointer; }\n  #canvas-zone #angle-mode {\n    grid-column: 1;\n    grid-row: 2;\n    width: 40px;\n    height: 100%;\n    z-index: 1;\n    background: black; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -11250,7 +11250,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#top-bar {\n  display: grid;\n  grid-template-columns: 40px 200px 75px 8px 75px 8px 40px 40px 40px 40px 40px 40px 40px 1fr 40px;\n  grid-template-rows: 100%; }\n  #top-bar #logo {\n    grid-row: 1;\n    grid-column: 1; }\n  #top-bar #parent-name {\n    grid-row: 1;\n    grid-column: 2;\n    font-family: 'acumin-pro-condensed';\n    font-size: 15pt;\n    color: white;\n    display: grid;\n    align-content: center;\n    padding-bottom: 5px; }\n  #top-bar #key-frame {\n    grid-row: 1;\n    grid-column: 3;\n    height: 24px;\n    display: grid;\n    align-self: center; }\n  #top-bar #key-value {\n    grid-row: 1;\n    grid-column: 5;\n    height: 24px;\n    display: grid;\n    align-self: center; }\n  #top-bar #new-key {\n    grid-row: 1;\n    grid-column: 7; }\n  #top-bar #frame-canvas {\n    grid-row: 1;\n    grid-column: 8; }\n  #top-bar #flatten-tangent {\n    grid-row: 1;\n    grid-column: 9; }\n  #top-bar #linear-tangent {\n    grid-row: 1;\n    grid-column: 10; }\n  #top-bar #break-tangent {\n    grid-row: 1;\n    grid-column: 11; }\n  #top-bar #unify-tangent {\n    grid-row: 1;\n    grid-column: 12; }\n", ""]);
+exports.push([module.i, "#top-bar {\n  display: grid;\n  grid-template-columns: 40px 200px 75px 8px 75px 8px 40px 40px 40px 40px 40px 40px 40px 1fr 40px;\n  grid-template-rows: 100%; }\n  #top-bar .disabled {\n    opacity: 20%;\n    pointer-events: none; }\n  #top-bar #logo {\n    grid-row: 1;\n    grid-column: 1; }\n  #top-bar #parent-name {\n    grid-row: 1;\n    grid-column: 2;\n    font-family: 'acumin-pro-condensed';\n    font-size: 15pt;\n    color: white;\n    display: grid;\n    align-content: center;\n    padding-bottom: 5px; }\n  #top-bar #key-frame {\n    grid-row: 1;\n    grid-column: 3;\n    height: 24px;\n    display: grid;\n    align-self: center; }\n  #top-bar #key-value {\n    grid-row: 1;\n    grid-column: 5;\n    height: 24px;\n    display: grid;\n    align-self: center; }\n  #top-bar #new-key {\n    grid-row: 1;\n    grid-column: 7; }\n  #top-bar #frame-canvas {\n    grid-row: 1;\n    grid-column: 8; }\n  #top-bar #flatten-tangent {\n    grid-row: 1;\n    grid-column: 9; }\n  #top-bar #linear-tangent {\n    grid-row: 1;\n    grid-column: 10; }\n  #top-bar #break-tangent {\n    grid-row: 1;\n    grid-column: 11; }\n  #top-bar #unify-tangent {\n    grid-row: 1;\n    grid-column: 12; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -47740,6 +47740,19 @@ var Context = /** @class */ (function () {
         }
         this.stop();
     };
+    Context.prototype.refreshTarget = function () {
+        if (!this.animations || !this.animations.length) {
+            return;
+        }
+        if (this.isPlaying) {
+            return;
+        }
+        this.moveToFrame(this.activeFrame);
+    };
+    Context.prototype.clearSelection = function () {
+        this.activeKeyPoints = [];
+        this.onActiveKeyPointChanged.notifyObservers();
+    };
     return Context;
 }());
 
@@ -48405,7 +48418,20 @@ var GraphComponent = /** @class */ (function (_super) {
                     break;
                 }
             }
-            var value = _this._currentAnimation.evaluate(currentFrame);
+            var value;
+            if (_this.props.context.target) {
+                value = _this.props.context.target;
+                for (var _a = 0, _b = _this._currentAnimation.targetPropertyPath; _a < _b.length; _a++) {
+                    var path = _b[_a];
+                    value = value[path];
+                }
+                if (value.clone) {
+                    value = value.clone();
+                }
+            }
+            else {
+                value = _this._currentAnimation.evaluate(currentFrame);
+            }
             var leftKey = keys[indexToAdd];
             var rightKey = keys[indexToAdd + 1];
             var newKey = {
@@ -48820,35 +48846,47 @@ var GraphComponent = /** @class */ (function (_super) {
         }
         var stepCounts = 10;
         var range = this._maxValue !== this._minValue ? this._maxValue - this._minValue : 1;
-        var offset = range / stepCounts;
+        var offset = (range / stepCounts) * this._viewScale;
         var convertRatio = range / this._GraphAbsoluteHeight;
         var steps = [];
+        // Get precision
+        var a = 0;
+        var b = offset;
+        var precision = 2;
+        while (a.toFixed(precision) === b.toFixed(precision)) {
+            precision++;
+        }
+        // Make sure we have an even number with the correct number of decimals
+        var pow = Math.pow(10, precision);
+        offset = Math.round(offset * pow);
+        if (offset % 2 !== 0) {
+            offset -= 1;
+        }
+        offset /= pow;
+        // Evaluate limits
         var startPosition = ((this._viewHeight * this._viewScale) - this._GraphAbsoluteHeight - this._offsetY) * convertRatio;
-        var start = this._minValue - ((startPosition / offset) | 0) * offset;
-        var end = start + (this._viewHeight * this._viewScale) * convertRatio;
+        var start = Math.ceil((this._minValue - ((startPosition / offset) | 0) * offset) / offset) * offset;
+        var end = Math.round((start + (this._viewHeight * this._viewScale) * convertRatio) / offset) * offset;
         for (var step = start - offset; step <= end + offset; step += offset) {
             steps.push(step);
-            if (step < 0 && step + offset > 0) {
-                steps.push(0);
-            }
-        }
-        var precision = 2;
-        while (steps[0].toFixed(precision) === steps[1].toFixed(precision)) {
-            precision++;
         }
         return (steps.map(function (s, i) {
             var y = _this._GraphAbsoluteHeight - ((s - _this._minValue) / convertRatio);
+            var text = s.toFixed(precision);
+            text = parseFloat(text).toFixed(precision); // Avoid -0.00 (negative zero)
+            var zero = 0.0;
+            var isZero = text === zero.toFixed(precision);
             return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("g", { key: "axis" + s },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { key: "line" + s, x1: _this._graphOffsetX * _this._viewScale, y1: y, x2: _this._viewWidth * _this._viewScale, y2: y, style: {
-                        stroke: s === 0 ? "#666666" : "#333333",
-                        strokeWidth: s === 0 ? 1.0 : 0.5,
+                        stroke: isZero ? "#666666" : "#333333",
+                        strokeWidth: isZero ? 1.0 : 0.5,
                     } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("text", { key: "label" + s, x: 0, y: y, dx: 15 * _this._viewScale + "px", textAnchor: "middle", dy: 3 * _this._viewScale + "px", style: {
                         fontFamily: "acumin-pro-condensed",
                         fontSize: 10 * _this._viewScale + "px",
                         fill: "#888888",
                         textAlign: "center",
-                    } }, s.toFixed(precision))));
+                    } }, text)));
         }));
     };
     GraphComponent.prototype._frame = function () {
@@ -48905,7 +48943,13 @@ var GraphComponent = /** @class */ (function (_super) {
         return curve.keys.map(function (key, i) {
             var x = _this._convertX(key.frame);
             var y = _this._convertY(key.value);
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_keyPoint__WEBPACK_IMPORTED_MODULE_4__["KeyPointComponent"], { x: x, y: y, context: _this.props.context, scale: _this._viewScale, getPreviousX: function () { return i > 0 ? _this._convertX(curve.keys[i - 1].frame) : null; }, getNextX: function () { return i < curve.keys.length - 1 ? _this._convertX(curve.keys[i + 1].frame) : null; }, channel: curve.color, keyId: i, curve: curve, key: curveId + "-" + i, invertX: function (x) { return _this._invertX(x); }, invertY: function (y) { return _this._invertY(y); }, convertX: function (x) { return _this._convertX(x); }, convertY: function (y) { return _this._convertY(y); }, onFrameValueChanged: function (value) { curve.updateKeyFrame(i, value); }, onKeyValueChanged: function (value) { curve.updateKeyValue(i, value); } }));
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_keyPoint__WEBPACK_IMPORTED_MODULE_4__["KeyPointComponent"], { x: x, y: y, context: _this.props.context, scale: _this._viewScale, getPreviousX: function () { return i > 0 ? _this._convertX(curve.keys[i - 1].frame) : null; }, getNextX: function () { return i < curve.keys.length - 1 ? _this._convertX(curve.keys[i + 1].frame) : null; }, channel: curve.color, keyId: i, curve: curve, key: curveId + "-" + i, invertX: function (x) { return _this._invertX(x); }, invertY: function (y) { return _this._invertY(y); }, convertX: function (x) { return _this._convertX(x); }, convertY: function (y) { return _this._convertY(y); }, onFrameValueChanged: function (value) {
+                    curve.updateKeyFrame(i, value);
+                    _this.props.context.refreshTarget();
+                }, onKeyValueChanged: function (value) {
+                    curve.updateKeyValue(i, value);
+                    _this.props.context.refreshTarget();
+                } }));
         });
     };
     GraphComponent.prototype._onPointerDown = function (evt) {
@@ -48961,6 +49005,9 @@ var GraphComponent = /** @class */ (function (_super) {
         this._pointerIsDown = false;
         evt.currentTarget.releasePointerCapture(evt.pointerId);
         this._selectionRectangle.current.style.visibility = "hidden";
+        if (!this._inSelectionMode) {
+            this.props.context.clearSelection();
+        }
     };
     GraphComponent.prototype._onWheel = function (evt) {
         var delta = evt.deltaY < 0 ? -0.05 : 0.05;
@@ -49430,6 +49477,7 @@ var KeyPointComponent = /** @class */ (function (_super) {
                     this.props.curve.updateInTangentFromControlPoint(this.props.keyId, this._extractSlope(tmpVector, this._storedLengthIn, true));
                 }
             }
+            this.props.context.refreshTarget();
             this.forceUpdate();
         }
         this._sourcePointerX = evt.nativeEvent.offsetX;
@@ -50098,7 +50146,11 @@ var AnimationEntryComponent = /** @class */ (function (_super) {
             _this.forceUpdate();
         });
         _this._onActiveKeyPointChangedObserver = _this.props.context.onActiveKeyPointChanged.add(function () {
-            _this.setState({ isSelected: _this.props.animation.dataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_FLOAT && _this.props.animation === _this.props.context.activeAnimation });
+            _this.setState({ isSelected: _this.props.animation.dataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_FLOAT &&
+                    _this.props.animation === _this.props.context.activeAnimation &&
+                    _this.props.context.activeKeyPoints !== null &&
+                    _this.props.context.activeKeyPoints.length > 0
+            });
         });
         return _this;
     }
@@ -50869,19 +50921,14 @@ var TopBarComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "top-bar" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { id: "logo", src: logoIcon }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "parent-name" }, this.props.context.title),
-            this.props.context.activeAnimation && this.state.editControlsVisible &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_textInputComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputComponent"], { isNumber: true, value: this.state.keyFrameValue, tooltip: "Frame", id: "key-frame", onValueAsNumberChanged: function (newValue) { return _this.props.context.onFrameManuallyEntered.notifyObservers(newValue); }, globalState: this.props.globalState, context: this.props.context }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_textInputComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputComponent"], { isNumber: true, value: this.state.keyValue, tooltip: "Value", id: "key-value", onValueAsNumberChanged: function (newValue) { return _this.props.context.onValueManuallyEntered.notifyObservers(newValue); }, globalState: this.props.globalState, context: this.props.context })),
-            this.props.context.activeAnimation &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "New key", id: "new-key", globalState: this.props.globalState, context: this.props.context, icon: newKeyIcon, onClick: function () { return _this.props.context.onNewKeyPointRequired.notifyObservers(); } }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_textInputComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputComponent"], { className: this.props.context.activeAnimation && this.state.editControlsVisible ? "" : "disabled", isNumber: true, value: this.state.keyFrameValue, tooltip: "Frame", id: "key-frame", onValueAsNumberChanged: function (newValue) { return _this.props.context.onFrameManuallyEntered.notifyObservers(newValue); }, globalState: this.props.globalState, context: this.props.context }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_textInputComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputComponent"], { className: this.props.context.activeAnimation && this.state.editControlsVisible ? "" : "disabled", isNumber: true, value: this.state.keyValue, tooltip: "Value", id: "key-value", onValueAsNumberChanged: function (newValue) { return _this.props.context.onValueManuallyEntered.notifyObservers(newValue); }, globalState: this.props.globalState, context: this.props.context }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { className: this.props.context.activeAnimation ? "" : "disabled", tooltip: "New key", id: "new-key", globalState: this.props.globalState, context: this.props.context, icon: newKeyIcon, onClick: function () { return _this.props.context.onNewKeyPointRequired.notifyObservers(); } }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Frame canvas", id: "frame-canvas", globalState: this.props.globalState, context: this.props.context, icon: frameIcon, onClick: function () { return _this.props.context.onFrameRequired.notifyObservers(); } }),
-            this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 0 &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Flatten tangent", id: "flatten-tangent", globalState: this.props.globalState, context: this.props.context, icon: flatTangentIcon, onClick: function () { return _this.props.context.onFlattenTangentRequired.notifyObservers(); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Linear tangent", id: "linear-tangent", globalState: this.props.globalState, context: this.props.context, icon: linearTangentIcon, onClick: function () { return _this.props.context.onLinearTangentRequired.notifyObservers(); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Break tangent", id: "break-tangent", globalState: this.props.globalState, context: this.props.context, icon: breakTangentIcon, onClick: function () { return _this.props.context.onBreakTangentRequired.notifyObservers(); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Unify tangent", id: "unify-tangent", globalState: this.props.globalState, context: this.props.context, icon: unifyTangentIcon, onClick: function () { return _this.props.context.onUnifyTangentRequired.notifyObservers(); } }))));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { className: this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 0 ? "" : "disabled", tooltip: "Flatten tangent", id: "flatten-tangent", globalState: this.props.globalState, context: this.props.context, icon: flatTangentIcon, onClick: function () { return _this.props.context.onFlattenTangentRequired.notifyObservers(); } }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { className: this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 0 ? "" : "disabled", tooltip: "Linear tangent", id: "linear-tangent", globalState: this.props.globalState, context: this.props.context, icon: linearTangentIcon, onClick: function () { return _this.props.context.onLinearTangentRequired.notifyObservers(); } }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { className: this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 0 ? "" : "disabled", tooltip: "Break tangent", id: "break-tangent", globalState: this.props.globalState, context: this.props.context, icon: breakTangentIcon, onClick: function () { return _this.props.context.onBreakTangentRequired.notifyObservers(); } }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { className: this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 0 ? "" : "disabled", tooltip: "Unify tangent", id: "unify-tangent", globalState: this.props.globalState, context: this.props.context, icon: unifyTangentIcon, onClick: function () { return _this.props.context.onUnifyTangentRequired.notifyObservers(); } })));
     };
     return TopBarComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));

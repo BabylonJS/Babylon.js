@@ -5812,6 +5812,9 @@ declare module BABYLON {
      */
     export class CubeTexture extends BaseTexture {
         private _delayedOnLoad;
+        private _delayedOnError;
+        private _lodScale;
+        private _lodOffset;
         /**
          * Observable triggered once the texture has been loaded.
          */
@@ -5914,8 +5917,11 @@ declare module BABYLON {
          * @param forcedExtension defines the extension to use
          * @param onLoad callback called when the texture is loaded  (defaults to null)
          * @param prefiltered Defines whether the updated texture is prefiltered or not
+         * @param onError callback called if there was an error during the loading process (defaults to null)
+         * @param extensions defines the suffixes add to the picture name in case six images are in use like _px.jpg...
+         * @param delayLoad defines if the texture should be loaded now (false by default)
          */
-        updateURL(url: string, forcedExtension?: string, onLoad?: () => void, prefiltered?: boolean): void;
+        updateURL(url: string, forcedExtension?: string, onLoad?: Nullable<() => void>, prefiltered?: boolean, onError?: Nullable<(message?: string, exception?: any) => void>, extensions?: Nullable<string[]>, delayLoad?: boolean): void;
         /**
          * Delays loading of the cube texture
          * @param forcedExtension defines the extension to use
@@ -5931,6 +5937,7 @@ declare module BABYLON {
          * @param value Reflection texture matrix
          */
         setReflectionTextureMatrix(value: Matrix): void;
+        private _loadTexture;
         /**
          * Parses text to create a cube texture
          * @param parsedTexture define the serialized text to read from
@@ -33867,6 +33874,10 @@ declare module BABYLON {
         get position(): Vector3;
         set position(newPosition: Vector3);
         /**
+         * return true if a pivot has been set
+         */
+        get usePivotMatrix(): boolean;
+        /**
           * Gets or sets the rotation property : a Vector3 defining the rotation value in radians around each local axis X, Y, Z  (default is (0.0, 0.0, 0.0)).
           * If rotation quaternion is set, this Vector3 will be ignored and copy from the quaternion
           */
@@ -48699,6 +48710,10 @@ declare module BABYLON {
          */
         camera: ArcRotateCamera;
         /**
+         * The minimum radius used for pinch, to avoid radius lock at 0
+         */
+        static MinimumRadiusForPinch: number;
+        /**
          * Gets the class name of the current input.
          * @returns the class name
          */
@@ -58296,6 +58311,10 @@ declare module BABYLON {
          */
         protected _update(): void;
         /**
+         * Handle position/translation when using an attached node using pivot
+         */
+        protected _handlePivot(): void;
+        /**
          * computes the rotation/scaling/position of the transform once the Node world matrix has changed.
          * @param value Node, TransformNode or mesh
          */
@@ -61839,11 +61858,7 @@ declare module BABYLON {
     /** @hidden */
     export class WebGPUTintWASM {
         private static readonly _twgslDefaultOptions;
-        private static _TwgslInitedResolve;
-        private static _TwgslInited;
         private _twgsl;
-        /** @hidden */
-        static _TWGSLModuleInitialized(): void;
         initTwgsl(twgslOptions?: TwgslOptions): Promise<void>;
         convertSpirV2WGSL(code: Uint32Array): string;
     }
