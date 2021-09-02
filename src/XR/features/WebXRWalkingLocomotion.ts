@@ -1,6 +1,8 @@
-import { Vector2, Vector3 } from "../../Maths/math.vector";
+import { Matrix, Vector2, Vector3 } from "../../Maths/math.vector";
+import { TransformNode } from "../../Meshes";
 import { Observable } from "../../Misc/observable";
 import { Nullable } from "../../types";
+import { WebXRCamera } from "../webXRCamera";
 import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
 import { WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
@@ -311,7 +313,7 @@ class Walker {
  * Options for the walking locomotion feature.
  */
 export interface IWebXRWalkingLocomotionOptions {
-    locomotionTarget: Nullable<Vector3>;
+    locomotionTarget: WebXRCamera | TransformNode;
 }
 
 /**
@@ -338,6 +340,7 @@ export class WebXRWalkingLocomotion extends WebXRAbstractFeature {
     private _up: Vector3 = new Vector3();
     private _forward: Vector3 = new Vector3();
     private _position: Vector3 = new Vector3();
+    private _movement: Vector3 = new Vector3();
     private _walker: Nullable<Walker>;
 
     /**
@@ -346,7 +349,7 @@ export class WebXRWalkingLocomotion extends WebXRAbstractFeature {
      * X and Z coordinates will be modified to reflect locomotion. This vector is
      * assumed to be in the base XR space and will be articulated accordingly.
      */
-    public locomotionTarget: Vector3;
+    public locomotionTarget: WebXRCamera | TransformNode;
 
     /**
      * Construct a new Walking Locomotion feature.
@@ -392,17 +395,23 @@ export class WebXRWalkingLocomotion extends WebXRAbstractFeature {
         if (!pose) {
             return;
         }
+
+        const handednessScalar = this.locomotionTarget.getScene().useRightHandedSystem ? 1 : -1;
         
         const m = pose.transform.matrix;
-        this._up.copyFromFloats(m[4], m[5], -m[6]);
-        this._forward.copyFromFloats(m[8], m[9], -m[10]);
-        this._position.copyFromFloats(m[12], m[13], -m[14]);
+        this._up.copyFromFloats(m[4], m[5], handednessScalar * m[6]);
+        this._forward.copyFromFloats(m[8], m[9], handednessScalar * m[10]);
+        this._position.copyFromFloats(m[12], m[13], handednessScalar * m[14]);
 
         // Compute the nape position
         this._forward.scaleAndAddToRef(0.05, this._position);
         this._up.scaleAndAddToRef(-0.05, this._position);
         this._walker!.update(this._position, this._forward);
-        this.locomotionTarget.addInPlace(this._walker!.movementThisFrame);
+        this._movement.copyFrom(this._walker!.movementThisFrame);
+        if (this.locomotionTarget instanceof TransformNode) {
+            Vector3.TransformNormalToRef(this._movement, this.locomotionTarget.getWorldMatrix(), this._movement);
+        }
+        this.locomotionTarget.position.addInPlace(this._movement);
     }
 }
 
