@@ -1273,6 +1273,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         play(forward: boolean): void;
         stop(): void;
         moveToFrame(frame: number): void;
+        refreshTarget(): void;
+        clearSelection(): void;
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/curveEditor/controls/controlButtonComponent" {
@@ -6040,6 +6042,8 @@ declare module INSPECTOR {
         play(forward: boolean): void;
         stop(): void;
         moveToFrame(frame: number): void;
+        refreshTarget(): void;
+        clearSelection(): void;
     }
 }
 declare module INSPECTOR {
