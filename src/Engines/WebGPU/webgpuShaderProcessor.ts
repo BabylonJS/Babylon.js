@@ -136,7 +136,7 @@ export abstract class WebGPUShaderProcessor {
     protected _collectSamplerAndUBONames(): void {
         // collect all the buffer names for faster processing later in _getBindGroupsToRender
         // also collect all the sampler names
-        this.webgpuProcessingContext.samplerNames = [];
+        this.webgpuProcessingContext.textureNames = [];
         for (let i = 0; i < this.webgpuProcessingContext.orderedUBOsAndSamplers.length; i++) {
             const setDefinition = this.webgpuProcessingContext.orderedUBOsAndSamplers[i];
             if (setDefinition === undefined) {
@@ -146,7 +146,7 @@ export abstract class WebGPUShaderProcessor {
                 const bindingDefinition = this.webgpuProcessingContext.orderedUBOsAndSamplers[i][j];
                 if (bindingDefinition) {
                     if (bindingDefinition.isTexture) {
-                        this.webgpuProcessingContext.samplerNames.push(bindingDefinition.name);
+                        this.webgpuProcessingContext.textureNames.push(bindingDefinition.name);
                     }
                     if (!bindingDefinition.isSampler && !bindingDefinition.isTexture) {
                         this.webgpuProcessingContext.uniformBufferNames.push(bindingDefinition.name);

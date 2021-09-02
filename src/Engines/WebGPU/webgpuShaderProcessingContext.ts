@@ -68,7 +68,7 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
     public orderedAttributes: string[];
     public orderedUBOsAndSamplers: WebGPUBindingDescription[][];
     public uniformBufferNames: string[];
-    public samplerNames: string[]; // list of all sampler (texture) names used in the shader
+    public textureNames: string[]; // list of all texture names used in the shader
     public attributeNamesFromEffect: string[];
     public attributeLocationsFromEffect: number[];
 

@@ -5,6 +5,7 @@ import { WebGPUMaterialContext } from "./webgpuMaterialContext";
 import { WebGPUPipelineContext } from "./webgpuPipelineContext";
 import { WebGPUEngine } from "../webgpuEngine";
 import { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
+import { InternalTexture } from "../../Materials/Textures/internalTexture";
 
 class WebGPUBindGroupCacheNode {
     public values: { [id: number]: WebGPUBindGroupCacheNode };
@@ -66,8 +67,8 @@ export class WebGPUCacheBindGroups {
                 node = nextNode;
             }
 
-            for (const samplerName of webgpuPipelineContext.shaderProcessingContext.samplerNames) {
-                const textureId = materialContext.textures[samplerName]?.texture?.uniqueId ?? 0;
+            for (const textureName of webgpuPipelineContext.shaderProcessingContext.textureNames) {
+                const textureId = materialContext.textures[textureName]?.texture?.uniqueId ?? 0;
                 let nextNode = node.values[textureId];
                 if (!nextNode) {
                     nextNode = new WebGPUBindGroupCacheNode();
@@ -127,7 +128,7 @@ export class WebGPUCacheBindGroups {
                         }
                         entries.push({
                             binding: j,
-                            resource: this._cacheSampler.getSampler(texture),
+                            resource: this._cacheSampler.getSampler(texture as InternalTexture), // TODO
                         });
                     } else {
                         Logger.Error(`Sampler "${bindingDefinition.name}" could not be bound. bindingDefinition=${JSON.stringify(bindingDefinition)}, materialContext=${JSON.stringify(materialContext, (key: string, value: any) => key === 'texture' || key === '_cacheBindGroups' ? '<no dump>' : value)}`, 50);
@@ -139,7 +140,7 @@ export class WebGPUCacheBindGroups {
                             Logger.Error(`Trying to bind a null texture! bindingDefinition=${JSON.stringify(bindingDefinition)}, bindingInfo=${JSON.stringify(bindingInfo, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}`, 50);
                             continue;
                         }
-                        const hardwareTexture = bindingInfo.texture._hardwareTexture as WebGPUHardwareTexture;
+                        const hardwareTexture = (bindingInfo.texture as InternalTexture)._hardwareTexture as WebGPUHardwareTexture; // TODO
 
                         if (this._engine.dbgSanityChecks && (!hardwareTexture || !hardwareTexture.view)) {
                             Logger.Error(`Trying to bind a null gpu texture! bindingDefinition=${JSON.stringify(bindingDefinition)}, bindingInfo=${JSON.stringify(bindingInfo, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}, isReady=${bindingInfo.texture.isReady}`, 50);
