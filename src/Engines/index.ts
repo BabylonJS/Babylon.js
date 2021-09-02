@@ -10,6 +10,7 @@ export * from "./WebGPU/Extensions/index";
 export * from "./IPipelineContext";
 export * from "./ICanvas";
 export * from "./WebGL/webGLPipelineContext";
+export * from "./WebGL/WebGLHardwareTexture";
 export * from "./WebGPU/webgpuConstants";
 export * from "./webgpuEngine";
 export * from "./WebGPU/webgpuCacheRenderPipeline";
