@@ -154,7 +154,20 @@ IGraphComponentState
                 }
             }
 
-            const value = this._currentAnimation.evaluate(currentFrame);
+            let value: any;
+            
+            if (this.props.context.target) {
+                value = this.props.context.target as any;
+                for (let path of this._currentAnimation.targetPropertyPath) {
+                    value = value[path];
+                }
+
+                if (value.clone) {
+                    value = value.clone();
+                }
+            } else {
+                value = this._currentAnimation.evaluate(currentFrame);
+            }
             const leftKey = keys[indexToAdd];
             const rightKey = keys[indexToAdd + 1];
             
