@@ -345,7 +345,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     <TextLineComponent tooltip="" label="CANVAS" value=" " color="grey"></TextLineComponent>
                     <CheckBoxLineComponent
                         label="RESPONSIVE"
-                        iconLabel="Use pixels or pecentage when dragging with the mouse"
+                        iconLabel="A responsive layout for the AdvancedDynamicTexture will resize the UI layout and reflow controls to accommodate different device screen sizes"
                         icon={responsiveIcon}
                         isSelected={() => DataStorage.ReadBoolean("Responsive", true)}
                         onSelect={(value: boolean) => {
