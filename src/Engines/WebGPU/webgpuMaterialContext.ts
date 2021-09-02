@@ -44,10 +44,10 @@ export class WebGPUMaterialContext implements IMaterialContext {
         }
 
         const curTexture = textureCache.texture;
-        if (texture !== null) {
+        if (!!texture) {
             if (ExternalTexture.IsExternalTexture(texture)) {
                 textureCache.isExternal = true;
-                if (curTexture === texture &&
+                /*if (curTexture === texture &&
                     (textureCache.wrapU !== texture.wrapU || textureCache.wrapV !== texture.wrapV || textureCache.wrapR !== texture.wrapR ||
                         textureCache.anisotropicFilteringLevel !== texture.anisotropicFilteringLevel || textureCache.samplingMode !== texture.samplingMode)) {
                     // the sampler used to sample the texture must be updated, so we need to clear the bind group cache entries that are using
@@ -58,7 +58,7 @@ export class WebGPUMaterialContext implements IMaterialContext {
                     textureCache.anisotropicFilteringLevel = texture.anisotropicFilteringLevel;
                     textureCache.samplingMode = texture.samplingMode;
                     this._cacheBindGroups.clearTextureEntries(curTexture.uniqueId);
-                }
+                }*/
             } else {
                 textureCache.isExternal = false;
                 if (curTexture === texture &&

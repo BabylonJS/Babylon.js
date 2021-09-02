@@ -2827,9 +2827,9 @@ export class WebGPUEngine extends Engine {
         let textureState = 0;
         if (!this._caps.textureFloatLinearFiltering) {
             let bitVal = 1;
-            for (let i = 0; i < webgpuPipelineContext.shaderProcessingContext.samplerNames.length; ++i) {
-                const samplerName = webgpuPipelineContext.shaderProcessingContext.samplerNames[i];
-                const texture = this._currentMaterialContext.textures[samplerName]?.texture;
+            for (let i = 0; i < webgpuPipelineContext.shaderProcessingContext.textureNames.length; ++i) {
+                const textureName = webgpuPipelineContext.shaderProcessingContext.textureNames[i];
+                const texture = this._currentMaterialContext.textures[textureName]?.texture;
                 if (texture?.type === Constants.TEXTURETYPE_FLOAT) {
                     textureState |= bitVal;
                 }
