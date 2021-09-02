@@ -648,8 +648,14 @@ IGraphComponentState
             precision++;
         }
 
+        // Make sure we have an even number with the correct number of decimals
         const pow = Math.pow(10, precision);
-        offset = Math.round(offset * pow) / pow;
+        offset = Math.round(offset * pow);
+        if (offset % 2 !== 0) {
+            offset -= 1;
+        }
+        
+        offset /= pow;
 
         // Evaluate limits
         let startPosition = ((this._viewHeight  * this._viewScale) - this._GraphAbsoluteHeight - this._offsetY) * convertRatio;
@@ -785,8 +791,14 @@ IGraphComponentState
                     invertY={y => this._invertY(y)}
                     convertX={x => this._convertX(x)}
                     convertY={y => this._convertY(y)}
-                    onFrameValueChanged={value => { curve.updateKeyFrame(i, value)}}
-                    onKeyValueChanged={value => { curve.updateKeyValue(i, value)}}
+                    onFrameValueChanged={value => { 
+                        curve.updateKeyFrame(i, value);
+                        this.props.context.refreshTarget();
+                    }}
+                    onKeyValueChanged={value => { 
+                        curve.updateKeyValue(i, value);
+                        this.props.context.refreshTarget();
+                    }}
                 />
             );
         })

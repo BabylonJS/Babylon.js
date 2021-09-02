@@ -140,4 +140,16 @@ export class Context {
 
         this.stop();
     }
+
+    public refreshTarget() {        
+        if (!this.animations || !this.animations.length) {
+            return;
+        }
+
+        if (this.isPlaying) {
+            return;
+        }
+
+        this.moveToFrame(this.activeFrame);
+    }
 }
