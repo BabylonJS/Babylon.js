@@ -60,7 +60,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
         });
     }
 
-    private updateNodeOutline(guiControl : Control) {
+    private updateNodeOutline(guiControl: Control) {
         guiControl.isHighlighted = this._outlines;
         guiControl.highlightLineWidth = 5;
         if (this.props.globalState.workbench.isContainer(guiControl)) {
@@ -82,20 +82,24 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                             onClick: () => { this.props.globalState.onSaveObservable.notifyObservers(); }
                         }, {
                             label: "Load",
+                            fileButton: true
                         }, {
                             label: "Save to snippet",
-                            onClick: () => { this.props.globalState.onSnippetSaveObservable.notifyObservers();}
+                            onClick: () => { this.props.globalState.onSnippetSaveObservable.notifyObservers(); }
                         }, {
                             label: "Load from snippet",
                             onClick: () => { this.props.globalState.onSnippetLoadObservable.notifyObservers(); }
+                        }, {
+                            label: "Help",
+                            onClick: () => { window.open('https://doc.babylonjs.com/divingDeeper/gui/gui', '_blank') }
                         },
                     ]} />
                     <CommandButtonComponent tooltip="Select" icon={pointerIcon} shortcut="Q" isActive={this._selecting}
-                        onClick={() => { if(!this._selecting) this.props.globalState.onSelectionButtonObservable.notifyObservers(); }} />
+                        onClick={() => { if (!this._selecting) this.props.globalState.onSelectionButtonObservable.notifyObservers(); }} />
                     <CommandButtonComponent tooltip="Pan" icon={handIcon} shortcut="W" isActive={this._panning}
-                        onClick={() => { if(!this._panning) this.props.globalState.onPanObservable.notifyObservers(); }} />
+                        onClick={() => { if (!this._panning) this.props.globalState.onPanObservable.notifyObservers(); }} />
                     <CommandButtonComponent tooltip="Zoom" shortcut="E" icon={zoomIcon} isActive={this._zooming}
-                        onClick={() => { if(!this._zooming) this.props.globalState.onZoomObservable.notifyObservers(); }} />
+                        onClick={() => { if (!this._zooming) this.props.globalState.onZoomObservable.notifyObservers(); }} />
                     <CommandButtonComponent tooltip="Toggle Guides" shortcut="R" icon={guidesIcon} isActive={this._outlines}
                         onClick={() => { this.props.globalState.onOutlinesObservable.notifyObservers(); }} />
                 </div>
