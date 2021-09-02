@@ -140,4 +140,21 @@ export class Context {
 
         this.stop();
     }
+
+    public refreshTarget() {        
+        if (!this.animations || !this.animations.length) {
+            return;
+        }
+
+        if (this.isPlaying) {
+            return;
+        }
+
+        this.moveToFrame(this.activeFrame);
+    }
+
+    public clearSelection() {
+        this.activeKeyPoints = [];
+        this.onActiveKeyPointChanged.notifyObservers();
+    }
 }

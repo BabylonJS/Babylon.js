@@ -49,7 +49,11 @@ IAnimationEntryComponentState
         });
 
         this._onActiveKeyPointChangedObserver = this.props.context.onActiveKeyPointChanged.add(() => {
-            this.setState({isSelected: this.props.animation.dataType === Animation.ANIMATIONTYPE_FLOAT && this.props.animation === this.props.context.activeAnimation})
+            this.setState({isSelected: this.props.animation.dataType === Animation.ANIMATIONTYPE_FLOAT && 
+                this.props.animation === this.props.context.activeAnimation &&
+                this.props.context.activeKeyPoints !== null &&
+                this.props.context.activeKeyPoints.length > 0
+            })
         });
     }
 
