@@ -49,7 +49,6 @@ import { Observable } from "../Misc/observable";
 import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
 import { TwgslOptions, WebGPUTintWASM } from "./WebGPU/webgpuTintWASM";
 import { ExternalTexture } from "../Materials/Textures/externalTexture";
-import { Sampler } from "../Materials/Textures/sampler";
 
 declare function importScripts(...urls: string[]): void;
 
@@ -308,7 +307,8 @@ export class WebGPUEngine extends Engine {
     // Effect is on the parent class
     // protected _currentEffect: Nullable<Effect> = null;
     private _defaultMaterialContext: WebGPUMaterialContext;
-    private _currentMaterialContext: WebGPUMaterialContext;
+    /** @hidden */
+    public _currentMaterialContext: WebGPUMaterialContext;
     private _currentDrawContext: WebGPUDrawContext | undefined;
     private _currentOverrideVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }> = null;
     private _currentIndexBuffer: Nullable<DataBuffer> = null;
@@ -1875,7 +1875,8 @@ export class WebGPUEngine extends Engine {
         this._textureHelper.createGPUTextureForInternalTexture(texture, width, height, depth, additionalUsages);
     }
 
-    private _setInternalTexture(name: string, texture: Nullable<InternalTexture | ExternalTexture>, baseName?: string, textureIndex = 0): void {
+    /** @hidden */
+    public _setInternalTexture(name: string, texture: Nullable<InternalTexture | ExternalTexture>, baseName?: string, textureIndex = 0): void {
         baseName = baseName ?? name;
         if (this._currentEffect && !this._currentMaterialContext.setTexture(name, texture)) {
             const webgpuPipelineContext = this._currentEffect._pipelineContext as WebGPUPipelineContext;
@@ -1887,7 +1888,7 @@ export class WebGPUEngine extends Engine {
                     };
                 }
                 if (texture && ExternalTexture.IsExternalTexture(texture)) {
-                    this._currentMaterialContext.textures[name] = {
+                    /*this._currentMaterialContext.textures[name] = {
                         texture: texture!,
                         isExternal: true,
                         wrapU: texture?.wrapU,
@@ -1895,7 +1896,7 @@ export class WebGPUEngine extends Engine {
                         wrapR: texture?.wrapR,
                         anisotropicFilteringLevel: texture?.anisotropicFilteringLevel,
                         samplingMode: texture?.samplingMode,
-                    };
+                    };*/
                 } else {
                     this._currentMaterialContext.textures[name] = {
                         texture: texture!,
@@ -1920,29 +1921,6 @@ export class WebGPUEngine extends Engine {
      */
     public setTexture(channel: number, unused: Nullable<WebGLUniformLocation>, texture: Nullable<BaseTexture>, name: string): void {
         this._setTexture(channel, texture, false, false, name, name);
-    }
-
-    /**
-     * Sets an internal texture to the according uniform.
-     * @param name The name of the uniform in the effect
-     * @param texture The texture to apply
-     */
-    public setExternalTexture(name: string, texture: Nullable<ExternalTexture>): void {
-        if (this._currentEffect) {
-            if (!texture) {
-                this._currentMaterialContext.setTexture(name, null);
-                return;
-            }
-            this._setInternalTexture(name, texture);
-        }
-    }
-
-    /**
-     * Sets a sampler to the according uniform.
-     * @param name The name of the uniform in the effect
-     * @param sampler The sampler to apply
-     */
-    public setSampler(name: string, texture: Nullable<Sampler>): void {
     }
 
     /**

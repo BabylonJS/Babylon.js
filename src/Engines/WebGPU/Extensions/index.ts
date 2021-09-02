@@ -11,6 +11,7 @@ import "./engine.rawTexture";
 import "./engine.readTexture";
 import "./engine.renderTarget";
 import "./engine.renderTargetCube";
+import "./engine.sampler";
 import "./engine.storageBuffer";
 import "./engine.uniformBuffer";
 import "./engine.videoTexture";

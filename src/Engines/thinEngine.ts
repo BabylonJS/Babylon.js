@@ -50,8 +50,6 @@ declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTex
 declare type Texture = import("../Materials/Textures/texture").Texture;
 declare type RenderTargetWrapper = import("./renderTargetWrapper").RenderTargetWrapper;
 declare type WebGLRenderTargetWrapper = import("./WebGL/webGLRenderTargetWrapper").WebGLRenderTargetWrapper;
-declare type ExternalTexture = import("../Materials/Textures/externalTexture").ExternalTexture;
-declare type Sampler = import("../Materials/Textures/sampler").Sampler;
 
 /**
  * Defines the interface used by objects working like Scene
@@ -457,7 +455,7 @@ export class ThinEngine {
     /** @hidden */
     protected _boundTexturesCache: { [key: string]: Nullable<InternalTexture> } = {};
     /** @hidden */
-    protected _currentEffect: Nullable<Effect>;
+    public _currentEffect: Nullable<Effect>;
     /** @hidden */
     protected _currentProgram: Nullable<WebGLProgram>;
     protected _compiledEffects: { [key: string]: Effect } = {};
@@ -4239,24 +4237,6 @@ export class ThinEngine {
         }
 
         this._setTexture(channel, texture);
-    }
-
-    /**
-     * Sets an internal texture to the according uniform.
-     * @param name The name of the uniform in the effect
-     * @param texture The texture to apply
-     */
-    public setExternalTexture(name: string, texture: Nullable<ExternalTexture>): void {
-        // not supported by WebGL
-    }
-
-    /**
-     * Sets a sampler to the according uniform.
-     * @param name The name of the uniform in the effect
-     * @param sampler The sampler to apply
-     */
-    public setSampler(name: string, sampler: Nullable<Sampler>): void {
-        // not supported by WebGL
     }
 
     private _bindSamplerUniformToChannel(sourceSlot: number, destination: number) {
