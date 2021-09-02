@@ -48710,6 +48710,10 @@ declare module BABYLON {
          */
         camera: ArcRotateCamera;
         /**
+         * The minimum radius used for pinch, to avoid radius lock at 0
+         */
+        static MinimumRadiusForPinch: number;
+        /**
          * Gets the class name of the current input.
          * @returns the class name
          */
@@ -61854,11 +61858,7 @@ declare module BABYLON {
     /** @hidden */
     export class WebGPUTintWASM {
         private static readonly _twgslDefaultOptions;
-        private static _TwgslInitedResolve;
-        private static _TwgslInited;
         private _twgsl;
-        /** @hidden */
-        static _TWGSLModuleInitialized(): void;
         initTwgsl(twgslOptions?: TwgslOptions): Promise<void>;
         convertSpirV2WGSL(code: Uint32Array): string;
     }
