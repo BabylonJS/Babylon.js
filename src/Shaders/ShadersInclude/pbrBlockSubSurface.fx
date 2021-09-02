@@ -29,88 +29,88 @@ struct subSurfaceOutParams
     #define pbr_inline
     #define inline
     void subSurfaceBlock(
-        const in vec3 vSubSurfaceIntensity,
-        const in vec2 vThicknessParam,
-        const in vec4 vTintColor,
-        const in vec3 normalW,
-        const in vec3 specularEnvironmentReflectance,
+        in vec3 vSubSurfaceIntensity,
+        in vec2 vThicknessParam,
+        in vec4 vTintColor,
+        in vec3 normalW,
+        in vec3 specularEnvironmentReflectance,
     #ifdef SS_THICKNESSANDMASK_TEXTURE
-        const in vec4 thicknessMap,
+        in vec4 thicknessMap,
     #endif
     #ifdef SS_REFRACTIONINTENSITY_TEXTURE
-        const in vec4 refractionIntensityMap,
+        in vec4 refractionIntensityMap,
     #endif
     #ifdef SS_TRANSLUCENCYINTENSITY_TEXTURE
-        const in vec4 translucencyIntensityMap,
+        in vec4 translucencyIntensityMap,
     #endif
     #ifdef REFLECTION
         #ifdef SS_TRANSLUCENCY
-            const in mat4 reflectionMatrix,
+            in mat4 reflectionMatrix,
             #ifdef USESPHERICALFROMREFLECTIONMAP
                 #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
-                    const in vec3 irradianceVector_,
+                    in vec3 irradianceVector_,
                 #endif
                 #if defined(REALTIME_FILTERING)
-                    const in samplerCube reflectionSampler,
-                    const in vec2 vReflectionFilteringInfo,
+                    in samplerCube reflectionSampler,
+                    in vec2 vReflectionFilteringInfo,
                 #endif
             #endif
             #ifdef USEIRRADIANCEMAP
                 #ifdef REFLECTIONMAP_3D
-                    const in samplerCube irradianceSampler,
+                    in samplerCube irradianceSampler,
                 #else
-                    const in sampler2D irradianceSampler,
+                    in sampler2D irradianceSampler,
                 #endif
             #endif
         #endif
     #endif
     #if defined(SS_REFRACTION) || defined(SS_TRANSLUCENCY)
-        const in vec3 surfaceAlbedo,
+        in vec3 surfaceAlbedo,
     #endif
     #ifdef SS_REFRACTION
-        const in vec3 vPositionW,
-        const in vec3 viewDirectionW,
-        const in mat4 view,
-        const in vec4 vRefractionInfos,
-        const in mat4 refractionMatrix,
-        const in vec4 vRefractionMicrosurfaceInfos,
-        const in vec4 vLightingIntensity,
+        in vec3 vPositionW,
+        in vec3 viewDirectionW,
+        in mat4 view,
+        in vec4 vRefractionInfos,
+        in mat4 refractionMatrix,
+        in vec4 vRefractionMicrosurfaceInfos,
+        in vec4 vLightingIntensity,
         #ifdef SS_LINKREFRACTIONTOTRANSPARENCY
-            const in float alpha,
+            in float alpha,
         #endif
         #ifdef SS_LODINREFRACTIONALPHA
-            const in float NdotVUnclamped,
+            in float NdotVUnclamped,
         #endif
         #ifdef SS_LINEARSPECULARREFRACTION
-            const in float roughness,
+            in float roughness,
         #endif
-        const in float alphaG,
+        in float alphaG,
         #ifdef SS_REFRACTIONMAP_3D
-            const in samplerCube refractionSampler,
+            in samplerCube refractionSampler,
             #ifndef LODBASEDMICROSFURACE
-                const in samplerCube refractionSamplerLow,
-                const in samplerCube refractionSamplerHigh,
+                in samplerCube refractionSamplerLow,
+                in samplerCube refractionSamplerHigh,
             #endif
         #else
-            const in sampler2D refractionSampler,
+            in sampler2D refractionSampler,
             #ifndef LODBASEDMICROSFURACE
-                const in sampler2D refractionSamplerLow,
-                const in sampler2D refractionSamplerHigh,
+                in sampler2D refractionSamplerLow,
+                in sampler2D refractionSamplerHigh,
             #endif
         #endif
         #ifdef ANISOTROPIC
-            const in anisotropicOutParams anisotropicOut,
+            in anisotropicOutParams anisotropicOut,
         #endif
         #ifdef REALTIME_FILTERING
-            const in vec2 vRefractionFilteringInfo,
+            in vec2 vRefractionFilteringInfo,
         #endif
         #ifdef SS_USE_LOCAL_REFRACTIONMAP_CUBIC
-            const in vec3 refractionPosition,
-            const in vec3 refractionSize,
+            in vec3 refractionPosition,
+            in vec3 refractionSize,
         #endif
     #endif
     #ifdef SS_TRANSLUCENCY
-        const in vec3 vDiffusionDistance,
+        in vec3 vDiffusionDistance,
     #endif
         out subSurfaceOutParams outParams
     )

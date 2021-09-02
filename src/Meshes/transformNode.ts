@@ -201,6 +201,13 @@ export class TransformNode extends Node {
     }
 
     /**
+     * return true if a pivot has been set
+     */
+     public get usePivotMatrix(): boolean {
+         return this._usePivotMatrix;
+     }
+
+    /**
       * Gets or sets the rotation property : a Vector3 defining the rotation value in radians around each local axis X, Y, Z  (default is (0.0, 0.0, 0.0)).
       * If rotation quaternion is set, this Vector3 will be ignored and copy from the quaternion
       */
