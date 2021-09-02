@@ -37,7 +37,7 @@ export class AnimationCurveEditorComponent extends React.Component<
             window.close();
         }
         this.setState({isOpen: false});
-        this.props.context.activeAnimation = null;
+        this.props.context.activeAnimations = [];
         this.props.context.onActiveAnimationChanged.notifyObservers();
     }
 
@@ -48,7 +48,9 @@ export class AnimationCurveEditorComponent extends React.Component<
                 this.props.context.prepare();
                 if (this.props.context.animations && this.props.context.animations.length) {
                     setTimeout(() => {
-                        this.props.context.activeAnimation = this.props.context.useTargetAnimations ? (this.props.context.animations![0] as TargetedAnimation).animation : this.props.context.animations![0] as Animation;
+                        for (const animation of this.props.context.animations!) {
+                            this.props.context.activeAnimations.push(this.props.context.useTargetAnimations ? (animation as TargetedAnimation).animation : animation as Animation);
+                        }
                         this.props.context.onActiveAnimationChanged.notifyObservers();    
                     });
                 }

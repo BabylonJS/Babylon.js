@@ -12,7 +12,7 @@ export class Context {
     animations: Nullable<Animation[] | TargetedAnimation[]>;
     scene: Scene;
     target: Nullable<IAnimatable>;
-    activeAnimation: Nullable<Animation>;
+    activeAnimations: Animation[] = [];
     activeColor: Nullable<string> = null;
     activeKeyPoints: Nullable<KeyPointComponent[]>;
     mainKeyPoint: Nullable<KeyPointComponent>;

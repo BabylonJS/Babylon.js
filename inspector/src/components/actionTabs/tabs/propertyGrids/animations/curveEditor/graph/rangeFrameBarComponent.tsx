@@ -21,8 +21,6 @@ IRangeFrameBarComponentState
     private _viewWidth = 748;
     private _offsetX = 10;
     private _isMounted = false;
-
-    private _currentAnimation: Nullable<Animation>;
     
     private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
 
@@ -38,8 +36,6 @@ IRangeFrameBarComponentState
         });
 
         this._onActiveAnimationChangedObserver = this.props.context.onActiveAnimationChanged.add(() => {
-            this._currentAnimation = this.props.context.activeAnimation;
-
             if (!this._isMounted) {
                 return;
             }
@@ -86,17 +82,13 @@ IRangeFrameBarComponentState
         this.forceUpdate();
     }
 
-    private _dropKeyFrames() {
-        if (!this._currentAnimation) {
-            return null;
-        }
-
+    private _dropKeyFrames(animation: Animation) {
         const from = this.props.context.fromKey;
         const to = this.props.context.toKey;
         let range = to - from;
         let convertRatio = range / this._viewWidth;
         
-        const keys = this._currentAnimation.getKeys();
+        const keys = animation.getKeys();
 
         return (
             keys.map((k, i) => {
@@ -119,7 +111,7 @@ IRangeFrameBarComponentState
     }
 
     private _buildFrames() {
-        if (!this._currentAnimation) {
+        if (this.props.context.activeAnimations.length === 0) {
             return null;
         }
 
@@ -197,7 +189,9 @@ IRangeFrameBarComponentState
                         this._buildFrames()
                     }
                     {
-                        this._dropKeyFrames()
+                        this.props.context.activeAnimations.map(a => {
+                            return this._dropKeyFrames(a);
+                        })                        
                     }
                 </svg>
             </div>
