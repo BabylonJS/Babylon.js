@@ -4,14 +4,14 @@
     },
     "name": "babylonjs-gui-editor",
     "description": "The Babylon.js GUI editor.",
-    "version": "5.0.0-alpha.40",
+    "version": "5.0.0-alpha.41",
     "repository": {
         "type": "git",
         "url": "https://github.com/BabylonJS/Babylon.js.git"
     },
     "license": "Apache-2.0",
     "dependencies": {
-        "babylonjs": "5.0.0-alpha.40"
+        "babylonjs": "5.0.0-alpha.41"
     },
     "files": [
         "babylon.guiEditor.max.js.map",
