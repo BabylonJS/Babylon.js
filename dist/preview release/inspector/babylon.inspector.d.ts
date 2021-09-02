@@ -1408,6 +1408,7 @@ declare module INSPECTOR {
         private _invertX;
         private _convertY;
         private _invertY;
+        private _buildFrameIntervalAxis;
         private _buildYAxis;
         private _frame;
         private _dropKeyFrames;

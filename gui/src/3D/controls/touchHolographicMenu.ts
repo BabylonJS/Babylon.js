@@ -136,9 +136,7 @@ export class TouchHolographicMenu extends VolumeBasedPanel {
     public addButton(button: TouchHolographicButton): TouchHolographicMenu {
         super.addControl(button);
 
-        if (button.backMaterial) {
-            button.backMaterial.alpha = 0;
-        }
+        button.isBackplateVisible = false;
 
         return this;
     }

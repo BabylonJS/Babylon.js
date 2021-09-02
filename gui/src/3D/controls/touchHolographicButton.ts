@@ -41,6 +41,7 @@ export class TouchHolographicButton extends TouchButton3D {
     private _text: string;
     private _imageUrl: string;
     private _shareMaterials = true;
+    private _isBackplateVisible = true;
     private _frontMaterial: FluentButtonMaterial;
     private _backMaterial: StandardMaterial;
     private _plateMaterial: StandardMaterial;
@@ -208,6 +209,22 @@ export class TouchHolographicButton extends TouchButton3D {
     }
 
     /**
+     * Sets whether the backplate is visible or hidden. Hiding the backplate is not recommended without some sort of replacement
+     */
+    public set isBackplateVisible(isVisible: boolean) {
+        if (this.mesh && !!this._backMaterial) {
+            if (isVisible && !this._isBackplateVisible) {
+                this._backPlate.visibility = 1;
+            }
+            else if (!isVisible && this._isBackplateVisible) {
+                this._backPlate.visibility = 0;
+            }
+        }
+
+        this._isBackplateVisible = isVisible;
+    }
+
+    /**
      * Creates a new button
      * @param name defines the control name
      */
@@ -372,8 +389,8 @@ export class TouchHolographicButton extends TouchButton3D {
     }
 
     protected _affectMaterial(mesh: Mesh) {
-        // Back
         if (this._shareMaterials) {
+            // Back
             if (!this._host._touchSharedMaterials["backFluentMaterial"]) {
                 this._createBackMaterial(mesh);
                 this._host._touchSharedMaterials["backFluentMaterial"] = this._backMaterial;
@@ -396,6 +413,10 @@ export class TouchHolographicButton extends TouchButton3D {
         this._createPlateMaterial(mesh);
         this._backPlate.material = this._backMaterial;
         this._textPlate.material = this._plateMaterial;
+
+        if (!this._isBackplateVisible) {
+            this._backPlate.visibility = 0;
+        }
         if (!!this._frontPlate) {
             this._frontPlate.material = this._frontMaterial;
         }
