@@ -1,5 +1,6 @@
 import { Vector2, Vector3 } from "../../Maths/math.vector";
 import { TransformNode } from "../../Meshes/transformNode";
+import { Logger } from "../../Misc/logger";
 import { Observable } from "../../Misc/observable";
 import { Nullable } from "../../types";
 import { WebXRCamera } from "../webXRCamera";
@@ -313,6 +314,12 @@ class Walker {
  * Options for the walking locomotion feature.
  */
 export interface IWebXRWalkingLocomotionOptions {
+    /**
+     * The target to be moved by walking locomotion. This should be the transform node 
+     * which is the root of the XR space (i.e., the WebXRCamera's parent node). However,
+     * for simple cases and legacy purposes, articulating the WebXRCamera itself is also
+     * supported as a deprecated feature.
+     */
     locomotionTarget: WebXRCamera | TransformNode;
 }
 
@@ -344,10 +351,12 @@ export class WebXRWalkingLocomotion extends WebXRAbstractFeature {
     private _walker: Nullable<Walker>;
 
     /**
-     * The Vector3 to be articulated by walking locomotion.
-     * When the walking locomotion feature detects walking in place, this vector's
-     * X and Z coordinates will be modified to reflect locomotion. This vector is
-     * assumed to be in the base XR space and will be articulated accordingly.
+     * The target to be articulated by walking locomotion.
+     * When the walking locomotion feature detects walking in place, this element's
+     * X and Z coordinates will be modified to reflect locomotion. This target should
+     * be either the XR space's origin (i.e., the parent node of the WebXRCamera) or
+     * the WebXRCamera itself. Note that the WebXRCamera path will modify the position
+     * of the WebXRCamera directly and is thus discouraged.
      */
     public locomotionTarget: WebXRCamera | TransformNode;
 
@@ -359,7 +368,10 @@ export class WebXRWalkingLocomotion extends WebXRAbstractFeature {
     public constructor(sessionManager: WebXRSessionManager, options: IWebXRWalkingLocomotionOptions) {
         super(sessionManager);
         this._sessionManager = sessionManager;
-        this.locomotionTarget = options.locomotionTarget ?? new Vector3();
+        this.locomotionTarget = options.locomotionTarget;
+        if (this.locomotionTarget instanceof WebXRCamera) {
+            Logger.Warn("Using walking locomotion directly on a WebXRCamera may have unintended interactions with other XR techniques. Using an XR space parent is highly recommended");
+        }
     }
 
     /**
