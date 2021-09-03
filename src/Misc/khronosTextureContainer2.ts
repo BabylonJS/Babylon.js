@@ -237,6 +237,7 @@ export class KhronosTextureContainer2 {
         }
 
         delete KhronosTextureContainer2._WorkerPoolPromise;
+        delete KhronosTextureContainer2._NoWorkerPromise;
     }
 
     protected _createTexture(data: any /* IEncodedData */, internalTexture: InternalTexture, options?: any) {
