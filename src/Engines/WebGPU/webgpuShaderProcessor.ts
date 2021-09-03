@@ -1,8 +1,10 @@
 import * as WebGPUConstants from './webgpuConstants';
-import { WebGPUShaderProcessingContext, WebGPUTextureSamplerBindingDescription } from "./webgpuShaderProcessingContext";
+import { WebGPUBindingInfo, WebGPUShaderProcessingContext, WebGPUTextureBindingDescription } from "./webgpuShaderProcessingContext";
 
 /** @hidden */
 export abstract class WebGPUShaderProcessor {
+
+    public static readonly AutoSamplerSuffix = "Sampler";
 
     public static UniformSizes: { [type: string]: number } = {
         // GLSL types
@@ -49,8 +51,12 @@ export abstract class WebGPUShaderProcessor {
         "Mesh": { setIndex: 1, bindingIndex: 1, varName: "mesh" },
     };
 
-    protected static _KnownSamplers: { [key: string]: WebGPUTextureSamplerBindingDescription } = {
-        "environmentBrdfSampler": { sampler: { setIndex: 1, bindingIndex: 2 }, isTextureArray: false, textures: [{ setIndex: 1, bindingIndex: 3 }] },
+    protected static _KnownTextures: { [key: string]: WebGPUTextureBindingDescription } = {
+        "environmentBrdfSampler": { autoBindSampler: true, isTextureArray: false, textures: [{ setIndex: 1, bindingIndex: 3 }] },
+    };
+
+    protected static _KnownSamplers: { [key: string]: WebGPUBindingInfo } = {
+        "environmentBrdfSamplerSampler": { setIndex: 1, bindingIndex: 2 },
     };
 
     protected static _SamplerFunctionByWebGLSamplerType: { [key: string]: string } = {
@@ -133,9 +139,8 @@ export abstract class WebGPUShaderProcessor {
         return this._generateLeftOverUBOCode(name, availableUBO.setIndex, availableUBO.bindingIndex);
     }
 
-    protected _collectSamplerAndUBONames(): void {
-        // collect all the buffer names for faster processing later in _getBindGroupsToRender
-        // also collect all the sampler names
+    protected _collectBindingNames(): void {
+        // collect all the binding names for faster processing in WebGPUCacheBindGroup
         this.webgpuProcessingContext.textureNames = [];
         for (let i = 0; i < this.webgpuProcessingContext.orderedUBOsAndSamplers.length; i++) {
             const setDefinition = this.webgpuProcessingContext.orderedUBOsAndSamplers[i];
@@ -147,8 +152,9 @@ export abstract class WebGPUShaderProcessor {
                 if (bindingDefinition) {
                     if (bindingDefinition.isTexture) {
                         this.webgpuProcessingContext.textureNames.push(bindingDefinition.name);
-                    }
-                    if (!bindingDefinition.isSampler && !bindingDefinition.isTexture) {
+                    } else if (bindingDefinition.isSampler) {
+                        this.webgpuProcessingContext.samplerNames.push(bindingDefinition.name);
+                    } else  {
                         this.webgpuProcessingContext.uniformBufferNames.push(bindingDefinition.name);
                     }
                 }

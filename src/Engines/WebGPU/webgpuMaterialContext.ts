@@ -1,23 +1,20 @@
 import { ExternalTexture } from "../../Materials/Textures/externalTexture";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
+import { Sampler } from "../../Materials/Textures/sampler";
 import { Nullable } from "../../types";
 import { IMaterialContext } from "../IMaterialContext";
-import { WebGPUCacheBindGroups } from "./webgpuCacheBindGroups";
+import { WebGPUCacheSampler } from "./webgpuCacheSampler";
 
 /** @hidden */
 interface IWebGPUMaterialContextSamplerCache {
-    firstTextureName: string;
+    sampler: Nullable<Sampler>;
+    hashCode: number;
 }
 
 /** @hidden */
 interface IWebGPUMaterialContextTextureCache {
-    texture: InternalTexture | ExternalTexture;
+    texture: Nullable<InternalTexture | ExternalTexture>;
     isExternal: boolean;
-    wrapU?: Nullable<number>;
-    wrapV?: Nullable<number>;
-    wrapR?: Nullable<number>;
-    anisotropicFilteringLevel?: Nullable<number>;
-    samplingMode?: Nullable<number>;
 }
 
 /** @hidden */
@@ -28,56 +25,32 @@ export class WebGPUMaterialContext implements IMaterialContext {
     public samplers: { [name: string]: Nullable<IWebGPUMaterialContextSamplerCache> };
     public textures: { [name: string]: Nullable<IWebGPUMaterialContextTextureCache> };
 
-    private _cacheBindGroups: WebGPUCacheBindGroups;
-
-    constructor(cachBindGroups: WebGPUCacheBindGroups) {
-        this._cacheBindGroups = cachBindGroups;
+    constructor() {
         this.samplers = {};
         this.textures = {};
         this.uniqueId = WebGPUMaterialContext._Counter++;
     }
 
-    public setTexture(name: string, texture: Nullable<InternalTexture | ExternalTexture>): boolean {
-        const textureCache = this.textures[name];
+    public setSampler(name: string, sampler: Nullable<Sampler>): void {
+        let samplerCache = this.samplers[name];
+        if (!samplerCache) {
+            this.samplers[name] = samplerCache = { sampler, hashCode: 0 };
+        }
+
+        samplerCache.sampler = sampler;
+        samplerCache.hashCode = sampler ? WebGPUCacheSampler.GetSamplerHashCode(sampler) : 0;
+    }
+
+    public setTexture(name: string, texture: Nullable<InternalTexture | ExternalTexture>): void {
+        let textureCache = this.textures[name];
         if (!textureCache) {
-            return false;
+            this.textures[name] = textureCache = { texture, isExternal: false };
         }
 
-        const curTexture = textureCache.texture;
         if (!!texture) {
-            if (ExternalTexture.IsExternalTexture(texture)) {
-                textureCache.isExternal = true;
-                /*if (curTexture === texture &&
-                    (textureCache.wrapU !== texture.wrapU || textureCache.wrapV !== texture.wrapV || textureCache.wrapR !== texture.wrapR ||
-                        textureCache.anisotropicFilteringLevel !== texture.anisotropicFilteringLevel || textureCache.samplingMode !== texture.samplingMode)) {
-                    // the sampler used to sample the texture must be updated, so we need to clear the bind group cache entries that are using
-                    // this texture so that the bind groups are re-created with the right sampler
-                    textureCache.wrapU = texture.wrapU;
-                    textureCache.wrapV = texture.wrapV;
-                    textureCache.wrapR = texture.wrapR;
-                    textureCache.anisotropicFilteringLevel = texture.anisotropicFilteringLevel;
-                    textureCache.samplingMode = texture.samplingMode;
-                    this._cacheBindGroups.clearTextureEntries(curTexture.uniqueId);
-                }*/
-            } else {
-                textureCache.isExternal = false;
-                if (curTexture === texture &&
-                    (textureCache.wrapU !== texture._cachedWrapU || textureCache.wrapV !== texture._cachedWrapV || textureCache.wrapR !== texture._cachedWrapR ||
-                        textureCache.anisotropicFilteringLevel !== texture._cachedAnisotropicFilteringLevel || textureCache.samplingMode !== texture.samplingMode)) {
-                    // the sampler used to sample the texture must be updated, so we need to clear the bind group cache entries that are using
-                    // this texture so that the bind groups are re-created with the right sampler
-                    textureCache.wrapU = texture._cachedWrapU;
-                    textureCache.wrapV = texture._cachedWrapV;
-                    textureCache.wrapR = texture._cachedWrapR;
-                    textureCache.anisotropicFilteringLevel = texture._cachedAnisotropicFilteringLevel;
-                    textureCache.samplingMode = texture.samplingMode;
-                    this._cacheBindGroups.clearTextureEntries(curTexture.uniqueId);
-                }
-            }
+            textureCache.isExternal = ExternalTexture.IsExternalTexture(texture);
         }
 
-        textureCache.texture = texture!;
-
-        return true;
+        textureCache.texture = texture;
     }
 }

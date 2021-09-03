@@ -79,6 +79,19 @@ export class Sampler {
         this._comparisonFunction = value;
     }
 
+    private _useMipMaps = true;
+    /**
+     * Indicates to use the mip maps (if available on the texture).
+     * Thanks to this flag, you can instruct the sampler to not sample the mipmaps even if they exist (and if the sampling mode is set to a value that normally samples the mipmaps!)
+     */
+    public get useMipMaps() {
+        return this._useMipMaps;
+    }
+
+    public set useMipMaps(value: boolean) {
+        this._useMipMaps = value;
+    }
+
     /** @hidden */
     public _cachedWrapU: Nullable<number> = null;
 
