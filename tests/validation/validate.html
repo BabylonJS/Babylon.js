@@ -2,64 +2,63 @@
 <html>
 
 <head>
-	<title>BabylonJS - Build validation page</title>
+    <title>BabylonJS - Build validation page</title>
     <link href="index.css" rel="stylesheet" />
 
-	<script src="https://preview.babylonjs.com/draco_decoder_gltf.js"></script>
-	<script src="https://preview.babylonjs.com/ammo.js"></script>
-	<script src="https://preview.babylonjs.com/cannon.js"></script>
-	<script src="https://preview.babylonjs.com/Oimo.js"></script>
-	<script src="https://preview.babylonjs.com/babylon.js"></script>
-	<script src="https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
+    <script src="https://preview.babylonjs.com/ammo.js"></script>
+    <script src="https://preview.babylonjs.com/cannon.js"></script>
+    <script src="https://preview.babylonjs.com/Oimo.js"></script>
+    <script src="https://preview.babylonjs.com/babylon.js"></script>
+    <script src="https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
 
-	<script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
-	<script src="https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
-	<script src="https://preview.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js"></script>
-	<script src="https://preview.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js"></script>
-	<script src="https://preview.babylonjs.com/gui/babylon.gui.min.js"></script>
+    <script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+    <script src="https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+    <script src="https://preview.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js"></script>
+    <script src="https://preview.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js"></script>
+    <script src="https://preview.babylonjs.com/gui/babylon.gui.min.js"></script>
 </head>
 
 <body>
-	<script src="validation.js"></script>
-	<script>
-		// Loading tests
-		var xhr = new XMLHttpRequest();
+    <script src="validation.js"></script>
+    <script>
+        // Loading tests
+        var xhr = new XMLHttpRequest();
 
-		xhr.open("GET", "config.json", true);
+        xhr.open("GET", "config.json", true);
 
-		xhr.addEventListener("load", function() {
-			if (xhr.status === 200) {
+        xhr.addEventListener("load", function() {
+            if (xhr.status === 200) {
 
-				config = JSON.parse(xhr.responseText);
+                config = JSON.parse(xhr.responseText);
 
-				// Run tests
-				var index = 0;
-				if (window.location.search) {
-					justOnce = true;
-					var title = window.location.search.replace("?", "").replace(/%20/g, " ");
-					for (var index = 0; index < config.tests.length; index++) {
-						if (config.tests[index].title === title) {
-							break;
-						}
-					}
-				}
+                // Run tests
+                var index = 0;
+                if (window.location.search) {
+                    justOnce = true;
+                    var title = window.location.search.replace("?", "").replace(/%20/g, " ");
+                    for (var index = 0; index < config.tests.length; index++) {
+                        if (config.tests[index].title === title) {
+                            break;
+                        }
+                    }
+                }
 
-				var recursiveRunTest = function(i) {
-					runTest(i, function() {
-						i++;
-						if (justOnce || i >= config.tests.length) {
-							return;
-						}
-						recursiveRunTest(i);
-					});
-				}
+                var recursiveRunTest = function(i) {
+                    runTest(i, function() {
+                        i++;
+                        if (justOnce || i >= config.tests.length) {
+                            return;
+                        }
+                        recursiveRunTest(i);
+                    });
+                }
 
-				recursiveRunTest(index);
-			}
-		}, false);
+                recursiveRunTest(index);
+            }
+        }, false);
 
-		xhr.send();
-	</script>
+        xhr.send();
+    </script>
 </body>
 
 </html>

@@ -376,7 +376,7 @@ export class SpriteRenderer {
     /**
      * Rebuilds the renderer (after a context lost, for eg)
      */
-     public rebuild(): void {
+    public rebuild(): void {
         if (this._indexBuffer) {
             this._buildIndexBuffer();
         }

@@ -85,7 +85,7 @@ export class SolidParticleSystem implements IDisposable {
      * It's better to use the method SPS.pickedParticle(pickingInfo) rather than using directly this array.
      * Please read : https://doc.babylonjs.com/how_to/Solid_Particle_System#pickable-particles
      */
-    public pickedBySubMesh: { idx: number; faceId: number}[][];
+    public pickedBySubMesh: { idx: number; faceId: number }[][];
     /**
      * This array is populated when `enableDepthSort` is set to true.
      * Each element of this array is an instance of the class DepthSortedParticle.
@@ -259,7 +259,7 @@ export class SolidParticleSystem implements IDisposable {
                 for (let i = 0; i < lind; i++) {
                     let f = i % 3;
                     if (f == 0) {
-                        const pickedData = {idx: part.idx, faceId: faceId};
+                        const pickedData = { idx: part.idx, faceId: faceId };
                         this.pickedParticles[faceId] = pickedData;
                         faceId++;
                     }
@@ -838,7 +838,7 @@ export class SolidParticleSystem implements IDisposable {
             return this;
         }
         var idxInShape = 0;
-        var  currentShapeId = solidParticleArray[0].shapeId;
+        var currentShapeId = solidParticleArray[0].shapeId;
         const nb = solidParticleArray.length;
         for (var i = 0; i < nb; i++) {
             var sp = solidParticleArray[i];
@@ -850,7 +850,7 @@ export class SolidParticleSystem implements IDisposable {
             var meshNor = model._normals;
             var noNor = (meshNor) ? false : true;
             this.recomputeNormals = (noNor || this.recomputeNormals);
-            var bbInfo = sp._boundingInfo;
+            var bbInfo = sp.getBoundingInfo();
             var newPart = this._insertNewParticle(this.nbParticles, idxInShape, model, shape, meshInd, meshUV, meshCol, meshNor, bbInfo, null, null);
             sp.copyToRef(newPart!);
             idxInShape++;
@@ -881,7 +881,7 @@ export class SolidParticleSystem implements IDisposable {
      * @options addShape() passed options
      * @hidden
      */
-    private _insertNewParticle(idx: number, i: number, modelShape: ModelShape, shape: Vector3[], meshInd: IndicesArray, meshUV: number[] | Float32Array, meshCol: number[] | Float32Array, meshNor: number[] | Float32Array, bbInfo: Nullable<BoundingInfo>, storage: Nullable<[]> , options: any): Nullable<SolidParticle> {
+    private _insertNewParticle(idx: number, i: number, modelShape: ModelShape, shape: Vector3[], meshInd: IndicesArray, meshUV: number[] | Float32Array, meshCol: number[] | Float32Array, meshNor: number[] | Float32Array, bbInfo: Nullable<BoundingInfo>, storage: Nullable<[]>, options: any): Nullable<SolidParticle> {
         var currentPos = this._positions.length;
         var currentInd = this._indices.length;
         var currentCopy = this._meshBuilder(this._index, currentInd, shape, this._positions, meshInd, this._indices, meshUV, this._uvs, meshCol, this._colors, meshNor, this._normals, idx, i, options, modelShape);
@@ -1006,7 +1006,7 @@ export class SolidParticleSystem implements IDisposable {
         end = (end >= this.nbParticles) ? this.nbParticles - 1 : end;
         if (this._computeBoundingBox) {
             if (start != 0 || end != this.nbParticles - 1) { // only some particles are updated, then use the current existing BBox basis. Note : it can only increase.
-                const boundingInfo = this.mesh._boundingInfo;
+                const boundingInfo = this.mesh.getBoundingInfo();
                 if (boundingInfo) {
                     minimum.copyFrom(boundingInfo.minimum);
                     maximum.copyFrom(boundingInfo.maximum);
@@ -1132,7 +1132,7 @@ export class SolidParticleSystem implements IDisposable {
                     idx = index + pt * 3;
                     colidx = colorIndex + pt * 4;
                     uvidx = uvIndex + pt * 2;
-                    const iu  = 2 * pt;
+                    const iu = 2 * pt;
                     const iv = iu + 1;
 
                     tmpVector.copyFrom(shape[pt]);
@@ -1225,7 +1225,7 @@ export class SolidParticleSystem implements IDisposable {
 
             // if the particle intersections must be computed : update the bbInfo
             if (this._particlesIntersect) {
-                const bInfo = particle._boundingInfo;
+                const bInfo = particle.getBoundingInfo();
                 const bBox = bInfo.boundingBox;
                 const bSphere = bInfo.boundingSphere;
                 const modelBoundingInfo = particle._modelBoundingInfo;
@@ -1321,11 +1321,11 @@ export class SolidParticleSystem implements IDisposable {
             }
         }
         if (this._computeBoundingBox) {
-            if (mesh._boundingInfo) {
-                mesh._boundingInfo.reConstruct(minimum, maximum, mesh._worldMatrix);
+            if (mesh.hasBoundingInfo) {
+                mesh.getBoundingInfo().reConstruct(minimum, maximum, mesh._worldMatrix);
             }
             else {
-                mesh._boundingInfo = new BoundingInfo(minimum, maximum, mesh._worldMatrix);
+                mesh.buildBoundingInfo(minimum, maximum, mesh._worldMatrix);
             }
         }
         if (this._autoUpdateSubMeshes) {
@@ -1367,7 +1367,7 @@ export class SolidParticleSystem implements IDisposable {
      * @param pickingInfo (PickingInfo object)
      * @returns {idx: number, faceId: number} or null
      */
-    public pickedParticle(pickingInfo: PickingInfo): Nullable<{idx: number, faceId: number}> {
+    public pickedParticle(pickingInfo: PickingInfo): Nullable<{ idx: number, faceId: number }> {
         if (pickingInfo.hit) {
             const subMesh = pickingInfo.subMeshId;
             const faceId = pickingInfo.faceId;
@@ -1524,7 +1524,7 @@ export class SolidParticleSystem implements IDisposable {
                             pickedData.faceId = faceId;
                         }
                         else {
-                            this.pickedBySubMesh[subMeshIndex][subMeshFaceId] = {idx: sortedPart.idx, faceId: faceId};
+                            this.pickedBySubMesh[subMeshIndex][subMeshFaceId] = { idx: sortedPart.idx, faceId: faceId };
                         }
                         subMeshFaceId++;
                         faceId++;
@@ -1557,7 +1557,7 @@ export class SolidParticleSystem implements IDisposable {
      * @hidden
      */
     private _filterUniqueMaterialId(array: Material[]): Material[] {
-        var filtered = array.filter(function(value, index, self) {
+        var filtered = array.filter(function (value, index, self) {
             return self.indexOf(value) === index;
         });
         return filtered;
@@ -1592,7 +1592,7 @@ export class SolidParticleSystem implements IDisposable {
      */
     public setVisibilityBox(size: number): void {
         var vis = size / 2;
-        this.mesh._boundingInfo = new BoundingInfo(new Vector3(-vis, -vis, -vis), new Vector3(vis, vis, vis));
+        this.mesh.buildBoundingInfo(new Vector3(-vis, -vis, -vis), new Vector3(vis, vis, vis));
     }
 
     /**

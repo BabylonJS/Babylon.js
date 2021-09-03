@@ -142,7 +142,7 @@ IAddAnimationComponentState
         if (!context.useTargetAnimations) {
             (context.animations as Animation[]).push(animation);
         }
-        context.activeAnimation = animation;
+        context.activeAnimations.push(animation);
         context.prepare();
         context.onActiveAnimationChanged.notifyObservers();            
         context.onAnimationsLoaded.notifyObservers();

@@ -1,11 +1,17 @@
 :root {
     --backgroundGrey: #aaaaaa;
-    --spacingHeight: 40px;
+    --spacingHeight: 30px;
 }
 
+hr.ge {
+    border: 1px solid #d0cece;
+}
 
 #ge-propertyTab {
+    user-select: none;
     $line-padding-left: 5px;
+    $line-padding-bottom: 0px;
+    $line-padding-top: 0px;
     color:black;
     background: #e2e2e2;
     font-family: "acumin-pro-condensed";
@@ -48,8 +54,8 @@
     .range {
         -webkit-appearance: none;
         width: 120px;
-        height: 6px;
-        background: #d3d3d3;
+        height: 2px;
+        background: black;
         border-radius: 5px;
         outline: none;
         opacity: 0.7;
@@ -67,7 +73,9 @@
         width: 14px;
         height: 14px;
         border-radius: 50%;
-        background: rgb(51, 122, 183);
+        background: #e2e2e2;
+        border: solid;
+        border-width: thin;
         cursor: pointer;
     }
     
@@ -75,7 +83,7 @@
         width: 14px;
         height: 14px;
         border-radius: 50%;
-        background: rgb(51, 122, 183);
+        background: rgb(0, 0, 0);
         cursor: pointer;
     }
 
@@ -95,32 +103,44 @@
 
     .sliderLine {
         padding-left: $line-padding-left;
+        padding-bottom: $line-padding-bottom;
+        padding-top: $line-padding-top;
         height: var(--spacingHeight);;
         display: grid;
         grid-template-rows: 100%;
-        grid-template-columns: 1fr 40px;
+        grid-template-columns: auto auto auto 1fr;
 
-        .label { 
+        .label {
+            grid-column: 2;
+            display: flex;
+            align-items: center;
+            min-width: 15px;
+        }
+
+        .img {
             grid-column: 1;
             display: flex;
             align-items: center;
         }
 
+
         .slider {
-            grid-column: 3;
+            grid-column: 4;
             grid-row: 1;
             margin-right: 5px;
             width: 90%;
             display: flex;
             align-items: center;
+            padding-left: 5px;
         }
 
         .floatLine {
-            padding-left: $line-padding-left;
-    
+            grid-column: 3;
+            padding-left: 15px;
+            
             .label {
                 grid-column: 1;
-                display: flex;
+                display: none;
                 align-items: center;
             }
         
@@ -130,7 +150,13 @@
                 align-items: center;
                 
                 input {
-                    width: 27px;
+                    width: 40px;
+                    background-color: transparent;
+                    outline-color: transparent;
+                    border-left: transparent;
+                    border-right: transparent;
+                    border-top: transparent;
+                    outline-width: 0px
                 }
                 
                 input::-webkit-outer-spin-button,
@@ -146,16 +172,25 @@
         }  
     }     
 
-    .textInputLine {
-        padding-left: $line-padding-left;
-        height: var(--spacingHeight);;
+    .divider {
         display: grid;
-        grid-template-columns: auto auto 15px 75px 2fr;
+        grid-template-columns: auto auto auto auto auto auto;
+    }
 
+    .textInputLine {
+        user-select: none;
+        padding-left: $line-padding-left;
+        padding-bottom: $line-padding-bottom;
+        padding-top: $line-padding-top;
+        height: var(--spacingHeight);
+        display: grid;
+        grid-template-columns: auto auto 2fr 1fr;
         .label {
             grid-column: 2;
+            padding-left: 5px;
             display: flex;
             align-items: center;
+            min-width: 15px;
         }
 
         .img {
@@ -167,7 +202,8 @@
         .value {                        
             display: flex;
             align-items: center;
-            grid-column: 4;
+            padding-left: 15px;
+            grid-column: 3;
             background: transparent;
             input {
                 width: calc(100% - 5px);
@@ -177,6 +213,12 @@
                 border-right: transparent;
                 border-top: transparent;
                 outline-width: 0px
+            }
+        }
+
+        .noUnderline {
+            input {
+                border-bottom: transparent;
             }
         }
     }
@@ -251,7 +293,9 @@
                 display: grid;
                 grid-template-columns: 1fr auto;
                 background: #cccccc;    
-                height: var(--spacingHeight);;   
+                height: var(--spacingHeight);
+                padding-bottom: $line-padding-bottom;
+                padding-top: $line-padding-top;
                 padding-right: 5px;                        
                 cursor: pointer;
                 
@@ -287,15 +331,13 @@
     }
 
     .color-picker {
-        height: calc(100% - 8px);
-        margin: 4px;
-        width: calc(100% - 8px);
+        height: 150px;
+        width: 15px;
 
         .color-rect {
-            height: calc(100% - 4px);
-            border: 2px white solid;
+            height: 15px;
+            border: 1px black solid;
             cursor: pointer;
-            min-height: 18px;
         }
 
         .color-picker-cover {
@@ -387,27 +429,75 @@
 
     }
 
-    .floatLine {
-        padding-left: $line-padding-left;
-        height: var(--spacingHeight);;
-        display: grid;
-        grid-template-columns: 1fr 120px;
+    .command-button {
+        cursor: pointer;
+        width: auto;
 
+        .command-label {
+            display: none;
+        }        
+
+        .command-button-icon {
+            height: 100%;
+            width: 100%;
+            display: grid;
+            color: white;
+            align-content: center;
+            justify-content: center;
+        }
+
+        &:hover {
+            background-color: white;
+        } 
+        
+        .active {
+            transform-origin: center;
+            background-color: white;
+        }
+
+        img {
+            &.active {
+                background-color: white;
+            }
+        }
+    }
+
+    .floatLine {
+        user-select: none;
+        padding-left: $line-padding-left;
+        height: var(--spacingHeight);
+        padding-bottom: $line-padding-bottom;
+        padding-top: $line-padding-top;
+        display: grid;
+        grid-template-columns: auto auto 2fr 1fr;
 
         .label {
+            grid-column: 2;
+            display: flex;
+            align-items: center;
+            min-width: 15px;
+        }
+
+        .img {
             grid-column: 1;
             display: flex;
             align-items: center;
         }
 
-        .value {
-            grid-column: 2;
-            
+        .value {                        
             display: flex;
+            padding-left: 15px;
             align-items: center;
-            
+            grid-column: 3;
+            background: transparent;
             input {
-                width: 110px;
+                width: calc(100% - 5px);
+                background-color: transparent;
+                outline-color: transparent;
+                border-left: transparent;
+                border-right: transparent;
+                border-top: transparent;
+                outline-width: 0px
             }
         }
 
@@ -434,13 +524,14 @@
     }
 
     .vector3Line {
-        padding-left:$line-padding-left;                    
+        padding-left:$line-padding-left;
+        padding-bottom: $line-padding-bottom;
+        padding-top: $line-padding-top;      
         display: grid;
-
         .firstLine {
             display: grid;
             grid-template-columns: 1fr auto 20px;
-            height: var(--spacingHeight);;
+            height: var(--spacingHeight);
 
             .label {
                 grid-column: 1;
@@ -500,11 +591,12 @@
 
     .buttonLine {
         height: var(--spacingHeight);
+        padding-bottom: $line-padding-bottom;
+        padding-top: $line-padding-top;
         display: grid;
         align-items: center;
         justify-items: stretch;
         padding-bottom: 5px;
-
         input[type="file"] {
             display: none;
         }
@@ -557,6 +649,8 @@
 
     .numeric {
         padding-left: $line-padding-left;
+        padding-bottom: $line-padding-bottom;
+        padding-top: $line-padding-top;
         height: var(--spacingHeight);;
         display: grid;
         grid-template-columns: 1fr 120px auto;
@@ -581,9 +675,11 @@
     
     .checkBoxLine {
         padding-left: $line-padding-left;
+        padding-bottom: $line-padding-bottom;
+        padding-top: $line-padding-top;
         height: var(--spacingHeight);
         display: grid;
-        grid-template-columns: auto 1fr auto ;
+        grid-template-columns: auto auto 1fr ;
 
         .label {
             grid-column: 2;
@@ -601,6 +697,7 @@
             grid-column: 3;
             display: flex;
             align-items: center;
+            padding-left: 15px;
 
             .lbl {
                 position: relative;
@@ -608,24 +705,27 @@
                 height: 14px;
                 width: 34px;
                 margin-right: 5px;
-                background: #898989;
                 border-radius: 100px;
                 cursor: pointer;
                 transition: all 0.3s ease;
+                border: solid;
+                border-width: thin;
             }
 
             .lbl:after {
                 position: absolute;
                 left: 3px;
-                top: 2px;
+                top: 1px;
                 display: block;
                 width: 10px;
                 height: 10px;
                 border-radius: 100px;
-                background: #fff;
+                background: #e2e2e2;
                 box-shadow: 0px 3px 3px rgba(0,0,0,0.05);
                 content: '';
                 transition: all 0.15s ease;
+                border: solid;
+                border-width: thin;
             }
 
             .lbl:active:after { 
@@ -633,16 +733,19 @@
             }
 
             .cbx:checked ~ label { 
-                background: rgb(51, 122, 183);
+                background: transparent;
+                
             }
 
             .cbx:checked ~ label:after {
                 left: 20px;
-                background: rgb(22, 73, 117);
+                background: rgb(0, 0, 0);
+                border: solid;
+                border-width: thin;
             }
 
             .cbx:checked ~ label.disabled { 
-                background: rgb(22, 73, 117);
+                background: rgb(0, 0, 0);
                 cursor: pointer;
             }
 
@@ -665,13 +768,15 @@
 
     .listLine {
         padding-left: $line-padding-left;
+        padding-bottom: $line-padding-bottom;
+        padding-top: $line-padding-top;
         height: var(--spacingHeight);
         display: grid;
         grid-template-columns: auto 1fr auto ;
 
         .label {
             grid-column: 2;
-            display: flex;
+            display: none;
             align-items: center;
         }
 
@@ -682,7 +787,7 @@
         }
 
         .options {
-            grid-column: 3;
+            grid-column: 2;
             
             display: flex;
             align-items: center;   
@@ -699,23 +804,37 @@
                     
     .color3Line {
         padding-left: $line-padding-left;
+        padding-bottom: $line-padding-bottom;
+        padding-top: $line-padding-top;
         display: grid;
 
         .firstLine {
             height: var(--spacingHeight);
             display: grid;
-            grid-template-columns: 1fr auto 20px 20px;
+            grid-template-columns: auto auto 1fr;
 
             .label {
+                grid-column: 2;
+                padding-left: 5px;
+                display: none;
+                align-items: center;
+                min-width: 15px;
+            }
+    
+            .img {
                 grid-column: 1;
                 display: flex;
                 align-items: center;
             }
 
+            .textInputLine {
+                grid-column: 3;
+                margin-top: 5px;;
+            }
+    
             .color3 {
                 grid-column: 2;                
-                width: 50px;
-                
+                margin-top: 12px;
                 display: flex;
                 align-items: center;            
                 
@@ -725,12 +844,12 @@
             }
 
             .copy {
-                grid-column: 3;
-                display: grid;
+                grid-column: 4;
+                display: none;
                 align-items: center;
                 justify-items: center;
                 cursor: pointer;
-                
+                color: black;
                 img {
                     height: 100%;
                     width: 20px;
@@ -739,7 +858,7 @@
 
             .expand {
                 grid-column: 4;
-                display: grid;
+                display: none;
                 align-items: center;
                 justify-items: center;
                 cursor: pointer;
@@ -782,6 +901,8 @@
     
     .textLine {
         padding-left: $line-padding-left;
+        padding-bottom: $line-padding-bottom;
+        padding-top: $line-padding-top;
         height: var(--spacingHeight);
         display: grid;
         grid-template-columns: 1fr auto;

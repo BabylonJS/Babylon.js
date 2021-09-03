@@ -20,7 +20,7 @@ export class STLExport {
 
         //Binary support adapted from https://gist.github.com/paulkaplan/6d5f0ab2c7e8fdc68a61
 
-        let getFaceData = function(indices: any, vertices: any, i: number) {
+        let getFaceData = function (indices: any, vertices: any, i: number) {
             let id = [indices[i] * 3, indices[i + 1] * 3, indices[i + 2] * 3];
             let v = [
                 new Vector3(vertices[id[0]], vertices[id[0] + 2], vertices[id[0] + 1]),
@@ -31,16 +31,16 @@ export class STLExport {
             let p3p2 = v[2].subtract(v[1]);
             let n = (Vector3.Cross(p3p2, p1p2)).normalize();
 
-            return {v, n};
+            return { v, n };
         };
 
-        let writeVector = function(dataview: any, offset: number, vector: Vector3, isLittleEndian: boolean) {
-                offset = writeFloat(dataview, offset, vector.x, isLittleEndian);
-                offset = writeFloat(dataview, offset, vector.y, isLittleEndian);
-                return writeFloat(dataview, offset, vector.z, isLittleEndian);
+        let writeVector = function (dataview: any, offset: number, vector: Vector3, isLittleEndian: boolean) {
+            offset = writeFloat(dataview, offset, vector.x, isLittleEndian);
+            offset = writeFloat(dataview, offset, vector.y, isLittleEndian);
+            return writeFloat(dataview, offset, vector.z, isLittleEndian);
         };
 
-        let writeFloat = function(dataview: any, offset: number, value: number, isLittleEndian: boolean) {
+        let writeFloat = function (dataview: any, offset: number, value: number, isLittleEndian: boolean) {
             dataview.setFloat32(offset, value, isLittleEndian);
             return offset + 4;
         };
@@ -105,12 +105,12 @@ export class STLExport {
 
         if (download) {
             let a = document.createElement('a');
-            let blob = new Blob([data], {'type': 'application/octet-stream'});
+            let blob = new Blob([data], { 'type': 'application/octet-stream' });
             a.href = window.URL.createObjectURL(blob);
             a.download = fileName + ".stl";
             a.click();
         }
 
-    return data;
+        return data;
     }
 }

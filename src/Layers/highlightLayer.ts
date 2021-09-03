@@ -38,7 +38,7 @@ declare module "../abstractScene" {
     }
 }
 
-AbstractScene.prototype.getHighlightLayerByName = function(name: string): Nullable<HighlightLayer> {
+AbstractScene.prototype.getHighlightLayerByName = function (name: string): Nullable<HighlightLayer> {
     for (var index = 0; index < this.effectLayers.length; index++) {
         if (this.effectLayers[index].name === name && this.effectLayers[index].getEffectName() === HighlightLayer.EffectName) {
             return (<any>this.effectLayers[index]) as HighlightLayer;
@@ -398,7 +398,7 @@ export class HighlightLayer extends EffectLayer {
         this._mainTexture.onAfterUnbindObservable.add(() => {
             this.onBeforeBlurObservable.notifyObservers(this);
 
-            let internalTexture = this._blurTexture.getInternalTexture();
+            let internalTexture = this._blurTexture.renderTarget;
             if (internalTexture) {
                 this._scene.postProcessManager.directRender(
                     this._postProcesses,

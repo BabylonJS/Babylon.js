@@ -6,8 +6,8 @@ import { WebGPUEngine } from "../../webgpuEngine";
 
 declare type Scene = import("../../../scene").Scene;
 
-WebGPUEngine.prototype._createDepthStencilCubeTexture = function(size: number, options: DepthTextureCreationOptions): InternalTexture {
-    const internalTexture = new InternalTexture(this, InternalTextureSource.Depth);
+WebGPUEngine.prototype._createDepthStencilCubeTexture = function (size: number, options: DepthTextureCreationOptions): InternalTexture {
+    const internalTexture = new InternalTexture(this, InternalTextureSource.DepthStencil);
 
     internalTexture.isCube = true;
 
@@ -31,42 +31,41 @@ WebGPUEngine.prototype._createDepthStencilCubeTexture = function(size: number, o
     return internalTexture;
 };
 
-WebGPUEngine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null,
-     onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null, createPolynomials: boolean = false, lodScale: number = 0, lodOffset: number = 0,
-     fallback: Nullable<InternalTexture> = null, useSRGBBuffer = false): InternalTexture
-{
-     return this.createCubeTextureBase(
-         rootUrl, scene, files, !!noMipmap, onLoad, onError, format, forcedExtension, createPolynomials, lodScale, lodOffset, fallback,
-         null,
-         (texture: InternalTexture, imgs: HTMLImageElement[] | ImageBitmap[]) => {
-             const imageBitmaps = imgs as ImageBitmap[]; // we will always get an ImageBitmap array in WebGPU
-             const width = imageBitmaps[0].width;
-             const height = width;
+WebGPUEngine.prototype.createCubeTexture = function (rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null,
+    onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null, createPolynomials: boolean = false, lodScale: number = 0, lodOffset: number = 0,
+    fallback: Nullable<InternalTexture> = null, useSRGBBuffer = false): InternalTexture {
+    return this.createCubeTextureBase(
+        rootUrl, scene, files, !!noMipmap, onLoad, onError, format, forcedExtension, createPolynomials, lodScale, lodOffset, fallback,
+        null,
+        (texture: InternalTexture, imgs: HTMLImageElement[] | ImageBitmap[]) => {
+            const imageBitmaps = imgs as ImageBitmap[]; // we will always get an ImageBitmap array in WebGPU
+            const width = imageBitmaps[0].width;
+            const height = width;
 
-             this._setCubeMapTextureParams(texture, !noMipmap);
-             texture.format = format ?? -1;
+            this._setCubeMapTextureParams(texture, !noMipmap);
+            texture.format = format ?? -1;
 
-             const gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, width, height);
+            const gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, width, height);
 
-             this._textureHelper.updateCubeTextures(imageBitmaps, gpuTextureWrapper.underlyingResource!, width, height, gpuTextureWrapper.format, false, false, 0, 0, this._uploadEncoder);
+            this._textureHelper.updateCubeTextures(imageBitmaps, gpuTextureWrapper.underlyingResource!, width, height, gpuTextureWrapper.format, false, false, 0, 0, this._uploadEncoder);
 
-             if (!noMipmap) {
-                 this._generateMipmaps(texture, this._uploadEncoder);
-             }
+            if (!noMipmap) {
+                this._generateMipmaps(texture, this._uploadEncoder);
+            }
 
-             texture.isReady = true;
+            texture.isReady = true;
 
-             texture.onLoadedObservable.notifyObservers(texture);
-             texture.onLoadedObservable.clear();
+            texture.onLoadedObservable.notifyObservers(texture);
+            texture.onLoadedObservable.clear();
 
-             if (onLoad) {
-                 onLoad();
-             }
-         }, !!useSRGBBuffer
-     );
+            if (onLoad) {
+                onLoad();
+            }
+        }, !!useSRGBBuffer
+    );
 };
 
-WebGPUEngine.prototype._setCubeMapTextureParams = function(texture: InternalTexture, loadMipmap: boolean) {
+WebGPUEngine.prototype._setCubeMapTextureParams = function (texture: InternalTexture, loadMipmap: boolean) {
     texture.samplingMode = loadMipmap ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
     texture._cachedWrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
     texture._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;

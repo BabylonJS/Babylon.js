@@ -39,7 +39,7 @@ export class Sound {
         }
 
         this._loop = value;
-        this.updateOptions({loop: value});
+        this.updateOptions({ loop: value });
     }
 
     /**
@@ -842,7 +842,7 @@ export class Sound {
                 this._soundSource.stop(stopTime);
                 if (stopTime === undefined) {
                     this.isPlaying = false;
-                    this._soundSource.onended = () => void(0);
+                    this._soundSource.onended = () => void (0);
                 } else {
                     this._soundSource.onended = () => {
                         this.isPlaying = false;

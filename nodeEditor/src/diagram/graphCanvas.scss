@@ -579,7 +579,7 @@
                     }
 
                     &.texture-block {                    
-                        grid-row: 3;
+                        grid-row: 2;
                         height: 140px;
                         width: 140px;
                         overflow: hidden;
@@ -600,7 +600,11 @@
                     }
 
                     &.regular-texture-block {  
-                        margin-top: -115px;                        
+                        margin-top: 30px;                        
+                    }
+
+                    &.reflection-block {
+                        grid-row: 3;
                     }
 
                     &.remap-block {                    

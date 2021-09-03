@@ -12,7 +12,7 @@ export interface IComputePipelineContext {
     isReady: boolean;
 
     /** @hidden */
-    _name?:  string;
+    _name?: string;
 
     /** @hidden */
     _getComputeShaderCode(): string | null;

@@ -374,29 +374,29 @@ export class SolidParser {
      * @param v
      */
     private _setDataForCurrentFaceWithPattern5(face: Array<string>, v: number) {
-       //Get the indices of triangles for each polygon
-       this._getTriangles(face, v);
+        //Get the indices of triangles for each polygon
+        this._getTriangles(face, v);
 
-       for (var k = 0; k < this._triangles.length; k++) {
-           //triangle[k] = "-1/-1/-1"
-           //Split the data for getting position, uv, and normals
-           var point = this._triangles[k].split("/"); // ["-1", "-1", "-1"]
-           // Set position indice
-           var indicePositionFromObj = this._positions.length + parseInt(point[0]);
-           // Set uv indice
-           var indiceUvsFromObj = this._uvs.length + parseInt(point[1]);
-           // Set normal indice
-           var indiceNormalFromObj = this._normals.length + parseInt(point[2]);
+        for (var k = 0; k < this._triangles.length; k++) {
+            //triangle[k] = "-1/-1/-1"
+            //Split the data for getting position, uv, and normals
+            var point = this._triangles[k].split("/"); // ["-1", "-1", "-1"]
+            // Set position indice
+            var indicePositionFromObj = this._positions.length + parseInt(point[0]);
+            // Set uv indice
+            var indiceUvsFromObj = this._uvs.length + parseInt(point[1]);
+            // Set normal indice
+            var indiceNormalFromObj = this._normals.length + parseInt(point[2]);
 
-           this._setData(
-               indicePositionFromObj, indiceUvsFromObj, indiceNormalFromObj,
-               this._positions[indicePositionFromObj], this._uvs[indiceUvsFromObj], this._normals[indiceNormalFromObj], //Set the vector for each component
-               this._loadingOptions.importVertexColors ? this._colors[indicePositionFromObj] : undefined
-           );
+            this._setData(
+                indicePositionFromObj, indiceUvsFromObj, indiceNormalFromObj,
+                this._positions[indicePositionFromObj], this._uvs[indiceUvsFromObj], this._normals[indiceNormalFromObj], //Set the vector for each component
+                this._loadingOptions.importVertexColors ? this._colors[indicePositionFromObj] : undefined
+            );
 
-       }
-       //Reset variable for the next line
-       this._triangles = [];
+        }
+        //Reset variable for the next line
+        this._triangles = [];
     }
 
     private _addPreviousObjMesh() {
@@ -607,8 +607,8 @@ export class SolidParser {
                     1
                 );
 
-            // Define a mesh or an object
-            // Each time this keyword is analysed, create a new Object with all data for creating a babylonMesh
+                // Define a mesh or an object
+                // Each time this keyword is analysed, create a new Object with all data for creating a babylonMesh
             } else if (SolidParser.GroupDescriptor.test(line) || SolidParser.ObjectDescriptor.test(line)) {
                 // Create a new mesh corresponding to the name of the group.
                 // Definition of the mesh
@@ -664,16 +664,16 @@ export class SolidParser {
                     this._meshesFromObj[this._meshesFromObj.length - 1].materialName = this._materialNameFromObj;
                     this._isFirstMaterial = false;
                 }
-        // Keyword for loading the mtl file
+                // Keyword for loading the mtl file
             } else if (SolidParser.MtlLibGroupDescriptor.test(line)) {
-            // Get the name of mtl file
-            onFileToLoadFound(line.substring(7).trim());
+                // Get the name of mtl file
+                onFileToLoadFound(line.substring(7).trim());
 
-            // Apply smoothing
+                // Apply smoothing
             } else if (SolidParser.SmoothDescriptor.test(line)) {
-            // smooth shading => apply smoothing
-            // Today I don't know it work with babylon and with obj.
-            // With the obj file  an integer is set
+                // smooth shading => apply smoothing
+                // Today I don't know it work with babylon and with obj.
+                // With the obj file  an integer is set
             } else {
                 //If there is another possibility
                 console.log("Unhandled expression at line : " + line);
@@ -696,7 +696,7 @@ export class SolidParser {
             this._handledMesh.uvs = this._unwrappedUVForBabylon;
 
             if (this._loadingOptions.importVertexColors) {
-            this._handledMesh.colors = this._unwrappedColorsForBabylon;
+                this._handledMesh.colors = this._unwrappedColorsForBabylon;
             }
         }
 
@@ -711,24 +711,24 @@ export class SolidParser {
             } else {
                 // There is no indices in the file. We will have to switch to point cloud rendering
                 for (var pos of this._positions) {
-                this._unwrappedPositionsForBabylon.push(pos.x, pos.y, pos.z);
+                    this._unwrappedPositionsForBabylon.push(pos.x, pos.y, pos.z);
                 }
 
                 if (this._normals.length) {
                     for (var normal of this._normals) {
-                    this._unwrappedNormalsForBabylon.push(normal.x, normal.y, normal.z);
+                        this._unwrappedNormalsForBabylon.push(normal.x, normal.y, normal.z);
                     }
                 }
 
                 if (this._uvs.length) {
                     for (var uv of this._uvs) {
-                    this._unwrappedUVForBabylon.push(uv.x, uv.y);
+                        this._unwrappedUVForBabylon.push(uv.x, uv.y);
                     }
                 }
 
                 if (this._colors.length) {
                     for (var color of this._colors) {
-                    this._unwrappedColorsForBabylon.push(color.r, color.g, color.b, color.a);
+                        this._unwrappedColorsForBabylon.push(color.r, color.g, color.b, color.a);
                     }
                 }
 
@@ -790,6 +790,12 @@ export class SolidParser {
             //Push the name of the material to an array
             //This is indispensable for the importMesh function
             this._materialToUse.push(this._meshesFromObj[j].materialName);
+
+            if (this._handledMesh.positions?.length === 0) {
+                //Push the mesh into an array
+                this._babylonMeshesArray.push(babylonMesh);
+                continue;
+            }
 
             var vertexData: VertexData = new VertexData(); //The container for the values
             //Set the data for the babylonMesh

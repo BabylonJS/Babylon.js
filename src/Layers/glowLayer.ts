@@ -35,7 +35,7 @@ declare module "../abstractScene" {
     }
 }
 
-AbstractScene.prototype.getGlowLayerByName = function(name: string): Nullable<GlowLayer> {
+AbstractScene.prototype.getGlowLayerByName = function (name: string): Nullable<GlowLayer> {
     for (var index = 0; index < this.effectLayers.length; index++) {
         if (this.effectLayers[index].name === name && this.effectLayers[index].getEffectName() === GlowLayer.EffectName) {
             return (<any>this.effectLayers[index]) as GlowLayer;
@@ -309,14 +309,14 @@ export class GlowLayer extends EffectLayer {
 
         this._mainTexture.samples = this._options.mainTextureSamples!;
         this._mainTexture.onAfterUnbindObservable.add(() => {
-            let internalTexture = this._blurTexture1.getInternalTexture();
+            let internalTexture = this._blurTexture1.renderTarget;
             if (internalTexture) {
                 this._scene.postProcessManager.directRender(
                     this._postProcesses1,
                     internalTexture,
                     true);
 
-                let internalTexture2 = this._blurTexture2.getInternalTexture();
+                let internalTexture2 = this._blurTexture2.renderTarget;
                 if (internalTexture2) {
                     this._scene.postProcessManager.directRender(
                         this._postProcesses2,
@@ -529,6 +529,10 @@ export class GlowLayer extends EffectLayer {
      */
     public referenceMeshToUseItsOwnMaterial(mesh: AbstractMesh): void {
         this._meshesUsingTheirOwnMaterials.push(mesh.uniqueId);
+
+        mesh.onDisposeObservable.add(() => {
+            this._disposeMesh(mesh as Mesh);
+        });
     }
 
     /**

@@ -27,7 +27,7 @@ export interface IAccessor extends GLTF2.IAccessor, IArrayItem {
     _data?: Promise<ArrayBufferView>;
 
     /** @hidden */
-    _babylonVertexBuffer?: Promise<VertexBuffer>;
+    _babylonVertexBuffer?: { [kind: string]: Promise<VertexBuffer>; };
 }
 
 /**

@@ -16,7 +16,6 @@ import { Buffer } from "../Buffers/buffer";
 import { Geometry } from "./geometry";
 import { AbstractMesh } from "./abstractMesh";
 import { SubMesh } from "./subMesh";
-import { BoundingInfo } from "../Culling/boundingInfo";
 import { BoundingSphere } from "../Culling/boundingSphere";
 import { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
@@ -565,6 +564,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     "worldMatrixFromCache",
                     "hasThinInstances",
                     "cloneMeshMap",
+                    "hasBoundingInfo",
                 ],
                 ["_poseMatrix"]
             );
@@ -1325,7 +1325,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns the current mesh
      */
     public refreshBoundingInfo(applySkeleton: boolean = false, applyMorph: boolean = true): Mesh {
-        if (this._boundingInfo && this._boundingInfo.isLocked) {
+        if (this.hasBoundingInfo && this.getBoundingInfo().isLocked) {
             return this;
         }
 
@@ -1675,7 +1675,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // VBOs
-        if (!this._userInstancedBuffersStorage) {
+        if (!this._userInstancedBuffersStorage || this.hasThinInstances) {
             this._geometry._bind(effect, indexToBind);
         } else {
             this._geometry._bind(effect, indexToBind, this._userInstancedBuffersStorage.vertexBuffers, this._userInstancedBuffersStorage.vertexArrayObjects);
@@ -2484,7 +2484,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
                 scene._removePendingData(this);
             },
-            () => {},
+            () => { },
             scene.offlineProvider,
             getBinaryData
         );
@@ -2605,7 +2605,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // flip faces?
-        if (transform.m[0] * transform.m[5] * transform.m[10] < 0) {
+        if (transform.determinant() < 0) {
             this.flipFaces();
         }
 
@@ -2634,6 +2634,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /** @hidden */
     public get _positions(): Nullable<Vector3[]> {
+        if (this._internalAbstractMeshDataInfo._positions) {
+            return this._internalAbstractMeshDataInfo._positions;
+        }
+
         if (this._geometry) {
             return this._geometry._positions;
         }
@@ -2802,7 +2806,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
         };
 
-        Tools.LoadImage(url, onload, () => {}, scene.offlineProvider);
+        Tools.LoadImage(url, onload, () => { }, scene.offlineProvider);
         return this;
     }
 
@@ -2874,6 +2878,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (forceUpdate) {
             this.setVerticesData(VertexBuffer.PositionKind, positions);
             this.setVerticesData(VertexBuffer.NormalKind, normals);
+            this.setVerticesData(VertexBuffer.UVKind, uvs);
         } else {
             this.updateVerticesData(VertexBuffer.PositionKind, positions);
             this.updateVerticesData(VertexBuffer.NormalKind, normals);
@@ -3548,6 +3553,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 instancesCount: this._thinInstanceDataStorage.instancesCount,
                 matrixData: Tools.SliceToArray(this._thinInstanceDataStorage.matrixData),
                 matrixBufferSize: this._thinInstanceDataStorage.matrixBufferSize,
+                enablePicking: this.thinInstanceEnablePicking,
             };
 
             if (this._userThinInstanceBuffersStorage) {
@@ -3784,7 +3790,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (parsedMesh.delayLoadingFile) {
             mesh.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
             mesh.delayLoadingFile = rootUrl + parsedMesh.delayLoadingFile;
-            mesh._boundingInfo = new BoundingInfo(Vector3.FromArray(parsedMesh.boundingBoxMinimum), Vector3.FromArray(parsedMesh.boundingBoxMaximum));
+            mesh.buildBoundingInfo(Vector3.FromArray(parsedMesh.boundingBoxMinimum), Vector3.FromArray(parsedMesh.boundingBoxMaximum));
 
             if (parsedMesh._binaryInfo) {
                 mesh._binaryInfo = parsedMesh._binaryInfo;
@@ -3989,6 +3995,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Thin instances
         if (parsedMesh.thinInstances) {
             const thinInstances = parsedMesh.thinInstances;
+
+            mesh.thinInstanceEnablePicking = !!thinInstances.enablePicking;
 
             if (thinInstances.matrixData) {
                 mesh.thinInstanceSetBuffer("matrix", new Float32Array(thinInstances.matrixData), 16, false);
@@ -4789,19 +4797,24 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         subdivideWithSubMeshes?: boolean,
         multiMultiMaterials?: boolean
     ): Nullable<Mesh> {
+        // Remove any null/undefined entries from the mesh array
+        meshes = meshes.filter(Boolean);
+
+        if (meshes.length === 0) {
+            return null;
+        }
+
         var index: number;
         if (!allow32BitsIndices) {
             var totalVertices = 0;
 
             // Counting vertices
             for (index = 0; index < meshes.length; index++) {
-                if (meshes[index]) {
-                    totalVertices += meshes[index].getTotalVertices();
+                totalVertices += meshes[index].getTotalVertices();
 
-                    if (totalVertices >= 65536) {
-                        Logger.Warn("Cannot merge meshes because resulting mesh will have more than 65536 vertices. Please use allow32BitsIndices = true to use 32 bits indices");
-                        return null;
-                    }
+                if (totalVertices >= 65536) {
+                    Logger.Warn("Cannot merge meshes because resulting mesh will have more than 65536 vertices. Please use allow32BitsIndices = true to use 32 bits indices");
+                    return null;
                 }
             }
         }
@@ -4814,64 +4827,58 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         var materialArray: Array<Material> = new Array<Material>();
         var materialIndexArray: Array<number> = new Array<number>();
         // Merge
-        var vertexData: Nullable<VertexData> = null;
-        var otherVertexData: VertexData;
         var indiceArray: Array<number> = new Array<number>();
-        var source: Nullable<Mesh> = null;
         for (index = 0; index < meshes.length; index++) {
-            if (meshes[index]) {
-                var mesh = meshes[index];
-                if (mesh.isAnInstance) {
-                    Logger.Warn("Cannot merge instance meshes.");
-                    return null;
-                }
+            var mesh = meshes[index];
+            if (mesh.isAnInstance) {
+                Logger.Warn("Cannot merge instance meshes.");
+                return null;
+            }
 
-                const wm = mesh.computeWorldMatrix(true);
-                otherVertexData = VertexData.ExtractFromMesh(mesh, true, true);
-                otherVertexData.transform(wm);
+            if (subdivideWithSubMeshes) {
+                indiceArray.push(mesh.getTotalIndices());
+            }
 
-                if (vertexData) {
-                    vertexData.merge(otherVertexData, allow32BitsIndices);
-                } else {
-                    vertexData = otherVertexData;
-                    source = mesh;
-                }
-                if (subdivideWithSubMeshes) {
-                    indiceArray.push(mesh.getTotalIndices());
-                }
-                if (multiMultiMaterials) {
-                    if (mesh.material) {
-                        var material = mesh.material;
-                        if (material instanceof MultiMaterial) {
-                            for (matIndex = 0; matIndex < material.subMaterials.length; matIndex++) {
-                                if (materialArray.indexOf(<Material>material.subMaterials[matIndex]) < 0) {
-                                    materialArray.push(<Material>material.subMaterials[matIndex]);
-                                }
-                            }
-                            for (subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
-                                materialIndexArray.push(materialArray.indexOf(<Material>material.subMaterials[mesh.subMeshes[subIndex].materialIndex]));
-                                indiceArray.push(mesh.subMeshes[subIndex].indexCount);
-                            }
-                        } else {
-                            if (materialArray.indexOf(<Material>material) < 0) {
-                                materialArray.push(<Material>material);
-                            }
-                            for (subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
-                                materialIndexArray.push(materialArray.indexOf(<Material>material));
-                                indiceArray.push(mesh.subMeshes[subIndex].indexCount);
+            if (multiMultiMaterials) {
+                if (mesh.material) {
+                    var material = mesh.material;
+                    if (material instanceof MultiMaterial) {
+                        for (matIndex = 0; matIndex < material.subMaterials.length; matIndex++) {
+                            if (materialArray.indexOf(<Material>material.subMaterials[matIndex]) < 0) {
+                                materialArray.push(<Material>material.subMaterials[matIndex]);
                             }
                         }
-                    } else {
                         for (subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
-                            materialIndexArray.push(0);
+                            materialIndexArray.push(materialArray.indexOf(<Material>material.subMaterials[mesh.subMeshes[subIndex].materialIndex]));
                             indiceArray.push(mesh.subMeshes[subIndex].indexCount);
                         }
+                    } else {
+                        if (materialArray.indexOf(<Material>material) < 0) {
+                            materialArray.push(<Material>material);
+                        }
+                        for (subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
+                            materialIndexArray.push(materialArray.indexOf(<Material>material));
+                            indiceArray.push(mesh.subMeshes[subIndex].indexCount);
+                        }
+                    }
+                } else {
+                    for (subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
+                        materialIndexArray.push(0);
+                        indiceArray.push(mesh.subMeshes[subIndex].indexCount);
                     }
                 }
             }
         }
 
-        source = <Mesh>source;
+        const source = meshes[0];
+
+        const getVertexDataFromMesh = (mesh: Mesh) => {
+            const wm = mesh.computeWorldMatrix(true);
+            const vertexData = VertexData.ExtractFromMesh(mesh, true, true);
+            vertexData.transform(wm);
+            return vertexData;
+        };
+        const vertexData = getVertexDataFromMesh(source).merge(meshes.slice(1).map((mesh) => getVertexDataFromMesh(mesh)), allow32BitsIndices);
 
         if (!meshSubclass) {
             meshSubclass = new Mesh(source.name + "_merged", source.getScene());
@@ -4886,9 +4893,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Cleaning
         if (disposeSource) {
             for (index = 0; index < meshes.length; index++) {
-                if (meshes[index]) {
-                    meshes[index].dispose();
-                }
+                meshes[index].dispose();
             }
         }
 
@@ -4901,10 +4906,16 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
             //-- apply subdivision according to index table
             while (index < indiceArray.length) {
-                SubMesh.CreateFromIndices(0, offset, indiceArray[index], meshSubclass);
+                SubMesh.CreateFromIndices(0, offset, indiceArray[index], meshSubclass, undefined, false);
                 offset += indiceArray[index];
                 index++;
             }
+
+            for (const subMesh of meshSubclass.subMeshes) {
+                subMesh.refreshBoundingInfo();
+            }
+
+            meshSubclass.computeWorldMatrix(true);
         }
 
         if (multiMultiMaterials) {

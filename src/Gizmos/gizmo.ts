@@ -170,10 +170,9 @@ export class Gizmo implements IDisposable {
     }
 
     /**
-     * poseture that the gizmo will be display
-     * * When set null, default value will be used (Quaternion(0, 0, 0, 1))
+     * posture that the gizmo will be display
+     * When set null, default value will be used (Quaternion(0, 0, 0, 1))
      */
-
     public get customRotationQuaternion(): Nullable<Quaternion> {
         return this._customRotationQuaternion;
     }
@@ -233,16 +232,30 @@ export class Gizmo implements IDisposable {
     }
 
     /**
+     * Handle position/translation when using an attached node using pivot
+     */
+    protected _handlePivot() {
+        const attachedNodeTransform = this._attachedNode as TransformNode;
+        // check there is an active pivot for the TransformNode attached
+        if (attachedNodeTransform.usePivotMatrix && attachedNodeTransform.position) {
+            // When a TransformNode has an active pivot, even without parenting,
+            // translation from the world matrix is different from TransformNode.position.
+            // Pivot works like a virtual parent that's using the node orientation.
+            // As the world matrix is transformed by the gizmo and then decomposed to TRS
+            // its translation part must be set to the Node's position.
+            attachedNodeTransform.getWorldMatrix().setTranslation(attachedNodeTransform.position);
+        }
+    }
+    /**
      * computes the rotation/scaling/position of the transform once the Node world matrix has changed.
      * @param value Node, TransformNode or mesh
      */
-    protected _matrixChanged()
-    {
+    protected _matrixChanged() {
         if (!this._attachedNode) {
             return;
         }
 
-        if  ((<Camera>this._attachedNode)._isCamera) {
+        if ((<Camera>this._attachedNode)._isCamera) {
             var camera = this._attachedNode as Camera;
             var worldMatrix;
             var worldMatrixUC;
@@ -266,11 +279,11 @@ export class Gizmo implements IDisposable {
             worldMatrixUC.decompose(this._tempVector2, this._tempQuaternion, this._tempVector);
 
             var inheritsTargetCamera = this._attachedNode.getClassName() === "FreeCamera"
-            || this._attachedNode.getClassName() === "FlyCamera"
-            || this._attachedNode.getClassName() === "ArcFollowCamera"
-            || this._attachedNode.getClassName() === "TargetCamera"
-            || this._attachedNode.getClassName() === "TouchCamera"
-            || this._attachedNode.getClassName() === "UniversalCamera";
+                || this._attachedNode.getClassName() === "FlyCamera"
+                || this._attachedNode.getClassName() === "ArcFollowCamera"
+                || this._attachedNode.getClassName() === "TargetCamera"
+                || this._attachedNode.getClassName() === "TouchCamera"
+                || this._attachedNode.getClassName() === "UniversalCamera";
 
             if (inheritsTargetCamera) {
                 var targetCamera = this._attachedNode as TargetCamera;

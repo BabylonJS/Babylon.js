@@ -17,6 +17,7 @@ export class TouchButton3D extends Button3D {
 
     // 'front' direction. If Vector3.Zero, there is no front and all directions of interaction are accepted
     private _collidableFrontDirection: Vector3;
+    protected _isNearPressed = false;
 
     /**
      * Creates a new touchable button
@@ -46,6 +47,7 @@ export class TouchButton3D extends Button3D {
             invert.copyFrom(this._collisionMesh.getWorldMatrix());
             invert.invert();
             Vector3.TransformNormalToRef(this._collidableFrontDirection, invert, this._collidableFrontDirection);
+            this._collidableFrontDirection.normalize();
         }
     }
 
@@ -58,7 +60,7 @@ export class TouchButton3D extends Button3D {
             const transformedDirection = TmpVectors.Vector3[0];
             Vector3.TransformNormalToRef(this._collidableFrontDirection, this._collisionMesh.getWorldMatrix(), transformedDirection);
 
-            return transformedDirection;
+            return transformedDirection.normalize();
         }
 
         return this._collidableFrontDirection;
@@ -87,15 +89,20 @@ export class TouchButton3D extends Button3D {
 
     // Returns true if the collidable is in front of the button, or if the button has no front direction
     private _isInteractionInFrontOfButton(collidablePos: Vector3) {
+        return this._getInteractionHeight(collidablePos, this._collisionMesh.getAbsolutePosition()) > 0;
+    }
+
+    // Returns true if the collidable is in front of the button, or if the button has no front direction
+    protected _getInteractionHeight(interactionPos: Vector3, basePos: Vector3) {
         const frontDir = this.collidableFrontDirection;
         if (frontDir.length() === 0) {
-            // The button has no front, just return the distance to the center
-            return true;
+            // The button has no front, just return the distance to the base
+            return Vector3.Distance(interactionPos, basePos);
         }
-        const d = Vector3.Dot(this._collisionMesh.getAbsolutePosition(), frontDir);
-        const abc = Vector3.Dot(collidablePos, frontDir);
+        const d = Vector3.Dot(basePos, frontDir);
+        const abc = Vector3.Dot(interactionPos, frontDir);
 
-        return abc > d;
+        return abc - d;
     }
 
     /** @hidden */
@@ -105,11 +112,17 @@ export class TouchButton3D extends Button3D {
                 // Near interaction mesh is behind the button, don't send a pointer down
                 return PointerEventTypes.POINTERMOVE;
             }
+            else {
+                this._isNearPressed = true;
+            }
         }
         if (providedType === PointerEventTypes.POINTERUP) {
             if (activeInteractionCount == 0) {
                 // We get the release for the down we swallowed earlier, swallow as well
                 return PointerEventTypes.POINTERMOVE;
+            }
+            else {
+                this._isNearPressed = false;
             }
         }
 

@@ -91,7 +91,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
 
         this._tmpAmmoConcreteContactResultCallback = new this.bjsAMMO.ConcreteContactResultCallback();
         this._tmpAmmoConcreteContactResultCallback.addSingleResult = (contactPoint: any, colObj0Wrap: any, partId0: any, index0: any) => {
-            contactPoint = this.bjsAMMO.wrapPointer(contactPoint, Ammo.btManifoldPoint);
+            contactPoint = this.bjsAMMO.wrapPointer(contactPoint, this.bjsAMMO.btManifoldPoint);
             const worldPoint = contactPoint.getPositionWorldOnA();
             this._tmpContactPoint.x = worldPoint.x();
             this._tmpContactPoint.y = worldPoint.y();
@@ -1391,7 +1391,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * @param impostor impostor to sleep
      */
     public sleepBody(impostor: PhysicsImpostor) {
-        Logger.Warn("sleepBody is not currently supported by the Ammo physics plugin");
+        impostor.physicsBody.forceActivationState(0);
     }
 
     /**

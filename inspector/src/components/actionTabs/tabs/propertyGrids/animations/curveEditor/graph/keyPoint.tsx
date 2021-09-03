@@ -195,7 +195,7 @@ IKeyPointComponentState
                 let state = SelectionState.None;
 
                 for (let activeKeyPoint of this.props.context.activeKeyPoints) {
-                    if (activeKeyPoint.props.keyId === this.props.keyId && curve !== activeKeyPoint.props.curve) {
+                    if (activeKeyPoint.props.keyId === this.props.keyId && curve !== activeKeyPoint.props.curve && curve.animation === activeKeyPoint.props.curve.animation) {
                         state = SelectionState.Siblings;
                         break;
                     }
@@ -531,6 +531,8 @@ IKeyPointComponentState
                     this.props.curve.updateInTangentFromControlPoint(this.props.keyId, this._extractSlope(tmpVector, this._storedLengthIn, true));
                 }
             }  
+            
+            this.props.context.refreshTarget();
             this.forceUpdate();
         }
 
@@ -549,7 +551,7 @@ IKeyPointComponentState
     }
 
     public render() {
-        if (this.props.context.activeColor && this.props.context.activeColor !== this.props.curve.color) {
+        if (!this.props.context.isChannelEnabled(this.props.curve.animation, this.props.curve.color)) {
             return null;
         }
 

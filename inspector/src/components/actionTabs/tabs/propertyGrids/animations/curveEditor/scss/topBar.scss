@@ -3,6 +3,10 @@
     grid-template-columns: 40px 200px 75px 8px 75px 8px 40px 40px 40px 40px 40px 40px 40px 1fr 40px;
     grid-template-rows: 100%;
 
+    .disabled {
+        opacity: 20%;
+        pointer-events: none;
+    }
 
     #logo {
         grid-row: 1;

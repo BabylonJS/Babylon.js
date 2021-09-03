@@ -116,7 +116,6 @@ export enum GLTFLoaderState {
 
 /** @hidden */
 export interface IGLTFLoader extends IDisposable {
-    readonly state: Nullable<GLTFLoaderState>;
     importMeshAsync: (meshesNames: any, scene: Scene, container: Nullable<AssetContainer>, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string) => Promise<ISceneLoaderAsyncResult>;
     loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string) => Promise<void>;
 }
@@ -234,9 +233,9 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
      */
     public useSRGBBuffers = true;
 
-     /**
-     * Function called before loading a url referenced by the asset.
-     */
+    /**
+    * Function called before loading a url referenced by the asset.
+    */
     public preprocessUrlAsync = (url: string) => Promise.resolve(url);
 
     /**
@@ -451,6 +450,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     }
 
     private _loader: Nullable<IGLTFLoader> = null;
+    private _state: Nullable<GLTFLoaderState> = null;
     private _progressCallback?: (event: ISceneLoaderProgressEvent) => void;
     private _requests = new Array<IFileRequestInfo>();
 
@@ -669,8 +669,13 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
      * The loader state or null if the loader is not active.
      */
     public get loaderState(): Nullable<GLTFLoaderState> {
-        return this._loader ? this._loader.state : null;
+        return this._state;
     }
+
+    /**
+     * Observable raised when the loader state changes.
+     */
+     public onLoaderStateChangedObservable = new Observable<Nullable<GLTFLoaderState>>();
 
     /**
      * Returns a promise that resolves when the asset is completely loaded.
@@ -685,6 +690,17 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
                 reject(reason);
             });
         });
+    }
+
+    /** @hidden */
+    public _setState(state: GLTFLoaderState): void {
+        if (this._state === state) {
+            return;
+        }
+
+        this._state = state;
+        this.onLoaderStateChangedObservable.notifyObservers(this._state);
+        this._log(GLTFLoaderState[this._state]);
     }
 
     /** @hidden */

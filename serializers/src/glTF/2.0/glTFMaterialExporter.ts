@@ -9,7 +9,7 @@ import { TextureTools } from "babylonjs/Misc/textureTools";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { RawTexture } from "babylonjs/Materials/Textures/rawTexture";
-import { IMaterialExtension } from  "babylonjs-gltf2interface";
+import { IMaterialExtension } from "babylonjs-gltf2interface";
 import { Scene } from "babylonjs/scene";
 
 import { _Exporter } from "./glTFExporter";
@@ -991,7 +991,7 @@ export class _GLTFMaterialExporter {
             }
 
             const useMicrosurfaceFromReflectivityMapAlpha = babylonPBRMaterial._useMicroSurfaceFromReflectivityMapAlpha;
-            if (reflectivityTexture  && !useMicrosurfaceFromReflectivityMapAlpha) {
+            if (reflectivityTexture && !useMicrosurfaceFromReflectivityMapAlpha) {
                 return Promise.reject("_ConvertPBRMaterial: Glossiness values not included in the reflectivity texture are currently not supported");
             }
             if ((albedoTexture || reflectivityTexture) && hasTextureCoords) {

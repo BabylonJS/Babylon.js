@@ -14,6 +14,7 @@ interface IRenderingComponentProps {
 }
 
 declare const Ammo: any;
+declare const Recast: any;
 
 export class RenderingComponent extends React.Component<IRenderingComponentProps> {
     private _engine: Nullable<Engine>;
@@ -104,13 +105,16 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
         const displayInspector = this._scene?.debugLayer.isVisible();
 
-        let useWebGPU = location.href.indexOf("webgpu") !== -1 && !!navigator.gpu;
+        const webgpuPromise = WebGPUEngine ? WebGPUEngine.IsSupportedAsync : Promise.resolve(false);
+        const webGPUSupported = await webgpuPromise;
+
+        let useWebGPU = location.search.indexOf("webgpu") !== -1 && webGPUSupported;
         let forceWebGL1 = false;
         const configuredEngine = Utilities.ReadStringFromStore("engineVersion", "WebGL2");
 
         switch (configuredEngine) {
             case "WebGPU":
-                useWebGPU = true;
+                useWebGPU = true && webGPUSupported;
                 break;
             case "WebGL":
                 forceWebGL1 = true;
@@ -182,8 +186,15 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             }
 
             // Check for Ammo.js
+            let ammoInit = "";
             if (code.indexOf("AmmoJSPlugin") > -1 && typeof Ammo === "function") {
-                await Ammo();
+                ammoInit = "await Ammo();";
+            }
+
+            // Check for Recast.js
+            let recastInit = "";
+            if (code.indexOf("RecastJSPlugin") > -1 && typeof Recast === "function") {
+                recastInit = "await Recast();";
             }
 
             // Check for Unity Toolkit
@@ -227,7 +238,9 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 // using the appropriate default or user-provided functions.
                 // (Use "window.x = foo" to allow later deletion, see above.)
                 code += `
-                window.initFunction = async function() {               
+                window.initFunction = async function() {
+                    ${ammoInit}
+                    ${recastInit}
                     var asyncEngineCreation = async function() {
                         try {
                         return ${createEngineFunction}();
@@ -351,6 +364,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 });
             }
         } catch (err) {
+            console.error(err);
             this.props.globalState.onErrorObservable.notifyObservers(this._tmpErrorEvent || err);
         }
     }

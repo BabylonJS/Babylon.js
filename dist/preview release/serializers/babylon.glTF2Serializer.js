@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \***********************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \*****************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -293,10 +293,14 @@ function __spreadArrays() {
     return r;
 }
 
-function __spreadArray(to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+function __spreadArray(to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 }
 
 function __await(v) {
@@ -352,19 +356,17 @@ function __importDefault(mod) {
     return (mod && mod.__esModule) ? mod : { default: mod };
 }
 
-function __classPrivateFieldGet(receiver, privateMap) {
-    if (!privateMap.has(receiver)) {
-        throw new TypeError("attempted to get private field on non-instance");
-    }
-    return privateMap.get(receiver);
+function __classPrivateFieldGet(receiver, state, kind, f) {
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 }
 
-function __classPrivateFieldSet(receiver, privateMap, value) {
-    if (!privateMap.has(receiver)) {
-        throw new TypeError("attempted to set private field on non-instance");
-    }
-    privateMap.set(receiver, value);
-    return value;
+function __classPrivateFieldSet(receiver, state, value, kind, f) {
+    if (kind === "m") throw new TypeError("Private method is not writable");
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
 }
 
 
@@ -1368,7 +1370,8 @@ var _GLTFAnimation = /** @class */ (function () {
                                     animationKeys.push(morphTargetAnimation.getKeys()[i]);
                                 }
                                 else {
-                                    animationKeys.push({ frame: animationGroup.from + (animationGroupFrameDiff / numAnimationKeys) * i,
+                                    animationKeys.push({
+                                        frame: animationGroup.from + (animationGroupFrameDiff / numAnimationKeys) * i,
                                         value: morphTarget.influence,
                                         inTangent: sampleAnimationKeys[0].inTangent ? 0 : undefined,
                                         outTangent: sampleAnimationKeys[0].outTangent ? 0 : undefined
@@ -2846,7 +2849,14 @@ var _Exporter = /** @class */ (function () {
             var headerLength = 12;
             var chunkLengthPrefix = 8;
             var jsonLength = jsonText.length;
+            var encodedJsonText;
             var imageByteLength = 0;
+            // make use of TextEncoder when available
+            if (typeof TextEncoder !== "undefined") {
+                var encoder = new TextEncoder();
+                encodedJsonText = encoder.encode(jsonText);
+                jsonLength = encodedJsonText.length;
+            }
             for (var i = 0; i < _this._orderedImageData.length; ++i) {
                 imageByteLength += _this._orderedImageData[i].data.byteLength;
             }
@@ -2867,8 +2877,22 @@ var _Exporter = /** @class */ (function () {
             jsonChunkBufferView.setUint32(4, 0x4E4F534A, true);
             //json chunk bytes
             var jsonData = new Uint8Array(jsonChunkBuffer, chunkLengthPrefix);
-            for (var i = 0; i < jsonLength; ++i) {
-                jsonData[i] = jsonText.charCodeAt(i);
+            // if TextEncoder was available, we can simply copy the encoded array
+            if (encodedJsonText) {
+                jsonData.set(encodedJsonText);
+            }
+            else {
+                var blankCharCode = "_".charCodeAt(0);
+                for (var i = 0; i < jsonLength; ++i) {
+                    var charCode = jsonText.charCodeAt(i);
+                    // if the character doesn't fit into a single UTF-16 code unit, just put a blank character
+                    if (charCode != jsonText.codePointAt(i)) {
+                        jsonData[i] = blankCharCode;
+                    }
+                    else {
+                        jsonData[i] = charCode;
+                    }
+                }
             }
             //json padding
             var jsonPaddingView = new Uint8Array(jsonChunkBuffer, chunkLengthPrefix + jsonLength);
@@ -3356,7 +3380,7 @@ var _Exporter = /** @class */ (function () {
         var glTFNodeIndex;
         var glTFNode;
         var directDescendents;
-        var nodes = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArray"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArray"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArray"])([], babylonScene.transformNodes), babylonScene.meshes), babylonScene.lights);
+        var nodes = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArray"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArray"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArray"])([], babylonScene.transformNodes, true), babylonScene.meshes, true), babylonScene.lights, true);
         var rootNodesToLeftHanded = [];
         this._convertToRightHandedSystem = !babylonScene.useRightHandedSystem;
         this._convertToRightHandedSystemMap = {};

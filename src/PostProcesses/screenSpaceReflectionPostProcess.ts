@@ -93,8 +93,8 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
         ], [
             "textureSampler", "normalSampler", "positionSampler", "reflectivitySampler"
         ], options, camera, samplingMode, engine, reusable,
-        "#define SSR_SUPPORTED\n#define REFLECTION_SAMPLES 64\n#define SMOOTH_STEPS 5\n",
-        textureType, undefined, null, blockCompilation);
+            "#define SSR_SUPPORTED\n#define REFLECTION_SAMPLES 64\n#define SMOOTH_STEPS 5\n",
+            textureType, undefined, null, blockCompilation);
 
         this._forceGeometryBuffer = forceGeometryBuffer;
 

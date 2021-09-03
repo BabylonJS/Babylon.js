@@ -377,11 +377,11 @@ export class VertexBuffer {
         // note: cast to any because the property is declared readonly
         (this.hashCode as any) =
             (((this.type - 5120) << 0) +
-            ((this.normalized ? 1 : 0) << 3) +
-            (this._size << 4) +
-            ((this._instanced ? 1 : 0) << 6) +
-            /* keep 5 bits free */
-            (this.byteStride << 12));
+                ((this.normalized ? 1 : 0) << 3) +
+                (this._size << 4) +
+                ((this._instanced ? 1 : 0) << 6) +
+                /* keep 5 bits free */
+                (this.byteStride << 12));
     }
 
     /** @hidden */

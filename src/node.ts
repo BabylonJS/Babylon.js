@@ -30,6 +30,7 @@ class _InternalNodeDataInfo {
     public _isEnabled = true;
     public _isParentEnabled = true;
     public _isReady = true;
+    public _onEnabledStateChangedObservable = new Observable<boolean>();
 }
 
 /**
@@ -287,6 +288,13 @@ export class Node implements IBehaviorAware<Node> {
     }
 
     /**
+     * An event triggered when the enabled state of the node changes
+     */
+     public get onEnabledStateChangedObservable(): Observable<boolean> {
+         return this._nodeDataStorage._onEnabledStateChangedObservable;
+     }
+
+    /**
      * Creates a new Node
      * @param name the name and id to be given to this node
      * @param scene the scene this node will be added to
@@ -534,7 +542,12 @@ export class Node implements IBehaviorAware<Node> {
      * @param value defines the new enabled state
      */
     public setEnabled(value: boolean): void {
+        if (this._nodeDataStorage._isEnabled === value) {
+            return;
+        }
         this._nodeDataStorage._isEnabled = value;
+
+        this._nodeDataStorage._onEnabledStateChangedObservable.notifyObservers(value);
 
         this._syncParentEnabledState();
     }

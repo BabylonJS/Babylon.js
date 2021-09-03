@@ -89,7 +89,8 @@ export class Control {
     private _cachedOffsetY: number;
     private _isVisible = true;
     private _isHighlighted = false;
-    private _highlightLineWidth = 2;
+    private _highlightColor = "#4affff";
+    protected _highlightLineWidth = 2;
     /** @hidden */
     public _linkedMesh: Nullable<TransformNode>;
     private _fontSet = false;
@@ -101,6 +102,7 @@ export class Control {
     protected _isEnabled = true;
     protected _disabledColor = "#9a9a9a";
     protected _disabledColorItem = "#6a6a6a";
+    protected _isReadOnly = false;
     /** @hidden */
     protected _rebuildLayout = false;
 
@@ -120,6 +122,18 @@ export class Control {
      * Gets or sets the unique id of the node. Please note that this number will be updated when the control is added to a container
      */
     public uniqueId: number;
+
+    /**
+     * Gets or sets a boolean indicating if the control is readonly (default: false).
+     * A readonly control will still raise pointer events but will not react to them
+     */
+    public get isReadOnly() {
+        return this._isReadOnly;
+    }
+
+    public set isReadOnly(value: boolean) {
+        this._isReadOnly = value;
+    }
 
     /**
      * Gets or sets an object used to store user defined information for the node
@@ -255,12 +269,12 @@ export class Control {
     */
     public onWheelObservable = new Observable<Vector2>();
     /**
-    * An event triggered when the pointer move over the control.
+    * An event triggered when the pointer moves over the control.
     */
     public onPointerMoveObservable = new Observable<Vector2>();
 
     /**
-    * An event triggered when the pointer move out of the control.
+    * An event triggered when the pointer moves out of the control.
     */
     public onPointerOutObservable = new Observable<Control>();
 
@@ -302,7 +316,7 @@ export class Control {
     /**
     * An event triggered when the control has been disposed
     */
-   public onDisposeObservable = new Observable<Control>();
+    public onDisposeObservable = new Observable<Control>();
 
     /**
      * Get the hosting AdvancedDynamicTexture
@@ -361,17 +375,33 @@ export class Control {
 
     public set isHighlighted(value: boolean) {
         if (this._isHighlighted === value) {
-             return;
+            return;
         }
 
         this._isHighlighted = value;
         this._markAsDirty();
     }
 
+    /**
+     * Gets or sets a string defining the color to use for highlighting this control
+     */
+    public get highlightColor(): string {
+        return this._highlightColor;
+    }
+
+    public set highlightColor(value: string) {
+        if (this._highlightColor === value) {
+            return;
+        }
+
+        this._highlightColor = value;
+        this._markAsDirty();
+    }
+
     /** Gets or sets a value indicating the scale factor on X axis (1 by default)
      * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
     */
-   @serialize()
+    @serialize()
     public get scaleX(): number {
         return this._scaleX;
     }
@@ -389,7 +419,7 @@ export class Control {
     /** Gets or sets a value indicating the scale factor on Y axis (1 by default)
      * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
     */
-   @serialize()
+    @serialize()
     public get scaleY(): number {
         return this._scaleY;
     }
@@ -407,7 +437,7 @@ export class Control {
     /** Gets or sets the rotation angle (0 by default)
      * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
     */
-   @serialize()
+    @serialize()
     public get rotation(): number {
         return this._rotation;
     }
@@ -425,7 +455,7 @@ export class Control {
     /** Gets or sets the transformation center on Y axis (0 by default)
      * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
     */
-   @serialize()
+    @serialize()
     public get transformCenterY(): number {
         return this._transformCenterY;
     }
@@ -443,7 +473,7 @@ export class Control {
     /** Gets or sets the transformation center on X axis (0 by default)
      * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
     */
-   @serialize()
+    @serialize()
     public get transformCenterX(): number {
         return this._transformCenterX;
     }
@@ -1233,14 +1263,14 @@ export class Control {
         this._host._linkedControls.push(this);
     }
 
-     /**
-     * Shorthand funtion to set the top, right, bottom, and left padding values on the control.
-     * @param { string | number} paddingTop - The value of the top padding.
-     * @param { string | number} paddingRight - The value of the right padding. If omitted, top is used.
-     * @param { string | number} paddingBottom - The value of the bottom padding. If omitted, top is used.
-     * @param { string | number} paddingLeft - The value of the left padding. If omitted, right is used.
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
-     */
+    /**
+    * Shorthand funtion to set the top, right, bottom, and left padding values on the control.
+    * @param { string | number} paddingTop - The value of the top padding.
+    * @param { string | number} paddingRight - The value of the right padding. If omitted, top is used.
+    * @param { string | number} paddingBottom - The value of the bottom padding. If omitted, top is used.
+    * @param { string | number} paddingLeft - The value of the left padding. If omitted, right is used.
+    * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+    */
     public setPadding(
         paddingTop: string | number,
         paddingRight?: string | number,
@@ -1456,7 +1486,7 @@ export class Control {
         }
 
         context.save();
-        context.strokeStyle = "#4affff";
+        context.strokeStyle = this._highlightColor;
         context.lineWidth = this._highlightLineWidth;
 
         this._renderHighlightSpecific(context);
@@ -1962,7 +1992,7 @@ export class Control {
     }
 
     /** @hidden */
-    public _onCanvasBlur(): void {}
+    public _onCanvasBlur(): void { }
 
     /** @hidden */
     public _processObservables(type: number, x: number, y: number, pi: PointerInfoBase, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {

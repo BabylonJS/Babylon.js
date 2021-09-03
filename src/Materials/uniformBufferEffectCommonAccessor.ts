@@ -24,7 +24,7 @@ export class UniformBufferEffectCommonAccessor {
 
     public setMatrix: (name: string, mat: IMatrixLike) => void;
 
-    public setMatrices:  (name: string, mat: Float32Array) => void;
+    public setMatrices: (name: string, mat: Float32Array) => void;
 
     public setVector3: (name: string, vector: IVector3Like) => void;
 

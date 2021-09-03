@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \***********************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \*****************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -293,10 +293,14 @@ function __spreadArrays() {
     return r;
 }
 
-function __spreadArray(to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+function __spreadArray(to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 }
 
 function __await(v) {
@@ -352,19 +356,17 @@ function __importDefault(mod) {
     return (mod && mod.__esModule) ? mod : { default: mod };
 }
 
-function __classPrivateFieldGet(receiver, privateMap) {
-    if (!privateMap.has(receiver)) {
-        throw new TypeError("attempted to get private field on non-instance");
-    }
-    return privateMap.get(receiver);
+function __classPrivateFieldGet(receiver, state, kind, f) {
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 }
 
-function __classPrivateFieldSet(receiver, privateMap, value) {
-    if (!privateMap.has(receiver)) {
-        throw new TypeError("attempted to set private field on non-instance");
-    }
-    privateMap.set(receiver, value);
-    return value;
+function __classPrivateFieldSet(receiver, state, value, kind, f) {
+    if (kind === "m") throw new TypeError("Private method is not writable");
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
 }
 
 
@@ -1390,6 +1392,7 @@ var SolidParser = /** @class */ (function () {
      * @param onFileToLoadFound defines a callback that will be called if a MTL file is found
      */
     SolidParser.prototype.parse = function (meshesNames, data, scene, assetContainer, onFileToLoadFound) {
+        var _a;
         // Split the file into lines
         var lines = data.split('\n');
         // Look at each line
@@ -1569,25 +1572,25 @@ var SolidParser = /** @class */ (function () {
             }
             else {
                 // There is no indices in the file. We will have to switch to point cloud rendering
-                for (var _i = 0, _a = this._positions; _i < _a.length; _i++) {
-                    var pos = _a[_i];
+                for (var _i = 0, _b = this._positions; _i < _b.length; _i++) {
+                    var pos = _b[_i];
                     this._unwrappedPositionsForBabylon.push(pos.x, pos.y, pos.z);
                 }
                 if (this._normals.length) {
-                    for (var _b = 0, _c = this._normals; _b < _c.length; _b++) {
-                        var normal = _c[_b];
+                    for (var _c = 0, _d = this._normals; _c < _d.length; _c++) {
+                        var normal = _d[_c];
                         this._unwrappedNormalsForBabylon.push(normal.x, normal.y, normal.z);
                     }
                 }
                 if (this._uvs.length) {
-                    for (var _d = 0, _e = this._uvs; _d < _e.length; _d++) {
-                        var uv = _e[_d];
+                    for (var _e = 0, _f = this._uvs; _e < _f.length; _e++) {
+                        var uv = _f[_e];
                         this._unwrappedUVForBabylon.push(uv.x, uv.y);
                     }
                 }
                 if (this._colors.length) {
-                    for (var _f = 0, _g = this._colors; _f < _g.length; _f++) {
-                        var color = _g[_f];
+                    for (var _g = 0, _h = this._colors; _g < _h.length; _g++) {
+                        var color = _h[_g];
                         this._unwrappedColorsForBabylon.push(color.r, color.g, color.b, color.a);
                     }
                 }
@@ -1640,6 +1643,11 @@ var SolidParser = /** @class */ (function () {
             //Push the name of the material to an array
             //This is indispensable for the importMesh function
             this._materialToUse.push(this._meshesFromObj[j].materialName);
+            if (((_a = this._handledMesh.positions) === null || _a === void 0 ? void 0 : _a.length) === 0) {
+                //Push the mesh into an array
+                this._babylonMeshesArray.push(babylonMesh);
+                continue;
+            }
             var vertexData = new babylonjs_Buffers_buffer__WEBPACK_IMPORTED_MODULE_0__["VertexData"](); //The container for the values
             //Set the data for the babylonMesh
             vertexData.uvs = this._handledMesh.uvs;
@@ -3411,7 +3419,6 @@ var GLTFLoaderBase = /** @class */ (function () {
 */
 var GLTFLoader = /** @class */ (function () {
     function GLTFLoader() {
-        this.state = null;
     }
     GLTFLoader.RegisterExtension = function (extension) {
         if (GLTFLoader.Extensions[extension.name]) {
@@ -4569,9 +4576,9 @@ _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoader"].RegisterExtension(NAME, f
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "EXT_meshopt_compression", function() { return EXT_meshopt_compression; });
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/tools");
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _glTFLoader__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../glTFLoader */ "./glTF/2.0/glTFLoader.ts");
+/* harmony import */ var _glTFLoader__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../glTFLoader */ "./glTF/2.0/glTFLoader.ts");
+/* harmony import */ var babylonjs_Meshes_Compression_meshoptCompression__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Meshes/Compression/meshoptCompression */ "babylonjs/Misc/tools");
+/* harmony import */ var babylonjs_Meshes_Compression_meshoptCompression__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Meshes_Compression_meshoptCompression__WEBPACK_IMPORTED_MODULE_1__);
 
 
 var NAME = "EXT_meshopt_compression";
@@ -4579,6 +4586,7 @@ var NAME = "EXT_meshopt_compression";
  * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Vendor/EXT_meshopt_compression)
  *
  * This extension uses a WebAssembly decoder module from https://github.com/zeux/meshoptimizer/tree/master/js
+ * @since 5.0.0
  */
 var EXT_meshopt_compression = /** @class */ (function () {
     /** @hidden */
@@ -4589,12 +4597,6 @@ var EXT_meshopt_compression = /** @class */ (function () {
         this.name = NAME;
         this.enabled = loader.isExtensionUsed(NAME);
         this._loader = loader;
-        if (this.enabled && !EXT_meshopt_compression._DecoderPromise) {
-            EXT_meshopt_compression._DecoderPromise = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__["Tools"].LoadScriptAsync(EXT_meshopt_compression.DecoderPath).then(function () {
-                // Wait for WebAssembly compilation before resolving promise
-                return MeshoptDecoder.ready;
-            });
-        }
     }
     /** @hidden */
     EXT_meshopt_compression.prototype.dispose = function () {
@@ -4603,32 +4605,22 @@ var EXT_meshopt_compression = /** @class */ (function () {
     /** @hidden */
     EXT_meshopt_compression.prototype.loadBufferViewAsync = function (context, bufferView) {
         var _this = this;
-        return _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoader"].LoadExtensionAsync(context, bufferView, this.name, function (extensionContext, extension) {
+        return _glTFLoader__WEBPACK_IMPORTED_MODULE_0__["GLTFLoader"].LoadExtensionAsync(context, bufferView, this.name, function (extensionContext, extension) {
             var bufferViewMeshopt = bufferView;
             if (bufferViewMeshopt._meshOptData) {
                 return bufferViewMeshopt._meshOptData;
             }
-            var buffer = _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["ArrayItem"].Get(context + "/buffer", _this._loader.gltf.buffers, extension.buffer);
-            var bufferPromise = _this._loader.loadBufferAsync("/buffers/" + buffer.index, buffer, (extension.byteOffset || 0), extension.byteLength);
-            bufferViewMeshopt._meshOptData = Promise.all([bufferPromise, EXT_meshopt_compression._DecoderPromise]).then(function (res) {
-                var source = res[0];
-                var count = extension.count;
-                var stride = extension.byteStride;
-                var result = new Uint8Array(new ArrayBuffer(count * stride));
-                MeshoptDecoder.decodeGltfBuffer(result, count, stride, source, extension.mode, extension.filter);
-                return Promise.resolve(result);
+            var buffer = _glTFLoader__WEBPACK_IMPORTED_MODULE_0__["ArrayItem"].Get(context + "/buffer", _this._loader.gltf.buffers, extension.buffer);
+            bufferViewMeshopt._meshOptData = _this._loader.loadBufferAsync("/buffers/" + buffer.index, buffer, (extension.byteOffset || 0), extension.byteLength).then(function (buffer) {
+                return babylonjs_Meshes_Compression_meshoptCompression__WEBPACK_IMPORTED_MODULE_1__["MeshoptCompression"].Default.decodeGltfBufferAsync(buffer, extension.count, extension.byteStride, extension.mode, extension.filter);
             });
             return bufferViewMeshopt._meshOptData;
         });
     };
-    /**
-     * Path to decoder module; defaults to https://preview.babylonjs.com/meshopt_decoder.js
-     */
-    EXT_meshopt_compression.DecoderPath = "https://preview.babylonjs.com/meshopt_decoder.js";
     return EXT_meshopt_compression;
 }());
 
-_glTFLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoader"].RegisterExtension(NAME, function (loader) { return new EXT_meshopt_compression(loader); });
+_glTFLoader__WEBPACK_IMPORTED_MODULE_0__["GLTFLoader"].RegisterExtension(NAME, function (loader) { return new EXT_meshopt_compression(loader); });
 
 
 /***/ }),
@@ -5066,8 +5058,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var NAME = "KHR_materials_ior";
 /**
- * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1718)
- * !!! Experimental Extension Subject to Changes !!!
+ * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_ior)
  */
 var KHR_materials_ior = /** @class */ (function () {
     /** @hidden */
@@ -5230,7 +5221,6 @@ var NAME = "KHR_materials_sheen";
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_sheen/README.md)
  * [Playground Sample](https://www.babylonjs-playground.com/frame.html#BNIZX6#4)
- * !!! Experimental Extension Subject to Changes !!!
  */
 var KHR_materials_sheen = /** @class */ (function () {
     /** @hidden */
@@ -5322,8 +5312,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var NAME = "KHR_materials_specular";
 /**
- * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1719)
- * !!! Experimental Extension Subject to Changes !!!
+ * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_specular)
  */
 var KHR_materials_specular = /** @class */ (function () {
     /** @hidden */
@@ -6069,8 +6058,8 @@ __webpack_require__.r(__webpack_exports__);
 
 var NAME = "KHR_materials_volume";
 /**
- * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1726)
- * !!! Experimental Extension Subject to Changes !!!
+ * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_volume)
+ * @since 5.0.0
  */
 var KHR_materials_volume = /** @class */ (function () {
     /** @hidden */
@@ -6197,8 +6186,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var NAME = "KHR_texture_basisu";
 /**
- * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1751)
- * !!! Experimental Extension Subject to Changes !!!
+ * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_texture_basisu)
  */
 var KHR_texture_basisu = /** @class */ (function () {
     /** @hidden */
@@ -6315,8 +6303,8 @@ __webpack_require__.r(__webpack_exports__);
 
 var NAME = "KHR_xmp_json_ld";
 /**
- * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1893)
- * !!! Experimental Extension Subject to Changes !!!
+ * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_xmp_json_ld)
+ * @since 5.0.0
  */
 var KHR_xmp_json_ld = /** @class */ (function () {
     /** @hidden */
@@ -7279,7 +7267,6 @@ var GLTFLoader = /** @class */ (function () {
         /** @hidden */
         this._disableInstancedMesh = 0;
         this._disposed = false;
-        this._state = null;
         this._extensions = new Array();
         this._defaultBabylonMaterialData = {};
         this._parent = parent;
@@ -7309,16 +7296,6 @@ var GLTFLoader = /** @class */ (function () {
         delete GLTFLoader._RegisteredExtensions[name];
         return true;
     };
-    Object.defineProperty(GLTFLoader.prototype, "state", {
-        /**
-         * The loader state.
-         */
-        get: function () {
-            return this._state;
-        },
-        enumerable: false,
-        configurable: true
-    });
     Object.defineProperty(GLTFLoader.prototype, "gltf", {
         /**
          * The object that represents the glTF JSON.
@@ -7449,7 +7426,7 @@ var GLTFLoader = /** @class */ (function () {
             var loadingToCompleteCounterName = _glTFFileLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoaderState"][_glTFFileLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoaderState"].LOADING] + " => " + _glTFFileLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoaderState"][_glTFFileLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoaderState"].COMPLETE];
             _this._parent._startPerformanceCounter(loadingToReadyCounterName);
             _this._parent._startPerformanceCounter(loadingToCompleteCounterName);
-            _this._setState(_glTFFileLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoaderState"].LOADING);
+            _this._parent._setState(_glTFFileLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoaderState"].LOADING);
             _this._extensionsOnLoading();
             var promises = new Array();
             // Block the marking of materials dirty until the scene is loaded.
@@ -7483,7 +7460,7 @@ var GLTFLoader = /** @class */ (function () {
                     _this._rootBabylonMesh.setEnabled(true);
                 }
                 _this._extensionsOnReady();
-                _this._setState(_glTFFileLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoaderState"].READY);
+                _this._parent._setState(_glTFFileLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoaderState"].READY);
                 _this._startAnimations();
                 return resultFunc();
             });
@@ -7493,7 +7470,7 @@ var GLTFLoader = /** @class */ (function () {
                     if (!_this._disposed) {
                         Promise.all(_this._completePromises).then(function () {
                             _this._parent._endPerformanceCounter(loadingToCompleteCounterName);
-                            _this._setState(_glTFFileLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoaderState"].COMPLETE);
+                            _this._parent._setState(_glTFFileLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoaderState"].COMPLETE);
                             _this._parent.onCompleteObservable.notifyObservers(undefined);
                             _this._parent.onCompleteObservable.clear();
                             _this.dispose();
@@ -7591,10 +7568,6 @@ var GLTFLoader = /** @class */ (function () {
                 _loop_1(name_3);
             }
         }
-    };
-    GLTFLoader.prototype._setState = function (state) {
-        this._state = state;
-        this.log(_glTFFileLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoaderState"][this._state]);
     };
     GLTFLoader.prototype._createRootNode = function () {
         this._babylonScene._blockEntityCollection = !!this._assetContainer;
@@ -8059,12 +8032,14 @@ var GLTFLoader = /** @class */ (function () {
         }
         var targetNames = mesh.extras ? mesh.extras.targetNames : null;
         babylonMesh.morphTargetManager = new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["MorphTargetManager"](babylonMesh.getScene());
+        babylonMesh.morphTargetManager.areUpdatesFrozen = true;
         for (var index = 0; index < primitive.targets.length; index++) {
             var weight = node.weights ? node.weights[index] : mesh.weights ? mesh.weights[index] : 0;
             var name_4 = targetNames ? targetNames[index] : "morphTarget" + index;
             babylonMesh.morphTargetManager.addTarget(new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["MorphTarget"](name_4, weight, babylonMesh.getScene()));
             // TODO: tell the target whether it has positions, normals, tangents
         }
+        babylonMesh.morphTargetManager.areUpdatesFrozen = false;
     };
     GLTFLoader.prototype._loadMorphTargetsAsync = function (context, primitive, babylonMesh, babylonGeometry) {
         if (!primitive.targets) {
@@ -8682,36 +8657,40 @@ var GLTFLoader = /** @class */ (function () {
     };
     GLTFLoader.prototype._loadVertexAccessorAsync = function (context, accessor, kind) {
         var _this = this;
-        if (accessor._babylonVertexBuffer) {
-            return accessor._babylonVertexBuffer;
+        var _a;
+        if ((_a = accessor._babylonVertexBuffer) === null || _a === void 0 ? void 0 : _a[kind]) {
+            return accessor._babylonVertexBuffer[kind];
+        }
+        if (!accessor._babylonVertexBuffer) {
+            accessor._babylonVertexBuffer = {};
         }
         if (accessor.sparse) {
-            accessor._babylonVertexBuffer = this._loadFloatAccessorAsync("/accessors/" + accessor.index, accessor).then(function (data) {
+            accessor._babylonVertexBuffer[kind] = this._loadFloatAccessorAsync("/accessors/" + accessor.index, accessor).then(function (data) {
                 return new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"](_this._babylonScene.getEngine(), data, kind, false);
             });
         }
         // HACK: If byte offset is not a multiple of component type byte length then load as a float array instead of using Babylon buffers.
         else if (accessor.byteOffset && accessor.byteOffset % babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].GetTypeByteLength(accessor.componentType) !== 0) {
             babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Logger"].Warn("Accessor byte offset is not a multiple of component type byte length");
-            accessor._babylonVertexBuffer = this._loadFloatAccessorAsync("/accessors/" + accessor.index, accessor).then(function (data) {
+            accessor._babylonVertexBuffer[kind] = this._loadFloatAccessorAsync("/accessors/" + accessor.index, accessor).then(function (data) {
                 return new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"](_this._babylonScene.getEngine(), data, kind, false);
             });
         }
         // Load joint indices as a float array since the shaders expect float data but glTF uses unsigned byte/short.
         // This prevents certain platforms (e.g. D3D) from having to convert the data to float on the fly.
         else if (kind === babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].MatricesIndicesKind || kind === babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].MatricesIndicesExtraKind) {
-            accessor._babylonVertexBuffer = this._loadFloatAccessorAsync("/accessors/" + accessor.index, accessor).then(function (data) {
+            accessor._babylonVertexBuffer[kind] = this._loadFloatAccessorAsync("/accessors/" + accessor.index, accessor).then(function (data) {
                 return new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"](_this._babylonScene.getEngine(), data, kind, false);
             });
         }
         else {
             var bufferView_2 = ArrayItem.Get(context + "/bufferView", this._gltf.bufferViews, accessor.bufferView);
-            accessor._babylonVertexBuffer = this._loadVertexBufferViewAsync(bufferView_2, kind).then(function (babylonBuffer) {
+            accessor._babylonVertexBuffer[kind] = this._loadVertexBufferViewAsync(bufferView_2, kind).then(function (babylonBuffer) {
                 var size = GLTFLoader._GetNumComponents(context, accessor.type);
                 return new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"](_this._babylonScene.getEngine(), babylonBuffer, kind, false, false, bufferView_2.byteStride, false, accessor.byteOffset, size, accessor.componentType, accessor.normalized, true, 1, true);
             });
         }
-        return accessor._babylonVertexBuffer;
+        return accessor._babylonVertexBuffer[kind];
     };
     GLTFLoader.prototype._loadMaterialMetallicRoughnessPropertiesAsync = function (context, properties, babylonMaterial) {
         if (!(babylonMaterial instanceof babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["PBRMaterial"])) {
@@ -8936,7 +8915,7 @@ var GLTFLoader = /** @class */ (function () {
             return extensionPromise;
         }
         this.logOpen("" + context);
-        if (textureInfo.texCoord >= 2) {
+        if (textureInfo.texCoord >= 6) {
             throw new Error(context + "/texCoord: Invalid value (" + textureInfo.texCoord + ")");
         }
         var texture = ArrayItem.Get(context + "/index", this._gltf.textures, textureInfo.index);
@@ -9694,6 +9673,7 @@ var GLTFFileLoader = /** @class */ (function () {
          */
         this.onValidatedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this._loader = null;
+        this._state = null;
         this._requests = new Array();
         /**
          * Name of the loader ("gltf")
@@ -9704,6 +9684,10 @@ var GLTFFileLoader = /** @class */ (function () {
             ".gltf": { isBinary: false },
             ".glb": { isBinary: true }
         };
+        /**
+         * Observable raised when the loader state changes.
+         */
+        this.onLoaderStateChangedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this._logIndentLevel = 0;
         this._loggingEnabled = false;
         /** @hidden */
@@ -10064,7 +10048,7 @@ var GLTFFileLoader = /** @class */ (function () {
          * The loader state or null if the loader is not active.
          */
         get: function () {
-            return this._loader ? this._loader.state : null;
+            return this._state;
         },
         enumerable: false,
         configurable: true
@@ -10083,6 +10067,15 @@ var GLTFFileLoader = /** @class */ (function () {
                 reject(reason);
             });
         });
+    };
+    /** @hidden */
+    GLTFFileLoader.prototype._setState = function (state) {
+        if (this._state === state) {
+            return;
+        }
+        this._state = state;
+        this.onLoaderStateChangedObservable.notifyObservers(this._state);
+        this._log(GLTFLoaderState[this._state]);
     };
     /** @hidden */
     GLTFFileLoader.prototype._loadFile = function (scene, fileOrUrl, onSuccess, useArrayBuffer, onError, onOpened) {

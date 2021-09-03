@@ -17,6 +17,7 @@ import { serialize, serializeAsColor4, SerializationHelper } from '../Misc/decor
 import { _TypeStore } from '../Misc/typeStore';
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { AbstractScene } from "../abstractScene";
+import { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 
 declare type Scene = import("../scene").Scene;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
@@ -30,7 +31,7 @@ declare type PrePassEffectConfiguration = import("../Rendering/prePassEffectConf
  */
 export type PostProcessOptions = { width: number, height: number };
 
-type TextureCache = {texture: InternalTexture, postProcessChannel: number, lastUsedRenderId : number};
+type TextureCache = { texture: RenderTargetWrapper, postProcessChannel: number, lastUsedRenderId: number };
 
 /**
  * PostProcess can be used to apply a shader to a texture after it has been rendered
@@ -71,7 +72,7 @@ export class PostProcess {
     * Internal, reference to the location where this postprocess was output to. (Typically the texture on the next postprocess in the chain)
     * @hidden
     */
-    public _outputTexture: Nullable<InternalTexture> = null;
+    public _outputTexture: Nullable<RenderTargetWrapper> = null;
     /**
     * Sampling mode used by the shader
     * See https://doc.babylonjs.com/classes/3.1/texture
@@ -180,7 +181,7 @@ export class PostProcess {
     * Smart array of input and output textures for the post process.
     * @hidden
     */
-    public _textures = new SmartArray<InternalTexture>(2);
+    public _textures = new SmartArray<RenderTargetWrapper>(2);
     /**
     * Smart array of input and output textures for the post process.
     * @hidden
@@ -202,7 +203,7 @@ export class PostProcess {
     private _shareOutputWithPostProcess: Nullable<PostProcess>;
     private _texelSize = Vector2.Zero();
     /** @hidden */
-    public _forcedOutputTexture: Nullable<InternalTexture>;
+    public _forcedOutputTexture: Nullable<RenderTargetWrapper>;
 
     /**
     * Prepass configuration in case this post process needs a texture from prepass
@@ -306,11 +307,11 @@ export class PostProcess {
     * The input texture for this post process and the output texture of the previous post process. When added to a pipeline the previous post process will
     * render it's output into this texture and this texture will be used as textureSampler in the fragment shader of this post process.
     */
-    public get inputTexture(): InternalTexture {
+    public get inputTexture(): RenderTargetWrapper {
         return this._textures.data[this._currentRenderTextureInd];
     }
 
-    public set inputTexture(value: InternalTexture) {
+    public set inputTexture(value: RenderTargetWrapper) {
         this._forcedOutputTexture = value;
     }
 
@@ -373,41 +374,41 @@ export class PostProcess {
         samplingMode: number = Constants.TEXTURE_NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, vertexUrl: string = "postprocess",
         indexParameters?: any, blockCompilation = false, textureFormat = Constants.TEXTUREFORMAT_RGBA) {
 
-            this.name = name;
-            if (camera != null) {
-                this._camera = camera;
-                this._scene = camera.getScene();
-                camera.attachPostProcess(this);
-                this._engine = this._scene.getEngine();
+        this.name = name;
+        if (camera != null) {
+            this._camera = camera;
+            this._scene = camera.getScene();
+            camera.attachPostProcess(this);
+            this._engine = this._scene.getEngine();
 
-                this._scene.postProcesses.push(this);
-                this.uniqueId = this._scene.getUniqueId();
-            }
-            else if (engine) {
-                this._engine = engine;
-                this._engine.postProcesses.push(this);
-            }
-            this._options = options;
-            this.renderTargetSamplingMode = samplingMode ? samplingMode : Constants.TEXTURE_NEAREST_SAMPLINGMODE;
-            this._reusable = reusable || false;
-            this._textureType = textureType;
-            this._textureFormat = textureFormat;
+            this._scene.postProcesses.push(this);
+            this.uniqueId = this._scene.getUniqueId();
+        }
+        else if (engine) {
+            this._engine = engine;
+            this._engine.postProcesses.push(this);
+        }
+        this._options = options;
+        this.renderTargetSamplingMode = samplingMode ? samplingMode : Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        this._reusable = reusable || false;
+        this._textureType = textureType;
+        this._textureFormat = textureFormat;
 
-            this._samplers = samplers || [];
-            this._samplers.push("textureSampler");
+        this._samplers = samplers || [];
+        this._samplers.push("textureSampler");
 
-            this._fragmentUrl = fragmentUrl;
-            this._vertexUrl = vertexUrl;
-            this._parameters = parameters || [];
+        this._fragmentUrl = fragmentUrl;
+        this._vertexUrl = vertexUrl;
+        this._parameters = parameters || [];
 
-            this._parameters.push("scale");
+        this._parameters.push("scale");
 
-            this._indexParameters = indexParameters;
-            this._drawWrapper = new DrawWrapper(this._engine);
+        this._indexParameters = indexParameters;
+        this._drawWrapper = new DrawWrapper(this._engine);
 
-            if (!blockCompilation) {
-                this.updateEffect(defines);
-            }
+        if (!blockCompilation) {
+            this.updateEffect(defines);
+        }
     }
 
     /**
@@ -453,7 +454,7 @@ export class PostProcess {
      */
     public useOwnOutput() {
         if (this._textures.length == 0) {
-            this._textures = new SmartArray<InternalTexture>(2);
+            this._textures = new SmartArray<RenderTargetWrapper>(2);
         }
 
         this._shareOutputWithPostProcess = null;
@@ -502,13 +503,14 @@ export class PostProcess {
         for (let i = 0; i < this._textureCache.length; i++) {
             if (this._textureCache[i].texture.width === textureSize.width &&
                 this._textureCache[i].texture.height === textureSize.height &&
-                this._textureCache[i].postProcessChannel === channel) {
+                this._textureCache[i].postProcessChannel === channel &&
+                this._textureCache[i].texture._generateDepthBuffer === textureOptions.generateDepthBuffer) {
                 return this._textureCache[i].texture;
             }
         }
 
         const tex = this._engine.createRenderTargetTexture(textureSize, textureOptions);
-        this._textureCache.push({ texture: tex, postProcessChannel: channel, lastUsedRenderId : -1 });
+        this._textureCache.push({ texture: tex, postProcessChannel: channel, lastUsedRenderId: -1 });
 
         return tex;
     }
@@ -527,7 +529,7 @@ export class PostProcess {
                 }
 
                 if (!currentlyUsed) {
-                    this._engine._releaseTexture(this._textureCache[i].texture);
+                    this._textureCache[i].texture.dispose();
                     this._textureCache.splice(i, 1);
                 }
             }
@@ -542,11 +544,19 @@ export class PostProcess {
         this.width = width;
         this.height = height;
 
+        let firstPP = null;
+        for (let i = 0; i < camera._postProcesses.length; i++) {
+            if (camera._postProcesses[i] !== null) {
+                firstPP = camera._postProcesses[i];
+                break;
+            }
+        }
+
         let textureSize = { width: this.width, height: this.height };
         let textureOptions = {
             generateMipMaps: needMipMaps,
-            generateDepthBuffer: forceDepthStencil || camera._postProcesses.indexOf(this) === 0,
-            generateStencilBuffer: (forceDepthStencil || camera._postProcesses.indexOf(this) === 0) && this._engine.isStencilEnable,
+            generateDepthBuffer: forceDepthStencil || firstPP === this,
+            generateStencilBuffer: (forceDepthStencil || firstPP === this) && this._engine.isStencilEnable,
             samplingMode: this.renderTargetSamplingMode,
             type: this._textureType,
             format: this._textureFormat
@@ -569,9 +579,9 @@ export class PostProcess {
      * @param camera The camera that will be used in the post process. This camera will be used when calling onActivateObservable.
      * @param sourceTexture The source texture to be inspected to get the width and height if not specified in the post process constructor. (default: null)
      * @param forceDepthStencil If true, a depth and stencil buffer will be generated. (default: false)
-     * @returns The target texture that was bound to be written to.
+     * @returns The render target wrapper that was bound to be written to.
      */
-    public activate(camera: Nullable<Camera>, sourceTexture: Nullable<InternalTexture> = null, forceDepthStencil?: boolean): InternalTexture {
+    public activate(camera: Nullable<Camera>, sourceTexture: Nullable<InternalTexture> = null, forceDepthStencil?: boolean): RenderTargetWrapper {
         camera = camera || this._camera;
 
         var scene = camera.getScene();
@@ -630,7 +640,7 @@ export class PostProcess {
             this._renderId++;
         }
 
-        var target: InternalTexture;
+        var target: RenderTargetWrapper;
 
         if (this._shareOutputWithPostProcess) {
             target = this._shareOutputWithPostProcess.inputTexture;
@@ -732,7 +742,7 @@ export class PostProcess {
         }
 
         // Bind the output texture of the preivous post process as the input to this post process.
-        var source: InternalTexture;
+        var source: RenderTargetWrapper;
         if (this._shareOutputWithPostProcess) {
             source = this._shareOutputWithPostProcess.inputTexture;
         } else if (this._forcedOutputTexture) {
@@ -741,7 +751,7 @@ export class PostProcess {
             source = this.inputTexture;
         }
 
-        this._drawWrapper.effect._bindTexture("textureSampler", source);
+        this._drawWrapper.effect._bindTexture("textureSampler", source?.texture);
 
         // Parameters
         this._drawWrapper.effect.setVector2("scale", this._scaleRatio);
@@ -762,7 +772,7 @@ export class PostProcess {
 
     private _disposeTextureCache() {
         for (let i = this._textureCache.length - 1; i >= 0; i--) {
-            this._engine._releaseTexture(this._textureCache[i].texture);
+            this._textureCache[i].texture.dispose();
         }
 
         this._textureCache.length = 0;
@@ -834,7 +844,7 @@ export class PostProcess {
     }
 
     /**
-     * Serializes the particle system to a JSON object
+     * Serializes the post process to a JSON object
      * @returns the JSON object
      */
     public serialize(): any {
@@ -901,7 +911,7 @@ export class PostProcess {
     }
 
     /** @hidden */
-    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) : Nullable<PostProcess> {
+    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<PostProcess> {
         return SerializationHelper.Parse(() => {
             return new PostProcess(
                 parsedPostProcess.name,
@@ -919,7 +929,7 @@ export class PostProcess {
                 parsedPostProcess.indexParameters,
                 false,
                 parsedPostProcess.textureFormat
-                );
+            );
         }, parsedPostProcess, scene, rootUrl);
     }
 }

@@ -231,9 +231,8 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
     public detach(): void {
         super.detach();
 
-        (this._ownerNode as Mesh).isNearGrabbable = false;
-
         if (this._ownerNode) {
+            (this._ownerNode as Mesh).isNearGrabbable = false;
             this._ownerNode.getScene().onBeforeRenderObservable.remove(this._sceneRenderObserver);
         }
 

@@ -42,6 +42,9 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
      * If the camera should be rotated automatically based on pointer movement
      */
     public _allowCameraRotation = true;
+
+    private _currentActiveButton: number = -1;
+
     /**
      * Manage the mouse inputs to control the movement of a free camera.
      * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -52,7 +55,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
          * Define if touch is enabled in the mouse input
          */
         public touchEnabled = true
-    ) {}
+    ) { }
 
     /**
      * Attach the input controls to a specific dom element to get the input from.
@@ -88,6 +91,10 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                         //Nothing to do with the error. Execution will continue.
                     }
 
+                    if (this._currentActiveButton === -1) {
+                        this._currentActiveButton = evt.button;
+                    }
+
                     this.previousPosition = {
                         x: evt.clientX,
                         y: evt.clientY,
@@ -108,6 +115,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                     } catch (e) {
                         //Nothing to do with the error.
                     }
+                    this._currentActiveButton = -1;
 
                     this.previousPosition = null;
                     if (!noPreventDefault) {

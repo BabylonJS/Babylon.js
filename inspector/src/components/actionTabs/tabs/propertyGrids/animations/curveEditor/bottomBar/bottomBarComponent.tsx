@@ -38,7 +38,7 @@ IBottomBarComponentState
     }
 
     private _renderMaxFrame() {
-        const keys = this.props.context.activeAnimation!.getKeys();
+        const keys = this.props.context.activeAnimations[0].getKeys();
         return Math.round(keys[keys.length - 1].frame);
     }
 
@@ -58,7 +58,7 @@ IBottomBarComponentState
                 <MediaPlayerComponent globalState={this.props.globalState} context={this.props.context} />
                 <RangeSelectorComponent globalState={this.props.globalState} context={this.props.context} />
                 {
-                    this.props.context.activeAnimation &&
+                    this.props.context.activeAnimations.length > 0 &&
                     <div id="bottom-bar-total">
                         {this._renderMaxFrame()}
                     </div>

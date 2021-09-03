@@ -31,6 +31,7 @@ export interface IMaterialClearCoatDefines {
     CLEARCOAT_TINT: boolean;
     CLEARCOAT_TINT_TEXTURE: boolean;
     CLEARCOAT_TINT_TEXTUREDIRECTUV: number;
+    CLEARCOAT_TINT_GAMMATEXTURE: boolean;
 
     /** @hidden */
     _areTexturesDirty: boolean;
@@ -257,6 +258,7 @@ export class PBRClearCoatConfiguration {
                         defines.CLEARCOAT_TINT = true;
                         if (this._tintTexture && MaterialFlags.ClearCoatTintTextureEnabled) {
                             MaterialHelper.PrepareDefinesForMergedUV(this._tintTexture, defines, "CLEARCOAT_TINT_TEXTURE");
+                            defines.CLEARCOAT_TINT_GAMMATEXTURE = this._tintTexture.gammaSpace;
                         }
                         else {
                             defines.CLEARCOAT_TINT_TEXTURE = false;
@@ -301,7 +303,7 @@ export class PBRClearCoatConfiguration {
             if (identicalTextures && MaterialFlags.ClearCoatTextureEnabled) {
                 uniformBuffer.updateFloat4("vClearCoatInfos", this._texture!.coordinatesIndex, this._texture!.level, -1, -1);
                 MaterialHelper.BindTextureMatrix(this._texture!, uniformBuffer, "clearCoat");
-            } else  if ((this._texture || this._textureRoughness) && MaterialFlags.ClearCoatTextureEnabled) {
+            } else if ((this._texture || this._textureRoughness) && MaterialFlags.ClearCoatTextureEnabled) {
                 uniformBuffer.updateFloat4("vClearCoatInfos", this._texture?.coordinatesIndex ?? 0, this._texture?.level ?? 0, this._textureRoughness?.coordinatesIndex ?? 0, this._textureRoughness?.level ?? 0);
                 if (this._texture) {
                     MaterialHelper.BindTextureMatrix(this._texture, uniformBuffer, "clearCoat");
