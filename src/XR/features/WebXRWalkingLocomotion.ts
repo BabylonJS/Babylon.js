@@ -377,7 +377,7 @@ export class WebXRWalkingLocomotion extends WebXRAbstractFeature {
      */
      public set locomotionTarget(locomotionTarget: WebXRCamera | TransformNode) {
          this._locomotionTarget = locomotionTarget;
-         this._isLocomotionTargetWebXRCamera = this._locomotionTarget instanceof WebXRCamera;
+         this._isLocomotionTargetWebXRCamera = this._locomotionTarget.getClassName() === 'WebXRCamera';
      }
 
     /**
@@ -395,12 +395,21 @@ export class WebXRWalkingLocomotion extends WebXRAbstractFeature {
     }
 
     /**
+     * Checks whether this feature is compatible with the current WebXR session.
+     * Walking locomotion is only compatible with "immersive-vr" sessions.
+     * @returns true if compatible, false otherwise
+     */
+    public isCompatible(): boolean {
+        return this._sessionManager.sessionMode === "immersive-vr";
+    }
+
+    /**
      * Attaches the feature.
      * Typically called automatically by the features manager.
      * @returns true if attach succeeded, false otherwise
      */
     public attach(): boolean {
-        if (!super.attach()) {
+        if (!this.isCompatible || !super.attach()) {
             return false;
         }
 
