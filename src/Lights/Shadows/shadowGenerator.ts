@@ -837,9 +837,9 @@ export class ShadowGenerator implements IShadowGenerator {
      * Documentation : https://doc.babylonjs.com/babylon101/shadows
      * @param mapSize The size of the texture what stores the shadows. Example : 1024.
      * @param light The light object generating the shadows.
-     * @param usefulFloatFirst By default the generator will try to use half float textures but if you need precision (for self shadowing for instance), you can use this option to enforce full float texture.
+     * @param usefullFloatFirst By default the generator will try to use half float textures but if you need precision (for self shadowing for instance), you can use this option to enforce full float texture.
      */
-    constructor(mapSize: number, light: IShadowLight, usefulFloatFirst?: boolean) {
+    constructor(mapSize: number, light: IShadowLight, usefullFloatFirst?: boolean) {
         this._mapSize = mapSize;
         this._light = light;
         this._scene = light.getScene();
@@ -860,7 +860,7 @@ export class ShadowGenerator implements IShadowGenerator {
         // Texture type fallback from float to int if not supported.
         var caps = this._scene.getEngine().getCaps();
 
-        if (!usefulFloatFirst) {
+        if (!usefullFloatFirst) {
             if (caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering) {
                 this._textureType = Constants.TEXTURETYPE_HALF_FLOAT;
             }
