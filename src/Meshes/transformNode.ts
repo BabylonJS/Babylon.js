@@ -203,7 +203,7 @@ export class TransformNode extends Node {
     /**
      * return true if a pivot has been set
      */
-     public usePivotMatrix(): boolean {
+     public isUsingPivotMatrix(): boolean {
          return this._usePivotMatrix;
      }
 
