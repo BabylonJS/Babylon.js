@@ -1,9 +1,7 @@
-import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
 import * as React from "react";
 import { GlobalState } from "../../../../../../globalState";
 import { Context } from "../context";
 import { ControlButtonComponent } from "../controls/controlButtonComponent";
-import { Animation } from "babylonjs/Animations/animation";
 
 const firstKeyIcon = require("../assets/animationLastKeyIcon.svg");
 const firstKeyHoverIcon = require("../assets/animationLastKeyHoverIcon.svg");
@@ -106,8 +104,8 @@ IMediaPlayerComponentState
 
         let nextKey = Number.MAX_VALUE;
 
-        for (var animation of this.props.context.animations) {
-            const keys = this.props.context.useTargetAnimations ? (animation as TargetedAnimation).animation.getKeys() : (animation as Animation).getKeys();
+        for (var animation of this.props.context.activeAnimations) {
+            const keys = animation.getKeys();
 
             for (var key of keys) {
                 if (key.frame > this.props.context.activeFrame && key.frame < nextKey) {

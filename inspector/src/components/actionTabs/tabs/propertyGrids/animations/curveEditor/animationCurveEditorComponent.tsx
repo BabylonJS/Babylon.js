@@ -48,9 +48,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                 this.props.context.prepare();
                 if (this.props.context.animations && this.props.context.animations.length) {
                     setTimeout(() => {
-                        for (const animation of this.props.context.animations!) {
-                            this.props.context.activeAnimations.push(this.props.context.useTargetAnimations ? (animation as TargetedAnimation).animation : animation as Animation);
-                        }
+                        this.props.context.activeAnimations.push(this.props.context.useTargetAnimations ? (this.props.context.animations![0] as TargetedAnimation).animation : this.props.context.animations![0] as Animation);
                         this.props.context.onActiveAnimationChanged.notifyObservers();    
                     });
                 }
