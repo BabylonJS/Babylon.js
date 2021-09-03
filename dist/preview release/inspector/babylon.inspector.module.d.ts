@@ -1200,6 +1200,10 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         private _storedLengthOut;
         private _inVec;
         private _outVec;
+        private _lockX;
+        private _lockY;
+        private _accumulatedX;
+        private _accumulatedY;
         constructor(props: IKeyPointComponentProps);
         componentWillUnmount(): void;
         shouldComponentUpdate(newProps: IKeyPointComponentProps, newState: IKeyPointComponentState): boolean;
@@ -1763,15 +1767,18 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         context: Context;
     }
     interface IAddAnimationComponentState {
+        customPropertyMode: boolean;
     }
     export class AddAnimationComponent extends React.Component<IAddAnimationComponentProps, IAddAnimationComponentState> {
         private _root;
         private _displayName;
         private _property;
         private _typeElement;
+        private _propertylement;
         private _loopModeElement;
         constructor(props: IAddAnimationComponentProps);
         createNew(): void;
+        getInferredType(activeProperty?: string): any;
         render(): JSX.Element;
     }
 }
@@ -5986,6 +5993,10 @@ declare module INSPECTOR {
         private _storedLengthOut;
         private _inVec;
         private _outVec;
+        private _lockX;
+        private _lockY;
+        private _accumulatedX;
+        private _accumulatedY;
         constructor(props: IKeyPointComponentProps);
         componentWillUnmount(): void;
         shouldComponentUpdate(newProps: IKeyPointComponentProps, newState: IKeyPointComponentState): boolean;
@@ -6483,15 +6494,18 @@ declare module INSPECTOR {
         context: Context;
     }
     interface IAddAnimationComponentState {
+        customPropertyMode: boolean;
     }
     export class AddAnimationComponent extends React.Component<IAddAnimationComponentProps, IAddAnimationComponentState> {
         private _root;
         private _displayName;
         private _property;
         private _typeElement;
+        private _propertylement;
         private _loopModeElement;
         constructor(props: IAddAnimationComponentProps);
         createNew(): void;
+        getInferredType(activeProperty?: string): any;
         render(): JSX.Element;
     }
 }

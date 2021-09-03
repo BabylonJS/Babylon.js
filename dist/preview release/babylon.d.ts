@@ -17560,9 +17560,9 @@ declare module BABYLON {
          * Documentation : https://doc.babylonjs.com/babylon101/shadows
          * @param mapSize The size of the texture what stores the shadows. Example : 1024.
          * @param light The light object generating the shadows.
-         * @param usefulFloatFirst By default the generator will try to use half float textures but if you need precision (for self shadowing for instance), you can use this option to enforce full float texture.
+         * @param usefullFloatFirst By default the generator will try to use half float textures but if you need precision (for self shadowing for instance), you can use this option to enforce full float texture.
          */
-        constructor(mapSize: number, light: IShadowLight, usefulFloatFirst?: boolean);
+        constructor(mapSize: number, light: IShadowLight, usefullFloatFirst?: boolean);
         protected _initializeGenerator(): void;
         protected _createTargetRenderTexture(): void;
         protected _initializeShadowMap(): void;
@@ -60933,6 +60933,8 @@ declare module BABYLON {
         clearBeforeCopy?: boolean;
         /** Indicates if the view is enabled (true by default) */
         enabled: boolean;
+        /** Defines a custom function to handle canvas size changes. (the canvas to render into is provided to the callback) */
+        customResize?: (canvas: HTMLCanvasElement) => void;
     }
         interface Engine {
             /**
@@ -68381,6 +68383,7 @@ declare module BABYLON {
      */
     export class KhronosTextureContainer2 {
         private static _WorkerPoolPromise?;
+        private static _NoWorkerPromise?;
         private static _Initialized;
         private static _Ktx2Decoder;
         /**
