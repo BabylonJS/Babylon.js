@@ -34,6 +34,8 @@ export class _IAnimationState {
  * Class used to store any kind of animation
  */
 export class Animation {
+    private static _UniqueIdGenerator = 0;
+
     /**
      * Use matrix interpolation instead of using direct key value when animating matrices
      */
@@ -43,6 +45,11 @@ export class Animation {
      * When matrix interpolation is enabled, this boolean forces the system to use Matrix.DecomposeLerp instead of Matrix.Lerp. Interpolation is more precise but slower
      */
     public static AllowMatrixDecomposeForInterpolation = true;
+
+    /**
+     * Gets or sets the unique id of the animation (the uniqueness is solely among other animations)
+     */
+    public uniqueId: number;
 
     /** Define the Url to load snippets */
     public static SnippetUrl = "https://snippet.babylonjs.com";
@@ -519,6 +526,7 @@ export class Animation {
         this.targetPropertyPath = targetProperty.split(".");
         this.dataType = dataType;
         this.loopMode = loopMode === undefined ? Animation.ANIMATIONLOOPMODE_CYCLE : loopMode;
+        this.uniqueId = Animation._UniqueIdGenerator++;
     }
 
     // Methods

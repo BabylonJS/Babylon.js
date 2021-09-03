@@ -13,7 +13,7 @@ export class Context {
     scene: Scene;
     target: Nullable<IAnimatable>;
     activeAnimations: Animation[] = [];
-    activeColor: Nullable<string> = null;
+    activeChannels: {[key: number]: string} = {};
     activeKeyPoints: Nullable<KeyPointComponent[]>;
     mainKeyPoint: Nullable<KeyPointComponent>;
     snippetId: string;
@@ -69,6 +69,8 @@ export class Context {
 
     onEditAnimationRequired = new Observable<Animation>();
     onEditAnimationUIClosed = new Observable<void>();
+
+    onSelectToActivated = new Observable<{from:number, to:number}>();
 
     public prepare() {
         this.isPlaying = false;
@@ -156,5 +158,39 @@ export class Context {
     public clearSelection() {
         this.activeKeyPoints = [];
         this.onActiveKeyPointChanged.notifyObservers();
+    }
+
+    public enableChannel(animation: Animation, color: string) {
+        this.activeChannels[animation.uniqueId] = color;
+    }
+
+    public disableChannel(animation: Animation) {
+        delete this.activeChannels[animation.uniqueId];
+    }
+
+    public isChannelEnabled(animation: Animation, color: string) {
+        return this.activeChannels[animation.uniqueId] === undefined || this.activeChannels[animation.uniqueId] === color;
+    }
+
+    public getActiveChannel(animation: Animation) {
+        return this.activeChannels[animation.uniqueId];
+    }
+
+    public resetAllActiveChannels() {
+        this.activeChannels = {};
+    }
+
+    public getAnimationSortIndex(animation: Animation) {
+        if (!this.animations) {
+            return -1;
+        }
+
+        for (var index = 0; index < this.animations?.length; index++) {
+            if (animation === (this.useTargetAnimations ? (this.animations[0] as TargetedAnimation).animation : (this.animations[index] as Animation))) {
+                return index;
+            }
+        }
+
+        return -1;
     }
 }
