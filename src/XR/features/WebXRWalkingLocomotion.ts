@@ -366,7 +366,7 @@ export class WebXRWalkingLocomotion extends WebXRAbstractFeature {
     public get locomotionTarget(): WebXRCamera | TransformNode {
         return this._locomotionTarget;
     }
-    
+
     /**
      * The target to be articulated by walking locomotion.
      * When the walking locomotion feature detects walking in place, this element's
