@@ -1,7 +1,7 @@
 import * as WebGPUConstants from './webgpuConstants';
 import { Constants } from '../constants';
-import { InternalTexture } from '../../Materials/Textures/internalTexture';
 import { WebGPUTextureHelper } from "./webgpuTextureHelper";
+import { Sampler } from "../../Materials/textures/sampler";
 
 const filterToBits = [
     0 | 0 << 1 | 0 << 2, // not used
@@ -61,21 +61,21 @@ export class WebGPUCacheSampler {
         this.disabled = false;
     }
 
-    private static _GetSamplerHashCode(texture: InternalTexture): number {
+    public static GetSamplerHashCode(sampler: Sampler): number {
         let code =
-            filterToBits[texture.samplingMode] +
-            comparisonFunctionToBits[(texture._comparisonFunction || 0x0202) - 0x0200 + 1] +
-            filterNoMipToBits[texture.samplingMode] + // handle the lodMinClamp = lodMaxClamp = 0 case when no filter used for mip mapping
-            ((texture._cachedWrapU ?? 1) << 8) +
-            ((texture._cachedWrapV ?? 1) << 10) +
-            ((texture._cachedWrapR ?? 1) << 12) +
-            ((texture.generateMipMaps ? 1 : 0) << 14) + // need to factor this in because _getSamplerFilterDescriptor depends on samplingMode AND generateMipMaps!
-            ((texture._cachedAnisotropicFilteringLevel ?? 1) << 15);
+            filterToBits[sampler.samplingMode] +
+            comparisonFunctionToBits[(sampler._comparisonFunction || 0x0202) - 0x0200 + 1] +
+            filterNoMipToBits[sampler.samplingMode] + // handle the lodMinClamp = lodMaxClamp = 0 case when no filter used for mip mapping
+            ((sampler._cachedWrapU ?? 1) << 8) +
+            ((sampler._cachedWrapV ?? 1) << 10) +
+            ((sampler._cachedWrapR ?? 1) << 12) +
+            ((sampler.useMipMaps ? 1 : 0) << 14) + // need to factor this in because _getSamplerFilterDescriptor depends on samplingMode AND useMipMaps!
+            ((sampler._cachedAnisotropicFilteringLevel ?? 1) << 15);
 
         return code;
     }
 
-    private static _GetSamplerFilterDescriptor(internalTexture: InternalTexture, anisotropy: number): {
+    private static _GetSamplerFilterDescriptor(sampler: Sampler, anisotropy: number): {
         magFilter: GPUFilterMode,
         minFilter: GPUFilterMode,
         mipmapFilter: GPUFilterMode,
@@ -84,8 +84,8 @@ export class WebGPUCacheSampler {
         anisotropyEnabled?: boolean,
     } {
         let magFilter: GPUFilterMode, minFilter: GPUFilterMode, mipmapFilter: GPUFilterMode, lodMinClamp: number | undefined, lodMaxClamp: number | undefined;
-        const useMipMaps = internalTexture.generateMipMaps;
-        switch (internalTexture.samplingMode) {
+        const useMipMaps = sampler.useMipMaps;
+        switch (sampler.samplingMode) {
             case Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST:
                 magFilter = WebGPUConstants.FilterMode.Linear;
                 minFilter = WebGPUConstants.FilterMode.Linear;
@@ -223,44 +223,44 @@ export class WebGPUCacheSampler {
         return WebGPUConstants.AddressMode.Repeat;
     }
 
-    private static _GetSamplerWrappingDescriptor(internalTexture: InternalTexture): {
+    private static _GetSamplerWrappingDescriptor(sampler: Sampler): {
         addressModeU: GPUAddressMode,
         addressModeV: GPUAddressMode,
         addressModeW: GPUAddressMode
     } {
         return {
-            addressModeU: this._GetWrappingMode(internalTexture._cachedWrapU!),
-            addressModeV: this._GetWrappingMode(internalTexture._cachedWrapV!),
-            addressModeW: this._GetWrappingMode(internalTexture._cachedWrapR!),
+            addressModeU: this._GetWrappingMode(sampler._cachedWrapU!),
+            addressModeV: this._GetWrappingMode(sampler._cachedWrapV!),
+            addressModeW: this._GetWrappingMode(sampler._cachedWrapR!),
         };
     }
 
-    private static _GetSamplerDescriptor(internalTexture: InternalTexture): GPUSamplerDescriptor {
-        const anisotropy = internalTexture.generateMipMaps ? (internalTexture._cachedAnisotropicFilteringLevel ?? 1) : 1;
-        const filterDescriptor = this._GetSamplerFilterDescriptor(internalTexture, anisotropy);
+    private static _GetSamplerDescriptor(sampler: Sampler): GPUSamplerDescriptor {
+        const anisotropy = sampler.useMipMaps ? (sampler._cachedAnisotropicFilteringLevel ?? 1) : 1;
+        const filterDescriptor = this._GetSamplerFilterDescriptor(sampler, anisotropy);
         return {
             ...filterDescriptor,
-            ...this._GetSamplerWrappingDescriptor(internalTexture),
-            compare: internalTexture._comparisonFunction ? WebGPUTextureHelper.GetCompareFunction(internalTexture._comparisonFunction) : undefined,
+            ...this._GetSamplerWrappingDescriptor(sampler),
+            compare: sampler._comparisonFunction ? WebGPUTextureHelper.GetCompareFunction(sampler._comparisonFunction) : undefined,
             maxAnisotropy: filterDescriptor.anisotropyEnabled ? anisotropy : 1,
         };
     }
 
-    public getSampler(internalTexture: InternalTexture, bypassCache = false): GPUSampler {
+    public getSampler(sampler: Sampler, bypassCache = false): GPUSampler {
         if (this.disabled) {
-            return this._device.createSampler(WebGPUCacheSampler._GetSamplerDescriptor(internalTexture));
+            return this._device.createSampler(WebGPUCacheSampler._GetSamplerDescriptor(sampler));
         }
 
-        const hash = bypassCache ? 0 : WebGPUCacheSampler._GetSamplerHashCode(internalTexture);
+        const hash = bypassCache ? 0 : WebGPUCacheSampler.GetSamplerHashCode(sampler);
 
-        let sampler = bypassCache ? undefined : this._samplers[hash];
-        if (!sampler) {
-            sampler = this._device.createSampler(WebGPUCacheSampler._GetSamplerDescriptor(internalTexture));
+        let gpuSampler = bypassCache ? undefined : this._samplers[hash];
+        if (!gpuSampler) {
+            gpuSampler = this._device.createSampler(WebGPUCacheSampler._GetSamplerDescriptor(sampler));
             if (!bypassCache) {
-                this._samplers[hash] = sampler;
+                this._samplers[hash] = gpuSampler;
             }
         }
 
-        return sampler;
+        return gpuSampler;
     }
 }

@@ -118,10 +118,13 @@ export class InternalTexture extends Sampler {
     public generateMipMaps: boolean = false;
     /**
      * Gets a boolean indicating if the texture uses mipmaps
-     * @TODO implements useMipMaps separately from generateMipMaps
+     * @TODO implements useMipMaps as a separate setting from generateMipMaps
      */
     public get useMipMaps() {
         return this.generateMipMaps;
+    }
+    public set useMipMaps(value: boolean) {
+        this.generateMipMaps = value;
     }
     /**
      * Gets the number of samples used by the texture (WebGL2+ only)

@@ -1,4 +1,3 @@
-import { Nullable } from "../../types";
 import { ShaderLanguage } from "../Processors/iShaderProcessor";
 import { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 
@@ -25,8 +24,8 @@ export interface WebGPUBindingInfo {
 }
 
 /** @hidden */
-export interface WebGPUTextureSamplerBindingDescription {
-    sampler: Nullable<WebGPUBindingInfo>;
+export interface WebGPUTextureBindingDescription {
+    autoBindSampler?: boolean;
     isTextureArray: boolean;
     textures: Array<WebGPUBindingInfo>;
 }
@@ -61,7 +60,8 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
     public availableVaryings: { [key: string]: number };
     public availableAttributes: { [key: string]: number };
     public availableUBOs: { [key: string]: { setIndex: number, bindingIndex: number } };
-    public availableTextures: { [key: string]: WebGPUTextureSamplerBindingDescription };
+    public availableTextures: { [key: string]: WebGPUTextureBindingDescription };
+    public availableSamplers: { [key: string]: WebGPUBindingInfo };
 
     public leftOverUniforms: { name: string, type: string, length: number }[];
 
@@ -69,6 +69,7 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
     public orderedUBOsAndSamplers: WebGPUBindingDescription[][];
     public uniformBufferNames: string[];
     public textureNames: string[]; // list of all texture names used in the shader
+    public samplerNames: string[]; // list of all sampler names used in the shader
     public attributeNamesFromEffect: string[];
     public attributeLocationsFromEffect: number[];
 
@@ -87,10 +88,12 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
         this.availableAttributes = {};
         this.availableUBOs = {};
         this.availableTextures = {};
+        this.availableSamplers = {};
 
         this.orderedAttributes = [];
         this.orderedUBOsAndSamplers = [];
         this.uniformBufferNames = [];
+        this.samplerNames = [];
 
         this.leftOverUniforms = [];
     }

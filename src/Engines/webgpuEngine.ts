@@ -49,6 +49,7 @@ import { Observable } from "../Misc/observable";
 import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
 import { TwgslOptions, WebGPUTintWASM } from "./WebGPU/webgpuTintWASM";
 import { ExternalTexture } from "../Materials/Textures/externalTexture";
+import { WebGPUShaderProcessor } from "./WebGPU/webgpuShaderProcessor";
 
 declare function importScripts(...urls: string[]): void;
 
@@ -1556,7 +1557,7 @@ export class WebGPUEngine extends Engine {
      * @returns the new context
      */
     public createMaterialContext(): WebGPUMaterialContext | undefined {
-        return new WebGPUMaterialContext(this._cacheBindGroups);
+        return new WebGPUMaterialContext();
     }
 
     /**
@@ -1878,36 +1879,15 @@ export class WebGPUEngine extends Engine {
     /** @hidden */
     public _setInternalTexture(name: string, texture: Nullable<InternalTexture | ExternalTexture>, baseName?: string, textureIndex = 0): void {
         baseName = baseName ?? name;
-        if (this._currentEffect && !this._currentMaterialContext.setTexture(name, texture)) {
+        if (this._currentEffect) {
             const webgpuPipelineContext = this._currentEffect._pipelineContext as WebGPUPipelineContext;
-            const availableSampler = webgpuPipelineContext.shaderProcessingContext.availableTextures[baseName];
-            if (availableSampler) {
-                if (availableSampler.sampler) {
-                    this._currentMaterialContext.samplers[baseName] = {
-                        firstTextureName: name,
-                    };
-                }
-                if (texture && ExternalTexture.IsExternalTexture(texture)) {
-                    /*this._currentMaterialContext.textures[name] = {
-                        texture: texture!,
-                        isExternal: true,
-                        wrapU: texture?.wrapU,
-                        wrapV: texture?.wrapV,
-                        wrapR: texture?.wrapR,
-                        anisotropicFilteringLevel: texture?.anisotropicFilteringLevel,
-                        samplingMode: texture?.samplingMode,
-                    };*/
-                } else {
-                    this._currentMaterialContext.textures[name] = {
-                        texture: texture!,
-                        isExternal: false,
-                        wrapU: texture?._cachedWrapU,
-                        wrapV: texture?._cachedWrapV,
-                        wrapR: texture?._cachedWrapR,
-                        anisotropicFilteringLevel: texture?._cachedAnisotropicFilteringLevel,
-                        samplingMode: texture?.samplingMode,
-                    };
-                }
+            const availableTexture = webgpuPipelineContext.shaderProcessingContext.availableTextures[baseName];
+
+            this._currentMaterialContext.setTexture(name, texture);
+
+            if (availableTexture && availableTexture.autoBindSampler) {
+                const samplerName = name + WebGPUShaderProcessor.AutoSamplerSuffix;
+                this._currentMaterialContext.setSampler(samplerName, texture as InternalTexture); // we can safely cast to InternalTexture because ExternalTexture always has autoBindSampler = false
             }
         }
     }

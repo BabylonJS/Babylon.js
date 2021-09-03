@@ -161,27 +161,26 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
             const textureFunc = match[4]; // texture_2d, texture_depth_2d, etc
             const componentType = match[6]; // f32 or i32 or u32 or undefined
 
-            let samplerInfo = WebGPUShaderProcessor._KnownSamplers[name];
+            let textureInfo = WebGPUShaderProcessor._KnownTextures[name];
             let arraySize = 0;
-            if (!samplerInfo) {
+            if (!textureInfo) {
                 arraySize = isArrayOfTexture ? this._getArraySize(name, type, preProcessors)[2] : 0;
-                samplerInfo = this.webgpuProcessingContext.availableTextures[name];
-                if (!samplerInfo) {
-                    samplerInfo = {
-                        sampler: null,
+                textureInfo = this.webgpuProcessingContext.availableTextures[name];
+                if (!textureInfo) {
+                    textureInfo = {
                         isTextureArray: arraySize > 0,
                         textures: [],
                     };
                     arraySize = arraySize || 1;
                     for (let i = 0; i < arraySize; ++i) {
-                        samplerInfo.textures.push(this.webgpuProcessingContext.getNextFreeUBOBinding());
+                        textureInfo.textures.push(this.webgpuProcessingContext.getNextFreeUBOBinding());
                     }
                 } else {
-                    arraySize = samplerInfo.textures.length;
+                    arraySize = textureInfo.textures.length;
                 }
             }
 
-            this.webgpuProcessingContext.availableTextures[name] = samplerInfo;
+            this.webgpuProcessingContext.availableTextures[name] = textureInfo;
 
             const isDepthTexture = textureFunc.indexOf("depth") > 0;
             const textureDimension = gpuTextureViewDimensionByWebGPUTextureFunction[textureFunc];
@@ -195,8 +194,8 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
             }
 
             for (let i = 0; i < arraySize; ++i) {
-                const textureSetIndex = samplerInfo.textures[i].setIndex;
-                const textureBindingIndex = samplerInfo.textures[i].bindingIndex;
+                const textureSetIndex = textureInfo.textures[i].setIndex;
+                const textureBindingIndex = textureInfo.textures[i].bindingIndex;
 
                 if (i === 0) {
                     texture = `[[group(${textureSetIndex}), binding(${textureBindingIndex})]] ${texture}`;
@@ -330,7 +329,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
 
         console.log(fragmentCode);
 
-        this._collectSamplerAndUBONames();
+        this._collectBindingNames();
 
         return { vertexCode, fragmentCode };
     }
@@ -395,26 +394,27 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
 
             const name = match[1]; // name of the variable
             const samplerType = match[2]; // sampler or sampler_comparison
-            const textureName = name.replace("Sampler", "");
+            const textureName = name.indexOf(WebGPUShaderProcessor.AutoSamplerSuffix) === name.length - WebGPUShaderProcessor.AutoSamplerSuffix.length ? name.substring(0, name.indexOf(WebGPUShaderProcessor.AutoSamplerSuffix)) : null;
 
-            const samplerInfo = this.webgpuProcessingContext.availableTextures[textureName];
-
+            let samplerInfo = WebGPUShaderProcessor._KnownSamplers[name];
             if (!samplerInfo) {
-                Logger.Error(`Invalid sampler declaration "${match[0]}": there's not texture declared with name "${textureName}"!`);
-                continue;
+                if (textureName) {
+                    const textureInfo = this.webgpuProcessingContext.availableTextures[textureName];
+                    if (textureInfo) {
+                        textureInfo.autoBindSampler = true;
+                    }
+                }
+                samplerInfo = this.webgpuProcessingContext.getNextFreeUBOBinding();
             }
 
-            if (!samplerInfo.sampler) {
-                samplerInfo.sampler = this.webgpuProcessingContext.getNextFreeUBOBinding();
-            }
+            this.webgpuProcessingContext.availableSamplers[name] = samplerInfo;
 
-            const { setIndex, bindingIndex } = samplerInfo.sampler!;
             const samplerBindingType = samplerType === "sampler_comparison" ? WebGPUConstants.SamplerBindingType.Comparison : WebGPUConstants.SamplerBindingType.Filtering;
 
-            this._addSamplerBindingDescription(textureName, setIndex, bindingIndex, samplerBindingType, isVertex);
+            this._addSamplerBindingDescription(name, samplerInfo.setIndex, samplerInfo.bindingIndex, samplerBindingType, isVertex);
 
             const part1 = code.substring(0, match.index);
-            const insertPart = `[[group(${setIndex}), binding(${bindingIndex})]] `;
+            const insertPart = `[[group(${samplerInfo.setIndex}), binding(${samplerInfo.bindingIndex})]] `;
             const part2 = code.substring(match.index);
 
             code = part1 + insertPart + part2;

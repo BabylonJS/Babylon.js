@@ -92,25 +92,32 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor implements 
         if (match != null) {
             let uniformType = match[1];
             let name = match[2];
+            let samplerName = name + WebGPUShaderProcessor.AutoSamplerSuffix;
 
             if (uniformType.indexOf("sampler") === 0 || uniformType.indexOf("sampler") === 1) {
-                let samplerInfo = WebGPUShaderProcessor._KnownSamplers[name];
-                let arraySize = 0; // 0 means the sampler/texture is not declared as an array
-                if (!samplerInfo) {
+                let textureInfo = WebGPUShaderProcessor._KnownTextures[name];
+                let samplerInfo = WebGPUShaderProcessor._KnownSamplers[samplerName];
+                let arraySize = 0; // 0 means the texture is not declared as an array
+
+                if (!textureInfo) {
                     [name, uniformType, arraySize] = this._getArraySize(name, uniformType, preProcessors);
-                    samplerInfo = this.webgpuProcessingContext.availableTextures[name];
-                    if (!samplerInfo) {
-                        samplerInfo = {
-                            sampler: this.webgpuProcessingContext.getNextFreeUBOBinding(),
+                    textureInfo = this.webgpuProcessingContext.availableTextures[name];
+                    if (!textureInfo) {
+                        textureInfo = {
+                            autoBindSampler: true,
                             isTextureArray: arraySize > 0,
                             textures: [],
                         };
                         for (let i = 0; i < (arraySize || 1); ++i) {
-                            samplerInfo.textures.push(this.webgpuProcessingContext.getNextFreeUBOBinding());
+                            textureInfo.textures.push(this.webgpuProcessingContext.getNextFreeUBOBinding());
                         }
                     } else {
-                        arraySize = samplerInfo.isTextureArray ? samplerInfo.textures.length : 0;
+                        arraySize = textureInfo.isTextureArray ? textureInfo.textures.length : 0;
                     }
+                }
+
+                if(!samplerInfo) {
+                    samplerInfo = this.webgpuProcessingContext.getNextFreeUBOBinding();
                 }
 
                 const componentType = uniformType.charAt(0) === 'u' ? 'u' : uniformType.charAt(0) === 'i' ? 'i' : '';
@@ -120,8 +127,8 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor implements 
                 }
 
                 const isTextureArray = arraySize > 0;
-                const samplerSetIndex = samplerInfo.sampler!.setIndex;
-                const samplerBindingIndex = samplerInfo.sampler!.bindingIndex;
+                const samplerSetIndex = samplerInfo.setIndex;
+                const samplerBindingIndex = samplerInfo.bindingIndex;
                 const samplerFunction = WebGPUShaderProcessor._SamplerFunctionByWebGLSamplerType[uniformType];
                 const samplerType = WebGPUShaderProcessor._SamplerTypeByWebGLSamplerType[uniformType] ?? "sampler";
                 const textureType = WebGPUShaderProcessor._TextureTypeByWebGLSamplerType[uniformType];
@@ -131,30 +138,31 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor implements 
                 // Manage textures and samplers.
                 if (!isTextureArray) {
                     arraySize = 1;
-                    uniform = `layout(set = ${samplerSetIndex}, binding = ${samplerBindingIndex}) uniform ${componentType}${samplerType} ${name}Sampler;
-                        layout(set = ${samplerInfo.textures[0].setIndex}, binding = ${samplerInfo.textures[0].bindingIndex}) uniform ${textureType} ${name}Texture;
-                        #define ${name} ${componentType}${samplerFunction}(${name}Texture, ${name}Sampler)`;
+                    uniform = `layout(set = ${samplerSetIndex}, binding = ${samplerBindingIndex}) uniform ${componentType}${samplerType} ${samplerName};
+                        layout(set = ${textureInfo.textures[0].setIndex}, binding = ${textureInfo.textures[0].bindingIndex}) uniform ${textureType} ${name}Texture;
+                        #define ${name} ${componentType}${samplerFunction}(${name}Texture, ${samplerName})`;
                 } else {
                     let layouts = [];
-                    layouts.push(`layout(set = ${samplerSetIndex}, binding = ${samplerBindingIndex}) uniform ${componentType}${samplerType} ${name}Sampler;`);
+                    layouts.push(`layout(set = ${samplerSetIndex}, binding = ${samplerBindingIndex}) uniform ${componentType}${samplerType} ${samplerName};`);
                     uniform = `\r\n`;
                     for (let i = 0; i < arraySize; ++i) {
-                        const textureSetIndex = samplerInfo.textures[i].setIndex;
-                        const textureBindingIndex = samplerInfo.textures[i].bindingIndex;
+                        const textureSetIndex = textureInfo.textures[i].setIndex;
+                        const textureBindingIndex = textureInfo.textures[i].bindingIndex;
 
                         layouts.push(`layout(set = ${textureSetIndex}, binding = ${textureBindingIndex}) uniform ${textureType} ${name}Texture${i};`);
 
-                        uniform += `${i > 0 ? '\r\n' : ''}#define ${name}${i} ${componentType}${samplerFunction}(${name}Texture${i}, ${name}Sampler)`;
+                        uniform += `${i > 0 ? '\r\n' : ''}#define ${name}${i} ${componentType}${samplerFunction}(${name}Texture${i}, ${samplerName})`;
                     }
                     uniform = layouts.join('\r\n') + uniform;
                     this._textureArrayProcessing.push(name);
                 }
 
-                this.webgpuProcessingContext.availableTextures[name] = samplerInfo;
+                this.webgpuProcessingContext.availableTextures[name] = textureInfo;
+                this.webgpuProcessingContext.availableSamplers[samplerName] = samplerInfo;
 
                 const samplerBindingType = isComparisonSampler ? WebGPUConstants.SamplerBindingType.Comparison : WebGPUConstants.SamplerBindingType.Filtering;
 
-                this._addSamplerBindingDescription(name, samplerSetIndex, samplerBindingIndex, samplerBindingType, !isFragment);
+                this._addSamplerBindingDescription(samplerName, samplerSetIndex, samplerBindingIndex, samplerBindingType, !isFragment);
 
                 const sampleType =
                     isComparisonSampler ? WebGPUConstants.TextureSampleType.Depth :
@@ -162,8 +170,8 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor implements 
                     componentType === 'i' ? WebGPUConstants.TextureSampleType.Sint : WebGPUConstants.TextureSampleType.Float;
 
                 for (let i = 0; i < arraySize; ++i) {
-                    const textureSetIndex = samplerInfo.textures[i].setIndex;
-                    const textureBindingIndex = samplerInfo.textures[i].bindingIndex;
+                    const textureSetIndex = textureInfo.textures[i].setIndex;
+                    const textureBindingIndex = textureInfo.textures[i].bindingIndex;
 
                     this._addTextureBindingDescription(isTextureArray ? name + i.toString() : name, name, textureSetIndex, textureBindingIndex, sampleType, textureDimension, !isFragment);
                 }
@@ -307,7 +315,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor implements 
         vertexCode = leftOverUBO + vertexCode;
         fragmentCode = leftOverUBO + fragmentCode;
 
-        this._collectSamplerAndUBONames();
+        this._collectBindingNames();
 
         this._preProcessors = null as any;
 

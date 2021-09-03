@@ -8,6 +8,7 @@ import { Nullable } from "../../types";
 import { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
 import { WebGPUPipelineContext } from "./webgpuPipelineContext";
 import { WebGPUBindingInfo } from "./webgpuShaderProcessingContext";
+import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
 
 enum StatePosition {
     //DepthBias = 0, // not used, so remove it to improve perf
@@ -972,14 +973,15 @@ export abstract class WebGPUCacheRenderPipeline {
                     if ((this._textureState & bitVal) && sampleType !== WebGPUConstants.TextureSampleType.Depth) {
                         // The texture is a 32 bits float texture but the system does not support linear filtering for them:
                         // we set the sampler to "non-filtering" and the texture sample type to "unfilterable-float"
-                        const samplerTexture = shaderProcessingContext.availableTextures[bindingDefinition.origName!];
+                        const textureInfo = shaderProcessingContext.availableTextures[bindingDefinition.origName!];
 
-                        if (samplerTexture.sampler) {
+                        if (textureInfo.autoBindSampler) {
                             // The sampler could be bound after the texture, so bindGroupEntries[sampler.setIndex][sampler.bindingIndex] could not exist yet
                             // That's why we defer the change for after all bindings have been processed
+                            const samplerInfo = shaderProcessingContext.availableSamplers[bindingDefinition.origName! + WebGPUShaderProcessor.AutoSamplerSuffix];
                             deferred.push(((sampler: WebGPUBindingInfo) => {
                                 return () => bindGroupEntries[sampler.setIndex][sampler.bindingIndex].sampler!.type = WebGPUConstants.SamplerBindingType.NonFiltering;
-                            })(samplerTexture.sampler));
+                            })(samplerInfo));
                         }
                         sampleType = WebGPUConstants.TextureSampleType.UnfilterableFloat;
                     }
