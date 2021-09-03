@@ -235,9 +235,9 @@ export class Gizmo implements IDisposable {
      * Handle position/translation when using an attached node using pivot
      */
     protected _handlePivot() {
-        const attachedNodeTransform = this._attachedNode as TransformNode;
+        const attachedNodeTransform = this._attachedNode as any;
         // check there is an active pivot for the TransformNode attached
-        if (attachedNodeTransform.usePivotMatrix && attachedNodeTransform.position) {
+        if (attachedNodeTransform.usePivotMatrix && attachedNodeTransform.usePivotMatrix() && attachedNodeTransform.position) {
             // When a TransformNode has an active pivot, even without parenting,
             // translation from the world matrix is different from TransformNode.position.
             // Pivot works like a virtual parent that's using the node orientation.
