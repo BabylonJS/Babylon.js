@@ -44,7 +44,7 @@ export class GlobalState {
     onZoomObservable = new Observable<void>();
     onPanObservable = new Observable<void>();
     onSelectionButtonObservable = new Observable<void>();
-    onLoadObservable = new Observable<void>();
+    onLoadObservable = new Observable<File>();
     onSaveObservable = new Observable<void>();
     onSnippetLoadObservable = new Observable<void>();
     onSnippetSaveObservable = new Observable<void>();
