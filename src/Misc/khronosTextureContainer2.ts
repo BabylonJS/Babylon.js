@@ -2,6 +2,7 @@ import { InternalTexture } from "../Materials/Textures/internalTexture";
 import { ThinEngine } from "../Engines/thinEngine";
 import { Constants } from '../Engines/constants';
 import { WorkerPool } from './workerPool';
+import { Tools } from "./tools";
 
 declare var KTX2DECODER: any;
 
@@ -10,6 +11,7 @@ declare var KTX2DECODER: any;
  */
 export class KhronosTextureContainer2 {
     private static _WorkerPoolPromise?: Promise<WorkerPool>;
+    private static _NoWorkerPromise?: Promise<void>;
     private static _Initialized: boolean;
     private static _Ktx2Decoder: any; // used when no worker pool is used
 
@@ -95,6 +97,34 @@ export class KhronosTextureContainer2 {
                     resolve(new WorkerPool(workers));
                 });
             });
+        } else if (typeof(KTX2DECODER) === "undefined") {
+            KhronosTextureContainer2._NoWorkerPromise = Tools.LoadScriptAsync(KhronosTextureContainer2.URLConfig.jsDecoderModule).then(() => {
+                KTX2DECODER.MSCTranscoder.UseFromWorkerThread = false;
+                KTX2DECODER.WASMMemoryManager.LoadBinariesFromCurrentThread = true;
+
+                const urls = KhronosTextureContainer2.URLConfig;
+                if (urls.wasmUASTCToASTC !== null) {
+                    KTX2DECODER.LiteTranscoder_UASTC_ASTC.WasmModuleURL = urls.wasmUASTCToASTC;
+                }
+                if (urls.wasmUASTCToBC7 !== null) {
+                    KTX2DECODER.LiteTranscoder_UASTC_BC7.WasmModuleURL = urls.wasmUASTCToBC7;
+                }
+                if (urls.wasmUASTCToRGBA_UNORM !== null) {
+                    KTX2DECODER.LiteTranscoder_UASTC_RGBA_UNORM.WasmModuleURL = urls.wasmUASTCToRGBA_UNORM;
+                }
+                if (urls.wasmUASTCToRGBA_SRGB !== null) {
+                    KTX2DECODER.LiteTranscoder_UASTC_RGBA_SRGB.WasmModuleURL = urls.wasmUASTCToRGBA_SRGB;
+                }
+                if (urls.jsMSCTranscoder !== null) {
+                    KTX2DECODER.MSCTranscoder.JSModuleURL = urls.jsMSCTranscoder;
+                }
+                if (urls.wasmMSCTranscoder !== null) {
+                    KTX2DECODER.MSCTranscoder.WasmModuleURL = urls.wasmMSCTranscoder;
+                }
+                if (urls.wasmZSTDDecoder !== null) {
+                    KTX2DECODER.ZSTDDecoder.WasmModuleURL = urls.wasmZSTDDecoder;
+                }
+            });
         } else {
             KTX2DECODER.MSCTranscoder.UseFromWorkerThread = false;
             KTX2DECODER.WASMMemoryManager.LoadBinariesFromCurrentThread = true;
@@ -161,6 +191,22 @@ export class KhronosTextureContainer2 {
 
                         // note: we can't transfer the ownership of data.buffer because if using a fallback texture the data.buffer buffer will be used by the current thread
                         worker.postMessage({ action: "decode", data, caps: compressedTexturesCaps, options }/*, [data.buffer]*/);
+                    });
+                });
+            });
+        }
+        else if (KhronosTextureContainer2._NoWorkerPromise) {
+            return KhronosTextureContainer2._NoWorkerPromise.then(() => {
+                return new Promise((resolve, reject) => {
+                    if (!KhronosTextureContainer2._Ktx2Decoder) {
+                        KhronosTextureContainer2._Ktx2Decoder = new KTX2DECODER.KTX2Decoder();
+                    }
+
+                    KhronosTextureContainer2._Ktx2Decoder.decode(data, caps).then((data: any) => {
+                        this._createTexture(data, internalTexture);
+                        resolve();
+                    }).catch((reason: any) => {
+                        reject({ message: reason });
                     });
                 });
             });
