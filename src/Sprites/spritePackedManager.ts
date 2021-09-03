@@ -7,7 +7,7 @@ import { Texture } from "../Materials/Textures/texture";
  * @see https://doc.babylonjs.com/babylon101/sprites
  */
 
-export class SpritePackedManager extends SpriteManager{
+export class SpritePackedManager extends SpriteManager {
 
     /**
      * Creates a new sprite manager from a packed sprite sheet

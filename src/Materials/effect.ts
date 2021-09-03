@@ -85,7 +85,7 @@ export class Effect implements IDisposable {
      * Gets or sets the relative url used to load shaders if using the engine in non-minified mode
      */
     public static get ShadersRepository(): string {
-            return EngineShaderStore.ShadersRepository;
+        return EngineShaderStore.ShadersRepository;
     }
     public static set ShadersRepository(repo: string) {
         EngineShaderStore.ShadersRepository = repo;
@@ -167,7 +167,7 @@ export class Effect implements IDisposable {
     private _allFallbacksProcessed = false;
     private _attributesNames: string[];
     private _attributes: number[];
-    private _attributeLocationByName: { [name: string] : number };
+    private _attributeLocationByName: { [name: string]: number };
     private _uniforms: { [key: string]: Nullable<WebGLUniformLocation> } = {};
     /**
      * Key for the effect.
@@ -214,8 +214,7 @@ export class Effect implements IDisposable {
      */
     constructor(baseName: any, attributesNamesOrOptions: string[] | IEffectCreationOptions, uniformsNamesOrEngine: string[] | ThinEngine, samplers: Nullable<string[]> = null,
         engine?: ThinEngine, defines: Nullable<string> = null,
-        fallbacks: Nullable<IEffectFallbacks> = null, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null, indexParameters?: any, key: string = "")
-    {
+        fallbacks: Nullable<IEffectFallbacks> = null, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null, indexParameters?: any, key: string = "") {
         this.name = baseName;
         this._key = key;
 
@@ -259,7 +258,7 @@ export class Effect implements IDisposable {
             this._fallbacks = fallbacks;
         }
 
-        this._attributeLocationByName = { };
+        this._attributeLocationByName = {};
 
         this.uniqueId = Effect._uniqueIdSeed++;
 
@@ -307,9 +306,10 @@ export class Effect implements IDisposable {
             platformName: this._engine.shaderPlatformName,
             processingContext: this._processingContext,
             isNDCHalfZRange: this._engine.isNDCHalfZRange,
+            useReverseDepthBuffer: this._engine.useReverseDepthBuffer,
         };
 
-        let shaderCodes : [string | undefined, string | undefined] = [undefined, undefined];
+        let shaderCodes: [string | undefined, string | undefined] = [undefined, undefined];
         let shadersLoaded = () => {
             if (shaderCodes[0] && shaderCodes[1]) {
                 processorOptions.isFragment = true;
@@ -539,7 +539,7 @@ export class Effect implements IDisposable {
     }
 
     private _loadShader(shader: any, key: string, optionalKey: string, callback: (data: any) => void): void {
-        if (typeof(HTMLElement) !== "undefined") {
+        if (typeof (HTMLElement) !== "undefined") {
             // DOM element ?
             if (shader instanceof HTMLElement) {
                 var shaderCode = DomManagement.GetDOMTextContent(shader);
@@ -714,7 +714,7 @@ export class Effect implements IDisposable {
             }
 
         } catch (e) {
-           this._processCompilationErrors(e, previousPipelineContext);
+            this._processCompilationErrors(e, previousPipelineContext);
         }
     }
 
@@ -744,10 +744,10 @@ export class Effect implements IDisposable {
 
         // Let's go through fallbacks then
         Logger.Error("Unable to compile effect:");
-        Logger.Error("Uniforms: " + this._uniformsNames.map(function(uniform) {
+        Logger.Error("Uniforms: " + this._uniformsNames.map(function (uniform) {
             return " " + uniform;
         }));
-        Logger.Error("Attributes: " + attributesNames.map(function(attribute) {
+        Logger.Error("Attributes: " + attributesNames.map(function (attribute) {
             return " " + attribute;
         }));
         Logger.Error("Defines:\r\n" + this.defines);

@@ -294,7 +294,7 @@ export class Geometry implements IGetSetVerticesData {
 
             for (var index = 0; index < numOfMeshes; index++) {
                 var mesh = meshes[index];
-                mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
+                mesh.buildBoundingInfo(this._extend.minimum, this._extend.maximum);
                 mesh._createGlobalSubMesh(false);
                 mesh.computeWorldMatrix(true);
                 mesh.synchronizeInstances();
@@ -356,10 +356,10 @@ export class Geometry implements IGetSetVerticesData {
         if (updateExtends) {
             var meshes = this._meshes;
             for (const mesh of meshes) {
-                if (mesh._boundingInfo) {
-                    mesh._boundingInfo.reConstruct(this._extend.minimum, this._extend.maximum);
+                if (mesh.hasBoundingInfo) {
+                    mesh.getBoundingInfo().reConstruct(this._extend.minimum, this._extend.maximum);
                 } else {
-                    mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
+                    mesh.buildBoundingInfo(this._extend.minimum, this._extend.maximum);
                 }
 
                 const subMeshes = mesh.subMeshes;
@@ -371,7 +371,7 @@ export class Geometry implements IGetSetVerticesData {
     }
 
     /** @hidden */
-    public _bind(effect: Nullable<Effect>, indexToBind?: Nullable<DataBuffer>, overrideVertexBuffers?: { [kind: string]: Nullable<VertexBuffer>}, overrideVertexArrayObjects?: {[key: string]: WebGLVertexArrayObject}): void {
+    public _bind(effect: Nullable<Effect>, indexToBind?: Nullable<DataBuffer>, overrideVertexBuffers?: { [kind: string]: Nullable<VertexBuffer> }, overrideVertexArrayObjects?: { [key: string]: WebGLVertexArrayObject }): void {
         if (!effect) {
             return;
         }
@@ -584,12 +584,7 @@ export class Geometry implements IGetSetVerticesData {
         if (!forceCopy && (!copyWhenShared || this._meshes.length === 1)) {
             return orig;
         } else {
-            var len = orig.length;
-            var copy = [];
-            for (var i = 0; i < len; i++) {
-                copy.push(orig[i]);
-            }
-            return copy;
+            return Tools.Slice(orig);
         }
     }
 
@@ -664,6 +659,7 @@ export class Geometry implements IGetSetVerticesData {
 
         // must be done before setting vertexBuffers because of mesh._createGlobalSubMesh()
         mesh._geometry = this;
+        mesh._internalAbstractMeshDataInfo._positions = null;
 
         this._scene.pushGeometry(this);
 
@@ -671,8 +667,8 @@ export class Geometry implements IGetSetVerticesData {
 
         if (this.isReady()) {
             this._applyToMesh(mesh);
-        } else {
-            mesh._boundingInfo = this._boundingInfo;
+        } else if (this._boundingInfo) {
+            mesh.setBoundingInfo(this._boundingInfo);
         }
     }
 
@@ -708,7 +704,7 @@ export class Geometry implements IGetSetVerticesData {
                 if (!this._extend) {
                     this._updateExtend();
                 }
-                mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
+                mesh.buildBoundingInfo(this._extend.minimum, this._extend.maximum);
 
                 mesh._createGlobalSubMesh(false);
 

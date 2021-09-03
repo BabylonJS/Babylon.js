@@ -98,7 +98,7 @@ export class CameraInputsManager<TCamera extends Camera> {
     constructor(camera: TCamera) {
         this.attached = {};
         this.camera = camera;
-        this.checkInputs = () => {};
+        this.checkInputs = () => { };
     }
 
     /**
@@ -220,7 +220,7 @@ export class CameraInputsManager<TCamera extends Camera> {
      * defined inputs in the manager.
      */
     public rebuildInputCheck(): void {
-        this.checkInputs = () => {};
+        this.checkInputs = () => { };
 
         for (var cam in this.attached) {
             var input = this.attached[cam];
@@ -239,7 +239,7 @@ export class CameraInputsManager<TCamera extends Camera> {
         }
         this.attached = {};
         this.attachedToElement = false;
-        this.checkInputs = () => {};
+        this.checkInputs = () => { };
     }
 
     /**

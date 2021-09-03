@@ -9,8 +9,8 @@ struct ambientOcclusionOutParams
 #define pbr_inline
 void ambientOcclusionBlock(
 #ifdef AMBIENT
-    const in vec3 ambientOcclusionColorMap_,
-    const in vec4 vAmbientInfos,
+    in vec3 ambientOcclusionColorMap_,
+    in vec4 vAmbientInfos,
 #endif
     out ambientOcclusionOutParams outParams
 )

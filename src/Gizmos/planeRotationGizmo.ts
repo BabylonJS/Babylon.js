@@ -139,10 +139,10 @@ export class PlaneRotationGizmo extends Gizmo {
             vertex: "rotationGizmo",
             fragment: "rotationGizmo",
         },
-        {
-            attributes: ["position", "uv"],
-            uniforms: ["worldViewProjection", "angles"]
-        });
+            {
+                attributes: ["position", "uv"],
+                uniforms: ["worldViewProjection", "angles"]
+            });
         this._rotationShaderMaterial.backFaceCulling = false;
 
         this._rotationDisplayPlane.material = this._rotationShaderMaterial;
@@ -198,6 +198,7 @@ export class PlaneRotationGizmo extends Gizmo {
                 var nodeScale = new Vector3(1, 1, 1);
                 var nodeQuaternion = new Quaternion(0, 0, 0, 1);
                 var nodeTranslation = new Vector3(0, 0, 0);
+                this._handlePivot();
                 this.attachedNode.getWorldMatrix().decompose(nodeScale, nodeQuaternion, nodeTranslation);
 
                 var newVector = event.dragPlanePoint.subtract(nodeTranslation).normalize();
@@ -279,8 +280,8 @@ export class PlaneRotationGizmo extends Gizmo {
         light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this._rootMesh.getChildMeshes(false));
 
         const cache: GizmoAxisCache = {
-            colliderMeshes: [ collider ],
-            gizmoMeshes: [ rotationMesh ],
+            colliderMeshes: [collider],
+            gizmoMeshes: [rotationMesh],
             material: this._coloredMaterial,
             hoverMaterial: this._hoverMaterial,
             disableMaterial: this._disableMaterial,

@@ -128,7 +128,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
     /**
      *  Initializes the behavior
      */
-    public init() {}
+    public init() { }
 
     /**
      * In the case of multiple active cameras, the cameraToUseForPointers should be used if set instead of active camera
@@ -228,6 +228,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                         pointerInfo.pickInfo.ray.origin.copyFrom(this._pointerCamera!.globalPosition);
                     }
                     this._dragging = true;
+                    this._ownerNode.computeWorldMatrix(true);
 
                     virtualMeshesInfo.lastOriginPosition.copyFrom(pointerInfo.pickInfo.ray.origin);
 

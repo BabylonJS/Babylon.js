@@ -43,13 +43,13 @@ declare module "../abstractScene" {
 }
 
 Object.defineProperty(Scene.prototype, "subSurfaceConfiguration", {
-    get: function(this: Scene) {
+    get: function (this: Scene) {
         return this._subSurfaceConfiguration;
     },
-    set: function(this: Scene, value: Nullable<SubSurfaceConfiguration>) {
+    set: function (this: Scene, value: Nullable<SubSurfaceConfiguration>) {
         if (value) {
             if (this.enablePrePassRenderer()) {
-                    this._subSurfaceConfiguration = value;
+                this._subSurfaceConfiguration = value;
             }
         }
     },
@@ -57,7 +57,7 @@ Object.defineProperty(Scene.prototype, "subSurfaceConfiguration", {
     configurable: true
 });
 
-Scene.prototype.enableSubSurfaceForPrePass = function(): Nullable<SubSurfaceConfiguration> {
+Scene.prototype.enableSubSurfaceForPrePass = function (): Nullable<SubSurfaceConfiguration> {
     if (this._subSurfaceConfiguration) {
         return this._subSurfaceConfiguration;
     }
@@ -73,7 +73,7 @@ Scene.prototype.enableSubSurfaceForPrePass = function(): Nullable<SubSurfaceConf
 
 };
 
-Scene.prototype.disableSubSurfaceForPrePass = function(): void {
+Scene.prototype.disableSubSurfaceForPrePass = function (): void {
     if (!this._subSurfaceConfiguration) {
         return;
     }
@@ -124,9 +124,11 @@ export class SubSurfaceSceneComponent implements ISceneSerializableComponent {
         serializationObject.ssDiffusionProfileColors = [];
 
         for (let i = 0; i < ssDiffusionProfileColors.length; i++) {
-            serializationObject.ssDiffusionProfileColors.push({ r: ssDiffusionProfileColors[i].r,
-                                                                g: ssDiffusionProfileColors[i].g,
-                                                                b: ssDiffusionProfileColors[i].b });
+            serializationObject.ssDiffusionProfileColors.push({
+                r: ssDiffusionProfileColors[i].r,
+                g: ssDiffusionProfileColors[i].g,
+                b: ssDiffusionProfileColors[i].b
+            });
         }
     }
 

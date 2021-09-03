@@ -272,7 +272,7 @@ export interface ICrowd {
      * get the list of all agents attached to this crowd
      * @returns list of agent indices
      */
-    getAgents() : number[];
+    getAgents(): number[];
 
     /**
      * Tick update done by the Scene. Agent position/velocity/acceleration is updated by this function
@@ -331,7 +331,7 @@ export interface ICrowd {
     /**
      * Release all resources
      */
-    dispose() : void;
+    dispose(): void;
 }
 
 /**
@@ -372,6 +372,12 @@ export interface IAgentParameters {
      * How aggressive the agent manager should be at avoiding collisions with this agent. [Limit: >= 0]
      */
     separationWeight: number;
+
+    /**
+     * Observers will be notified when agent gets inside the virtual circle with this Radius around destination point.
+     * Default is agent radius
+     */
+     reachRadius?: number;
 }
 
 /**
@@ -455,10 +461,10 @@ export interface INavMeshParameters {
      * This member defines the tile cube side length in world units.
      * If no obstacles are needed, leave it undefined or 0.
      */
-    tileSize: number;
+    tileSize?: number;
 
     /**
     * The size of the non-navigable border around the heightfield.
     */
-    borderSize: number;
+    borderSize?: number;
 }

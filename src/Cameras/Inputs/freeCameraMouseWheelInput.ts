@@ -279,8 +279,8 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      */
     public checkInputs(): void {
         if (this._wheelDeltaX === 0 &&
-                this._wheelDeltaY === 0 &&
-                this._wheelDeltaZ == 0) {
+            this._wheelDeltaY === 0 &&
+            this._wheelDeltaZ == 0) {
             return;
         }
 

@@ -215,7 +215,7 @@ export class Tools {
             return Math.fround(value);
         }
 
-        return (Tools._tmpFloatArray[0] = value);
+        return Tools._tmpFloatArray[0] = value, Tools._tmpFloatArray[0];
     }
 
     /**
@@ -741,7 +741,7 @@ export class Tools {
             successCallback(base64Image);
         }
         else {
-            this.ToBlob(canvas ?? Tools._ScreenshotCanvas, function(blob) {
+            this.ToBlob(canvas ?? Tools._ScreenshotCanvas, function (blob) {
                 //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
                 if (("download" in document.createElement("a"))) {
                     if (!fileName) {
@@ -757,7 +757,7 @@ export class Tools {
                     var newWindow = window.open("");
                     if (!newWindow) { return; }
                     var img = newWindow.document.createElement("img");
-                    img.onload = function() {
+                    img.onload = function () {
                         // no longer need to read the blob so it's revoked
                         URL.revokeObjectURL(url);
                     };
@@ -774,8 +774,8 @@ export class Tools {
      * @param fileName defines the name of the downloaded file
      */
     public static Download(blob: Blob, fileName: string): void {
-        if (navigator && navigator.msSaveBlob) {
-            navigator.msSaveBlob(blob, fileName);
+        if (navigator && (navigator as any).msSaveBlob) {
+            (navigator as any).msSaveBlob(blob, fileName);
             return;
         }
 
@@ -1060,9 +1060,9 @@ export class Tools {
         Tools.EndPerformanceCounter = Tools._EndPerformanceCounterDisabled;
     }
 
-    private static _StartPerformanceCounterDisabled(counterName: string, condition?: boolean): void {}
+    private static _StartPerformanceCounterDisabled(counterName: string, condition?: boolean): void { }
 
-    private static _EndPerformanceCounterDisabled(counterName: string, condition?: boolean): void {}
+    private static _EndPerformanceCounterDisabled(counterName: string, condition?: boolean): void { }
 
     private static _StartUserMark(counterName: string, condition = true): void {
         if (!Tools._performance) {

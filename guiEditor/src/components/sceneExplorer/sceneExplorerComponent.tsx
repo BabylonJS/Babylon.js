@@ -7,6 +7,7 @@ import { Scene } from "babylonjs/scene";
 import { TreeItemComponent } from "./treeItemComponent";
 import { Tools } from "../../tools";
 import { GlobalState } from "../../globalState";
+import { PropertyChangedEvent } from "../../sharedUiComponents/propertyChangedEvent";
 
 require("./sceneExplorer.scss");
 
@@ -45,6 +46,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
     private _onSelectionChangeObserver: Nullable<Observer<any>>;
     private _onParrentingChangeObserver: Nullable<Observer<any>>;
     private _onNewSceneObserver: Nullable<Observer<Nullable<Scene>>>;
+    private _onPropertyChangedObservable: Nullable<Observer<PropertyChangedEvent>>;
 
     constructor(props: ISceneExplorerComponentProps) {
         super(props);
@@ -55,14 +57,14 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 scene,
             });
         });
-    }
 
-    processMutation() {
-        if (this.props.globalState.blockMutationUpdates) {
-            return;
-        }
-
-        setTimeout(() => this.forceUpdate());
+        this._onPropertyChangedObservable = this.props.globalState.onPropertyChangedObservable.add((event: PropertyChangedEvent) => {
+            if (event.property === "name" ||
+                event.property === "_columnNumber" ||
+                event.property === "_rowNumber") {
+                this.forceUpdate();
+            }
+        });
     }
 
     componentDidMount() {
@@ -75,7 +77,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         this.props.globalState.onSelectionChangedObservable.add(() => {
             this.forceUpdate();
         });
-        
+
         this._onParrentingChangeObserver = this.props.globalState.onParentingChangeObservable.add(() => {
             this.forceUpdate();
         });
@@ -92,6 +94,10 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
 
         if (this._onParrentingChangeObserver) {
             this.props.globalState.onParentingChangeObservable.remove(this._onParrentingChangeObserver);
+        }
+
+        if (this._onPropertyChangedObservable) {
+            this.props.globalState.onPropertyChangedObservable.remove(this._onPropertyChangedObservable);
         }
     }
 
@@ -173,6 +179,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 break;
             case "Delete":
                 this.state.selectedEntity.dispose();
+                this.forceUpdate();
                 break;
             default:
                 break;
@@ -203,13 +210,22 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         let guiElements = scene.textures.filter((t) => t.getClassName() === "AdvancedDynamicTexture");
 
         return (
-            <div id="tree"             
-            onDrop={event => {
-                this.props.globalState.onParentingChangeObservable.notifyObservers(null);
-            }}
-            onDragOver={event => {
-                event.preventDefault();
-            }}>
+            <div id="tree"
+                onDrop={event => {
+                    this.props.globalState.onParentingChangeObservable.notifyObservers(null);
+                }}
+                onDragOver={event => {
+                    event.preventDefault();
+                }}
+                onClick={event => {
+                    if (!this.props.globalState.selectionLock) {
+                        this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                    }
+                    else {
+                        this.props.globalState.selectionLock = false;
+                    }
+                }}>
+
                 {guiElements && guiElements.length > 0 && <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={guiElements} label="GUI" offset={1} filter={this.state.filter} />}
             </div>
         );

@@ -16,7 +16,7 @@ export interface IPipelineContext {
     isReady: boolean;
 
     /** @hidden */
-    _name?:  string;
+    _name?: string;
 
     /** @hidden */
     _getVertexShaderCode(): string | null;

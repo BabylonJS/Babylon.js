@@ -145,7 +145,7 @@ export class CloudPoint {
      * @returns true if it intersects
      */
     public intersectsMesh(target: Mesh, isSphere: boolean): boolean {
-        if (!target._boundingInfo) {
+        if (!target.hasBoundingInfo) {
             return false;
         }
         isSphere = isSphere ? isSphere : false;
@@ -170,7 +170,7 @@ export class CloudPoint {
             let x = this.position.x + this._pcs.mesh.position.x;
             let y = this.position.y + this._pcs.mesh.position.y;
             let z = this.position.z + this._pcs.mesh.position.z;
-            return minX <= x  &&  x <= maxX && minY <= y && y <= maxY && minZ <= z && z <= maxZ;
+            return minX <= x && x <= maxX && minY <= y && y <= maxY && minZ <= z && z <= maxZ;
         }
     }
 

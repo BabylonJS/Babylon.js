@@ -57,7 +57,7 @@ ICurveComponentState
     }
 
     public render() {
-        if (this.props.context.activeColor && this.props.context.activeColor !== this.props.curve.color) {
+        if (!this.props.context.isChannelEnabled(this.props.curve.animation, this.props.curve.color)) {
             return null;
         }
 

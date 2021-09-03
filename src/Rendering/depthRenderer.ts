@@ -37,6 +37,9 @@ export class DepthRenderer {
     /** Enable or disable the depth renderer. When disabled, the depth texture is not updated */
     public enabled = true;
 
+    /** Force writing the transparent objects into the depth map */
+    public forceDepthWriteTransparentMeshes = false;
+
     /**
      * Specifies that the depth renderer will only be used within
      * the camera it is created for.
@@ -55,8 +58,9 @@ export class DepthRenderer {
      * @param type The texture type of the depth map (default: Engine.TEXTURETYPE_FLOAT)
      * @param camera The camera to be used to render the depth map (default: scene's active camera)
      * @param storeNonLinearDepth Defines whether the depth is stored linearly like in Babylon Shadows or directly like glFragCoord.z
+     * @param samplingMode The sampling mode to be used with the render target (Linear, Nearest...)
      */
-    constructor(scene: Scene, type: number = Constants.TEXTURETYPE_FLOAT, camera: Nullable<Camera> = null, storeNonLinearDepth = false) {
+    constructor(scene: Scene, type: number = Constants.TEXTURETYPE_FLOAT, camera: Nullable<Camera> = null, storeNonLinearDepth = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE) {
         this._scene = scene;
         this._storeNonLinearDepth = storeNonLinearDepth;
         this.isPacked = type === Constants.TEXTURETYPE_UNSIGNED_BYTE;
@@ -73,10 +77,19 @@ export class DepthRenderer {
         this._camera = camera;
         var engine = scene.getEngine();
 
+        if (samplingMode !== Texture.NEAREST_SAMPLINGMODE) {
+            if (type === Constants.TEXTURETYPE_FLOAT && !engine._caps.textureFloatLinearFiltering) {
+                samplingMode = Texture.NEAREST_SAMPLINGMODE;
+            }
+            if (type === Constants.TEXTURETYPE_HALF_FLOAT && !engine._caps.textureHalfFloatLinearFiltering) {
+                samplingMode = Texture.NEAREST_SAMPLINGMODE;
+            }
+        }
+
         // Render target
         var format = (this.isPacked || !engine._features.supportExtendedTextureFormats) ? Constants.TEXTUREFORMAT_RGBA : Constants.TEXTUREFORMAT_R;
         this._depthMap = new RenderTargetTexture("depthMap", { width: engine.getRenderWidth(), height: engine.getRenderHeight() }, this._scene, false, true, type,
-            false, undefined, undefined, undefined, undefined,
+            false, samplingMode, undefined, undefined, undefined,
             format);
         this._depthMap.wrapU = Texture.CLAMP_ADDRESSMODE;
         this._depthMap.wrapV = Texture.CLAMP_ADDRESSMODE;
@@ -116,8 +129,15 @@ export class DepthRenderer {
                 return;
             }
 
-            // Culling and reverse (right handed system)
-            engine.setState(material.backFaceCulling, 0, false, scene.useRightHandedSystem, material.cullBackFaces);
+            // Culling
+            const detNeg = effectiveMesh._getWorldMatrixDeterminant() < 0;
+            let sideOrientation = renderingMesh.overrideMaterialSideOrientation ?? material.sideOrientation;
+            if (scene.useRightHandedSystem && !detNeg || !scene.useRightHandedSystem && detNeg) {
+                sideOrientation = sideOrientation === Constants.MATERIAL_ClockWiseSideOrientation ? Constants.MATERIAL_CounterClockWiseSideOrientation : Constants.MATERIAL_ClockWiseSideOrientation;
+            }
+            let reverseSideOrientation = sideOrientation === Constants.MATERIAL_ClockWiseSideOrientation;
+
+            engine.setState(material.backFaceCulling, 0, false, reverseSideOrientation, material.cullBackFaces);
 
             // Managing instances
             var batch = renderingMesh._getInstancesRenderList(subMesh._id, !!subMesh.getReplacementMesh());
@@ -145,7 +165,7 @@ export class DepthRenderer {
                 effect.setMatrix("viewProjection", scene.getTransformMatrix());
                 effect.setMatrix("world", effectiveMesh.getWorldMatrix());
 
-                let minZ : number, maxZ: number;
+                let minZ: number, maxZ: number;
 
                 if (cameraIsOrtho) {
                     minZ = !engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : 1;
@@ -200,11 +220,9 @@ export class DepthRenderer {
             var index;
 
             if (depthOnlySubMeshes.length) {
-                engine.setColorWrite(false);
                 for (index = 0; index < depthOnlySubMeshes.length; index++) {
                     renderSubMesh(depthOnlySubMeshes.data[index]);
                 }
-                engine.setColorWrite(true);
             }
 
             for (index = 0; index < opaqueSubMeshes.length; index++) {
@@ -213,6 +231,16 @@ export class DepthRenderer {
 
             for (index = 0; index < alphaTestSubMeshes.length; index++) {
                 renderSubMesh(alphaTestSubMeshes.data[index]);
+            }
+
+            if (this.forceDepthWriteTransparentMeshes) {
+                for (index = 0; index < transparentSubMeshes.length; index++) {
+                    renderSubMesh(transparentSubMeshes.data[index]);
+                }
+            } else {
+                for (index = 0; index < transparentSubMeshes.length; index++) {
+                    transparentSubMeshes.data[index].getEffectiveMesh()._internalAbstractMeshDataInfo._isActiveIntermediate = false;
+                }
             }
         };
     }
@@ -264,6 +292,12 @@ export class DepthRenderer {
             }
             defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
             defines.push("#define BonesPerMesh " + (mesh.skeleton ? mesh.skeleton.bones.length + 1 : 0));
+
+            const skeleton = subMesh.getRenderingMesh().skeleton;
+
+            if (skeleton?.isUsingTextureForMatrices) {
+                defines.push("#define BONETEXTURE");
+            }
         } else {
             defines.push("#define NUM_BONE_INFLUENCERS 0");
         }
@@ -305,19 +339,14 @@ export class DepthRenderer {
             defines.push("#define PACKED");
         }
 
-        // Reverse depth buffer
-        if (engine.useReverseDepthBuffer) {
-            defines.push("#define USE_REVERSE_DEPTHBUFFER");
-        }
-
         // Get correct effect
         var join = defines.join("\n");
         if (cachedDefines !== join) {
             cachedDefines = join;
             effect = engine.createEffect("depth",
                 attribs,
-                ["world", "mBones", "viewProjection", "diffuseMatrix", "depthValues", "morphTargetInfluences", "morphTargetTextureInfo", "morphTargetTextureIndices"],
-                ["diffuseSampler", "morphTargets"], join,
+                ["world", "mBones", "boneTextureWidth", "viewProjection", "diffuseMatrix", "depthValues", "morphTargetInfluences", "morphTargetTextureInfo", "morphTargetTextureIndices"],
+                ["diffuseSampler", "morphTargets", "boneSampler"], join,
                 undefined, undefined, undefined, { maxSimultaneousMorphTargets: numMorphInfluencers });
         }
 

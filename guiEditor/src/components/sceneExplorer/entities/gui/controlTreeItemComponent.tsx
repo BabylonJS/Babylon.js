@@ -3,38 +3,31 @@ import { Control } from "babylonjs-gui/2D/controls/control";
 import { TreeItemLabelComponent } from "../../treeItemLabelComponent";
 import { ExtensionsComponent } from "../../extensionsComponent";
 import * as React from 'react';
-import { GlobalState } from "../../../../globalState";
-import { Nullable, Observer } from "babylonjs/Legacy/legacy";
+import { DragOverLocation, GlobalState } from "../../../../globalState";
+import { Grid } from "babylonjs-gui/2D/controls/grid";
 
 const visibilityNotActiveIcon: string = require("../../../../../public/imgs/visibilityNotActiveIcon.svg");
 const visibilityActiveIcon: string = require("../../../../../public/imgs/visibilityActiveIcon.svg");
 const makeComponentIcon: string = require("../../../../../public/imgs/makeComponentIcon.svg");
+const makeChildOfContainerIcon: string = require("../../../../../public/imgs/makeChildOfContainerIcon.svg");
 
 interface IControlTreeItemComponentProps {
     control: Control;
     extensibilityGroups?: IExplorerExtensibilityGroup[];
     onClick: () => void;
     globalState: GlobalState;
+    isHovered: boolean;
+    dragOverHover: boolean;
+    dragOverLocation: DragOverLocation
 }
 
-export class ControlTreeItemComponent extends React.Component<IControlTreeItemComponentProps, { isActive: boolean, isVisible: boolean, isHovered: boolean, isSelected: boolean }> {
-    dragOverHover: boolean;
-    private _onSelectionChangedObservable: Nullable<Observer<any>>;
-    
+export class ControlTreeItemComponent extends React.Component<IControlTreeItemComponentProps, { isActive: boolean, isVisible: boolean }> {
     constructor(props: IControlTreeItemComponentProps) {
         super(props);
 
         const control = this.props.control;
-        this.dragOverHover = false;
-        this._onSelectionChangedObservable = props.globalState.onSelectionChangedObservable.add((selection) => {
-                this.setState({ isSelected: selection === this.props.control });
-        });
-        this.state = { isActive: control.isHighlighted, isVisible: control.isVisible, isHovered: false, isSelected: false };
-    }
 
-    componentWillUnmount()
-    {
-        this.props.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObservable);
+        this.state = { isActive: control.isHighlighted, isVisible: control.isVisible };
     }
 
     highlight() {
@@ -48,47 +41,30 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
         const newState = !this.state.isVisible;
         this.setState({ isVisible: newState });
         this.props.control.isVisible = newState;
-
     }
 
     render() {
         const control = this.props.control;
 
-        const name =  `${control.name || "No name"} [${control.getClassName()}]`;
-
+        let name = `${control.name || "No name"} [${control.getClassName()}]`;
+        if (control.parent?.typeName === "Grid") {
+            name += ` [${(control.parent as Grid).getChildCellInfo(this.props.control)}]`;
+        }
+        let draggingSelf = this.props.globalState.draggedControl === control;
         return (
-            <div className="controlTools" onMouseOver={() => this.setState({ isHovered: true })} onMouseLeave={() => this.setState({ isHovered: false })}
-            draggable={true}
-            onDragStart={event => {
-                this.props.globalState.draggedControl = control;
-            }} onDrop={event => {
-                if(this.props.globalState.draggedControl != control) {
-                    this.dragOverHover = false;
-                    this.props.globalState.onParentingChangeObservable.notifyObservers(this.props.control);
-                    this.forceUpdate(); 
-                }
-            }}
-            onDragOver={event => {
-                event.preventDefault();
-                this.dragOverHover = true;
-                this.forceUpdate();
-            }}
-            onDragLeave={event => {
-             this.dragOverHover = false;   
-             this.forceUpdate();
-            }}
-            >
+            <div className="controlTools" >
                 <TreeItemLabelComponent label={name} onClick={() => this.props.onClick()} color="greenyellow" />
-                {(this.state.isHovered || this.state.isSelected || this.dragOverHover) && <>
+                {(!draggingSelf && this.props.dragOverHover && this.props.dragOverLocation == DragOverLocation.CENTER && this.props.globalState.workbench.isContainer(control)) && <>
+                    <div className="makeChild icon" onClick={() => this.highlight()} title="Make Child">
+                        <img src={makeChildOfContainerIcon} />
+                    </div>
+                </>}
+                {(this.props.isHovered && this.props.globalState.draggedControl === null && this.props.dragOverLocation == DragOverLocation.NONE) && <>
                     <div className="addComponent icon" onClick={() => this.highlight()} title="Add component (Not Implemented)">
                         <img src={makeComponentIcon} />
                     </div>
                     <div className="visibility icon" onClick={() => this.switchVisibility()} title="Show/Hide control">
-                        <img src={this.state.isVisible ? visibilityActiveIcon : visibilityNotActiveIcon }/>
-                    </div>
-                </>}
-                {(this.dragOverHover) && <>
-                    <div className="Parent">
+                        <img src={this.state.isVisible ? visibilityActiveIcon : visibilityNotActiveIcon} />
                     </div>
                 </>}
                 <ExtensionsComponent target={control} extensibilityGroups={this.props.extensibilityGroups} />

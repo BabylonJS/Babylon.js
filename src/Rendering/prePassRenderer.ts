@@ -49,6 +49,7 @@ export class PrePassRenderer {
 
     private _mrtFormats: number[] = [];
     private _mrtLayout: number[] = [];
+    private _mrtNames: string[] = [];
     private _textureIndices: number[] = [];
 
     private _multiRenderAttachments: number[];
@@ -79,34 +80,42 @@ export class PrePassRenderer {
         {
             type: Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
             format: Constants.TEXTURETYPE_HALF_FLOAT,
+            name: "prePass_Irradiance",
         },
         {
             type: Constants.PREPASS_POSITION_TEXTURE_TYPE,
             format: Constants.TEXTURETYPE_HALF_FLOAT,
+            name: "prePass_Position",
         },
         {
             type: Constants.PREPASS_VELOCITY_TEXTURE_TYPE,
             format: Constants.TEXTURETYPE_UNSIGNED_INT,
+            name: "prePass_Velocity",
         },
         {
             type: Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE,
             format: Constants.TEXTURETYPE_UNSIGNED_INT,
+            name: "prePass_Reflectivity",
         },
         {
             type: Constants.PREPASS_COLOR_TEXTURE_TYPE,
             format: Constants.TEXTURETYPE_HALF_FLOAT,
+            name: "prePass_Color",
         },
         {
             type: Constants.PREPASS_DEPTH_TEXTURE_TYPE,
             format: Constants.TEXTURETYPE_HALF_FLOAT,
+            name: "prePass_Depth",
         },
         {
             type: Constants.PREPASS_NORMAL_TEXTURE_TYPE,
             format: Constants.TEXTURETYPE_HALF_FLOAT,
+            name: "prePass_Normal",
         },
         {
             type: Constants.PREPASS_ALBEDO_TEXTURE_TYPE,
             format: Constants.TEXTURETYPE_UNSIGNED_INT,
+            name: "prePass_Albedo",
         },
     ];
 
@@ -297,7 +306,8 @@ export class PrePassRenderer {
 
         this._textureIndices[Constants.PREPASS_COLOR_TEXTURE_TYPE] = 0;
         this._mrtLayout = [Constants.PREPASS_COLOR_TEXTURE_TYPE];
-        this._mrtFormats = [Constants.TEXTURETYPE_HALF_FLOAT];
+        this._mrtFormats = [PrePassRenderer._textureFormats[Constants.PREPASS_COLOR_TEXTURE_TYPE].format];
+        this._mrtNames = [PrePassRenderer._textureFormats[Constants.PREPASS_COLOR_TEXTURE_TYPE].name];
         this.mrtCount = 1;
     }
 
@@ -393,7 +403,7 @@ export class PrePassRenderer {
 
     private _renderPostProcesses(prePassRenderTarget: PrePassRenderTarget, faceIndex?: number) {
         const firstPP = this._postProcessesSourceForThisPass[0];
-        let outputTexture = firstPP ? firstPP.inputTexture : prePassRenderTarget.renderTargetTexture ? prePassRenderTarget.renderTargetTexture.getInternalTexture() : null;
+        let outputTexture = firstPP ? firstPP.inputTexture : prePassRenderTarget.renderTargetTexture ? prePassRenderTarget.renderTargetTexture.renderTarget : null;
 
         // Build post process chain for this prepass post draw
         let postProcessChain = this._currentTarget._beforeCompositionPostProcesses;
@@ -404,7 +414,7 @@ export class PrePassRenderer {
 
         // Activates and renders the chain
         if (postProcessChain.length) {
-            this._scene.postProcessManager._prepareFrame(this._currentTarget.getInternalTexture()!, postProcessChain);
+            this._scene.postProcessManager._prepareFrame(this._currentTarget.renderTarget?.texture, postProcessChain);
             this._scene.postProcessManager.directRender(postProcessChain, outputTexture, false, faceIndex);
         }
     }
@@ -438,7 +448,7 @@ export class PrePassRenderer {
     private _bindFrameBuffer(prePassRenderTarget: PrePassRenderTarget) {
         if (this._enabled && this._currentTarget.enabled) {
             this._currentTarget._checkSize();
-            var internalTexture = this._currentTarget.getInternalTexture();
+            var internalTexture = this._currentTarget.renderTarget;
             if (internalTexture) {
                 this._engine.bindFramebuffer(internalTexture);
             }
@@ -451,6 +461,9 @@ export class PrePassRenderer {
 
     private _setRenderTargetEnabled(prePassRenderTarget: PrePassRenderTarget, enabled: boolean) {
         prePassRenderTarget.enabled = enabled;
+        if (!enabled) {
+            this._unlinkInternalTexture(prePassRenderTarget);
+        }
     }
 
     /**
@@ -483,7 +496,7 @@ export class PrePassRenderer {
 
         for (let i = 0; i < this.renderTargets.length; i++) {
             if (this.mrtCount !== previousMrtCount) {
-                this.renderTargets[i].updateCount(this.mrtCount, { types: this._mrtFormats });
+                this.renderTargets[i].updateCount(this.mrtCount, { types: this._mrtFormats }, this._mrtNames.concat("prePass_DepthBuffer"));
             }
 
             this.renderTargets[i]._resetPostProcessChain();
@@ -580,12 +593,12 @@ export class PrePassRenderer {
     private _linkInternalTexture(prePassRenderTarget: PrePassRenderTarget, postProcess: Nullable<PostProcess>) {
         if (postProcess) {
             postProcess.autoClear = false;
-            postProcess.inputTexture = prePassRenderTarget.getInternalTexture()!;
+            postProcess.inputTexture = prePassRenderTarget.renderTarget!;
         }
 
         if (prePassRenderTarget._outputPostProcess !== postProcess) {
             if (prePassRenderTarget._outputPostProcess) {
-                prePassRenderTarget._outputPostProcess.restoreDefaultInputTexture();
+                this._unlinkInternalTexture(prePassRenderTarget);
             }
             prePassRenderTarget._outputPostProcess = postProcess;
         }
@@ -593,6 +606,15 @@ export class PrePassRenderer {
         if (prePassRenderTarget._internalTextureDirty) {
             this._updateGeometryBufferLayout();
             prePassRenderTarget._internalTextureDirty = false;
+        }
+    }
+
+    /** @hidden */
+    public _unlinkInternalTexture(prePassRenderTarget: PrePassRenderTarget) {
+        if (prePassRenderTarget._outputPostProcess) {
+            prePassRenderTarget._outputPostProcess.autoClear = true;
+            prePassRenderTarget._outputPostProcess.restoreDefaultInputTexture();
+            prePassRenderTarget._outputPostProcess = null;
         }
     }
 
@@ -655,6 +677,7 @@ export class PrePassRenderer {
                 this._mrtLayout.push(type);
 
                 this._mrtFormats.push(PrePassRenderer._textureFormats[type].format);
+                this._mrtNames.push(PrePassRenderer._textureFormats[type].name);
                 this.mrtCount++;
             }
 

@@ -14,7 +14,7 @@ import { IAnimatable } from '../Animations/animatable.interface';
  */
 export interface IMaterialDetailMapDefines {
     DETAIL: boolean;
-    DETAILDIRECTUV : number;
+    DETAILDIRECTUV: number;
     DETAIL_NORMALBLENDMETHOD: number;
 
     /** @hidden */

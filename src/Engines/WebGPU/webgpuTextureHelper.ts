@@ -27,8 +27,9 @@ import { HardwareTextureWrapper } from '../../Materials/Textures/hardwareTexture
 import { BaseTexture } from '../../Materials/Textures/baseTexture';
 import { WebGPUHardwareTexture } from './webgpuHardwareTexture';
 import { EngineStore } from "../engineStore";
+import { WebGPUTintWASM } from "./webgpuTintWASM";
 
-// TODO WEBGPU improve mipmap generation by not using the OutputAttachment flag
+// TODO WEBGPU improve mipmap generation by not using the OutputAttachment flag (but that requires an extra copy...) - use compute shaders?
 // see https://github.com/toji/web-texture-tool/tree/main/src
 
 // TODO WEBGPU optimize, don't recreate things that can be cached (bind groups, descriptors, etc)
@@ -59,29 +60,41 @@ const mipmapFragmentSource = `
     `;
 
 const invertYPreMultiplyAlphaVertexSource = `
+    #extension GL_EXT_samplerless_texture_functions : enable
+
     const vec2 pos[4] = vec2[4](vec2(-1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(-1.0f, -1.0f), vec2(1.0f, -1.0f));
     const vec2 tex[4] = vec2[4](vec2(0.0f, 0.0f), vec2(1.0f, 0.0f), vec2(0.0f, 1.0f), vec2(1.0f, 1.0f));
 
-    layout(location = 0) out vec2 vTex;
+    layout(set = 0, binding = 0) uniform texture2D img;
+
+    #ifdef INVERTY
+        layout(location = 0) out flat ivec2 vTextureSize;
+    #endif
 
     void main() {
-        vTex = tex[gl_VertexIndex];
-    #ifdef INVERTY
-        vTex.y = 1.0 - vTex.y;
-    #endif
+        #ifdef INVERTY
+            vTextureSize = textureSize(img, 0);
+        #endif
         gl_Position = vec4(pos[gl_VertexIndex], 0.0, 1.0);
     }
     `;
 
 const invertYPreMultiplyAlphaFragmentSource = `
-    layout(set = 0, binding = 0) uniform sampler imgSampler;
-    layout(set = 0, binding = 1) uniform texture2D img;
+    #extension GL_EXT_samplerless_texture_functions : enable
 
-    layout(location = 0) in vec2 vTex;
+    layout(set = 0, binding = 0) uniform texture2D img;
+
+    #ifdef INVERTY
+        layout(location = 0) in flat ivec2 vTextureSize;
+    #endif
     layout(location = 0) out vec4 outColor;
 
     void main() {
-        vec4 color = texture(sampler2D(img, imgSampler), vTex);
+    #ifdef INVERTY
+        vec4 color = texelFetch(img, ivec2(gl_FragCoord.x, vTextureSize.y - gl_FragCoord.y), 0);
+    #else
+        vec4 color = texelFetch(img, ivec2(gl_FragCoord.xy), 0);
+    #endif
     #ifdef PREMULTIPLYALPHA
         color.rgb *= color.a;
     #endif
@@ -131,12 +144,12 @@ export class WebGPUTextureHelper {
 
     private _device: GPUDevice;
     private _glslang: any;
+    private _tintWASM: Nullable<WebGPUTintWASM>;
     private _bufferManager: WebGPUBufferManager;
     private _mipmapSampler: GPUSampler;
-    private _invertYPreMultiplyAlphaSampler: GPUSampler;
     private _pipelines: { [format: string]: Array<GPURenderPipeline> } = {};
     private _compiledShaders: GPUShaderModule[][] = [];
-    private _deferredReleaseTextures: Array<[Nullable<HardwareTextureWrapper | GPUTexture>, Nullable<BaseTexture>, Nullable<InternalTexture>]> = [];
+    private _deferredReleaseTextures: Array<[Nullable<HardwareTextureWrapper | GPUTexture>, Nullable<BaseTexture>]> = [];
     private _commandEncoderForCreation: GPUCommandEncoder;
 
     public static ComputeNumMipmapLevels(width: number, height: number) {
@@ -147,22 +160,22 @@ export class WebGPUTextureHelper {
     //                         Initialization / Helpers
     //------------------------------------------------------------------------------
 
-    constructor(device: GPUDevice, glslang: any, bufferManager: WebGPUBufferManager) {
+    constructor(device: GPUDevice, glslang: any, tintWASM: Nullable<WebGPUTintWASM>, bufferManager: WebGPUBufferManager) {
         this._device = device;
         this._glslang = glslang;
+        this._tintWASM = tintWASM;
         this._bufferManager = bufferManager;
 
         this._mipmapSampler = device.createSampler({ minFilter: WebGPUConstants.FilterMode.Linear });
-        this._invertYPreMultiplyAlphaSampler = device.createSampler({ minFilter: WebGPUConstants.FilterMode.Nearest, magFilter: WebGPUConstants.FilterMode.Nearest });
 
         this._getPipeline(WebGPUConstants.TextureFormat.RGBA8Unorm);
     }
 
     private _getPipeline(format: GPUTextureFormat, type: PipelineType = PipelineType.MipMap, params?: pipelineParameters): GPURenderPipeline {
         const index =
-                type === PipelineType.MipMap ? 1 << 0 :
+            type === PipelineType.MipMap ? 1 << 0 :
                 type === PipelineType.InvertYPremultiplyAlpha ? ((params!.invertY ? 1 : 0) << 1) + ((params!.premultiplyAlpha ? 1 : 0) << 2) :
-                type === PipelineType.Clear ? 1 << 3 : 0;
+                    type === PipelineType.Clear ? 1 << 3 : 0;
 
         if (!this._pipelines[format]) {
             this._pipelines[format] = [];
@@ -182,11 +195,19 @@ export class WebGPUTextureHelper {
 
             let modules = this._compiledShaders[index];
             if (!modules) {
+                let vertexCode = this._glslang.compileGLSL(defines + shadersForPipelineType[type].vertex, 'vertex');
+                let fragmentCode = this._glslang.compileGLSL(defines + shadersForPipelineType[type].fragment, 'fragment');
+
+                if (this._tintWASM) {
+                    vertexCode = this._tintWASM.convertSpirV2WGSL(vertexCode);
+                    fragmentCode = this._tintWASM.convertSpirV2WGSL(fragmentCode);
+                }
+
                 const vertexModule = this._device.createShaderModule({
-                    code: this._glslang.compileGLSL(defines + shadersForPipelineType[type].vertex, 'vertex')
+                    code: vertexCode
                 });
                 const fragmentModule = this._device.createShaderModule({
-                    code: this._glslang.compileGLSL(defines + shadersForPipelineType[type].fragment, 'fragment')
+                    code: fragmentCode
                 });
                 modules = this._compiledShaders[index] = [vertexModule, fragmentModule];
             }
@@ -623,7 +644,7 @@ export class WebGPUTextureHelper {
         return useSRGBBuffer ? WebGPUConstants.TextureFormat.RGBA8UnormSRGB : WebGPUConstants.TextureFormat.RGBA8Unorm;
     }
 
-    public invertYPreMultiplyAlpha(gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY = false, premultiplyAlpha = false, faceIndex= 0, commandEncoder?: GPUCommandEncoder): void {
+    public invertYPreMultiplyAlpha(gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY = false, premultiplyAlpha = false, faceIndex = 0, mipLevel = 0, layers = 1, commandEncoder?: GPUCommandEncoder): void {
         const useOwnCommandEncoder = commandEncoder === undefined;
         const pipeline = this._getPipeline(format, PipelineType.InvertYPremultiplyAlpha, { invertY, premultiplyAlpha });
         const bindGroupLayout = pipeline.getBindGroupLayout(0);
@@ -655,16 +676,13 @@ export class WebGPUTextureHelper {
             layout: bindGroupLayout,
             entries: [{
                 binding: 0,
-                resource: this._invertYPreMultiplyAlphaSampler,
-            }, {
-                binding: 1,
                 resource: gpuTexture.createView({
                     format,
                     dimension: WebGPUConstants.TextureViewDimension.E2d,
-                    baseMipLevel: 0,
+                    baseMipLevel: mipLevel,
                     mipLevelCount: 1,
-                    arrayLayerCount: 1,
-                    baseArrayLayer: faceIndex,
+                    arrayLayerCount: layers,
+                    baseArrayLayer: Math.max(faceIndex, 0),
                 }),
             }],
         });
@@ -675,22 +693,23 @@ export class WebGPUTextureHelper {
         passEncoder.endPass();
 
         commandEncoder!.copyTextureToTexture({
-                texture: outputTexture,
-            }, {
-                texture: gpuTexture,
-                origin: {
-                    x: 0,
-                    y: 0,
-                    z: Math.max(faceIndex, 0),
-                }
-            }, {
-                width,
-                height,
-                depthOrArrayLayers: 1,
+            texture: outputTexture,
+        }, {
+            texture: gpuTexture,
+            mipLevel,
+            origin: {
+                x: 0,
+                y: 0,
+                z: Math.max(faceIndex, 0),
             }
+        }, {
+            width,
+            height,
+            depthOrArrayLayers: 1,
+        }
         );
 
-        this._deferredReleaseTextures.push([outputTexture, null, null]);
+        this._deferredReleaseTextures.push([outputTexture, null]);
 
         commandEncoder!.popDebugGroup?.();
 
@@ -717,9 +736,6 @@ export class WebGPUTextureHelper {
             layout: bindGroupLayout,
             entries: [{
                 binding: 0,
-                resource: this._invertYPreMultiplyAlphaSampler,
-            }, {
-                binding: 1,
                 resource: srcTextureView,
             }],
         });
@@ -742,8 +758,7 @@ export class WebGPUTextureHelper {
     //------------------------------------------------------------------------------
 
     public createTexture(imageBitmap: ImageBitmap | { width: number, height: number, layers: number }, hasMipmaps = false, generateMipmaps = false, invertY = false, premultiplyAlpha = false, is3D = false, format: GPUTextureFormat = WebGPUConstants.TextureFormat.RGBA8Unorm,
-        sampleCount = 1, commandEncoder?: GPUCommandEncoder, usage = -1, additionalUsages = 0): GPUTexture
-    {
+        sampleCount = 1, commandEncoder?: GPUCommandEncoder, usage = -1, additionalUsages = 0): GPUTexture {
         if (sampleCount > 1) {
             // TODO WEBGPU for the time being, Chrome only accepts values of 1 or 4
             sampleCount = 4;
@@ -770,7 +785,7 @@ export class WebGPUTextureHelper {
             size: textureSize,
             dimension: is3D ? WebGPUConstants.TextureDimension.E3d : WebGPUConstants.TextureDimension.E2d,
             format,
-            usage:  usages | additionalUsages,
+            usage: usages | additionalUsages,
             sampleCount,
             mipLevelCount
         });
@@ -787,8 +802,7 @@ export class WebGPUTextureHelper {
     }
 
     public createCubeTexture(imageBitmaps: ImageBitmap[] | { width: number, height: number }, hasMipmaps = false, generateMipmaps = false, invertY = false, premultiplyAlpha = false, format: GPUTextureFormat = WebGPUConstants.TextureFormat.RGBA8Unorm,
-        sampleCount = 1, commandEncoder?: GPUCommandEncoder, usage = -1, additionalUsages = 0): GPUTexture
-    {
+        sampleCount = 1, commandEncoder?: GPUCommandEncoder, usage = -1, additionalUsages = 0): GPUTexture {
         if (sampleCount > 1) {
             // TODO WEBGPU for the time being, Chrome only accepts values of 1 or 4
             sampleCount = 4;
@@ -852,7 +866,7 @@ export class WebGPUTextureHelper {
         }
     }
 
-    public generateMipmaps(gpuTexture: GPUTexture, format: GPUTextureFormat, mipLevelCount: number, faceIndex= 0, commandEncoder?: GPUCommandEncoder): void {
+    public generateMipmaps(gpuTexture: GPUTexture, format: GPUTextureFormat, mipLevelCount: number, faceIndex = 0, commandEncoder?: GPUCommandEncoder): void {
         const useOwnCommandEncoder = commandEncoder === undefined;
         const pipeline = this._getPipeline(format);
         const bindGroupLayout = pipeline.getBindGroupLayout(0);
@@ -872,7 +886,7 @@ export class WebGPUTextureHelper {
                         baseMipLevel: i,
                         mipLevelCount: 1,
                         arrayLayerCount: 1,
-                        baseArrayLayer: faceIndex,
+                        baseArrayLayer: Math.max(faceIndex, 0),
                     }),
                     loadValue: WebGPUConstants.LoadOp.Load,
                     storeOp: WebGPUConstants.StoreOp.Store,
@@ -892,7 +906,7 @@ export class WebGPUTextureHelper {
                         baseMipLevel: i - 1,
                         mipLevelCount: 1,
                         arrayLayerCount: 1,
-                        baseArrayLayer: faceIndex,
+                        baseArrayLayer: Math.max(faceIndex, 0),
                     }),
                 }],
             });
@@ -932,7 +946,7 @@ export class WebGPUTextureHelper {
 
         gpuTextureWrapper.textureUsages =
             texture._source === InternalTextureSource.RenderTarget || texture.source === InternalTextureSource.MultiRenderTarget ? WebGPUConstants.TextureUsage.Sampled | WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.RenderAttachment :
-            texture._source === InternalTextureSource.Depth ? WebGPUConstants.TextureUsage.Sampled | WebGPUConstants.TextureUsage.RenderAttachment : -1;
+                texture._source === InternalTextureSource.DepthStencil ? WebGPUConstants.TextureUsage.Sampled | WebGPUConstants.TextureUsage.RenderAttachment : -1;
 
         gpuTextureWrapper.textureAdditionalUsages = (creationFlags ?? 0) & Constants.TEXTURE_CREATIONFLAG_STORAGE ? WebGPUConstants.TextureUsage.Storage : 0;
 
@@ -962,7 +976,7 @@ export class WebGPUTextureHelper {
                 mipLevelCount: hasMipMaps ? WebGPUTextureHelper.ComputeNumMipmapLevels(width!, height!) : 1,
                 baseArrayLayer: 0,
                 baseMipLevel: 0,
-                arrayLayerCount: layerCount,
+                arrayLayerCount: texture.is3D ? 1 : layerCount,
                 aspect: WebGPUConstants.TextureAspect.All
             });
         }
@@ -1018,8 +1032,7 @@ export class WebGPUTextureHelper {
 
     // TODO WEBGPU handle data source not being in the same format than the destination texture?
     public updateTexture(imageBitmap: ImageBitmap | Uint8Array | HTMLCanvasElement | OffscreenCanvas, texture: GPUTexture | InternalTexture, width: number, height: number, layers: number, format: GPUTextureFormat, faceIndex: number = 0, mipLevel: number = 0, invertY = false, premultiplyAlpha = false, offsetX = 0, offsetY = 0,
-        commandEncoder?: GPUCommandEncoder): void
-    {
+        commandEncoder?: GPUCommandEncoder): void {
         const gpuTexture = WebGPUTextureHelper._IsInternalTexture(texture) ? (texture._hardwareTexture as WebGPUHardwareTexture).underlyingResource! : texture;
         const blockInformation = WebGPUTextureHelper._GetBlockInformationFromFormat(format);
 
@@ -1082,18 +1095,18 @@ export class WebGPUTextureHelper {
             }
 
             if (invertY || premultiplyAlpha) {
-                this.invertYPreMultiplyAlpha(gpuTexture, width, height, format, invertY, premultiplyAlpha, faceIndex, commandEncoder);
+                this.invertYPreMultiplyAlpha(gpuTexture, width, height, format, invertY, premultiplyAlpha, faceIndex, mipLevel, layers || 1, commandEncoder);
             }
         } else {
             imageBitmap = imageBitmap as ImageBitmap;
 
             if (invertY || premultiplyAlpha) {
                 const engine = EngineStore.LastCreatedEngine;
-                engine && engine.createImageBitmap(imageBitmap, { imageOrientation: invertY ? "flipY" : "none", premultiplyAlpha: premultiplyAlpha ? "premultiply" : "none" }).then((imageBitmap) => {
+                engine && engine.createImageBitmap(imageBitmap as ImageBitmapSource, { imageOrientation: invertY ? "flipY" : "none", premultiplyAlpha: premultiplyAlpha ? "premultiply" : "none" }).then((imageBitmap) => {
                     this._device.queue.copyImageBitmapToTexture({ imageBitmap }, textureCopyView, textureExtent);
                 });
             } else {
-                this._device.queue.copyImageBitmapToTexture({ imageBitmap }, textureCopyView, textureExtent);
+                this._device.queue.copyImageBitmapToTexture({ imageBitmap } as GPUImageBitmapCopyView, textureCopyView, textureExtent);
             }
 
             /*imageBitmap = imageBitmap as (ImageBitmap | HTMLCanvasElement | OffscreenCanvas);
@@ -1110,7 +1123,7 @@ export class WebGPUTextureHelper {
                     // in which case it would be executed as copyExternalImageToTexture / copyExternalImageToTexture / invertYPreMultiplyAlpha / invertYPreMultiplyAlpha because the command encoder we are passed in
                     // is submitted at the end of the frame
                     commandEncoder = this._device.createCommandEncoder({});
-                    this.invertYPreMultiplyAlpha(gpuTexture, width, height, format, invertY, premultiplyAlpha, 0, commandEncoder);
+                    this.invertYPreMultiplyAlpha(gpuTexture, width, height, format, invertY, premultiplyAlpha, faceIndex, mipLevel, layers || 1, commandEncoder);
                     this._device.queue.submit([commandEncoder!.finish()]);
                     commandEncoder = null as any;
                 } else {
@@ -1124,14 +1137,14 @@ export class WebGPUTextureHelper {
                     // create a temp texture and copy the image to it
                     const srcTexture = this.createTexture({ width, height, layers: 1 }, false, false, false, false, false, format, 1, commandEncoder, WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.Sampled);
 
-                    this._deferredReleaseTextures.push([srcTexture, null, null]);
+                    this._deferredReleaseTextures.push([srcTexture, null]);
 
                     textureExtent.depthOrArrayLayers = 1;
                     this._device.queue.copyExternalImageToTexture({ source: imageBitmap }, { texture: srcTexture }, textureExtent);
                     textureExtent.depthOrArrayLayers = layers || 1;
 
                     // apply the preprocessing to this temp texture
-                    this.invertYPreMultiplyAlpha(srcTexture, width, height, format, invertY, premultiplyAlpha, 0, commandEncoder);
+                    this.invertYPreMultiplyAlpha(srcTexture, width, height, format, invertY, premultiplyAlpha, faceIndex, mipLevel, layers || 1, commandEncoder);
 
                     // copy the temp texture to the destination texture
                     commandEncoder!.copyTextureToTexture({ texture: srcTexture }, textureCopyView, textureExtent);
@@ -1148,7 +1161,7 @@ export class WebGPUTextureHelper {
         }
     }
 
-    public readPixels(texture: GPUTexture, x: number, y: number, width: number, height: number, format: GPUTextureFormat, faceIndex: number = 0, mipLevel: number = 0, buffer: Nullable<ArrayBufferView> = null): Promise<ArrayBufferView> {
+    public readPixels(texture: GPUTexture, x: number, y: number, width: number, height: number, format: GPUTextureFormat, faceIndex: number = 0, mipLevel: number = 0, buffer: Nullable<ArrayBufferView> = null, noDataConversion = false): Promise<ArrayBufferView> {
         const blockInformation = WebGPUTextureHelper._GetBlockInformationFromFormat(format);
 
         const bytesPerRow = Math.ceil(width / blockInformation.width) * blockInformation.length;
@@ -1181,10 +1194,7 @@ export class WebGPUTextureHelper {
 
         this._device.queue.submit([commandEncoder!.finish()]);
 
-        const type = WebGPUTextureHelper._GetTextureTypeFromFormat(format);
-        const floatFormat = type === Constants.TEXTURETYPE_FLOAT ? 2 : type === Constants.TEXTURETYPE_HALF_FLOAT ? 1 : 0;
-
-        return this._bufferManager.readDataFromBuffer(gpuBuffer, size, width, height, bytesPerRow, bytesPerRowAligned, floatFormat, 0, buffer);
+        return this._bufferManager.readDataFromBuffer(gpuBuffer, size, width, height, bytesPerRow, bytesPerRowAligned, WebGPUTextureHelper._GetTextureTypeFromFormat(format), 0, buffer, true, noDataConversion);
     }
 
     //------------------------------------------------------------------------------
@@ -1195,18 +1205,17 @@ export class WebGPUTextureHelper {
         if (WebGPUTextureHelper._IsInternalTexture(texture)) {
             const hardwareTexture = texture._hardwareTexture;
             const irradianceTexture = texture._irradianceTexture;
-            const depthStencilTexture = texture._depthStencilTexture;
 
             // We can't destroy the objects just now because they could be used in the current frame - we delay the destroying after the end of the frame
-            this._deferredReleaseTextures.push([hardwareTexture, irradianceTexture, depthStencilTexture]);
+            this._deferredReleaseTextures.push([hardwareTexture, irradianceTexture]);
         } else {
-            this._deferredReleaseTextures.push([texture, null, null]);
+            this._deferredReleaseTextures.push([texture, null]);
         }
     }
 
     public destroyDeferredTextures(): void {
         for (let i = 0; i < this._deferredReleaseTextures.length; ++i) {
-            const [hardwareTexture, irradianceTexture, depthStencilTexture] = this._deferredReleaseTextures[i];
+            const [hardwareTexture, irradianceTexture] = this._deferredReleaseTextures[i];
 
             if (hardwareTexture) {
                 if (WebGPUTextureHelper._IsHardwareTexture(hardwareTexture)) {
@@ -1216,7 +1225,6 @@ export class WebGPUTextureHelper {
                 }
             }
             irradianceTexture?.dispose();
-            depthStencilTexture?.dispose();
         }
 
         this._deferredReleaseTextures.length = 0;

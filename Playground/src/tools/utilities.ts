@@ -5,12 +5,12 @@ export class Utilities {
         var head = document.getElementsByTagName('head')[0];
         var script = document.createElement('script');
         script.setAttribute('type', 'text/javascript');
-    
+
         script.innerHTML = `try {${code};}
         catch(e) {
             handleException(e);
         }`;
-    
+
         head.appendChild(script);
     }
 
@@ -57,7 +57,7 @@ export class Utilities {
         return true;
     };
 
-    public static SwitchLanguage(language: string, globalState: GlobalState, force?: boolean) {        
+    public static SwitchLanguage(language: string, globalState: GlobalState, force?: boolean) {
         if (force || window.confirm("Are you sure you want to switch the language (You will lose your current project if it was not saved before)?")) {
             Utilities.StoreStringToStore("language", language);
             globalState.language = language;

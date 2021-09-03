@@ -629,7 +629,7 @@ export class ScrollViewer extends Rectangle {
         let ratio = this.host.idealRatio;
 
         this._horizontalBar.thumbWidth = this._thumbLength * 0.9 * (this._clientWidth / ratio) + "px";
-        this._verticalBar.thumbWidth = this._thumbLength *  0.9 * (this._clientHeight / ratio) + "px";
+        this._verticalBar.thumbWidth = this._thumbLength * 0.9 * (this._clientHeight / ratio) + "px";
     }
 
     public _link(host: AdvancedDynamicTexture): void {
@@ -666,7 +666,7 @@ export class ScrollViewer extends Rectangle {
         }
 
         this._onWheelObserver = this.onWheelObservable.add((pi) => {
-            if (!this._pointerIsOver) {
+            if (!this._pointerIsOver || this.isReadOnly) {
                 return;
             }
             if (this._verticalBar.isVisible == true) {

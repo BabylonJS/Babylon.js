@@ -42,10 +42,10 @@ declare module "../scene" {
 }
 
 Object.defineProperty(Scene.prototype, "forceShowBoundingBoxes", {
-    get: function(this: Scene) {
+    get: function (this: Scene) {
         return this._forceShowBoundingBoxes || false;
     },
-    set: function(this: Scene, value: boolean) {
+    set: function (this: Scene, value: boolean) {
         this._forceShowBoundingBoxes = value;
         // Lazyly creates a BB renderer if needed.
         if (value) {
@@ -56,7 +56,7 @@ Object.defineProperty(Scene.prototype, "forceShowBoundingBoxes", {
     configurable: true
 });
 
-Scene.prototype.getBoundingBoxRenderer = function(): BoundingBoxRenderer {
+Scene.prototype.getBoundingBoxRenderer = function (): BoundingBoxRenderer {
 
     if (!this._boundingBoxRenderer) {
         this._boundingBoxRenderer = new BoundingBoxRenderer(this);
@@ -78,10 +78,10 @@ declare module "../Meshes/abstractMesh" {
 }
 
 Object.defineProperty(AbstractMesh.prototype, "showBoundingBox", {
-    get: function(this: AbstractMesh) {
+    get: function (this: AbstractMesh) {
         return this._showBoundingBox || false;
     },
-    set: function(this: AbstractMesh, value: boolean) {
+    set: function (this: AbstractMesh, value: boolean) {
         this._showBoundingBox = value;
         // Lazyly creates a BB renderer if needed.
         if (value) {
@@ -321,7 +321,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
 
         this._prepareResources();
 
-        if (!this._colorShader.isReady() || !mesh._boundingInfo) {
+        if (!this._colorShader.isReady() || !mesh.hasBoundingInfo) {
             return;
         }
 
@@ -334,7 +334,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
         engine.setColorWrite(false);
         this._colorShader._preBind();
 
-        var boundingBox = mesh._boundingInfo.boundingBox;
+        var boundingBox = mesh.getBoundingInfo().boundingBox;
         var min = boundingBox.minimum;
         var max = boundingBox.maximum;
         var diff = max.subtract(min);
