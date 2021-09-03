@@ -489,6 +489,11 @@ function init(_engineName, useReverseDepthBuffer) {
             wasmPath: "../../dist/preview%20release/glslang/glslang.wasm"
         };
 
+        var twgslOptions = { 
+            jsPath: "/dist/preview release/twgsl/twgsl.js",
+            wasmPath: "/dist/preview release/twgsl/twgsl.wasm"
+        };
+
         const options = {
             deviceDescriptor: {
                 requiredFeatures: [
@@ -508,7 +513,7 @@ function init(_engineName, useReverseDepthBuffer) {
         engine.useReverseDepthBuffer = useReverseDepthBuffer == 1 || useReverseDepthBuffer == "true";
         if (engine.useReverseDepthBuffer) console.log("Forcing reverse depth buffer in all tests");
         return new Promise((resolve) => {
-            engine.initAsync(glslangOptions).then(() => resolve());
+            engine.initAsync(glslangOptions, twgslOptions).then(() => resolve());
         });
     } else {
         engine = new BABYLON.Engine(canvas, false, { useHighPrecisionFloats: true, disableWebGL2Support: engineName === "webgl1" ? true : false });
