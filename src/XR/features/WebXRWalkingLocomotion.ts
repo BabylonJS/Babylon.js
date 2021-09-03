@@ -400,7 +400,7 @@ export class WebXRWalkingLocomotion extends WebXRAbstractFeature {
      * @returns true if compatible, false otherwise
      */
     public isCompatible(): boolean {
-        return this._sessionManager.sessionMode === "immersive-vr";
+        return (this._sessionManager.sessionMode === undefined || this._sessionManager.sessionMode === "immersive-vr");
     }
 
     /**
