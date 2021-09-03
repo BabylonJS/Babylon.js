@@ -1,4 +1,4 @@
-import { Vector2, Vector3 } from "../../Maths/math.vector";
+import { TmpVectors, Vector2, Vector3 } from "../../Maths/math.vector";
 import { TransformNode } from "../../Meshes/transformNode";
 import { Logger } from "../../Misc/logger";
 import { Observable } from "../../Misc/observable";
@@ -12,22 +12,22 @@ class CircleBuffer {
     private _samples: Array<Vector2> = [];
     private _idx: number = 0;
 
-    constructor (numSamples: number, initializer: Nullable<() => Vector2> = null) {
+    constructor (numSamples: number, initializer?: () => Vector2) {
         for (let idx = 0; idx < numSamples; ++idx) {
             this._samples.push(initializer ? initializer() : Vector2.Zero());
         }
     }
 
-    get length() {
+    public get length() {
         return this._samples.length;
     }
 
-    push(x: number, y: number) {
+    public push(x: number, y: number) {
         this._idx = (this._idx + this._samples.length - 1) % this._samples.length;
         this.at(0).copyFromFloats(x, y);
     }
 
-    at(idx: number) {
+    public at(idx: number) {
         if (idx >= this._samples.length) {
             throw new Error("Index out of bounds");
         }
@@ -87,7 +87,7 @@ class FirstStepDetector {
         const axis = apex.subtract(origin);
         axis.normalize();
 
-        const vec = new Vector2();
+        const vec = TmpVectors.Vector2[0];
         let dot;
         let sample;
         let sumSquaredProjectionDistances = 0;
@@ -102,8 +102,10 @@ class FirstStepDetector {
             return;
         }
 
-        const forwardVec = new Vector3(forwardX, forwardY, 0);
-        const axisVec = new Vector3(axis.x, axis.y, 0);
+        const forwardVec = TmpVectors.Vector3[0];
+        forwardVec.set(forwardX, forwardY, 0);
+        const axisVec = TmpVectors.Vector3[1];
+        axisVec.set(axis.x, axis.y, 0);
         const isApexLeft = Vector3.Cross(forwardVec, axisVec).z > 0;
         const leftApex = origin.clone();
         const rightApex = origin.clone();
@@ -163,26 +165,26 @@ class FirstStepDetector {
 }
 
 class WalkingTracker {
-    _leftApex = new Vector2();
-    _rightApex = new Vector2();
-    _currentPosition = new Vector2();
-    _axis = new Vector2();
-    _axisLength = -1;
-    _forward = new Vector2();
-    _steppingLeft = false;
-    _t = -1;
-    _maxT = -1;
-    _maxTPosition = new Vector2();
-    _vitality = 0;
+    private _leftApex = new Vector2();
+    private _rightApex = new Vector2();
+    private _currentPosition = new Vector2();
+    private _axis = new Vector2();
+    private _axisLength = -1;
+    private _forward = new Vector2();
+    private _steppingLeft = false;
+    private _t = -1;
+    private _maxT = -1;
+    private _maxTPosition = new Vector2();
+    private _vitality = 0;
 
-    onMovement = new Observable<{ deltaT: number }>();
-    onFootfall = new Observable<{ foot: "left" | "right" }>();
+    public onMovement = new Observable<{ deltaT: number }>();
+    public onFootfall = new Observable<{ foot: "left" | "right" }>();
 
     constructor(leftApex: Vector2, rightApex: Vector2, currentPosition: Vector2, currentStepDirection: "left" | "right") {
         this._reset(leftApex, rightApex, currentPosition, currentStepDirection === "left");
     }
 
-    _reset(leftApex: Vector2, rightApex: Vector2, currentPosition: Vector2, steppingLeft: boolean) {
+    private _reset(leftApex: Vector2, rightApex: Vector2, currentPosition: Vector2, steppingLeft: boolean) {
         this._leftApex.copyFrom(leftApex);
         this._rightApex.copyFrom(rightApex);
         this._steppingLeft = steppingLeft;
@@ -204,7 +206,7 @@ class WalkingTracker {
         this._vitality = 1;
     }
 
-    _updateTAndVitality(x: number, y: number) {
+    private _updateTAndVitality(x: number, y: number) {
         this._currentPosition.copyFromFloats(x, y);
 
         if (this._steppingLeft) {
@@ -221,7 +223,7 @@ class WalkingTracker {
         this._vitality *= (0.95 - 100 * Math.max(projDistSquared - 0.0016, 0) + Math.max(this._t - priorT, 0));
     }
 
-    update(x: number, y: number) {
+    public update(x: number, y: number) {
         if (this._vitality < this._vitalityThreshold) {
             return false;
         }
@@ -263,7 +265,7 @@ class WalkingTracker {
         return true;
     }
 
-    get _vitalityThreshold() {
+    private get _vitalityThreshold() {
         return 0.1;
     }
 
@@ -293,7 +295,7 @@ class Walker {
         });
     }
 
-    update(position: Vector3, forward: Vector3) {
+    public update(position: Vector3, forward: Vector3) {
         forward.y = 0;
         forward.normalize();
 
@@ -350,6 +352,9 @@ export class WebXRWalkingLocomotion extends WebXRAbstractFeature {
     private _movement: Vector3 = new Vector3();
     private _walker: Nullable<Walker>;
 
+    private _locomotionTarget: WebXRCamera | TransformNode;
+    private _isLocomotionTargetWebXRCamera: boolean;
+
     /**
      * The target to be articulated by walking locomotion.
      * When the walking locomotion feature detects walking in place, this element's
@@ -358,7 +363,22 @@ export class WebXRWalkingLocomotion extends WebXRAbstractFeature {
      * the WebXRCamera itself. Note that the WebXRCamera path will modify the position
      * of the WebXRCamera directly and is thus discouraged.
      */
-    public locomotionTarget: WebXRCamera | TransformNode;
+    public get locomotionTarget(): WebXRCamera | TransformNode {
+        return this._locomotionTarget;
+    }
+    
+    /**
+     * The target to be articulated by walking locomotion.
+     * When the walking locomotion feature detects walking in place, this element's
+     * X and Z coordinates will be modified to reflect locomotion. This target should
+     * be either the XR space's origin (i.e., the parent node of the WebXRCamera) or
+     * the WebXRCamera itself. Note that the WebXRCamera path will modify the position
+     * of the WebXRCamera directly and is thus discouraged.
+     */
+     public set locomotionTarget(locomotionTarget: WebXRCamera | TransformNode) {
+         this._locomotionTarget = locomotionTarget;
+         this._isLocomotionTargetWebXRCamera = this._locomotionTarget instanceof WebXRCamera;
+     }
 
     /**
      * Construct a new Walking Locomotion feature.
@@ -369,7 +389,7 @@ export class WebXRWalkingLocomotion extends WebXRAbstractFeature {
         super(sessionManager);
         this._sessionManager = sessionManager;
         this.locomotionTarget = options.locomotionTarget;
-        if (this.locomotionTarget instanceof WebXRCamera) {
+        if (this._isLocomotionTargetWebXRCamera) {
             Logger.Warn("Using walking locomotion directly on a WebXRCamera may have unintended interactions with other XR techniques. Using an XR space parent is highly recommended");
         }
     }
@@ -420,7 +440,7 @@ export class WebXRWalkingLocomotion extends WebXRAbstractFeature {
         this._up.scaleAndAddToRef(-0.05, this._position);
         this._walker!.update(this._position, this._forward);
         this._movement.copyFrom(this._walker!.movementThisFrame);
-        if (this.locomotionTarget instanceof TransformNode) {
+        if (!this._isLocomotionTargetWebXRCamera) {
             Vector3.TransformNormalToRef(this._movement, this.locomotionTarget.getWorldMatrix(), this._movement);
         }
         this.locomotionTarget.position.addInPlace(this._movement);
