@@ -26196,6 +26196,7 @@ declare module BABYLON {
         loopMode?: number | undefined;
         /**Specifies if blending should be enabled */
         enableBlending?: boolean | undefined;
+        private static _UniqueIdGenerator;
         /**
          * Use matrix interpolation instead of using direct key value when animating matrices
          */
@@ -26204,6 +26205,10 @@ declare module BABYLON {
          * When matrix interpolation is enabled, this boolean forces the system to use Matrix.DecomposeLerp instead of Matrix.Lerp. Interpolation is more precise but slower
          */
         static AllowMatrixDecomposeForInterpolation: boolean;
+        /**
+         * Gets or sets the unique id of the animation (the uniqueness is solely among other animations)
+         */
+        uniqueId: number;
         /** Define the Url to load snippets */
         static SnippetUrl: string;
         /** Snippet ID if the animation was created from the snippet server */
@@ -33875,8 +33880,9 @@ declare module BABYLON {
         set position(newPosition: Vector3);
         /**
          * return true if a pivot has been set
+         * @returns true if a pivot matrix is used
          */
-        get usePivotMatrix(): boolean;
+        isUsingPivotMatrix(): boolean;
         /**
           * Gets or sets the rotation property : a Vector3 defining the rotation value in radians around each local axis X, Y, Z  (default is (0.0, 0.0, 0.0)).
           * If rotation quaternion is set, this Vector3 will be ignored and copy from the quaternion
@@ -60076,7 +60082,7 @@ declare module BABYLON {
 declare module BABYLON {
     /**
      * Class used to render a debug view of the frustum for a directional light
-     * @see https://playground.babylonjs.com/#7EFGSG#3
+     * @see https://playground.babylonjs.com/#7EFGSG#4
      * @since 5.0.0
      */
     export class DirectionalLightFrustumViewer {
