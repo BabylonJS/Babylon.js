@@ -39,6 +39,30 @@ export class MSCTranscoder extends Transcoder {
             if (MSCTranscoder.UseFromWorkerThread) {
                 importScripts(MSCTranscoder.JSModuleURL);
             }
+            // Worker Number = 0 and MSC_TRANSCODER has not been loaded yet.
+            else if (typeof(MSC_TRANSCODER) === "undefined") {
+                return new Promise((resolve, reject) => {
+                    const head = document.getElementsByTagName("head")[0];
+                    const script = document.createElement("script");
+                    script.setAttribute("type", "text/javascript");
+                    script.setAttribute("src", MSCTranscoder.JSModuleURL);
+
+                    script.onload = () => {
+                        MSC_TRANSCODER({ wasmBinary }).then((basisModule: any) => {
+                            basisModule.initTranscoders();
+                            this._mscBasisModule = basisModule;
+                            resolve();
+                        });
+                    };
+
+                    script.onerror = () => {
+                        reject("Can not load MSC_TRANSCODER script.");
+                    };
+
+                    head.appendChild(script);
+                });
+            }
+
             return new Promise((resolve) => {
                 MSC_TRANSCODER({ wasmBinary }).then((basisModule: any) => {
                     basisModule.initTranscoders();
