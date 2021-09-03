@@ -131,9 +131,14 @@
                         wasmPath: "/dist/preview release/glslang/glslang.wasm"
                     };
 
+                    var twgslOptions = { 
+                        jsPath: "/dist/preview release/twgsl/twgsl.js",
+                        wasmPath: "/dist/preview release/twgsl/twgsl.wasm"
+                    };
+
                     if (typeof createEngine !== "undefined") {
                         engine = createEngine();
-                        engine.initAsync(glslangOptions).then(() => onLoad(engine));
+                        engine.initAsync(glslangOptions, twgslOptions).then(() => onLoad(engine));
                     } else {
                         engine = new BABYLON.WebGPUEngine(canvas, {
                             deviceDescriptor: {
@@ -149,7 +154,7 @@
                             enableGPUDebugMarkers: true,
                             antialiasing: true,
                         });
-                        engine.initAsync(glslangOptions).then(() => onLoad(engine));
+                        engine.initAsync(glslangOptions, twgslOptions).then(() => onLoad(engine));
                     }
 
                     BABYLONDEVTOOLS.Loader.debugShortcut(engine);

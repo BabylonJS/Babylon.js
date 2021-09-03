@@ -1268,6 +1268,9 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         var textureSize = this.getSize();
         if (this._isFullscreen) {
             var camera = scene.cameraToUseForPointers || scene.activeCamera;
+            if (!camera) {
+                return;
+            }
             var viewport = camera.viewport;
             x = x * (textureSize.width / (engine.getRenderWidth() * viewport.width));
             y = y * (textureSize.height / (engine.getRenderHeight() * viewport.height));
@@ -1326,9 +1329,6 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
                 && pi.type !== babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERUP
                 && pi.type !== babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERDOWN
                 && pi.type !== babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERWHEEL) {
-                return;
-            }
-            if (!scene) {
                 return;
             }
             if (pi.type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERMOVE && pi.event.pointerId) {
@@ -3886,6 +3886,7 @@ var Container = /** @class */ (function (_super) {
             }
         }
         this._localDraw(contextToDrawTo);
+        context.save();
         if (this.clipChildren) {
             this._clipForChildren(contextToDrawTo);
         }
@@ -3906,6 +3907,7 @@ var Container = /** @class */ (function (_super) {
             context.drawImage(contextToDrawTo.canvas, this._currentMeasure.left, this._currentMeasure.top);
             context.restore();
         }
+        context.restore();
     };
     Container.prototype.getDescendantsToRef = function (results, directDescendantsOnly, predicate) {
         if (directDescendantsOnly === void 0) { directDescendantsOnly = false; }
@@ -19158,6 +19160,7 @@ var TouchHolographicButton = /** @class */ (function (_super) {
         if (shareMaterials === void 0) { shareMaterials = true; }
         var _this = _super.call(this, name) || this;
         _this._shareMaterials = true;
+        _this._isBackplateVisible = true;
         _this._frontPlateDepth = 0.5;
         _this._backPlateDepth = 0.04;
         _this._shareMaterials = shareMaterials;
@@ -19366,6 +19369,24 @@ var TouchHolographicButton = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
+    Object.defineProperty(TouchHolographicButton.prototype, "isBackplateVisible", {
+        /**
+         * Sets whether the backplate is visible or hidden. Hiding the backplate is not recommended without some sort of replacement
+         */
+        set: function (isVisible) {
+            if (this.mesh && !!this._backMaterial) {
+                if (isVisible && !this._isBackplateVisible) {
+                    this._backPlate.visibility = 1;
+                }
+                else if (!isVisible && this._isBackplateVisible) {
+                    this._backPlate.visibility = 0;
+                }
+            }
+            this._isBackplateVisible = isVisible;
+        },
+        enumerable: false,
+        configurable: true
+    });
     TouchHolographicButton.prototype._getTypeName = function () {
         return "TouchHolographicButton";
     };
@@ -19454,8 +19475,8 @@ var TouchHolographicButton = /** @class */ (function (_super) {
         this._plateMaterial.specularColor = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Color3"].Black();
     };
     TouchHolographicButton.prototype._affectMaterial = function (mesh) {
-        // Back
         if (this._shareMaterials) {
+            // Back
             if (!this._host._touchSharedMaterials["backFluentMaterial"]) {
                 this._createBackMaterial(mesh);
                 this._host._touchSharedMaterials["backFluentMaterial"] = this._backMaterial;
@@ -19479,6 +19500,9 @@ var TouchHolographicButton = /** @class */ (function (_super) {
         this._createPlateMaterial(mesh);
         this._backPlate.material = this._backMaterial;
         this._textPlate.material = this._plateMaterial;
+        if (!this._isBackplateVisible) {
+            this._backPlate.visibility = 0;
+        }
         if (!!this._frontPlate) {
             this._frontPlate.material = this._frontMaterial;
         }
@@ -19638,9 +19662,7 @@ var TouchHolographicMenu = /** @class */ (function (_super) {
      */
     TouchHolographicMenu.prototype.addButton = function (button) {
         _super.prototype.addControl.call(this, button);
-        if (button.backMaterial) {
-            button.backMaterial.alpha = 0;
-        }
+        button.isBackplateVisible = false;
         return this;
     };
     /**

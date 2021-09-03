@@ -1171,6 +1171,8 @@ declare module INSPECTOR {
         play(forward: boolean): void;
         stop(): void;
         moveToFrame(frame: number): void;
+        refreshTarget(): void;
+        clearSelection(): void;
     }
 }
 declare module INSPECTOR {
@@ -1408,6 +1410,7 @@ declare module INSPECTOR {
         private _invertX;
         private _convertY;
         private _invertY;
+        private _buildFrameIntervalAxis;
         private _buildYAxis;
         private _frame;
         private _dropKeyFrames;

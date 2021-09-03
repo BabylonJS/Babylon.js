@@ -158,7 +158,7 @@ declare module "babylonjs-gui-editor/globalState" {
         onZoomObservable: Observable<void>;
         onPanObservable: Observable<void>;
         onSelectionButtonObservable: Observable<void>;
-        onLoadObservable: Observable<void>;
+        onLoadObservable: Observable<File>;
         onSaveObservable: Observable<void>;
         onSnippetLoadObservable: Observable<void>;
         onSnippetSaveObservable: Observable<void>;
@@ -2242,7 +2242,7 @@ declare module GUIEDITOR {
         onZoomObservable: BABYLON.Observable<void>;
         onPanObservable: BABYLON.Observable<void>;
         onSelectionButtonObservable: BABYLON.Observable<void>;
-        onLoadObservable: BABYLON.Observable<void>;
+        onLoadObservable: BABYLON.Observable<File>;
         onSaveObservable: BABYLON.Observable<void>;
         onSnippetLoadObservable: BABYLON.Observable<void>;
         onSnippetSaveObservable: BABYLON.Observable<void>;

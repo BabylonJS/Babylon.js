@@ -531,6 +531,8 @@ IKeyPointComponentState
                     this.props.curve.updateInTangentFromControlPoint(this.props.keyId, this._extractSlope(tmpVector, this._storedLengthIn, true));
                 }
             }  
+            
+            this.props.context.refreshTarget();
             this.forceUpdate();
         }
 

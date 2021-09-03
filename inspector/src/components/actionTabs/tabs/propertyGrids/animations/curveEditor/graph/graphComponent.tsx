@@ -154,7 +154,20 @@ IGraphComponentState
                 }
             }
 
-            const value = this._currentAnimation.evaluate(currentFrame);
+            let value: any;
+            
+            if (this.props.context.target) {
+                value = this.props.context.target as any;
+                for (let path of this._currentAnimation.targetPropertyPath) {
+                    value = value[path];
+                }
+
+                if (value.clone) {
+                    value = value.clone();
+                }
+            } else {
+                value = this._currentAnimation.evaluate(currentFrame);
+            }
             const leftKey = keys[indexToAdd];
             const rightKey = keys[indexToAdd + 1];
             
@@ -581,6 +594,53 @@ IGraphComponentState
         return ((this._GraphAbsoluteHeight - y) / this._GraphAbsoluteHeight) * diff + this._minValue;
     }
 
+    private _buildFrameIntervalAxis() {
+        if (!this.props.context.activeAnimation) {
+            return null;
+        }
+
+        let maxFrame = this.props.context.referenceMaxFrame;
+
+        let range = maxFrame;
+        let offset = this.props.context.activeAnimation.framePerSecond;
+        let convertRatio = range / this._GraphAbsoluteWidth;
+
+        let steps = [];
+
+        if (offset === 0) {
+            offset = 1;
+        }
+
+        let startPosition = this._offsetX * convertRatio;
+        let start = -((startPosition / offset) | 0) * offset;
+        let end = start + ((this._viewWidth - 40) * this._viewScale ) * convertRatio;
+
+        for (var step = start - offset; step <= end + offset; step += offset) {
+            steps.push(step);
+        }
+
+        return (
+            steps.map((s, i) => {
+                let x = s / convertRatio;
+                return (
+                    <g key={"axis" + s}>
+                        <line
+                            key={"line" + s}
+                            x1={x}
+                            y1={0}
+                            x2={x}
+                            y2={this._viewHeight* this._viewScale}
+                            style={{
+                                stroke: "#666666",
+                                strokeWidth: 1,
+                            }}>
+                        </line>
+                    </g>
+                )
+            })
+        )
+    }
+
     private _buildYAxis() {
         if (!this.props.context.activeAnimation) {
             return null;
@@ -588,28 +648,46 @@ IGraphComponentState
 
         let stepCounts = 10;
         let range = this._maxValue !== this._minValue ? this._maxValue - this._minValue : 1;
-        let offset = range / stepCounts;
+        let offset = (range / stepCounts) * this._viewScale;
         let convertRatio = range / this._GraphAbsoluteHeight;
-
         let steps = [];
 
+        // Get precision
+        let a = 0;
+        let b = offset;
+        let precision = 2;
+
+        while (a.toFixed(precision) === b.toFixed(precision)) {
+            precision++;
+        }
+
+        // Make sure we have an even number with the correct number of decimals
+        const pow = Math.pow(10, precision);
+        offset = Math.round(offset * pow);
+        if (offset % 2 !== 0) {
+            offset -= 1;
+        }
+        
+        offset /= pow;
+
+        // Evaluate limits
         let startPosition = ((this._viewHeight  * this._viewScale) - this._GraphAbsoluteHeight - this._offsetY) * convertRatio;
-        let start = this._minValue - ((startPosition / offset) | 0) * offset;
-        let end = start + (this._viewHeight * this._viewScale )* convertRatio;
+        let start = Math.ceil((this._minValue - ((startPosition / offset) | 0) * offset) / offset) * offset;
+        let end = Math.round((start + (this._viewHeight * this._viewScale )* convertRatio) / offset) * offset;
 
         for (var step = start - offset; step <= end + offset; step += offset) {
             steps.push(step);
         }
 
-        let precision = 2;
-
-        while (steps[0].toFixed(precision) === steps[1].toFixed(precision)) {
-            precision++;
-        }
-
         return (
             steps.map((s, i) => {
                 let y = this._GraphAbsoluteHeight - ((s - this._minValue) / convertRatio);
+                let text = s.toFixed(precision);                
+
+                text = parseFloat(text).toFixed(precision); // Avoid -0.00 (negative zero)
+                const zero = 0.0;
+                const isZero = text === zero.toFixed(precision);
+
                 return (
                     <g key={"axis" + s}>
                         <line
@@ -619,8 +697,8 @@ IGraphComponentState
                             x2={this._viewWidth * this._viewScale}
                             y2={y}
                             style={{
-                                stroke: "#333333",
-                                strokeWidth: 0.5,
+                                stroke: isZero ? "#666666" : "#333333",
+                                strokeWidth: isZero ? 1.0 : 0.5,
                             }}>
                         </line>
                         <text
@@ -637,7 +715,7 @@ IGraphComponentState
                                 textAlign: "center",
                             }}
                         >
-                            {s.toFixed(precision)}
+                            {text}
                         </text>
                     </g>
                 )
@@ -726,8 +804,14 @@ IGraphComponentState
                     invertY={y => this._invertY(y)}
                     convertX={x => this._convertX(x)}
                     convertY={y => this._convertY(y)}
-                    onFrameValueChanged={value => { curve.updateKeyFrame(i, value)}}
-                    onKeyValueChanged={value => { curve.updateKeyValue(i, value)}}
+                    onFrameValueChanged={value => { 
+                        curve.updateKeyFrame(i, value);
+                        this.props.context.refreshTarget();
+                    }}
+                    onKeyValueChanged={value => { 
+                        curve.updateKeyValue(i, value);
+                        this.props.context.refreshTarget();
+                    }}
                 />
             );
         })
@@ -800,6 +884,10 @@ IGraphComponentState
         evt.currentTarget.releasePointerCapture(evt.pointerId);
 
         this._selectionRectangle.current!.style.visibility = "hidden";
+
+        if (!this._inSelectionMode) {
+            this.props.context.clearSelection();
+        }
     }
 
     private _onWheel(evt: React.WheelEvent) {
@@ -829,6 +917,7 @@ IGraphComponentState
         const scale = this._viewScale;
         const viewBoxScalingCurves = `${-this._offsetX} ${-this._offsetY} ${Math.round(scale * this._viewCurveWidth)} ${Math.round(scale * this._viewHeight)}`;
         const viewBoxScalingGrid = `0 ${-this._offsetY} ${Math.round(scale * this._viewWidth)} ${Math.round(scale * this._viewHeight)}`;
+        const viewBoxHorizontal = `${-this._offsetX} 0 ${Math.round((this._viewWidth - 40) * this._viewScale)}  ${Math.round(scale * this._viewHeight)}`;
 
         let activeBoxLeft = 0;
         let activeBoxRight = 0;
@@ -865,6 +954,14 @@ IGraphComponentState
                         this._buildYAxis()
                     }
                 </svg>
+                <svg
+                        id="svg-graph-horizontal"
+                        viewBox={viewBoxHorizontal}
+                        >
+                        {
+                            this._buildFrameIntervalAxis()
+                        }
+                    </svg>
                 <svg
                     ref={this._svgHost2}
                     id="svg-graph-curves"

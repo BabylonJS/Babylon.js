@@ -185,6 +185,7 @@
 - Exposed `scaleRatio` for `GizmoManager` ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Added constructor parameters to customize colors for rotation gizmos on `RotationGizmo` ([jekelija](https://github.com/jekelija))
 - Added constructor parameters to allow turning off `updateScale` on RotationGizmo ([jekelija](https://github.com/jekelija))
+- Fixed wrong matrix with nodes having pivot point ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Gizmos that have draggable components now support near interactions via `WebXRNearInteraction` ([rickfromwork](https://github.com/rickfromwork)) 
 
 ### Viewer
@@ -305,6 +306,7 @@
 - Depth renderer: don't render mesh if `infiniteDistance = true` or if `material.disableDepthWrite = true` ([Popov72](https://github.com/Popov72))
 - `Mesh.createInstance` no longer make a unique `Geometry` for the Mesh so updating one `Geometry` can affect more meshes than before. Use `Mesh.makeUniqueGeometry` for old behaviour. ([breakin](https://github.com/breakin))
 - Ammo.js needs to be initialized before creating the plugin with `await Ammo();` since Ammo introduced an async init in their library. ([sebavan](https://github.com/sebavan))
+- Recast.js needs to be initialized before creating the plugin with `await Recast();` since Recast introduced an async init in their library. ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Fixed spelling of `EventState.initialize` ([seritools](https://github.com/seritools))
 - `SkeletonViewer` is now enabled by default ([Deltakosh](https://github.com/deltakosh))
 - `BindEyePosition` has been moved from `Material` to `Scene` to avoid a circular dependency problem and is now a non-static method (`bindEyePosition`) ([Popov72](https://github.com/Popov72))
