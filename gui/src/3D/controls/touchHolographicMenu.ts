@@ -38,11 +38,13 @@ export class TouchHolographicMenu extends VolumeBasedPanel {
     public set backPlateMargin(value: number) {
         this._backPlateMargin = value;
 
-        this.children.forEach((control) => {
-            this._updateCurrentMinMax(control.position);
-        });
+        if (this._children.length >= 1) {
+            this.children.forEach((control) => {
+                this._updateCurrentMinMax(control.position);
+            });
 
-        this._updateMargins();
+            this._updateMargins();
+        }
     }
 
     protected _createNode(scene: Scene): Nullable<TransformNode> {
