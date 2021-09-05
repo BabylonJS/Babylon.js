@@ -9,6 +9,9 @@ import { Constants } from "../Engines/constants";
 import { Scene } from "../scene";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { Logger } from "../Misc/logger";
+import { Engine } from '../Engines/engine';
+import { RGBDTextureTools } from './rgbdTextureTools';
+import { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 
 import "../Engines/Extensions/engine.renderTargetCube";
 import "../Engines/Extensions/engine.readTexture";
@@ -16,8 +19,6 @@ import "../Materials/Textures/baseTexture.polynomial";
 
 import "../Shaders/rgbdEncode.fragment";
 import "../Shaders/rgbdDecode.fragment";
-import { Engine } from '../Engines/engine';
-import { RGBDTextureTools } from './rgbdTextureTools';
 
 /**
  * Raw texture data and descriptor sufficient for WebGL texture upload
@@ -361,7 +362,7 @@ export class EnvironmentTextureTools {
 
     private static _OnImageReadyAsync(image: HTMLImageElement | ImageBitmap, engine: Engine, expandTexture: boolean,
         rgbdPostProcess: Nullable<PostProcess>, url: string, face: number, i: number, generateNonLODTextures: boolean,
-        lodTextures: Nullable<{ [lod: number]: BaseTexture }>, cubeRtt: Nullable<InternalTexture>, texture: InternalTexture
+        lodTextures: Nullable<{ [lod: number]: BaseTexture }>, cubeRtt: Nullable<RenderTargetWrapper>, texture: InternalTexture
     ): Promise<void> {
         return new Promise((resolve, reject) => {
             if (expandTexture) {
@@ -425,7 +426,7 @@ export class EnvironmentTextureTools {
         let expandTexture = false;
         let generateNonLODTextures = false;
         let rgbdPostProcess: Nullable<PostProcess> = null;
-        let cubeRtt: Nullable<InternalTexture> = null;
+        let cubeRtt: Nullable<RenderTargetWrapper> = null;
         let lodTextures: Nullable<{ [lod: number]: BaseTexture }> = null;
         let caps = engine.getCaps();
 
@@ -587,7 +588,6 @@ export class EnvironmentTextureTools {
         return Promise.all(promises).then(() => {
             // Release temp RTT.
             if (cubeRtt) {
-                engine._releaseFramebufferObjects(cubeRtt);
                 engine._releaseTexture(texture);
                 cubeRtt._swapAndDie(texture);
             }

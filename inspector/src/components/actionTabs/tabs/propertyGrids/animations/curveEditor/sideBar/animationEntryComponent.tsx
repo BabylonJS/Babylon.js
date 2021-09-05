@@ -31,6 +31,8 @@ IAnimationEntryComponentState
 > {
     private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
     private _onActiveKeyPointChangedObserver: Nullable<Observer<void>>;
+    private _onSelectToActivatedObserver: Nullable<Observer<{from:number, to:number}>>;
+
     private _unmount = false;
 
     constructor(props: IAnimationEntryComponentProps) {
@@ -42,14 +44,33 @@ IAnimationEntryComponentState
             if (this._unmount) {
                 return;
             }
-            if (this.props.animation !== this.props.context.activeAnimation) {
+            if (this.props.context.activeAnimations.indexOf(this.props.animation) === -1) {
                 this.setState({isSelected: false});
             }
             this.forceUpdate();
         });
 
         this._onActiveKeyPointChangedObserver = this.props.context.onActiveKeyPointChanged.add(() => {
-            this.setState({isSelected: this.props.animation.dataType === Animation.ANIMATIONTYPE_FLOAT && this.props.animation === this.props.context.activeAnimation})
+            this.setState({isSelected: this.props.animation.dataType === Animation.ANIMATIONTYPE_FLOAT && 
+                this.props.context.activeAnimations.indexOf(this.props.animation) !== -1 &&
+                this.props.context.activeKeyPoints !== null &&
+                this.props.context.activeKeyPoints.length > 0 &&
+                this.props.context.activeKeyPoints.some(kp => kp.props.curve.animation === this.props.animation)
+            })
+        });
+
+        this._onSelectToActivatedObserver = this.props.context.onSelectToActivated.add((info: {from:number, to:number}) => {
+            const currentIndex = this.props.context.getAnimationSortIndex(this.props.animation);
+            const activeIndex = this.props.context.activeAnimations.indexOf(this.props.animation);
+
+            if ((currentIndex > info.from && currentIndex <= info.to 
+                || currentIndex >= info.to && currentIndex < info.from)) {
+                if (activeIndex === -1) {
+                    this.props.context.activeAnimations.push(this.props.animation);
+                }
+            } else if (currentIndex !== info.from && activeIndex !== -1) {
+                this.props.context.activeAnimations.splice(activeIndex, 1);
+            }
         });
     }
 
@@ -71,17 +92,41 @@ IAnimationEntryComponentState
         if (this._onActiveKeyPointChangedObserver) {
             this.props.context.onActiveKeyPointChanged.remove(this._onActiveKeyPointChangedObserver);
         }
+
+        if (this._onSelectToActivatedObserver) {
+            this.props.context.onSelectToActivated.remove(this._onSelectToActivatedObserver);
+        }
     }
 
-    private _activate() {
-        if (this.props.animation === this.props.context.activeAnimation && this.props.context.activeColor === null) {
+    private _activate(evt: React.MouseEvent<HTMLDivElement>) {
+        if (evt.shiftKey) {
+            if (this.props.context.activeAnimations.length > 0) {
+                const firstOne = this.props.context.activeAnimations[0];
+                const payload = {
+                    from: this.props.context.getAnimationSortIndex(firstOne),
+                    to: this.props.context.getAnimationSortIndex(this.props.animation),
+                }
+
+                this.props.context.onSelectToActivated.notifyObservers(payload);
+
+                this.props.context.onActiveAnimationChanged.notifyObservers();
+            }
             return;
         }
-        
-        this.props.context.activeKeyPoints = [];
-        this.props.context.onActiveKeyPointChanged.notifyObservers();
-        this.props.context.activeAnimation = this.props.animation;
-        this.props.context.activeColor = null;
+        if (!evt.ctrlKey) {
+            this.props.context.activeAnimations = [this.props.animation];
+            this.props.context.resetAllActiveChannels();
+        } else {
+            const index = this.props.context.activeAnimations.indexOf(this.props.animation);
+
+            if (index !== -1) {
+                    this.props.context.activeAnimations.splice(index, 1);            
+            } else {            
+                this.props.context.activeAnimations.push(this.props.animation);
+            }
+        }
+
+        this.props.context.disableChannel(this.props.animation);
         this.props.context.onActiveAnimationChanged.notifyObservers();
     }
 
@@ -90,7 +135,7 @@ IAnimationEntryComponentState
     }
 
     public render() {
-        let isActive = this.props.animation === this.props.context.activeAnimation;        
+        let isActive = this.props.context.activeAnimations.indexOf(this.props.animation) !== -1;        
 
         return (
             <>
@@ -113,7 +158,7 @@ IAnimationEntryComponentState
                             <img className={"animation-chevron-image" + (this.state.isExpanded ? "" : " collapsed")} src={chevronIcon}/>              
                         </div>      
                     }
-                    <div className="animation-name" onClick={() => this._activate()}>{this.props.animation.name}</div>
+                    <div className="animation-name" onClick={evt => this._activate(evt)}>{this.props.animation.name}</div>
                     <ActionButtonComponent className="animation-options" context={this.props.context} globalState={this.props.globalState} icon={gearIcon} onClick={() => this._onGear()} />
                     <ActionButtonComponent className="animation-delete" context={this.props.context} globalState={this.props.globalState} icon={deleteIcon} onClick={() => this._onDelete()} />
                 </div>

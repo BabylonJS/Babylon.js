@@ -19,10 +19,10 @@
 
     #define pbr_inline
     void createReflectionCoords(
-        const in vec3 vPositionW,
-        const in vec3 normalW,
+        in vec3 vPositionW,
+        in vec3 normalW,
     #ifdef ANISOTROPIC
-        const in anisotropicOutParams anisotropicOut,
+        in anisotropicOutParams anisotropicOut,
     #endif
     #ifdef REFLECTIONMAP_3D
         out vec3 reflectionCoords
@@ -56,34 +56,34 @@
     #define pbr_inline
     #define inline
     void sampleReflectionTexture(
-        const in float alphaG,
-        const in vec3 vReflectionMicrosurfaceInfos,
-        const in vec2 vReflectionInfos,
-        const in vec3 vReflectionColor,
+        in float alphaG,
+        in vec3 vReflectionMicrosurfaceInfos,
+        in vec2 vReflectionInfos,
+        in vec3 vReflectionColor,
     #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
-        const in float NdotVUnclamped,
+        in float NdotVUnclamped,
     #endif
     #ifdef LINEARSPECULARREFLECTION
-        const in float roughness,
+        in float roughness,
     #endif
     #ifdef REFLECTIONMAP_3D
-        const in samplerCube reflectionSampler,
+        in samplerCube reflectionSampler,
         const vec3 reflectionCoords,
     #else
-        const in sampler2D reflectionSampler,
+        in sampler2D reflectionSampler,
         const vec2 reflectionCoords,
     #endif
     #ifndef LODBASEDMICROSFURACE
         #ifdef REFLECTIONMAP_3D
-            const in samplerCube reflectionSamplerLow,
-            const in samplerCube reflectionSamplerHigh,
+            in samplerCube reflectionSamplerLow,
+            in samplerCube reflectionSamplerHigh,
         #else
-            const in sampler2D reflectionSamplerLow,
-            const in sampler2D reflectionSamplerHigh,
+            in sampler2D reflectionSamplerLow,
+            in sampler2D reflectionSamplerHigh,
         #endif
     #endif
     #ifdef REALTIME_FILTERING
-        const in vec2 vReflectionFilteringInfo,
+        in vec2 vReflectionFilteringInfo,
     #endif
         out vec4 environmentRadiance
     )
@@ -158,52 +158,52 @@
     #define pbr_inline
     #define inline
     void reflectionBlock(
-        const in vec3 vPositionW,
-        const in vec3 normalW,
-        const in float alphaG,
-        const in vec3 vReflectionMicrosurfaceInfos,
-        const in vec2 vReflectionInfos,
-        const in vec3 vReflectionColor,
+        in vec3 vPositionW,
+        in vec3 normalW,
+        in float alphaG,
+        in vec3 vReflectionMicrosurfaceInfos,
+        in vec2 vReflectionInfos,
+        in vec3 vReflectionColor,
     #ifdef ANISOTROPIC
-        const in anisotropicOutParams anisotropicOut,
+        in anisotropicOutParams anisotropicOut,
     #endif
     #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
-        const in float NdotVUnclamped,
+        in float NdotVUnclamped,
     #endif
     #ifdef LINEARSPECULARREFLECTION
-        const in float roughness,
+        in float roughness,
     #endif
     #ifdef REFLECTIONMAP_3D
-        const in samplerCube reflectionSampler,
+        in samplerCube reflectionSampler,
     #else
-        const in sampler2D reflectionSampler,
+        in sampler2D reflectionSampler,
     #endif
     #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
-        const in vec3 vEnvironmentIrradiance,
+        in vec3 vEnvironmentIrradiance,
     #endif
     #ifdef USESPHERICALFROMREFLECTIONMAP
         #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
-            const in mat4 reflectionMatrix,
+            in mat4 reflectionMatrix,
         #endif
     #endif
     #ifdef USEIRRADIANCEMAP
         #ifdef REFLECTIONMAP_3D
-            const in samplerCube irradianceSampler,
+            in samplerCube irradianceSampler,
         #else
-            const in sampler2D irradianceSampler,
+            in sampler2D irradianceSampler,
         #endif
     #endif
     #ifndef LODBASEDMICROSFURACE
         #ifdef REFLECTIONMAP_3D
-            const in samplerCube reflectionSamplerLow,
-            const in samplerCube reflectionSamplerHigh,
+            in samplerCube reflectionSamplerLow,
+            in samplerCube reflectionSamplerHigh,
         #else
-            const in sampler2D reflectionSamplerLow,
-            const in sampler2D reflectionSamplerHigh,
+            in sampler2D reflectionSamplerLow,
+            in sampler2D reflectionSamplerHigh,
         #endif
     #endif
     #ifdef REALTIME_FILTERING
-        const in vec2 vReflectionFilteringInfo,
+        in vec2 vReflectionFilteringInfo,
     #endif
         out reflectionOutParams outParams
     )

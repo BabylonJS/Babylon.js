@@ -16,6 +16,7 @@ import { Quaternion, Vector3 } from "../Maths/math.vector";
  */
 export class WebXRExperienceHelper implements IDisposable {
     private _nonVRCamera: Nullable<Camera> = null;
+    private _attachedToElement: boolean = false;
     private _spectatorCamera: Nullable<UniversalCamera> = null;
     private _originalSceneAutoClear = true;
     private _supported = false;
@@ -131,6 +132,8 @@ export class WebXRExperienceHelper implements IDisposable {
             // Cache pre xr scene settings
             this._originalSceneAutoClear = this.scene.autoClear;
             this._nonVRCamera = this.scene.activeCamera;
+            this._attachedToElement = !!(this._nonVRCamera?.inputs.attachedToElement);
+            this._nonVRCamera?.detachControl();
 
             this.scene.activeCamera = this.camera;
             // do not compensate when AR session is used
@@ -151,6 +154,9 @@ export class WebXRExperienceHelper implements IDisposable {
                 // Restore scene settings
                 this.scene.autoClear = this._originalSceneAutoClear;
                 this.scene.activeCamera = this._nonVRCamera;
+                if (this._attachedToElement && this._nonVRCamera) {
+                    this._nonVRCamera.attachControl(!!(this._nonVRCamera.inputs.noPreventDefault));
+                }
                 if (sessionMode !== "immersive-ar" && this.camera.compensateOnFirstFrame) {
                     if ((<any>this._nonVRCamera).setPosition) {
                         (<any>this._nonVRCamera).setPosition(this.camera.position);

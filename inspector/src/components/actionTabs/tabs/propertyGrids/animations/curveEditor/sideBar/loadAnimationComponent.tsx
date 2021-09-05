@@ -50,7 +50,7 @@ ILoadAnimationComponentState
             context.stop();
 
             context.target!.animations = animations;
-            context.activeAnimation = animations.length ? animations[0] : null;
+            context.activeAnimations = animations.length ? animations : [];
             context.prepare();
             context.onAnimationsLoaded.notifyObservers();
             context.onActiveAnimationChanged.notifyObservers();
@@ -75,7 +75,7 @@ ILoadAnimationComponentState
             context.stop();
 
             context.target!.animations = context.animations;
-            context.activeAnimation = context.animations.length ? context.animations[0] : null;
+            context.activeAnimations = context.animations.length ? context.animations : [];
             context.prepare();
             context.onAnimationsLoaded.notifyObservers();
             context.onActiveAnimationChanged.notifyObservers();    

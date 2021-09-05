@@ -32,7 +32,7 @@ IAnimationSubEntryComponentState
 
         let isSelected = false;
 
-        if (this.props.animation === this.props.context.activeAnimation && this.props.context.activeKeyPoints) {
+        if (this.props.context.activeAnimations.indexOf(this.props.animation) !== -1 && this.props.context.activeKeyPoints) {
             for (var keyPoint of this.props.context.activeKeyPoints) {
                 if (keyPoint.state.selectedState === SelectionState.Selected && keyPoint.props.channel === this.props.color) {
                     isSelected = true;
@@ -51,7 +51,9 @@ IAnimationSubEntryComponentState
 
             if (this.props.context.activeKeyPoints) {
                 for (let activeKeyPoint of this.props.context.activeKeyPoints) {
-                    if (activeKeyPoint.props.channel === this.props.color && this.props.animation === this.props.context.activeAnimation) {
+                    if (activeKeyPoint.props.curve.animation === this.props.animation 
+                        && activeKeyPoint.props.channel === this.props.color 
+                        && this.props.context.activeAnimations.indexOf(this.props.animation) !== -1) {
                         isSelected = true;
                         break;
                     }
@@ -72,20 +74,28 @@ IAnimationSubEntryComponentState
         }
     }
 
-    private _activate() {
-        if (this.props.animation === this.props.context.activeAnimation && this.props.context.activeColor === this.props.color) {
+    private _activate(evt: React.MouseEvent<HTMLDivElement>) {
+        const index = this.props.context.activeAnimations.indexOf(this.props.animation);
+
+        if (index !== -1 && this.props.context.getActiveChannel(this.props.animation) === this.props.color) {
             return;
         }
 
-        this.props.context.activeKeyPoints = [];
-        this.props.context.onActiveKeyPointChanged.notifyObservers();
-        this.props.context.activeAnimation = this.props.animation;
-        this.props.context.activeColor = this.props.color;
+        if (!evt.ctrlKey) {
+            this.props.context.activeAnimations = [this.props.animation];
+            this.props.context.resetAllActiveChannels();
+        } else {
+            if (index === -1) {
+                this.props.context.activeAnimations.push(this.props.animation);
+            }
+        }
+        this.props.context.enableChannel(this.props.animation, this.props.color);
         this.props.context.onActiveAnimationChanged.notifyObservers();
     }
 
     public render() {
-        let isActive = this.props.animation === this.props.context.activeAnimation && (this.props.context.activeColor === null || this.props.context.activeColor === this.props.color);
+        let isActive = this.props.context.activeAnimations.indexOf(this.props.animation) !== -1 
+                        && (this.props.context.isChannelEnabled(this.props.animation, this.props.color));
         return (
             <>
                 <div className={"animation-entry" + (isActive ? " isActive" : "")}>
@@ -102,7 +112,7 @@ IAnimationSubEntryComponentState
                                 color: this.props.color
                             }
                         }
-                        onClick={() => this._activate()}>{this.props.subName}</div>
+                        onClick={evt => this._activate(evt)}>{this.props.subName}</div>
                 </div>
             </>
         );

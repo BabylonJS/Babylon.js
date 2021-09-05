@@ -1,9 +1,12 @@
 import { InternalTexture, InternalTextureSource } from "../../../Materials/Textures/internalTexture";
 import { RenderTargetCreationOptions } from "../../../Materials/Textures/renderTargetCreationOptions";
 import { Constants } from "../../constants";
+import { RenderTargetWrapper } from "../../renderTargetWrapper";
 import { WebGPUEngine } from "../../webgpuEngine";
 
-WebGPUEngine.prototype.createRenderTargetCubeTexture = function (size: number, options?: Partial<RenderTargetCreationOptions>): InternalTexture {
+WebGPUEngine.prototype.createRenderTargetCubeTexture = function (size: number, options?: Partial<RenderTargetCreationOptions>): RenderTargetWrapper {
+    const rtWrapper = this._createHardwareRenderTargetWrapper(false, true, size);
+
     let fullOptions = {
         generateMipMaps: true,
         generateDepthBuffer: true,
@@ -15,6 +18,9 @@ WebGPUEngine.prototype.createRenderTargetCubeTexture = function (size: number, o
         ...options
     };
     fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && fullOptions.generateStencilBuffer;
+
+    rtWrapper._generateDepthBuffer = fullOptions.generateDepthBuffer;
+    rtWrapper._generateStencilBuffer = fullOptions.generateStencilBuffer;
 
     const texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
 
@@ -28,24 +34,20 @@ WebGPUEngine.prototype.createRenderTargetCubeTexture = function (size: number, o
     texture.samplingMode = fullOptions.samplingMode;
     texture.type = fullOptions.type;
     texture.format = fullOptions.format;
-    texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
-    texture._generateStencilBuffer = fullOptions.generateStencilBuffer;
 
     this._internalTexturesCache.push(texture);
+    rtWrapper.setTextures(texture);
 
-    if (texture._generateDepthBuffer || texture._generateStencilBuffer) {
-        texture._depthStencilTexture = this.createDepthStencilTexture({ width: texture.width, height: texture.height, layers: texture.depth }, {
-            bilinearFiltering:
-                fullOptions.samplingMode === undefined ||
-                fullOptions.samplingMode === Constants.TEXTURE_BILINEAR_SAMPLINGMODE || fullOptions.samplingMode === Constants.TEXTURE_LINEAR_LINEAR ||
-                fullOptions.samplingMode === Constants.TEXTURE_TRILINEAR_SAMPLINGMODE || fullOptions.samplingMode === Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR ||
-                fullOptions.samplingMode === Constants.TEXTURE_NEAREST_LINEAR_MIPNEAREST || fullOptions.samplingMode === Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR ||
-                fullOptions.samplingMode === Constants.TEXTURE_NEAREST_LINEAR || fullOptions.samplingMode === Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST,
-            comparisonFunction: 0,
-            generateStencil: texture._generateStencilBuffer,
-            isCube: texture.isCube,
-            samples: texture.samples,
-        });
+    if (rtWrapper._generateDepthBuffer || rtWrapper._generateStencilBuffer) {
+        rtWrapper.createDepthStencilTexture(0,
+            fullOptions.samplingMode === undefined ||
+            fullOptions.samplingMode === Constants.TEXTURE_BILINEAR_SAMPLINGMODE || fullOptions.samplingMode === Constants.TEXTURE_LINEAR_LINEAR ||
+            fullOptions.samplingMode === Constants.TEXTURE_TRILINEAR_SAMPLINGMODE || fullOptions.samplingMode === Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR ||
+            fullOptions.samplingMode === Constants.TEXTURE_NEAREST_LINEAR_MIPNEAREST || fullOptions.samplingMode === Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR ||
+            fullOptions.samplingMode === Constants.TEXTURE_NEAREST_LINEAR || fullOptions.samplingMode === Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST,
+            rtWrapper._generateStencilBuffer,
+            rtWrapper.samples
+        );
     }
 
     if (options && options.createMipMaps && !fullOptions.generateMipMaps) {
@@ -58,5 +60,5 @@ WebGPUEngine.prototype.createRenderTargetCubeTexture = function (size: number, o
         texture.generateMipMaps = false;
     }
 
-    return texture;
+    return rtWrapper;
 };
