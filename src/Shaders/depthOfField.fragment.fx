@@ -67,7 +67,7 @@ vec2 getDistortedCoords(vec2 coords) {
 }
 
 // sample screen with an offset (randomize offset angle for better smothness), returns partial sample weight
-float sampleScreen(inout vec4 color, const in vec2 offset, const in float weight) {
+float sampleScreen(inout vec4 color, in vec2 offset, in float weight) {
 
 	// compute coords with offset (a random angle is added)
 	vec2 coords = distorted_coords;

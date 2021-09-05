@@ -7,10 +7,10 @@
 
     #define pbr_inline
     void alphaFresnelBlock(
-        const in vec3 normalW,
-        const in vec3 viewDirectionW,
-        const in float alpha,
-        const in float microSurface,
+        in vec3 normalW,
+        in vec3 viewDirectionW,
+        in float alpha,
+        in float microSurface,
         out alphaFresnelOutParams outParams
     )
     {
