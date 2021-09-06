@@ -340,9 +340,16 @@ struct subSurfaceOutParams
             //environmentIrradiance *= (1. - refractionIntensity);
         #endif
 
-        // Add Multiple internal bounces.
-        vec3 bounceSpecularEnvironmentReflectance = (2.0 * specularEnvironmentReflectance) / (1.0 + specularEnvironmentReflectance);
-        outParams.specularEnvironmentReflectance = mix(bounceSpecularEnvironmentReflectance, specularEnvironmentReflectance, refractionIntensity);
+        #ifdef UNUSED_MULTIPLEBOUNCES
+            // Keeping track in case of back compat issue.
+            // The following code is broken and has never worked cause the mix is reversed. Fixing it
+            // Introduces more reflection at grazing angle than expected and we can not find it back in any
+            // nomenclatures (probably coming from our V1)
+
+            // Add Multiple internal bounces.
+            vec3 bounceSpecularEnvironmentReflectance = (2.0 * specularEnvironmentReflectance) / (1.0 + specularEnvironmentReflectance);
+            outParams.specularEnvironmentReflectance = mix(bounceSpecularEnvironmentReflectance, specularEnvironmentReflectance, refractionIntensity);
+        #endif
 
         // In theory T = 1 - R.
         refractionTransmittance *= 1.0 - outParams.specularEnvironmentReflectance;

@@ -85,7 +85,7 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
         return (
             <div className="checkBoxLine">
                 {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel}  className="icon"/>}
-                <div className="label">
+                <div className="label" title={this.props.iconLabel}>
                     {this.props.label}
                 </div>
                 <div className="checkBox">
