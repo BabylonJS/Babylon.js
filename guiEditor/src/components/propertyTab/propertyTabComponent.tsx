@@ -88,6 +88,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             this.forceUpdate();
         });
 
+        this.props.globalState.onLoadObservable.add((file) => this.load(file));
+
     }
 
     componentDidMount() {
@@ -343,7 +345,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     <TextLineComponent tooltip="" label="CANVAS" value=" " color="grey"></TextLineComponent>
                     <CheckBoxLineComponent
                         label="RESPONSIVE"
-                        iconLabel="Responsive"
+                        iconLabel="A responsive layout for the AdvancedDynamicTexture will resize the UI layout and reflow controls to accommodate different device screen sizes"
                         icon={responsiveIcon}
                         isSelected={() => DataStorage.ReadBoolean("Responsive", true)}
                         onSelect={(value: boolean) => {
