@@ -5920,8 +5920,9 @@ declare module BABYLON {
          * @param onError callback called if there was an error during the loading process (defaults to null)
          * @param extensions defines the suffixes add to the picture name in case six images are in use like _px.jpg...
          * @param delayLoad defines if the texture should be loaded now (false by default)
+         * @param files defines the six files to load for the different faces in that order: px, py, pz, nx, ny, nz
          */
-        updateURL(url: string, forcedExtension?: string, onLoad?: Nullable<() => void>, prefiltered?: boolean, onError?: Nullable<(message?: string, exception?: any) => void>, extensions?: Nullable<string[]>, delayLoad?: boolean): void;
+        updateURL(url: string, forcedExtension?: string, onLoad?: Nullable<() => void>, prefiltered?: boolean, onError?: Nullable<(message?: string, exception?: any) => void>, extensions?: Nullable<string[]>, delayLoad?: boolean, files?: Nullable<string[]>): void;
         /**
          * Delays loading of the cube texture
          * @param forcedExtension defines the extension to use
