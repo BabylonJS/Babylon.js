@@ -53,6 +53,7 @@ const adtIcon: string = require("../../../public/imgs/adtIcon.svg");
 const responsiveIcon: string = require("../../../public/imgs/responsiveIcon.svg");
 const canvasSizeIcon: string = require("../../../public/imgs/canvasSizeIcon.svg");
 const artboardColorIcon: string = require("../../../public/imgs/artboardColorIcon.svg");
+const MAX_TEXTURE_SIZE = 16384; //2^14
 
 interface IPropertyTabComponentProps {
     globalState: GlobalState;
@@ -87,6 +88,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             this.forceUpdate();
         });
 
+        this.props.globalState.onLoadObservable.add((file) => this.load(file));
+
     }
 
     componentDidMount() {
@@ -100,6 +103,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         });
         this.props.globalState.onResizeObservable.add((newSize) => {
             this.setState({ textureSize: newSize });
+            this.props.globalState.workbench.artBoardBackground._markAsDirty(true);
         });
 
         this._onBuiltObserver = this.props.globalState.onBuiltObservable.add(() => {
@@ -281,19 +285,19 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
     render() {
 
-        if (this.state.currentNode) {
+        if (this.state.currentNode && this.props.globalState.workbench.selectedGuiNodes.length === 1) {
             return (
                 <div id="ge-propertyTab">
                     <div id="header">
                         <img id="logo" src={adtIcon} />
-                        <div id="title"> 
+                        <div id="title">
                             <TextInputLineComponent noUnderline={true} lockObject={this._lockObject} label="" target={this.state.currentNode} propertyName="name" onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
                         </div>
                     </div>
                     {this.renderProperties()}
                     <hr className="ge" />
                     {
-                        this.state.currentNode?.parent?.typeName === "Grid" && 
+                        this.state.currentNode?.parent?.typeName === "Grid" &&
                         <ParentingPropertyGridComponent control={this.state.currentNode} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} lockObject={this._lockObject}></ParentingPropertyGridComponent>
                     }
                     <ButtonLineComponent
@@ -307,23 +311,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         label="COPY ELEMENT"
                         onClick={() => {
                             if (this.state.currentNode) {
-                                const serializationObject = {};
-                                this.state.currentNode.serialize(serializationObject);
-                                const newControl = Control.Parse(serializationObject, this.props.globalState.guiTexture);
-
-                                if (newControl) { //insert the new control into the adt or parent container
-                                    this.props.globalState.workbench.appendBlock(newControl);
-                                    this.props.globalState.guiTexture.removeControl(newControl);
-                                    this.state.currentNode.parent?.addControl(newControl);
-
-                                    let index = 1;
-                                    while (this.props.globalState.guiTexture.getDescendants(false).filter(  //search if there are any copies
-                                        control => control.name === `${newControl.name} Copy ${index}`).length) { 
-                                        index++;
-                                    }
-                                    newControl.name = `${newControl.name} Copy ${index}`;
-                                    this.props.globalState.onSelectionChangedObservable.notifyObservers(newControl);
-                                }
+                                this.props.globalState.workbench.CopyGUIControl(this.state.currentNode);
                             }
                         }}
                     />
@@ -357,7 +345,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     <TextLineComponent tooltip="" label="CANVAS" value=" " color="grey"></TextLineComponent>
                     <CheckBoxLineComponent
                         label="RESPONSIVE"
-                        iconLabel="Responsive"
+                        iconLabel="A responsive layout for the AdvancedDynamicTexture will resize the UI layout and reflow controls to accommodate different device screen sizes"
                         icon={responsiveIcon}
                         isSelected={() => DataStorage.ReadBoolean("Responsive", true)}
                         onSelect={(value: boolean) => {
@@ -387,20 +375,29 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             <FloatLineComponent
                                 icon={canvasSizeIcon}
                                 iconLabel="Canvas Size"
-                                label=" "
+                                label="X"
                                 target={this.state.textureSize}
                                 propertyName="x"
                                 isInteger={true}
+                                min={1}
+                                max={MAX_TEXTURE_SIZE}
                                 onChange={(newvalue) => {
-                                    this.props.globalState.workbench.resizeGuiTexture(new Vector2(newvalue, this.state.textureSize.y));
+                                    if (!isNaN(newvalue)) {
+                                        this.props.globalState.workbench.resizeGuiTexture(new Vector2(newvalue, this.state.textureSize.y));
+                                    }
                                 }} ></FloatLineComponent>
                             <FloatLineComponent
-                                label=" "
+                                icon={canvasSizeIcon}
+                                label="Y"
                                 target={this.state.textureSize}
                                 propertyName="y"
                                 isInteger={true}
+                                min={1}
+                                max={MAX_TEXTURE_SIZE}
                                 onChange={(newvalue) => {
-                                    this.props.globalState.workbench.resizeGuiTexture(new Vector2(this.state.textureSize.x, newvalue));
+                                    if (!isNaN(newvalue)) {
+                                        this.props.globalState.workbench.resizeGuiTexture(new Vector2(this.state.textureSize.x, newvalue));
+                                    }
                                 }}
                             ></FloatLineComponent>
                         </div>

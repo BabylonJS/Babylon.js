@@ -29,7 +29,7 @@ export class InputsPropertyTabComponent extends React.Component<IInputsPropertyT
         this.props.globalState.onUpdateRequiredObservable.notifyObservers();
 
         if (ib.isConstant) {
-            this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+            this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
         }
     }
 

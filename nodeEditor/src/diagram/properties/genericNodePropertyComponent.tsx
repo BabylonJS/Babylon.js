@@ -63,7 +63,7 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
                             this.forceUpdate();
 
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers();
-                            this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                            this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                         }} />
                     }
                     {
@@ -90,7 +90,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
         }
 
         if (!notifiers || notifiers.rebuild) {
-            this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+            this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
         }
 
         if (notifiers?.activatePreviewCommand) {

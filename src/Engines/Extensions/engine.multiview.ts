@@ -8,6 +8,8 @@ import { Matrix, TmpVectors } from '../../Maths/math.vector';
 import { UniformBuffer } from '../../Materials/uniformBuffer';
 import { MultiviewRenderTarget } from '../../Materials/Textures/MultiviewRenderTarget';
 import { Frustum } from '../../Maths/math.frustum';
+import { WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
+import { RenderTargetWrapper } from "../renderTargetWrapper";
 
 declare module "../../Engines/engine" {
     export interface Engine {
@@ -15,15 +17,15 @@ declare module "../../Engines/engine" {
          * Creates a new multiview render target
          * @param width defines the width of the texture
          * @param height defines the height of the texture
-         * @returns the created multiview texture
+         * @returns the created multiview render target wrapper
          */
-        createMultiviewRenderTargetTexture(width: number, height: number): InternalTexture;
+        createMultiviewRenderTargetTexture(width: number, height: number): RenderTargetWrapper;
 
         /**
-         * Binds a multiview framebuffer to be drawn to
-         * @param multiviewTexture texture to bind
+         * Binds a multiview render target wrapper to be drawn to
+         * @param multiviewTexture render target wrapper to bind
          */
-        bindMultiviewFramebuffer(multiviewTexture: InternalTexture): void;
+        bindMultiviewFramebuffer(multiviewTexture: RenderTargetWrapper): void;
     }
 }
 
@@ -34,23 +36,32 @@ Engine.prototype.createMultiviewRenderTargetTexture = function (width: number, h
         throw "Multiview is not supported";
     }
 
+    const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, { width, height }) as WebGLRenderTargetWrapper;
+
+    rtWrapper._framebuffer = gl.createFramebuffer();
+
     var internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
     internalTexture.width = width;
     internalTexture.height = height;
-    internalTexture._framebuffer = gl.createFramebuffer();
 
-    internalTexture._colorTextureArray = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D_ARRAY, internalTexture._colorTextureArray);
+    rtWrapper._colorTextureArray = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D_ARRAY, rtWrapper._colorTextureArray);
     (gl as any).texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8, width, height, 2);
 
-    internalTexture._depthStencilTextureArray = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D_ARRAY, internalTexture._depthStencilTextureArray);
+    rtWrapper._depthStencilTextureArray = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D_ARRAY, rtWrapper._depthStencilTextureArray);
     (gl as any).texStorage3D(gl.TEXTURE_2D_ARRAY, 1, (gl as any).DEPTH32F_STENCIL8, width, height, 2);
+
     internalTexture.isReady = true;
-    return internalTexture;
+
+    rtWrapper.setTextures(internalTexture);
+
+    return rtWrapper;
 };
 
-Engine.prototype.bindMultiviewFramebuffer = function (multiviewTexture: InternalTexture) {
+Engine.prototype.bindMultiviewFramebuffer = function (_multiviewTexture: RenderTargetWrapper) {
+    const multiviewTexture = _multiviewTexture as WebGLRenderTargetWrapper;
+
     var gl: any = this._gl;
     var ext = this.getCaps().oculusMultiview || this.getCaps().multiview;
 

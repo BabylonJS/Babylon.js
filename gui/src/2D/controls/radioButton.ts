@@ -172,6 +172,10 @@ export class RadioButton extends Control {
             return false;
         }
 
+        if (this.isReadOnly) {
+            return true;
+        }
+
         if (!this.isChecked) {
             this.isChecked = true;
         }

@@ -284,6 +284,19 @@ declare module "babylonjs-inspector/components/graph/graphSupportingTypes" {
         datasets: IPerfDatasets;
     }
     /**
+     * Defines the structure representing the preprocessable tooltip information.
+     */
+    export interface ITooltipPreprocessedInformation {
+        xForActualTimestamp: number;
+        numberOfTooltipItems: number;
+        longestText: string;
+        focusedId: string;
+    }
+    export interface IPerfTooltipHoverPosition {
+        xPos: number;
+        yPos: number;
+    }
+    /**
      * Defines the supported timestamp units.
      */
     export enum TimestampUnit {
@@ -313,6 +326,8 @@ declare module "babylonjs-inspector/components/graph/canvasGraphService" {
         private _tooltipTextCache;
         private _tickerTextCache;
         private _tickerItems;
+        private _preprocessedTooltipInfo;
+        private _numberOfTickers;
         private readonly _addonFontLineHeight;
         private readonly _defaultLineHeight;
         readonly datasets: IPerfDatasets;
@@ -429,7 +444,7 @@ declare module "babylonjs-inspector/components/graph/canvasGraphService" {
          */
         private _handleDataHover;
         /**
-         * Debounced version of _drawTooltip.
+         * Debounced processing and drawing of tooltip.
          */
         private _debouncedTooltip;
         /**
@@ -437,9 +452,27 @@ declare module "babylonjs-inspector/components/graph/canvasGraphService" {
          */
         private _handleStopHover;
         /**
+         * Given a line defined by P1: (x1, y1) and P2: (x2, y2) get the distance of P0 (x0, y0) from the line.
+         * https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line#Line_defined_by_two_points
+         * @param x1 x position of point P1
+         * @param y1 y position of point P1
+         * @param x2 x position of point P2
+         * @param y2 y position of point P2
+         * @param x0 x position of point P0
+         * @param y0 y position of point P0
+         * @returns distance of P0 from the line defined by P1 and P2
+         */
+        private _getDistanceFromLine;
+        /**
+         * This method does preprocessing calculations for the tooltip.
+         * @param pos the position of our mouse.
+         * @param drawableArea the remaining drawable area.
+         */
+        private _preprocessTooltip;
+        /**
          * Draws the tooltip given the area it is allowed to draw in and the current pixel position.
          *
-         * @param pixel the position of the mouse cursor in pixels.
+         * @param pos the position of the mouse cursor in pixels (x, y).
          * @param drawableArea  the available area we can draw in.
          */
         private _drawTooltip;
@@ -450,6 +483,7 @@ declare module "babylonjs-inspector/components/graph/canvasGraphService" {
          * @param minMax the minimum and maximum number in the range.
          * @param startingPixel position of the starting pixel in range.
          * @param endingPixel position of ending pixel in range.
+         * @param shouldFlipValue if we should use a [1, 0] scale instead of a [0, 1] scale.
          * @returns number corresponding to pixel position
          */
         private _getNumberFromPixel;
@@ -606,6 +640,7 @@ declare module "babylonjs-inspector/sharedUiComponents/colorPicker/colorPicker" 
         private _isSaturationPointerDown;
         private _isHuePointerDown;
         constructor(props: IColorPickerProps);
+        shouldComponentUpdate(nextProps: IColorPickerProps, nextState: IColorPickerState): boolean;
         onSaturationPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
         onSaturationPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
         onSaturationPointerMove(evt: React.PointerEvent<HTMLDivElement>): void;
@@ -917,6 +952,7 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/textInputLineCompon
         icon?: string;
         iconLabel?: string;
         noUnderline?: boolean;
+        numbersOnly?: boolean;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
@@ -1164,6 +1200,10 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         private _storedLengthOut;
         private _inVec;
         private _outVec;
+        private _lockX;
+        private _lockY;
+        private _accumulatedX;
+        private _accumulatedY;
         constructor(props: IKeyPointComponentProps);
         componentWillUnmount(): void;
         shouldComponentUpdate(newProps: IKeyPointComponentProps, newState: IKeyPointComponentState): boolean;
@@ -1193,8 +1233,10 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         animations: Nullable<Animation[] | TargetedAnimation[]>;
         scene: Scene;
         target: Nullable<IAnimatable>;
-        activeAnimation: Nullable<Animation>;
-        activeColor: Nullable<string>;
+        activeAnimations: Animation[];
+        activeChannels: {
+            [key: number]: string;
+        };
         activeKeyPoints: Nullable<KeyPointComponent[]>;
         mainKeyPoint: Nullable<KeyPointComponent>;
         snippetId: string;
@@ -1233,10 +1275,22 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         onAnimationsLoaded: Observable<void>;
         onEditAnimationRequired: Observable<Animation>;
         onEditAnimationUIClosed: Observable<void>;
+        onSelectToActivated: Observable<{
+            from: number;
+            to: number;
+        }>;
         prepare(): void;
         play(forward: boolean): void;
         stop(): void;
         moveToFrame(frame: number): void;
+        refreshTarget(): void;
+        clearSelection(): void;
+        enableChannel(animation: Animation, color: string): void;
+        disableChannel(animation: Animation): void;
+        isChannelEnabled(animation: Animation, color: string): boolean;
+        getActiveChannel(animation: Animation): string;
+        resetAllActiveChannels(): void;
+        getAnimationSortIndex(animation: Animation): number;
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/curveEditor/controls/controlButtonComponent" {
@@ -1424,7 +1478,6 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         private _viewWidth;
         private _viewScale;
         private _offsetX;
-        private _currentAnimation;
         private _onActiveAnimationChangedObserver;
         constructor(props: IFrameBarComponentProps);
         componentWillUnmount(): void;
@@ -1491,7 +1544,6 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         private _sourcePointerY;
         private _selectionStartX;
         private _selectionStartY;
-        private _currentAnimation;
         private _onActiveAnimationChangedObserver;
         constructor(props: IGraphComponentProps);
         componentWillUnmount(): void;
@@ -1504,6 +1556,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         private _invertX;
         private _convertY;
         private _invertY;
+        private _buildFrameIntervalAxis;
         private _buildYAxis;
         private _frame;
         private _dropKeyFrames;
@@ -1559,7 +1612,6 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         private _viewWidth;
         private _offsetX;
         private _isMounted;
-        private _currentAnimation;
         private _onActiveAnimationChangedObserver;
         constructor(props: IRangeFrameBarComponentProps);
         componentDidMount(): void;
@@ -1626,6 +1678,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     export class AnimationEntryComponent extends React.Component<IAnimationEntryComponentProps, IAnimationEntryComponentState> {
         private _onActiveAnimationChangedObserver;
         private _onActiveKeyPointChangedObserver;
+        private _onSelectToActivatedObserver;
         private _unmount;
         constructor(props: IAnimationEntryComponentProps);
         private _onGear;
@@ -1714,15 +1767,18 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         context: Context;
     }
     interface IAddAnimationComponentState {
+        customPropertyMode: boolean;
     }
     export class AddAnimationComponent extends React.Component<IAddAnimationComponentProps, IAddAnimationComponentState> {
         private _root;
         private _displayName;
         private _property;
         private _typeElement;
+        private _propertylement;
         private _loopModeElement;
         constructor(props: IAddAnimationComponentProps);
         createNew(): void;
+        getInferredType(activeProperty?: string): any;
         render(): JSX.Element;
     }
 }
@@ -4681,6 +4737,7 @@ declare module "babylonjs-inspector/components/sceneExplorer/sceneExplorerCompon
         private _onNewSceneAddedObserver;
         private _onNewSceneObserver;
         private sceneExplorerRef;
+        private _mutationTimeout;
         private _once;
         private _hooked;
         private sceneMutationFunc;
@@ -5088,6 +5145,19 @@ declare module INSPECTOR {
         datasets: BABYLON.IPerfDatasets;
     }
     /**
+     * Defines the structure representing the preprocessable tooltip information.
+     */
+    export interface ITooltipPreprocessedInformation {
+        xForActualTimestamp: number;
+        numberOfTooltipItems: number;
+        longestText: string;
+        focusedId: string;
+    }
+    export interface IPerfTooltipHoverPosition {
+        xPos: number;
+        yPos: number;
+    }
+    /**
      * Defines the supported timestamp units.
      */
     export enum TimestampUnit {
@@ -5115,6 +5185,8 @@ declare module INSPECTOR {
         private _tooltipTextCache;
         private _tickerTextCache;
         private _tickerItems;
+        private _preprocessedTooltipInfo;
+        private _numberOfTickers;
         private readonly _addonFontLineHeight;
         private readonly _defaultLineHeight;
         readonly datasets: BABYLON.IPerfDatasets;
@@ -5231,7 +5303,7 @@ declare module INSPECTOR {
          */
         private _handleDataHover;
         /**
-         * Debounced version of _drawTooltip.
+         * Debounced processing and drawing of tooltip.
          */
         private _debouncedTooltip;
         /**
@@ -5239,9 +5311,27 @@ declare module INSPECTOR {
          */
         private _handleStopHover;
         /**
+         * Given a line defined by P1: (x1, y1) and P2: (x2, y2) get the distance of P0 (x0, y0) from the line.
+         * https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line#Line_defined_by_two_points
+         * @param x1 x position of point P1
+         * @param y1 y position of point P1
+         * @param x2 x position of point P2
+         * @param y2 y position of point P2
+         * @param x0 x position of point P0
+         * @param y0 y position of point P0
+         * @returns distance of P0 from the line defined by P1 and P2
+         */
+        private _getDistanceFromLine;
+        /**
+         * This method does preprocessing calculations for the tooltip.
+         * @param pos the position of our mouse.
+         * @param drawableArea the remaining drawable area.
+         */
+        private _preprocessTooltip;
+        /**
          * Draws the tooltip given the area it is allowed to draw in and the current pixel position.
          *
-         * @param pixel the position of the mouse cursor in pixels.
+         * @param pos the position of the mouse cursor in pixels (x, y).
          * @param drawableArea  the available area we can draw in.
          */
         private _drawTooltip;
@@ -5252,6 +5342,7 @@ declare module INSPECTOR {
          * @param minMax the minimum and maximum number in the range.
          * @param startingPixel position of the starting pixel in range.
          * @param endingPixel position of ending pixel in range.
+         * @param shouldFlipValue if we should use a [1, 0] scale instead of a [0, 1] scale.
          * @returns number corresponding to pixel position
          */
         private _getNumberFromPixel;
@@ -5398,6 +5489,7 @@ declare module INSPECTOR {
         private _isSaturationPointerDown;
         private _isHuePointerDown;
         constructor(props: IColorPickerProps);
+        shouldComponentUpdate(nextProps: IColorPickerProps, nextState: IColorPickerState): boolean;
         onSaturationPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
         onSaturationPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
         onSaturationPointerMove(evt: React.PointerEvent<HTMLDivElement>): void;
@@ -5678,6 +5770,7 @@ declare module INSPECTOR {
         icon?: string;
         iconLabel?: string;
         noUnderline?: boolean;
+        numbersOnly?: boolean;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
@@ -5900,6 +5993,10 @@ declare module INSPECTOR {
         private _storedLengthOut;
         private _inVec;
         private _outVec;
+        private _lockX;
+        private _lockY;
+        private _accumulatedX;
+        private _accumulatedY;
         constructor(props: IKeyPointComponentProps);
         componentWillUnmount(): void;
         shouldComponentUpdate(newProps: IKeyPointComponentProps, newState: IKeyPointComponentState): boolean;
@@ -5922,8 +6019,10 @@ declare module INSPECTOR {
         animations: BABYLON.Nullable<BABYLON.Animation[] | BABYLON.TargetedAnimation[]>;
         scene: BABYLON.Scene;
         target: BABYLON.Nullable<BABYLON.IAnimatable>;
-        activeAnimation: BABYLON.Nullable<BABYLON.Animation>;
-        activeColor: BABYLON.Nullable<string>;
+        activeAnimations: BABYLON.Animation[];
+        activeChannels: {
+            [key: number]: string;
+        };
         activeKeyPoints: BABYLON.Nullable<KeyPointComponent[]>;
         mainKeyPoint: BABYLON.Nullable<KeyPointComponent>;
         snippetId: string;
@@ -5962,10 +6061,22 @@ declare module INSPECTOR {
         onAnimationsLoaded: BABYLON.Observable<void>;
         onEditAnimationRequired: BABYLON.Observable<BABYLON.Animation>;
         onEditAnimationUIClosed: BABYLON.Observable<void>;
+        onSelectToActivated: BABYLON.Observable<{
+            from: number;
+            to: number;
+        }>;
         prepare(): void;
         play(forward: boolean): void;
         stop(): void;
         moveToFrame(frame: number): void;
+        refreshTarget(): void;
+        clearSelection(): void;
+        enableChannel(animation: BABYLON.Animation, color: string): void;
+        disableChannel(animation: BABYLON.Animation): void;
+        isChannelEnabled(animation: BABYLON.Animation, color: string): boolean;
+        getActiveChannel(animation: BABYLON.Animation): string;
+        resetAllActiveChannels(): void;
+        getAnimationSortIndex(animation: BABYLON.Animation): number;
     }
 }
 declare module INSPECTOR {
@@ -6129,7 +6240,6 @@ declare module INSPECTOR {
         private _viewWidth;
         private _viewScale;
         private _offsetX;
-        private _currentAnimation;
         private _onActiveAnimationChangedObserver;
         constructor(props: IFrameBarComponentProps);
         componentWillUnmount(): void;
@@ -6190,7 +6300,6 @@ declare module INSPECTOR {
         private _sourcePointerY;
         private _selectionStartX;
         private _selectionStartY;
-        private _currentAnimation;
         private _onActiveAnimationChangedObserver;
         constructor(props: IGraphComponentProps);
         componentWillUnmount(): void;
@@ -6203,6 +6312,7 @@ declare module INSPECTOR {
         private _invertX;
         private _convertY;
         private _invertY;
+        private _buildFrameIntervalAxis;
         private _buildYAxis;
         private _frame;
         private _dropKeyFrames;
@@ -6252,7 +6362,6 @@ declare module INSPECTOR {
         private _viewWidth;
         private _offsetX;
         private _isMounted;
-        private _currentAnimation;
         private _onActiveAnimationChangedObserver;
         constructor(props: IRangeFrameBarComponentProps);
         componentDidMount(): void;
@@ -6308,6 +6417,7 @@ declare module INSPECTOR {
     export class AnimationEntryComponent extends React.Component<IAnimationEntryComponentProps, IAnimationEntryComponentState> {
         private _onActiveAnimationChangedObserver;
         private _onActiveKeyPointChangedObserver;
+        private _onSelectToActivatedObserver;
         private _unmount;
         constructor(props: IAnimationEntryComponentProps);
         private _onGear;
@@ -6384,15 +6494,18 @@ declare module INSPECTOR {
         context: Context;
     }
     interface IAddAnimationComponentState {
+        customPropertyMode: boolean;
     }
     export class AddAnimationComponent extends React.Component<IAddAnimationComponentProps, IAddAnimationComponentState> {
         private _root;
         private _displayName;
         private _property;
         private _typeElement;
+        private _propertylement;
         private _loopModeElement;
         constructor(props: IAddAnimationComponentProps);
         createNew(): void;
+        getInferredType(activeProperty?: string): any;
         render(): JSX.Element;
     }
 }
@@ -8747,6 +8860,7 @@ declare module INSPECTOR {
         private _onNewSceneAddedObserver;
         private _onNewSceneObserver;
         private sceneExplorerRef;
+        private _mutationTimeout;
         private _once;
         private _hooked;
         private sceneMutationFunc;

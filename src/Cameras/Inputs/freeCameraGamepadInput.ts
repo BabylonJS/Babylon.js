@@ -121,7 +121,7 @@ export class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
             var RSValues = this.gamepad.rightStick;
             if (RSValues && this.gamepadAngularSensibility !== 0) {
                 RSValues.x = (Math.abs(RSValues.x) > this.deadzoneDelta) ? RSValues.x / this.gamepadAngularSensibility : 0;
-                RSValues.y = (Math.abs(RSValues.y) > this.deadzoneDelta) ? RSValues.y / this.gamepadAngularSensibility : 0;
+                RSValues.y = ((Math.abs(RSValues.y) > this.deadzoneDelta) ? RSValues.y / this.gamepadAngularSensibility : 0) * this._yAxisScale;
             } else {
                 RSValues = { x: 0, y: 0 };
             }

@@ -804,7 +804,8 @@ declare module "babylonjs-gui/2D/controls/control" {
         private _cachedOffsetY;
         private _isVisible;
         private _isHighlighted;
-        private _highlightLineWidth;
+        private _highlightColor;
+        protected _highlightLineWidth: number;
         /** @hidden */
         _linkedMesh: Nullable<TransformNode>;
         private _fontSet;
@@ -816,6 +817,7 @@ declare module "babylonjs-gui/2D/controls/control" {
         protected _isEnabled: boolean;
         protected _disabledColor: string;
         protected _disabledColorItem: string;
+        protected _isReadOnly: boolean;
         /** @hidden */
         protected _rebuildLayout: boolean;
         /** @hidden */
@@ -830,6 +832,12 @@ declare module "babylonjs-gui/2D/controls/control" {
          * Gets or sets the unique id of the node. Please note that this number will be updated when the control is added to a container
          */
         uniqueId: number;
+        /**
+         * Gets or sets a boolean indicating if the control is readonly (default: false).
+         * A readonly control will still raise pointer events but will not react to them
+         */
+        get isReadOnly(): boolean;
+        set isReadOnly(value: boolean);
         /**
          * Gets or sets an object used to store user defined information for the node
          */
@@ -957,6 +965,11 @@ declare module "babylonjs-gui/2D/controls/control" {
          */
         get isHighlighted(): boolean;
         set isHighlighted(value: boolean);
+        /**
+         * Gets or sets a string defining the color to use for highlighting this control
+         */
+        get highlightColor(): string;
+        set highlightColor(value: string);
         /** Gets or sets a value indicating the scale factor on X axis (1 by default)
          * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
         */
@@ -1449,6 +1462,8 @@ declare module "babylonjs-gui/2D/controls/container" {
         set background(value: string);
         /** Gets the list of children */
         get children(): Control[];
+        get isReadOnly(): boolean;
+        set isReadOnly(value: boolean);
         /**
          * Creates a new Container
          * @param name defines the name of the container
@@ -2652,6 +2667,7 @@ declare module "babylonjs-gui/2D/controls/ellipse" {
         protected _localDraw(context: ICanvasRenderingContext): void;
         protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void;
         protected _clipForChildren(context: ICanvasRenderingContext): void;
+        _renderHighlightSpecific(context: ICanvasRenderingContext): void;
     }
 }
 declare module "babylonjs-gui/2D/controls/focusableButton" {
@@ -4202,6 +4218,7 @@ declare module "babylonjs-gui/3D/controls/touchButton3D" {
     export class TouchButton3D extends Button3D {
         private _collisionMesh;
         private _collidableFrontDirection;
+        protected _isNearPressed: boolean;
         /**
          * Creates a new touchable button
          * @param name defines the control name
@@ -4223,6 +4240,7 @@ declare module "babylonjs-gui/3D/controls/touchButton3D" {
          */
         set collisionMesh(collisionMesh: Mesh);
         private _isInteractionInFrontOfButton;
+        protected _getInteractionHeight(interactionPos: Vector3, basePos: Vector3): number;
         /** @hidden */
         _generatePointerEventType(providedType: number, nearMeshPosition: Vector3, activeInteractionCount: number): number;
         protected _getTypeName(): string;
@@ -4257,10 +4275,10 @@ declare module "babylonjs-gui/3D/controls/control3D" {
         private _enterCount;
         private _downPointerIds;
         private _isVisible;
-        /** Gets or sets the control position  in world space */
+        /** Gets or sets the control position in world space */
         get position(): Vector3;
         set position(value: Vector3);
-        /** Gets or sets the control scaling  in world space */
+        /** Gets or sets the control scaling in world space */
         get scaling(): Vector3;
         set scaling(value: Vector3);
         /** Callback used to start pointer enter animation */
@@ -4944,11 +4962,14 @@ declare module "babylonjs-gui/3D/controls/touchHolographicButton" {
         private _text;
         private _imageUrl;
         private _shareMaterials;
+        private _isBackplateVisible;
         private _frontMaterial;
         private _backMaterial;
         private _plateMaterial;
         private _pickedPointObserver;
         private _pointerHoverObserver;
+        private _frontPlateDepth;
+        private _backPlateDepth;
         private _tooltipFade;
         private _tooltipTextBlock;
         private _tooltipTexture;
@@ -4992,6 +5013,10 @@ declare module "babylonjs-gui/3D/controls/touchHolographicButton" {
          * Gets a boolean indicating if this button shares its material with other HolographicButtons
          */
         get shareMaterials(): boolean;
+        /**
+         * Sets whether the backplate is visible or hidden. Hiding the backplate is not recommended without some sort of replacement
+         */
+        set isBackplateVisible(isVisible: boolean);
         /**
          * Creates a new button
          * @param name defines the control name
@@ -5217,6 +5242,7 @@ declare module "babylonjs-gui/3D/gizmos/slateGizmo" {
     export class SlateGizmo extends Gizmo {
         private _boundingDimensions;
         private _pickedPointObserver;
+        private _renderObserver;
         private _tmpQuaternion;
         private _tmpVector;
         private _corners;
@@ -5230,6 +5256,7 @@ declare module "babylonjs-gui/3D/gizmos/slateGizmo" {
          */
         private _margin;
         private _attachedSlate;
+        private _existingSlateScale;
         /**
          * If set, the handles will increase in size based on the distance away from the camera to have a consistent screen size (Default: true)
          */
@@ -5649,14 +5676,19 @@ declare module "babylonjs-gui/3D/controls/touchHolographicMenu" {
         private _pickedPointObserver;
         private _currentMin;
         private _currentMax;
+        private _backPlateMargin;
         /**
-         * Margin size of the backplate in button size units (setting this to 1, will make the backPlate margin the size of 1 button)
+         * Gets or sets the margin size of the backplate in button size units.
+         * Setting this to 1, will make the backPlate margin the size of 1 button
          */
-        backPlateMargin: number;
+        get backPlateMargin(): number;
+        set backPlateMargin(value: number);
         protected _createNode(scene: Scene): Nullable<TransformNode>;
         protected _affectMaterial(mesh: AbstractMesh): void;
         protected _mapGridNode(control: Control3D, nodePosition: Vector3): void;
         protected _finalProcessing(): void;
+        private _updateCurrentMinMax;
+        private _updateMargins;
         /**
          * Creates a holographic menu GUI 3D control
          * @param name name of the menu
@@ -6877,7 +6909,8 @@ declare module BABYLON.GUI {
         private _cachedOffsetY;
         private _isVisible;
         private _isHighlighted;
-        private _highlightLineWidth;
+        private _highlightColor;
+        protected _highlightLineWidth: number;
         /** @hidden */
         _linkedMesh: BABYLON.Nullable<BABYLON.TransformNode>;
         private _fontSet;
@@ -6889,6 +6922,7 @@ declare module BABYLON.GUI {
         protected _isEnabled: boolean;
         protected _disabledColor: string;
         protected _disabledColorItem: string;
+        protected _isReadOnly: boolean;
         /** @hidden */
         protected _rebuildLayout: boolean;
         /** @hidden */
@@ -6903,6 +6937,12 @@ declare module BABYLON.GUI {
          * Gets or sets the unique id of the node. Please note that this number will be updated when the control is added to a container
          */
         uniqueId: number;
+        /**
+         * Gets or sets a boolean indicating if the control is readonly (default: false).
+         * A readonly control will still raise pointer events but will not react to them
+         */
+        get isReadOnly(): boolean;
+        set isReadOnly(value: boolean);
         /**
          * Gets or sets an object used to store user defined information for the node
          */
@@ -7030,6 +7070,11 @@ declare module BABYLON.GUI {
          */
         get isHighlighted(): boolean;
         set isHighlighted(value: boolean);
+        /**
+         * Gets or sets a string defining the color to use for highlighting this control
+         */
+        get highlightColor(): string;
+        set highlightColor(value: string);
         /** Gets or sets a value indicating the scale factor on X axis (1 by default)
          * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
         */
@@ -7515,6 +7560,8 @@ declare module BABYLON.GUI {
         set background(value: string);
         /** Gets the list of children */
         get children(): Control[];
+        get isReadOnly(): boolean;
+        set isReadOnly(value: boolean);
         /**
          * Creates a new Container
          * @param name defines the name of the container
@@ -8654,6 +8701,7 @@ declare module BABYLON.GUI {
         protected _localDraw(context: BABYLON.ICanvasRenderingContext): void;
         protected _additionalProcessing(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         protected _clipForChildren(context: BABYLON.ICanvasRenderingContext): void;
+        _renderHighlightSpecific(context: BABYLON.ICanvasRenderingContext): void;
     }
 }
 declare module BABYLON.GUI {
@@ -10048,6 +10096,7 @@ declare module BABYLON.GUI {
     export class TouchButton3D extends Button3D {
         private _collisionMesh;
         private _collidableFrontDirection;
+        protected _isNearPressed: boolean;
         /**
          * Creates a new touchable button
          * @param name defines the control name
@@ -10069,6 +10118,7 @@ declare module BABYLON.GUI {
          */
         set collisionMesh(collisionMesh: BABYLON.Mesh);
         private _isInteractionInFrontOfButton;
+        protected _getInteractionHeight(interactionPos: BABYLON.Vector3, basePos: BABYLON.Vector3): number;
         /** @hidden */
         _generatePointerEventType(providedType: number, nearMeshPosition: BABYLON.Vector3, activeInteractionCount: number): number;
         protected _getTypeName(): string;
@@ -10093,10 +10143,10 @@ declare module BABYLON.GUI {
         private _enterCount;
         private _downPointerIds;
         private _isVisible;
-        /** Gets or sets the control position  in world space */
+        /** Gets or sets the control position in world space */
         get position(): BABYLON.Vector3;
         set position(value: BABYLON.Vector3);
-        /** Gets or sets the control scaling  in world space */
+        /** Gets or sets the control scaling in world space */
         get scaling(): BABYLON.Vector3;
         set scaling(value: BABYLON.Vector3);
         /** Callback used to start pointer enter animation */
@@ -10726,11 +10776,14 @@ declare module BABYLON.GUI {
         private _text;
         private _imageUrl;
         private _shareMaterials;
+        private _isBackplateVisible;
         private _frontMaterial;
         private _backMaterial;
         private _plateMaterial;
         private _pickedPointObserver;
         private _pointerHoverObserver;
+        private _frontPlateDepth;
+        private _backPlateDepth;
         private _tooltipFade;
         private _tooltipTextBlock;
         private _tooltipTexture;
@@ -10774,6 +10827,10 @@ declare module BABYLON.GUI {
          * Gets a boolean indicating if this button shares its material with other HolographicButtons
          */
         get shareMaterials(): boolean;
+        /**
+         * Sets whether the backplate is visible or hidden. Hiding the backplate is not recommended without some sort of replacement
+         */
+        set isBackplateVisible(isVisible: boolean);
         /**
          * Creates a new button
          * @param name defines the control name
@@ -10982,6 +11039,7 @@ declare module BABYLON.GUI {
     export class SlateGizmo extends BABYLON.Gizmo {
         private _boundingDimensions;
         private _pickedPointObserver;
+        private _renderObserver;
         private _tmpQuaternion;
         private _tmpVector;
         private _corners;
@@ -10995,6 +11053,7 @@ declare module BABYLON.GUI {
          */
         private _margin;
         private _attachedSlate;
+        private _existingSlateScale;
         /**
          * If set, the handles will increase in size based on the distance away from the camera to have a consistent screen size (Default: true)
          */
@@ -11375,14 +11434,19 @@ declare module BABYLON.GUI {
         private _pickedPointObserver;
         private _currentMin;
         private _currentMax;
+        private _backPlateMargin;
         /**
-         * Margin size of the backplate in button size units (setting this to 1, will make the backPlate margin the size of 1 button)
+         * Gets or sets the margin size of the backplate in button size units.
+         * Setting this to 1, will make the backPlate margin the size of 1 button
          */
-        backPlateMargin: number;
+        get backPlateMargin(): number;
+        set backPlateMargin(value: number);
         protected _createNode(scene: BABYLON.Scene): BABYLON.Nullable<BABYLON.TransformNode>;
         protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
         protected _mapGridNode(control: Control3D, nodePosition: BABYLON.Vector3): void;
         protected _finalProcessing(): void;
+        private _updateCurrentMinMax;
+        private _updateMargins;
         /**
          * Creates a holographic menu GUI 3D control
          * @param name name of the menu

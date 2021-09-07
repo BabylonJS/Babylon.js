@@ -141,7 +141,7 @@ export class WebGPUCacheBindGroups {
                         }
                         const hardwareTexture = bindingInfo.texture._hardwareTexture as WebGPUHardwareTexture;
 
-                        if (this._engine.dbgSanityChecks && !hardwareTexture.view) {
+                        if (this._engine.dbgSanityChecks && (!hardwareTexture || !hardwareTexture.view)) {
                             Logger.Error(`Trying to bind a null gpu texture! bindingDefinition=${JSON.stringify(bindingDefinition)}, bindingInfo=${JSON.stringify(bindingInfo, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}, isReady=${bindingInfo.texture.isReady}`, 50);
                             continue;
                         }

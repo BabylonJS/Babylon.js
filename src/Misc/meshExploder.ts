@@ -37,8 +37,8 @@ export class MeshExploder {
                 var mesh = this._meshes[index];
                 this._meshesOrigins[index] = mesh.getAbsolutePosition().clone();
                 this._toCenterVectors[index] = Vector3.Zero();
-                if (mesh._boundingInfo && this._centerMesh._boundingInfo) {
-                    mesh._boundingInfo.boundingBox.centerWorld.subtractToRef(this._centerMesh._boundingInfo.boundingBox.centerWorld, this._toCenterVectors[index]);
+                if (mesh.hasBoundingInfo && this._centerMesh.hasBoundingInfo) {
+                    mesh.getBoundingInfo().boundingBox.centerWorld.subtractToRef(this._centerMesh.getBoundingInfo().boundingBox.centerWorld, this._toCenterVectors[index]);
                 }
             }
         }

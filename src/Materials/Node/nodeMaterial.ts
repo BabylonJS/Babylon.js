@@ -50,6 +50,7 @@ import { TimingTools } from '../../Misc/timingTools';
 import { ProceduralTexture } from '../Textures/Procedurals/proceduralTexture';
 import { AnimatedInputBlockTypes } from './Blocks/Input/animatedInputBlockTypes';
 import { TrigonometryBlock, TrigonometryBlockOperations } from './Blocks/trigonometryBlock';
+import { NodeMaterialSystemValues } from './Enums/nodeMaterialSystemValues';
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -553,9 +554,11 @@ export class NodeMaterial extends PushMaterial {
         return this._sharedData && this._sharedData.hints.needAlphaTesting;
     }
 
-    private _initializeBlock(node: NodeMaterialBlock, state: NodeMaterialBuildState, nodesToProcessForOtherBuildState: NodeMaterialBlock[]) {
+    private _initializeBlock(node: NodeMaterialBlock, state: NodeMaterialBuildState, nodesToProcessForOtherBuildState: NodeMaterialBlock[], autoConfigure = true) {
         node.initialize(state);
-        node.autoConfigure(this);
+        if (autoConfigure) {
+            node.autoConfigure(this);
+        }
         node._preparationId = this._buildId;
 
         if (this.attachedBlocks.indexOf(node) === -1) {
@@ -585,7 +588,7 @@ export class NodeMaterial extends PushMaterial {
                         && block._preparationId !== this._buildId) {
                         nodesToProcessForOtherBuildState.push(block);
                     }
-                    this._initializeBlock(block, state, nodesToProcessForOtherBuildState);
+                    this._initializeBlock(block, state, nodesToProcessForOtherBuildState, autoConfigure);
                 }
             }
         }
@@ -630,8 +633,9 @@ export class NodeMaterial extends PushMaterial {
      * Build the material and generates the inner effect
      * @param verbose defines if the build should log activity
      * @param updateBuildId defines if the internal build Id should be updated (default is true)
+     * @param autoConfigure defines if the autoConfigure method should be called when initializing blocks (default is true)
      */
-    public build(verbose: boolean = false, updateBuildId = true) {
+    public build(verbose: boolean = false, updateBuildId = true, autoConfigure = true) {
         this._buildWasSuccessful = false;
         var engine = this.getScene().getEngine();
 
@@ -669,12 +673,12 @@ export class NodeMaterial extends PushMaterial {
 
         for (var vertexOutputNode of this._vertexOutputNodes) {
             vertexNodes.push(vertexOutputNode);
-            this._initializeBlock(vertexOutputNode, this._vertexCompilationState, fragmentNodes);
+            this._initializeBlock(vertexOutputNode, this._vertexCompilationState, fragmentNodes, autoConfigure);
         }
 
         for (var fragmentOutputNode of this._fragmentOutputNodes) {
             fragmentNodes.push(fragmentOutputNode);
-            this._initializeBlock(fragmentOutputNode, this._fragmentCompilationState, vertexNodes);
+            this._initializeBlock(fragmentOutputNode, this._fragmentCompilationState, vertexNodes, autoConfigure);
         }
 
         // Optimize
@@ -1425,14 +1429,14 @@ export class NodeMaterial extends PushMaterial {
         positionInput.setAsAttribute("position");
 
         var worldInput = new InputBlock("World");
-        worldInput.setAsSystemValue(BABYLON.NodeMaterialSystemValues.World);
+        worldInput.setAsSystemValue(NodeMaterialSystemValues.World);
 
         var worldPos = new TransformBlock("WorldPos");
         positionInput.connectTo(worldPos);
         worldInput.connectTo(worldPos);
 
         var viewProjectionInput = new InputBlock("ViewProjection");
-        viewProjectionInput.setAsSystemValue(BABYLON.NodeMaterialSystemValues.ViewProjection);
+        viewProjectionInput.setAsSystemValue(NodeMaterialSystemValues.ViewProjection);
 
         var worldPosdMultipliedByViewProjection = new TransformBlock("WorldPos * ViewProjectionTransform");
         worldPos.connectTo(worldPosdMultipliedByViewProjection);

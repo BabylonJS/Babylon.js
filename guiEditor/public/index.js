@@ -22,7 +22,7 @@ var checkHash = function () {
 
             previousHash = location.hash;
             var hash = location.hash.substr(1);
-            currentSnippetToken = hash.split("#")[0];
+            currentSnippetToken = hash;
             showEditor();
         }
     }

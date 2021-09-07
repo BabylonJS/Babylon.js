@@ -19,24 +19,24 @@ struct reflectivityOutParams
 
 #define pbr_inline
 void reflectivityBlock(
-    const in vec4 vReflectivityColor,
+    in vec4 vReflectivityColor,
 #ifdef METALLICWORKFLOW
-    const in vec3 surfaceAlbedo,
-    const in vec4 metallicReflectanceFactors,
+    in vec3 surfaceAlbedo,
+    in vec4 metallicReflectanceFactors,
 #endif
 #ifdef REFLECTIVITY
-    const in vec3 reflectivityInfos,
-    const in vec4 surfaceMetallicOrReflectivityColorMap,
+    in vec3 reflectivityInfos,
+    in vec4 surfaceMetallicOrReflectivityColorMap,
 #endif
 #if defined(METALLICWORKFLOW) && defined(REFLECTIVITY)  && defined(AOSTOREINMETALMAPRED)
-    const in vec3 ambientOcclusionColorIn,
+    in vec3 ambientOcclusionColorIn,
 #endif
 #ifdef MICROSURFACEMAP
-    const in vec4 microSurfaceTexel,
+    in vec4 microSurfaceTexel,
 #endif
 #ifdef DETAIL
-    const in vec4 detailColor,
-    const in vec4 vDetailInfos,
+    in vec4 detailColor,
+    in vec4 vDetailInfos,
 #endif
     out reflectivityOutParams outParams
 )

@@ -116,6 +116,18 @@ export class Container extends Control {
         return this._children;
     }
 
+    public get isReadOnly() {
+        return this._isReadOnly;
+    }
+
+    public set isReadOnly(value: boolean) {
+        this._isReadOnly = value;
+
+        for (const child of this._children) {
+            child.isReadOnly = value;
+        }
+    }
+
     /**
      * Creates a new Container
      * @param name defines the name of the container
@@ -438,6 +450,8 @@ export class Container extends Control {
 
         this._localDraw(contextToDrawTo);
 
+        context.save();
+
         if (this.clipChildren) {
             this._clipForChildren(contextToDrawTo);
         }
@@ -459,6 +473,8 @@ export class Container extends Control {
             context.drawImage(contextToDrawTo.canvas, this._currentMeasure.left, this._currentMeasure.top);
             context.restore();
         }
+
+        context.restore();
     }
 
     public getDescendantsToRef(results: Control[], directDescendantsOnly: boolean = false, predicate?: (control: Control) => boolean): void {

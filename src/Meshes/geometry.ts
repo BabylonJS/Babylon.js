@@ -294,7 +294,7 @@ export class Geometry implements IGetSetVerticesData {
 
             for (var index = 0; index < numOfMeshes; index++) {
                 var mesh = meshes[index];
-                mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
+                mesh.buildBoundingInfo(this._extend.minimum, this._extend.maximum);
                 mesh._createGlobalSubMesh(false);
                 mesh.computeWorldMatrix(true);
                 mesh.synchronizeInstances();
@@ -356,10 +356,10 @@ export class Geometry implements IGetSetVerticesData {
         if (updateExtends) {
             var meshes = this._meshes;
             for (const mesh of meshes) {
-                if (mesh._boundingInfo) {
-                    mesh._boundingInfo.reConstruct(this._extend.minimum, this._extend.maximum);
+                if (mesh.hasBoundingInfo) {
+                    mesh.getBoundingInfo().reConstruct(this._extend.minimum, this._extend.maximum);
                 } else {
-                    mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
+                    mesh.buildBoundingInfo(this._extend.minimum, this._extend.maximum);
                 }
 
                 const subMeshes = mesh.subMeshes;
@@ -667,8 +667,8 @@ export class Geometry implements IGetSetVerticesData {
 
         if (this.isReady()) {
             this._applyToMesh(mesh);
-        } else {
-            mesh._boundingInfo = this._boundingInfo;
+        } else if (this._boundingInfo) {
+            mesh.setBoundingInfo(this._boundingInfo);
         }
     }
 
@@ -704,7 +704,7 @@ export class Geometry implements IGetSetVerticesData {
                 if (!this._extend) {
                     this._updateExtend();
                 }
-                mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
+                mesh.buildBoundingInfo(this._extend.minimum, this._extend.maximum);
 
                 mesh._createGlobalSubMesh(false);
 

@@ -44,7 +44,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      */
     public constructor(recastInjection: any = Recast) {
         if (typeof recastInjection === "function") {
-            recastInjection(this.bjsRECAST);
+            Logger.Error("RecastJS is not ready. Please make sure you await Recast() before using the plugin.");
         } else {
             this.bjsRECAST = recastInjection;
         }
