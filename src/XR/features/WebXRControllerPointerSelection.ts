@@ -651,26 +651,28 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             });
         }
 
-        // Fire a pointerup
-        const pointerEventInit: PointerEventInit = {
-            pointerId: controllerData.id,
-            pointerType: "xr",
-        };
-        this._scene.simulatePointerUp(new PickingInfo(), pointerEventInit);
+        this._xrSessionManager.scene.onBeforeRenderObservable.addOnce(() => {
+            // Fire a pointerup
+            const pointerEventInit: PointerEventInit = {
+                pointerId: controllerData.id,
+                pointerType: "xr",
+            };
+            this._scene.simulatePointerUp(new PickingInfo(), pointerEventInit);
 
-        controllerData.selectionMesh.dispose();
-        controllerData.laserPointer.dispose();
-        // remove from the map
-        delete this._controllers[xrControllerUniqueId];
-        if (this._attachedController === xrControllerUniqueId) {
-            // check for other controllers
-            const keys = Object.keys(this._controllers);
-            if (keys.length) {
-                this._attachedController = keys[0];
-            } else {
-                this._attachedController = "";
+            controllerData.selectionMesh.dispose();
+            controllerData.laserPointer.dispose();
+            // remove from the map
+            delete this._controllers[xrControllerUniqueId];
+            if (this._attachedController === xrControllerUniqueId) {
+                // check for other controllers
+                const keys = Object.keys(this._controllers);
+                if (keys.length) {
+                    this._attachedController = keys[0];
+                } else {
+                    this._attachedController = "";
+                }
             }
-        }
+        });
     }
 
     private _generateNewMeshPair(meshParent: Node) {
