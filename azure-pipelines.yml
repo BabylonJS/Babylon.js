@@ -11,7 +11,7 @@ jobs:
 - job: WhatsNewUpdate
   displayName: '1. What s New Update'
   pool:
-    vmImage: 'Ubuntu-16.04'
+    vmImage: 'Ubuntu-latest'
     demands: npm
   steps:
   - task: Npm@1
@@ -29,7 +29,7 @@ jobs:
 - job: DocumentationCheck
   displayName: '2. Documentation Check'
   pool:
-    vmImage: 'Ubuntu-16.04'
+    vmImage: 'Ubuntu-latest'
     demands: npm
   steps:
   - task: Npm@1
@@ -44,7 +44,7 @@ jobs:
 - job: Linting
   displayName: '3. Linting'
   pool:
-    vmImage: 'Ubuntu-16.04'
+    vmImage: 'Ubuntu-latest'
     demands: npm
   steps:
   - task: Npm@1
@@ -59,7 +59,7 @@ jobs:
 - job: Build
   displayName: '4. Build and Unit Tests'
   pool:
-    vmImage: 'Ubuntu-16.04'
+    vmImage: 'Ubuntu-latest'
     demands: npm
   steps:
   - task: Npm@1
@@ -82,7 +82,7 @@ jobs:
 - job: TestsWebGL1
   displayName: '5. Validation Tests WebGL1'
   pool:
-    vmImage: 'Ubuntu-16.04'
+    vmImage: 'Ubuntu-latest'
     demands: npm
   steps:
   - task: Npm@1
@@ -109,7 +109,7 @@ jobs:
 - job: TestsWebGL2
   displayName: '6. Validation Tests WebGL2'
   pool:
-    vmImage: 'Ubuntu-16.04'
+    vmImage: 'Ubuntu-latest'
     demands: npm
   steps:
   - task: Npm@1
@@ -143,7 +143,7 @@ jobs:
 - job: ModuleTests
   displayName: '7. Module Tests'
   pool:
-    vmImage: 'Ubuntu-16.04'
+    vmImage: 'Ubuntu-latest'
     demands: npm
   steps:
   - task: Npm@1
@@ -177,7 +177,7 @@ jobs:
 - job: ViewerTests
   displayName: '8. Viewer Tests'
   pool:
-    vmImage: 'Ubuntu-16.04'
+    vmImage: 'Ubuntu-latest'
     demands: npm
   steps:
   - task: Npm@1
