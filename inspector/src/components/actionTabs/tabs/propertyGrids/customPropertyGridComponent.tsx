@@ -72,7 +72,7 @@ export class CustomPropertyGridComponent extends React.Component<ICustomProperty
                 return (
                     <OptionsLineComponent key={inspectable.label} label={inspectable.label} target={this.props.target} propertyName={inspectable.propertyName} options={inspectable.options as any || []} onSelect={inspectable.callback || function(value) {
                         console.log(`Option ${value} is selected`);
-                    }}/>
+                    }} />
                 );
             case InspectableType.Tab:
                 return (
