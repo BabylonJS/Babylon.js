@@ -946,16 +946,13 @@ declare module "babylonjs-node-editor/sharedComponents/optionsLineComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-node-editor/sharedComponents/propertyChangedEvent";
-    class ListLineOption {
-        label: string;
-        value: number | string;
-    }
+    import { IInspectableOptions } from "babylonjs/Misc/iInspectable";
     interface IOptionsLineComponentProps {
         label: string;
         target: any;
         className?: string;
         propertyName?: string;
-        options: ListLineOption[];
+        options: IInspectableOptions[];
         noDirectUpdate?: boolean;
         onSelect?: (value: number | string) => void;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
@@ -2529,17 +2526,13 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/optionsLineCompon
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-node-editor/sharedUiComponents/propertyChangedEvent";
+    import { IInspectableOptions } from "babylonjs/Misc/iInspectable";
     export const Null_Value: number;
-    export class ListLineOption {
-        label: string;
-        value: number;
-        selected?: boolean;
-    }
     export interface IOptionsLineComponentProps {
         label: string;
         target: any;
         propertyName: string;
-        options: ListLineOption[];
+        options: IInspectableOptions[];
         noDirectUpdate?: boolean;
         onSelect?: (value: number) => void;
         extractValue?: () => number;
@@ -3772,16 +3765,12 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    class ListLineOption {
-        label: string;
-        value: number | string;
-    }
     interface IOptionsLineComponentProps {
         label: string;
         target: any;
         className?: string;
         propertyName?: string;
-        options: ListLineOption[];
+        options: BABYLON.IInspectableOptions[];
         noDirectUpdate?: boolean;
         onSelect?: (value: number | string) => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -5154,16 +5143,11 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     export const Null_Value: number;
-    export class ListLineOption {
-        label: string;
-        value: number;
-        selected?: boolean;
-    }
     export interface IOptionsLineComponentProps {
         label: string;
         target: any;
         propertyName: string;
-        options: ListLineOption[];
+        options: BABYLON.IInspectableOptions[];
         noDirectUpdate?: boolean;
         onSelect?: (value: number) => void;
         extractValue?: () => number;

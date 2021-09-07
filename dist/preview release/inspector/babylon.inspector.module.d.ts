@@ -875,17 +875,13 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/optionsLineComponen
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-inspector/sharedUiComponents/propertyChangedEvent";
+    import { IInspectableOptions } from "babylonjs/Misc/iInspectable";
     export const Null_Value: number;
-    export class ListLineOption {
-        label: string;
-        value: number;
-        selected?: boolean;
-    }
     export interface IOptionsLineComponentProps {
         label: string;
         target: any;
         propertyName: string;
-        options: ListLineOption[];
+        options: IInspectableOptions[];
         noDirectUpdate?: boolean;
         onSelect?: (value: number) => void;
         extractValue?: () => number;
@@ -5699,16 +5695,11 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     export const Null_Value: number;
-    export class ListLineOption {
-        label: string;
-        value: number;
-        selected?: boolean;
-    }
     export interface IOptionsLineComponentProps {
         label: string;
         target: any;
         propertyName: string;
-        options: ListLineOption[];
+        options: BABYLON.IInspectableOptions[];
         noDirectUpdate?: boolean;
         onSelect?: (value: number) => void;
         extractValue?: () => number;

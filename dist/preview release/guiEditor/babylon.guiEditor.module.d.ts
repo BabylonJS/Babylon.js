@@ -507,17 +507,13 @@ declare module "babylonjs-gui-editor/sharedUiComponents/lines/optionsLineCompone
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
+    import { IInspectableOptions } from "babylonjs/Misc/iInspectable";
     export const Null_Value: number;
-    export class ListLineOption {
-        label: string;
-        value: number;
-        selected?: boolean;
-    }
     export interface IOptionsLineComponentProps {
         label: string;
         target: any;
         propertyName: string;
-        options: ListLineOption[];
+        options: IInspectableOptions[];
         noDirectUpdate?: boolean;
         onSelect?: (value: number) => void;
         extractValue?: () => number;
@@ -2549,16 +2545,11 @@ declare module GUIEDITOR {
 }
 declare module GUIEDITOR {
     export const Null_Value: number;
-    export class ListLineOption {
-        label: string;
-        value: number;
-        selected?: boolean;
-    }
     export interface IOptionsLineComponentProps {
         label: string;
         target: any;
         propertyName: string;
-        options: ListLineOption[];
+        options: BABYLON.IInspectableOptions[];
         noDirectUpdate?: boolean;
         onSelect?: (value: number) => void;
         extractValue?: () => number;
