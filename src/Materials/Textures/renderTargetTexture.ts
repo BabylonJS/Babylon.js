@@ -6,7 +6,7 @@ import { Camera } from "../../Cameras/camera";
 import { Scene } from "../../scene";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { Color4 } from '../../Maths/math.color';
-import { RenderTargetCreationOptions } from "../../Materials/Textures/renderTargetCreationOptions";
+import { RenderTargetCreationOptions, TextureSize } from "../../Materials/Textures/textureCreationOptions";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { SubMesh } from "../../Meshes/subMesh";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
@@ -16,7 +16,6 @@ import { PostProcess } from "../../PostProcesses/postProcess";
 import { RenderingManager } from "../../Rendering/renderingManager";
 import { Constants } from "../../Engines/constants";
 import { RenderTargetWrapper } from "../../Engines/renderTargetWrapper";
-import { RenderTargetTextureSize } from "../../Engines/Extensions/engine.renderTarget";
 
 import "../../Engines/Extensions/engine.renderTarget";
 import "../../Engines/Extensions/engine.renderTargetCube";
@@ -232,7 +231,7 @@ export class RenderTargetTexture extends Texture {
      * Define the clear color of the Render Target if it should be different from the scene.
      */
     public clearColor: Color4;
-    protected _size: RenderTargetTextureSize;
+    protected _size: TextureSize;
     protected _initialSizeParameter: number | { width: number, height: number } | { ratio: number };
     protected _sizeRatio: Nullable<number>;
     /** @hidden */

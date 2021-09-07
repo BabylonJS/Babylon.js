@@ -20,7 +20,7 @@ import "../../../Shaders/procedural.vertex";
 import { DataBuffer } from '../../../Buffers/dataBuffer';
 import { _TypeStore } from '../../../Misc/typeStore';
 import { NodeMaterial } from '../../Node/nodeMaterial';
-import { RenderTargetTextureSize } from '../../../Engines/Extensions/engine.renderTarget';
+import { TextureSize } from '../../../Materials/Textures/textureCreationOptions';
 import { EngineStore } from '../../../Engines/engineStore';
 import { Constants } from '../../../Engines/constants';
 import { DrawWrapper } from "../../drawWrapper";
@@ -77,7 +77,7 @@ export class ProceduralTexture extends Texture {
     protected _fallbackTexture: Nullable<Texture>;
 
     @serialize()
-    private _size: RenderTargetTextureSize;
+    private _size: TextureSize;
     private _textureType: number;
     private _currentRefreshId = -1;
     private _frameId = -1;
@@ -121,7 +121,7 @@ export class ProceduralTexture extends Texture {
      * @param isCube Define if the texture is a cube texture or not (this will render each faces of the cube)
      * @param textureType The FBO internal texture type
      */
-    constructor(name: string, size: RenderTargetTextureSize, fragment: any, scene: Nullable<Scene>, fallbackTexture: Nullable<Texture> = null, generateMipMaps = true, isCube = false, textureType = Constants.TEXTURETYPE_UNSIGNED_INT) {
+    constructor(name: string, size: TextureSize, fragment: any, scene: Nullable<Scene>, fallbackTexture: Nullable<Texture> = null, generateMipMaps = true, isCube = false, textureType = Constants.TEXTURETYPE_UNSIGNED_INT) {
         super(null, scene, !generateMipMaps);
 
         scene = this.getScene() || EngineStore.LastCreatedScene!;
@@ -366,7 +366,7 @@ export class ProceduralTexture extends Texture {
      * Get the size the texture is rendering at.
      * @returns the size (on cube texture it is always squared)
      */
-    public getRenderSize(): RenderTargetTextureSize {
+    public getRenderSize(): TextureSize {
         return this._size;
     }
 

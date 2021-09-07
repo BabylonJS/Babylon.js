@@ -13,7 +13,7 @@ import { Tools } from "../Misc/tools";
 import { Observer } from "../Misc/observable";
 import { EnvironmentTextureTools, EnvironmentTextureSpecularInfoV1 } from "../Misc/environmentTextureTools";
 import { Scene } from "../scene";
-import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
+import { RenderTargetCreationOptions, TextureSize, DepthTextureCreationOptions} from "../Materials/Textures/textureCreationOptions";
 import { IPipelineContext } from './IPipelineContext';
 import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IViewportLike } from '../Maths/math.like';
 import { Logger } from "../Misc/logger";
@@ -22,9 +22,7 @@ import { ThinEngine, ISceneLike } from './thinEngine';
 import { IWebRequest } from '../Misc/interfaces/iWebRequest';
 import { EngineStore } from './engineStore';
 import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
-import { RenderTargetTextureSize } from '../Engines/Extensions/engine.renderTarget';
 import { WebGL2ShaderProcessor } from '../Engines/WebGL/webGL2ShaderProcessors';
-import { DepthTextureCreationOptions } from '../Engines/depthTextureCreationOptions';
 import { IMaterialContext } from "./IMaterialContext";
 import { IDrawContext } from "./IDrawContext";
 import { ICanvas, IImage } from "./ICanvas";
@@ -769,7 +767,7 @@ class NativeRenderTargetWrapper extends RenderTargetWrapper {
     public _framebuffer: Nullable<WebGLFramebuffer> = null;
     public _framebufferDepthStencil: Nullable<WebGLFramebuffer> = null;
 
-    constructor(isMulti: boolean, isCube: boolean, size: RenderTargetTextureSize, engine: NativeEngine, native: INativeEngine) {
+    constructor(isMulti: boolean, isCube: boolean, size: TextureSize, engine: NativeEngine, native: INativeEngine) {
         super(isMulti, isCube, size, engine);
         this._native = native;
     }
@@ -2089,7 +2087,7 @@ export class NativeEngine extends Engine {
         return texture;
     }
 
-    public _createDepthStencilTexture(size: RenderTargetTextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
+    public _createDepthStencilTexture(size: TextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
         const nativeRTWrapper = rtWrapper as NativeRenderTargetWrapper;
         const texture = new InternalTexture(this, InternalTextureSource.DepthStencil);
 
@@ -2269,7 +2267,7 @@ export class NativeEngine extends Engine {
     }
 
     /** @hidden */
-    public _createHardwareRenderTargetWrapper(isMulti: boolean, isCube: boolean, size: RenderTargetTextureSize): RenderTargetWrapper {
+    public _createHardwareRenderTargetWrapper(isMulti: boolean, isCube: boolean, size: TextureSize): RenderTargetWrapper {
         const rtWrapper = new NativeRenderTargetWrapper(isMulti, isCube, size, this, this._native);
         this._renderTargetWrapperCache.push(rtWrapper);
         return rtWrapper;

@@ -1,17 +1,15 @@
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
-import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
+import { RenderTargetCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
 import { Nullable } from "../types";
 import { Constants } from "./constants";
-import { RenderTargetTextureSize } from "./Extensions/engine.renderTarget";
 import { ThinEngine } from "./thinEngine";
 
 /**
  * Wrapper around a render target (either single or multi textures)
  */
 export class RenderTargetWrapper {
-
     protected _engine: ThinEngine;
-    private _size: RenderTargetTextureSize;
+    private _size: TextureSize;
     private _isCube: boolean;
     private _isMulti: boolean;
     private _textures: Nullable<InternalTexture[]> = null;
@@ -60,21 +58,21 @@ export class RenderTargetWrapper {
      * Gets the width of the render target wrapper
      */
     public get width(): number {
-        return ((<{ width: number, height: number }>this._size).width) || <number>this._size;
+        return (<{ width: number; height: number }>this._size).width || <number>this._size;
     }
 
     /**
      * Gets the height of the render target wrapper
      */
     public get height(): number {
-        return ((<{ width: number, height: number }>this._size).height) || <number>this._size;
+        return (<{ width: number; height: number }>this._size).height || <number>this._size;
     }
 
     /**
      * Gets the number of layers of the render target wrapper (only used if is2DArray is true)
      */
     public get layers(): number {
-        return ((<{ width: number, height: number, layers?: number }>this._size).layers) || 0;
+        return (<{ width: number; height: number; layers?: number }>this._size).layers || 0;
     }
 
     /**
@@ -110,7 +108,9 @@ export class RenderTargetWrapper {
             return value;
         }
 
-        return this._isMulti ? this._engine.updateMultipleRenderTargetTextureSampleCount(this, value, initializeBuffers) : this._engine.updateRenderTargetTextureSampleCount(this, value);
+        return this._isMulti
+            ? this._engine.updateMultipleRenderTargetTextureSampleCount(this, value, initializeBuffers)
+            : this._engine.updateRenderTargetTextureSampleCount(this, value);
     }
 
     /**
@@ -120,7 +120,7 @@ export class RenderTargetWrapper {
      * @param size size of the render target (width/height/layers)
      * @param engine engine used to create the render target
      */
-    constructor(isMulti: boolean, isCube: boolean, size: RenderTargetTextureSize, engine: ThinEngine) {
+    constructor(isMulti: boolean, isCube: boolean, size: TextureSize, engine: ThinEngine) {
         this._isMulti = isMulti;
         this._isCube = isCube;
         this._size = size;
@@ -157,7 +157,6 @@ export class RenderTargetWrapper {
         }
 
         this._textures[index] = texture;
-        this._engine.bindTextureRenderTarget(this, texture, index);
     }
 
     /**
@@ -172,15 +171,35 @@ export class RenderTargetWrapper {
         this._depthStencilTexture?.dispose();
 
         this._depthStencilTextureWithStencil = generateStencil;
-        this._depthStencilTexture = this._engine.createDepthStencilTexture(this._size, {
-            bilinearFiltering,
-            comparisonFunction,
-            generateStencil,
-            isCube: this._isCube,
-            samples
-        }, this);
+        this._depthStencilTexture = this._engine.createDepthStencilTexture(
+            this._size,
+            {
+                bilinearFiltering,
+                comparisonFunction,
+                generateStencil,
+                isCube: this._isCube,
+                samples,
+            },
+            this
+        );
 
         return this._depthStencilTexture;
+    }
+
+    /**
+     * Shares the depth buffer of this render target with another render target.
+     * *
+     * @param renderTarget Destination renderTarget
+     */
+    public _shareDepth(renderTarget: RenderTargetWrapper): void {
+        if (this._depthStencilTexture) {
+            if (renderTarget._depthStencilTexture) {
+                renderTarget._depthStencilTexture.dispose();
+            }
+
+            renderTarget._depthStencilTexture = this._depthStencilTexture;
+            this._depthStencilTexture.incrementReferences();
+        }
     }
 
     /** @hidden */
@@ -249,7 +268,7 @@ export class RenderTargetWrapper {
                 let size = {
                     width: this.width,
                     height: this.height,
-                    layers: this.is2DArray ? this.texture?.depth : undefined
+                    layers: this.is2DArray ? this.texture?.depth : undefined,
                 };
 
                 rtw = this._engine.createRenderTargetTexture(size, options);
@@ -285,7 +304,10 @@ export class RenderTargetWrapper {
 
         if (this._depthStencilTexture) {
             const samplingMode = this._depthStencilTexture.samplingMode;
-            const bilinear = (samplingMode === Constants.TEXTURE_BILINEAR_SAMPLINGMODE) || (samplingMode === Constants.TEXTURE_TRILINEAR_SAMPLINGMODE) || (samplingMode === Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST);
+            const bilinear =
+                samplingMode === Constants.TEXTURE_BILINEAR_SAMPLINGMODE ||
+                samplingMode === Constants.TEXTURE_TRILINEAR_SAMPLINGMODE ||
+                samplingMode === Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST;
             rtw.createDepthStencilTexture(this._depthStencilTexture._comparisonFunction, bilinear, this._depthStencilTextureWithStencil, this._depthStencilTexture.samples);
         }
 

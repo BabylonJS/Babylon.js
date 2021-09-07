@@ -266,7 +266,12 @@ export class MultiRenderTarget extends RenderTargetTexture {
 
         this._count = this.renderTarget.textures ? this.renderTarget.textures.length : 0;
 
-        // TODO : update types and samplingModes
+        if (this._multiRenderTargetOptions.types) {
+            this._multiRenderTargetOptions.types[index] = texture.type;
+        }
+        if (this._multiRenderTargetOptions.samplingModes) {
+            this._multiRenderTargetOptions.samplingModes[index] = texture.samplingMode;
+        }
     }
 
     /**

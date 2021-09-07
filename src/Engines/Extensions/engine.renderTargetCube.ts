@@ -1,10 +1,10 @@
 import { InternalTexture, InternalTextureSource } from '../../Materials/Textures/internalTexture';
 import { Logger } from '../../Misc/logger';
-import { RenderTargetCreationOptions } from '../../Materials/Textures/renderTargetCreationOptions';
 import { Constants } from '../constants';
 import { ThinEngine } from '../thinEngine';
 import { RenderTargetWrapper } from "../renderTargetWrapper";
 import { WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
+import { RenderTargetCreationOptions } from '../../Materials/Textures/textureCreationOptions';
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {

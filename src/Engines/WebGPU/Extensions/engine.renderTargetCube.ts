@@ -1,5 +1,5 @@
 import { InternalTexture, InternalTextureSource } from "../../../Materials/Textures/internalTexture";
-import { RenderTargetCreationOptions } from "../../../Materials/Textures/renderTargetCreationOptions";
+import { RenderTargetCreationOptions } from "../../../Materials/Textures/textureCreationOptions";
 import { Constants } from "../../constants";
 import { RenderTargetWrapper } from "../../renderTargetWrapper";
 import { WebGPUEngine } from "../../webgpuEngine";

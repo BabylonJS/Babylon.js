@@ -2,7 +2,7 @@ import { Constants } from "../Engines/constants";
 import { Engine } from "../Engines/engine";
 import { Effect } from "../Materials/effect";
 import { MultiRenderTarget } from "../Materials/Textures/multiRenderTarget";
-import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
+import { InternalTextureCreationOptions } from "../Materials/Textures/textureCreationOptions";
 import { Color4 } from "../Maths/math.color";
 import { SubMesh } from "../Meshes/subMesh";
 import { SmartArray } from "../Misc/smartArray";
@@ -98,12 +98,12 @@ export class DepthPeelingRenderer {
                 format: Constants.TEXTUREFORMAT_RG,
                 samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
                 type: Constants.TEXTURETYPE_FLOAT,
-            } as RenderTargetCreationOptions,
+            } as InternalTextureCreationOptions,
             {
                 format: Constants.TEXTUREFORMAT_RGBA,
                 samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
                 type: Constants.TEXTURETYPE_HALF_FLOAT,
-            } as RenderTargetCreationOptions,
+            } as InternalTextureCreationOptions,
         ];
 
         for (let i = 0; i < 2; i++) {
@@ -174,7 +174,7 @@ export class DepthPeelingRenderer {
             }
             this._thinTextures[6] = new ThinTexture(this._blendBackTexture);
 
-            this._engine.shareDepth(prePassRenderer.defaultRT.renderTarget!, this._depthMrts[0].renderTarget!);
+            prePassRenderer.defaultRT.renderTarget!._shareDepth(this._depthMrts[0].renderTarget!);
         }
 
         return true;
@@ -240,13 +240,13 @@ export class DepthPeelingRenderer {
     }
 
     private _finalCompose(writeId: number) {
-        this._engine.bindRenderTarget(null);
+        this._engine._bindUnboundFramebuffer(null);
 
         this._engine.setAlphaMode(Constants.ALPHA_SRC_DSTONEMINUSSRCALPHA);
         this._engine._alphaState.alphaBlend = false;
         this._engine.applyStates();
 
-        this._engine.enableEffect(this._finalEffectWrapper.effect);
+        this._engine.enableEffect(this._finalEffectWrapper._drawWrapper);
         this._finalEffectWrapper.effect.setTexture("uFrontColor", this._thinTextures[writeId * 3 + 1]);
         this._finalEffectWrapper.effect.setTexture("uBackColor", this._thinTextures[6]);
         this._effectRenderer.render(this._finalEffectWrapper);
@@ -274,24 +274,24 @@ export class DepthPeelingRenderer {
         (this._scene.prePassRenderer! as any)._enabled = false;
 
         // Clears
-        this._engine.bindRenderTarget(this._depthMrts[0].renderTarget);
+        this._engine.bindFramebuffer(this._depthMrts[0].renderTarget!);
         let attachments = this._engine.buildTextureLayout([true]);
         this._engine.bindAttachments(attachments);
         this._engine.clear(new Color4(DEPTH_CLEAR_VALUE, DEPTH_CLEAR_VALUE, 0, 0), true, false, false);
 
-        this._engine.bindRenderTarget(this._depthMrts[1].renderTarget);
+        this._engine.bindFramebuffer(this._depthMrts[1].renderTarget!);
         this._engine.clear(new Color4(-MIN_DEPTH, MAX_DEPTH, 0, 0), true, false, false);
 
-        this._engine.bindRenderTarget(this._colorMrts[0].renderTarget);
+        this._engine.bindFramebuffer(this._colorMrts[0].renderTarget!);
         attachments = this._engine.buildTextureLayout([true, true]);
         this._engine.bindAttachments(attachments);
         this._engine.clear(new Color4(0, 0, 0, 0), true, false, false);
 
-        this._engine.bindRenderTarget(this._colorMrts[1].renderTarget);
+        this._engine.bindFramebuffer(this._colorMrts[1].renderTarget!);
         this._engine.clear(new Color4(0, 0, 0, 0), true, false, false);
 
         // Draw depth for first pass
-        this._engine.bindRenderTarget(this._depthMrts[0].renderTarget);
+        this._engine.bindFramebuffer(this._depthMrts[0].renderTarget!);
         attachments = this._engine.buildTextureLayout([true]);
         this._engine.bindAttachments(attachments);
 
@@ -316,17 +316,17 @@ export class DepthPeelingRenderer {
             this._currentPingPongState = readId;
 
             // Clears
-            this._engine.bindRenderTarget(this._depthMrts[writeId].renderTarget);
+            this._engine.bindFramebuffer(this._depthMrts[writeId].renderTarget!);
             attachments = this._engine.buildTextureLayout([true]);
             this._engine.bindAttachments(attachments);
             this._engine.clear(new Color4(DEPTH_CLEAR_VALUE, DEPTH_CLEAR_VALUE, 0, 0), true, false, false);
 
-            this._engine.bindRenderTarget(this._colorMrts[writeId].renderTarget);
+            this._engine.bindFramebuffer(this._colorMrts[writeId].renderTarget!);
             attachments = this._engine.buildTextureLayout([true, true]);
             this._engine.bindAttachments(attachments);
             this._engine.clear(new Color4(0, 0, 0, 0), true, false, false);
 
-            this._engine.bindRenderTarget(this._depthMrts[writeId].renderTarget);
+            this._engine.bindFramebuffer(this._depthMrts[writeId].renderTarget!);
             attachments = this._engine.buildTextureLayout([true, true, true]);
             this._engine.bindAttachments(attachments);
 
@@ -338,14 +338,14 @@ export class DepthPeelingRenderer {
             this._renderSubMeshes(transparentSubMeshes);
 
             // Back color
-            this._engine.bindRenderTarget(this._blendBackMrt.renderTarget);
+            this._engine.bindFramebuffer(this._blendBackMrt.renderTarget!);
             attachments = this._engine.buildTextureLayout([true]);
             this._engine.bindAttachments(attachments);
             this._engine.setAlphaEquation(Constants.ALPHA_EQUATION_ADD);
             this._engine.setAlphaMode(Constants.ALPHA_LAYER_ACCUMULATE);
             this._engine.applyStates();
 
-            this._engine.enableEffect(this._blendBackEffectWrapper.effect);
+            this._engine.enableEffect(this._blendBackEffectWrapper._drawWrapper);
             this._blendBackEffectWrapper.effect.setTexture("uBackColor", this._thinTextures[writeId * 3 + 2]);
             this._effectRenderer.render(this._blendBackEffectWrapper);
         }
