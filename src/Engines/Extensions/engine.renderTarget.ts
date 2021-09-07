@@ -8,7 +8,6 @@ import { WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
 import { WebGLHardwareTexture } from "../WebGL/webGLHardwareTexture";
 import { TextureSize } from "../../Materials/Textures/textureCreationOptions";
 
-
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
         /**
