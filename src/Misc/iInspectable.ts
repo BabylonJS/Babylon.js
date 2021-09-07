@@ -37,7 +37,7 @@ export enum InspectableType {
     /**
      * Tab
      */
-    Tab = 7,
+    Tab = 8,
 }
 
 /**
