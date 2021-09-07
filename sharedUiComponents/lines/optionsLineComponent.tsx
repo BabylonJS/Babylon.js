@@ -1,20 +1,15 @@
 import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../propertyChangedEvent";
+import { IInspectableOptions } from "babylonjs/Misc/iInspectable";
 
 export const Null_Value = Number.MAX_SAFE_INTEGER;
-
-export class ListLineOption {
-    public label: string;
-    public value: number;
-    selected?: boolean;
-}
 
 export interface IOptionsLineComponentProps {
     label: string;
     target: any;
     propertyName: string;
-    options: ListLineOption[];
+    options: IInspectableOptions[];
     noDirectUpdate?: boolean;
     onSelect?: (value: number) => void;
     extractValue?: () => number;

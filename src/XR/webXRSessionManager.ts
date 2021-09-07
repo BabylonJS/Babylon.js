@@ -101,6 +101,13 @@ export class WebXRSessionManager implements IDisposable {
     }
 
     /**
+     * The mode for the managed XR session
+     */
+    public get sessionMode(): XRSessionMode {
+        return this._sessionMode;
+    }
+
+    /**
      * Disposes of the session manager
      * This should be called explicitly by the dev, if required.
      */
