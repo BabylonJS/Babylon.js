@@ -73,7 +73,7 @@ export interface IInspectable {
     /**
      * Gets the callback function when using "Button" mode
      */
-     callback(): any;
+     callback?: () => void;
      /**
       * Gets the list of options when using "Option" mode
       */
