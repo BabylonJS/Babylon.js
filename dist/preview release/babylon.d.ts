@@ -5920,8 +5920,9 @@ declare module BABYLON {
          * @param onError callback called if there was an error during the loading process (defaults to null)
          * @param extensions defines the suffixes add to the picture name in case six images are in use like _px.jpg...
          * @param delayLoad defines if the texture should be loaded now (false by default)
+         * @param files defines the six files to load for the different faces in that order: px, py, pz, nx, ny, nz
          */
-        updateURL(url: string, forcedExtension?: string, onLoad?: Nullable<() => void>, prefiltered?: boolean, onError?: Nullable<(message?: string, exception?: any) => void>, extensions?: Nullable<string[]>, delayLoad?: boolean): void;
+        updateURL(url: string, forcedExtension?: string, onLoad?: Nullable<() => void>, prefiltered?: boolean, onError?: Nullable<(message?: string, exception?: any) => void>, extensions?: Nullable<string[]>, delayLoad?: boolean, files?: Nullable<string[]>): void;
         /**
          * Delays loading of the cube texture
          * @param forcedExtension defines the extension to use
@@ -17560,9 +17561,9 @@ declare module BABYLON {
          * Documentation : https://doc.babylonjs.com/babylon101/shadows
          * @param mapSize The size of the texture what stores the shadows. Example : 1024.
          * @param light The light object generating the shadows.
-         * @param usefulFloatFirst By default the generator will try to use half float textures but if you need precision (for self shadowing for instance), you can use this option to enforce full float texture.
+         * @param usefullFloatFirst By default the generator will try to use half float textures but if you need precision (for self shadowing for instance), you can use this option to enforce full float texture.
          */
-        constructor(mapSize: number, light: IShadowLight, usefulFloatFirst?: boolean);
+        constructor(mapSize: number, light: IShadowLight, usefullFloatFirst?: boolean);
         protected _initializeGenerator(): void;
         protected _createTargetRenderTexture(): void;
         protected _initializeShadowMap(): void;
@@ -26196,6 +26197,7 @@ declare module BABYLON {
         loopMode?: number | undefined;
         /**Specifies if blending should be enabled */
         enableBlending?: boolean | undefined;
+        private static _UniqueIdGenerator;
         /**
          * Use matrix interpolation instead of using direct key value when animating matrices
          */
@@ -26204,6 +26206,10 @@ declare module BABYLON {
          * When matrix interpolation is enabled, this boolean forces the system to use Matrix.DecomposeLerp instead of Matrix.Lerp. Interpolation is more precise but slower
          */
         static AllowMatrixDecomposeForInterpolation: boolean;
+        /**
+         * Gets or sets the unique id of the animation (the uniqueness is solely among other animations)
+         */
+        uniqueId: number;
         /** Define the Url to load snippets */
         static SnippetUrl: string;
         /** Snippet ID if the animation was created from the snippet server */
@@ -33875,8 +33881,9 @@ declare module BABYLON {
         set position(newPosition: Vector3);
         /**
          * return true if a pivot has been set
+         * @returns true if a pivot matrix is used
          */
-        get usePivotMatrix(): boolean;
+        isUsingPivotMatrix(): boolean;
         /**
           * Gets or sets the rotation property : a Vector3 defining the rotation value in radians around each local axis X, Y, Z  (default is (0.0, 0.0, 0.0)).
           * If rotation quaternion is set, this Vector3 will be ignored and copy from the quaternion
@@ -60076,7 +60083,7 @@ declare module BABYLON {
 declare module BABYLON {
     /**
      * Class used to render a debug view of the frustum for a directional light
-     * @see https://playground.babylonjs.com/#7EFGSG#3
+     * @see https://playground.babylonjs.com/#7EFGSG#4
      * @since 5.0.0
      */
     export class DirectionalLightFrustumViewer {
@@ -60927,6 +60934,8 @@ declare module BABYLON {
         clearBeforeCopy?: boolean;
         /** Indicates if the view is enabled (true by default) */
         enabled: boolean;
+        /** Defines a custom function to handle canvas size changes. (the canvas to render into is provided to the callback) */
+        customResize?: (canvas: HTMLCanvasElement) => void;
     }
         interface Engine {
             /**
@@ -68375,6 +68384,7 @@ declare module BABYLON {
      */
     export class KhronosTextureContainer2 {
         private static _WorkerPoolPromise?;
+        private static _NoWorkerPromise?;
         private static _Initialized;
         private static _Ktx2Decoder;
         /**

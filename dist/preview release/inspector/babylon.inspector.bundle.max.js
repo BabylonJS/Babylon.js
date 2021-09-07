@@ -11232,7 +11232,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#sideBar {\n  display: grid;\n  grid-template-columns: 100%;\n  grid-template-rows: 30px 1fr; }\n  #sideBar #menu-bar {\n    background: #252525;\n    grid-row: 1;\n    grid-column: 1;\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 30px 30px 30px 30px 1fr 52px 3px; }\n    #sideBar #menu-bar.small {\n      grid-template-columns: 0px 0px 30px 30px 1fr 52px 3px; }\n    #sideBar #menu-bar #add-animation {\n      grid-row: 1;\n      grid-column: 1; }\n    #sideBar #menu-bar #load-animation {\n      grid-row: 1;\n      grid-column: 2; }\n    #sideBar #menu-bar #save-animation {\n      grid-row: 1;\n      grid-column: 3; }\n    #sideBar #menu-bar #edit-animation {\n      grid-row: 1;\n      grid-column: 4; }\n    #sideBar #menu-bar #framerate-animation {\n      grid-row: 1;\n      grid-column: 6; }\n  #sideBar .simple-button {\n    width: 80px;\n    height: 20px;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt;\n    background: #444444;\n    border: 0;\n    line-height: 12px;\n    cursor: pointer;\n    align-self: center;\n    justify-self: center;\n    border-radius: 0; }\n    #sideBar .simple-button:active {\n      transform-origin: center;\n      transform: scale(0.95); }\n  #sideBar #save-animation-pane {\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 1fr 40px auto; }\n    #sideBar #save-animation-pane #save-animation-list {\n      grid-row: 1;\n      grid-column: 1;\n      width: 100%;\n      height: 100%;\n      display: flex;\n      flex-direction: column;\n      padding-top: 5px; }\n      #sideBar #save-animation-pane #save-animation-list .save-animation-list-entry {\n        height: 20px;\n        margin-left: 10px;\n        display: flex;\n        align-content: center;\n        color: white;\n        font-family: 'acumin-pro-condensed';\n        font-size: 10pt;\n        line-height: 15px; }\n    #sideBar #save-animation-pane #save-animation-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      width: 100%;\n      height: 100%;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 10px 1fr 10px 1fr 10px;\n      align-items: center; }\n      #sideBar #save-animation-pane #save-animation-buttons #save-snippet {\n        grid-row: 1;\n        grid-column: 2; }\n      #sideBar #save-animation-pane #save-animation-buttons #save-file {\n        grid-row: 1;\n        grid-column: 4; }\n    #sideBar #save-animation-pane #save-animation-snippet {\n      grid-row: 3;\n      grid-column: 1;\n      width: calc(100% - 31px);\n      height: 20px;\n      align-content: center;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt;\n      padding-left: 31px;\n      background: #252525; }\n  #sideBar #load-animation-pane {\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 75px 1fr;\n    grid-template-rows: 10px 20px 10px 20px 10px 20px 1fr auto;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt; }\n    #sideBar #load-animation-pane #load-animation-snippet-id-label {\n      grid-row: 2;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #load-animation-pane #load-animation-local-file-label {\n      grid-row: 6;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #load-animation-pane #load-snippet-id {\n      grid-row: 2;\n      grid-column: 2;\n      margin-right: 10px;\n      border: 0;\n      background: #252525;\n      width: 127px;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt; }\n    #sideBar #load-animation-pane #load-snippet {\n      grid-row: 4;\n      grid-column: 2;\n      width: 60px;\n      justify-self: left; }\n    #sideBar #load-animation-pane input[type=\"file\"] {\n      display: none; }\n    #sideBar #load-animation-pane #file-snippet-label {\n      grid-row: 6;\n      grid-column: 2;\n      width: 60px;\n      justify-self: left;\n      text-align: center;\n      line-height: 18px; }\n    #sideBar #load-animation-pane #load-animation-snippet {\n      grid-row: 8;\n      grid-column: 1 / 3;\n      width: calc(100% - 31px);\n      height: 20px;\n      align-content: center;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt;\n      padding-left: 31px;\n      background: #252525; }\n  #sideBar #add-animation-pane {\n    grid-column: 1;\n    grid-row: 2;\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 75px 1fr;\n    grid-template-rows: 10px 20px 10px 20px 10px 20px 10px 20px 10px 20px 1fr;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt; }\n    #sideBar #add-animation-pane .input-text {\n      border: 0;\n      background: #252525;\n      width: 127px;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt; }\n    #sideBar #add-animation-pane .option {\n      background: #252525;\n      color: white;\n      border: 0; }\n    #sideBar #add-animation-pane #add-animation-display-name-label {\n      grid-row: 2;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-property-label {\n      grid-row: 4;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-type-label {\n      grid-row: 6;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-loop-mode-label {\n      grid-row: 8;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-name {\n      grid-row: 2;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-property {\n      grid-row: 4;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-type {\n      grid-row: 6;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-loop-mode {\n      grid-row: 8;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation {\n      grid-row: 10;\n      grid-column: 2;\n      justify-self: left; }\n  #sideBar #edit-animation-pane {\n    grid-column: 1;\n    grid-row: 2;\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 75px 1fr;\n    grid-template-rows: 10px 20px 10px 20px 10px 20px 10px 20px 1fr;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt;\n    background: #111111; }\n    #sideBar #edit-animation-pane .input-text {\n      border: 0;\n      background: #252525;\n      width: 127px;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt; }\n    #sideBar #edit-animation-pane .option {\n      background: #252525;\n      color: white;\n      border: 0; }\n    #sideBar #edit-animation-pane #edit-animation-display-name-label {\n      grid-row: 2;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation-property-label {\n      grid-row: 4;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation-loop-mode-label {\n      grid-row: 6;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation-name {\n      grid-row: 2;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation-property {\n      grid-row: 4;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation-loop-mode {\n      grid-row: 6;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation {\n      grid-row: 8;\n      grid-column: 1 / 3;\n      display: grid;\n      grid-template-columns: 50% 50%;\n      grid-template-rows: 100%; }\n      #sideBar #edit-animation-pane #edit-animation #edit-animation-ok {\n        grid-row: 1;\n        grid-column: 1; }\n      #sideBar #edit-animation-pane #edit-animation #edit-animation-cancel {\n        grid-row: 1;\n        grid-column: 2; }\n  #sideBar #animation-list {\n    background: #111111;\n    grid-row: 2;\n    grid-column: 1;\n    width: 100%;\n    height: 100%; }\n    #sideBar #animation-list .animation-entry {\n      height: 20px;\n      display: grid;\n      grid-template-columns: 20px 10px 1fr 20px 20px;\n      grid-template-rows: 100%; }\n      #sideBar #animation-list .animation-entry.isActive {\n        background: #444444; }\n      #sideBar #animation-list .animation-entry .animation-active-indicator {\n        grid-row: 1;\n        grid-column: 1;\n        display: grid;\n        margin: 5px;\n        padding-top: 2px; }\n      #sideBar #animation-list .animation-entry .animation-chevron {\n        grid-row: 1;\n        grid-column: 2;\n        display: grid;\n        align-content: center;\n        padding-top: 5px;\n        cursor: pointer; }\n        #sideBar #animation-list .animation-entry .animation-chevron .animation-chevron-image.collapsed {\n          transform-origin: 50% 50%;\n          transform: rotateZ(-90deg); }\n      #sideBar #animation-list .animation-entry .animation-name {\n        cursor: pointer;\n        grid-row: 1;\n        grid-column: 3;\n        font-family: 'acumin-pro-condensed';\n        font-size: 10.5pt;\n        color: white;\n        display: grid;\n        align-self: center;\n        margin-left: 5px;\n        user-select: none; }\n      #sideBar #animation-list .animation-entry .animation-options {\n        grid-row: 1;\n        grid-column: 4; }\n      #sideBar #animation-list .animation-entry .animation-delete {\n        grid-row: 1;\n        grid-column: 5; }\n", ""]);
+exports.push([module.i, "#sideBar {\n  display: grid;\n  grid-template-columns: 100%;\n  grid-template-rows: 30px 1fr; }\n  #sideBar #menu-bar {\n    background: #252525;\n    grid-row: 1;\n    grid-column: 1;\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 30px 30px 30px 30px 1fr 52px 3px; }\n    #sideBar #menu-bar.small {\n      grid-template-columns: 0px 0px 30px 30px 1fr 52px 3px; }\n    #sideBar #menu-bar #add-animation {\n      grid-row: 1;\n      grid-column: 1; }\n    #sideBar #menu-bar #load-animation {\n      grid-row: 1;\n      grid-column: 2; }\n    #sideBar #menu-bar #save-animation {\n      grid-row: 1;\n      grid-column: 3; }\n    #sideBar #menu-bar #edit-animation {\n      grid-row: 1;\n      grid-column: 4; }\n    #sideBar #menu-bar #framerate-animation {\n      grid-row: 1;\n      grid-column: 6; }\n  #sideBar .simple-button {\n    width: 80px;\n    height: 20px;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt;\n    background: #444444;\n    border: 0;\n    line-height: 12px;\n    cursor: pointer;\n    align-self: center;\n    justify-self: center;\n    border-radius: 0; }\n    #sideBar .simple-button:active {\n      transform-origin: center;\n      transform: scale(0.95); }\n  #sideBar #save-animation-pane {\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 1fr 40px auto; }\n    #sideBar #save-animation-pane #save-animation-list {\n      grid-row: 1;\n      grid-column: 1;\n      width: 100%;\n      height: 100%;\n      display: flex;\n      flex-direction: column;\n      padding-top: 5px; }\n      #sideBar #save-animation-pane #save-animation-list .save-animation-list-entry {\n        height: 20px;\n        margin-left: 10px;\n        display: flex;\n        align-content: center;\n        color: white;\n        font-family: 'acumin-pro-condensed';\n        font-size: 10pt;\n        line-height: 15px; }\n    #sideBar #save-animation-pane #save-animation-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      width: 100%;\n      height: 100%;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 10px 1fr 10px 1fr 10px;\n      align-items: center; }\n      #sideBar #save-animation-pane #save-animation-buttons #save-snippet {\n        grid-row: 1;\n        grid-column: 2; }\n      #sideBar #save-animation-pane #save-animation-buttons #save-file {\n        grid-row: 1;\n        grid-column: 4; }\n    #sideBar #save-animation-pane #save-animation-snippet {\n      grid-row: 3;\n      grid-column: 1;\n      width: calc(100% - 31px);\n      height: 20px;\n      align-content: center;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt;\n      padding-left: 31px;\n      background: #252525; }\n  #sideBar #load-animation-pane {\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 75px 1fr;\n    grid-template-rows: 10px 20px 10px 20px 10px 20px 1fr auto;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt; }\n    #sideBar #load-animation-pane #load-animation-snippet-id-label {\n      grid-row: 2;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #load-animation-pane #load-animation-local-file-label {\n      grid-row: 6;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #load-animation-pane #load-snippet-id {\n      grid-row: 2;\n      grid-column: 2;\n      margin-right: 10px;\n      border: 0;\n      background: #252525;\n      width: 127px;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt; }\n    #sideBar #load-animation-pane #load-snippet {\n      grid-row: 4;\n      grid-column: 2;\n      width: 60px;\n      justify-self: left; }\n    #sideBar #load-animation-pane input[type=\"file\"] {\n      display: none; }\n    #sideBar #load-animation-pane #file-snippet-label {\n      grid-row: 6;\n      grid-column: 2;\n      width: 60px;\n      justify-self: left;\n      text-align: center;\n      line-height: 18px; }\n    #sideBar #load-animation-pane #load-animation-snippet {\n      grid-row: 8;\n      grid-column: 1 / 3;\n      width: calc(100% - 31px);\n      height: 20px;\n      align-content: center;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt;\n      padding-left: 31px;\n      background: #252525; }\n  #sideBar #add-animation-pane {\n    grid-column: 1;\n    grid-row: 2;\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 75px 1fr;\n    grid-template-rows: 10px 20px 10px 20px 10px 20px 10px 20px 10px 20px 10px 20px 1fr;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt; }\n    #sideBar #add-animation-pane .input-text {\n      border: 0;\n      background: #252525;\n      width: 127px;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt; }\n    #sideBar #add-animation-pane .option {\n      background: #252525;\n      color: white;\n      border: 0; }\n    #sideBar #add-animation-pane #add-animation-display-name-label {\n      grid-row: 2;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-mode-label {\n      grid-row: 4;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-property-label {\n      grid-row: 6;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-type-label {\n      grid-row: 8;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-loop-mode-label {\n      grid-row: 10;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-name {\n      grid-row: 2;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-mode {\n      grid-row: 4;\n      grid-column: 2;\n      margin-right: 10px;\n      width: calc(100% - 10px); }\n    #sideBar #add-animation-pane #add-animation-property {\n      grid-row: 6;\n      grid-column: 2;\n      margin-right: 10px;\n      width: calc(100% - 10px); }\n    #sideBar #add-animation-pane #add-animation-type {\n      grid-row: 8;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation-loop-mode {\n      grid-row: 10;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #add-animation-pane #add-animation {\n      grid-row: 12;\n      grid-column: 2;\n      justify-self: left; }\n  #sideBar #edit-animation-pane {\n    grid-column: 1;\n    grid-row: 2;\n    width: 100%;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 75px 1fr;\n    grid-template-rows: 10px 20px 10px 20px 10px 20px 10px 20px 1fr;\n    color: white;\n    font-family: 'acumin-pro-condensed';\n    font-size: 10pt;\n    background: #111111; }\n    #sideBar #edit-animation-pane .input-text {\n      border: 0;\n      background: #252525;\n      width: 127px;\n      color: white;\n      font-family: 'acumin-pro-condensed';\n      font-size: 10pt; }\n    #sideBar #edit-animation-pane .option {\n      background: #252525;\n      color: white;\n      border: 0; }\n    #sideBar #edit-animation-pane #edit-animation-display-name-label {\n      grid-row: 2;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation-property-label {\n      grid-row: 4;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation-loop-mode-label {\n      grid-row: 6;\n      grid-column: 1;\n      justify-self: end;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation-name {\n      grid-row: 2;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation-property {\n      grid-row: 4;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation-loop-mode {\n      grid-row: 6;\n      grid-column: 2;\n      margin-right: 10px; }\n    #sideBar #edit-animation-pane #edit-animation {\n      grid-row: 8;\n      grid-column: 1 / 3;\n      display: grid;\n      grid-template-columns: 50% 50%;\n      grid-template-rows: 100%; }\n      #sideBar #edit-animation-pane #edit-animation #edit-animation-ok {\n        grid-row: 1;\n        grid-column: 1; }\n      #sideBar #edit-animation-pane #edit-animation #edit-animation-cancel {\n        grid-row: 1;\n        grid-column: 2; }\n  #sideBar #animation-list {\n    background: #111111;\n    grid-row: 2;\n    grid-column: 1;\n    width: 100%;\n    height: 100%; }\n    #sideBar #animation-list .animation-entry {\n      height: 20px;\n      display: grid;\n      grid-template-columns: 20px 10px 1fr 20px 20px;\n      grid-template-rows: 100%; }\n      #sideBar #animation-list .animation-entry.isActive {\n        background: #444444; }\n      #sideBar #animation-list .animation-entry .animation-active-indicator {\n        grid-row: 1;\n        grid-column: 1;\n        display: grid;\n        margin: 5px;\n        padding-top: 2px; }\n      #sideBar #animation-list .animation-entry .animation-chevron {\n        grid-row: 1;\n        grid-column: 2;\n        display: grid;\n        align-content: center;\n        padding-top: 5px;\n        cursor: pointer; }\n        #sideBar #animation-list .animation-entry .animation-chevron .animation-chevron-image.collapsed {\n          transform-origin: 50% 50%;\n          transform: rotateZ(-90deg); }\n      #sideBar #animation-list .animation-entry .animation-name {\n        cursor: pointer;\n        grid-row: 1;\n        grid-column: 3;\n        font-family: 'acumin-pro-condensed';\n        font-size: 10.5pt;\n        color: white;\n        display: grid;\n        align-self: center;\n        margin-left: 5px;\n        user-select: none; }\n      #sideBar #animation-list .animation-entry .animation-options {\n        grid-row: 1;\n        grid-column: 4; }\n      #sideBar #animation-list .animation-entry .animation-delete {\n        grid-row: 1;\n        grid-column: 5; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -46890,7 +46890,7 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
             window.close();
         }
         this.setState({ isOpen: false });
-        this.props.context.activeAnimation = null;
+        this.props.context.activeAnimations = [];
         this.props.context.onActiveAnimationChanged.notifyObservers();
     };
     AnimationCurveEditorComponent.prototype.shouldComponentUpdate = function (newProps, newState) {
@@ -46900,7 +46900,7 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
                 this.props.context.prepare();
                 if (this.props.context.animations && this.props.context.animations.length) {
                     setTimeout(function () {
-                        _this.props.context.activeAnimation = _this.props.context.useTargetAnimations ? _this.props.context.animations[0].animation : _this.props.context.animations[0];
+                        _this.props.context.activeAnimations.push(_this.props.context.useTargetAnimations ? _this.props.context.animations[0].animation : _this.props.context.animations[0]);
                         _this.props.context.onActiveAnimationChanged.notifyObservers();
                     });
                 }
@@ -47337,7 +47337,7 @@ var BottomBarComponent = /** @class */ (function (_super) {
         return _this;
     }
     BottomBarComponent.prototype._renderMaxFrame = function () {
-        var keys = this.props.context.activeAnimation.getKeys();
+        var keys = this.props.context.activeAnimations[0].getKeys();
         return Math.round(keys[keys.length - 1].frame);
     };
     BottomBarComponent.prototype.componentWillUnmount = function () {
@@ -47352,7 +47352,7 @@ var BottomBarComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "bottom-bar" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_mediaPlayerComponent__WEBPACK_IMPORTED_MODULE_2__["MediaPlayerComponent"], { globalState: this.props.globalState, context: this.props.context }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_rangeSelectorComponent__WEBPACK_IMPORTED_MODULE_3__["RangeSelectorComponent"], { globalState: this.props.globalState, context: this.props.context }),
-            this.props.context.activeAnimation &&
+            this.props.context.activeAnimations.length > 0 &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "bottom-bar-total" }, this._renderMaxFrame())));
     };
     return BottomBarComponent;
@@ -47417,20 +47417,20 @@ var MediaPlayerComponent = /** @class */ (function (_super) {
         this.props.context.onMoveToFrameRequired.notifyObservers(this.props.context.fromKey);
     };
     MediaPlayerComponent.prototype._onPrevKey = function () {
-        if (!this.props.context.animations || !this.props.context.animations.length || !this.props.context.activeAnimation) {
+        if (!this.props.context.animations || !this.props.context.animations.length || this.props.context.activeAnimations.length === 0) {
             return;
         }
         var prevKey = -Number.MAX_VALUE;
-        //for (var animation of this.props.context.animations) {
-        var animation = this.props.context.activeAnimation;
-        var keys = animation.getKeys();
-        for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
-            var key = keys_1[_i];
-            if (key.frame < this.props.context.activeFrame && key.frame > prevKey) {
-                prevKey = key.frame;
+        for (var _i = 0, _a = this.props.context.activeAnimations; _i < _a.length; _i++) {
+            var animation = _a[_i];
+            var keys = animation.getKeys();
+            for (var _b = 0, keys_1 = keys; _b < keys_1.length; _b++) {
+                var key = keys_1[_b];
+                if (key.frame < this.props.context.activeFrame && key.frame > prevKey) {
+                    prevKey = key.frame;
+                }
             }
         }
-        //}
         if (prevKey === -Number.MAX_VALUE) {
             prevKey = this.props.context.fromKey;
         }
@@ -47449,9 +47449,9 @@ var MediaPlayerComponent = /** @class */ (function (_super) {
             return;
         }
         var nextKey = Number.MAX_VALUE;
-        for (var _i = 0, _a = this.props.context.animations; _i < _a.length; _i++) {
+        for (var _i = 0, _a = this.props.context.activeAnimations; _i < _a.length; _i++) {
             var animation = _a[_i];
-            var keys = this.props.context.useTargetAnimations ? animation.animation.getKeys() : animation.getKeys();
+            var keys = animation.getKeys();
             for (var _b = 0, keys_2 = keys; _b < keys_2.length; _b++) {
                 var key = keys_2[_b];
                 if (key.frame > this.props.context.activeFrame && key.frame < nextKey) {
@@ -47650,7 +47650,8 @@ __webpack_require__.r(__webpack_exports__);
 
 var Context = /** @class */ (function () {
     function Context() {
-        this.activeColor = null;
+        this.activeAnimations = [];
+        this.activeChannels = {};
         this.forwardAnimation = true;
         this.referenceMinFrame = 0;
         this.referenceMaxFrame = 100;
@@ -47681,6 +47682,7 @@ var Context = /** @class */ (function () {
         this.onAnimationsLoaded = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onEditAnimationRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onEditAnimationUIClosed = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onSelectToActivated = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
     }
     Context.prototype.prepare = function () {
         this.isPlaying = false;
@@ -47752,6 +47754,33 @@ var Context = /** @class */ (function () {
     Context.prototype.clearSelection = function () {
         this.activeKeyPoints = [];
         this.onActiveKeyPointChanged.notifyObservers();
+    };
+    Context.prototype.enableChannel = function (animation, color) {
+        this.activeChannels[animation.uniqueId] = color;
+    };
+    Context.prototype.disableChannel = function (animation) {
+        delete this.activeChannels[animation.uniqueId];
+    };
+    Context.prototype.isChannelEnabled = function (animation, color) {
+        return this.activeChannels[animation.uniqueId] === undefined || this.activeChannels[animation.uniqueId] === color;
+    };
+    Context.prototype.getActiveChannel = function (animation) {
+        return this.activeChannels[animation.uniqueId];
+    };
+    Context.prototype.resetAllActiveChannels = function () {
+        this.activeChannels = {};
+    };
+    Context.prototype.getAnimationSortIndex = function (animation) {
+        var _a;
+        if (!this.animations) {
+            return -1;
+        }
+        for (var index = 0; index < ((_a = this.animations) === null || _a === void 0 ? void 0 : _a.length); index++) {
+            if (animation === (this.useTargetAnimations ? this.animations[0].animation : this.animations[index])) {
+                return index;
+            }
+        }
+        return -1;
     };
     return Context;
 }());
@@ -48178,7 +48207,7 @@ var CurveComponent = /** @class */ (function (_super) {
         return true;
     };
     CurveComponent.prototype.render = function () {
-        if (this.props.context.activeColor && this.props.context.activeColor !== this.props.curve.color) {
+        if (!this.props.context.isChannelEnabled(this.props.curve.animation, this.props.curve.color)) {
             return null;
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { style: { cursor: "pointer", overflow: "auto" } },
@@ -48224,10 +48253,6 @@ var FrameBarComponent = /** @class */ (function (_super) {
             _this._computeSizes();
         });
         _this._onActiveAnimationChangedObserver = _this.props.context.onActiveAnimationChanged.add(function () {
-            if (_this._currentAnimation === _this.props.context.activeAnimation) {
-                return;
-            }
-            _this._currentAnimation = _this.props.context.activeAnimation;
             _this._computeSizes();
             _this.forceUpdate();
         });
@@ -48255,7 +48280,7 @@ var FrameBarComponent = /** @class */ (function (_super) {
     };
     FrameBarComponent.prototype._buildFrames = function () {
         var _this = this;
-        if (!this._currentAnimation) {
+        if (this.props.context.activeAnimations.length === 0) {
             return null;
         }
         var minFrame = this.props.context.referenceMinFrame;
@@ -48354,10 +48379,6 @@ var GraphComponent = /** @class */ (function (_super) {
             _this._computeSizes();
         });
         _this._onActiveAnimationChangedObserver = _this.props.context.onActiveAnimationChanged.add(function () {
-            if (_this._currentAnimation === _this.props.context.activeAnimation) {
-                return;
-            }
-            _this._currentAnimation = _this.props.context.activeAnimation;
             _this._evaluateKeys();
             _this._computeSizes();
             _this.forceUpdate();
@@ -48371,108 +48392,113 @@ var GraphComponent = /** @class */ (function (_super) {
         });
         // Delete keypoint
         _this.props.context.onDeleteKeyActiveKeyPoints.add(function () {
-            if (!_this._currentAnimation || !_this.props.context.activeKeyPoints) {
+            if (_this.props.context.activeAnimations.length === 0 || !_this.props.context.activeKeyPoints) {
                 return;
             }
-            var keys = _this._currentAnimation.getKeys();
-            var newKeys = keys.slice(0);
-            var deletedFrame = null;
-            for (var _i = 0, _a = _this.props.context.activeKeyPoints; _i < _a.length; _i++) {
-                var keyPoint = _a[_i];
-                // Cannot delete 0 and last
-                if (keyPoint.props.keyId === 0 || keyPoint.props.keyId === keys.length - 1) {
-                    continue;
-                }
-                var key = keys[keyPoint.props.keyId];
-                var keyIndex = newKeys.indexOf(key);
-                if (keyIndex > -1) {
-                    newKeys.splice(keyIndex, 1);
-                    if (deletedFrame === null) {
-                        deletedFrame = key.frame;
+            for (var _i = 0, _a = _this.props.context.activeAnimations; _i < _a.length; _i++) {
+                var currentAnimation = _a[_i];
+                var keys = currentAnimation.getKeys();
+                var newKeys = keys.slice(0);
+                var deletedFrame = null;
+                for (var _b = 0, _c = _this.props.context.activeKeyPoints; _b < _c.length; _b++) {
+                    var keyPoint = _c[_b];
+                    // Cannot delete 0 and last
+                    if (keyPoint.props.keyId === 0 || keyPoint.props.keyId === keys.length - 1) {
+                        continue;
+                    }
+                    var key = keys[keyPoint.props.keyId];
+                    var keyIndex = newKeys.indexOf(key);
+                    if (keyIndex > -1) {
+                        newKeys.splice(keyIndex, 1);
+                        if (deletedFrame === null) {
+                            deletedFrame = key.frame;
+                        }
                     }
                 }
+                _this.props.context.stop();
+                currentAnimation.setKeys(newKeys);
+                if (deletedFrame !== null) {
+                    _this.props.context.moveToFrame(deletedFrame);
+                }
+                _this.props.context.activeKeyPoints = [];
             }
-            _this.props.context.stop();
-            _this._currentAnimation.setKeys(newKeys);
-            if (deletedFrame !== null) {
-                _this.props.context.moveToFrame(deletedFrame);
-            }
-            _this.props.context.activeKeyPoints = [];
-            _this._currentAnimation = null;
             _this.props.context.onActiveAnimationChanged.notifyObservers();
         });
         // New keypoint
         _this.props.context.onNewKeyPointRequired.add(function () {
-            if (!_this._currentAnimation) {
+            if (_this.props.context.activeAnimations.length === 0) {
                 return;
             }
-            var keys = _this._currentAnimation.getKeys();
-            var currentFrame = _this.props.context.activeFrame;
-            var indexToAdd = -1;
-            for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
-                var key = keys_1[_i];
-                if (key.frame < currentFrame) {
-                    indexToAdd++;
+            for (var _i = 0, _a = _this.props.context.activeAnimations; _i < _a.length; _i++) {
+                var currentAnimation = _a[_i];
+                var keys = currentAnimation.getKeys();
+                var currentFrame = _this.props.context.activeFrame;
+                var indexToAdd = -1;
+                for (var _b = 0, keys_1 = keys; _b < keys_1.length; _b++) {
+                    var key = keys_1[_b];
+                    if (key.frame < currentFrame) {
+                        indexToAdd++;
+                    }
+                    else {
+                        break;
+                    }
+                }
+                var value = void 0;
+                if (_this.props.context.target) {
+                    value = _this.props.context.target;
+                    for (var _c = 0, _d = currentAnimation.targetPropertyPath; _c < _d.length; _c++) {
+                        var path = _d[_c];
+                        value = value[path];
+                    }
+                    if (value.clone) {
+                        value = value.clone();
+                    }
                 }
                 else {
-                    break;
+                    value = currentAnimation.evaluate(currentFrame);
                 }
-            }
-            var value;
-            if (_this.props.context.target) {
-                value = _this.props.context.target;
-                for (var _a = 0, _b = _this._currentAnimation.targetPropertyPath; _a < _b.length; _a++) {
-                    var path = _b[_a];
-                    value = value[path];
-                }
-                if (value.clone) {
-                    value = value.clone();
-                }
-            }
-            else {
-                value = _this._currentAnimation.evaluate(currentFrame);
-            }
-            var leftKey = keys[indexToAdd];
-            var rightKey = keys[indexToAdd + 1];
-            var newKey = {
-                frame: currentFrame,
-                value: value
-            };
-            if (leftKey.outTangent !== undefined && rightKey.inTangent !== undefined) {
-                var derivative = null;
-                var invFrameDelta = 1.0 / (rightKey.frame - leftKey.frame);
-                var cutTime = (currentFrame - leftKey.frame) * invFrameDelta;
-                switch (_this._currentAnimation.dataType) {
-                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_FLOAT: {
-                        derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Scalar"].Hermite1stDerivative(leftKey.value * invFrameDelta, leftKey.outTangent, rightKey.value * invFrameDelta, rightKey.inTangent, cutTime);
-                        break;
+                var leftKey = keys[indexToAdd];
+                var rightKey = keys[indexToAdd + 1];
+                var newKey = {
+                    frame: currentFrame,
+                    value: value
+                };
+                if (leftKey.outTangent !== undefined && rightKey.inTangent !== undefined) {
+                    var derivative = null;
+                    var invFrameDelta = 1.0 / (rightKey.frame - leftKey.frame);
+                    var cutTime = (currentFrame - leftKey.frame) * invFrameDelta;
+                    switch (currentAnimation.dataType) {
+                        case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_FLOAT: {
+                            derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Scalar"].Hermite1stDerivative(leftKey.value * invFrameDelta, leftKey.outTangent, rightKey.value * invFrameDelta, rightKey.inTangent, cutTime);
+                            break;
+                        }
+                        case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR2: {
+                            derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
+                            break;
+                        }
+                        case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR3: {
+                            derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
+                            break;
+                        }
+                        case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_QUATERNION: {
+                            derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
+                            break;
+                        }
+                        case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR3:
+                            derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
+                            break;
+                        case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR4:
+                            derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
+                            break;
                     }
-                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR2: {
-                        derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
-                        break;
+                    if (derivative !== null) {
+                        newKey.inTangent = derivative;
+                        newKey.outTangent = derivative.clone ? derivative.clone() : derivative;
                     }
-                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR3: {
-                        derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
-                        break;
-                    }
-                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_QUATERNION: {
-                        derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
-                        break;
-                    }
-                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR3:
-                        derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
-                        break;
-                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR4:
-                        derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
-                        break;
                 }
-                if (derivative !== null) {
-                    newKey.inTangent = derivative;
-                    newKey.outTangent = derivative.clone ? derivative.clone() : derivative;
-                }
+                keys.splice(indexToAdd + 1, 0, newKey);
+                currentAnimation.setKeys(keys);
             }
-            keys.splice(indexToAdd + 1, 0, newKey);
-            _this._currentAnimation.setKeys(keys);
             _this._evaluateKeys(false, false);
             _this.props.context.activeKeyPoints = [];
             _this.props.context.onActiveKeyPointChanged.notifyObservers();
@@ -48508,59 +48534,68 @@ var GraphComponent = /** @class */ (function (_super) {
         }
     };
     GraphComponent.prototype._evaluateKeys = function (frame, range) {
+        var _a;
         var _this = this;
         if (frame === void 0) { frame = true; }
         if (range === void 0) { range = true; }
-        if (!this.props.context.activeAnimation) {
+        if (this.props.context.activeAnimations.length === 0) {
             this._curves = [];
             return;
         }
-        var animation = this.props.context.activeAnimation;
-        var keys = animation.getKeys();
         this._curves = [];
-        switch (animation.dataType) {
-            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_FLOAT:
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation));
-                break;
-            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR2:
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
-                break;
-            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR3:
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "z", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
-                break;
-            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR3:
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "r", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Black(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "g", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Black(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "b", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Black(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
-                break;
-            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_QUATERNION:
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "z", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#8700FF", animation, "w", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
-                break;
-            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR4:
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "r", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "g", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "b", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
-                this._curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#8700FF", animation, "a", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
-                break;
-        }
-        var values = this._extractValuesFromKeys(keys, animation.dataType, true);
-        if (range) {
-            this._minValue = values.min;
-            this._maxValue = values.max;
-            this._minFrame = keys[0].frame;
-            this._maxFrame = keys[keys.length - 1].frame;
+        this._minValue = Number.MAX_VALUE;
+        this._maxValue = -Number.MAX_VALUE;
+        this._minFrame = Number.MAX_VALUE;
+        this._maxFrame = -Number.MAX_VALUE;
+        for (var _i = 0, _b = this.props.context.activeAnimations; _i < _b.length; _i++) {
+            var animation = _b[_i];
+            var keys = animation.getKeys();
+            var curves = [];
+            switch (animation.dataType) {
+                case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_FLOAT:
+                    curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation));
+                    break;
+                case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR2:
+                    curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                    curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                    break;
+                case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR3:
+                    curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                    curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                    curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "z", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                    break;
+                case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR3:
+                    curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "r", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Black(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                    curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "g", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Black(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                    curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "b", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Black(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                    break;
+                case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_QUATERNION:
+                    curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "x", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                    curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "y", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                    curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "z", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                    curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#8700FF", animation, "w", function () { return babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Zero(); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                    break;
+                case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR4:
+                    curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#DB3E3E", animation, "r", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                    curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#51E22D", animation, "g", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                    curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#00A3FF", animation, "b", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                    curves.push(new _curve__WEBPACK_IMPORTED_MODULE_3__["Curve"]("#8700FF", animation, "a", function () { return new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"](); }, function (keyId) { return _this._setDefaultInTangent(keyId); }, function (keyId) { return _this._setDefaultOutTangent(keyId); }));
+                    break;
+            }
+            var values = this._extractValuesFromKeys(keys, animation.dataType, curves);
+            (_a = this._curves).push.apply(_a, curves);
+            if (range) {
+                this._minValue = Math.min(this._minValue, values.min);
+                this._maxValue = Math.max(this._maxValue, values.max);
+                this._minFrame = Math.min(this._minFrame, keys[0].frame);
+                this._maxFrame = Math.max(this._maxFrame, keys[keys.length - 1].frame);
+            }
         }
         if (frame) {
             this._frame();
         }
     };
-    GraphComponent.prototype._extractValuesFromKeys = function (keys, dataType, pushToCurves, propertyFilter) {
+    GraphComponent.prototype._extractValuesFromKeys = function (keys, dataType, curvesToPushTo, propertyFilter) {
         var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7;
         var minValue = Number.MAX_VALUE;
         var maxValue = -Number.MAX_VALUE;
@@ -48574,8 +48609,8 @@ var GraphComponent = /** @class */ (function (_super) {
                 case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_FLOAT:
                     minValue = Math.min(minValue, key.value);
                     maxValue = Math.max(maxValue, key.value);
-                    if (pushToCurves) {
-                        this._curves[0].keys.push({
+                    if (curvesToPushTo) {
+                        curvesToPushTo[0].keys.push({
                             frame: key.frame,
                             value: key.value,
                             inTangent: key.inTangent,
@@ -48593,15 +48628,15 @@ var GraphComponent = /** @class */ (function (_super) {
                         minValue = Math.min(minValue, key.value.y);
                         maxValue = Math.max(maxValue, key.value.y);
                     }
-                    if (pushToCurves) {
-                        this._curves[0].keys.push({
+                    if (curvesToPushTo) {
+                        curvesToPushTo[0].keys.push({
                             frame: key.frame,
                             value: key.value.x,
                             inTangent: (_a = key.inTangent) === null || _a === void 0 ? void 0 : _a.x,
                             outTangent: (_b = key.outTangent) === null || _b === void 0 ? void 0 : _b.x,
                             lockedTangent: lockedTangent
                         });
-                        this._curves[1].keys.push({
+                        curvesToPushTo[1].keys.push({
                             frame: key.frame,
                             value: key.value.y,
                             inTangent: (_c = key.inTangent) === null || _c === void 0 ? void 0 : _c.y,
@@ -48623,22 +48658,22 @@ var GraphComponent = /** @class */ (function (_super) {
                         minValue = Math.min(minValue, key.value.z);
                         maxValue = Math.max(maxValue, key.value.z);
                     }
-                    if (pushToCurves) {
-                        this._curves[0].keys.push({
+                    if (curvesToPushTo) {
+                        curvesToPushTo[0].keys.push({
                             frame: key.frame,
                             value: key.value.x,
                             inTangent: (_e = key.inTangent) === null || _e === void 0 ? void 0 : _e.x,
                             outTangent: (_f = key.outTangent) === null || _f === void 0 ? void 0 : _f.x,
                             lockedTangent: lockedTangent
                         });
-                        this._curves[1].keys.push({
+                        curvesToPushTo[1].keys.push({
                             frame: key.frame,
                             value: key.value.y,
                             inTangent: (_g = key.inTangent) === null || _g === void 0 ? void 0 : _g.y,
                             outTangent: (_h = key.outTangent) === null || _h === void 0 ? void 0 : _h.y,
                             lockedTangent: lockedTangent
                         });
-                        this._curves[2].keys.push({
+                        curvesToPushTo[2].keys.push({
                             frame: key.frame,
                             value: key.value.z,
                             inTangent: (_j = key.inTangent) === null || _j === void 0 ? void 0 : _j.z,
@@ -48660,22 +48695,22 @@ var GraphComponent = /** @class */ (function (_super) {
                         minValue = Math.min(minValue, key.value.b);
                         maxValue = Math.max(maxValue, key.value.b);
                     }
-                    if (pushToCurves) {
-                        this._curves[0].keys.push({
+                    if (curvesToPushTo) {
+                        curvesToPushTo[0].keys.push({
                             frame: key.frame,
                             value: key.value.r,
                             inTangent: (_l = key.inTangent) === null || _l === void 0 ? void 0 : _l.r,
                             outTangent: (_m = key.outTangent) === null || _m === void 0 ? void 0 : _m.r,
                             lockedTangent: lockedTangent
                         });
-                        this._curves[1].keys.push({
+                        curvesToPushTo[1].keys.push({
                             frame: key.frame,
                             value: key.value.g,
                             inTangent: (_o = key.inTangent) === null || _o === void 0 ? void 0 : _o.g,
                             outTangent: (_p = key.outTangent) === null || _p === void 0 ? void 0 : _p.g,
                             lockedTangent: lockedTangent
                         });
-                        this._curves[2].keys.push({
+                        curvesToPushTo[2].keys.push({
                             frame: key.frame,
                             value: key.value.b,
                             inTangent: (_q = key.inTangent) === null || _q === void 0 ? void 0 : _q.b,
@@ -48701,29 +48736,29 @@ var GraphComponent = /** @class */ (function (_super) {
                         minValue = Math.min(minValue, key.value.w);
                         maxValue = Math.max(maxValue, key.value.w);
                     }
-                    if (pushToCurves) {
-                        this._curves[0].keys.push({
+                    if (curvesToPushTo) {
+                        curvesToPushTo[0].keys.push({
                             frame: key.frame,
                             value: key.value.x,
                             inTangent: (_s = key.inTangent) === null || _s === void 0 ? void 0 : _s.x,
                             outTangent: (_t = key.outTangent) === null || _t === void 0 ? void 0 : _t.x,
                             lockedTangent: lockedTangent
                         });
-                        this._curves[1].keys.push({
+                        curvesToPushTo[1].keys.push({
                             frame: key.frame,
                             value: key.value.y,
                             inTangent: (_u = key.inTangent) === null || _u === void 0 ? void 0 : _u.y,
                             outTangent: (_v = key.outTangent) === null || _v === void 0 ? void 0 : _v.y,
                             lockedTangent: lockedTangent
                         });
-                        this._curves[2].keys.push({
+                        curvesToPushTo[2].keys.push({
                             frame: key.frame,
                             value: key.value.z,
                             inTangent: (_w = key.inTangent) === null || _w === void 0 ? void 0 : _w.z,
                             outTangent: (_x = key.outTangent) === null || _x === void 0 ? void 0 : _x.z,
                             lockedTangent: lockedTangent
                         });
-                        this._curves[3].keys.push({
+                        curvesToPushTo[3].keys.push({
                             frame: key.frame,
                             value: key.value.w,
                             inTangent: (_y = key.inTangent) === null || _y === void 0 ? void 0 : _y.w,
@@ -48749,29 +48784,29 @@ var GraphComponent = /** @class */ (function (_super) {
                         minValue = Math.min(minValue, key.value.a);
                         maxValue = Math.max(maxValue, key.value.a);
                     }
-                    if (pushToCurves) {
-                        this._curves[0].keys.push({
+                    if (curvesToPushTo) {
+                        curvesToPushTo[0].keys.push({
                             frame: key.frame,
                             value: key.value.r,
                             inTangent: (_0 = key.inTangent) === null || _0 === void 0 ? void 0 : _0.r,
                             outTangent: (_1 = key.outTangent) === null || _1 === void 0 ? void 0 : _1.r,
                             lockedTangent: lockedTangent
                         });
-                        this._curves[1].keys.push({
+                        curvesToPushTo[1].keys.push({
                             frame: key.frame,
                             value: key.value.g,
                             inTangent: (_2 = key.inTangent) === null || _2 === void 0 ? void 0 : _2.g,
                             outTangent: (_3 = key.outTangent) === null || _3 === void 0 ? void 0 : _3.g,
                             lockedTangent: lockedTangent
                         });
-                        this._curves[2].keys.push({
+                        curvesToPushTo[2].keys.push({
                             frame: key.frame,
                             value: key.value.b,
                             inTangent: (_4 = key.inTangent) === null || _4 === void 0 ? void 0 : _4.b,
                             outTangent: (_5 = key.outTangent) === null || _5 === void 0 ? void 0 : _5.b,
                             lockedTangent: lockedTangent
                         });
-                        this._curves[3].keys.push({
+                        curvesToPushTo[3].keys.push({
                             frame: key.frame,
                             value: key.value.a,
                             inTangent: (_6 = key.inTangent) === null || _6 === void 0 ? void 0 : _6.a,
@@ -48813,12 +48848,12 @@ var GraphComponent = /** @class */ (function (_super) {
     };
     GraphComponent.prototype._buildFrameIntervalAxis = function () {
         var _this = this;
-        if (!this.props.context.activeAnimation) {
+        if (this.props.context.activeAnimations.length === 0) {
             return null;
         }
         var maxFrame = this.props.context.referenceMaxFrame;
         var range = maxFrame;
-        var offset = this.props.context.activeAnimation.framePerSecond;
+        var offset = this.props.context.activeAnimations[0].framePerSecond;
         var convertRatio = range / this._GraphAbsoluteWidth;
         var steps = [];
         if (offset === 0) {
@@ -48841,7 +48876,7 @@ var GraphComponent = /** @class */ (function (_super) {
     };
     GraphComponent.prototype._buildYAxis = function () {
         var _this = this;
-        if (!this.props.context.activeAnimation) {
+        if (this.props.context.activeAnimations.length === 0) {
             return null;
         }
         var stepCounts = 10;
@@ -48890,37 +48925,50 @@ var GraphComponent = /** @class */ (function (_super) {
         }));
     };
     GraphComponent.prototype._frame = function () {
-        var _this = this;
-        if (!this._currentAnimation) {
+        if (this.props.context.activeAnimations.length === 0) {
             return;
         }
         this._offsetX = 20;
         this._offsetY = 20;
-        var keys = this._currentAnimation.getKeys();
-        // Only keep selected keys
-        if (this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 1) {
-            var newKeys = [];
-            for (var _i = 0, _a = this.props.context.activeKeyPoints; _i < _a.length; _i++) {
-                var keyPoint = _a[_i];
-                newKeys.push(keys[keyPoint.props.keyId]);
+        this._minValue = Number.MAX_VALUE;
+        this._maxValue = -Number.MAX_VALUE;
+        this._minFrame = Number.MAX_VALUE;
+        this._maxFrame = -Number.MAX_VALUE;
+        var _loop_1 = function (animation) {
+            var propertyFilter = undefined;
+            var activeChannel = this_1.props.context.getActiveChannel(animation);
+            if (activeChannel) {
+                var activeCurve = this_1._curves.filter(function (c) { return c.color === activeChannel; })[0];
+                if (activeCurve) {
+                    propertyFilter = activeCurve.property;
+                }
             }
-            keys = newKeys;
+            var keys = animation.getKeys();
+            // Only keep selected keys
+            if (this_1.props.context.activeKeyPoints && this_1.props.context.activeKeyPoints.length > 1) {
+                var newKeys = [];
+                for (var _b = 0, _c = this_1.props.context.activeKeyPoints; _b < _c.length; _b++) {
+                    var keyPoint = _c[_b];
+                    if (keyPoint.props.curve.animation === animation) {
+                        newKeys.push(keys[keyPoint.props.keyId]);
+                    }
+                }
+                keys = newKeys;
+            }
+            if (keys.length === 0) {
+                return "continue";
+            }
+            var values = this_1._extractValuesFromKeys(keys, animation.dataType, undefined, propertyFilter);
+            this_1._minValue = Math.min(this_1._minValue, values.min);
+            this_1._maxValue = Math.max(this_1._maxValue, values.max);
+            this_1._minFrame = Math.min(this_1._minFrame, keys[0].frame);
+            this_1._maxFrame = Math.max(this_1._maxFrame, keys[keys.length - 1].frame);
+        };
+        var this_1 = this;
+        for (var _i = 0, _a = this.props.context.activeAnimations; _i < _a.length; _i++) {
+            var animation = _a[_i];
+            _loop_1(animation);
         }
-        this._minFrame = keys[0].frame;
-        this._maxFrame = keys[keys.length - 1].frame;
-        var propertyFilter = undefined;
-        if (this.props.context.activeColor) {
-            var activeCurve = this._curves.filter(function (c) { return c.color === _this.props.context.activeColor; })[0];
-            if (activeCurve) {
-                propertyFilter = activeCurve.property;
-            }
-            else {
-                this.props.context.activeColor = null;
-            }
-        }
-        var values = this._extractValuesFromKeys(keys, this._currentAnimation.dataType, false, propertyFilter);
-        this._minValue = values.min;
-        this._maxValue = values.max;
         this.props.context.referenceMinFrame = this._minFrame;
         this.props.context.referenceMaxFrame = this._maxFrame;
         var frameConvert = Math.abs(this._convertX(this._maxFrame) - this._convertX(this._minFrame)) + this._offsetX * 2;
@@ -48931,19 +48979,12 @@ var GraphComponent = /** @class */ (function (_super) {
         this.props.context.onGraphMoved.notifyObservers(this._offsetX);
         this.props.context.onGraphScaled.notifyObservers(this._viewScale);
     };
-    GraphComponent.prototype._dropKeyFrames = function (curveId) {
+    GraphComponent.prototype._dropKeyFrames = function (curve) {
         var _this = this;
-        if (!this.props.context.activeAnimation || !this._curves || !this._curves.length) {
-            return null;
-        }
-        if (curveId >= this._curves.length) {
-            return null;
-        }
-        var curve = this._curves[curveId];
         return curve.keys.map(function (key, i) {
             var x = _this._convertX(key.frame);
             var y = _this._convertY(key.value);
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_keyPoint__WEBPACK_IMPORTED_MODULE_4__["KeyPointComponent"], { x: x, y: y, context: _this.props.context, scale: _this._viewScale, getPreviousX: function () { return i > 0 ? _this._convertX(curve.keys[i - 1].frame) : null; }, getNextX: function () { return i < curve.keys.length - 1 ? _this._convertX(curve.keys[i + 1].frame) : null; }, channel: curve.color, keyId: i, curve: curve, key: curveId + "-" + i, invertX: function (x) { return _this._invertX(x); }, invertY: function (y) { return _this._invertY(y); }, convertX: function (x) { return _this._convertX(x); }, convertY: function (y) { return _this._convertY(y); }, onFrameValueChanged: function (value) {
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_keyPoint__WEBPACK_IMPORTED_MODULE_4__["KeyPointComponent"], { x: x, y: y, context: _this.props.context, scale: _this._viewScale, getPreviousX: function () { return i > 0 ? _this._convertX(curve.keys[i - 1].frame) : null; }, getNextX: function () { return i < curve.keys.length - 1 ? _this._convertX(curve.keys[i + 1].frame) : null; }, channel: curve.color, keyId: i, curve: curve, key: "curve-" + i, invertX: function (x) { return _this._invertX(x); }, invertY: function (y) { return _this._invertY(y); }, convertX: function (x) { return _this._convertX(x); }, convertY: function (y) { return _this._convertY(y); }, onFrameValueChanged: function (value) {
                     curve.updateKeyFrame(i, value);
                     _this.props.context.refreshTarget();
                 }, onKeyValueChanged: function (value) {
@@ -49032,14 +49073,14 @@ var GraphComponent = /** @class */ (function (_super) {
         var viewBoxHorizontal = -this._offsetX + " 0 " + Math.round((this._viewWidth - 40) * this._viewScale) + "  " + Math.round(scale * this._viewHeight);
         var activeBoxLeft = 0;
         var activeBoxRight = 0;
-        if (this.props.context.activeAnimation) {
+        if (this.props.context.activeAnimations.length !== 0) {
             var minFrame = this.props.context.referenceMinFrame;
             var maxFrame = this.props.context.referenceMaxFrame;
             activeBoxLeft = (((this.props.context.fromKey - minFrame) / (maxFrame - minFrame)) * this._GraphAbsoluteWidth + this._offsetX) / this._viewScale;
             activeBoxRight = (((this.props.context.toKey - minFrame) / (maxFrame - minFrame)) * this._GraphAbsoluteWidth + this._offsetX) / this._viewScale;
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "graph", onWheel: function (evt) { return _this._onWheel(evt); }, onPointerDown: function (evt) { return _this._onPointerDown(evt); }, onPointerMove: function (evt) { return _this._onPointerMove(evt); }, onPointerUp: function (evt) { return _this._onPointerUp(evt); } },
-            this.props.context.activeAnimation &&
+            this.props.context.activeAnimations.length !== 0 &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "dark-rectangle", style: {
                         left: activeBoxLeft + "px",
                         width: (activeBoxRight - activeBoxLeft) + "px"
@@ -49051,10 +49092,9 @@ var GraphComponent = /** @class */ (function (_super) {
                 this._curves.map(function (c, i) {
                     return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_curveComponent__WEBPACK_IMPORTED_MODULE_5__["CurveComponent"], { key: i, context: _this.props.context, curve: c, convertX: function (x) { return _this._convertX(x); }, convertY: function (y) { return _this._convertY(y); } }));
                 }),
-                this._dropKeyFrames(0),
-                this._dropKeyFrames(1),
-                this._dropKeyFrames(2),
-                this._dropKeyFrames(3)),
+                this._curves.map(function (c) {
+                    return _this._dropKeyFrames(c);
+                })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { ref: this._selectionRectangle, id: "selection-rectangle" })));
     };
     return GraphComponent;
@@ -49104,6 +49144,10 @@ var KeyPointComponent = /** @class */ (function (_super) {
     function KeyPointComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._controlMode = ControlMode.None;
+        _this._lockX = false;
+        _this._lockY = false;
+        _this._accumulatedX = 0;
+        _this._accumulatedY = 0;
         _this.state = { selectedState: SelectionState.None, x: _this.props.x, y: _this.props.y, tangentSelectedIndex: -1 };
         _this._svgHost = react__WEBPACK_IMPORTED_MODULE_2__["createRef"]();
         _this._keyPointSVG = react__WEBPACK_IMPORTED_MODULE_2__["createRef"]();
@@ -49197,7 +49241,7 @@ var KeyPointComponent = /** @class */ (function (_super) {
                 var state = SelectionState.None;
                 for (var _i = 0, _b = _this.props.context.activeKeyPoints; _i < _b.length; _i++) {
                     var activeKeyPoint = _b[_i];
-                    if (activeKeyPoint.props.keyId === _this.props.keyId && curve !== activeKeyPoint.props.curve) {
+                    if (activeKeyPoint.props.keyId === _this.props.keyId && curve !== activeKeyPoint.props.curve && curve.animation === activeKeyPoint.props.curve.animation) {
                         state = SelectionState.Siblings;
                         break;
                     }
@@ -49382,6 +49426,10 @@ var KeyPointComponent = /** @class */ (function (_super) {
             this._controlMode = ControlMode.TangentRight;
             this.setState({ tangentSelectedIndex: 1 });
         }
+        this._lockX = false;
+        this._lockY = false;
+        this._accumulatedX = 0;
+        this._accumulatedY = 0;
         evt.stopPropagation();
     };
     KeyPointComponent.prototype._extractSlope = function (vec, storedLength, isIn) {
@@ -49410,8 +49458,28 @@ var KeyPointComponent = /** @class */ (function (_super) {
             return;
         }
         if (this._controlMode === ControlMode.Key) {
-            var newX = this.state.x + (evt.nativeEvent.offsetX - this._sourcePointerX) * this.props.scale;
-            var newY = this.state.y + (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
+            var diffX = evt.nativeEvent.offsetX - this._sourcePointerX;
+            var diffY = evt.nativeEvent.offsetY - this._sourcePointerY;
+            if (evt.shiftKey) {
+                if (!this._lockX && !this._lockY) {
+                    this._accumulatedX += Math.abs(diffX);
+                    this._accumulatedY += Math.abs(diffY);
+                    if (this._accumulatedX > 5 || this._accumulatedY > 5) {
+                        if (this._accumulatedX > this._accumulatedY) {
+                            this._lockY = true;
+                        }
+                        else {
+                            this._lockX = true;
+                        }
+                    }
+                }
+            }
+            else {
+                this._lockX = false;
+                this._lockY = false;
+            }
+            var newX = this.state.x + (this._lockX ? 0 : diffX * this.props.scale);
+            var newY = this.state.y + (this._lockY ? 0 : diffY * this.props.scale);
             var previousX = this.props.getPreviousX();
             var nextX = this.props.getNextX();
             var epsilon = 0.01;
@@ -49493,7 +49561,7 @@ var KeyPointComponent = /** @class */ (function (_super) {
     KeyPointComponent.prototype.render = function () {
         var _this = this;
         var _a;
-        if (this.props.context.activeColor && this.props.context.activeColor !== this.props.curve.color) {
+        if (!this.props.context.isChannelEnabled(this.props.curve.animation, this.props.curve.color)) {
             return null;
         }
         var svgImageIcon = this.state.selectedState === SelectionState.Selected ? keySelected : (this.state.selectedState === SelectionState.Siblings ? keyActive : keyInactive);
@@ -49574,10 +49642,10 @@ var PlayHeadComponent = /** @class */ (function (_super) {
         });
         _this._onBeforeRenderObserver = _this.props.context.scene.onBeforeRenderObservable.add(function () {
             var _a;
-            if (!_this.props.context.activeAnimation) {
+            if (_this.props.context.activeAnimations.length === 0) {
                 return;
             }
-            var animation = _this.props.context.activeAnimation;
+            var animation = _this.props.context.activeAnimations[0];
             if (!animation) {
                 return;
             }
@@ -49619,7 +49687,7 @@ var PlayHeadComponent = /** @class */ (function (_super) {
         return (((frame - minFrame) / (maxFrame - minFrame)) * this._GraphAbsoluteWidth + this._offsetX) * this._viewScale;
     };
     PlayHeadComponent.prototype._pixelToFrame = function (pixel) {
-        var animation = this.props.context.activeAnimation;
+        var animation = this.props.context.activeAnimations[0];
         var keys = animation.getKeys();
         var minFrame = this.props.context.referenceMinFrame;
         var maxFrame = this.props.context.referenceMaxFrame;
@@ -49655,7 +49723,7 @@ var PlayHeadComponent = /** @class */ (function (_super) {
     };
     PlayHeadComponent.prototype.render = function () {
         var _this = this;
-        if (!this.props.context.activeAnimation) {
+        if (this.props.context.activeAnimations.length === 0) {
             return null;
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
@@ -49699,7 +49767,6 @@ var RangeFrameBarComponent = /** @class */ (function (_super) {
             _this._computeSizes();
         });
         _this._onActiveAnimationChangedObserver = _this.props.context.onActiveAnimationChanged.add(function () {
-            _this._currentAnimation = _this.props.context.activeAnimation;
             if (!_this._isMounted) {
                 return;
             }
@@ -49736,15 +49803,12 @@ var RangeFrameBarComponent = /** @class */ (function (_super) {
         this._viewWidth = this._svgHost.current.clientWidth;
         this.forceUpdate();
     };
-    RangeFrameBarComponent.prototype._dropKeyFrames = function () {
-        if (!this._currentAnimation) {
-            return null;
-        }
+    RangeFrameBarComponent.prototype._dropKeyFrames = function (animation) {
         var from = this.props.context.fromKey;
         var to = this.props.context.toKey;
         var range = to - from;
         var convertRatio = range / this._viewWidth;
-        var keys = this._currentAnimation.getKeys();
+        var keys = animation.getKeys();
         return (keys.map(function (k, i) {
             var x = (k.frame - from) / convertRatio;
             return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { key: "frame-line" + k.frame + i, x1: x, y1: "0px", x2: x, y2: "40px", style: {
@@ -49754,7 +49818,7 @@ var RangeFrameBarComponent = /** @class */ (function (_super) {
         }));
     };
     RangeFrameBarComponent.prototype._buildFrames = function () {
-        if (!this._currentAnimation) {
+        if (this.props.context.activeAnimations.length === 0) {
             return null;
         }
         var from = this.props.context.fromKey;
@@ -49788,11 +49852,14 @@ var RangeFrameBarComponent = /** @class */ (function (_super) {
         }));
     };
     RangeFrameBarComponent.prototype.render = function () {
+        var _this = this;
         var viewBox = -this._offsetX + " 0 " + (this._viewWidth + this._offsetX * 4) + " 40";
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "range-frame-bar" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { id: "svg-range-frames", viewBox: viewBox, ref: this._svgHost },
                 this._buildFrames(),
-                this._dropKeyFrames())));
+                this.props.context.activeAnimations.map(function (a) {
+                    return _this._dropKeyFrames(a);
+                }))));
     };
     return RangeFrameBarComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -49970,20 +50037,21 @@ var AddAnimationComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AddAnimationComponent, _super);
     function AddAnimationComponent(props) {
         var _this = _super.call(this, props) || this;
-        _this.state = {};
+        _this.state = { customPropertyMode: false };
         _this._root = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         _this._displayName = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         _this._property = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         _this._typeElement = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         _this._loopModeElement = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this._propertylement = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         return _this;
     }
     AddAnimationComponent.prototype.createNew = function () {
         var context = this.props.context;
         var document = this._displayName.current.ownerDocument;
         var displayName = this._displayName.current.value;
-        var property = this._property.current.value;
-        var type = this._typeElement.current.value;
+        var property = this._property.current ? this._property.current.value : this._propertylement.current.value;
+        var type = this._typeElement.current ? this._typeElement.current.value : this.getInferredType();
         var loopModeValue = this._loopModeElement.current.value;
         if (!displayName) {
             document.defaultView.alert("Please define a display name");
@@ -50072,25 +50140,99 @@ var AddAnimationComponent = /** @class */ (function (_super) {
         if (!context.useTargetAnimations) {
             context.animations.push(animation);
         }
-        context.activeAnimation = animation;
+        context.activeAnimations.push(animation);
         context.prepare();
         context.onActiveAnimationChanged.notifyObservers();
         context.onAnimationsLoaded.notifyObservers();
+    };
+    AddAnimationComponent.prototype.getInferredType = function (activeProperty) {
+        if (activeProperty === void 0) { activeProperty = ""; }
+        var source = this.props.context.target;
+        if (this._propertylement.current) {
+            activeProperty = this._propertylement.current.value;
+        }
+        var value = source[activeProperty];
+        if (!isNaN(parseFloat(value))) {
+            return "Float";
+        }
+        return value.getClassName();
     };
     AddAnimationComponent.prototype.render = function () {
         var _this = this;
         var types = ["Float", "Vector2", "Vector3", "Quaternion", "Color3", "Color4"];
         var loopModes = ["Cycle", "Relative", "Constant"];
+        var modes = ["Custom", "List"];
+        var properties = [];
+        var inferredType = "";
+        if (this.props.context.target) {
+            var target = this.props.context.target;
+            var source = target;
+            while (target !== null) {
+                var descriptors = Object.getOwnPropertyDescriptors(target);
+                for (var property in descriptors) {
+                    var descriptor = descriptors[property];
+                    if (property[0] === "_" || source[property] === null || source[property] === undefined) {
+                        continue;
+                    }
+                    if (source[property].r === undefined && source[property].x === undefined && isNaN(parseFloat(source[property]))) {
+                        continue;
+                    }
+                    if (properties.indexOf(property) !== -1) {
+                        continue;
+                    }
+                    if (!descriptor.writable && !descriptor.set) {
+                        continue;
+                    }
+                    properties.push(property);
+                }
+                target = Object.getPrototypeOf(target);
+            }
+            properties.sort();
+            // Extract position, rotation, scaling
+            var main = ["scaling", "rotation", "position"];
+            for (var _i = 0, main_1 = main; _i < main_1.length; _i++) {
+                var mainProperty = main_1[_i];
+                var index = properties.indexOf(mainProperty);
+                if (index === -1) {
+                    continue;
+                }
+                properties.splice(index, 1);
+                properties.splice(0, 0, mainProperty);
+            }
+            if (this._propertylement.current) {
+                inferredType = this.getInferredType();
+            }
+            else {
+                inferredType = this.getInferredType(properties[0]);
+            }
+        }
+        var customPropertyMode = this.state.customPropertyMode || properties.length === 0;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "add-animation-pane", ref: this._root },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "add-animation-display-name-label" }, "Display Name"),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "add-animation-mode-label" }, "Mode"),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "add-animation-property-label" }, "Property"),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "add-animation-type-label" }, "Type"),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "add-animation-loop-mode-label" }, "Loop Mode"),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "text", id: "add-animation-name", ref: this._displayName, className: "input-text", defaultValue: "" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "text", id: "add-animation-property", ref: this._property, className: "input-text", defaultValue: "" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { id: "add-animation-type", className: "option", ref: this._typeElement }, types.map(function (type, i) {
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { key: type + i, value: type, title: type }, type));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { id: "add-animation-mode", className: "option", value: this.state.customPropertyMode ? "Custom" : "List", onChange: function (evt) {
+                    _this.setState({ customPropertyMode: evt.currentTarget.value === "Custom" });
+                } }, modes.map(function (mode, i) {
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { key: mode + i, value: mode, title: mode }, mode));
             })),
+            customPropertyMode &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "text", id: "add-animation-property", ref: this._property, className: "input-text", defaultValue: "" }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { id: "add-animation-type", className: "option", ref: this._typeElement }, types.map(function (type, i) {
+                        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { key: type + i, value: type, title: type }, type));
+                    }))),
+            !customPropertyMode &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { id: "add-animation-property", className: "option", ref: this._propertylement, onClick: function () {
+                            _this.forceUpdate();
+                        } }, properties.map(function (property, i) {
+                        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { key: property + i, value: property, title: property }, property));
+                    })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "add-animation-type" }, inferredType)),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { id: "add-animation-loop-mode", className: "option", ref: this._loopModeElement }, loopModes.map(function (loopMode, i) {
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { key: loopMode + i, value: loopMode, title: loopMode }, loopMode));
             })),
@@ -50140,17 +50282,31 @@ var AnimationEntryComponent = /** @class */ (function (_super) {
             if (_this._unmount) {
                 return;
             }
-            if (_this.props.animation !== _this.props.context.activeAnimation) {
+            if (_this.props.context.activeAnimations.indexOf(_this.props.animation) === -1) {
                 _this.setState({ isSelected: false });
             }
             _this.forceUpdate();
         });
         _this._onActiveKeyPointChangedObserver = _this.props.context.onActiveKeyPointChanged.add(function () {
             _this.setState({ isSelected: _this.props.animation.dataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_FLOAT &&
-                    _this.props.animation === _this.props.context.activeAnimation &&
+                    _this.props.context.activeAnimations.indexOf(_this.props.animation) !== -1 &&
                     _this.props.context.activeKeyPoints !== null &&
-                    _this.props.context.activeKeyPoints.length > 0
+                    _this.props.context.activeKeyPoints.length > 0 &&
+                    _this.props.context.activeKeyPoints.some(function (kp) { return kp.props.curve.animation === _this.props.animation; })
             });
+        });
+        _this._onSelectToActivatedObserver = _this.props.context.onSelectToActivated.add(function (info) {
+            var currentIndex = _this.props.context.getAnimationSortIndex(_this.props.animation);
+            var activeIndex = _this.props.context.activeAnimations.indexOf(_this.props.animation);
+            if ((currentIndex > info.from && currentIndex <= info.to
+                || currentIndex >= info.to && currentIndex < info.from)) {
+                if (activeIndex === -1) {
+                    _this.props.context.activeAnimations.push(_this.props.animation);
+                }
+            }
+            else if (currentIndex !== info.from && activeIndex !== -1) {
+                _this.props.context.activeAnimations.splice(activeIndex, 1);
+            }
         });
         return _this;
     }
@@ -50172,15 +50328,37 @@ var AnimationEntryComponent = /** @class */ (function (_super) {
         if (this._onActiveKeyPointChangedObserver) {
             this.props.context.onActiveKeyPointChanged.remove(this._onActiveKeyPointChangedObserver);
         }
+        if (this._onSelectToActivatedObserver) {
+            this.props.context.onSelectToActivated.remove(this._onSelectToActivatedObserver);
+        }
     };
-    AnimationEntryComponent.prototype._activate = function () {
-        if (this.props.animation === this.props.context.activeAnimation && this.props.context.activeColor === null) {
+    AnimationEntryComponent.prototype._activate = function (evt) {
+        if (evt.shiftKey) {
+            if (this.props.context.activeAnimations.length > 0) {
+                var firstOne = this.props.context.activeAnimations[0];
+                var payload = {
+                    from: this.props.context.getAnimationSortIndex(firstOne),
+                    to: this.props.context.getAnimationSortIndex(this.props.animation),
+                };
+                this.props.context.onSelectToActivated.notifyObservers(payload);
+                this.props.context.onActiveAnimationChanged.notifyObservers();
+            }
             return;
         }
-        this.props.context.activeKeyPoints = [];
-        this.props.context.onActiveKeyPointChanged.notifyObservers();
-        this.props.context.activeAnimation = this.props.animation;
-        this.props.context.activeColor = null;
+        if (!evt.ctrlKey) {
+            this.props.context.activeAnimations = [this.props.animation];
+            this.props.context.resetAllActiveChannels();
+        }
+        else {
+            var index = this.props.context.activeAnimations.indexOf(this.props.animation);
+            if (index !== -1) {
+                this.props.context.activeAnimations.splice(index, 1);
+            }
+            else {
+                this.props.context.activeAnimations.push(this.props.animation);
+            }
+        }
+        this.props.context.disableChannel(this.props.animation);
         this.props.context.onActiveAnimationChanged.notifyObservers();
     };
     AnimationEntryComponent.prototype._expandOrCollapse = function () {
@@ -50188,7 +50366,7 @@ var AnimationEntryComponent = /** @class */ (function (_super) {
     };
     AnimationEntryComponent.prototype.render = function () {
         var _this = this;
-        var isActive = this.props.animation === this.props.context.activeAnimation;
+        var isActive = this.props.context.activeAnimations.indexOf(this.props.animation) !== -1;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "animation-entry" + (isActive ? " isActive" : "") },
                 this.state.isSelected &&
@@ -50200,7 +50378,7 @@ var AnimationEntryComponent = /** @class */ (function (_super) {
                 this.props.animation.dataType !== babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_FLOAT &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "animation-chevron", onClick: function () { return _this._expandOrCollapse(); } },
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { className: "animation-chevron-image" + (this.state.isExpanded ? "" : " collapsed"), src: chevronIcon })),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "animation-name", onClick: function () { return _this._activate(); } }, this.props.animation.name),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "animation-name", onClick: function (evt) { return _this._activate(evt); } }, this.props.animation.name),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_3__["ActionButtonComponent"], { className: "animation-options", context: this.props.context, globalState: this.props.globalState, icon: gearIcon, onClick: function () { return _this._onGear(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_3__["ActionButtonComponent"], { className: "animation-delete", context: this.props.context, globalState: this.props.globalState, icon: deleteIcon, onClick: function () { return _this._onDelete(); } })),
             this.state.isExpanded && this.props.animation.dataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR3 &&
@@ -50307,7 +50485,7 @@ var AnimationSubEntryComponent = /** @class */ (function (_super) {
     function AnimationSubEntryComponent(props) {
         var _this = _super.call(this, props) || this;
         var isSelected = false;
-        if (_this.props.animation === _this.props.context.activeAnimation && _this.props.context.activeKeyPoints) {
+        if (_this.props.context.activeAnimations.indexOf(_this.props.animation) !== -1 && _this.props.context.activeKeyPoints) {
             for (var _i = 0, _a = _this.props.context.activeKeyPoints; _i < _a.length; _i++) {
                 var keyPoint = _a[_i];
                 if (keyPoint.state.selectedState === _graph_keyPoint__WEBPACK_IMPORTED_MODULE_2__["SelectionState"].Selected && keyPoint.props.channel === _this.props.color) {
@@ -50324,7 +50502,9 @@ var AnimationSubEntryComponent = /** @class */ (function (_super) {
             if (_this.props.context.activeKeyPoints) {
                 for (var _i = 0, _a = _this.props.context.activeKeyPoints; _i < _a.length; _i++) {
                     var activeKeyPoint = _a[_i];
-                    if (activeKeyPoint.props.channel === _this.props.color && _this.props.animation === _this.props.context.activeAnimation) {
+                    if (activeKeyPoint.props.curve.animation === _this.props.animation
+                        && activeKeyPoint.props.channel === _this.props.color
+                        && _this.props.context.activeAnimations.indexOf(_this.props.animation) !== -1) {
                         isSelected = true;
                         break;
                     }
@@ -50342,19 +50522,27 @@ var AnimationSubEntryComponent = /** @class */ (function (_super) {
             this.props.context.onActiveKeyPointChanged.remove(this._onActiveKeyPointChangedObserver);
         }
     };
-    AnimationSubEntryComponent.prototype._activate = function () {
-        if (this.props.animation === this.props.context.activeAnimation && this.props.context.activeColor === this.props.color) {
+    AnimationSubEntryComponent.prototype._activate = function (evt) {
+        var index = this.props.context.activeAnimations.indexOf(this.props.animation);
+        if (index !== -1 && this.props.context.getActiveChannel(this.props.animation) === this.props.color) {
             return;
         }
-        this.props.context.activeKeyPoints = [];
-        this.props.context.onActiveKeyPointChanged.notifyObservers();
-        this.props.context.activeAnimation = this.props.animation;
-        this.props.context.activeColor = this.props.color;
+        if (!evt.ctrlKey) {
+            this.props.context.activeAnimations = [this.props.animation];
+            this.props.context.resetAllActiveChannels();
+        }
+        else {
+            if (index === -1) {
+                this.props.context.activeAnimations.push(this.props.animation);
+            }
+        }
+        this.props.context.enableChannel(this.props.animation, this.props.color);
         this.props.context.onActiveAnimationChanged.notifyObservers();
     };
     AnimationSubEntryComponent.prototype.render = function () {
         var _this = this;
-        var isActive = this.props.animation === this.props.context.activeAnimation && (this.props.context.activeColor === null || this.props.context.activeColor === this.props.color);
+        var isActive = this.props.context.activeAnimations.indexOf(this.props.animation) !== -1
+            && (this.props.context.isChannelEnabled(this.props.animation, this.props.color));
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "animation-entry" + (isActive ? " isActive" : "") },
                 this.state.isSelected &&
@@ -50362,7 +50550,7 @@ var AnimationSubEntryComponent = /** @class */ (function (_super) {
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: selectedIcon })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "animation-name", style: {
                         color: this.props.color
-                    }, onClick: function () { return _this._activate(); } }, this.props.subName))));
+                    }, onClick: function (evt) { return _this._activate(evt); } }, this.props.subName))));
     };
     return AnimationSubEntryComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -50526,7 +50714,7 @@ var LoadAnimationComponent = /** @class */ (function (_super) {
             }
             context.stop();
             context.target.animations = animations;
-            context.activeAnimation = animations.length ? animations[0] : null;
+            context.activeAnimations = animations.length ? animations : [];
             context.prepare();
             context.onAnimationsLoaded.notifyObservers();
             context.onActiveAnimationChanged.notifyObservers();
@@ -50547,7 +50735,7 @@ var LoadAnimationComponent = /** @class */ (function (_super) {
             }
             context.stop();
             context.target.animations = context.animations;
-            context.activeAnimation = context.animations.length ? context.animations[0] : null;
+            context.activeAnimations = context.animations.length ? context.animations : [];
             context.prepare();
             context.onAnimationsLoaded.notifyObservers();
             context.onActiveAnimationChanged.notifyObservers();
@@ -50757,8 +50945,9 @@ var SideBarComponent = /** @class */ (function (_super) {
         var _this = _super.call(this, props) || this;
         _this.state = { mode: Mode.Edit };
         _this.props.context.onDeleteAnimation.add(function (animationToDelete) {
-            if (_this.props.context.activeAnimation === animationToDelete) {
-                _this.props.context.activeAnimation = null;
+            var indexInActiveList = _this.props.context.activeAnimations.indexOf(animationToDelete);
+            if (indexInActiveList !== -1) {
+                _this.props.context.activeAnimations.splice(indexInActiveList, 1);
                 _this.props.context.onActiveAnimationChanged.notifyObservers();
             }
             var index = -1;
@@ -50776,7 +50965,6 @@ var SideBarComponent = /** @class */ (function (_super) {
             }
             if (index > -1) {
                 _this.props.context.animations.splice(index, 1);
-                _this.props.context.play(_this.props.context.forwardAnimation);
                 _this.forceUpdate();
             }
         });
@@ -50918,12 +51106,13 @@ var TopBarComponent = /** @class */ (function (_super) {
     };
     TopBarComponent.prototype.render = function () {
         var _this = this;
+        var hasActiveAnimations = this.props.context.activeAnimations.length > 0;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "top-bar" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { id: "logo", src: logoIcon }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "parent-name" }, this.props.context.title),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_textInputComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputComponent"], { className: this.props.context.activeAnimation && this.state.editControlsVisible ? "" : "disabled", isNumber: true, value: this.state.keyFrameValue, tooltip: "Frame", id: "key-frame", onValueAsNumberChanged: function (newValue) { return _this.props.context.onFrameManuallyEntered.notifyObservers(newValue); }, globalState: this.props.globalState, context: this.props.context }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_textInputComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputComponent"], { className: this.props.context.activeAnimation && this.state.editControlsVisible ? "" : "disabled", isNumber: true, value: this.state.keyValue, tooltip: "Value", id: "key-value", onValueAsNumberChanged: function (newValue) { return _this.props.context.onValueManuallyEntered.notifyObservers(newValue); }, globalState: this.props.globalState, context: this.props.context }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { className: this.props.context.activeAnimation ? "" : "disabled", tooltip: "New key", id: "new-key", globalState: this.props.globalState, context: this.props.context, icon: newKeyIcon, onClick: function () { return _this.props.context.onNewKeyPointRequired.notifyObservers(); } }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_textInputComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputComponent"], { className: hasActiveAnimations && this.state.editControlsVisible ? "" : "disabled", isNumber: true, value: this.state.keyFrameValue, tooltip: "Frame", id: "key-frame", onValueAsNumberChanged: function (newValue) { return _this.props.context.onFrameManuallyEntered.notifyObservers(newValue); }, globalState: this.props.globalState, context: this.props.context }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_textInputComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputComponent"], { className: hasActiveAnimations && this.state.editControlsVisible ? "" : "disabled", isNumber: true, value: this.state.keyValue, tooltip: "Value", id: "key-value", onValueAsNumberChanged: function (newValue) { return _this.props.context.onValueManuallyEntered.notifyObservers(newValue); }, globalState: this.props.globalState, context: this.props.context }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { className: hasActiveAnimations ? "" : "disabled", tooltip: "New key", id: "new-key", globalState: this.props.globalState, context: this.props.context, icon: newKeyIcon, onClick: function () { return _this.props.context.onNewKeyPointRequired.notifyObservers(); } }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Frame canvas", id: "frame-canvas", globalState: this.props.globalState, context: this.props.context, icon: frameIcon, onClick: function () { return _this.props.context.onFrameRequired.notifyObservers(); } }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { className: this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 0 ? "" : "disabled", tooltip: "Flatten tangent", id: "flatten-tangent", globalState: this.props.globalState, context: this.props.context, icon: flatTangentIcon, onClick: function () { return _this.props.context.onFlattenTangentRequired.notifyObservers(); } }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { className: this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 0 ? "" : "disabled", tooltip: "Linear tangent", id: "linear-tangent", globalState: this.props.globalState, context: this.props.context, icon: linearTangentIcon, onClick: function () { return _this.props.context.onLinearTangentRequired.notifyObservers(); } }),
