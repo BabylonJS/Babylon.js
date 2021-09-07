@@ -204,7 +204,7 @@
         height: 100%;
         display: grid;
         grid-template-columns: 75px 1fr;
-        grid-template-rows: 10px 20px 10px 20px 10px 20px 10px 20px 10px 20px 1fr;
+        grid-template-rows: 10px 20px 10px 20px 10px 20px 10px 20px 10px 20px 10px 20px 1fr;
         color:white;
         font-family: 'acumin-pro-condensed';
         font-size: 10pt;
@@ -224,7 +224,6 @@
             border: 0;
         }
 
-
         #add-animation-display-name-label {
             grid-row: 2;
             grid-column: 1;
@@ -232,22 +231,29 @@
             margin-right: 10px;
         }      
 
-        #add-animation-property-label {
+        #add-animation-mode-label {
             grid-row: 4;
             grid-column: 1;
             justify-self: end;
             margin-right: 10px;
         }       
+
+        #add-animation-property-label {
+            grid-row: 6;
+            grid-column: 1;
+            justify-self: end;
+            margin-right: 10px;
+        }    
      
         #add-animation-type-label {
-            grid-row: 6;
+            grid-row: 8;
             grid-column: 1;
             justify-self: end;
             margin-right: 10px;
         }    
 
         #add-animation-loop-mode-label {
-            grid-row: 8;
+            grid-row: 10;
             grid-column: 1;
             justify-self: end;
             margin-right: 10px;
@@ -259,26 +265,34 @@
             margin-right: 10px;
         }
 
-        #add-animation-property {
+        #add-animation-mode {
             grid-row: 4;
             grid-column: 2;
             margin-right: 10px;
+            width: calc(100% - 10px);
         }
 
-        #add-animation-type {
+        #add-animation-property {
             grid-row: 6;
             grid-column: 2;
             margin-right: 10px;
+            width: calc(100% - 10px);
         }
 
-        #add-animation-loop-mode {
+        #add-animation-type {
             grid-row: 8;
             grid-column: 2;
             margin-right: 10px;
         }
 
-        #add-animation {
+        #add-animation-loop-mode {
             grid-row: 10;
+            grid-column: 2;
+            margin-right: 10px;
+        }
+
+        #add-animation {
+            grid-row: 12;
             grid-column: 2;           
             justify-self: left;
         }

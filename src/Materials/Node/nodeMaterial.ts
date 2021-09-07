@@ -50,6 +50,7 @@ import { TimingTools } from '../../Misc/timingTools';
 import { ProceduralTexture } from '../Textures/Procedurals/proceduralTexture';
 import { AnimatedInputBlockTypes } from './Blocks/Input/animatedInputBlockTypes';
 import { TrigonometryBlock, TrigonometryBlockOperations } from './Blocks/trigonometryBlock';
+import { NodeMaterialSystemValues } from './Enums/nodeMaterialSystemValues';
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -1428,14 +1429,14 @@ export class NodeMaterial extends PushMaterial {
         positionInput.setAsAttribute("position");
 
         var worldInput = new InputBlock("World");
-        worldInput.setAsSystemValue(BABYLON.NodeMaterialSystemValues.World);
+        worldInput.setAsSystemValue(NodeMaterialSystemValues.World);
 
         var worldPos = new TransformBlock("WorldPos");
         positionInput.connectTo(worldPos);
         worldInput.connectTo(worldPos);
 
         var viewProjectionInput = new InputBlock("ViewProjection");
-        viewProjectionInput.setAsSystemValue(BABYLON.NodeMaterialSystemValues.ViewProjection);
+        viewProjectionInput.setAsSystemValue(NodeMaterialSystemValues.ViewProjection);
 
         var worldPosdMultipliedByViewProjection = new TransformBlock("WorldPos * ViewProjectionTransform");
         worldPos.connectTo(worldPosdMultipliedByViewProjection);

@@ -82,6 +82,12 @@ IKeyPointComponentState
     private _inVec: Vector2;
     private _outVec: Vector2;
 
+    private _lockX = false;
+    private _lockY = false;
+    
+    private _accumulatedX = 0;
+    private _accumulatedY = 0;
+
     constructor(props: IKeyPointComponentProps) {
         super(props);
 
@@ -414,6 +420,11 @@ IKeyPointComponentState
             this.setState({tangentSelectedIndex: 1});
         }
 
+        this._lockX = false;
+        this._lockY = false;
+        this._accumulatedX = 0;
+        this._accumulatedY = 0;
+
         evt.stopPropagation();
     }
 
@@ -449,9 +460,30 @@ IKeyPointComponentState
         }
 
         if (this._controlMode === ControlMode.Key) {
+            const diffX = evt.nativeEvent.offsetX - this._sourcePointerX;
+            const diffY = evt.nativeEvent.offsetY - this._sourcePointerY;
 
-            let newX = this.state.x + (evt.nativeEvent.offsetX - this._sourcePointerX) * this.props.scale;
-            let newY = this.state.y + (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
+            if (evt.shiftKey) {
+                if (!this._lockX && !this._lockY) {
+                    this._accumulatedX += Math.abs(diffX);
+                    this._accumulatedY += Math.abs(diffY);
+
+                    if (this._accumulatedX > 5 || this._accumulatedY > 5) {
+                        if (this._accumulatedX > this._accumulatedY) {
+                            this._lockY = true;
+                        } else {
+                            this._lockX = true;
+                        }
+                    }
+                }
+            } else {
+                this._lockX = false;
+                this._lockY = false;
+            }
+
+
+            let newX = this.state.x + (this._lockX ? 0 : diffX * this.props.scale);
+            let newY = this.state.y + (this._lockY ? 0 : diffY * this.props.scale);
             let previousX = this.props.getPreviousX();
             let nextX = this.props.getNextX();
             const epsilon = 0.01;
