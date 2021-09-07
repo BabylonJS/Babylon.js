@@ -134,8 +134,8 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
     constructor() {
         // For a right hand
         this._zoneAxis[HandConstraintZone.ABOVE_FINGER_TIPS] = new Vector3(0, 1, 0);
-        this._zoneAxis[HandConstraintZone.RADIAL_SIDE] = new Vector3(1, 0, 0);
-        this._zoneAxis[HandConstraintZone.ULNAR_SIDE] = new Vector3(-1, 0, 0);
+        this._zoneAxis[HandConstraintZone.RADIAL_SIDE] = new Vector3(-1, 0, 0);
+        this._zoneAxis[HandConstraintZone.ULNAR_SIDE] = new Vector3(1, 0, 0);
         this._zoneAxis[HandConstraintZone.BELOW_WRIST] = new Vector3(0, -1, 0);
     }
 
@@ -175,13 +175,13 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
             if (wrist && middleMetacarpal && pinkyMetacarpal) {
                 // palm forward
                 const up = TmpVectors.Vector3[0];
-                up.copyFrom(middleMetacarpal.absolutePosition).subtractInPlace(wrist.absolutePosition).normalize();
                 const forward = TmpVectors.Vector3[1];
-                pinkyMetacarpal.absolutePosition.subtractToRef(middleMetacarpal.absolutePosition, forward);
-                forward.normalize();
-                Vector3.CrossToRef(forward, up, forward);
-
                 const left = TmpVectors.Vector3[2];
+                up.copyFrom(middleMetacarpal.absolutePosition).subtractInPlace(wrist.absolutePosition).normalize();
+                forward.copyFrom(pinkyMetacarpal.absolutePosition).subtractInPlace(middleMetacarpal.absolutePosition).normalize();
+
+                // Create vectors for a rotation quaternion, where forward points out from the palm
+                Vector3.CrossToRef(up, forward, forward);
                 Vector3.CrossToRef(forward, up, left);
 
                 const quaternion = Quaternion.FromLookDirectionLH(forward, up);
