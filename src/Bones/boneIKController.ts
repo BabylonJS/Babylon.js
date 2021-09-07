@@ -381,7 +381,7 @@ export class BoneIKController {
         }
     }
 
-    public static _IsTransformNode(node: Nullable<Node>): node is TransformNode {
+    private static _IsTransformNode(node: Nullable<Node>): node is TransformNode {
         return !!node && (node as TransformNode).isUsingPivotMatrix !== undefined;
     }
 }
