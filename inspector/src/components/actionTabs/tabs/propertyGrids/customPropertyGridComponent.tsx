@@ -17,7 +17,7 @@ import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLine
 
 interface ICustomPropertyGridComponentProps {
     globalState: GlobalState;
-    target: any,
+    target: any;
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
@@ -70,7 +70,7 @@ export class CustomPropertyGridComponent extends React.Component<ICustomProperty
                 );
             case InspectableType.Options:
                 return (
-                    <OptionsLineComponent key={inspectable.label} label={inspectable.label} target={this.props.target} propertyName={inspectable.propertyName} options={inspectable.options as any || []} onSelect={inspectable.callback || function(value) {
+                    <OptionsLineComponent key={inspectable.label} label={inspectable.label} target={this.props.target} propertyName={inspectable.propertyName} options={inspectable.options || []} onSelect={inspectable.callback || function(value) {
                         console.log(`Option ${value} is selected`);
                     }} />
                 );

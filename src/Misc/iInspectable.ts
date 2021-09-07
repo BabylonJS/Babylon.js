@@ -41,6 +41,25 @@ export enum InspectableType {
 }
 
 /**
+ * Interface used to define custom inspectable options in "Options" mode.
+ * This interface is used by the inspector to display the list of options
+ */
+ export interface IInspectableOptions {
+    /**
+     * Defines the visible part of the option
+     */
+    label: string;
+    /**
+     * Defines the value part of the option (returned through the callback)
+     */
+    value: number | string;
+    /**
+     * Defines if the option should be selected or not
+     */
+    selected?: boolean;
+ }
+
+/**
  * Interface used to define custom inspectable properties.
  * This interface is used by the inspector to display custom property grids
  * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
