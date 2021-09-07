@@ -1,4 +1,4 @@
-import { InternalTexture } from "../../Materials";
+import { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { TextureSize } from "../../Materials/Textures/textureCreationOptions";
 import { Nullable } from "../../types";
 import { Engine } from "../engine";

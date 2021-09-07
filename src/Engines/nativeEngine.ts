@@ -13,7 +13,7 @@ import { Tools } from "../Misc/tools";
 import { Observer } from "../Misc/observable";
 import { EnvironmentTextureTools, EnvironmentTextureSpecularInfoV1 } from "../Misc/environmentTextureTools";
 import { Scene } from "../scene";
-import { RenderTargetCreationOptions, TextureSize, DepthTextureCreationOptions} from "../Materials/Textures/textureCreationOptions";
+import { RenderTargetCreationOptions, TextureSize, DepthTextureCreationOptions } from "../Materials/Textures/textureCreationOptions";
 import { IPipelineContext } from './IPipelineContext';
 import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IViewportLike } from '../Maths/math.like';
 import { Logger } from "../Misc/logger";

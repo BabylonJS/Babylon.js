@@ -3589,7 +3589,7 @@ export class ThinEngine {
         this._internalTexturesCache.push(texture);
 
         return texture;
-    };
+    }
 
     protected _createTextureBase(
         url: Nullable<string>,
