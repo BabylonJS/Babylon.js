@@ -1,19 +1,17 @@
 import { InternalTexture, InternalTextureSource } from "../../../Materials/Textures/internalTexture";
-import { RenderTargetCreationOptions } from "../../../Materials/Textures/renderTargetCreationOptions";
+import { RenderTargetCreationOptions, DepthTextureCreationOptions, TextureSize } from "../../../Materials/Textures/textureCreationOptions";
 import { Nullable } from "../../../types";
 import { Constants } from "../../constants";
-import { DepthTextureCreationOptions } from "../../depthTextureCreationOptions";
-import { RenderTargetTextureSize } from "../../Extensions/engine.renderTarget";
 import { RenderTargetWrapper } from "../../renderTargetWrapper";
 import { WebGPUEngine } from "../../webgpuEngine";
 
-WebGPUEngine.prototype._createHardwareRenderTargetWrapper = function(isMulti: boolean, isCube: boolean, size: RenderTargetTextureSize): RenderTargetWrapper {
+WebGPUEngine.prototype._createHardwareRenderTargetWrapper = function(isMulti: boolean, isCube: boolean, size: TextureSize): RenderTargetWrapper {
     const rtWrapper = new RenderTargetWrapper(isMulti, isCube, size, this);
     this._renderTargetWrapperCache.push(rtWrapper);
     return rtWrapper;
 };
 
-WebGPUEngine.prototype.createRenderTargetTexture = function (size: RenderTargetTextureSize, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper {
+WebGPUEngine.prototype.createRenderTargetTexture = function (size: TextureSize, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper {
     const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, size) as RenderTargetWrapper;
 
     let fullOptions = new RenderTargetCreationOptions();
@@ -96,7 +94,7 @@ WebGPUEngine.prototype.createRenderTargetTexture = function (size: RenderTargetT
     return rtWrapper;
 };
 
-WebGPUEngine.prototype._createDepthStencilTexture = function (size: RenderTargetTextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
+WebGPUEngine.prototype._createDepthStencilTexture = function (size: TextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
     const internalTexture = new InternalTexture(this, InternalTextureSource.DepthStencil);
 
     const internalOptions = {
@@ -119,7 +117,7 @@ WebGPUEngine.prototype._createDepthStencilTexture = function (size: RenderTarget
     return internalTexture;
 };
 
-WebGPUEngine.prototype._setupDepthStencilTexture = function (internalTexture: InternalTexture, size: RenderTargetTextureSize, generateStencil: boolean, bilinearFiltering: boolean, comparisonFunction: number, samples = 1): void {
+WebGPUEngine.prototype._setupDepthStencilTexture = function (internalTexture: InternalTexture, size: TextureSize, generateStencil: boolean, bilinearFiltering: boolean, comparisonFunction: number, samples = 1): void {
     const width = (<{ width: number, height: number, layers?: number }>size).width || <number>size;
     const height = (<{ width: number, height: number, layers?: number }>size).height || <number>size;
     const layers = (<{ width: number, height: number, layers?: number }>size).layers || 0;

@@ -6,9 +6,9 @@ import { Scene } from '../../scene';
 import { IInternalTextureLoader } from '../../Materials/Textures/internalTextureLoader';
 import { FileTools } from '../../Misc/fileTools';
 import { GUID } from '../../Misc/guid';
-import { DepthTextureCreationOptions } from '../depthTextureCreationOptions';
 import { IWebRequest } from '../../Misc/interfaces/iWebRequest';
 import { Constants } from '../constants';
+import { DepthTextureCreationOptions } from "../../Materials/Textures/textureCreationOptions";
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {

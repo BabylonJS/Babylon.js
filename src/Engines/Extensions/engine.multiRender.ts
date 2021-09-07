@@ -7,7 +7,7 @@ import { ThinEngine } from '../thinEngine';
 import { RenderTargetWrapper } from "../renderTargetWrapper";
 import { WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
 import { WebGLHardwareTexture } from "../WebGL/webGLHardwareTexture";
-import { RenderTargetTextureSize } from "./engine.renderTarget";
+import { TextureSize } from '../../Materials/Textures/textureCreationOptions';
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
@@ -28,7 +28,7 @@ declare module "../../Engines/thinEngine" {
          * @param initializeBuffers if set to true, the engine will make an initializing call of drawBuffers
          * @returns a new render target wrapper ready to render textures
          */
-        createMultipleRenderTarget(size: RenderTargetTextureSize, options: IMultiRenderTargetOptions, initializeBuffers?: boolean): RenderTargetWrapper;
+        createMultipleRenderTarget(size: TextureSize, options: IMultiRenderTargetOptions, initializeBuffers?: boolean): RenderTargetWrapper;
 
         /**
          * Update the sample count for a given multiple render target texture
@@ -157,7 +157,7 @@ ThinEngine.prototype.unBindMultiColorAttachmentFramebuffer = function (rtWrapper
     this._bindUnboundFramebuffer(null);
 };
 
-ThinEngine.prototype.createMultipleRenderTarget = function (size: RenderTargetTextureSize, options: IMultiRenderTargetOptions, initializeBuffers: boolean = true): RenderTargetWrapper {
+ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, options: IMultiRenderTargetOptions, initializeBuffers: boolean = true): RenderTargetWrapper {
     var generateMipMaps = false;
     var generateDepthBuffer = true;
     var generateStencilBuffer = false;

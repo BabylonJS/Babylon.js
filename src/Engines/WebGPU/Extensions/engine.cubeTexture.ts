@@ -1,7 +1,7 @@
 import { InternalTexture, InternalTextureSource } from "../../../Materials/Textures/internalTexture";
 import { Nullable } from "../../../types";
 import { Constants } from "../../constants";
-import { DepthTextureCreationOptions } from "../../depthTextureCreationOptions";
+import { DepthTextureCreationOptions } from "../../../Materials/Textures/textureCreationOptions";
 import { WebGPUEngine } from "../../webgpuEngine";
 
 declare type Scene = import("../../../scene").Scene;

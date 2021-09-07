@@ -3,7 +3,7 @@ import { IMultiRenderTargetOptions } from "../../../Materials/Textures/multiRend
 import { Logger } from "../../../Misc/logger";
 import { Nullable } from "../../../types";
 import { Constants } from "../../constants";
-import { RenderTargetTextureSize } from "../../Extensions/engine.renderTarget";
+import { TextureSize } from "../../../Materials/Textures/textureCreationOptions";
 import { RenderTargetWrapper } from "../../renderTargetWrapper";
 import { WebGPUEngine } from "../../webgpuEngine";
 
@@ -35,7 +35,7 @@ WebGPUEngine.prototype.unBindMultiColorAttachmentFramebuffer = function (rtWrapp
     this._setColorFormat(this._mainRenderPassWrapper);
 };
 
-WebGPUEngine.prototype.createMultipleRenderTarget = function (size: RenderTargetTextureSize, options: IMultiRenderTargetOptions, initializeBuffers?: boolean): RenderTargetWrapper {
+WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, options: IMultiRenderTargetOptions, initializeBuffers?: boolean): RenderTargetWrapper {
     let generateMipMaps = false;
     let generateDepthBuffer = true;
     let generateStencilBuffer = false;

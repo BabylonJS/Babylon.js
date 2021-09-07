@@ -1,12 +1,12 @@
+import { InternalTexture } from "../../Materials";
+import { TextureSize } from "../../Materials/Textures/textureCreationOptions";
 import { Nullable } from "../../types";
 import { Engine } from "../engine";
-import { RenderTargetTextureSize } from "../Extensions/engine.renderTarget";
 import { RenderTargetWrapper } from "../renderTargetWrapper";
 import { ThinEngine } from "../thinEngine";
 
 /** @hidden */
 export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
-
     private _context: WebGLRenderingContext;
 
     public _framebuffer: Nullable<WebGLFramebuffer> = null;
@@ -16,7 +16,7 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
     public _colorTextureArray: Nullable<WebGLTexture> = null;
     public _depthStencilTextureArray: Nullable<WebGLTexture> = null;
 
-    constructor(isMulti: boolean, isCube: boolean, size: RenderTargetTextureSize, engine: ThinEngine, context: WebGLRenderingContext) {
+    constructor(isMulti: boolean, isCube: boolean, size: TextureSize, engine: ThinEngine, context: WebGLRenderingContext) {
         super(isMulti, isCube, size, engine);
 
         this._context = context;
@@ -45,6 +45,63 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
         target._depthStencilTextureArray = this._depthStencilTextureArray;
 
         this._framebuffer = this._depthStencilBuffer = this._MSAAFramebuffer = this._colorTextureArray = this._depthStencilTextureArray = null;
+    }
+
+    /**
+     * Shares the depth buffer of this render target with another render target.
+     * *
+     * @param renderTarget Destination renderTarget
+     */
+    public _shareDepth(renderTarget: WebGLRenderTargetWrapper): void {
+        super._shareDepth(renderTarget);
+
+        const gl = this._context;
+        const depthbuffer = this._depthStencilBuffer;
+        const framebuffer = renderTarget._framebuffer;
+
+        if (renderTarget._depthStencilBuffer) {
+            gl.deleteRenderbuffer(renderTarget._depthStencilBuffer);
+            renderTarget._depthStencilBuffer = this._depthStencilBuffer;
+        }
+
+        this._engine._bindUnboundFramebuffer(framebuffer);
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthbuffer);
+        this._engine._bindUnboundFramebuffer(null);
+    }
+
+    /**
+     * Binds a texture to this render target on a specific attachment
+     * @param texture The texture to bind to the framebuffer
+     * @param attachmentIndex Index of the attachment
+     * @param faceIndex The face of the texture to render to in case of cube texture
+     * @param lodLevel defines the lod level to bind to the frame buffer
+     */
+    private _bindTextureRenderTarget(texture: InternalTexture, attachmentIndex: number = 0, faceIndex: number = -1, lodLevel: number = 0) {
+        if (!texture._hardwareTexture) {
+            return;
+        }
+
+        const gl = this._context;
+        const framebuffer = this._framebuffer;
+
+        const currentFB = this._engine._currentFramebuffer;
+        this._engine._bindUnboundFramebuffer(framebuffer);
+        const attachment = (<any>gl)[this._engine.webGLVersion > 1 ? "COLOR_ATTACHMENT" + attachmentIndex : "COLOR_ATTACHMENT" + attachmentIndex + "_WEBGL"];
+        const target = faceIndex !== -1 ? gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex : gl.TEXTURE_2D;
+
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, target, texture._hardwareTexture.underlyingResource, lodLevel);
+        this._engine._bindUnboundFramebuffer(currentFB);
+    }
+
+    /**
+     * Set a texture in the textures array
+     * @param texture the texture to set
+     * @param index the index in the textures array to set
+     * @param disposePrevious If this function should dispose the previous texture
+     */
+    public setTexture(texture: InternalTexture, index: number = 0, disposePrevious: boolean = true) {
+        super.setTexture(texture, index, disposePrevious);
+        this._bindTextureRenderTarget(texture, index);
     }
 
     public dispose(disposeOnlyFramebuffers = false): void {
@@ -78,5 +135,4 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
 
         super.dispose(disposeOnlyFramebuffers);
     }
-
 }
