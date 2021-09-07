@@ -51567,6 +51567,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lines_quaternionLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../lines/quaternionLineComponent */ "./components/actionTabs/lines/quaternionLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/optionsLineComponent */ "./sharedUiComponents/lines/optionsLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
+
+
+
 
 
 
@@ -51598,6 +51604,16 @@ var CustomPropertyGridComponent = /** @class */ (function (_super) {
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_2__["Color3LineComponent"], { key: inspectable.label, label: inspectable.label, target: this.props.target, propertyName: inspectable.propertyName, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             case babylonjs_Misc_iInspectable__WEBPACK_IMPORTED_MODULE_3__["InspectableType"].String:
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_9__["TextInputLineComponent"], { key: inspectable.label, label: inspectable.label, lockObject: this.props.lockObject, target: this.props.target, propertyName: inspectable.propertyName, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+            case babylonjs_Misc_iInspectable__WEBPACK_IMPORTED_MODULE_3__["InspectableType"].Button:
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { key: inspectable.label, label: inspectable.label, onClick: inspectable.callback || function () {
+                        console.warn("no call back function added");
+                    } }));
+            case babylonjs_Misc_iInspectable__WEBPACK_IMPORTED_MODULE_3__["InspectableType"].Options:
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_11__["OptionsLineComponent"], { key: inspectable.label, label: inspectable.label, target: this.props.target, propertyName: inspectable.propertyName, options: inspectable.options || [], onSelect: inspectable.callback || function (value) {
+                        console.log("Option " + value + " is selected");
+                    } }));
+            case babylonjs_Misc_iInspectable__WEBPACK_IMPORTED_MODULE_3__["InspectableType"].Tab:
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_12__["TextLineComponent"], { key: inspectable.label, label: inspectable.label, value: " " }));
         }
         return null;
     };
@@ -65313,13 +65329,12 @@ var NumericInputComponent = /** @class */ (function (_super) {
 /*!***********************************************************!*\
   !*** ./sharedUiComponents/lines/optionsLineComponent.tsx ***!
   \***********************************************************/
-/*! exports provided: Null_Value, ListLineOption, OptionsLineComponent */
+/*! exports provided: Null_Value, OptionsLineComponent */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Null_Value", function() { return Null_Value; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ListLineOption", function() { return ListLineOption; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "OptionsLineComponent", function() { return OptionsLineComponent; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
@@ -65327,12 +65342,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Null_Value = Number.MAX_SAFE_INTEGER;
-var ListLineOption = /** @class */ (function () {
-    function ListLineOption() {
-    }
-    return ListLineOption;
-}());
-
 var OptionsLineComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(OptionsLineComponent, _super);
     function OptionsLineComponent(props) {
