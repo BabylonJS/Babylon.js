@@ -24,7 +24,7 @@ import { CustomPropertyGridComponent } from "../customPropertyGridComponent";
 import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
 import { Color3LineComponent } from "../../../../../sharedUiComponents/lines/color3LineComponent";
 import { MorphTarget } from "babylonjs/Morph/morphTarget";
-import { OptionsLineComponent, ListLineOption } from "../../../../../sharedUiComponents/lines/optionsLineComponent";
+import { OptionsLineComponent } from "../../../../../sharedUiComponents/lines/optionsLineComponent";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { ButtonLineComponent } from "../../../../../sharedUiComponents/lines/buttonLineComponent";
 import { TextInputLineComponent } from "../../../../../sharedUiComponents/lines/textInputLineComponent";
@@ -35,6 +35,7 @@ import { VariantsPropertyGridComponent } from "../variantsPropertyGridComponent"
 import { HexLineComponent } from "../../../../../sharedUiComponents/lines/hexLineComponent";
 import { SkeletonViewer } from "babylonjs/Debug/skeletonViewer";
 import { ShaderMaterial } from "babylonjs/Materials/shaderMaterial";
+import { IInspectableOptions } from "babylonjs/Misc/iInspectable";
 
 interface IMeshPropertyGridComponentProps {
     globalState: GlobalState;
@@ -383,7 +384,7 @@ export class MeshPropertyGridComponent extends React.Component<
             value: -1,
         });
 
-        const targetBoneOptions: ListLineOption[] = mesh.skeleton ? mesh.skeleton.bones.filter((bone) => bone.getIndex() >= 0).sort((bone1, bone2) => bone1.getIndex() - bone2.getIndex()).map((bone, idx) => {
+        const targetBoneOptions: IInspectableOptions[] = mesh.skeleton ? mesh.skeleton.bones.filter((bone) => bone.getIndex() >= 0).sort((bone1, bone2) => bone1.getIndex() - bone2.getIndex()).map((bone, idx) => {
             return {
                 label: bone.name,
                 value: bone.getIndex(),
