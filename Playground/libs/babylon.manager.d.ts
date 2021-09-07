@@ -166,12 +166,6 @@ declare module BABYLON {
         static ShowPageErrorMessage(message: string, title?: string, timeout?: number): void;
         /** Quit the Windows Runtime host application. */
         static QuitWindowsApplication(): void;
-        /** Loads a file as text (IFileRequest) */
-        static LoadTextFile(url: string, onSuccess: (data: string) => void, onProgress?: (data: any) => void, onError?: (request?: WebRequest, exception?: any) => void): BABYLON.IFileRequest;
-        /** Load a text based file */
-        static LoadTextFileAsync(url: string): Promise<string>;
-        /** Post data to server (XmlHttpRequest) */
-        /** Post data to server asynchronously */
         /** Shows the default page scene loader. */
         static ShowSceneLoader(): void;
         /** Hides the default page scene loader. */
@@ -1237,6 +1231,14 @@ declare module BABYLON {
         addPreloaderTasks(assetsManager: BABYLON.AssetsManager): void;
     }
     /**
+     * Http Request Header
+     * @class RequestHeader - All rights reserved (c) 2020 Mackey Kinard
+     */
+    class RequestHeader {
+        name: string;
+        value: string;
+    }
+    /**
      * Trigger Volume State
      * @class TriggerVolume - All rights reserved (c) 2020 Mackey Kinard
      */
@@ -1347,9 +1349,12 @@ declare module BABYLON {
         private static AuxVector;
         private static ZeroVector;
         private static TempMatrix;
+        private static TempMatrix2;
         private static TempVector2;
         private static TempVector3;
         private static TempQuaternion;
+        private static TempQuaternion2;
+        private static TempQuaternion3;
         private static PrintElement;
         private static LoadingState;
         static OnPreloaderProgress: (remainingCount: number, totalCount: number, lastFinishedTask: BABYLON.AbstractAssetTask) => void;
@@ -1535,10 +1540,18 @@ declare module BABYLON {
         static ParseTransformByName(source: BABYLON.IUnityTransform, scene: BABYLON.Scene, defaultValue?: BABYLON.TransformNode): BABYLON.TransformNode;
         /** TODO */
         static ParseChildTransform(parent: BABYLON.TransformNode, source: BABYLON.IUnityTransform, defaultValue?: BABYLON.TransformNode): BABYLON.TransformNode;
+        /** Sets the transform node abosulte position */
+        static SetAbsolutePosition(transform: BABYLON.TransformNode, position: BABYLON.Vector3): void;
         /** Gets the transform node abosulte position */
         static GetAbsolutePosition(transform: BABYLON.TransformNode | BABYLON.Camera, offsetPosition?: BABYLON.Vector3, computeMatrix?: boolean): BABYLON.Vector3;
         /** Gets the transform node abosulte position */
         static GetAbsolutePositionToRef(transform: BABYLON.TransformNode | BABYLON.Camera, result: BABYLON.Vector3, offsetPosition?: BABYLON.Vector3, computeMatrix?: boolean): void;
+        /** Sets the transform node abosulte Rotation */
+        static SetAbsoluteRotation(transform: BABYLON.TransformNode, rotation: BABYLON.Quaternion): void;
+        /** Gets the transform node abosulte rotation */
+        static GetAbsoluteRotation(transform: BABYLON.TransformNode): BABYLON.Quaternion;
+        /** Gets the transform node abosulte rotation */
+        static GetAbsoluteRotationToRef(transform: BABYLON.TransformNode, result: BABYLON.Quaternion): void;
         /** Transforms position from local space to world space. (Using TransformCoordinates) */
         static TransformPoint(owner: BABYLON.TransformNode | BABYLON.Camera, position: BABYLON.Vector3, computeMatrix?: boolean): BABYLON.Vector3;
         /** Inverse transforms position from world space to local space. (Using TransformCoordinates) */
@@ -1607,6 +1620,18 @@ declare module BABYLON {
         static WorldToScreenPoint(scene: BABYLON.Scene, position: BABYLON.Vector3, camera?: BABYLON.Camera): BABYLON.Vector3;
         /** Transforms a point from screen space into world space. */
         static ScreenToWorldPoint(scene: BABYLON.Scene, position: BABYLON.Vector3): BABYLON.Vector3;
+        /** Loads a file as text (IFileRequest) */
+        static LoadTextFile(url: string, onSuccess: (data: string | ArrayBuffer) => void, onProgress?: (data: any) => void, onError?: (request?: WebRequest, exception?: any) => void): BABYLON.IFileRequest;
+        /** Load a text based file */
+        static LoadTextFileAsync(url: string): Promise<string>;
+        /** Get data from server (XmlHttpRequest) */
+        static GetHttpRequest(url: string, headers?: BABYLON.RequestHeader[], onSuccess?: (xhr: XMLHttpRequest) => void, onFailure?: (reason: any) => void, onProgress?: (evt: ProgressEvent) => void, useArrayBuffer?: boolean, overrideMimeType?: string): XMLHttpRequest;
+        /** Get data from server asynchronously */
+        static GetHttpRequestAsync(url: string, headers?: BABYLON.RequestHeader[], onProgress?: (evt: ProgressEvent) => void, useArrayBuffer?: boolean, overrideMimeType?: string): Promise<XMLHttpRequest>;
+        /** Post data to server (XmlHttpRequest) */
+        static PostHttpRequest(url: string, data: any, headers?: BABYLON.RequestHeader[], contentType?: string, onSuccess?: (xhr: XMLHttpRequest) => void, onFailure?: (reason: any) => void, onProgress?: (evt: ProgressEvent) => void, useArrayBuffer?: boolean, overrideMimeType?: string): XMLHttpRequest;
+        /** Post data to server asynchronously */
+        static PostHttpRequestAsync(url: string, data: any, headers?: BABYLON.RequestHeader[], contentType?: string, onProgress?: (evt: ProgressEvent) => void, useArrayBuffer?: boolean, overrideMimeType?: string): Promise<XMLHttpRequest>;
         /** TODO */
         static ConvertAmmoVector3(btVector: any): BABYLON.Vector3;
         /** TODO */
