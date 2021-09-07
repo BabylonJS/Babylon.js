@@ -40,11 +40,11 @@ IPlayHeadComponentState
         });   
         
         this._onBeforeRenderObserver = this.props.context.scene.onBeforeRenderObservable.add(() => {            
-            if (!this.props.context.activeAnimation) {
+            if (this.props.context.activeAnimations.length === 0) {
                 return;
             }
     
-            let animation = this.props.context.activeAnimation;
+            let animation = this.props.context.activeAnimations[0];
     
             if (!animation) {
                 return;
@@ -97,7 +97,7 @@ IPlayHeadComponentState
     }
 
     private _pixelToFrame(pixel: number) {
-        let animation = this.props.context.activeAnimation!;
+        let animation = this.props.context.activeAnimations[0];
         let keys = animation.getKeys();
         let minFrame = this.props.context.referenceMinFrame;
         let maxFrame = this.props.context.referenceMaxFrame;
@@ -143,7 +143,7 @@ IPlayHeadComponentState
     }
 
     public render() {
-        if (!this.props.context.activeAnimation) {
+        if (this.props.context.activeAnimations.length === 0) {
             return null;
         }
 

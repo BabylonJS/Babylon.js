@@ -74,6 +74,7 @@ ITopBarComponentState
     }
 
     public render() {
+        const hasActiveAnimations = this.props.context.activeAnimations.length > 0;
         return (
             <div id="top-bar">
                 <img id="logo" src={logoIcon}/>
@@ -81,7 +82,7 @@ ITopBarComponentState
                     {this.props.context.title}
                 </div>
                 <TextInputComponent 
-                    className={this.props.context.activeAnimation && this.state.editControlsVisible ? "" : "disabled"}
+                    className={hasActiveAnimations && this.state.editControlsVisible ? "" : "disabled"}
                     isNumber={true}
                     value={this.state.keyFrameValue}
                     tooltip="Frame"
@@ -89,7 +90,7 @@ ITopBarComponentState
                     onValueAsNumberChanged={newValue => this.props.context.onFrameManuallyEntered.notifyObservers(newValue)}
                     globalState={this.props.globalState} context={this.props.context} />  
                 <TextInputComponent 
-                    className={this.props.context.activeAnimation && this.state.editControlsVisible ? "" : "disabled"}
+                    className={hasActiveAnimations && this.state.editControlsVisible ? "" : "disabled"}
                     isNumber={true}
                     value={this.state.keyValue}
                     tooltip="Value"
@@ -97,7 +98,7 @@ ITopBarComponentState
                     onValueAsNumberChanged={newValue => this.props.context.onValueManuallyEntered.notifyObservers(newValue)}
                     globalState={this.props.globalState} context={this.props.context} />  
                 <ActionButtonComponent                     
-                    className={this.props.context.activeAnimation ? "" : "disabled"}
+                    className={hasActiveAnimations ? "" : "disabled"}
                     tooltip="New key"
                     id="new-key" globalState={this.props.globalState} context={this.props.context} 
                     icon={newKeyIcon} onClick={() => this.props.context.onNewKeyPointRequired.notifyObservers()}/>                
