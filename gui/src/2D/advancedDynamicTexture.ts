@@ -562,15 +562,6 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 return;
             }
         }
-        var textureSize = this.getSize();
-        var renderWidth = textureSize.width;
-        var renderHeight = textureSize.height;
-        var context = this.getContext();
-        context.font = "18px Arial";
-        context.strokeStyle = "white";
-        var measure = new Measure(0, 0, renderWidth, renderHeight);
-        this._numLayoutCalls = 0;
-        this._rootContainer._layout(measure, context);
 
         if (this._isFullscreen && this._linkedControls.length) {
             var scene = this.getScene();
