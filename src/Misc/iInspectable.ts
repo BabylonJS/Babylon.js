@@ -25,7 +25,16 @@ export enum InspectableType {
     /**
      * String
      */
-    String = 5
+    String = 5,
+    /**
+     * Button
+     */
+    Button = 6,
+    /**
+     * Tab
+     */
+    Tab = 7,
+
 }
 
 /**
@@ -58,4 +67,12 @@ export interface IInspectable {
      * Gets the setp to use when using in "slider" mode
      */
     step?: number;
+    /**
+     * Gets the callback function when using "Button" mode
+     */
+    callback(): any;
+    /**
+     * Gets the list of options when using "Option" mode
+     */
+    options?: [];
 }

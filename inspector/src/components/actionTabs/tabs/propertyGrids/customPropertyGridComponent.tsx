@@ -11,6 +11,9 @@ import { QuaternionLineComponent } from '../../lines/quaternionLineComponent';
 import { LineContainerComponent } from '../../../../sharedUiComponents/lines/lineContainerComponent';
 import { TextInputLineComponent } from '../../../../sharedUiComponents/lines/textInputLineComponent';
 import { LockObject } from '../../../../sharedUiComponents/tabs/propertyGrids/lockObject';
+import { ButtonLineComponent } from "../../../../sharedUiComponents/lines/buttonLineComponent";
+import { OptionsLineComponent } from "../../../../sharedUiComponents/lines/optionsLineComponent";
+import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
 
 interface ICustomPropertyGridComponentProps {
     globalState: GlobalState;
@@ -58,6 +61,22 @@ export class CustomPropertyGridComponent extends React.Component<ICustomProperty
                 return (
                     <TextInputLineComponent key={inspectable.label} label={inspectable.label} lockObject={this.props.lockObject} target={this.props.target} propertyName={inspectable.propertyName}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                )
+            case InspectableType.Button:
+                return (
+                    <ButtonLineComponent key={inspectable.label} label={inspectable.label} onClick={inspectable.callback || function(){
+                        console.warn("no call back function added");
+                      }} />
+                )
+            case InspectableType.Options:
+                return (
+                    <OptionsLineComponent key={inspectable.label} label={inspectable.label} target={this.props.target} propertyName={inspectable.propertyName} options={inspectable.options as any|| []} onSelect={inspectable.callback || function(value){
+                        console.log(`Option ${value} is selected`)
+                    }}/>
+                )
+            case InspectableType.Tab:
+                return (
+                    <TextLineComponent key={inspectable.label} label={inspectable.label} value={" "}/>
                 )
         }
 
