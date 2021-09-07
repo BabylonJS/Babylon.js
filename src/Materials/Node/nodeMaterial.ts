@@ -1397,6 +1397,7 @@ export class NodeMaterial extends PushMaterial {
 
                 // Load editor and add it to the DOM
                 Tools.LoadScript(editorUrl, () => {
+                    this.BJSNODEMATERIALEDITOR = this.BJSNODEMATERIALEDITOR || this._getGlobalNodeMaterialEditor();
                     this._createNodeEditor();
                     resolve();
                 });
