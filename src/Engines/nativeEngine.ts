@@ -241,7 +241,7 @@ interface INativeEngine {
     setStencil(mask: number, stencilOpFail: number, depthOpFail: number, depthOpPass: number, func: number, ref: number): void;
 
     setCommandBuffer(commandBuffer: ArrayBuffer): void;
-    submitCommandBuffer(byteCount: number): void;
+    submitCommandBuffer(commandCount: number, byteCount: number): void;
 }
 
 class NativePipelineContext implements IPipelineContext {
@@ -827,7 +827,12 @@ export interface NativeEngineOptions {
 /** @hidden */
 class CommandBufferEncoder {
     private readonly _memoryBuffer: ArrayBuffer;
-    private _memoryIndex: number = 0;
+    private _commandCount: number = 0;
+    // Aligned to 1 byte
+    private _commandIndex: number = 0;
+    // Aligned to 4 bytes, but referencing the same buffer,
+    // so we start at 1 to give 4 bytes to the commands.
+    private _argumentIndex: number = 1;
     private readonly _commandBuffer: Uint8Array;
     private readonly _uint32Buffer: Uint32Array;
     private readonly _int32Buffer: Int32Array;
@@ -863,45 +868,52 @@ class CommandBufferEncoder {
     }
 
     public beginEncodingCommand(command: number) {
-        //console.log(`COMMAND BUFFER: Encode command: ${command}`);
-        this._commandBuffer[this._memoryIndex] = command;
-        this._memoryIndex += 4;
+        // console.log(`COMMAND BUFFER: Encode command: ${command}`);
+        this._commandBuffer[this._commandIndex] = command;
+        this._commandIndex++;
+        
+        // We have the commands fill up their allocated 4 bytes and then jump to the end of the current write.
+        if (this._commandIndex % 4 == 0) {
+            this._commandIndex = this._argumentIndex * 4;
+            this._argumentIndex++;
+        }
+        this._commandCount++;
     }
 
     public encodeCommandArgAsUInt32(commandArg: unknown) {
         //console.log(`COMMAND BUFFER:   Encode uint32: ${commandArg}`);
-        this._uint32Buffer[this._memoryIndex >> 2] = (commandArg as number);
-        this._memoryIndex += 4;
+        this._uint32Buffer[this._argumentIndex] = (commandArg as number);
+        this._argumentIndex++;
     }
 
     public encodeCommandArgAsUInt32s(commandArg: Uint32Array) {
         //console.log(`COMMAND BUFFER:   Encode uint32s: ${commandArg}`);
-        this._uint32Buffer.set(commandArg, this._memoryIndex >> 2);
-        this._memoryIndex += 4 * commandArg.length;
+        this._uint32Buffer.set(commandArg, this._argumentIndex);
+        this._argumentIndex += commandArg.length;
     }
 
     public encodeCommandArgAsInt32(commandArg: unknown) {
         //console.log(`COMMAND BUFFER:   Encode uint32: ${commandArg}`);
-        this._int32Buffer[this._memoryIndex >> 2] = commandArg as number;
-        this._memoryIndex += 4;
+        this._int32Buffer[this._argumentIndex] = commandArg as number;
+        this._argumentIndex++;
     }
 
-    public encodeCommandArgAsInt32s(commandArg: Int32Array) {
+    public encodeCommandArgAsInt32s(commandArg: Int32Array | number[]) {
         //console.log(`COMMAND BUFFER:   Encode uint32s: ${commandArg}`);
-        this._int32Buffer.set(commandArg, this._memoryIndex >> 2);
-        this._memoryIndex += 4 * commandArg.length;
+        this._int32Buffer.set(commandArg, this._argumentIndex);
+        this._argumentIndex += commandArg.length;
     }
 
     public encodeCommandArgAsFloat32(commandArg: unknown) {
         //console.log(`COMMAND BUFFER:   Encode float32: ${commandArg}`);
-        this._float32Buffer[this._memoryIndex >> 2] = commandArg as number;
-        this._memoryIndex += 4;
+        this._float32Buffer[this._argumentIndex] = commandArg as number;
+        this._argumentIndex++;
     }
 
-    public encodeCommandArgAsFloat32s(commandArg: Float32Array) {
+    public encodeCommandArgAsFloat32s(commandArg: Float32Array | number[]) {
         //console.log(`COMMAND BUFFER:   Encode float32s: ${commandArg}`);;
-        this._float32Buffer.set(commandArg, this._memoryIndex >> 2);
-        this._memoryIndex += 4 * commandArg.length;
+        this._float32Buffer.set(commandArg, this._argumentIndex);
+        this._argumentIndex += commandArg.length;
     }
 
     public finishEncodingCommand() {
@@ -911,11 +923,14 @@ class CommandBufferEncoder {
     }
 
     public _submitCommandBuffer() {
-        if (this._memoryIndex > 0) {
-            //console.log(`Submitting command buffer with memory index @ ${this._memoryIndex}`);
-            const bufferByteCount = this._memoryIndex;
-            this._memoryIndex = 0;
-            this._nativeEngine.submitCommandBuffer(bufferByteCount);
+        if (this._commandIndex > 0) {
+            // It's unlikely but possible that we'd have a command without an argument
+            const bufferByteCount = Math.max(this._commandIndex, this._argumentIndex * 4);
+            //console.log(`Submitting command buffer of size ${bufferByteCount}`);
+            this._nativeEngine.submitCommandBuffer(this._commandCount, bufferByteCount);
+            this._commandIndex = 0;
+            this._argumentIndex = 1;
+            this._commandCount = 0;
         }
     }
 }
