@@ -77,8 +77,8 @@ ITopBarComponentState
         const hasActiveAnimations = this.props.context.activeAnimations.length > 0;
         return (
             <div id="top-bar">
-                <img id="logo" src={logoIcon}/>
-                <div id="parent-name">
+                <img id="top-bar-logo" src={logoIcon}/>
+                <div id="top-bar-parent-name">
                     {this.props.context.title}
                 </div>
                 <TextInputComponent 
