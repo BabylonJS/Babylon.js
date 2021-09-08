@@ -6,6 +6,7 @@ import { WebGPUPipelineContext } from "./webgpuPipelineContext";
 import { WebGPUEngine } from "../webgpuEngine";
 import { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
+import { ExternalTexture } from "../../Materials/Textures/externalTexture";
 
 class WebGPUBindGroupCacheNode {
     public values: { [id: number]: WebGPUBindGroupCacheNode };
@@ -100,69 +101,80 @@ export class WebGPUCacheBindGroups {
         WebGPUCacheBindGroups._NumBindGroupsCreatedCurrentFrame++;
 
         const bindGroupLayouts = webgpuPipelineContext.bindGroupLayouts;
-
-        for (let i = 0; i < webgpuPipelineContext.shaderProcessingContext.orderedUBOsAndSamplers.length; i++) {
-            const setDefinition = webgpuPipelineContext.shaderProcessingContext.orderedUBOsAndSamplers[i];
-            if (setDefinition === undefined) {
-                let groupLayout = bindGroupLayouts[i];
-                bindGroups[i] = this._device.createBindGroup({
-                    layout: groupLayout,
-                    entries: [],
-                });
-                continue;
-            }
+        for (let i = 0; i < webgpuPipelineContext.shaderProcessingContext.bindGroupLayoutEntries.length; i++) {
+            const setDefinition = webgpuPipelineContext.shaderProcessingContext.bindGroupLayoutEntries[i];
 
             const entries: GPUBindGroupEntry[] = [];
             for (let j = 0; j < setDefinition.length; j++) {
-                const bindingDefinition = webgpuPipelineContext.shaderProcessingContext.orderedUBOsAndSamplers[i][j];
-                if (bindingDefinition === undefined) {
-                    continue;
-                }
+                const entry = webgpuPipelineContext.shaderProcessingContext.bindGroupLayoutEntries[i][j];
+                const entryInfo = webgpuPipelineContext.shaderProcessingContext.bindGroupLayoutEntryInfo[i][entry.binding];
+                const name = entryInfo.nameInArrayOfTexture ?? entryInfo.name;
 
-                if (bindingDefinition.isSampler) {
-                    const bindingInfo = materialContext.samplers[bindingDefinition.name];
+                if (entry.sampler) {
+                    const bindingInfo = materialContext.samplers[name];
                     if (bindingInfo) {
                         const sampler = bindingInfo.sampler;
                         if (!sampler) {
                             if (this._engine.dbgSanityChecks) {
-                                Logger.Error(`Trying to bind a null sampler! bindingDefinition=${JSON.stringify(bindingDefinition)}, bindingInfo=${JSON.stringify(bindingInfo, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}`, 50);
+                                Logger.Error(`Trying to bind a null sampler! entry=${JSON.stringify(entry)}, bindingInfo=${JSON.stringify(bindingInfo, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}`, 50);
                             }
                             continue;
                         }
                         entries.push({
-                            binding: j,
-                            resource: this._cacheSampler.getSampler(sampler),
+                            binding: entry.binding,
+                            resource: this._cacheSampler.getSampler(sampler, false, bindingInfo.hashCode),
                         });
                     } else {
-                        Logger.Error(`Sampler "${bindingDefinition.name}" could not be bound. bindingDefinition=${JSON.stringify(bindingDefinition)}, materialContext=${JSON.stringify(materialContext, (key: string, value: any) => key === 'texture' || key === 'sampler' ? '<no dump>' : value)}`, 50);
+                        Logger.Error(`Sampler "${name}" could not be bound. entry=${JSON.stringify(entry)}, materialContext=${JSON.stringify(materialContext, (key: string, value: any) => key === 'texture' || key === 'sampler' ? '<no dump>' : value)}`, 50);
                     }
-                } else if (bindingDefinition.isTexture) {
-                    const bindingInfo = materialContext.textures[bindingDefinition.name];
+                } else if (entry.texture) {
+                    const bindingInfo = materialContext.textures[name];
                     if (bindingInfo) {
                         if (this._engine.dbgSanityChecks && bindingInfo.texture === null) {
-                            Logger.Error(`Trying to bind a null texture! bindingDefinition=${JSON.stringify(bindingDefinition)}, bindingInfo=${JSON.stringify(bindingInfo, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}`, 50);
+                            Logger.Error(`Trying to bind a null texture! entry=${JSON.stringify(entry)}, bindingInfo=${JSON.stringify(bindingInfo, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}`, 50);
                             continue;
                         }
-                        const hardwareTexture = (bindingInfo.texture as InternalTexture)._hardwareTexture as WebGPUHardwareTexture; // TODO
+                        const hardwareTexture = (bindingInfo.texture as InternalTexture)._hardwareTexture as WebGPUHardwareTexture;
 
                         if (this._engine.dbgSanityChecks && (!hardwareTexture || !hardwareTexture.view)) {
-                            Logger.Error(`Trying to bind a null gpu texture! bindingDefinition=${JSON.stringify(bindingDefinition)}, bindingInfo=${JSON.stringify(bindingInfo, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}, isReady=${bindingInfo.texture?.isReady}`, 50);
+                            Logger.Error(`Trying to bind a null gpu texture! entry=${JSON.stringify(entry)}, bindingInfo=${JSON.stringify(bindingInfo, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}, isReady=${bindingInfo.texture?.isReady}`, 50);
                             continue;
                         }
 
                         entries.push({
-                            binding: j,
+                            binding: entry.binding,
                             resource: hardwareTexture.view!,
                         });
                     } else {
-                        Logger.Error(`Texture "${bindingDefinition.name}" could not be bound. bindingDefinition=${JSON.stringify(bindingDefinition)}, materialContext=${JSON.stringify(materialContext, (key: string, value: any) => key === 'texture' || key === 'sampler' ? '<no dump>' : value)}`, 50);
+                        Logger.Error(`Texture "${name}" could not be bound. entry=${JSON.stringify(entry)}, materialContext=${JSON.stringify(materialContext, (key: string, value: any) => key === 'texture' || key === 'sampler' ? '<no dump>' : value)}`, 50);
                     }
-                } else {
-                    const dataBuffer = uniformsBuffers[bindingDefinition.name];
+                } else if (entry.externalTexture) {
+                    const bindingInfo = materialContext.textures[name];
+                    if (bindingInfo) {
+                        if (this._engine.dbgSanityChecks && bindingInfo.texture === null) {
+                            Logger.Error(`Trying to bind a null external texture! entry=${JSON.stringify(entry)}, bindingInfo=${JSON.stringify(bindingInfo, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}`, 50);
+                            continue;
+                        }
+                        const externalTexture = (bindingInfo.texture as ExternalTexture).underlyingResource;
+
+                        if (this._engine.dbgSanityChecks && !externalTexture) {
+                            Logger.Error(`Trying to bind a null gpu external texture! entry=${JSON.stringify(entry)}, bindingInfo=${JSON.stringify(bindingInfo, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}, isReady=${bindingInfo.texture?.isReady}`, 50);
+                            continue;
+                        }
+
+                        entries.push({
+                            binding: entry.binding,
+                            resource: externalTexture,
+                        });
+                    } else {
+                        Logger.Error(`Texture "${name}" could not be bound. entry=${JSON.stringify(entry)}, materialContext=${JSON.stringify(materialContext, (key: string, value: any) => key === 'texture' || key === 'sampler' ? '<no dump>' : value)}`, 50);
+                    }
+                } else if (entry.buffer) {
+                    const dataBuffer = uniformsBuffers[name];
                     if (dataBuffer) {
                         const webgpuBuffer = dataBuffer.underlyingResource as GPUBuffer;
                         entries.push({
-                            binding: j,
+                            binding: entry.binding,
                             resource: {
                                 buffer: webgpuBuffer,
                                 offset: 0,
@@ -170,18 +182,16 @@ export class WebGPUCacheBindGroups {
                             },
                         });
                     } else {
-                        Logger.Error(`Can't find UBO "${bindingDefinition.name}". bindingDefinition=${JSON.stringify(bindingDefinition)}, _uniformsBuffers=${JSON.stringify(uniformsBuffers)}`, 50);
+                        Logger.Error(`Can't find UBO "${name}". entry=${JSON.stringify(entry)}, _uniformsBuffers=${JSON.stringify(uniformsBuffers)}`, 50);
                     }
                 }
             }
 
-            if (entries.length > 0) {
-                let groupLayout = bindGroupLayouts[i];
-                bindGroups[i] = this._device.createBindGroup({
-                    layout: groupLayout,
-                    entries,
-                });
-            }
+            let groupLayout = bindGroupLayouts[i];
+            bindGroups[i] = this._device.createBindGroup({
+                layout: groupLayout,
+                entries,
+            });
         }
 
         return bindGroups;

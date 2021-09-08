@@ -1,7 +1,7 @@
 import { Nullable } from '../../types';
 import { IShaderProcessor, ShaderLanguage } from '../Processors/iShaderProcessor';
 import { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
-import { WebGPUShaderProcessingContext } from './webgpuShaderProcessingContext';
+import { WebGPUShaderProcessingContext, WebGPUUniformBufferDescription } from './webgpuShaderProcessingContext';
 import * as WebGPUConstants from './webgpuConstants';
 import { Logger } from '../../Misc/logger';
 import { ThinEngine } from "../thinEngine";
@@ -161,23 +161,20 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
             const textureFunc = match[4]; // texture_2d, texture_depth_2d, etc
             const componentType = match[6]; // f32 or i32 or u32 or undefined
 
-            let textureInfo = WebGPUShaderProcessor._KnownTextures[name];
-            let arraySize = 0;
+            let arraySize = isArrayOfTexture ? this._getArraySize(name, type, preProcessors)[2] : 0;
+            let textureInfo = this.webgpuProcessingContext.availableTextures[name];
             if (!textureInfo) {
-                arraySize = isArrayOfTexture ? this._getArraySize(name, type, preProcessors)[2] : 0;
-                textureInfo = this.webgpuProcessingContext.availableTextures[name];
-                if (!textureInfo) {
-                    textureInfo = {
-                        isTextureArray: arraySize > 0,
-                        textures: [],
-                    };
-                    arraySize = arraySize || 1;
-                    for (let i = 0; i < arraySize; ++i) {
-                        textureInfo.textures.push(this.webgpuProcessingContext.getNextFreeUBOBinding());
-                    }
-                } else {
-                    arraySize = textureInfo.textures.length;
+                textureInfo = {
+                    isTextureArray: arraySize > 0,
+                    textures: [],
+                    sampleType: WebGPUConstants.TextureSampleType.Float,
+                };
+                arraySize = arraySize || 1;
+                for (let i = 0; i < arraySize; ++i) {
+                    textureInfo.textures.push(this.webgpuProcessingContext.getNextFreeUBOBinding());
                 }
+            } else {
+                arraySize = textureInfo.textures.length;
             }
 
             this.webgpuProcessingContext.availableTextures[name] = textureInfo;
@@ -189,19 +186,20 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
                 componentType === 'u32' ? WebGPUConstants.TextureSampleType.Uint :
                 componentType === 'i32' ? WebGPUConstants.TextureSampleType.Sint : WebGPUConstants.TextureSampleType.Float;
 
+            textureInfo.sampleType = sampleType;
+
             if (textureDimension === undefined) {
                 throw `Can't get the texture dimension corresponding to the texture function "${textureFunc}"!`;
             }
 
             for (let i = 0; i < arraySize; ++i) {
-                const textureSetIndex = textureInfo.textures[i].setIndex;
-                const textureBindingIndex = textureInfo.textures[i].bindingIndex;
+                const { groupIndex, bindingIndex } = textureInfo.textures[i];
 
                 if (i === 0) {
-                    texture = `[[group(${textureSetIndex}), binding(${textureBindingIndex})]] ${texture}`;
+                    texture = `[[group(${groupIndex}), binding(${bindingIndex})]] ${texture}`;
                 }
 
-                this._addTextureBindingDescription(isArrayOfTexture ? name + i.toString() : name, name, textureSetIndex, textureBindingIndex, sampleType, textureDimension, !isFragment);
+                this._addTextureBindingDescription(name, textureInfo, i, textureDimension, !isFragment);
             }
         }
 
@@ -334,7 +332,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
         return { vertexCode, fragmentCode };
     }
 
-    protected _generateLeftOverUBOCode(name: string, setIndex: number, bindingIndex: number): string {
+    protected _generateLeftOverUBOCode(name: string, uniformBufferDescription: WebGPUUniformBufferDescription): string {
         let ubo = `[[block]] struct ${name} {\n`;
         for (let leftOverUniform of this.webgpuProcessingContext.leftOverUniforms) {
             const type = leftOverUniform.type.replace(/^(.*?)(<.*>)?$/, "$1");
@@ -353,7 +351,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
         }
         ubo += "};\n";
 
-        ubo += `[[group(${setIndex}), binding(${bindingIndex})]] var<uniform> ${leftOverVarName} : ${name};\n`;
+        ubo += `[[group(${uniformBufferDescription.binding.groupIndex}), binding(${uniformBufferDescription.binding.bindingIndex})]] var<uniform> ${leftOverVarName} : ${name};\n`;
 
         return ubo;
     }
@@ -395,26 +393,28 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
             const name = match[1]; // name of the variable
             const samplerType = match[2]; // sampler or sampler_comparison
             const textureName = name.indexOf(WebGPUShaderProcessor.AutoSamplerSuffix) === name.length - WebGPUShaderProcessor.AutoSamplerSuffix.length ? name.substring(0, name.indexOf(WebGPUShaderProcessor.AutoSamplerSuffix)) : null;
-
-            let samplerInfo = WebGPUShaderProcessor._KnownSamplers[name];
-            if (!samplerInfo) {
-                if (textureName) {
-                    const textureInfo = this.webgpuProcessingContext.availableTextures[textureName];
-                    if (textureInfo) {
-                        textureInfo.autoBindSampler = true;
-                    }
-                }
-                samplerInfo = this.webgpuProcessingContext.getNextFreeUBOBinding();
-            }
-
-            this.webgpuProcessingContext.availableSamplers[name] = samplerInfo;
-
             const samplerBindingType = samplerType === "sampler_comparison" ? WebGPUConstants.SamplerBindingType.Comparison : WebGPUConstants.SamplerBindingType.Filtering;
 
-            this._addSamplerBindingDescription(name, samplerInfo.setIndex, samplerInfo.bindingIndex, samplerBindingType, isVertex);
+            if (textureName) {
+                const textureInfo = this.webgpuProcessingContext.availableTextures[textureName];
+                if (textureInfo) {
+                    textureInfo.autoBindSampler = true;
+                }
+            }
+
+            let samplerInfo = this.webgpuProcessingContext.availableSamplers[name];
+            if (!samplerInfo) {
+                samplerInfo = {
+                    binding: this.webgpuProcessingContext.getNextFreeUBOBinding(),
+                    type: samplerBindingType,
+                };
+                this.webgpuProcessingContext.availableSamplers[name] = samplerInfo;
+            }
+
+            this._addSamplerBindingDescription(name, samplerInfo, isVertex);
 
             const part1 = code.substring(0, match.index);
-            const insertPart = `[[group(${samplerInfo.setIndex}), binding(${samplerInfo.bindingIndex})]] `;
+            const insertPart = `[[group(${samplerInfo.binding.groupIndex}), binding(${samplerInfo.binding.bindingIndex})]] `;
             const part2 = code.substring(match.index);
 
             code = part1 + insertPart + part2;
@@ -433,30 +433,33 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
             if (match === null) {
                 break;
             }
+
             let name = match[1];
             const structName = match[2];
-            const knownUBO = WebGPUShaderProcessor._KnownUBOs[structName];
 
-            if (knownUBO) {
-                name = structName; 
-                this.webgpuProcessingContext.availableUBOs[name] = { setIndex: knownUBO.setIndex, bindingIndex: knownUBO. bindingIndex };
+            let uniformBufferInfo = this.webgpuProcessingContext.availableUBOs[name];
+            if (!uniformBufferInfo) {
+                const knownUBO = WebGPUShaderProcessor._KnownUBOs[structName];
+
+                let binding;
+                if (knownUBO) {
+                    name = structName; 
+                    binding = knownUBO.binding;
+                } else {
+                    binding = this.webgpuProcessingContext.getNextFreeUBOBinding();
+                }
+
+                uniformBufferInfo = { binding };
+                this.webgpuProcessingContext.availableUBOs[name] = uniformBufferInfo;
             }
 
-            let setIndex: number, bindingIndex: number;
-            if (this.webgpuProcessingContext.availableUBOs[name]) {
-                setIndex = this.webgpuProcessingContext.availableUBOs[name].setIndex;
-                bindingIndex = this.webgpuProcessingContext.availableUBOs[name].bindingIndex;
-            } else {
-                const binding = this.webgpuProcessingContext.getNextFreeUBOBinding();
-                this.webgpuProcessingContext.availableUBOs[name] = binding;
-                setIndex = binding.setIndex;
-                bindingIndex = binding.bindingIndex;
-            }
+            this._addUniformBufferBindingDescription(name, this.webgpuProcessingContext.availableUBOs[name], isVertex);
 
-            this._addUniformBufferBindingDescription(name, setIndex, bindingIndex, isVertex);
+            const groupIndex = uniformBufferInfo.binding.groupIndex;
+            const bindingIndex = uniformBufferInfo.binding.bindingIndex;
 
             const part1 = code.substring(0, match.index);
-            const insertPart = `[[group(${setIndex}), binding(${bindingIndex})]] `;
+            const insertPart = `[[group(${groupIndex}), binding(${bindingIndex})]] `;
             const part2 = code.substring(match.index);
 
             code = part1 + insertPart + part2;

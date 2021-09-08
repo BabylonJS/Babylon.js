@@ -1,5 +1,5 @@
 import * as WebGPUConstants from './webgpuConstants';
-import { WebGPUBindingInfo, WebGPUShaderProcessingContext, WebGPUTextureBindingDescription } from "./webgpuShaderProcessingContext";
+import { WebGPUSamplerDescription, WebGPUShaderProcessingContext, WebGPUTextureDescription, WebGPUUniformBufferDescription } from "./webgpuShaderProcessingContext";
 
 /** @hidden */
 export abstract class WebGPUShaderProcessor {
@@ -30,33 +30,44 @@ export abstract class WebGPUShaderProcessor {
         "mat4x4": 16
     };
 
-    protected static _KnownUBOs: { [key: string]: { setIndex: number, bindingIndex: number, varName: string } } = {
-        "Scene": { setIndex: 0, bindingIndex: 0, varName: "scene" },
-        "Light0": { setIndex: 0, bindingIndex: 1, varName: "light0" },
-        "Light1": { setIndex: 0, bindingIndex: 2, varName: "light1" },
-        "Light2": { setIndex: 0, bindingIndex: 3, varName: "light2" },
-        "Light3": { setIndex: 0, bindingIndex: 4, varName: "light3" },
-        "Light4": { setIndex: 0, bindingIndex: 5, varName: "light4" },
-        "Light5": { setIndex: 0, bindingIndex: 6, varName: "light5" },
-        "Light6": { setIndex: 0, bindingIndex: 7, varName: "light6" },
-        "Light7": { setIndex: 0, bindingIndex: 8, varName: "light7" },
-        "Light8": { setIndex: 0, bindingIndex: 9, varName: "light8" },
-        "Light9": { setIndex: 0, bindingIndex: 10, varName: "light9" },
-        "Light10": { setIndex: 0, bindingIndex: 11, varName: "light10" },
-        "Light11": { setIndex: 0, bindingIndex: 12, varName: "light11" },
-        "Light12": { setIndex: 0, bindingIndex: 13, varName: "light12" },
-        "Light13": { setIndex: 0, bindingIndex: 14, varName: "light13" },
-        "Light14": { setIndex: 0, bindingIndex: 15, varName: "light14" },
-        "Material": { setIndex: 1, bindingIndex: 0, varName: "material" },
-        "Mesh": { setIndex: 1, bindingIndex: 1, varName: "mesh" },
-    };
+    protected static _KnownUBOs: { [key: string]: WebGPUUniformBufferDescription } = {
+        "Scene":   { binding: { groupIndex: 0, bindingIndex: 0 } },
 
-    protected static _KnownTextures: { [key: string]: WebGPUTextureBindingDescription } = {
-        "environmentBrdfSampler": { autoBindSampler: true, isTextureArray: false, textures: [{ setIndex: 1, bindingIndex: 3 }] },
-    };
+        "Light0":  { binding: { groupIndex: 1, bindingIndex: 0 } },
+        "Light1":  { binding: { groupIndex: 1, bindingIndex: 1 } },
+        "Light2":  { binding: { groupIndex: 1, bindingIndex: 2 } },
+        "Light3":  { binding: { groupIndex: 1, bindingIndex: 3 } },
+        "Light4":  { binding: { groupIndex: 1, bindingIndex: 4 } },
+        "Light5":  { binding: { groupIndex: 1, bindingIndex: 5 } },
+        "Light6":  { binding: { groupIndex: 1, bindingIndex: 6 } },
+        "Light7":  { binding: { groupIndex: 1, bindingIndex: 7 } },
+        "Light8":  { binding: { groupIndex: 1, bindingIndex: 8 } },
+        "Light9":  { binding: { groupIndex: 1, bindingIndex: 9 } },
+        "Light10": { binding: { groupIndex: 1, bindingIndex: 10 } },
+        "Light11": { binding: { groupIndex: 1, bindingIndex: 11 } },
+        "Light12": { binding: { groupIndex: 1, bindingIndex: 12 } },
+        "Light13": { binding: { groupIndex: 1, bindingIndex: 13 } },
+        "Light14": { binding: { groupIndex: 1, bindingIndex: 14 } },
+        "Light15": { binding: { groupIndex: 1, bindingIndex: 15 } },
+        "Light16": { binding: { groupIndex: 1, bindingIndex: 16 } },
+        "Light17": { binding: { groupIndex: 1, bindingIndex: 17 } },
+        "Light18": { binding: { groupIndex: 1, bindingIndex: 18 } },
+        "Light19": { binding: { groupIndex: 1, bindingIndex: 19 } },
+        "Light20": { binding: { groupIndex: 1, bindingIndex: 20 } },
+        "Light21": { binding: { groupIndex: 1, bindingIndex: 21 } },
+        "Light22": { binding: { groupIndex: 1, bindingIndex: 22 } },
+        "Light23": { binding: { groupIndex: 1, bindingIndex: 23 } },
+        "Light24": { binding: { groupIndex: 1, bindingIndex: 24 } },
+        "Light25": { binding: { groupIndex: 1, bindingIndex: 25 } },
+        "Light26": { binding: { groupIndex: 1, bindingIndex: 26 } },
+        "Light27": { binding: { groupIndex: 1, bindingIndex: 27 } },
+        "Light28": { binding: { groupIndex: 1, bindingIndex: 28 } },
+        "Light29": { binding: { groupIndex: 1, bindingIndex: 29 } },
+        "Light30": { binding: { groupIndex: 1, bindingIndex: 30 } },
+        "Light31": { binding: { groupIndex: 1, bindingIndex: 31 } },
 
-    protected static _KnownSamplers: { [key: string]: WebGPUBindingInfo } = {
-        "environmentBrdfSamplerSampler": { setIndex: 1, bindingIndex: 2 },
+        "Material": { binding: { groupIndex: 2, bindingIndex: 0 } },
+        "Mesh":     { binding: { groupIndex: 2, bindingIndex: 1 } },
     };
 
     protected static _SamplerFunctionByWebGLSamplerType: { [key: string]: string } = {
@@ -101,7 +112,7 @@ export abstract class WebGPUShaderProcessor {
     protected webgpuProcessingContext: WebGPUShaderProcessingContext;
 
     protected abstract _getArraySize(name: string, type: string, preProcessors: { [key: string]: string }): [string, string, number];
-    protected abstract _generateLeftOverUBOCode(name: string, setIndex: number, bindingIndex: number): string;
+    protected abstract _generateLeftOverUBOCode(name: string, uniformBufferDescription: WebGPUUniformBufferDescription): string;
 
     protected _addUniformToLeftOverUBO(name: string, uniformType: string, preProcessors: { [key: string]: string }): void {
         let length = 0;
@@ -128,103 +139,116 @@ export abstract class WebGPUShaderProcessor {
         const name = "LeftOver";
         let availableUBO = this.webgpuProcessingContext.availableUBOs[name];
         if (!availableUBO) {
-            availableUBO = this.webgpuProcessingContext.getNextFreeUBOBinding();
+            availableUBO = {
+                binding: this.webgpuProcessingContext.getNextFreeUBOBinding(),
+            };
             this.webgpuProcessingContext.availableUBOs[name] = availableUBO;
-            if (!this.webgpuProcessingContext.orderedUBOsAndSamplers[availableUBO.setIndex]) {
-                this.webgpuProcessingContext.orderedUBOsAndSamplers[availableUBO.setIndex] = [];
-            }
-            this.webgpuProcessingContext.orderedUBOsAndSamplers[availableUBO.setIndex][availableUBO.bindingIndex] = { isSampler: false, isTexture: false, usedInVertex: true, usedInFragment: true, name };
+            this._addUniformBufferBindingDescription(name, availableUBO, true);
+            this._addUniformBufferBindingDescription(name, availableUBO, false);
         }
 
-        return this._generateLeftOverUBOCode(name, availableUBO.setIndex, availableUBO.bindingIndex);
+        return this._generateLeftOverUBOCode(name, availableUBO);
     }
 
     protected _collectBindingNames(): void {
         // collect all the binding names for faster processing in WebGPUCacheBindGroup
-        this.webgpuProcessingContext.textureNames = [];
-        for (let i = 0; i < this.webgpuProcessingContext.orderedUBOsAndSamplers.length; i++) {
-            const setDefinition = this.webgpuProcessingContext.orderedUBOsAndSamplers[i];
+        for (let i = 0; i < this.webgpuProcessingContext.bindGroupLayoutEntries.length; i++) {
+            const setDefinition = this.webgpuProcessingContext.bindGroupLayoutEntries[i];
             if (setDefinition === undefined) {
                 continue;
             }
             for (let j = 0; j < setDefinition.length; j++) {
-                const bindingDefinition = this.webgpuProcessingContext.orderedUBOsAndSamplers[i][j];
-                if (bindingDefinition) {
-                    if (bindingDefinition.isTexture) {
-                        this.webgpuProcessingContext.textureNames.push(bindingDefinition.name);
-                    } else if (bindingDefinition.isSampler) {
-                        this.webgpuProcessingContext.samplerNames.push(bindingDefinition.name);
-                    } else  {
-                        this.webgpuProcessingContext.uniformBufferNames.push(bindingDefinition.name);
+                const entry = this.webgpuProcessingContext.bindGroupLayoutEntries[i][j];
+                const name = this.webgpuProcessingContext.bindGroupLayoutEntryInfo[i][entry.binding].name;
+                const nameInArrayOfTexture = this.webgpuProcessingContext.bindGroupLayoutEntryInfo[i][entry.binding].nameInArrayOfTexture;
+                if (entry) {
+                    if (entry.texture || entry.externalTexture) {
+                        this.webgpuProcessingContext.textureNames.push(nameInArrayOfTexture!);
+                    } else if (entry.sampler) {
+                        this.webgpuProcessingContext.samplerNames.push(name);
+                    } else  if (entry.buffer) {
+                        this.webgpuProcessingContext.uniformBufferNames.push(name);
                     }
                 }
             }
         }
     }
 
-    protected _addTextureBindingDescription(name: string, origName: string, setIndex: number, bindingIndex: number, sampleType: GPUTextureSampleType, dimension: GPUTextureViewDimension, isVertex: boolean): void {
-        if (!this.webgpuProcessingContext.orderedUBOsAndSamplers[setIndex]) {
-            this.webgpuProcessingContext.orderedUBOsAndSamplers[setIndex] = [];
+    protected _addTextureBindingDescription(name: string, textureInfo: WebGPUTextureDescription, textureIndex: number, dimension: GPUTextureViewDimension, isVertex: boolean): void {
+        let { groupIndex, bindingIndex } = textureInfo.textures[textureIndex];
+        if (!this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex]) {
+            this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex] = [];
+            this.webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex] = [];
         }
-        if (!this.webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex]) {
-            this.webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex] = {
-                isSampler: false,
-                isTexture: true,
-                sampleType,
-                textureDimension: dimension,
-                usedInVertex: false,
-                usedInFragment: false,
-                name,
-                origName,
-            };
+        if (!this.webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex][bindingIndex]) {
+            const len = this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex].push({
+                binding: bindingIndex,
+                visibility: 0,
+                texture: {
+                    sampleType: textureInfo.sampleType,
+                    viewDimension: dimension,
+                    multisampled: false,
+                },
+            });
+            const textureName = textureInfo.isTextureArray ? name + textureIndex : name;
+            this.webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex][bindingIndex] = { name, index: len - 1, nameInArrayOfTexture: textureName };
         }
+
+        bindingIndex = this.webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex][bindingIndex].index;
         if (isVertex) {
-            this.webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex].usedInVertex = true;
+            this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex][bindingIndex].visibility |= WebGPUConstants.ShaderStage.Vertex;
         } else {
-            this.webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex].usedInFragment = true;
+            this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex][bindingIndex].visibility |= WebGPUConstants.ShaderStage.Fragment
         }
     }
 
-    protected _addSamplerBindingDescription(name: string, setIndex: number, bindingIndex: number, samplerBindingType: GPUSamplerBindingType, isVertex: boolean): void {
-        if (!this.webgpuProcessingContext.orderedUBOsAndSamplers[setIndex]) {
-            this.webgpuProcessingContext.orderedUBOsAndSamplers[setIndex] = [];
+    protected _addSamplerBindingDescription(name: string, samplerInfo: WebGPUSamplerDescription, isVertex: boolean): void {
+        let { groupIndex, bindingIndex } = samplerInfo.binding;
+        if (!this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex]) {
+            this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex] = [];
+            this.webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex] = [];
         }
-        if (!this.webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex]) {
-            this.webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex] = {
-                isSampler: true,
-                isTexture: false,
-                samplerBindingType,
-                usedInVertex: false,
-                usedInFragment: false,
-                name,
-            };
+        if (!this.webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex][bindingIndex]) {
+            const len = this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex].push({
+                binding: bindingIndex,
+                visibility: 0,
+                sampler: {
+                    type: samplerInfo.type,
+                },
+            });
+            this.webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex][bindingIndex] = { name, index: len - 1 };
         }
 
+        bindingIndex = this.webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex][bindingIndex].index;
         if (isVertex) {
-            this.webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex].usedInVertex = true;
+            this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex][bindingIndex].visibility |= WebGPUConstants.ShaderStage.Vertex;
         } else {
-            this.webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex].usedInFragment = true;
+            this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex][bindingIndex].visibility |= WebGPUConstants.ShaderStage.Fragment
         }
     }
 
-    protected _addUniformBufferBindingDescription(name: string, setIndex: number, bindingIndex: number, isVertex: boolean): void {
-        if (!this.webgpuProcessingContext.orderedUBOsAndSamplers[setIndex]) {
-            this.webgpuProcessingContext.orderedUBOsAndSamplers[setIndex] = [];
+    protected _addUniformBufferBindingDescription(name: string, uniformBufferInfo: WebGPUUniformBufferDescription, isVertex: boolean): void {
+        let { groupIndex, bindingIndex } = uniformBufferInfo.binding;
+        if (!this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex]) {
+            this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex] = [];
+            this.webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex] = [];
         }
-        if (!this.webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex]) {
-            this.webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex] = {
-                isSampler: false,
-                isTexture: false,
-                name,
-                usedInVertex: false,
-                usedInFragment: false
-            };
+        if (!this.webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex][bindingIndex]) {
+            const len = this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex].push({
+                binding: bindingIndex,
+                visibility: 0,
+                buffer: {
+                    type: WebGPUConstants.BufferBindingType.Uniform,
+                },
+            });
+            this.webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex][bindingIndex] = { name, index: len - 1 };
         }
 
+        bindingIndex = this.webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex][bindingIndex].index;
         if (isVertex) {
-            this.webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex].usedInVertex = true;
+            this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex][bindingIndex].visibility |= WebGPUConstants.ShaderStage.Vertex;
         } else {
-            this.webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex].usedInFragment = true;
+            this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex][bindingIndex].visibility |= WebGPUConstants.ShaderStage.Fragment
         }
     }
 }

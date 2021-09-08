@@ -7,7 +7,6 @@ import { DataBuffer } from "../../Buffers/dataBuffer";
 import { Nullable } from "../../types";
 import { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
 import { WebGPUPipelineContext } from "./webgpuPipelineContext";
-import { WebGPUBindingInfo } from "./webgpuShaderProcessingContext";
 import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
 
 enum StatePosition {
@@ -865,9 +864,10 @@ export abstract class WebGPUCacheRenderPipeline {
         }
 
         const bindGroupLayouts: GPUBindGroupLayout[] = [];
+        const bindGroupLayoutEntries = webgpuPipelineContext.shaderProcessingContext.bindGroupLayoutEntries;
 
-        for (let i = 0; i < webgpuPipelineContext.shaderProcessingContext.orderedUBOsAndSamplers.length; i++) {
-            const setDefinition = webgpuPipelineContext.shaderProcessingContext.orderedUBOsAndSamplers[i];
+        for (let i = 0; i < bindGroupLayoutEntries.length; i++) {
+            const setDefinition = bindGroupLayoutEntries[i];
             if (setDefinition === undefined) {
                 const entries: GPUBindGroupLayoutEntry[] = [];
                 const uniformsBindGroupLayout = this._device.createBindGroupLayout({
@@ -877,49 +877,9 @@ export abstract class WebGPUCacheRenderPipeline {
                 continue;
             }
 
-            const entries: GPUBindGroupLayoutEntry[] = [];
-            for (let j = 0; j < setDefinition.length; j++) {
-                const bindingDefinition = webgpuPipelineContext.shaderProcessingContext.orderedUBOsAndSamplers[i][j];
-                if (bindingDefinition === undefined) {
-                    continue;
-                }
-
-                let visibility = 0;
-                if (bindingDefinition.usedInVertex) {
-                    visibility = visibility | WebGPUConstants.ShaderStage.Vertex;
-                }
-                if (bindingDefinition.usedInFragment) {
-                    visibility = visibility | WebGPUConstants.ShaderStage.Fragment;
-                }
-
-                const entry: GPUBindGroupLayoutEntry = {
-                    binding: j,
-                    visibility,
-                };
-                entries.push(entry);
-
-                if (bindingDefinition.isSampler) {
-                    entry.sampler = {
-                        type: bindingDefinition.samplerBindingType
-                    };
-                } else if (bindingDefinition.isTexture) {
-                    entry.texture = {
-                        sampleType: bindingDefinition.sampleType,
-                        viewDimension: bindingDefinition.textureDimension,
-                        multisampled: false,
-                    };
-                } else {
-                    entry.buffer = {
-                        type: WebGPUConstants.BufferBindingType.Uniform,
-                    };
-                }
-            }
-
-            if (entries.length > 0) {
-                bindGroupLayouts[i] = this._device.createBindGroupLayout({
-                    entries,
-                });
-            }
+            bindGroupLayouts[i] = this._device.createBindGroupLayout({
+                entries: setDefinition,
+            });
         }
 
         webgpuPipelineContext.bindGroupLayouts = bindGroupLayouts;
@@ -928,88 +888,54 @@ export abstract class WebGPUCacheRenderPipeline {
     }
 
     private _createPipelineLayoutWithTextureStage(webgpuPipelineContext: WebGPUPipelineContext): GPUPipelineLayout {
-        const bindGroupEntries: GPUBindGroupLayoutEntry[][] = [];
         const shaderProcessingContext = webgpuPipelineContext.shaderProcessingContext;
-
-        const deferred: Array<() => void> = [];
+        const bindGroupLayoutEntries = shaderProcessingContext.bindGroupLayoutEntries;
 
         let bitVal = 1;
-        for (let i = 0; i < shaderProcessingContext.orderedUBOsAndSamplers.length; i++) {
-            const setDefinition = shaderProcessingContext.orderedUBOsAndSamplers[i];
+        for (let i = 0; i < bindGroupLayoutEntries.length; i++) {
+            const setDefinition = bindGroupLayoutEntries[i];
             if (setDefinition === undefined) {
-                bindGroupEntries[i] = [];
+                bindGroupLayoutEntries[i] = [];
                 continue;
             }
 
-            const entries: GPUBindGroupLayoutEntry[] = [];
-            bindGroupEntries[i] = entries;
             for (let j = 0; j < setDefinition.length; j++) {
-                const bindingDefinition = shaderProcessingContext.orderedUBOsAndSamplers[i][j];
-                if (bindingDefinition === undefined) {
-                    continue;
-                }
+                const entry = bindGroupLayoutEntries[i][j];
 
-                let visibility = 0;
-                if (bindingDefinition.usedInVertex) {
-                    visibility = visibility | WebGPUConstants.ShaderStage.Vertex;
-                }
-                if (bindingDefinition.usedInFragment) {
-                    visibility = visibility | WebGPUConstants.ShaderStage.Fragment;
-                }
+                if (entry.texture || entry.externalTexture) {
+                    const name = shaderProcessingContext.bindGroupLayoutEntryInfo[i][entry.binding].name;
+                    const textureInfo = shaderProcessingContext.availableTextures[name];
+                    const samplerInfo = textureInfo.autoBindSampler ? shaderProcessingContext.availableSamplers[name + WebGPUShaderProcessor.AutoSamplerSuffix] : null;
 
-                const entry: GPUBindGroupLayoutEntry = {
-                    binding: j,
-                    visibility,
-                };
-                entries.push(entry);
-
-                if (bindingDefinition.isSampler) {
-                    entry.sampler = {
-                        type: bindingDefinition.samplerBindingType
-                    };
-                } else if (bindingDefinition.isTexture) {
-                    let sampleType = bindingDefinition.sampleType;
+                    let sampleType = textureInfo.sampleType;
+                    let samplerType = samplerInfo?.type ?? WebGPUConstants.SamplerBindingType.Filtering;
 
                     if ((this._textureState & bitVal) && sampleType !== WebGPUConstants.TextureSampleType.Depth) {
                         // The texture is a 32 bits float texture but the system does not support linear filtering for them:
                         // we set the sampler to "non-filtering" and the texture sample type to "unfilterable-float"
-                        const textureInfo = shaderProcessingContext.availableTextures[bindingDefinition.origName!];
-
                         if (textureInfo.autoBindSampler) {
-                            // The sampler could be bound after the texture, so bindGroupEntries[sampler.setIndex][sampler.bindingIndex] could not exist yet
-                            // That's why we defer the change for after all bindings have been processed
-                            const samplerInfo = shaderProcessingContext.availableSamplers[bindingDefinition.origName! + WebGPUShaderProcessor.AutoSamplerSuffix];
-                            deferred.push(((sampler: WebGPUBindingInfo) => {
-                                return () => bindGroupEntries[sampler.setIndex][sampler.bindingIndex].sampler!.type = WebGPUConstants.SamplerBindingType.NonFiltering;
-                            })(samplerInfo));
+                            samplerType = WebGPUConstants.SamplerBindingType.NonFiltering;
                         }
                         sampleType = WebGPUConstants.TextureSampleType.UnfilterableFloat;
                     }
 
-                    entry.texture = {
-                        sampleType,
-                        viewDimension: bindingDefinition.textureDimension,
-                        multisampled: false,
-                    };
+                    entry.texture!.sampleType = sampleType;
+
+                    if (samplerInfo) {
+                        const binding = shaderProcessingContext.bindGroupLayoutEntryInfo[samplerInfo.binding.groupIndex][samplerInfo.binding.bindingIndex].index;
+                        bindGroupLayoutEntries[samplerInfo.binding.groupIndex][binding].sampler!.type = samplerType;
+                    }
 
                     bitVal = bitVal << 1;
-                } else {
-                    entry.buffer = {
-                        type: WebGPUConstants.BufferBindingType.Uniform,
-                    };
                 }
             }
         }
 
-        for (let i = 0; i < deferred.length; ++i) {
-            deferred[i]();
-        }
-
         const bindGroupLayouts: GPUBindGroupLayout[] = [];
 
-        for (let i = 0; i < bindGroupEntries.length; ++i) {
+        for (let i = 0; i < bindGroupLayoutEntries.length; ++i) {
             bindGroupLayouts[i] = this._device.createBindGroupLayout({
-                entries: bindGroupEntries[i],
+                entries: bindGroupLayoutEntries[i],
             });
         }
 
