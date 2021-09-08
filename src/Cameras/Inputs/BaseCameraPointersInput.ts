@@ -33,6 +33,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
     protected _buttonsPressed: number;
 
     private _currentActiveButton: number = -1;
+    private _usingSafari = Tools.IsSafari();
 
     /**
      * Defines the buttons associated with the input to handle camera move.
@@ -64,6 +65,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
         this._pointerInput = (p, s) => {
             var evt = <IPointerEvent>p.event;
             let isTouch = evt.pointerType === "touch";
+            let ignoreContext = isTouch || this._usingSafari;
 
             if (engine.isInVRExclusivePointerMode) {
                 return;
@@ -131,7 +133,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                 }
             } else if (p.type === PointerEventTypes.POINTERDOUBLETAP) {
                 this.onDoubleTap(evt.pointerType);
-            } else if (p.type === PointerEventTypes.POINTERUP && srcElement) {
+            } else if (srcElement && (p.type === PointerEventTypes.POINTERUP || (p.type === PointerEventTypes.POINTERMOVE && p.event.button === this._currentActiveButton && this._currentActiveButton !== -1 && !ignoreContext))) {
                 try {
                     srcElement.releasePointerCapture(evt.pointerId);
                 } catch (e) {
