@@ -4,11 +4,7 @@ import { Nullable } from "../../../types";
 import { WebGPUExternalTexture } from "../webgpuExternalTexture";
 
 WebGPUEngine.prototype.createExternalTexture = function (video: HTMLVideoElement): Nullable<ExternalTexture> {
-    const texture = new WebGPUExternalTexture(
-        this._device.importExternalTexture({
-            source: video
-        })
-    );
+    const texture = new WebGPUExternalTexture(video);
     return texture;
 };
 

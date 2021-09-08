@@ -1,15 +1,12 @@
 import { ExternalTexture } from "../../Materials/Textures/externalTexture";
 
-/** @hidden */
+/**
+ * Nothing specific to WebGPU in this class, but the spec is not final yet so let's remove it later on
+ * if it is not needed
+ * @hidden
+ **/
 export class WebGPUExternalTexture extends ExternalTexture {
-    private _texture: GPUExternalTexture;
-
-    public constructor(resource: GPUExternalTexture) {
-        super();
-        this._texture = resource;
-    }
-
-    public get underlyingResource(): GPUExternalTexture {
-        return this._texture;
+    public constructor(video: HTMLVideoElement) {
+        super(video);
     }
 }

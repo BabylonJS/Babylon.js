@@ -9,6 +9,8 @@ import { InternalTexture } from "./internalTexture";
         return (texture as ExternalTexture).underlyingResource !== undefined;
     }
 
+    private _video: HTMLVideoElement;
+
     /**
      * Get the class name of the texture.
      * @returns "ExternalTexture"
@@ -21,7 +23,7 @@ import { InternalTexture } from "./internalTexture";
      * Gets the underlying texture object
      */
     public get underlyingResource(): any {
-        return null;
+        return this._video;
     }
 
     /**
@@ -42,7 +44,8 @@ import { InternalTexture } from "./internalTexture";
     /**
      * Constructs the texture
      */
-    constructor() {
+    constructor(video: HTMLVideoElement) {
+        this._video = video;
         this.uniqueId = InternalTexture._Counter++;
     }
 
