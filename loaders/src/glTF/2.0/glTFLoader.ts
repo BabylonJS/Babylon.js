@@ -2225,7 +2225,7 @@ export class GLTFLoader implements IGLTFLoader {
         if (byteOffset % componentTypeLength !== 0) {
             // HACK: Copy the buffer if byte offset is not a multiple of component type byte length.
             Logger.Warn(`${context}: Copying buffer as byte offset (${byteOffset}) is not a multiple of component type byte length (${componentTypeLength})`);
-            return new constructor(buffer.slice(byteOffset, byteOffset + length), 0);
+            return new constructor(buffer.slice(byteOffset, byteOffset + length * componentTypeLength), 0);
         }
 
         return new constructor(buffer, byteOffset, length);
