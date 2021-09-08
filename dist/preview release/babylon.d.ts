@@ -22382,6 +22382,7 @@ declare module BABYLON {
          */
         _allowCameraRotation: boolean;
         private _currentActiveButton;
+        private _usingSafari;
         /**
          * Manage the mouse inputs to control the movement of a free camera.
          * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -48676,6 +48677,7 @@ declare module BABYLON {
          */
         protected _buttonsPressed: number;
         private _currentActiveButton;
+        private _usingSafari;
         /**
          * Defines the buttons associated with the input to handle camera move.
          */
@@ -53784,6 +53786,8 @@ declare module BABYLON {
          * Force the controller to update the bones
          */
         update(): void;
+        private static _SetAbsoluteRotation;
+        private static _IsTransformNode;
     }
 }
 declare module BABYLON {
@@ -64646,6 +64650,13 @@ declare module BABYLON {
          */
         constructor(gizmoLayer?: UtilityLayerRenderer);
         private _light;
+        /**
+         * Override attachedNode because lightgizmo only support attached mesh
+         * It will return the attached mesh (if any) and setting an attached node will log
+         * a warning
+         */
+        get attachedNode(): Nullable<Node>;
+        set attachedNode(value: Nullable<Node>);
         /**
          * The light that the gizmo is attached to
          */
