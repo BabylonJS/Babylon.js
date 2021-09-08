@@ -44,6 +44,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
     public _allowCameraRotation = true;
 
     private _currentActiveButton: number = -1;
+    private _usingSafari = Tools.IsSafari();
 
     /**
      * Manage the mouse inputs to control the movement of a free camera.
@@ -109,7 +110,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                     if (engine.isPointerLock && this._onMouseMove) {
                         this._onMouseMove(p.event);
                     }
-                } else if (p.type === PointerEventTypes.POINTERUP && srcElement) {
+                } else if (srcElement && (p.type === PointerEventTypes.POINTERUP || (p.type === PointerEventTypes.POINTERMOVE && p.event.button === this._currentActiveButton && this._currentActiveButton !== -1 && !this._usingSafari))) {
                     try {
                         srcElement.releasePointerCapture(evt.pointerId);
                     } catch (e) {
