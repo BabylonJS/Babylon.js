@@ -1,8 +1,8 @@
 import { ShaderLanguage } from "../Processors/iShaderProcessor";
 import { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 
-const _maxSets = 4;
-const _maxBindingsPerSet = 16;
+const _maxGroups = 4;
+const _maxBindingsPerGroup = 1 << 16;
 
 // all types not listed are assumed to consume 1 location
 const _typeToLocationSize: { [key: string]: number } = {
@@ -19,32 +19,34 @@ const _typeToLocationSize: { [key: string]: number } = {
 
 /** @hidden */
 export interface WebGPUBindingInfo {
-    setIndex: number;
+    groupIndex: number;
     bindingIndex: number;
 }
 
 /** @hidden */
-export interface WebGPUTextureBindingDescription {
+export interface WebGPUTextureDescription {
     autoBindSampler?: boolean;
     isTextureArray: boolean;
     textures: Array<WebGPUBindingInfo>;
+    sampleType: GPUTextureSampleType;
 }
 
-/** @hidden
- *  If the binding is a UBO, isSampler=isTexture=false
-*/
-export interface WebGPUBindingDescription {
+/** @hidden */
+export interface WebGPUSamplerDescription {
+    binding: WebGPUBindingInfo;
+    type: GPUSamplerBindingType;
+}
+
+/** @hidden */
+export interface WebGPUUniformBufferDescription {
+    binding: WebGPUBindingInfo;
+}
+
+/** @hidden */
+export interface WebGPUBindGroupLayoutEntryInfo {
     name: string;
-    usedInVertex: boolean;
-    usedInFragment: boolean;
-
-    isSampler: boolean;
-    samplerBindingType?: GPUSamplerBindingType;
-
-    isTexture: boolean;
-    sampleType?: GPUTextureSampleType;
-    textureDimension?: GPUTextureViewDimension;
-    origName?: string;
+    index: number; // index of the entry (GPUBindGroupLayoutEntry) in the bindGroupLayoutEntries[group] array
+    nameInArrayOfTexture?: string; // something like texture0, texture1, ... if texture is an array, else same thing as "name"
 }
 
 /**
@@ -54,20 +56,21 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
     public shaderLanguage: ShaderLanguage;
 
     public uboNextBindingIndex: number;
-    public freeSetIndex: number;
+    public freeGroupIndex: number;
     public freeBindingIndex: number;
 
     public availableVaryings: { [key: string]: number };
     public availableAttributes: { [key: string]: number };
-    public availableUBOs: { [key: string]: { setIndex: number, bindingIndex: number } };
-    public availableTextures: { [key: string]: WebGPUTextureBindingDescription };
-    public availableSamplers: { [key: string]: WebGPUBindingInfo };
+    public availableUBOs: { [key: string]: WebGPUUniformBufferDescription };
+    public availableTextures: { [key: string]: WebGPUTextureDescription };
+    public availableSamplers: { [key: string]: WebGPUSamplerDescription };
 
     public leftOverUniforms: { name: string, type: string, length: number }[];
 
     public orderedAttributes: string[];
-    public orderedUBOsAndSamplers: WebGPUBindingDescription[][];
-    public uniformBufferNames: string[];
+    public bindGroupLayoutEntries: GPUBindGroupLayoutEntry[][];
+    public bindGroupLayoutEntryInfo: WebGPUBindGroupLayoutEntryInfo[][];
+    public uniformBufferNames: string[]; // list of all uniform buffer names used in the shader
     public textureNames: string[]; // list of all texture names used in the shader
     public samplerNames: string[]; // list of all sampler names used in the shader
     public attributeNamesFromEffect: string[];
@@ -81,8 +84,8 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
 
         this._attributeNextLocation = 0;
         this._varyingNextLocation = 0;
-        this.freeSetIndex = 2;
-        this.freeBindingIndex = 0;
+        this.freeGroupIndex = 2;
+        this.freeBindingIndex = 2;
 
         this.availableVaryings = {};
         this.availableAttributes = {};
@@ -91,8 +94,10 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
         this.availableSamplers = {};
 
         this.orderedAttributes = [];
-        this.orderedUBOsAndSamplers = [];
+        this.bindGroupLayoutEntries = [];
+        this.bindGroupLayoutEntryInfo = [];
         this.uniformBufferNames = [];
+        this.textureNames = [];
         this.samplerNames = [];
 
         this.leftOverUniforms = [];
@@ -119,17 +124,17 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
     }
 
     private _getNextFreeBinding(bindingCount: number) {
-        if (this.freeBindingIndex > _maxBindingsPerSet - bindingCount) {
-            this.freeSetIndex++;
+        if (this.freeBindingIndex > _maxBindingsPerGroup - bindingCount) {
+            this.freeGroupIndex++;
             this.freeBindingIndex = 0;
         }
 
-        if (this.freeSetIndex === _maxSets) {
+        if (this.freeGroupIndex === _maxGroups) {
             throw "Too many textures or UBOs have been declared and it is not supported in WebGPU.";
         }
 
         const returnValue = {
-            setIndex: this.freeSetIndex,
+            groupIndex: this.freeGroupIndex,
             bindingIndex: this.freeBindingIndex
         };
 

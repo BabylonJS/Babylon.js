@@ -1886,7 +1886,7 @@ export class WebGPUEngine extends Engine {
             this._currentMaterialContext.setTexture(name, texture);
 
             if (availableTexture && availableTexture.autoBindSampler) {
-                const samplerName = name + WebGPUShaderProcessor.AutoSamplerSuffix;
+                const samplerName = baseName + WebGPUShaderProcessor.AutoSamplerSuffix;
                 this._currentMaterialContext.setSampler(samplerName, texture as InternalTexture); // we can safely cast to InternalTexture because ExternalTexture always has autoBindSampler = false
             }
         }

@@ -43,7 +43,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
     public bindGroupLayouts: GPUBindGroupLayout[];
 
     /**
-     * Stores the uniform buffer
+     * Stores the left-over uniform buffer
      */
     public uniformBuffer: Nullable<UniformBuffer>;
 

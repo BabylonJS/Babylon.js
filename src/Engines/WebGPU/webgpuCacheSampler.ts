@@ -246,12 +246,16 @@ export class WebGPUCacheSampler {
         };
     }
 
-    public getSampler(sampler: Sampler, bypassCache = false): GPUSampler {
+    public getSampler(sampler: Sampler, bypassCache = false, hash = 0): GPUSampler {
         if (this.disabled) {
             return this._device.createSampler(WebGPUCacheSampler._GetSamplerDescriptor(sampler));
         }
 
-        const hash = bypassCache ? 0 : WebGPUCacheSampler.GetSamplerHashCode(sampler);
+        if (bypassCache) {
+            hash = 0;
+        } else if (hash === 0) {
+            hash = WebGPUCacheSampler.GetSamplerHashCode(sampler);
+        }
 
         let gpuSampler = bypassCache ? undefined : this._samplers[hash];
         if (!gpuSampler) {
