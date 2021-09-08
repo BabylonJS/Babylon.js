@@ -53,7 +53,9 @@ export class WebGPUCacheBindGroups {
         let bindGroups: GPUBindGroup[] | undefined = undefined;
         let node = WebGPUCacheBindGroups._Cache;
 
-        if (!this.disabled) {
+        // If there is at least one external texture to bind, we must recreate the bind groups each time because we need to retrieve a new texture each frame (by calling device.importExternalTexture)
+        const cacheIsDisabled = this.disabled || materialContext.numExternalTextures > 0;
+        if (!cacheIsDisabled) {
             for (const bufferName of webgpuPipelineContext.shaderProcessingContext.uniformBufferNames) {
                 const uboId = uniformsBuffers[bufferName].uniqueId;
                 let nextNode = node.values[uboId];
@@ -93,7 +95,7 @@ export class WebGPUCacheBindGroups {
 
         bindGroups = [];
 
-        if (!this.disabled) {
+        if (!cacheIsDisabled) {
             node.bindGroups = bindGroups;
         }
 

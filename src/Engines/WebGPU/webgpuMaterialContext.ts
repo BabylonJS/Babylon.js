@@ -14,6 +14,7 @@ interface IWebGPUMaterialContextSamplerCache {
 /** @hidden */
 interface IWebGPUMaterialContextTextureCache {
     texture: Nullable<InternalTexture | ExternalTexture>;
+    isExternalTexture: boolean;
 }
 
 /** @hidden */
@@ -21,6 +22,7 @@ export class WebGPUMaterialContext implements IMaterialContext {
     private static _Counter = 0;
 
     public uniqueId: number;
+    public numExternalTextures: number;
     public samplers: { [name: string]: Nullable<IWebGPUMaterialContextSamplerCache> };
     public textures: { [name: string]: Nullable<IWebGPUMaterialContextTextureCache> };
 
@@ -28,6 +30,7 @@ export class WebGPUMaterialContext implements IMaterialContext {
         this.samplers = {};
         this.textures = {};
         this.uniqueId = WebGPUMaterialContext._Counter++;
+        this.numExternalTextures = 0;
     }
 
     public setSampler(name: string, sampler: Nullable<Sampler>): void {
@@ -43,7 +46,16 @@ export class WebGPUMaterialContext implements IMaterialContext {
     public setTexture(name: string, texture: Nullable<InternalTexture | ExternalTexture>): void {
         let textureCache = this.textures[name];
         if (!textureCache) {
-            this.textures[name] = textureCache = { texture };
+            this.textures[name] = textureCache = { texture, isExternalTexture: false };
+        }
+
+        if (texture) {
+            textureCache.isExternalTexture = ExternalTexture.IsExternalTexture(texture);
+            if (textureCache.isExternalTexture) {
+                this.numExternalTextures++;
+            }
+        } else if (textureCache.isExternalTexture) {
+            this.numExternalTextures--;
         }
 
         textureCache.texture = texture;
