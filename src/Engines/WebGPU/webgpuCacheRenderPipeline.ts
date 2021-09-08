@@ -902,7 +902,7 @@ export abstract class WebGPUCacheRenderPipeline {
             for (let j = 0; j < setDefinition.length; j++) {
                 const entry = bindGroupLayoutEntries[i][j];
 
-                if (entry.texture || entry.externalTexture) {
+                if (entry.texture) {
                     const name = shaderProcessingContext.bindGroupLayoutEntryInfo[i][entry.binding].name;
                     const textureInfo = shaderProcessingContext.availableTextures[name];
                     const samplerInfo = textureInfo.autoBindSampler ? shaderProcessingContext.availableSamplers[name + WebGPUShaderProcessor.AutoSamplerSuffix] : null;

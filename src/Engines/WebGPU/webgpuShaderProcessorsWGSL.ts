@@ -29,7 +29,7 @@ const builtInName_FragColor = "gl_FragColor";
 
 const leftOverVarName = "uniforms";
 
-const gpuTextureViewDimensionByWebGPUTextureFunction: { [key: string]: GPUTextureViewDimension } = {
+const gpuTextureViewDimensionByWebGPUTextureFunction: { [key: string]: Nullable<GPUTextureViewDimension> } = {
     "texture_1d": WebGPUConstants.TextureViewDimension.E1d,
     "texture_2d": WebGPUConstants.TextureViewDimension.E2d,
     "texture_2d_array": WebGPUConstants.TextureViewDimension.E2dArray,
@@ -42,6 +42,7 @@ const gpuTextureViewDimensionByWebGPUTextureFunction: { [key: string]: GPUTextur
     "texture_depth_cube": WebGPUConstants.TextureViewDimension.Cube,
     "texture_depth_cube_array": WebGPUConstants.TextureViewDimension.CubeArray,
     "texture_depth_multisampled_2d": WebGPUConstants.TextureViewDimension.E2d,
+    "texture_external": null
 };
 
  /** @hidden */

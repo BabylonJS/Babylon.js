@@ -1,3 +1,4 @@
+import { Nullable } from "../../types";
 import * as WebGPUConstants from './webgpuConstants';
 import { WebGPUSamplerDescription, WebGPUShaderProcessingContext, WebGPUTextureDescription, WebGPUUniformBufferDescription } from "./webgpuShaderProcessingContext";
 
@@ -174,22 +175,31 @@ export abstract class WebGPUShaderProcessor {
         }
     }
 
-    protected _addTextureBindingDescription(name: string, textureInfo: WebGPUTextureDescription, textureIndex: number, dimension: GPUTextureViewDimension, isVertex: boolean): void {
+    protected _addTextureBindingDescription(name: string, textureInfo: WebGPUTextureDescription, textureIndex: number, dimension: Nullable<GPUTextureViewDimension>, isVertex: boolean): void {
         let { groupIndex, bindingIndex } = textureInfo.textures[textureIndex];
         if (!this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex]) {
             this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex] = [];
             this.webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex] = [];
         }
         if (!this.webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex][bindingIndex]) {
-            const len = this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex].push({
-                binding: bindingIndex,
-                visibility: 0,
-                texture: {
-                    sampleType: textureInfo.sampleType,
-                    viewDimension: dimension,
-                    multisampled: false,
-                },
-            });
+            let len;
+            if (dimension === null) {
+                len = this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex].push({
+                    binding: bindingIndex,
+                    visibility: 0,
+                    externalTexture: {},
+                });
+            } else {
+                len = this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex].push({
+                    binding: bindingIndex,
+                    visibility: 0,
+                    texture: {
+                        sampleType: textureInfo.sampleType,
+                        viewDimension: dimension,
+                        multisampled: false,
+                    },
+                });
+            }
             const textureName = textureInfo.isTextureArray ? name + textureIndex : name;
             this.webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex][bindingIndex] = { name, index: len - 1, nameInArrayOfTexture: textureName };
         }

@@ -14,7 +14,6 @@ interface IWebGPUMaterialContextSamplerCache {
 /** @hidden */
 interface IWebGPUMaterialContextTextureCache {
     texture: Nullable<InternalTexture | ExternalTexture>;
-    isExternal: boolean;
 }
 
 /** @hidden */
@@ -44,11 +43,7 @@ export class WebGPUMaterialContext implements IMaterialContext {
     public setTexture(name: string, texture: Nullable<InternalTexture | ExternalTexture>): void {
         let textureCache = this.textures[name];
         if (!textureCache) {
-            this.textures[name] = textureCache = { texture, isExternal: false };
-        }
-
-        if (!!texture) {
-            textureCache.isExternal = ExternalTexture.IsExternalTexture(texture);
+            this.textures[name] = textureCache = { texture };
         }
 
         textureCache.texture = texture;
