@@ -84,19 +84,20 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
     /**
      * Sets the HandConstraintVisibility level for the hand constraint
      */
-    public handConstraintVisibility: HandConstraintVisibility = HandConstraintVisibility.ALWAYS_VISIBLE;
+    public handConstraintVisibility: HandConstraintVisibility = HandConstraintVisibility.PALM_AND_GAZE;
 
     /**
-     * A number from -1 to 1 that determines how 'upright' the palm must be before the attached node is enabled.
+     * A number from 0.0 to 1.0, marking how restricted the direction the palm faces is for the attached node to be enabled.
+     * A 1 means the palm must be directly facing the user before the node is enabled, a 0 means it is always enabled.
      * Used with HandConstraintVisibility.PALM_UP
      */
-    public palmUpStrictness: number = 0.9;
+    public palmUpStrictness: number = 0.95;
 
     /**
-     * The radius around the TransformNode the user must look wiithin for the attached node to be enabled.
+     * The radius in meters around the center of the hand that the user must gaze inside for the attached node to be enabled and appear.
      * Used with HandConstraintVisibility.GAZE_FOCUS
      */
-    public gazeProximity: number = 1;
+    public gazeProximityRadius: number = 0.15;
 
     /**
      * Offset distance from the hand in meters
@@ -120,7 +121,7 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
     /**
      * Set the hand this behavior should follow. If set to "none", it will follow any visible hand (prioritising the left one).
      */
-    public handedness: XRHandedness = "left";
+    public handedness: XRHandedness = "none";
 
     /**
      * Rate of interpolation of position and rotation of the attached node.
@@ -231,8 +232,7 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
                 const cameraLookAtQuaternion = TmpVectors.Quaternion[0];
                 if (camera && (this.zoneOrientationMode === HandConstraintOrientation.LOOK_AT_CAMERA || this.nodeOrientationMode === HandConstraintOrientation.LOOK_AT_CAMERA)) {
                     const toCamera = TmpVectors.Vector3[1];
-                    toCamera.copyFrom(camera.position);
-                    toCamera.subtractInPlace(pose.position).normalize();
+                    toCamera.copyFrom(camera.position).subtractInPlace(pose.position).normalize();
                     if (this._scene.useRightHandedSystem) {
                         Quaternion.FromLookDirectionRHToRef(toCamera, Vector3.UpReadOnly, cameraLookAtQuaternion);
                     } else {
@@ -276,44 +276,52 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
     private _setVisibility() {
         let palmVisible = true;
         let gazeVisible = true;
+        const camera = this._scene.activeCamera;
 
-        if (this.handConstraintVisibility === HandConstraintVisibility.GAZE_FOCUS ||
-            this.handConstraintVisibility === HandConstraintVisibility.PALM_AND_GAZE) {
-            gazeVisible = false;
-            let gaze: Ray | undefined;
-            if (this._eyeTracking) {
-                gaze = this._eyeTracking.getEyeGaze()!;
-            }
-            if (!gaze) {
-                const camera = this._scene.activeCamera;
-                gaze = camera?.getForwardRay();
-            }
+        if (camera) {
+            const cameraForward = camera.getForwardRay();
+            const pose = this._getHandPose();
 
-            if (gaze) {
-                const behaviorPosition = this._node.position;
-                const rayPos = gaze.origin;
-                const rayPos2 = gaze.origin.add(gaze.direction);
-                const rayPosToPoint = rayPos.subtract(behaviorPosition);
-                const rayPos2ToPoint = rayPos2.subtract(behaviorPosition);
-                const distance = rayPosToPoint.cross(rayPos2ToPoint).length();
+            if (this.handConstraintVisibility === HandConstraintVisibility.GAZE_FOCUS ||
+                this.handConstraintVisibility === HandConstraintVisibility.PALM_AND_GAZE) {
+                gazeVisible = false;
+                let gaze: Ray | undefined;
+                if (this._eyeTracking) {
+                    gaze = this._eyeTracking.getEyeGaze()!;
+                }
 
-                if (distance < this.gazeProximity) {
-                    gazeVisible = true;
+                gaze = gaze || cameraForward;
+
+                const gazeToBehavior = TmpVectors.Vector3[0];
+                if (pose) {
+                    pose.position.subtractToRef(gaze.origin, gazeToBehavior);
+                }
+                else {
+                    this._node.getAbsolutePosition().subtractToRef(gaze.origin, gazeToBehavior);
+                }
+
+                const projectedDistance = Vector3.Dot(gazeToBehavior, gaze.direction);
+                const projectedSquared = projectedDistance * projectedDistance;
+
+                if (projectedDistance > 0) {
+                    const radiusSquared = gazeToBehavior.lengthSquared() - projectedSquared;
+                    if (radiusSquared < (this.gazeProximityRadius * this.gazeProximityRadius)) {
+                        gazeVisible = true;
+                    }
                 }
             }
-        }
 
-        if (this.handConstraintVisibility === HandConstraintVisibility.PALM_UP ||
-            this.handConstraintVisibility === HandConstraintVisibility.PALM_AND_GAZE) {
-            palmVisible = false;
+            if (this.handConstraintVisibility === HandConstraintVisibility.PALM_UP ||
+                this.handConstraintVisibility === HandConstraintVisibility.PALM_AND_GAZE) {
+                palmVisible = false;
 
-            const pose = this._getHandPose();
-            if (pose) {
-                const palmDirection = Vector3.Up();
-                palmDirection.rotateByQuaternionToRef(pose.quaternion, palmDirection);
+                if (pose) {
+                    const palmDirection = TmpVectors.Vector3[0];
+                    Vector3.LeftHandedForwardReadOnly.rotateByQuaternionToRef(pose.quaternion, palmDirection);
 
-                if (Vector3.Dot(palmDirection, Vector3.UpReadOnly) > this.palmUpStrictness) {
-                    palmVisible = true;
+                    if (Vector3.Dot(palmDirection, cameraForward.direction) > ((this.palmUpStrictness * 2) - 1)) {
+                        palmVisible = true;
+                    }
                 }
             }
         }
