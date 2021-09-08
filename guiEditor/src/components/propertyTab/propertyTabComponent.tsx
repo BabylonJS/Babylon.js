@@ -78,7 +78,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             this.save(this.saveLocally);
         });
         this.props.globalState.onSnippetSaveObservable.add(() => {
-            this.save(this.customSave);
+            this.save(this.saveToSnippetServer);
         });
         this.props.globalState.onSnippetLoadObservable.add(() => {
             this.loadFromSnippet();
@@ -215,12 +215,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         }
         this.props.globalState.workbench.loadFromSnippet(snippedId);
     }
-
-    customSave = () => {
-        this.saveToSnippetServer();
-       
-    }
-
+    
     renderProperties() {
         const className = this.state.currentNode?.getClassName();
         switch (className) {
