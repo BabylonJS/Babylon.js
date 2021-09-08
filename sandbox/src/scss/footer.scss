@@ -53,7 +53,8 @@
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
-                font-size: var(--font-size)
+                font-size: var(--font-size);
+                width: 100%;
             }
         }
 
@@ -105,6 +106,8 @@
                 display: grid;
                 align-content: center;
                 justify-content: center;
+                padding-left: 4px;
+                padding-right: 4px;
             
                 &:hover {
                     background-color: var(--button-hover-hover); 
@@ -113,6 +116,10 @@
                 &:active {
                     background-color: var(--button-hover-background);
                     transition: all 0.3s ease;
+                }
+
+                div {
+                    overflow: hidden;
                 }
             }
         }     
