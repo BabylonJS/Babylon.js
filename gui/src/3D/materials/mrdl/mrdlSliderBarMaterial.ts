@@ -202,8 +202,8 @@ export class MRDLSliderBarMaterial extends PushMaterial {
         this._activeEffect.setVector3("cameraPosition", this.getScene().activeCamera!.position);
 
         // "Round Rect"
-        this._activeEffect.setFloat("_Radius_", 0.5);
-        this._activeEffect.setFloat("_Bevel_Front_", 0.429);
+        this._activeEffect.setFloat("_Radius_", 0.6);
+        this._activeEffect.setFloat("_Bevel_Front_", 0.6);
         this._activeEffect.setFloat("_Bevel_Front_Stretch_", 0.077);
         this._activeEffect.setFloat("_Bevel_Back_", 0);
         this._activeEffect.setFloat("_Bevel_Back_Stretch_", 0);
