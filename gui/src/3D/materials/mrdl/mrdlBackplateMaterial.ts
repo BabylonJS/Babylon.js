@@ -192,8 +192,8 @@ export class MRDLBackplateMaterial extends PushMaterial {
         this._activeEffect.setVector3("cameraPosition", this.getScene().activeCamera!.position);
 
         // "Round Rect"
-        this._activeEffect.setFloat("_Radius_", 0.2);
-        this._activeEffect.setFloat("_Line_Width_", 0.001);
+        this._activeEffect.setFloat("_Radius_", 0.3);
+        this._activeEffect.setFloat("_Line_Width_", 0.003);
         this._activeEffect.setFloat("_Absolute_Sizes_", false ? 1.0 : 0.0);
         this._activeEffect.setFloat("_Filter_Width_", 1);
         this._activeEffect.setDirectColor4("_Base_Color_", new Color4(0, 0, 0, 1));
@@ -220,7 +220,7 @@ export class MRDLBackplateMaterial extends PushMaterial {
         this._activeEffect.setTexture("_Iridescent_Map_", new Texture("https://github.com/rgerd/TestAssets/blob/master/PNG/BackplateIridescence.png", this.getScene()));
         this._activeEffect.setFloat("_Angle_", -45);
         this._activeEffect.setFloat("_Reflected_", true ? 1.0 : 0.0);
-        this._activeEffect.setFloat("_Frequency_", .96);
+        this._activeEffect.setFloat("_Frequency_", 0.96);
         this._activeEffect.setFloat("_Vertical_Offset_", 0);
 
         // "Gradient"
