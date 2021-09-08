@@ -70,6 +70,7 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
     public orderedAttributes: string[];
     public bindGroupLayoutEntries: GPUBindGroupLayoutEntry[][];
     public bindGroupLayoutEntryInfo: WebGPUBindGroupLayoutEntryInfo[][];
+    public bindGroupEntries: GPUBindGroupEntry[][];
     public uniformBufferNames: string[]; // list of all uniform buffer names used in the shader
     public textureNames: string[]; // list of all texture names used in the shader
     public samplerNames: string[]; // list of all sampler names used in the shader
@@ -96,6 +97,7 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
         this.orderedAttributes = [];
         this.bindGroupLayoutEntries = [];
         this.bindGroupLayoutEntryInfo = [];
+        this.bindGroupEntries = [];
         this.uniformBufferNames = [];
         this.textureNames = [];
         this.samplerNames = [];

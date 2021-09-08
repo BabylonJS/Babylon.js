@@ -156,6 +156,7 @@ export abstract class WebGPUShaderProcessor {
         for (let i = 0; i < this.webgpuProcessingContext.bindGroupLayoutEntries.length; i++) {
             const setDefinition = this.webgpuProcessingContext.bindGroupLayoutEntries[i];
             if (setDefinition === undefined) {
+                this.webgpuProcessingContext.bindGroupLayoutEntries[i] = [];
                 continue;
             }
             for (let j = 0; j < setDefinition.length; j++) {
@@ -172,6 +173,47 @@ export abstract class WebGPUShaderProcessor {
                     }
                 }
             }
+        }
+    }
+
+    protected _preCreateBindGroups(): void {
+        const bindGroupEntries = this.webgpuProcessingContext.bindGroupEntries;
+
+        for (let i = 0; i < this.webgpuProcessingContext.bindGroupLayoutEntries.length; i++) {
+            const setDefinition = this.webgpuProcessingContext.bindGroupLayoutEntries[i];
+
+            const entries: GPUBindGroupEntry[] = [];
+            for (let j = 0; j < setDefinition.length; j++) {
+                const entry = this.webgpuProcessingContext.bindGroupLayoutEntries[i][j];
+
+                if (entry.sampler) {
+                    entries.push({
+                        binding: entry.binding,
+                        resource: undefined as any,
+                    });
+                } else if (entry.texture) {
+                    entries.push({
+                        binding: entry.binding,
+                        resource: undefined as any,
+                    });
+                } else if (entry.externalTexture) {
+                    entries.push({
+                        binding: entry.binding,
+                        resource: undefined as any,
+                    });
+                } else if (entry.buffer) {
+                    entries.push({
+                        binding: entry.binding,
+                        resource: {
+                            buffer: undefined as any,
+                            offset: 0,
+                            size: 0,
+                        },
+                    });
+                }
+            }
+
+            bindGroupEntries[i] = entries;
         }
     }
 
