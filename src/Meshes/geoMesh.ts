@@ -519,20 +519,38 @@ export class PolyhedronData {
     }
 }
 
+/**
+ * This class Extends the PolyhedronData Class to provide measures for a Geodesic Polyhedron
+ */
 export class GeoData extends PolyhedronData{
 
+    /**
+     * @hidden
+     */
     public _edgematch: any[][];
+    /**
+     * @hidden
+     */
     public _adjacentFaces: number[][];
-    
+    /**
+     * @hidden
+     */
     public _sharedNodes: number;
+    /**
+     * @hidden
+     */
     public _poleNodes: number;
-
+    /**
+     * @hidden
+     */
     public _innerToData(face : number, primTri: Primary) {
         for (let i = 0; i < primTri._innerFacets.length; i++) {
             this.face.push(primTri._innerFacets[i].map((el) => primTri._vecToIdx[face + el]));
         }
     };
-
+    /**
+     * @hidden
+     */
     public _mapABOBtoDATA(faceNb: number, primTri: Primary) {
         const fr = primTri._IDATA._edgematch[faceNb][0];
         for (let i = 0; i < primTri._isoVecsABOB.length; i++) {
@@ -548,7 +566,9 @@ export class GeoData extends PolyhedronData{
             this.face.push([primTri._vecToIdx[temp[0]], primTri._vecToIdx[temp[1]], primTri._vecToIdx[temp[2]]]);
         }
     };
-
+    /**
+     * @hidden
+     */
     public _mapOBOAtoDATA(faceNb: number, primTri: Primary) {
         const fr = primTri._IDATA._edgematch[faceNb][0];
         for (let i = 0; i < primTri._isoVecsOBOA.length; i++) {
@@ -564,7 +584,9 @@ export class GeoData extends PolyhedronData{
             this.face.push([primTri._vecToIdx[temp[0]], primTri._vecToIdx[temp[1]], primTri._vecToIdx[temp[2]]]);
         }
     };
-
+    /**
+     * @hidden
+     */
     public _mapBAOAtoDATA(faceNb: number, primTri: Primary) {
         const fr = primTri._IDATA._edgematch[faceNb][2];
         for (let i = 0; i < primTri._isoVecsBAOA.length; i++) {
@@ -580,7 +602,9 @@ export class GeoData extends PolyhedronData{
             this.face.push([primTri._vecToIdx[temp[0]], primTri._vecToIdx[temp[1]], primTri._vecToIdx[temp[2]]]);
         }
     };
-
+    /**
+     * @hidden
+     */
     public _orderData(primTri: Primary) {
         const nearTo: any = [];
         for (let i = 0; i < 13; i++) {
@@ -641,17 +665,19 @@ export class GeoData extends PolyhedronData{
 
     }
 
-    //Puts vertices of a face for GP in correct order for mesh construction
+    /**
+     * @hidden
+     */
     public _setOrder(m: number, faces: number[]) {
         const adjVerts: number[] = []
         const dualFaces: number[] = [];
         let face: any = faces.pop();
         dualFaces.push(face);
         let index = this.face[face].indexOf(m);
-        index = (index + 2) % 3; //index to vertex included in adjacent face
+        index = (index + 2) % 3;
         let v = this.face[face][index];
+        adjVerts.push(v);
         let f = 0;
-        this._adjacentFaces = [];
         while (faces.length > 0) {
             face = faces[f]
             if (this.face[face].indexOf(v) > -1) { // v is a vertex of face f
@@ -669,7 +695,9 @@ export class GeoData extends PolyhedronData{
         this._adjacentFaces.push(adjVerts);
         return dualFaces; 
     }
-
+    /**
+     * @hidden
+     */
     public _toGoldbergData(): PolyhedronData {
         const goldbergData: PolyhedronData = new PolyhedronData("GeoDual", "Goldberg", [], []);
         goldbergData.name = "GD dual";
@@ -688,6 +716,7 @@ export class GeoData extends PolyhedronData{
         let cz = 0;
         let face = [];
         let vertex = [];
+        this._adjacentFaces = [];
         for(let m = 0; m < map.length; m++) {
             goldbergData.face[m] = this._setOrder(m, map[m].concat([]));
             map[m].forEach((el: number) => {
