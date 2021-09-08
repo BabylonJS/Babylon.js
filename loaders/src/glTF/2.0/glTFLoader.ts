@@ -1695,21 +1695,14 @@ export class GLTFLoader implements IGLTFLoader {
         }
 
         if (accessor.sparse) {
-            accessor._babylonVertexBuffer[kind] = this._loadFloatAccessorAsync(`/accessors/${accessor.index}`, accessor).then((data) => {
-                return new VertexBuffer(this._babylonScene.getEngine(), data, kind, false);
-            });
-        }
-        // HACK: If byte offset is not a multiple of component type byte length then load as a float array instead of using Babylon buffers.
-        else if (accessor.byteOffset && accessor.byteOffset % VertexBuffer.GetTypeByteLength(accessor.componentType) !== 0) {
-            Logger.Warn("Accessor byte offset is not a multiple of component type byte length");
-            accessor._babylonVertexBuffer[kind] = this._loadFloatAccessorAsync(`/accessors/${accessor.index}`, accessor).then((data) => {
+            accessor._babylonVertexBuffer[kind] = this._loadFloatAccessorAsync(context, accessor).then((data) => {
                 return new VertexBuffer(this._babylonScene.getEngine(), data, kind, false);
             });
         }
         // Load joint indices as a float array since the shaders expect float data but glTF uses unsigned byte/short.
         // This prevents certain platforms (e.g. D3D) from having to convert the data to float on the fly.
         else if (kind === VertexBuffer.MatricesIndicesKind || kind === VertexBuffer.MatricesIndicesExtraKind) {
-            accessor._babylonVertexBuffer[kind] = this._loadFloatAccessorAsync(`/accessors/${accessor.index}`, accessor).then((data) => {
+            accessor._babylonVertexBuffer[kind] = this._loadFloatAccessorAsync(context, accessor).then((data) => {
                 return new VertexBuffer(this._babylonScene.getEngine(), data, kind, false);
             });
         }
@@ -2228,12 +2221,14 @@ export class GLTFLoader implements IGLTFLoader {
 
         const constructor = GLTFLoader._GetTypedArrayConstructor(`${context}/componentType`, componentType);
 
-        try {
-            return new constructor(buffer, byteOffset, length);
+        const componentTypeLength = VertexBuffer.GetTypeByteLength(componentType);
+        if (byteOffset % componentTypeLength !== 0) {
+            // HACK: Copy the buffer if byte offset is not a multiple of component type byte length.
+            Logger.Warn(`${context}: Copying buffer as byte offset (${byteOffset}) is not a multiple of component type byte length (${componentTypeLength})`);
+            return new constructor(buffer.slice(byteOffset, byteOffset + length), 0);
         }
-        catch (e) {
-            throw new Error(`${context}: ${e}`);
-        }
+
+        return new constructor(buffer, byteOffset, length);
     }
 
     private static _GetNumComponents(context: string, type: string): number {
