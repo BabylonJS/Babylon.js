@@ -1318,8 +1318,8 @@ export class Control {
         let oldLeft = this._left.getValue(this._host);
         let oldTop = this._top.getValue(this._host);
 
-        var newLeft = ((projectedPosition.x + this._linkOffsetX.getValue(this._host)) - this.widthInPixels / 2);
-        var newTop = ((projectedPosition.y + this._linkOffsetY.getValue(this._host)) - this.heightInPixels / 2);
+        var newLeft = ((projectedPosition.x + this._linkOffsetX.getValue(this._host)) - this._currentMeasure.width / 2);
+        var newTop = ((projectedPosition.y + this._linkOffsetY.getValue(this._host)) - this._currentMeasure.height / 2);
 
         if (this._left.ignoreAdaptiveScaling && this._top.ignoreAdaptiveScaling) {
             if (Math.abs(newLeft - oldLeft) < 0.5) {
