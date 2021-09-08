@@ -78,7 +78,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             this.save(this.saveLocally);
         });
         this.props.globalState.onSnippetSaveObservable.add(() => {
-            this.save(this.saveToSnippetServer);
+            this.save(this.customSave);
         });
         this.props.globalState.onSnippetLoadObservable.add(() => {
             this.loadFromSnippet();
@@ -180,6 +180,11 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         });
                     }
 
+                    this.props.globalState.customSave!.action(adt.snippetId).then(() => {
+                    }).catch((err) => {
+                        alert("Unable to save your GUI");
+                    });
+
                     alert("GUI saved with ID: " + adt.snippetId + " (please note that the id was also saved to your clipboard)");
                 } else {
                     alert("Unable to save your GUI");
@@ -209,6 +214,11 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             return;
         }
         this.props.globalState.workbench.loadFromSnippet(snippedId);
+    }
+
+    customSave = () => {
+        this.saveToSnippetServer();
+       
     }
 
     renderProperties() {

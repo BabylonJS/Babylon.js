@@ -562,7 +562,6 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 return;
             }
         }
-
         if (this._isFullscreen && this._linkedControls.length) {
             var scene = this.getScene();
             if (!scene) {
