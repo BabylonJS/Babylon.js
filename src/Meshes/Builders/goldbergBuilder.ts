@@ -1,30 +1,25 @@
 import { Scene } from "../../scene";
-import { Vector3, Vector4 } from "../../Maths/math.vector";
+import { Vector3, Vector4, Vector2 } from "../../Maths/math.vector";
 import { Color4 } from '../../Maths/math.color';
 import { Mesh } from "../../Meshes/mesh";
 import { VertexData } from "../mesh.vertexData";
-import { Nullable } from '../../types';
+import { Nullable, FloatArray } from '../../types';
 import { Logger } from "../../Misc/logger";
 import { Primary, GeoData, PolyhedronData} from "../geoMesh"
 import { VertexBuffer } from "../../Buffers";
 
-VertexData.CreateGoldbergSphere = function(options: { size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, goldbergData: PolyhedronData): VertexData {
+VertexData.CreateGoldbergSphere = function(options: { size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, goldbergData: PolyhedronData): VertexData {
 
     const size = options.size;
     const sizeX: number = options.sizeX || size || 1;
     const sizeY: number = options.sizeY || size || 1;
     const sizeZ: number = options.sizeZ || size || 1;
-    //const data: { vertex: number[][], face: number[][], name?: string, category?: string };
-    //const nbfaces = data.face.length;
-    //const faceUV = options.faceUV || new Array(nbfaces);
-    const faceColors = options.faceColors;
     const sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
 
     const positions = new Array<number>();
     const indices = new Array<number>();
     const normals = new Array<number>();
     const uvs = new Array<number>();
-    const colors = new Array<number>();
 
     let minX = Infinity;
     let maxX = -Infinity;
@@ -57,9 +52,6 @@ VertexData.CreateGoldbergSphere = function(options: { size?: number, sizeX?: num
             indices.push(index, index + v + 2, index + v + 1);
         }
         index += verts.length;
-        if (faceColors) {
-            colors.push(faceColors[f].r, faceColors[f].g, faceColors[f].b, faceColors[f].a);
-        }
     }
 
     VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
@@ -69,9 +61,6 @@ VertexData.CreateGoldbergSphere = function(options: { size?: number, sizeX?: num
     vertexData.indices = indices;
     vertexData.normals = normals;
     vertexData.uvs = uvs;
-    if (faceColors) {
-        vertexData.colors = colors;
-    }
     return vertexData;
 };
 
@@ -93,10 +82,12 @@ export class GDMesh extends Mesh {
 
         this._nbSharedFaces = geoData._sharedNodes;
         this._nbUnsharedFaces = geoData._poleNodes;
+        this._adjacentFaces = geoData._adjacentFaces;
         this._nbFaces = this._nbSharedFaces + this._nbUnsharedFaces;
-        this._nbFacesAtPole = (this._nbUnsharedFaces - 12) / 12 - 1;
+        this._nbFacesAtPole = (this._nbUnsharedFaces - 12) / 12;
         for (let f = 0; f < geoData.vertex.length; f++) {
             this._faceCenters.push(Vector3.FromArray(geoData.vertex[f]));
+            this._faceColors.push(new Color4(1, 1, 1, 1));
         };
         for (let f = 0; f < goldbergData.face.length; f++) {
             const verts = goldbergData.face[f];
@@ -123,6 +114,7 @@ export class GDMesh extends Mesh {
     private _nbUnsharedFaces: number;
     private _nbFaces: number;
     private _nbFacesAtPole: number;
+    private _adjacentFaces: number[][];
 
     private _setMetadata = () => {
         this.metadata = {
@@ -133,8 +125,28 @@ export class GDMesh extends Mesh {
             faceCenters: this._faceCenters,
             faceXaxis: this._faceXaxis,
             faceYaxis: this._faceYaxis,
-            faceZaxis: this._faceZaxis
+            faceZaxis: this._faceZaxis,
+            adjacentFaces: this._adjacentFaces
         }
+    }
+
+    public relFace(poleOrShared: number, fromPole?: number): number {
+        if (fromPole === void 0) {
+            if (poleOrShared > this._nbUnsharedFaces - 1) {
+                Logger.Warn("Maximum number of unshared faces used");
+                poleOrShared = this._nbUnsharedFaces - 1;
+            }
+            return this._nbUnsharedFaces + poleOrShared;
+        }
+        if (poleOrShared > 11) {
+            Logger.Warn("Last pole used");
+            poleOrShared = 11;
+        }
+        if (fromPole > this._nbFacesAtPole - 1) {
+            Logger.Warn("Maximum number of faces at a pole used");
+            fromPole = this._nbFacesAtPole - 1;
+        }
+        return 12 + poleOrShared * this.nbFacesAtPole + fromPole;
     }
 
     public get nbSharedFaces() {
@@ -169,14 +181,16 @@ export class GDMesh extends Mesh {
         return this._faceZaxis;
     }
 
-   
-
+    public get adjacentFaces() {
+        return this._adjacentFaces;
+    }
     
     //after loading
     public refreshFaceData = () => {
         this._nbSharedFaces = this.metadata.nbSharedFaces;
         this._nbUnsharedFaces = this.metadata.nbUnsharedFaces;
         this._nbFacesAtPole = this.metadata.nbFacesAtPole;
+        this._adjacentFaces = this.metadata.adjacentFaces;
         this._nbFaces = this.metadata.nbFaces;
         this._faceCenters = this.metadata.faceCenters,
         this._faceXaxis = this.metadata.faceXaxis,
@@ -219,6 +233,68 @@ export class GDMesh extends Mesh {
     public updateFaceColors = (colorRange : any[][]) => {
         const newCols = this._changeFaceColors(colorRange);
         this.updateVerticesData(VertexBuffer.ColorKind, newCols);
+    }
+
+    private _changeFaceUVs = (uvRange : any[][]): FloatArray => {
+        const uvs: FloatArray = this.getVerticesData(VertexBuffer.UVKind)!!;
+        for ( let i = 0; i < uvRange.length; i++) {
+            const min: number = uvRange[i][0];
+            const max: number = uvRange[i][1];
+            const center: Vector2 = uvRange[i][2]
+            const radius: number = uvRange[i][3];
+            const angle: number = uvRange[i][4];
+            const points5: number[] = [];
+            const points6: number[] = [];
+            let u:number;
+            let v: number;
+            for (let p = 0; p < 5; p++ ) {
+                u = center.x + radius * Math.cos(angle + p * Math.PI / 2.5);
+                v = center.y + radius * Math.sin(angle + p * Math.PI / 2.5);
+                if ( u < 0) {
+                    u = 0;
+                }
+                if (u > 1) {
+                    u = 1;
+                }
+                points5.push(u, v);
+            }
+            for (let p = 0; p < 6; p++ ) {
+                u = center.x + radius * Math.cos(angle + p * Math.PI / 3);
+                v = center.y + radius * Math.sin(angle + p * Math.PI / 3);
+                if ( u < 0) {
+                    u = 0;
+                }
+                if (u > 1) {
+                    u = 1;
+                }
+                points6.push(u, v);
+            }
+            for ( let f = min; f < Math.min(12, max + 1); f++ ) {
+                for (let p = 0; p < 5; p++) {
+                    uvs[10 * f + 2 * p] = points5[2 * p];
+                    uvs[10 * f + 2 * p + 1] = points5[2 * p + 1];
+                }
+            }
+            for ( let f = Math.max(12, min); f < max + 1; f++ ) {
+                for (let p = 0; p < 6; p++) {
+                    //120 + 12 * (f - 12) = 12 * f - 24
+                    uvs[12 * f - 24 + 2 * p] = points6[2 * p];
+                    uvs[12 * f - 23 + 2 * p] = points6[2 * p + 1];
+                }
+            }
+        }
+
+        return uvs;
+    }
+
+    public setFaceUVs = (uvRange : any[][]) => {
+        const newUVs: FloatArray = this._changeFaceUVs(uvRange);
+        this.setVerticesData(VertexBuffer.UVKind, newUVs);
+    };
+
+    public updateFaceUVs = (uvRange : any[][]) => {
+        const newUVs = this._changeFaceUVs(uvRange);
+        this.updateVerticesData(VertexBuffer.UVKind, newUVs);
     }
 
     public placeOnFaceAt = (mesh: Mesh, face: number, position: Vector3) => {

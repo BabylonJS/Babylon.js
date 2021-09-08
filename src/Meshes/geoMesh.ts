@@ -34,30 +34,15 @@ export class Primary {
     public _cobv: number;
 
     public _IDATA: PolyhedronData = new PolyhedronData("icosahedron", 
-    "Regular", 
-    [ [0, PHI, -1], [-PHI, 1, 0], [-1, 0, -PHI], [1, 0, -PHI], [PHI, 1, 0], [0, PHI, 1], [-1, 0, PHI], [-PHI, -1, 0], [0, -PHI, -1], [PHI, -1, 0], [1, 0, PHI], [0, -PHI, 1]], 
-    [
-        [ 0, 2, 1 ], [ 0, 3, 2 ], [ 0, 4, 3 ], [ 0, 5, 4 ], [ 0, 1, 5 ],
-        [ 7, 6, 1 ],[ 8, 7, 2 ], [ 9, 8, 3 ], [ 10, 9, 4 ], [ 6, 10, 5 ],
-        [ 2, 7, 1 ], [ 3, 8, 2 ],[ 4, 9, 3 ], [ 5, 10, 4 ], [ 1, 6, 5 ],
-        [ 11, 6, 7 ], [ 11, 7, 8 ], [ 11, 8, 9 ], [ 11, 9, 10 ], [ 11, 10, 6 ]
-
-    ]
-    )
-
-    public _IDTA = { 
-        "name": "icosahedron", 
-        "category":["Regular"],
-        "edgematch": [ [1, "B"], [2, "B"], [3, "B"], [4, "B"], [0, "B"], [10, "O", 14, "A"], [11, "O", 10, "A"], [12, "O", 11, "A"], [13, "O", 12, "A"], [14, "O", 13, "A"], [0, "O"], [1, "O"], [2, "O"], [3, "O"], [4, "O"], [19, "B", 5, "A"], [15, "B", 6, "A"], [16, "B", 7, "A"], [17, "B", 8, "A"], [18, "B", 9, "A"] ], 
-        "vertex":[ [0, PHI, -1], [-PHI, 1, 0], [-1, 0, -PHI], [1, 0, -PHI], [PHI, 1, 0], [0, PHI, 1], [-1, 0, PHI], [-PHI, -1, 0], [0, -PHI, -1], [PHI, -1, 0], [1, 0, PHI], [0, -PHI, 1]],
-        "face":[
+        "Regular", 
+        [ [0, PHI, -1], [-PHI, 1, 0], [-1, 0, -PHI], [1, 0, -PHI], [PHI, 1, 0], [0, PHI, 1], [-1, 0, PHI], [-PHI, -1, 0], [0, -PHI, -1], [PHI, -1, 0], [1, 0, PHI], [0, -PHI, 1]], 
+        [
             [ 0, 2, 1 ], [ 0, 3, 2 ], [ 0, 4, 3 ], [ 0, 5, 4 ], [ 0, 1, 5 ],
             [ 7, 6, 1 ],[ 8, 7, 2 ], [ 9, 8, 3 ], [ 10, 9, 4 ], [ 6, 10, 5 ],
             [ 2, 7, 1 ], [ 3, 8, 2 ],[ 4, 9, 3 ], [ 5, 10, 4 ], [ 1, 6, 5 ],
             [ 11, 6, 7 ], [ 11, 7, 8 ], [ 11, 8, 9 ], [ 11, 9, 10 ], [ 11, 10, 6 ]
-    
         ]
-    };
+    )
 
     /**
     * Creates the Primary Triangle OAB
@@ -537,6 +522,7 @@ export class PolyhedronData {
 export class GeoData extends PolyhedronData{
 
     public _edgematch: any[][];
+    public _adjacentFaces: number[][];
     
     public _sharedNodes: number;
     public _poleNodes: number;
@@ -657,18 +643,21 @@ export class GeoData extends PolyhedronData{
 
     //Puts vertices of a face for GP in correct order for mesh construction
     public _setOrder(m: number, faces: number[]) {
-        const dualFaces = [];
+        const adjVerts: number[] = []
+        const dualFaces: number[] = [];
         let face: any = faces.pop();
         dualFaces.push(face);
         let index = this.face[face].indexOf(m);
         index = (index + 2) % 3; //index to vertex included in adjacent face
         let v = this.face[face][index];
         let f = 0;
+        this._adjacentFaces = [];
         while (faces.length > 0) {
             face = faces[f]
             if (this.face[face].indexOf(v) > -1) { // v is a vertex of face f
                 index = (this.face[face].indexOf(v) + 1) % 3;
                 v = this.face[face][index];
+                adjVerts.push(v);
                 dualFaces.push(face);
                 faces.splice(f, 1);
                 f = 0;
@@ -677,6 +666,7 @@ export class GeoData extends PolyhedronData{
                 f++
             }
         }
+        this._adjacentFaces.push(adjVerts);
         return dualFaces; 
     }
 
