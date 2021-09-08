@@ -329,6 +329,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
         console.log(fragmentCode);
 
         this._collectBindingNames();
+        this._preCreateBindGroups();
 
         return { vertexCode, fragmentCode };
     }

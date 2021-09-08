@@ -868,14 +868,6 @@ export abstract class WebGPUCacheRenderPipeline {
 
         for (let i = 0; i < bindGroupLayoutEntries.length; i++) {
             const setDefinition = bindGroupLayoutEntries[i];
-            if (setDefinition === undefined) {
-                const entries: GPUBindGroupLayoutEntry[] = [];
-                const uniformsBindGroupLayout = this._device.createBindGroupLayout({
-                    entries,
-                });
-                bindGroupLayouts[i] = uniformsBindGroupLayout;
-                continue;
-            }
 
             bindGroupLayouts[i] = this._device.createBindGroupLayout({
                 entries: setDefinition,
@@ -894,10 +886,6 @@ export abstract class WebGPUCacheRenderPipeline {
         let bitVal = 1;
         for (let i = 0; i < bindGroupLayoutEntries.length; i++) {
             const setDefinition = bindGroupLayoutEntries[i];
-            if (setDefinition === undefined) {
-                bindGroupLayoutEntries[i] = [];
-                continue;
-            }
 
             for (let j = 0; j < setDefinition.length; j++) {
                 const entry = bindGroupLayoutEntries[i][j];

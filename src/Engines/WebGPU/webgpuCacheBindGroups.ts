@@ -106,7 +106,7 @@ export class WebGPUCacheBindGroups {
         for (let i = 0; i < webgpuPipelineContext.shaderProcessingContext.bindGroupLayoutEntries.length; i++) {
             const setDefinition = webgpuPipelineContext.shaderProcessingContext.bindGroupLayoutEntries[i];
 
-            const entries: GPUBindGroupEntry[] = [];
+            const entries = webgpuPipelineContext.shaderProcessingContext.bindGroupEntries[i];
             for (let j = 0; j < setDefinition.length; j++) {
                 const entry = webgpuPipelineContext.shaderProcessingContext.bindGroupLayoutEntries[i][j];
                 const entryInfo = webgpuPipelineContext.shaderProcessingContext.bindGroupLayoutEntryInfo[i][entry.binding];
@@ -122,10 +122,7 @@ export class WebGPUCacheBindGroups {
                             }
                             continue;
                         }
-                        entries.push({
-                            binding: entry.binding,
-                            resource: this._cacheSampler.getSampler(sampler, false, bindingInfo.hashCode),
-                        });
+                        entries[j].resource = this._cacheSampler.getSampler(sampler, false, bindingInfo.hashCode);
                     } else {
                         Logger.Error(`Sampler "${name}" could not be bound. entry=${JSON.stringify(entry)}, materialContext=${JSON.stringify(materialContext, (key: string, value: any) => key === 'texture' || key === 'sampler' ? '<no dump>' : value)}`, 50);
                     }
@@ -143,10 +140,7 @@ export class WebGPUCacheBindGroups {
                             continue;
                         }
 
-                        entries.push({
-                            binding: entry.binding,
-                            resource: hardwareTexture.view!,
-                        });
+                        entries[j].resource = hardwareTexture.view!;
                     } else {
                         Logger.Error(`Texture "${name}" could not be bound. entry=${JSON.stringify(entry)}, materialContext=${JSON.stringify(materialContext, (key: string, value: any) => key === 'texture' || key === 'sampler' ? '<no dump>' : value)}`, 50);
                     }
@@ -164,10 +158,7 @@ export class WebGPUCacheBindGroups {
                             continue;
                         }
 
-                        entries.push({
-                            binding: entry.binding,
-                            resource: externalTexture,
-                        });
+                        entries[j].resource = this._device.importExternalTexture({ source: externalTexture });
                     } else {
                         Logger.Error(`Texture "${name}" could not be bound. entry=${JSON.stringify(entry)}, materialContext=${JSON.stringify(materialContext, (key: string, value: any) => key === 'texture' || key === 'sampler' ? '<no dump>' : value)}`, 50);
                     }
@@ -175,14 +166,8 @@ export class WebGPUCacheBindGroups {
                     const dataBuffer = uniformsBuffers[name];
                     if (dataBuffer) {
                         const webgpuBuffer = dataBuffer.underlyingResource as GPUBuffer;
-                        entries.push({
-                            binding: entry.binding,
-                            resource: {
-                                buffer: webgpuBuffer,
-                                offset: 0,
-                                size: dataBuffer.capacity,
-                            },
-                        });
+                        (entries[j].resource as GPUBufferBinding).buffer = webgpuBuffer;
+                        (entries[j].resource as GPUBufferBinding).size = dataBuffer.capacity;
                     } else {
                         Logger.Error(`Can't find UBO "${name}". entry=${JSON.stringify(entry)}, _uniformsBuffers=${JSON.stringify(uniformsBuffers)}`, 50);
                     }
