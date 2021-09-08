@@ -178,6 +178,7 @@ export class IsoVector {
     /**
      * Rotates one IsoVector 60 degrees counter clockwise about another
      * Please note that this is an in place operation
+     * @param other an IsoVector a center of rotation
      * @returns the rotated IsoVector
      */
     public rotate60About(other: IsoVector) { //other IsoVector
@@ -190,9 +191,10 @@ export class IsoVector {
     /**
      * Rotates one IsoVector 60 degrees clockwise about another
      * Please note that this is an in place operation
+     * @param other an IsoVector as center of rotation
      * @returns the rotated IsoVector
      */
-    public rotateNeg60About(other: IsoVector) { //other IsoVector
+    public rotateNeg60About(other: IsoVector) {
         let x = this.x;
         this.x = x + this.y - other.y;
         this.y = other.x + other.y - x;
@@ -203,6 +205,8 @@ export class IsoVector {
      * For an equilateral triangle OAB with O at isovector (0, 0) and A at isovector (m, n)
      * Rotates one IsoVector 120 degrees counter clockwise about the center of the triangle
      * Please note that this is an in place operation
+     * @param m integer a measure a Primary triangle of order (m, n) m > n
+     * @param n integer a measure for a Primary triangle of order (m, n)
      * @returns the rotated IsoVector
      */
     public rotate120(m: number, n: number) { //m, n integers
@@ -224,6 +228,8 @@ export class IsoVector {
      * For an equilateral triangle OAB with O at isovector (0, 0) and A at isovector (m, n)
      * Rotates one IsoVector 120 degrees clockwise about the center of the triangle
      * Please note that this is an in place operation
+     * @param m integer a measure a Primary triangle of order (m, n) m > n
+     * @param n integer a measure for a Primary triangle of order (m, n)
      * @returns the rotated IsoVector
      */
     public rotateNeg120(m: number, n: number) { //m, n integers
@@ -243,6 +249,7 @@ export class IsoVector {
     
     /**
      * Transforms an IsoVector to one in Cartesian 3D space based on an isovector
+     * @param origin an IsoVector
      * @returns Point as a Vector3 
      */
     public toCartesianOrigin(origin: IsoVector) {

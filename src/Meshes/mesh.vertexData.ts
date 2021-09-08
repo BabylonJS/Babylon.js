@@ -1082,7 +1082,7 @@ export class VertexData {
      * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
      * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
      * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
-     * @param scene defines the hosting scene 
+     * @param goldBergData polyhedronData defining the Goldberg polyhedron
      * @returns GoldbergSphere mesh
      */
      public static CreateGoldbergSphere(
