@@ -9,7 +9,7 @@ export class WebGPUExternalTexture extends ExternalTexture {
         this._texture = resource;
     }
 
-    public get underlyingResource(): any {
+    public get underlyingResource(): GPUExternalTexture {
         return this._texture;
     }
 }
