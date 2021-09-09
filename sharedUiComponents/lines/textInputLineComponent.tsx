@@ -71,7 +71,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
             if (/[^0-9\.\p\x\%]/g.test(checkValue)) {
                 return;
             }
-            if (value === "") {
+            if (!value) {
                 value = "0";
             }
         }
