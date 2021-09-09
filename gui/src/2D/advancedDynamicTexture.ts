@@ -588,7 +588,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 control.notRenderable = false;
                 // Account for RenderScale.
                 projectedPosition.scaleInPlace(this.renderScale);
-                control._moveToProjectedPosition(projectedPosition);
+                control._moveToProjectedPosition(projectedPosition, this.getContext());
             }
         }
         if (!this._isDirty && !this._rootContainer.isDirty) {
