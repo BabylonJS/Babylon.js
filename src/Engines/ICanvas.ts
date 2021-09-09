@@ -89,6 +89,16 @@ export interface ITextMetrics {
      * Text width.
      */
     readonly width: number;
+    /**
+     * distance (in pixels) parallel to the baseline from the alignment point given by the CanvasRenderingContext2D.textAlign
+     * property to the left side of the bounding rectangle of the given text
+     */
+    readonly actualBoundingBoxLeft: number;
+    /**
+     * distance (in pixels) parallel to the baseline from the alignment point given by the CanvasRenderingContext2D.textAlign
+     * property to the right side of the bounding rectangle of the given text
+     */
+    readonly actualBoundingBoxRight: number;
 }
 
 /**

@@ -7,7 +7,6 @@ import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { WebXRRenderTarget } from "./webXRTypes";
 import { WebXRManagedOutputCanvas, WebXRManagedOutputCanvasOptions } from "./webXRManagedOutputCanvas";
 import { Engine } from "../Engines/engine";
-import { Color4 } from "../Maths/math.color";
 import { WebGLRenderTargetWrapper } from "../Engines/WebGL/webGLRenderTargetWrapper";
 
 interface IRenderTargetProvider {
@@ -451,7 +450,7 @@ export class WebXRSessionManager implements IDisposable {
         renderTargetTexture._texture = internalTexture;
         renderTargetTexture.disableRescaling();
         if (this._sessionMode === 'immersive-ar') {
-            renderTargetTexture.clearColor = new Color4(0, 0, 0, 0);
+            renderTargetTexture.skipInitialClear = true;
         }
 
         // Store the render target texture for cleanup when the session ends.

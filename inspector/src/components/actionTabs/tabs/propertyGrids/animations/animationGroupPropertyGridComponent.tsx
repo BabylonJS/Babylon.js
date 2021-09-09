@@ -140,6 +140,7 @@ export class AnimationGroupGridComponent extends React.Component<
             this._animationCurveEditorContext.animations = animationGroup.targetedAnimations;
             this._animationCurveEditorContext.scene = this.props.scene;
             this._animationCurveEditorContext.useTargetAnimations = true;
+            this._animationCurveEditorContext.rootAnimationGroup = animationGroup;
         }            
 
         return (
