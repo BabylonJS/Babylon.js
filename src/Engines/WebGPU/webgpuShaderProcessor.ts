@@ -31,46 +31,6 @@ export abstract class WebGPUShaderProcessor {
         "mat4x4": 16
     };
 
-    protected static _KnownUBOs: { [key: string]: WebGPUUniformBufferDescription } = {
-        "Scene":   { binding: { groupIndex: 0, bindingIndex: 0 } },
-
-        "Light0":  { binding: { groupIndex: 1, bindingIndex: 0 } },
-        "Light1":  { binding: { groupIndex: 1, bindingIndex: 1 } },
-        "Light2":  { binding: { groupIndex: 1, bindingIndex: 2 } },
-        "Light3":  { binding: { groupIndex: 1, bindingIndex: 3 } },
-        "Light4":  { binding: { groupIndex: 1, bindingIndex: 4 } },
-        "Light5":  { binding: { groupIndex: 1, bindingIndex: 5 } },
-        "Light6":  { binding: { groupIndex: 1, bindingIndex: 6 } },
-        "Light7":  { binding: { groupIndex: 1, bindingIndex: 7 } },
-        "Light8":  { binding: { groupIndex: 1, bindingIndex: 8 } },
-        "Light9":  { binding: { groupIndex: 1, bindingIndex: 9 } },
-        "Light10": { binding: { groupIndex: 1, bindingIndex: 10 } },
-        "Light11": { binding: { groupIndex: 1, bindingIndex: 11 } },
-        "Light12": { binding: { groupIndex: 1, bindingIndex: 12 } },
-        "Light13": { binding: { groupIndex: 1, bindingIndex: 13 } },
-        "Light14": { binding: { groupIndex: 1, bindingIndex: 14 } },
-        "Light15": { binding: { groupIndex: 1, bindingIndex: 15 } },
-        "Light16": { binding: { groupIndex: 1, bindingIndex: 16 } },
-        "Light17": { binding: { groupIndex: 1, bindingIndex: 17 } },
-        "Light18": { binding: { groupIndex: 1, bindingIndex: 18 } },
-        "Light19": { binding: { groupIndex: 1, bindingIndex: 19 } },
-        "Light20": { binding: { groupIndex: 1, bindingIndex: 20 } },
-        "Light21": { binding: { groupIndex: 1, bindingIndex: 21 } },
-        "Light22": { binding: { groupIndex: 1, bindingIndex: 22 } },
-        "Light23": { binding: { groupIndex: 1, bindingIndex: 23 } },
-        "Light24": { binding: { groupIndex: 1, bindingIndex: 24 } },
-        "Light25": { binding: { groupIndex: 1, bindingIndex: 25 } },
-        "Light26": { binding: { groupIndex: 1, bindingIndex: 26 } },
-        "Light27": { binding: { groupIndex: 1, bindingIndex: 27 } },
-        "Light28": { binding: { groupIndex: 1, bindingIndex: 28 } },
-        "Light29": { binding: { groupIndex: 1, bindingIndex: 29 } },
-        "Light30": { binding: { groupIndex: 1, bindingIndex: 30 } },
-        "Light31": { binding: { groupIndex: 1, bindingIndex: 31 } },
-
-        "Material": { binding: { groupIndex: 2, bindingIndex: 0 } },
-        "Mesh":     { binding: { groupIndex: 2, bindingIndex: 1 } },
-    };
-
     protected static _SamplerFunctionByWebGLSamplerType: { [key: string]: string } = {
         "sampler2D": "sampler2D",
         "sampler2DArray": "sampler2DArray",

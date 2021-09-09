@@ -437,12 +437,15 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
 
             let uniformBufferInfo = this.webgpuProcessingContext.availableUBOs[name];
             if (!uniformBufferInfo) {
-                const knownUBO = WebGPUShaderProcessor._KnownUBOs[structName];
+                const knownUBO = WebGPUShaderProcessingContext.KnownUBOs[structName];
 
                 let binding;
                 if (knownUBO) {
                     name = structName; 
                     binding = knownUBO.binding;
+                    if (binding.groupIndex === -1) {
+                        binding = this.webgpuProcessingContext.getNextFreeUBOBinding();
+                    }
                 } else {
                     binding = this.webgpuProcessingContext.getNextFreeUBOBinding();
                 }
