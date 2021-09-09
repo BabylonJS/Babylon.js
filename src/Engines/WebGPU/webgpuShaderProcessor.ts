@@ -21,7 +21,7 @@ export abstract class WebGPUShaderProcessor {
         "mat2": 4,
         "mat3": 12,
         "mat4": 16,
-    
+
         // WGSL types
         "i32": 1,
         "u32": 1,
@@ -210,7 +210,7 @@ export abstract class WebGPUShaderProcessor {
         if (isVertex) {
             this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex][bindingIndex].visibility |= WebGPUConstants.ShaderStage.Vertex;
         } else {
-            this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex][bindingIndex].visibility |= WebGPUConstants.ShaderStage.Fragment
+            this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex][bindingIndex].visibility |= WebGPUConstants.ShaderStage.Fragment;
         }
     }
 
@@ -235,7 +235,7 @@ export abstract class WebGPUShaderProcessor {
         if (isVertex) {
             this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex][bindingIndex].visibility |= WebGPUConstants.ShaderStage.Vertex;
         } else {
-            this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex][bindingIndex].visibility |= WebGPUConstants.ShaderStage.Fragment
+            this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex][bindingIndex].visibility |= WebGPUConstants.ShaderStage.Fragment;
         }
     }
 
@@ -260,7 +260,7 @@ export abstract class WebGPUShaderProcessor {
         if (isVertex) {
             this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex][bindingIndex].visibility |= WebGPUConstants.ShaderStage.Vertex;
         } else {
-            this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex][bindingIndex].visibility |= WebGPUConstants.ShaderStage.Fragment
+            this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex][bindingIndex].visibility |= WebGPUConstants.ShaderStage.Fragment;
         }
     }
 }

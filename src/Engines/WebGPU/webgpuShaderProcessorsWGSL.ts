@@ -441,7 +441,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
 
                 let binding;
                 if (knownUBO) {
-                    name = structName; 
+                    name = structName;
                     binding = knownUBO.binding;
                     if (binding.groupIndex === -1) {
                         binding = this.webgpuProcessingContext.getNextFreeUBOBinding();

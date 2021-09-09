@@ -65,7 +65,7 @@ export class WebGPUMaterialContext implements IMaterialContext {
             textureCache.isExternalTexture = ExternalTexture.IsExternalTexture(texture);
             if (textureCache.isFloatTexture) {
                 this.numFloatTextures++;
-            }            
+            }
             if (textureCache.isExternalTexture) {
                 this.numExternalTextures++;
             }
