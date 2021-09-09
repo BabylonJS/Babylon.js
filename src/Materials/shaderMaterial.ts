@@ -532,7 +532,10 @@ export class ShaderMaterial extends Material {
         }
 
         for (var index = 0; index < this._options.defines.length; index++) {
-            defines.push(this._options.defines[index]);
+            const defineToAdd = this._options.defines[index].indexOf("#define") === 0 ?
+                this._options.defines[index] :
+                `#define ${this._options.defines[index]}`;
+            defines.push(defineToAdd);
         }
 
         for (var index = 0; index < this._options.attributes.length; index++) {
