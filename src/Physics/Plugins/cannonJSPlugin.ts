@@ -525,7 +525,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
             }
 
             //calculate the new center using a pivot (since this.BJSCANNON.js doesn't center height maps)
-            const p = Matrix.Translation(boundingInfo.boundingBox.extendSizeWorld.x, 0, -boundingInfo.boundingBox.extendSizeWorld.z);
+            const p = Matrix.Translation(-boundingInfo.boundingBox.extendSizeWorld.x, 0, -boundingInfo.boundingBox.extendSizeWorld.z);
             mesh.setPreTransformMatrix(p);
             mesh.computeWorldMatrix(true);
 
