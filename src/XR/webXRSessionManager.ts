@@ -7,7 +7,6 @@ import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { WebXRRenderTarget } from "./webXRTypes";
 import { WebXRManagedOutputCanvas, WebXRManagedOutputCanvasOptions } from "./webXRManagedOutputCanvas";
 import { Engine } from "../Engines/engine";
-import { Color4 } from "../Maths/math.color";
 import { WebGLRenderTargetWrapper } from "../Engines/WebGL/webGLRenderTargetWrapper";
 
 interface IRenderTargetProvider {
