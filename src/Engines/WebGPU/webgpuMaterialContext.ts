@@ -2,6 +2,7 @@ import { ExternalTexture } from "../../Materials/Textures/externalTexture";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { Sampler } from "../../Materials/Textures/sampler";
 import { Nullable } from "../../types";
+import { Constants } from "../constants";
 import { IMaterialContext } from "../IMaterialContext";
 import { WebGPUCacheSampler } from "./webgpuCacheSampler";
 
@@ -14,6 +15,7 @@ interface IWebGPUMaterialContextSamplerCache {
 /** @hidden */
 interface IWebGPUMaterialContextTextureCache {
     texture: Nullable<InternalTexture | ExternalTexture>;
+    isFloatTexture: boolean;
     isExternalTexture: boolean;
 }
 
@@ -22,6 +24,7 @@ export class WebGPUMaterialContext implements IMaterialContext {
     private static _Counter = 0;
 
     public uniqueId: number;
+    public numFloatTextures: number;
     public numExternalTextures: number;
     public samplers: { [name: string]: Nullable<IWebGPUMaterialContextSamplerCache> };
     public textures: { [name: string]: Nullable<IWebGPUMaterialContextTextureCache> };
@@ -30,6 +33,7 @@ export class WebGPUMaterialContext implements IMaterialContext {
         this.samplers = {};
         this.textures = {};
         this.uniqueId = WebGPUMaterialContext._Counter++;
+        this.numFloatTextures = 0;
         this.numExternalTextures = 0;
     }
 
@@ -46,16 +50,28 @@ export class WebGPUMaterialContext implements IMaterialContext {
     public setTexture(name: string, texture: Nullable<InternalTexture | ExternalTexture>): void {
         let textureCache = this.textures[name];
         if (!textureCache) {
-            this.textures[name] = textureCache = { texture, isExternalTexture: false };
+            this.textures[name] = textureCache = { texture, isFloatTexture: false, isExternalTexture: false };
+        }
+
+        if (textureCache.isExternalTexture) {
+            this.numExternalTextures--;
+        }
+        if (textureCache.isFloatTexture) {
+            this.numFloatTextures--;
         }
 
         if (texture) {
+            textureCache.isFloatTexture = texture.type === Constants.TEXTURETYPE_FLOAT;
             textureCache.isExternalTexture = ExternalTexture.IsExternalTexture(texture);
+            if (textureCache.isFloatTexture) {
+                this.numFloatTextures++;
+            }            
             if (textureCache.isExternalTexture) {
                 this.numExternalTextures++;
             }
-        } else if (textureCache.isExternalTexture) {
-            this.numExternalTextures--;
+        } else {
+            textureCache.isFloatTexture = false;
+            textureCache.isExternalTexture = false;
         }
 
         textureCache.texture = texture;
