@@ -310,53 +310,9 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     createItems() {
         this._items = [
             {
-                label: "Image",
-                icon: imageIcon,
-                onClick: () => { this.onCreate("Image") }
-            }, {
-                label: "TextButton",
-                icon: buttonIcon,
-                onClick: () => { this.onCreate("TextButton") }
-            },
-            {
-                label: "Slider",
-                icon: sliderIcon,
-                onClick: () => { this.onCreate("Slider") }
-            },
-            {
-                label: "ColorPicker",
-                icon: colorPickerIcon,
-                onClick: () => { this.onCreate("ColorPicker") }
-            },
-            {
-                label: "ImageButton",
-                icon: buttonIcon,
-                onClick: () => { this.onCreate("ImageButton") }
-            },
-            {
-                label: "Checkbox",
-                icon: checkboxIcon,
-                onClick: () => { this.onCreate("Checkbox") }
-            },
-            {
-                label: "VirtualKeyboard",
-                icon: keyboardIcon,
-                onClick: () => { this.onCreate("VirtualKeyboard") }
-            },
-            {
-                label: "DisplayGrid",
-                icon: displaygridIcon,
-                onClick: () => { this.onCreate("DisplayGrid") }
-            },
-            {
-                label: "Grid",
-                icon: gridIcon,
-                onClick: () => { this.onCreate("Grid") }
-            },
-            {
-                label: "StackPanel",
-                icon: stackPanelIcon,
-                onClick: () => { this.onCreate("StackPanel") }
+                label: "Rectangle",
+                icon: rectangleIcon,
+                onClick: () => { this.onCreate("Rectangle") }
             },
             {
                 label: "Ellipse",
@@ -364,14 +320,24 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                 onClick: () => { this.onCreate("Ellipse") }
             },
             {
+                label: "StackPanel",
+                icon: stackPanelIcon,
+                onClick: () => { this.onCreate("StackPanel") }
+            },
+            {
+                label: "DisplayGrid",
+                icon: displaygridIcon,
+                onClick: () => { this.onCreate("DisplayGrid") }
+            },
+            {
+                label: "ScrollViewer",
+                icon: scrollbarIcon,
+                onClick: () => { this.onCreate("ScrollViewer") }
+            },
+            {
                 label: "Line",
                 icon: lineIcon,
                 onClick: () => { this.onCreate("Line") }
-            },
-            {
-                label: "Rectangle",
-                icon: rectangleIcon,
-                onClick: () => { this.onCreate("Rectangle") }
             },
             {
                 label: "Text",
@@ -389,9 +355,40 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                 onClick: () => { this.onCreate("InputPassword") }
             },
             {
-                label: "ScrollViewer",
-                icon: scrollbarIcon,
-                onClick: () => { this.onCreate("ScrollViewer") }
+                label: "Image",
+                icon: imageIcon,
+                onClick: () => { this.onCreate("Image") }
+            },
+            {
+                label: "Grid",
+                icon: gridIcon,
+                onClick: () => { this.onCreate("Grid") }
+            },
+            {
+                label: "TextButton",
+                icon: buttonIcon,
+                onClick: () => { this.onCreate("TextButton") }
+            },
+
+            {
+                label: "ImageButton",
+                icon: buttonIcon,
+                onClick: () => { this.onCreate("ImageButton") }
+            },
+            {
+                label: "Checkbox",
+                icon: checkboxIcon,
+                onClick: () => { this.onCreate("Checkbox") }
+            },
+            {
+                label: "RadioButton",
+                icon: radioButtonIcon,
+                onClick: () => { this.onCreate("RadioButton") }
+            },
+            {
+                label: "Slider",
+                icon: sliderIcon,
+                onClick: () => { this.onCreate("Slider") }
             },
             {
                 label: "ImageBasedSlider",
@@ -399,9 +396,14 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                 onClick: () => { this.onCreate("ImageBasedSlider") }
             },
             {
-                label: "RadioButton",
-                icon: radioButtonIcon,
-                onClick: () => { this.onCreate("RadioButton") }
+                label: "VirtualKeyboard",
+                icon: keyboardIcon,
+                onClick: () => { this.onCreate("VirtualKeyboard") }
+            },
+            {
+                label: "ColorPicker",
+                icon: colorPickerIcon,
+                onClick: () => { this.onCreate("ColorPicker") }
             }
 
         ]
