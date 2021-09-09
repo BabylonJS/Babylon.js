@@ -189,32 +189,25 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor implements 
         const match = uboRegex.exec(uniformBuffer);
         if (match != null) {
             const name = match[1];
-            let groupIndex: number;
-            let bindingIndex: number;
-            const knownUBO = WebGPUShaderProcessor._KnownUBOs[name];
 
-            if (knownUBO) {
-                groupIndex = knownUBO.binding.groupIndex;
-                bindingIndex = knownUBO.binding.bindingIndex;
-            }
-            else {
-                const availableUBO = this.webgpuProcessingContext.availableUBOs[name];
-                if (availableUBO) {
-                    groupIndex = availableUBO.binding.groupIndex;
-                    bindingIndex = availableUBO.binding.bindingIndex;
+            let uniformBufferInfo = this.webgpuProcessingContext.availableUBOs[name];
+            if (!uniformBufferInfo) {
+                const knownUBO = WebGPUShaderProcessingContext.KnownUBOs[name];
+
+                let binding;
+                if (knownUBO && knownUBO.binding.groupIndex !== -1) {
+                    binding = knownUBO.binding;
+                } else {
+                    binding = this.webgpuProcessingContext.getNextFreeUBOBinding();
                 }
-                else {
-                    const nextBinding = this.webgpuProcessingContext.getNextFreeUBOBinding();
-                    groupIndex = nextBinding.groupIndex;
-                    bindingIndex = nextBinding.bindingIndex;
-                }
+
+                uniformBufferInfo = { binding };
+                this.webgpuProcessingContext.availableUBOs[name] = uniformBufferInfo;
             }
 
-            this.webgpuProcessingContext.availableUBOs[name] = { binding: { groupIndex: groupIndex, bindingIndex } };
+            this._addUniformBufferBindingDescription(name, uniformBufferInfo, !isFragment);
 
-            this._addUniformBufferBindingDescription(name, this.webgpuProcessingContext.availableUBOs[name], !isFragment);
-
-            uniformBuffer = uniformBuffer.replace("uniform", `layout(set = ${groupIndex}, binding = ${bindingIndex}) uniform`);
+            uniformBuffer = uniformBuffer.replace("uniform", `layout(set = ${uniformBufferInfo.binding.groupIndex}, binding = ${uniformBufferInfo.binding.bindingIndex}) uniform`);
         }
         return uniformBuffer;
     }
