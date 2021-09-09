@@ -4,9 +4,9 @@ import { PropertyChangedEvent } from "../../../../sharedUiComponents/propertyCha
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
 import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { Line } from "babylonjs-gui/2D/controls/line";
-import { LineContainerComponent } from "../../../../sharedUiComponents/lines/lineContainerComponent";
 import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
 import { TextInputLineComponent } from "../../../../sharedUiComponents/lines/textInputLineComponent";
+import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
 
 interface ILinePropertyGridComponentProps {
     line: Line,
@@ -41,14 +41,14 @@ export class LinePropertyGridComponent extends React.Component<ILinePropertyGrid
         return (
             <div className="pane">
                 <CommonControlPropertyGridComponent  lockObject={this.props.lockObject} control={line} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <LineContainerComponent title="LINE">
+                <hr/>
+                <TextLineComponent label="LINE" value=" " color="grey"></TextLineComponent>
                     <FloatLineComponent lockObject={this.props.lockObject} label="Line width" target={line} propertyName="lineWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="X1" target={line} propertyName="x1" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Y1" target={line} propertyName="y1" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="X2" target={line} propertyName="x2" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Y2" target={line} propertyName="y2" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Dash pattern" target={line} value={line.dash.join(",")} onChange={newValue => this.onDashChange(newValue)} />
-                </LineContainerComponent>
             </div>
         );
     }
