@@ -28,6 +28,11 @@ export class TouchHolographicMenu extends VolumeBasedPanel {
     private _backPlateMargin = 1.25;
 
     /**
+     * Scale for the buttons added to the menu
+     */
+    protected static MENU_BUTTON_SCALE: number = 0.32;
+
+    /**
      * Gets or sets the margin size of the backplate in button size units.
      * Setting this to 1, will make the backPlate margin the size of 1 button
      */
@@ -38,11 +43,13 @@ export class TouchHolographicMenu extends VolumeBasedPanel {
     public set backPlateMargin(value: number) {
         this._backPlateMargin = value;
 
-        this.children.forEach((control) => {
-            this._updateCurrentMinMax(control.position);
-        });
+        if (this._children.length >= 1) {
+            this.children.forEach((control) => {
+                this._updateCurrentMinMax(control.position);
+            });
 
-        this._updateMargins();
+            this._updateMargins();
+        }
     }
 
     protected _createNode(scene: Scene): Nullable<TransformNode> {
@@ -134,10 +141,21 @@ export class TouchHolographicMenu extends VolumeBasedPanel {
      * @returns This menu
      */
     public addButton(button: TouchHolographicButton): TouchHolographicMenu {
+        // Block updating the layout until the button is resized (which has to happen after node creation)
+        let wasLayoutBlocked = this.blockLayout;
+        if (!wasLayoutBlocked) {
+            this.blockLayout = true;
+        }
+
         super.addControl(button);
 
         button.isBackplateVisible = false;
+        button.scaling.scaleInPlace(TouchHolographicMenu.MENU_BUTTON_SCALE);
 
+        // Unblocking the layout triggers the pending layout update that uses the size of the buttons to determine the size of the backing mesh
+        if (!wasLayoutBlocked) {
+            this.blockLayout = false;
+        }
         return this;
     }
 
