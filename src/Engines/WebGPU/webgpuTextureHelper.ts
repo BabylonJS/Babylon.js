@@ -1,3 +1,5 @@
+// License for the mipmap generation code:
+//
 // Copyright 2020 Brandon Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,8 +31,7 @@ import { WebGPUHardwareTexture } from './webgpuHardwareTexture';
 import { EngineStore } from "../engineStore";
 import { WebGPUTintWASM } from "./webgpuTintWASM";
 
-// TODO WEBGPU improve mipmap generation by not using the OutputAttachment flag (but that requires an extra copy...) - use compute shaders?
-// see https://github.com/toji/web-texture-tool/tree/main/src
+// TODO WEBGPU improve mipmap generation by using compute shaders
 
 // TODO WEBGPU optimize, don't recreate things that can be cached (bind groups, descriptors, etc)
 

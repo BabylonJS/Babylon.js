@@ -267,8 +267,6 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
 
         vertexCode = this._injectStartingAndEndingCode(vertexCode, vertexStartingCode, vertexEndingCode);
 
-        console.log(vertexCode);
-
         // fragment code
         fragmentCode = fragmentCode.replace(/#define /g, "//#define ");
 
@@ -325,8 +323,6 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
         fragmentEndingCode += "  return output;";
 
         fragmentCode = this._injectStartingAndEndingCode(fragmentCode, fragmentStartingCode, fragmentEndingCode);
-
-        console.log(fragmentCode);
 
         this._collectBindingNames();
         this._preCreateBindGroups();
