@@ -1314,7 +1314,7 @@ export class Control {
     }
 
     /** @hidden */
-    public _moveToProjectedPosition(projectedPosition: Vector3, context ?: ICanvasRenderingContext): void {
+    public _moveToProjectedPosition(projectedPosition: Vector3, context?: ICanvasRenderingContext): void {
         let oldLeft = this._left.getValue(this._host);
         let oldTop = this._top.getValue(this._host);
 
@@ -1324,7 +1324,7 @@ export class Control {
                 this._processMeasures(parentMeasure, context);
             }
         }
-        
+
         var newLeft = ((projectedPosition.x + this._linkOffsetX.getValue(this._host)) - this._currentMeasure.width / 2);
         var newTop = ((projectedPosition.y + this._linkOffsetY.getValue(this._host)) - this._currentMeasure.height / 2);
 
