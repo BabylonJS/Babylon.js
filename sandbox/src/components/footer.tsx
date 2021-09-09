@@ -106,14 +106,17 @@ export class Footer extends React.Component<IFooterProps> {
             }
         }
 
+        const hasCameras = this._cameraNames.length > 1;
+
+
         return (
-            <div id="footer" className="footer">
+            <div id="footer" className={"footer" + (hasCameras || hasVariants ? " long" : (hasCameras && hasVariants ? " longer" : ""))}>
                 <div className="footerLeft">
                     <img id="logoImg" src={babylonIdentity}/>
                 </div>
                 <AnimationBar globalState={this.props.globalState} 
                                 enabled={!!this.props.globalState.currentScene}/>
-                <div className="footerRight">
+                <div className={"footerRight"}>
                     <FooterFileButton globalState={this.props.globalState} 
                                 enabled={true}
                                 icon={iconOpen}

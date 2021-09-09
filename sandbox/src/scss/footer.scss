@@ -9,7 +9,15 @@
     display: grid;
     grid-template-rows: 100%;
     grid-template-columns: 201px 1fr 210px;
+
+    &.long{
+        grid-template-columns: 201px 1fr 280px;
+    }
     
+    &.longer{
+        grid-template-columns: 201px 1fr 350px;
+    }
+
     .footerLeft {
         display: grid;
         grid-column: 1;
@@ -176,6 +184,14 @@
 @media (max-width: 768px) {
     .footer {       
         grid-template-columns: 0px 1fr 150px;
+
+        &.long {
+            grid-template-columns: 0px 1fr 200px;
+        }
+
+        &.longer {
+            grid-template-columns: 0px 1fr 250px;
+        }
 
         .dropup {
             .dropup-content {    
