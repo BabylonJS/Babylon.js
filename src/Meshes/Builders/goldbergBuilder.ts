@@ -65,7 +65,7 @@ VertexData.CreateGoldbergSphere = function(options: { size?: number, sizeX?: num
 };
 
 /**
- * Class add properties and methods to a Goldberg Sphere Mesh
+ * Class adding properties and methods to a Goldberg Mesh
  * @hidden
  */
 export class GDMesh extends Mesh {
@@ -309,7 +309,7 @@ Mesh.CreateGoldbergSphere = (name: string, options: { m?: number, n: number, siz
 };
 
 /**
- * Class containing static functions to help procedurally build meshes
+ * Class containing static functions to help procedurally build a Goldberg mesh
  */
  export class GoldbergBuilder {
     /**

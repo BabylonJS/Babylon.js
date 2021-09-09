@@ -12,7 +12,7 @@ Mesh.CreateGeodesicSphere = (name: string, options: { m?: number, n: number, siz
 };
 
 /**
- * Class containing static functions to help procedurally build meshes
+ * Class containing static functions to help procedurally build a geodesic mesh
  */
  export class GeoBuilder {
     /**
