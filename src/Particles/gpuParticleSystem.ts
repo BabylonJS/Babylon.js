@@ -79,7 +79,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     private _randomTextureSize: number;
     private _actualFrame = 0;
     private _drawWrapper: DrawWrapper;
-    private _customWrappers: { [blendMode: number] : Nullable<DrawWrapper> };
+    private _customWrappers: { [blendMode: number]: Nullable<DrawWrapper> };
 
     private readonly _rawTextureWidth = 256;
 

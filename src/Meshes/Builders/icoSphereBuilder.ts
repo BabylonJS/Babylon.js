@@ -4,7 +4,7 @@ import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { Nullable } from '../../types';
 
-VertexData.CreateIcoSphere = function(options: { radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
+VertexData.CreateIcoSphere = function (options: { radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
     var sideOrientation = options.sideOrientation || VertexData.DEFAULTSIDE;
     var radius = options.radius || 1;
     var flat = (options.flat === undefined) ? true : options.flat;

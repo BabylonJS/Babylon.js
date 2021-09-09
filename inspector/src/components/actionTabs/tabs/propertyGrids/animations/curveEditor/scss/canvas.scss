@@ -30,6 +30,20 @@
             z-index: 1;
         }
 
+        #svg-graph-horizontal {
+            grid-column: 1;
+            grid-row: 1;
+            margin-left: 40px;
+            width: calc(100% - 40px);
+            height: 100%;            
+            pointer-events: none;
+
+            &:focus {
+                outline: none;
+            }
+            z-index: 1;
+        }
+
         #dark-rectangle {
             grid-column: 1;
             grid-row: 1;
@@ -57,6 +71,7 @@
             margin-left: 40px;
             width: calc(100% - 40px);
             height: 100%;
+            z-index: 2;
 
             &:focus {
                 outline: none;
@@ -158,6 +173,7 @@
         grid-template-rows: 1fr 22px;
         transform: translateX(-50%);
         pointer-events: none;  
+        z-index: 3;
 
         #play-head-bar {
             grid-row: 1;

@@ -25,7 +25,7 @@ export class DownloadManager {
                 xhr.responseType = "arraybuffer";
             }
 
-            xhr.onreadystatechange = function() {
+            xhr.onreadystatechange = function () {
                 if (xhr.readyState === 4) {
                     if (xhr.status === 200) {
                         var text;

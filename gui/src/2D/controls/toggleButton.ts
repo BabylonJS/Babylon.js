@@ -11,6 +11,7 @@ import { PointerInfoBase } from "babylonjs/Events/pointerEvents";
 
 /**
  * Class used to create toggle buttons
+ * @since 5.0.0
  */
 export class ToggleButton extends Rectangle {
     /**
@@ -244,6 +245,10 @@ export class ToggleButton extends Rectangle {
             return false;
         }
 
+        if (this.isReadOnly) {
+            return true;
+        }
+
         if (this._isActive) {
             if (this.pointerEnterActiveAnimation) {
                 this.pointerEnterActiveAnimation();
@@ -259,13 +264,16 @@ export class ToggleButton extends Rectangle {
 
     /** @hidden */
     public _onPointerOut(target: Control, pi: PointerInfoBase, force = false): void {
-        if (this._isActive) {
-            if (this.pointerOutActiveAnimation) {
-                this.pointerOutActiveAnimation();
-            }
-        } else {
-            if (this.pointerOutInactiveAnimation) {
-                this.pointerOutInactiveAnimation();
+
+        if (!this.isReadOnly) {
+            if (this._isActive) {
+                if (this.pointerOutActiveAnimation) {
+                    this.pointerOutActiveAnimation();
+                }
+            } else {
+                if (this.pointerOutInactiveAnimation) {
+                    this.pointerOutInactiveAnimation();
+                }
             }
         }
 
@@ -276,6 +284,10 @@ export class ToggleButton extends Rectangle {
     public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean {
         if (!super._onPointerDown(target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
+        }
+
+        if (this.isReadOnly) {
+            return true;
         }
 
         if (this._isActive) {
@@ -293,13 +305,15 @@ export class ToggleButton extends Rectangle {
 
     /** @hidden */
     public _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi: PointerInfoBase): void {
-        if (this._isActive) {
-            if (this.pointerUpActiveAnimation) {
-                this.pointerUpActiveAnimation();
-            }
-        } else {
-            if (this.pointerUpInactiveAnimation) {
-                this.pointerUpInactiveAnimation();
+        if (!this.isReadOnly) {
+            if (this._isActive) {
+                if (this.pointerUpActiveAnimation) {
+                    this.pointerUpActiveAnimation();
+                }
+            } else {
+                if (this.pointerUpInactiveAnimation) {
+                    this.pointerUpInactiveAnimation();
+                }
             }
         }
 

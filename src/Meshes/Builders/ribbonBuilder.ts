@@ -5,9 +5,8 @@ import { Color4 } from '../../Maths/math.color';
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { VertexData } from "../mesh.vertexData";
-import { BoundingInfo } from "../../Culling/boundingInfo";
 
-VertexData.CreateRibbon = function(options: { pathArray: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, invertUV?: boolean, uvs?: Vector2[], colors?: Color4[] }): VertexData {
+VertexData.CreateRibbon = function (options: { pathArray: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, invertUV?: boolean, uvs?: Vector2[], colors?: Color4[] }): VertexData {
     var pathArray: Vector3[][] = options.pathArray;
     var closeArray: boolean = options.closeArray || false;
     var closePath: boolean = options.closePath || false;
@@ -320,16 +319,16 @@ export class RibbonBuilder {
             };
             var positions = <FloatArray>instance.getVerticesData(VertexBuffer.PositionKind);
             positionFunction(positions);
-            if (instance._boundingInfo) {
-                instance._boundingInfo.reConstruct(minimum, maximum, instance._worldMatrix);
+            if (instance.hasBoundingInfo) {
+                instance.getBoundingInfo().reConstruct(minimum, maximum, instance._worldMatrix);
             }
             else {
-                instance._boundingInfo = new BoundingInfo(minimum, maximum, instance._worldMatrix);
+                instance.buildBoundingInfo(minimum, maximum, instance._worldMatrix);
             }
             instance.updateVerticesData(VertexBuffer.PositionKind, positions, false, false);
             if (options.colors) {
                 var colors = <FloatArray>instance.getVerticesData(VertexBuffer.ColorKind);
-                for (var c = 0, colorIndex = 0; c < options.colors.length; c++ , colorIndex += 4) {
+                for (var c = 0, colorIndex = 0; c < options.colors.length; c++, colorIndex += 4) {
                     const color = options.colors[c];
                     colors[colorIndex] = color.r;
                     colors[colorIndex + 1] = color.g;

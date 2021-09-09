@@ -90,7 +90,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         this.props.globalState.onUpdateRequiredObservable.notifyObservers();
 
         if (ib.isConstant) {
-            this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+            this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
         }
     }
 

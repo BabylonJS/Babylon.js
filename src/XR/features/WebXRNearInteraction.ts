@@ -296,7 +296,10 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         Object.keys(this._controllers).forEach((id) => {
             // only do this for the selected pointer
             const controllerData = this._controllers[id];
-            if (!this._options.enableNearInteractionOnAllControllers && id !== this._attachedController) {
+            // If near interaction is not enabled/available for this controller, return early
+            if ((!this._options.enableNearInteractionOnAllControllers && id !== this._attachedController) ||
+                !controllerData.xrController ||
+                !controllerData.xrController.inputSource.hand) {
                 controllerData.pick = null;
                 return;
             }
@@ -373,8 +376,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             // Don't perform touch logic while grabbing, to prevent triggering touch interactions while in the middle of a grab interaction
             // Dont update cursor logic either - the cursor should already be visible for the grab to be in range,
             // and in order to maintain its position on the target mesh it is parented for the duration of the grab.
-            if (!controllerData.grabInteraction)
-            {
+            if (!controllerData.grabInteraction) {
                 let pick = null;
 
                 // near interaction hover
@@ -466,7 +468,9 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             pointerType: "xr",
         };
         controllerData.onFrameObserver = this._xrSessionManager.onXRFrameObservable.add(() => {
-            if (!this._options.enableNearInteractionOnAllControllers && xrController.uniqueId !== this._attachedController) {
+            if ((!this._options.enableNearInteractionOnAllControllers && xrController.uniqueId !== this._attachedController) ||
+                !controllerData.xrController ||
+                !controllerData.xrController.inputSource.hand) {
                 return;
             }
             if (controllerData.pick) {
@@ -674,7 +678,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
     public static PickMeshWithSphere(mesh: AbstractMesh, sphere: BoundingSphere, skipBoundingInfo = false): PickingInfo {
         const subMeshes = mesh.subMeshes;
         const pi = new PickingInfo();
-        const boundingInfo = mesh._boundingInfo;
+        const boundingInfo = mesh.getBoundingInfo();
 
         if (!mesh._generatePointsArray()) {
             return pi;
@@ -692,12 +696,12 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         const tmpVec = TmpVectors.Vector3[1];
 
         let distance = +Infinity;
-        let tmp;
+        let tmp, tmpDistanceSphereToCenter, tmpDistanceSurfaceToCenter;
         const center = TmpVectors.Vector3[2];
-        const invert = TmpVectors.Matrix[0];
-        invert.copyFrom(mesh.getWorldMatrix());
-        invert.invert();
-        Vector3.TransformCoordinatesToRef(sphere.center, invert, center);
+        const worldToMesh = TmpVectors.Matrix[0];
+        worldToMesh.copyFrom(mesh.getWorldMatrix());
+        worldToMesh.invert();
+        Vector3.TransformCoordinatesToRef(sphere.center, worldToMesh, center);
 
         for (var index = 0; index < subMeshes.length; index++) {
             const subMesh = subMeshes[index];
@@ -706,6 +710,14 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
 
             Vector3.TransformCoordinatesToRef(tmpVec, mesh.getWorldMatrix(), tmpVec);
             tmp = Vector3.Distance(tmpVec, sphere.center);
+
+            // Check for finger inside of mesh
+            tmpDistanceSurfaceToCenter = Vector3.Distance(tmpVec, mesh.getAbsolutePosition());
+            tmpDistanceSphereToCenter = Vector3.Distance(sphere.center, mesh.getAbsolutePosition());
+            if (tmpDistanceSphereToCenter !== -1 && tmpDistanceSurfaceToCenter !== -1 && tmpDistanceSurfaceToCenter > tmpDistanceSphereToCenter) {
+                tmp = 0;
+                tmpVec.copyFrom(sphere.center);
+            }
 
             if (tmp !== -1 && tmp < distance) {
                 distance = tmp;

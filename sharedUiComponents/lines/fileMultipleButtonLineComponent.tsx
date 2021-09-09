@@ -5,6 +5,7 @@ interface IFileMultipleButtonLineComponentProps {
     onClick: (event: any) => void;
     accept: string;
     icon? : string;
+    iconLabel? : string;
 }
 
 export class FileMultipleButtonLineComponent extends React.Component<IFileMultipleButtonLineComponentProps> {
@@ -30,7 +31,7 @@ export class FileMultipleButtonLineComponent extends React.Component<IFileMultip
     render() {
         return (
             <div className="buttonLine">
-                {this.props.icon && <img src={this.props.icon} className="icon"/>}
+                {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel}  className="icon"/>}
                 <label htmlFor={"file-upload" + this._id} className="file-upload">
                     {this.props.label}
                 </label>

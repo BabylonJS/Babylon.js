@@ -1,15 +1,39 @@
 import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../../../sharedUiComponents/propertyChangedEvent";
-import { LineContainerComponent } from "../../../../sharedUiComponents/lines/lineContainerComponent";
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
 import { Control } from "babylonjs-gui/2D/controls/control";
-import { Grid } from "babylonjs-gui/2D/controls/grid";
 import { SliderLineComponent } from "../../../../sharedUiComponents/lines/sliderLineComponent";
 import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
 import { TextInputLineComponent } from "../../../../sharedUiComponents/lines/textInputLineComponent";
 import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { OptionsLineComponent } from "../../../../sharedUiComponents/lines/optionsLineComponent";
+import { CommandButtonComponent } from "../../../commandButtonComponent";
+import { Image } from "babylonjs-gui/2D/controls/image";
+import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
+
+const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");
+const verticalMarginIcon: string = require("../../../../sharedUiComponents/imgs/verticalMarginIcon.svg");
+const positionIcon: string = require("../../../../sharedUiComponents/imgs/positionIcon.svg");
+const fontFamilyIcon: string = require("../../../../sharedUiComponents/imgs/fontFamilyIcon.svg");
+const alphaIcon: string = require("../../../../sharedUiComponents/imgs/alphaIcon.svg");
+const fontSizeIcon: string = require("../../../../sharedUiComponents/imgs/fontSizeIcon.svg");
+const fontStyleIcon: string = require("../../../../sharedUiComponents/imgs/fontStyleIcon.svg");
+const rotationIcon: string = require("../../../../sharedUiComponents/imgs/rotationIcon.svg");
+const scaleIcon: string = require("../../../../sharedUiComponents/imgs/scaleIcon.svg");
+const shadowBlurIcon: string = require("../../../../sharedUiComponents/imgs/shadowBlurIcon.svg");
+const horizontalMarginIcon: string = require("../../../../sharedUiComponents/imgs/horizontalMarginIcon.svg");
+const shadowColorIcon: string = require("../../../../sharedUiComponents/imgs/shadowColorIcon.svg");
+const shadowOffsetXIcon: string = require("../../../../sharedUiComponents/imgs/shadowOffsetXIcon.svg");
+const shadowOffsetYIcon: string = require("../../../../sharedUiComponents/imgs/shadowOffsetYIcon.svg");
+const colorIcon: string = require("../../../../sharedUiComponents/imgs/colorIcon.svg");
+const fillColorIcon: string = require("../../../../sharedUiComponents/imgs/fillColorIcon.svg");
+
+const hAlignCenterIcon: string = require("../../../../sharedUiComponents/imgs/hAlignCenterIcon.svg");
+const hAlignLeftIcon: string = require("../../../../sharedUiComponents/imgs/hAlignLeftIcon.svg");
+const hAlignRightIcon: string = require("../../../../sharedUiComponents/imgs/hAlignRightIcon.svg");
+const vAlignCenterIcon: string = require("../../../../sharedUiComponents/imgs/vAlignCenterIcon.svg");
+const vAlignTopIcon: string = require("../../../../sharedUiComponents/imgs/vAlignTopIcon.svg");
+const vAlignBottomIcon: string = require("../../../../sharedUiComponents/imgs/vAlignBottomIcon.svg");
 
 
 interface ICommonControlPropertyGridComponentProps {
@@ -19,108 +43,141 @@ interface ICommonControlPropertyGridComponentProps {
 }
 
 export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
+    private _width = this.props.control.width;
+    private _height = this.props.control.height;
     constructor(props: ICommonControlPropertyGridComponentProps) {
         super(props);
     }
 
-    renderGridInformation() {
+    private _updateAlignment(alignment: string, value: number) {
         const control = this.props.control;
-
-        if (!control.parent) {
-            return null;
+        if (control.typeName == "TextBlock") {
+            (this.props.control as any)["text" + alignment.charAt(0).toUpperCase() + alignment.slice(1)] = value;
         }
-
-        const gridParent = control.parent;
-
-        if ((gridParent as any).rowCount === undefined) {
-            return null;
+        else {
+            (this.props.control as any)[alignment] = value;
         }
+        this.forceUpdate();
+    }
 
-        const grid = gridParent as Grid;
-        const childCellInfo = grid.getChildCellInfo(control);
-
-        if (childCellInfo === undefined) {
-            return null;
+    private _checkAndUpdateValues(propertyName: string, value: string) {
+        //check if it contains either a px or a % sign
+        let percentage = false;
+        if (value.charAt(value.length - 1) == '%') {
+            percentage = true;
         }
+        let newValue = value.split('').filter(function (item) {
+            return (!isNaN(parseInt(item)));
+        }).join('');
 
-        const cellInfos = childCellInfo.split(":");
-
-        return (
-            <LineContainerComponent title="GRID">
-                <TextLineComponent label={"Row"} value={cellInfos[0]} />
-                <TextLineComponent label={"Column"} value={cellInfos[1]} />
-            </LineContainerComponent>
-        );
+        newValue += percentage ? '%' : 'px';
+        (this.props.control as any)[propertyName] = newValue;
+        this.forceUpdate();
     }
 
     render() {
         const control = this.props.control;
-
-        var horizontalOptions = [
-            { label: "Left", value: Control.HORIZONTAL_ALIGNMENT_LEFT },
-            { label: "Right", value: Control.HORIZONTAL_ALIGNMENT_RIGHT },
-            { label: "Center", value: Control.HORIZONTAL_ALIGNMENT_CENTER },
-        ];
-
-        var verticalOptions = [
-            { label: "Top", value: Control.VERTICAL_ALIGNMENT_TOP },
-            { label: "Bottom", value: Control.VERTICAL_ALIGNMENT_BOTTOM },
-            { label: "Center", value: Control.VERTICAL_ALIGNMENT_CENTER },
-        ];
+        var horizontalAlignment = this.props.control.horizontalAlignment;
+        var verticalAlignment = this.props.control.verticalAlignment;
+        if (control.typeName == "TextBlock") {
+            horizontalAlignment = (this.props.control as TextBlock).textHorizontalAlignment;
+            verticalAlignment = (this.props.control as TextBlock).textVerticalAlignment;
+        }
+        this._width = this.props.control.width;
+        this._height = this.props.control.height;
 
         return (
             <div>
-                <LineContainerComponent title="GENERAL">
-                    <TextLineComponent label="Class" value={control.getClassName()} />
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="Name" target={control} propertyName="name" onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
-                    <TextLineComponent label="Unique ID" value={control.uniqueId.toString()} />
-                    <SliderLineComponent label="Alpha" target={control} propertyName="alpha" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    {
-                        (control as any).color !== undefined &&
-                        <TextInputLineComponent lockObject={this.props.lockObject} label="Color" target={control} propertyName="color" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    }
-                    {
-                        (control as any).background !== undefined &&
-                        <TextInputLineComponent lockObject={this.props.lockObject} label="Background" target={control} propertyName="background" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    }
-                    <FloatLineComponent lockObject={this.props.lockObject} label="ZIndex" target={control} propertyName="zIndex" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                </LineContainerComponent>
+                <div className="divider">
+                    <CommandButtonComponent tooltip="Left" icon={hAlignLeftIcon} shortcut="" isActive={horizontalAlignment === Control.HORIZONTAL_ALIGNMENT_LEFT}
+                        onClick={() => { this._updateAlignment("horizontalAlignment", Control.HORIZONTAL_ALIGNMENT_LEFT); }} />
+                    <CommandButtonComponent tooltip="Center" icon={hAlignCenterIcon} shortcut="" isActive={horizontalAlignment === Control.HORIZONTAL_ALIGNMENT_CENTER}
+                        onClick={() => { this._updateAlignment("horizontalAlignment", Control.HORIZONTAL_ALIGNMENT_CENTER); }} />
+                    <CommandButtonComponent tooltip="Right" icon={hAlignRightIcon} shortcut="" isActive={horizontalAlignment === Control.HORIZONTAL_ALIGNMENT_RIGHT}
+                        onClick={() => { this._updateAlignment("horizontalAlignment", Control.HORIZONTAL_ALIGNMENT_RIGHT); }} />
+                    <CommandButtonComponent tooltip="Top" icon={vAlignTopIcon} shortcut="" isActive={verticalAlignment === Control.VERTICAL_ALIGNMENT_TOP}
+                        onClick={() => { this._updateAlignment("verticalAlignment", Control.VERTICAL_ALIGNMENT_TOP); }} />
+                    <CommandButtonComponent tooltip="Center" icon={vAlignCenterIcon} shortcut="" isActive={verticalAlignment === Control.VERTICAL_ALIGNMENT_CENTER}
+                        onClick={() => { this._updateAlignment("verticalAlignment", Control.VERTICAL_ALIGNMENT_CENTER); }} />
+                    <CommandButtonComponent tooltip="Center" icon={vAlignBottomIcon} shortcut="" isActive={verticalAlignment === Control.VERTICAL_ALIGNMENT_BOTTOM}
+                        onClick={() => { this._updateAlignment("verticalAlignment", Control.VERTICAL_ALIGNMENT_BOTTOM); }} />
+                </div>
+                <div className="divider">
+                    <TextInputLineComponent numbersOnly={true} iconLabel={"Position"} icon={positionIcon} lockObject={this.props.lockObject} label="X" target={control} propertyName="left" onChange={(newValue) => this._checkAndUpdateValues("left", newValue)} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <TextInputLineComponent numbersOnly={true} lockObject={this.props.lockObject} label="Y" target={control} propertyName="top" onChange={(newValue) => this._checkAndUpdateValues("top", newValue)} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                </div>
+                <div className="divider">
+                    <TextInputLineComponent numbersOnly={true} iconLabel={"Scale"} icon={sizeIcon} lockObject={this.props.lockObject} label="W" target={this} propertyName="_width" onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        onChange={(newValue) => {
+                            this._width = newValue;
+                            if (control.typeName === "Image") {
+                                (control as Image).autoScale = false;
+                            };
+                            this._checkAndUpdateValues("width", this._width.toString());
+                        }
+                        } />
+                    <TextInputLineComponent numbersOnly={true} lockObject={this.props.lockObject} label="H" target={this} propertyName="_height" onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        onChange={(newValue) => {
+                            this._height = newValue;
+                            if (control.typeName === "Image") {
+                                (control as Image).autoScale = false;
+                            };
+                            this._checkAndUpdateValues("height", this._height.toString());
+                        }
+                        } />
+                </div>
+                <div className="divider">
+                    <TextInputLineComponent numbersOnly={true} iconLabel={"Vertical Margins"} icon={verticalMarginIcon} lockObject={this.props.lockObject} label="B" target={control} propertyName="paddingBottom" onChange={(newValue) => this._checkAndUpdateValues("paddingBottom", newValue)} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <TextInputLineComponent numbersOnly={true} lockObject={this.props.lockObject} label="T" target={control} propertyName="paddingTop" onChange={(newValue) => this._checkAndUpdateValues("paddingTop", newValue)} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                </div>
+                <div className="divider">
+                    <TextInputLineComponent numbersOnly={true} iconLabel={"Horizontal Margins"} icon={horizontalMarginIcon} lockObject={this.props.lockObject} label="L" target={control} propertyName="paddingLeft" onChange={(newValue) => this._checkAndUpdateValues("paddingLeft", newValue)} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <TextInputLineComponent numbersOnly={true} lockObject={this.props.lockObject} label="R" target={control} propertyName="paddingRight" onChange={(newValue) => this._checkAndUpdateValues("paddingRight", newValue)} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                </div>
+                <hr className="ge" />
+                <TextLineComponent tooltip="" label="TRANSFORMATION" value=" " color="grey"></TextLineComponent>
+                <div className="divider">
+                    <FloatLineComponent iconLabel={"Trasnsform Center"} icon={positionIcon} lockObject={this.props.lockObject} label="X" target={control} propertyName="transformCenterX" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent lockObject={this.props.lockObject} label="Y" target={control} propertyName="transformCenterY" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                </div>
+                <div className="divider">
+                    <FloatLineComponent iconLabel={"Scale"} icon={scaleIcon} lockObject={this.props.lockObject} label="X" target={control} propertyName="scaleX" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent lockObject={this.props.lockObject} label="Y" target={control} propertyName="scaleY" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                </div>
+                <SliderLineComponent icon={rotationIcon} label="R" target={control} propertyName="rotation" minimum={0} maximum={2 * Math.PI} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <hr className="ge" />
+                <TextLineComponent tooltip="" label="APPEARANCE" value=" " color="grey"></TextLineComponent>
                 {
-                    this.renderGridInformation()
+                    (control as any).color !== undefined &&
+                    <TextInputLineComponent iconLabel={"Color"} icon={colorIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="color" onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        onChange={(newValue) => {
+                            if (newValue === "") { control.color = "Transparent" }
+                        }} />
                 }
-                <LineContainerComponent title="ALIGNMENT">
-                    <OptionsLineComponent label="Horizontal" options={horizontalOptions} target={control} propertyName="horizontalAlignment" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <OptionsLineComponent label="Vertical" options={verticalOptions} target={control} propertyName="verticalAlignment" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                </LineContainerComponent>
-                <LineContainerComponent title="POSITION">
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="Left" target={control} propertyName="left" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="Top" target={control} propertyName="top" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="Width" target={control} propertyName="width" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="Height" target={control} propertyName="height" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="Padding left" target={control} propertyName="paddingLeft" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="Padding top" target={control} propertyName="paddingTop" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="Padding right" target={control} propertyName="paddingRight" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="Padding bottom" target={control} propertyName="paddingBottom" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                </LineContainerComponent>
-                <LineContainerComponent title="TRANSFORMATION" closed={true}>
-                    <FloatLineComponent lockObject={this.props.lockObject} label="ScaleX" target={control} propertyName="scaleX" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <FloatLineComponent lockObject={this.props.lockObject} label="ScaleY" target={control} propertyName="scaleY" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <SliderLineComponent label="Rotation" target={control} propertyName="rotation" minimum={0} maximum={2 * Math.PI} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <FloatLineComponent lockObject={this.props.lockObject} label="Transform center X" target={control} propertyName="transformCenterX" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <FloatLineComponent lockObject={this.props.lockObject} label="Transform center Y" target={control} propertyName="transformCenterY" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                </LineContainerComponent>
-                <LineContainerComponent title="FONT" closed={true}>
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="Family" target={control} propertyName="fontFamily" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="Size" target={control} propertyName="fontSize" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="Weight" target={control} propertyName="fontWeight" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="Style" target={control} propertyName="fontStyle" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                </LineContainerComponent>
-                <LineContainerComponent title="SHADOWS" closed={true}>
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="Color" target={control} propertyName="shadowColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <FloatLineComponent lockObject={this.props.lockObject} label="Offset X" target={control} propertyName="shadowOffsetX" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <FloatLineComponent lockObject={this.props.lockObject} label="Offset Y" target={control} propertyName="shadowOffsetY" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <FloatLineComponent lockObject={this.props.lockObject} label="Blur" target={control} propertyName="shadowBlur" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                </LineContainerComponent>
+                {
+                    (control as any).background !== undefined &&
+                    <TextInputLineComponent iconLabel={"Background"} icon={fillColorIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="background" onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        onChange={(newValue) => {
+                            if (newValue === "") { (control as any).background = "Transparent" }
+                        }} />
+                }
+                <SliderLineComponent iconLabel={"Alpha"} icon={alphaIcon} label="" target={control} propertyName="alpha" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <TextInputLineComponent iconLabel={"Shadow Color"} icon={shadowColorIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="shadowColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <div className="divider">
+                    <FloatLineComponent iconLabel={"Shadow Offset X"} icon={shadowOffsetXIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="shadowOffsetX" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent iconLabel={"Shadow Offset Y"} icon={shadowOffsetYIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="shadowOffsetY" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                </div>
+                <FloatLineComponent iconLabel={"Shadow Blur"} icon={shadowBlurIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="shadowBlur" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <hr className="ge" />
+                <TextLineComponent tooltip="" label="FONT STYLE" value=" " color="grey"></TextLineComponent>
+                <div className="divider">
+                    <TextInputLineComponent iconLabel={"Font Family"} icon={fontFamilyIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="fontFamily" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <TextInputLineComponent iconLabel={"Font Size"} icon={fontSizeIcon} lockObject={this.props.lockObject} label="" target={control} numbersOnly={true} propertyName="fontSize" onChange={(newValue) => this._checkAndUpdateValues("fontSize", newValue)} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                </div>
+                <div className="divider">
+                    <TextInputLineComponent iconLabel={"Font Weight"} icon={shadowBlurIcon} lockObject={this.props.lockObject} label="" target={control} numbersOnly={true} propertyName="fontWeight" onChange={(newValue) => this._checkAndUpdateValues("fontWeight", newValue)} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <TextInputLineComponent iconLabel={"Font Style"} icon={fontStyleIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="fontStyle" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                </div>
             </div>
         );
     }

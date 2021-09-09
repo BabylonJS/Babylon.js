@@ -44,7 +44,7 @@ export class STLFileLoader implements ISceneLoaderPlugin {
      * The default is false to maintain backward compatibility. When set to
      * true, coordinates from the STL file are used without change.
      */
-     public static DO_NOT_ALTER_FILE_COORDINATES = false;
+    public static DO_NOT_ALTER_FILE_COORDINATES = false;
 
     /**
      * Import meshes into a scene.

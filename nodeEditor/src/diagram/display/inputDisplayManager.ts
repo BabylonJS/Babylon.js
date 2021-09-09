@@ -8,18 +8,18 @@ import { Vector2, Vector3, Vector4 } from 'babylonjs/Maths/math.vector';
 import { Color3 } from 'babylonjs/Maths/math.color';
 import { BlockTools } from '../../blockTools';
 
-const inputNameToAttributeValue: { [name: string] : string } = {
-    "position2d" : "position",
-    "particle_uv" : "uv",
-    "particle_color" : "color",
+const inputNameToAttributeValue: { [name: string]: string } = {
+    "position2d": "position",
+    "particle_uv": "uv",
+    "particle_color": "color",
     "particle_texturemask": "textureMask",
-    "particle_positionw" : "positionW",
+    "particle_positionw": "positionW",
 };
 
-const inputNameToAttributeName: { [name: string] : string } = {
-    "position2d" : "screen",
-    "particle_uv" : "particle",
-    "particle_color" : "particle",
+const inputNameToAttributeName: { [name: string]: string } = {
+    "position2d": "screen",
+    "particle_uv": "particle",
+    "particle_color": "particle",
     "particle_texturemask": "particle",
     "particle_positionw": "particle",
 };
@@ -114,6 +114,9 @@ export class InputDisplayManager implements IDisplayManager {
                     break;
                 case NodeMaterialSystemValues.DeltaTime:
                     value = "Delta time";
+                    break;
+                case NodeMaterialSystemValues.CameraParameters:
+                    value = "Camera parameters";
                     break;
             }
         } else {

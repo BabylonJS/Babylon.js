@@ -96,6 +96,7 @@ class _InternalAbstractMeshDataInfo {
     public _morphTargetManager: Nullable<MorphTargetManager> = null;
     public _renderingGroupId = 0;
     public _material: Nullable<Material> = null;
+    public _positions: Nullable<Vector3[]> = null;
     // Collisions
     public _meshCollisionData = new _MeshCollisionData();
 }
@@ -253,7 +254,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         this._internalAbstractMeshDataInfo._facetData.facetDepthSortFrom = location;
     }
 
-    /** number of collision detection tries. Change this value if not all colisions are detected and handled properly. */
+    /** number of collision detection tries. Change this value if not all colisions are detected and handled properly */
     public get collisionRetryCount(): number {
         return this._internalAbstractMeshDataInfo._collisionRetryCount;
     }
@@ -285,7 +286,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /** @hidden */
-    public _syncGeometryWithMorphTargetManager(): void {}
+    public _syncGeometryWithMorphTargetManager(): void { }
 
     /** @hidden */
     public _updateNonUniformScalingState(value: boolean): boolean {
@@ -357,8 +358,13 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             return;
         }
 
+        const oldValue = this._internalAbstractMeshDataInfo._visibility;
+
         this._internalAbstractMeshDataInfo._visibility = value;
-        this._markSubMeshesAsMiscDirty();
+
+        if (oldValue === 1 && value !== 1 || oldValue !== 1 && value === 1) {
+            this._markSubMeshesAsMiscDirty();
+        }
     }
 
     /** Gets or sets the alpha index used to sort transparent meshes
@@ -657,8 +663,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /** @hidden */
     public _masterMesh: Nullable<AbstractMesh> = null;
-    /** @hidden */
-    public _boundingInfo: Nullable<BoundingInfo> = null;
+    private _boundingInfo: Nullable<BoundingInfo> = null;
+    private _boundingInfoIsDirty = true;
     /** @hidden */
     public _renderId = 0;
 
@@ -694,10 +700,10 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         actions: Nullable<any>;
         freezeWorldMatrix: Nullable<boolean>;
     } = {
-        lods: null,
-        actions: null,
-        freezeWorldMatrix: null,
-    };
+            lods: null,
+            actions: null,
+            freezeWorldMatrix: null,
+        };
 
     /** @hidden */
     public _bonesTransformMatrices: Nullable<Float32Array> = null;
@@ -1093,12 +1099,42 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             return this._masterMesh.getBoundingInfo();
         }
 
-        if (!this._boundingInfo) {
-            // this._boundingInfo is being created here
+        if (this._boundingInfoIsDirty) {
+            this._boundingInfoIsDirty = false;
+            // this._boundingInfo is being created if undefined
             this._updateBoundingInfo();
         }
         // cannot be null.
         return this._boundingInfo!;
+    }
+
+    /**
+     * Overwrite the current bounding info
+     * @param boundingInfo defines the new bounding info
+     * @returns the current mesh
+     */
+    public setBoundingInfo(boundingInfo: BoundingInfo): AbstractMesh {
+        this._boundingInfo = boundingInfo;
+        return this;
+    }
+
+    /**
+     * Returns true if there is already a bounding info
+     */
+    public get hasBoundingInfo(): boolean {
+        return this._boundingInfo !== null;
+    }
+
+    /**
+     * Creates a new bounding info for the mesh
+     * @param minimum min vector of the bounding box/sphere
+     * @param maximum max vector of the bounding box/sphere
+     * @param worldMatrix defines the new world matrix
+     * @returns the new bounding info
+     */
+    public buildBoundingInfo(minimum: DeepImmutable<Vector3>, maximum: DeepImmutable<Vector3>, worldMatrix?: DeepImmutable<Matrix>) {
+        this._boundingInfo = new BoundingInfo(minimum, maximum, worldMatrix);
+        return this._boundingInfo;
     }
 
     /**
@@ -1110,15 +1146,6 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      */
     public normalizeToUnitCube(includeDescendants = true, ignoreRotation = false, predicate?: Nullable<(node: AbstractMesh) => boolean>): AbstractMesh {
         return <AbstractMesh>super.normalizeToUnitCube(includeDescendants, ignoreRotation, predicate);
-    }
-    /**
-     * Overwrite the current bounding info
-     * @param boundingInfo defines the new bounding info
-     * @returns the current mesh
-     */
-    public setBoundingInfo(boundingInfo: BoundingInfo): AbstractMesh {
-        this._boundingInfo = boundingInfo;
-        return this;
     }
 
     /** Gets a boolean indicating if this mesh has skinning data and an attached skeleton */
@@ -1132,10 +1159,10 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /** @hidden */
-    public _preActivate(): void {}
+    public _preActivate(): void { }
 
     /** @hidden */
-    public _preActivateForIntermediateRendering(renderId: number): void {}
+    public _preActivateForIntermediateRendering(renderId: number): void { }
 
     /** @hidden */
     public _activate(renderId: number, intermediateRendering: boolean): boolean {
@@ -1300,11 +1327,22 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /** @hidden */
     public _getPositionData(applySkeleton: boolean, applyMorph: boolean): Nullable<FloatArray> {
-        var data = this.getVerticesData(VertexBuffer.PositionKind);
+        let data = this.getVerticesData(VertexBuffer.PositionKind);
+
+        if (this._internalAbstractMeshDataInfo._positions) {
+            this._internalAbstractMeshDataInfo._positions = null;
+        }
 
         if (data && ((applySkeleton && this.skeleton) || (applyMorph && this.morphTargetManager))) {
             data = Tools.Slice(data);
             this._generatePointsArray();
+            if (this._positions) {
+                const pos = this._positions;
+                this._internalAbstractMeshDataInfo._positions = new Array<Vector3>(pos.length);
+                for (let i = 0; i < pos.length; i++) {
+                    this._internalAbstractMeshDataInfo._positions[i] = pos[i]?.clone() || new Vector3();
+                }
+            }
         }
 
         if (data && applySkeleton && this.skeleton) {
@@ -1355,6 +1393,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             }
         }
         if (data && applyMorph && this.morphTargetManager) {
+            let faceIndexCount = 0;
+            let positionIndex = 0;
             for (let vertexCount = 0; vertexCount < data.length; vertexCount++) {
                 for (let targetCount = 0; targetCount < this.morphTargetManager.numTargets; targetCount++) {
                     const targetMorph = this.morphTargetManager.getTarget(targetCount);
@@ -1365,6 +1405,14 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
                             data[vertexCount] += (morphTargetPositions[vertexCount] - data[vertexCount]) * influence;
                         }
                     }
+                }
+
+                faceIndexCount++;
+
+                if (this._positions && faceIndexCount === 3) { // We want to merge into positions every 3 indices starting (but not 0)
+                    faceIndexCount = 0;
+                    let index = positionIndex * 3;
+                    this._positions[positionIndex++].copyFromFloats(data[index], data[index + 1], data[index + 2]);
                 }
             }
         }
@@ -1405,7 +1453,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             return;
         }
         // Bounding info
-        this._updateBoundingInfo();
+        this._boundingInfoIsDirty = true;
     }
 
     /** @hidden */
@@ -1420,7 +1468,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @returns true if the mesh is in the frustum planes
      */
     public isInFrustum(frustumPlanes: Plane[]): boolean {
-        return this._boundingInfo !== null && this._boundingInfo.isInFrustum(frustumPlanes, this.cullingStrategy);
+        return this.getBoundingInfo().isInFrustum(frustumPlanes, this.cullingStrategy);
     }
 
     /**
@@ -1430,7 +1478,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @returns true if the mesh is completely in the frustum planes
      */
     public isCompletelyInFrustum(frustumPlanes: Plane[]): boolean {
-        return this._boundingInfo !== null && this._boundingInfo.isCompletelyInFrustum(frustumPlanes);
+        return this.getBoundingInfo().isCompletelyInFrustum(frustumPlanes);
     }
 
     /**
@@ -1441,11 +1489,10 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @returns true if there is an intersection
      */
     public intersectsMesh(mesh: AbstractMesh | SolidParticle, precise: boolean = false, includeDescendants?: boolean): boolean {
-        if (!this._boundingInfo || !mesh._boundingInfo) {
-            return false;
-        }
+        const boundingInfo = this.getBoundingInfo();
+        const otherBoundingInfo = mesh.getBoundingInfo();
 
-        if (this._boundingInfo.intersects(mesh._boundingInfo, precise)) {
+        if (boundingInfo.intersects(otherBoundingInfo, precise)) {
             return true;
         }
 
@@ -1466,11 +1513,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @returns true if there is an intersection
      */
     public intersectsPoint(point: Vector3): boolean {
-        if (!this._boundingInfo) {
-            return false;
-        }
-
-        return this._boundingInfo.intersectsPoint(point);
+        return this.getBoundingInfo().intersectsPoint(point);
     }
 
     // Collisions
@@ -1598,7 +1641,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     /** @hidden */
     public _checkCollision(collider: Collider): AbstractMesh {
         // Bounding box test
-        if (!this._boundingInfo || !this._boundingInfo._checkCollision(collider)) {
+        if (!this.getBoundingInfo()._checkCollision(collider)) {
             return this;
         }
 
@@ -1638,8 +1681,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     ): PickingInfo {
         var pickingInfo = new PickingInfo();
         const intersectionThreshold = this.getClassName() === "InstancedLinesMesh" || this.getClassName() === "LinesMesh" ? (this as any).intersectionThreshold : 0;
-        const boundingInfo = this._boundingInfo;
-        if (!this.subMeshes || !boundingInfo) {
+        const boundingInfo = this.getBoundingInfo();
+        if (!this.subMeshes) {
             return pickingInfo;
         }
         if (

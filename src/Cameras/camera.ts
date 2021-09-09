@@ -349,6 +349,7 @@ export class Camera extends Node {
     private _refreshFrustumPlanes = true;
     private _storedFov: number;
     private _stateStored: boolean;
+    private _absoluteRotation: Quaternion = Quaternion.Identity();
 
     /**
      * Instantiates a new camera object.
@@ -848,7 +849,7 @@ export class Camera extends Node {
                     this.maxZ,
                     this._projectionMatrix,
                     engine.isNDCHalfZRange);
-                } else {
+            } else {
                 Matrix.OrthoOffCenterLHToRef(this.orthoLeft ?? -halfWidth,
                     this.orthoRight ?? halfWidth,
                     this.orthoBottom ?? -halfHeight,
@@ -857,7 +858,7 @@ export class Camera extends Node {
                     this.maxZ,
                     this._projectionMatrix,
                     engine.isNDCHalfZRange);
-                }
+            }
 
             this._cache.orthoLeft = this.orthoLeft;
             this._cache.orthoRight = this.orthoRight;
@@ -1129,7 +1130,7 @@ export class Camera extends Node {
             case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
             case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
             case Camera.RIG_MODE_STEREOSCOPIC_INTERLACED:
-                    Camera._setStereoscopicRigMode(this);
+                Camera._setStereoscopicRigMode(this);
                 break;
             case Camera.RIG_MODE_VR:
                 Camera._setVRRigMode(this, rigParams);
@@ -1289,11 +1290,9 @@ export class Camera extends Node {
      * Returns the current camera absolute rotation
      */
     public get absoluteRotation(): Quaternion {
-        var result = Quaternion.Zero();
+        this.getWorldMatrix().decompose(undefined, this._absoluteRotation);
 
-        this.getWorldMatrix().decompose(undefined, result);
-
-        return result;
+        return this._absoluteRotation;
     }
 
     /**

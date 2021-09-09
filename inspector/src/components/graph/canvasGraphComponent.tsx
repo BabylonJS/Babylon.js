@@ -1,28 +1,77 @@
+import { PerformanceViewerCollector } from 'babylonjs/Misc/PerformanceViewer/performanceViewerCollector';
+import { Observable } from 'babylonjs/Misc/observable';
 import * as React from 'react';
 import { useEffect, useRef } from 'react';
+import { CanvasGraphService } from './canvasGraphService';
+import { IPerfLayoutSize } from './graphSupportingTypes';
+import { IPerfMetadata } from 'babylonjs/Misc/interfaces/iPerfViewer';
+import { Scene } from 'babylonjs/scene';
 
 interface ICanvasGraphComponentProps {
     id: string;
+    scene: Scene;
+    collector: PerformanceViewerCollector
+    layoutObservable?: Observable<IPerfLayoutSize>;
+    returnToPlayheadObservable?: Observable<void>;
 }
 
 export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps> = (props: ICanvasGraphComponentProps) => {
-    const { id } = props;
+    const { id, collector, scene, layoutObservable, returnToPlayheadObservable } = props;
     const canvasRef: React.MutableRefObject<HTMLCanvasElement | null>  = useRef(null);
+
     useEffect(() => {
         if (!canvasRef.current) {
             return;
         }
-        const ctx = canvasRef.current.getContext("2d");
-        if (!ctx) {
+        
+        let cs: CanvasGraphService | undefined;
+
+        try {
+            cs = new CanvasGraphService(canvasRef.current, {datasets: collector.datasets});
+        } catch (error) {
+            console.error(error);
             return;
         }
-        // for now just draw a line on the screen a simple step 1.
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.lineTo(100, 100);
-        ctx.stroke();
-    }, [canvasRef])
-   
+
+        const layoutUpdated = (newSize: IPerfLayoutSize) => {
+            if (!canvasRef.current) {
+                return;
+            }
+            const {left, top} = canvasRef.current.getBoundingClientRect();
+            newSize.width = newSize.width - left;
+            newSize.height = newSize.height - top;
+            cs?.resize(newSize);
+        };
+
+        const dataUpdated = () => {
+            cs?.update();
+        };
+
+        const metaUpdated = (meta: Map<string, IPerfMetadata>) => {
+            if (!cs) {
+                return;
+            }
+            cs.metadata = meta;
+            cs.update();
+        };
+
+        const resetDataPosition = () => {
+            cs?.resetDataPosition();
+        }
+        
+        scene.onAfterRenderObservable.add(dataUpdated);
+        collector.metadataObservable.add(metaUpdated);
+
+        layoutObservable?.add(layoutUpdated);
+        returnToPlayheadObservable?.add(resetDataPosition);
+        return () => {
+            cs?.destroy();
+            layoutObservable?.removeCallback(layoutUpdated);
+            scene.onAfterRenderObservable.removeCallback(dataUpdated);
+            collector.metadataObservable.removeCallback(metaUpdated);
+        };
+    }, [canvasRef]);
+    
     return (
         <canvas id={id} ref={canvasRef}>
 

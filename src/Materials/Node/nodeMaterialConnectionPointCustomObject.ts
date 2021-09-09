@@ -14,7 +14,7 @@ export class NodeMaterialConnectionPointCustomObject<T extends NodeMaterialBlock
      * @param direction defines the direction of the connection point
      */
     public constructor(name: string, ownerBlock: NodeMaterialBlock, direction: NodeMaterialConnectionPointDirection,
-            private _blockType: new (...args: any[]) => T, private _blockName: string, private _nameForCheking?: string) {
+        private _blockType: new (...args: any[]) => T, private _blockName: string, private _nameForCheking?: string) {
         super(name, ownerBlock, direction);
 
         if (!this._nameForCheking) {
@@ -31,7 +31,7 @@ export class NodeMaterialConnectionPointCustomObject<T extends NodeMaterialBlock
      */
     public checkCompatibilityState(connectionPoint: NodeMaterialConnectionPoint): NodeMaterialConnectionPointCompatibilityStates {
         return connectionPoint instanceof NodeMaterialConnectionPointCustomObject && connectionPoint.name === this._nameForCheking ?
-                NodeMaterialConnectionPointCompatibilityStates.Compatible : NodeMaterialConnectionPointCompatibilityStates.TypeIncompatible;
+            NodeMaterialConnectionPointCompatibilityStates.Compatible : NodeMaterialConnectionPointCompatibilityStates.TypeIncompatible;
     }
 
     /**

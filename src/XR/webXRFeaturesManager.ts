@@ -120,6 +120,14 @@ export class WebXRFeatureName {
      * The name of the movement feature
      */
     public static readonly MOVEMENT = "xr-controller-movement";
+    /**
+     * The name of the eye tracking feature
+     */
+    public static readonly EYE_TRACKING = "xr-eye-tracking";
+    /**
+     * The name of the walking locomotion feature
+     */
+    public static readonly WALKING_LOCOMOTION = "xr-walking-locomotion";
 }
 
 /**

@@ -11,6 +11,7 @@ import { IKeyboardEvent } from "babylonjs/Events/deviceInputEvents";
 
 /**
  * Class used to create a focusable button that can easily handle keyboard events
+ * @since 5.0.0
  */
 export class FocusableButton extends Button implements IFocusableControl {
     /** Highlight color when button is focused */
@@ -87,8 +88,10 @@ export class FocusableButton extends Button implements IFocusableControl {
 
     /** @hidden */
     public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean {
-        // Clicking on button should focus
-        this.focus();
+        if (!this.isReadOnly) {
+            // Clicking on button should focus
+            this.focus();
+        }
 
         return super._onPointerDown(target, coordinates, pointerId, buttonIndex, pi);
     }

@@ -3,9 +3,19 @@ import { RenderTargetCreationOptions } from "../../../Materials/Textures/renderT
 import { Nullable } from "../../../types";
 import { Constants } from "../../constants";
 import { DepthTextureCreationOptions } from "../../depthTextureCreationOptions";
+import { RenderTargetTextureSize } from "../../Extensions/engine.renderTarget";
+import { RenderTargetWrapper } from "../../renderTargetWrapper";
 import { WebGPUEngine } from "../../webgpuEngine";
 
-WebGPUEngine.prototype.createRenderTargetTexture = function(size: any, options: boolean | RenderTargetCreationOptions): InternalTexture {
+WebGPUEngine.prototype._createHardwareRenderTargetWrapper = function(isMulti: boolean, isCube: boolean, size: RenderTargetTextureSize): RenderTargetWrapper {
+    const rtWrapper = new RenderTargetWrapper(isMulti, isCube, size, this);
+    this._renderTargetWrapperCache.push(rtWrapper);
+    return rtWrapper;
+};
+
+WebGPUEngine.prototype.createRenderTargetTexture = function (size: RenderTargetTextureSize, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper {
+    const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, size) as RenderTargetWrapper;
+
     let fullOptions = new RenderTargetCreationOptions();
 
     if (options !== undefined && typeof options === "object") {
@@ -28,14 +38,21 @@ WebGPUEngine.prototype.createRenderTargetTexture = function(size: any, options: 
         fullOptions.creationFlags = 0;
     }
 
+    if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+        fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+    } else if (fullOptions.type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+        fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+    }
+
     const texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
 
-    const width = size.width || size;
-    const height = size.height || size;
-    const layers = size.layers || 0;
+    const width = (<{ width: number, height: number, layers?: number }>size).width || <number>size;
+    const height = (<{ width: number, height: number, layers?: number }>size).height || <number>size;
+    const layers = (<{ width: number, height: number, layers?: number }>size).layers || 0;
 
-    texture._depthStencilBuffer = {};
-    texture._framebuffer = {};
+    rtWrapper._generateDepthBuffer = fullOptions.generateDepthBuffer;
+    rtWrapper._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
+
     texture.baseWidth = width;
     texture.baseHeight = height;
     texture.width = width;
@@ -47,27 +64,23 @@ WebGPUEngine.prototype.createRenderTargetTexture = function(size: any, options: 
     texture.samplingMode = fullOptions.samplingMode;
     texture.type = fullOptions.type;
     texture.format = fullOptions.format;
-    texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
-    texture._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
     texture.is2DArray = layers > 0;
     texture._cachedWrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
     texture._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
 
     this._internalTexturesCache.push(texture);
+    rtWrapper.setTextures(texture);
 
-    if (texture._generateDepthBuffer || texture._generateStencilBuffer) {
-        texture._depthStencilTexture = this.createDepthStencilTexture({ width, height, layers }, {
-            bilinearFiltering:
+    if (rtWrapper._generateDepthBuffer || rtWrapper._generateStencilBuffer) {
+        rtWrapper.createDepthStencilTexture(0,
                 fullOptions.samplingMode === undefined ||
                 fullOptions.samplingMode === Constants.TEXTURE_BILINEAR_SAMPLINGMODE || fullOptions.samplingMode === Constants.TEXTURE_LINEAR_LINEAR ||
                 fullOptions.samplingMode === Constants.TEXTURE_TRILINEAR_SAMPLINGMODE || fullOptions.samplingMode === Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR ||
                 fullOptions.samplingMode === Constants.TEXTURE_NEAREST_LINEAR_MIPNEAREST || fullOptions.samplingMode === Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR ||
                 fullOptions.samplingMode === Constants.TEXTURE_NEAREST_LINEAR || fullOptions.samplingMode === Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST,
-            comparisonFunction: 0,
-            generateStencil: texture._generateStencilBuffer,
-            isCube: texture.isCube,
-            samples: texture.samples,
-        });
+                rtWrapper._generateStencilBuffer,
+                rtWrapper.samples
+        );
     }
 
     if (options !== undefined && typeof options === "object" && options.createMipMaps && !fullOptions.generateMipMaps) {
@@ -80,11 +93,11 @@ WebGPUEngine.prototype.createRenderTargetTexture = function(size: any, options: 
         texture.generateMipMaps = false;
     }
 
-    return texture;
+    return rtWrapper;
 };
 
-WebGPUEngine.prototype._createDepthStencilTexture = function(size: number | { width: number, height: number, layers?: number }, options: DepthTextureCreationOptions): InternalTexture {
-    const internalTexture = new InternalTexture(this, InternalTextureSource.Depth);
+WebGPUEngine.prototype._createDepthStencilTexture = function (size: RenderTargetTextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
+    const internalTexture = new InternalTexture(this, InternalTextureSource.DepthStencil);
 
     const internalOptions = {
         bilinearFiltering: false,
@@ -106,7 +119,7 @@ WebGPUEngine.prototype._createDepthStencilTexture = function(size: number | { wi
     return internalTexture;
 };
 
-WebGPUEngine.prototype._setupDepthStencilTexture = function(internalTexture: InternalTexture, size: number | { width: number, height: number, layers?: number }, generateStencil: boolean, bilinearFiltering: boolean, comparisonFunction: number, samples = 1): void {
+WebGPUEngine.prototype._setupDepthStencilTexture = function (internalTexture: InternalTexture, size: RenderTargetTextureSize, generateStencil: boolean, bilinearFiltering: boolean, comparisonFunction: number, samples = 1): void {
     const width = (<{ width: number, height: number, layers?: number }>size).width || <number>size;
     const height = (<{ width: number, height: number, layers?: number }>size).height || <number>size;
     const layers = (<{ width: number, height: number, layers?: number }>size).layers || 0;
@@ -120,8 +133,6 @@ WebGPUEngine.prototype._setupDepthStencilTexture = function(internalTexture: Int
     internalTexture.isReady = true;
     internalTexture.samples = samples;
     internalTexture.generateMipMaps = false;
-    internalTexture._generateDepthBuffer = true;
-    internalTexture._generateStencilBuffer = generateStencil;
     internalTexture.samplingMode = bilinearFiltering ? Constants.TEXTURE_BILINEAR_SAMPLINGMODE : Constants.TEXTURE_NEAREST_SAMPLINGMODE;
     internalTexture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
     internalTexture._comparisonFunction = comparisonFunction;
@@ -129,8 +140,8 @@ WebGPUEngine.prototype._setupDepthStencilTexture = function(internalTexture: Int
     internalTexture._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
 };
 
-WebGPUEngine.prototype.updateRenderTargetTextureSampleCount = function(texture: Nullable<InternalTexture>, samples: number): number {
-    if (!texture || texture.samples === samples) {
+WebGPUEngine.prototype.updateRenderTargetTextureSampleCount = function (rtWrapper: Nullable<RenderTargetWrapper>, samples: number): number {
+    if (!rtWrapper || !rtWrapper.texture || rtWrapper.samples === samples) {
         return samples;
     }
 
@@ -141,14 +152,14 @@ WebGPUEngine.prototype.updateRenderTargetTextureSampleCount = function(texture: 
         samples = 4;
     }
 
-    this._textureHelper.createMSAATexture(texture, samples);
+    this._textureHelper.createMSAATexture(rtWrapper.texture, samples);
 
-    if (texture._depthStencilTexture) {
-        this._textureHelper.createMSAATexture(texture._depthStencilTexture, samples);
-        texture._depthStencilTexture.samples = samples;
+    if (rtWrapper._depthStencilTexture) {
+        this._textureHelper.createMSAATexture(rtWrapper._depthStencilTexture, samples);
+        rtWrapper._depthStencilTexture.samples = samples;
     }
 
-    texture.samples = samples;
+    rtWrapper.texture.samples = samples;
 
     return samples;
 };

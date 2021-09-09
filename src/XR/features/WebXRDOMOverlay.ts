@@ -31,11 +31,11 @@ type WebXRDomOverlayType =
     /**
      * Appears as a floating rectangle in space
      */
-     'floating' |
-     /**
-      * Follows the user’s head movement consistently, appearing similar to a HUD
-      */
-     'head-locked';
+    'floating' |
+    /**
+     * Follows the user’s head movement consistently, appearing similar to a HUD
+     */
+    'head-locked';
 
 /**
  * DOM Overlay Feature

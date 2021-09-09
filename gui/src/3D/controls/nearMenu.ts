@@ -12,6 +12,7 @@ import { PickingInfo } from "babylonjs/Collisions/pickingInfo";
 
 /**
  * NearMenu that displays buttons and follows the camera
+ * @since 5.0.0
  */
 export class NearMenu extends TouchHolographicMenu {
     /**
@@ -133,7 +134,7 @@ export class NearMenu extends TouchHolographicMenu {
     protected _finalProcessing() {
         super._finalProcessing();
 
-        this._pinButton.position.copyFromFloats(this._backPlate.scaling.x / 2 + 0.02, this._backPlate.scaling.y / 2, -0.01);
+        this._pinButton.position.copyFromFloats(this._backPlate.scaling.x / 2 + 0.2, this._backPlate.scaling.y / 2, -0.1);
     }
 
     /**

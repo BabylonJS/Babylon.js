@@ -8,6 +8,8 @@ import { Matrix, TmpVectors } from '../../Maths/math.vector';
 import { UniformBuffer } from '../../Materials/uniformBuffer';
 import { MultiviewRenderTarget } from '../../Materials/Textures/MultiviewRenderTarget';
 import { Frustum } from '../../Maths/math.frustum';
+import { WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
+import { RenderTargetWrapper } from "../renderTargetWrapper";
 
 declare module "../../Engines/engine" {
     export interface Engine {
@@ -15,42 +17,51 @@ declare module "../../Engines/engine" {
          * Creates a new multiview render target
          * @param width defines the width of the texture
          * @param height defines the height of the texture
-         * @returns the created multiview texture
+         * @returns the created multiview render target wrapper
          */
-        createMultiviewRenderTargetTexture(width: number, height: number): InternalTexture;
+        createMultiviewRenderTargetTexture(width: number, height: number): RenderTargetWrapper;
 
         /**
-         * Binds a multiview framebuffer to be drawn to
-         * @param multiviewTexture texture to bind
+         * Binds a multiview render target wrapper to be drawn to
+         * @param multiviewTexture render target wrapper to bind
          */
-        bindMultiviewFramebuffer(multiviewTexture: InternalTexture): void;
+        bindMultiviewFramebuffer(multiviewTexture: RenderTargetWrapper): void;
     }
 }
 
-Engine.prototype.createMultiviewRenderTargetTexture = function(width: number, height: number) {
+Engine.prototype.createMultiviewRenderTargetTexture = function (width: number, height: number) {
     var gl = this._gl;
 
     if (!this.getCaps().multiview) {
         throw "Multiview is not supported";
     }
 
+    const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, { width, height }) as WebGLRenderTargetWrapper;
+
+    rtWrapper._framebuffer = gl.createFramebuffer();
+
     var internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
     internalTexture.width = width;
     internalTexture.height = height;
-    internalTexture._framebuffer = gl.createFramebuffer();
 
-    internalTexture._colorTextureArray = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D_ARRAY, internalTexture._colorTextureArray);
+    rtWrapper._colorTextureArray = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D_ARRAY, rtWrapper._colorTextureArray);
     (gl as any).texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8, width, height, 2);
 
-    internalTexture._depthStencilTextureArray = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D_ARRAY, internalTexture._depthStencilTextureArray);
+    rtWrapper._depthStencilTextureArray = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D_ARRAY, rtWrapper._depthStencilTextureArray);
     (gl as any).texStorage3D(gl.TEXTURE_2D_ARRAY, 1, (gl as any).DEPTH32F_STENCIL8, width, height, 2);
+
     internalTexture.isReady = true;
-    return internalTexture;
+
+    rtWrapper.setTextures(internalTexture);
+
+    return rtWrapper;
 };
 
-Engine.prototype.bindMultiviewFramebuffer = function(multiviewTexture: InternalTexture) {
+Engine.prototype.bindMultiviewFramebuffer = function (_multiviewTexture: RenderTargetWrapper) {
+    const multiviewTexture = _multiviewTexture as WebGLRenderTargetWrapper;
+
     var gl: any = this._gl;
     var ext = this.getCaps().oculusMultiview || this.getCaps().multiview;
 
@@ -96,7 +107,7 @@ Camera.prototype._useMultiviewToSingleView = false;
 
 Camera.prototype._multiviewTexture = null;
 
-Camera.prototype._resizeOrCreateMultiviewTexture = function(width: number, height: number) {
+Camera.prototype._resizeOrCreateMultiviewTexture = function (width: number, height: number) {
     if (!this._multiviewTexture) {
         this._multiviewTexture = new MultiviewRenderTarget(this.getScene(), { width: width, height: height });
     } else if (this._multiviewTexture.getRenderWidth() != width || this._multiviewTexture.getRenderHeight() != height) {
@@ -122,7 +133,7 @@ declare module "../../scene" {
 
 Scene.prototype._transformMatrixR = Matrix.Zero();
 Scene.prototype._multiviewSceneUbo = null;
-Scene.prototype._createMultiviewUbo = function() {
+Scene.prototype._createMultiviewUbo = function () {
     this._multiviewSceneUbo = new UniformBuffer(this.getEngine(), undefined, true, "scene_multiview");
     this._multiviewSceneUbo.addUniform("viewProjection", 16);
     this._multiviewSceneUbo.addUniform("viewProjectionR", 16);
@@ -130,7 +141,7 @@ Scene.prototype._createMultiviewUbo = function() {
     this._multiviewSceneUbo.addUniform("projection", 16);
     this._multiviewSceneUbo.addUniform("viewPosition", 4);
 };
-Scene.prototype._updateMultiviewUbo = function(viewR?: Matrix, projectionR?: Matrix) {
+Scene.prototype._updateMultiviewUbo = function (viewR?: Matrix, projectionR?: Matrix) {
     if (viewR && projectionR) {
         viewR.multiplyToRef(projectionR, this._transformMatrixR);
     }
@@ -147,7 +158,7 @@ Scene.prototype._updateMultiviewUbo = function(viewR?: Matrix, projectionR?: Mat
         this._multiviewSceneUbo.updateMatrix("projection", this._projectionMatrix);
     }
 };
-Scene.prototype._renderMultiviewToSingleView = function(camera: Camera) {
+Scene.prototype._renderMultiviewToSingleView = function (camera: Camera) {
     // Multiview is only able to be displayed directly for API's such as webXR
     // This displays a multiview image by rendering to the multiview image and then
     // copying the result into the sub cameras instead of rendering them and proceeding as normal from there

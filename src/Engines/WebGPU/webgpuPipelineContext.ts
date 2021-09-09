@@ -100,7 +100,6 @@ export class WebGPUPipelineContext implements IPipelineContext {
         // this._vertexSourceCodeOverride = "";
 
         const foundSamplers = this.shaderProcessingContext.availableSamplers;
-        const samplerNames: string[] = [];
         let index: number;
         for (index = 0; index < samplerList.length; index++) {
             const name = samplerList[index];
@@ -112,11 +111,8 @@ export class WebGPUPipelineContext implements IPipelineContext {
             }
             else {
                 samplers[name] = index;
-                samplerNames.push(name);
             }
         }
-
-        this.shaderProcessingContext.samplerNames = samplerNames;
 
         for (let attr of engine.getAttributes(this, attributesNames)) {
             attributes.push(attr);

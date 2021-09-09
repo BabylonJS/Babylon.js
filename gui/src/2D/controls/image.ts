@@ -7,7 +7,7 @@ import { Measure } from "../measure";
 import { _TypeStore } from "babylonjs/Misc/typeStore";
 import { serialize } from "babylonjs/Misc/decorators";
 import { Engine } from "babylonjs/Engines/engine";
-import { ICanvas, ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
+import { ICanvas, ICanvasRenderingContext, IImage } from "babylonjs/Engines/ICanvas";
 
 /**
  * Class used to create 2D images
@@ -15,7 +15,7 @@ import { ICanvas, ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
 export class Image extends Control {
     private _workingCanvas: Nullable<ICanvas> = null;
 
-    private _domImage: HTMLImageElement;
+    private _domImage: IImage;
     private _imageWidth: number;
     private _imageHeight: number;
     private _loaded = false;
@@ -312,8 +312,8 @@ export class Image extends Control {
         const width = this._domImage.width;
         const height = this._domImage.height;
 
-        // Shoudl abstract platform instead of using LastCreatedEngine
-        const engine = Engine.LastCreatedEngine;
+        // Should abstract platform instead of using LastCreatedEngine
+        const engine = this._host?.getScene()?.getEngine() || Engine.LastCreatedEngine;
         if (!engine) {
             throw new Error("Invalid engine. Unable to create a canvas.");
         }
@@ -400,7 +400,7 @@ export class Image extends Control {
         const height = this._domImage.height;
 
         if (!this._workingCanvas) {
-            const engine = Engine.LastCreatedEngine;
+            const engine = this._host?.getScene()?.getEngine() || Engine.LastCreatedEngine;
             if (!engine) {
                 throw new Error("Invalid engine. Unable to create a canvas.");
             }
@@ -450,7 +450,7 @@ export class Image extends Control {
     /**
      * Gets or sets the internal DOM image used to render the control
      */
-    public set domImage(value: HTMLImageElement) {
+    public set domImage(value: IImage) {
         this._domImage = value;
         this._loaded = false;
         this._imageDataCache.data = null;
@@ -464,7 +464,7 @@ export class Image extends Control {
         }
     }
 
-    public get domImage(): HTMLImageElement {
+    public get domImage(): IImage {
         return this._domImage;
     }
 
@@ -511,7 +511,12 @@ export class Image extends Control {
             value = this._svgCheck(value);
         }
 
-        this._domImage = document.createElement("img");
+        // Should abstract platform instead of using LastCreatedEngine
+        const engine = this._host?.getScene()?.getEngine() || Engine.LastCreatedEngine;
+        if (!engine) {
+            throw new Error("Invalid engine. Unable to create a canvas.");
+        }
+        this._domImage = engine.createCanvasImage();
 
         this._domImage.onload = () => {
             this._onImageLoaded();
@@ -593,11 +598,12 @@ export class Image extends Control {
                 var elem_matrix_d = 1;
                 var elem_matrix_e = 0;
                 var elem_matrix_f = 0;
+                const mainMatrix = elem.transform.baseVal.consolidate()!.matrix;
                 if (elem.transform && elem.transform.baseVal.consolidate()) {
-                    elem_matrix_a = elem.transform.baseVal.consolidate().matrix.a;
-                    elem_matrix_d = elem.transform.baseVal.consolidate().matrix.d;
-                    elem_matrix_e = elem.transform.baseVal.consolidate().matrix.e;
-                    elem_matrix_f = elem.transform.baseVal.consolidate().matrix.f;
+                    elem_matrix_a = mainMatrix.a;
+                    elem_matrix_d = mainMatrix.d;
+                    elem_matrix_e = mainMatrix.e;
+                    elem_matrix_f = mainMatrix.f;
                 }
 
                 // compute source coordinates and dimensions
@@ -756,7 +762,7 @@ export class Image extends Control {
         const height = this._currentMeasure.height;
 
         if (!this._workingCanvas) {
-            const engine = Engine.LastCreatedEngine;
+            const engine = this._host?.getScene()?.getEngine() || Engine.LastCreatedEngine;
             if (!engine) {
                 throw new Error("Invalid engine. Unable to create a canvas.");
             }

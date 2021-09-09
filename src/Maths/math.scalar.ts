@@ -298,7 +298,7 @@ export class Scalar {
      * @param time define where the derivative must be done
      * @returns 1st derivative
      */
-     public static Hermite1stDerivative(value1: number, tangent1: number, value2: number, tangent2: number, time: number): number {
+    public static Hermite1stDerivative(value1: number, tangent1: number, value2: number, tangent2: number, time: number): number {
         const t2 = time * time;
         return (
             (t2 - time) * 6 * value1 +

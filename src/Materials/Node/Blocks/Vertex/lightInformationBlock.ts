@@ -67,9 +67,9 @@ export class LightInformationBlock extends NodeMaterialBlock {
         return this._outputs[1];
     }
 
-        /**
-     * Gets the direction output component
-     */
+    /**
+ * Gets the direction output component
+ */
     public get intensity(): NodeMaterialConnectionPoint {
         return this._outputs[2];
     }

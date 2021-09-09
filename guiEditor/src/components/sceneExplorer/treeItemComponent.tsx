@@ -4,11 +4,14 @@ import { Nullable } from "babylonjs/types";
 import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faMinus, faBan, faExpandArrowsAlt, faCompress } from '@fortawesome/free-solid-svg-icons';
+import { faBan} from '@fortawesome/free-solid-svg-icons';
 import { TreeItemSelectableComponent } from "./treeItemSelectableComponent";
 import { Tools } from "../../tools";
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 import { GlobalState } from "../../globalState";
+
+const expandedIcon: string = require("../../../public/imgs/expandedIcon.svg");
+const collapsedIcon: string = require("../../../public/imgs/collapsedIcon.svg");
 
 interface ITreeItemExpandableHeaderComponentProps {
     isExpanded: boolean,
@@ -27,8 +30,7 @@ class TreeItemExpandableHeaderComponent extends React.Component<ITreeItemExpanda
     }
 
     render() {
-        const chevron = this.props.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />
-        const expandAll = this.props.isExpanded ? <FontAwesomeIcon icon={faCompress} /> : <FontAwesomeIcon icon={faExpandArrowsAlt} />
+        const chevron = this.props.isExpanded ? <img src={expandedIcon} className="icon"/>: <img src={collapsedIcon} className="icon"/>
 
         return (
             <div className="expandableHeader">
@@ -41,7 +43,7 @@ class TreeItemExpandableHeaderComponent extends React.Component<ITreeItemExpanda
                     </div>
                 </div>
                 <div className="expandAll icon" onClick={() => this.expandAll()} title={this.props.isExpanded ? "Collapse all" : "Expand all"}>
-                    {expandAll}
+                    {chevron}
                 </div>
             </div>
         )
@@ -192,20 +194,11 @@ export class TreeItemComponent extends React.Component<ITreeItemComponentProps, 
             )
         }
 
-        const sortedItems = Tools.SortAndFilter(null, items);
-
+        let sortedItems = Tools.SortAndFilter(null, items)[0].getChildren();         
         return (
             <div>
-                <div className="groupContainer" style={marginStyle}>
-                    <ContextMenuTrigger id={"contextmenu#" + TreeItemComponent._ContextMenuUniqueIdGenerator}>
-                        {
-                            this.renderContextMenu()
-                        }
-                        <TreeItemExpandableHeaderComponent isExpanded={this.state.isExpanded} label={this.props.label} onClick={() => this.switchExpandedState()} onExpandAll={expand => this.expandAll(expand)} />
-                    </ContextMenuTrigger>
-                </div>
                 {
-                    sortedItems.map(item => {
+                    sortedItems.map((item: { uniqueId: React.Key | null | undefined; name: React.Key | null | undefined; }) => {
                         return (
                             <TreeItemSelectableComponent mustExpand={this.state.mustExpand} extensibilityGroups={this.props.extensibilityGroups}
                                 key={item.uniqueId !== undefined && item.uniqueId !== null ? item.uniqueId : item.name}

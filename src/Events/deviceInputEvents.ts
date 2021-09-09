@@ -115,7 +115,7 @@ export interface IKeyboardEvent extends IUIEvent {
 /**
  * Native friendly interface for MouseEvent Object
  */
-export interface IMouseEvent extends IUIEvent{
+export interface IMouseEvent extends IUIEvent {
     // Properties
     /**
      * Status of Alt key being pressed

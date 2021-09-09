@@ -4,6 +4,7 @@ import { PostProcess } from "./postProcess";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Constants } from "../Engines/constants";
 import { DataBuffer } from '../Buffers/dataBuffer';
+import { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 
 declare type Scene = import("../scene").Scene;
 
@@ -97,18 +98,18 @@ export class PostProcessManager {
      * Manually render a set of post processes to a texture.
      * Please note, the frame buffer won't be unbound after the call in case you have more render to do.
      * @param postProcesses An array of post processes to be run.
-     * @param targetTexture The target texture to render to.
+     * @param targetTexture The render target wrapper to render to.
      * @param forceFullscreenViewport force gl.viewport to be full screen eg. 0,0,textureWidth,textureHeight
      * @param faceIndex defines the face to render to if a cubemap is defined as the target
      * @param lodLevel defines which lod of the texture to render to
      * @param doNotBindFrambuffer If set to true, assumes that the framebuffer has been bound previously
      */
-    public directRender(postProcesses: PostProcess[], targetTexture: Nullable<InternalTexture> = null, forceFullscreenViewport = false, faceIndex = 0, lodLevel = 0, doNotBindFrambuffer = false): void {
+    public directRender(postProcesses: PostProcess[], targetTexture: Nullable<RenderTargetWrapper> = null, forceFullscreenViewport = false, faceIndex = 0, lodLevel = 0, doNotBindFrambuffer = false): void {
         var engine = this._scene.getEngine();
 
         for (var index = 0; index < postProcesses.length; index++) {
             if (index < postProcesses.length - 1) {
-                postProcesses[index + 1].activate(this._scene.activeCamera, targetTexture);
+                postProcesses[index + 1].activate(this._scene.activeCamera, targetTexture?.texture);
             } else {
                 if (targetTexture) {
                     engine.bindFramebuffer(targetTexture, faceIndex, undefined, undefined, forceFullscreenViewport, lodLevel);
@@ -143,13 +144,13 @@ export class PostProcessManager {
     /**
      * Finalize the result of the output of the postprocesses.
      * @param doNotPresent If true the result will not be displayed to the screen.
-     * @param targetTexture The target texture to render to.
+     * @param targetTexture The render target wrapper to render to.
      * @param faceIndex The index of the face to bind the target texture to.
      * @param postProcesses The array of post processes to render.
      * @param forceFullscreenViewport force gl.viewport to be full screen eg. 0,0,textureWidth,textureHeight (default: false)
      * @hidden
      */
-    public _finalizeFrame(doNotPresent?: boolean, targetTexture?: InternalTexture, faceIndex?: number, postProcesses?: Array<PostProcess>, forceFullscreenViewport = false): void {
+    public _finalizeFrame(doNotPresent?: boolean, targetTexture?: RenderTargetWrapper, faceIndex?: number, postProcesses?: Array<PostProcess>, forceFullscreenViewport = false): void {
         let camera = this._scene.activeCamera;
 
         if (!camera) {
@@ -166,7 +167,7 @@ export class PostProcessManager {
             var pp = postProcesses[index];
 
             if (index < len - 1) {
-                pp._outputTexture = postProcesses[index + 1].activate(camera, targetTexture);
+                pp._outputTexture = postProcesses[index + 1].activate(camera, targetTexture?.texture);
             } else {
                 if (targetTexture) {
                     engine.bindFramebuffer(targetTexture, faceIndex, undefined, undefined, forceFullscreenViewport);

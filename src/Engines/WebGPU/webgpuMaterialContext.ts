@@ -44,8 +44,7 @@ export class WebGPUMaterialContext implements IMaterialContext {
         const curTexture = textureCache.texture;
         if (curTexture !== null && curTexture === internalTexture &&
             (textureCache.wrapU !== internalTexture._cachedWrapU || textureCache.wrapV !== internalTexture._cachedWrapV || textureCache.wrapR !== internalTexture._cachedWrapR ||
-                textureCache.anisotropicFilteringLevel !== internalTexture._cachedAnisotropicFilteringLevel || textureCache.samplingMode !== internalTexture.samplingMode))
-        {
+                textureCache.anisotropicFilteringLevel !== internalTexture._cachedAnisotropicFilteringLevel || textureCache.samplingMode !== internalTexture.samplingMode)) {
             // the sampler used to sample the texture must be updated, so we need to clear the bind group cache entries that are using
             // this texture so that the bind groups are re-created with the right sampler
             textureCache.wrapU = internalTexture._cachedWrapU;
