@@ -3,12 +3,13 @@ import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../../../sharedUiComponents/propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
 import { InputText } from "babylonjs-gui/2D/controls/inputText";
-import { LineContainerComponent } from "../../../../sharedUiComponents/lines/lineContainerComponent";
+
 import { TextInputLineComponent } from "../../../../sharedUiComponents/lines/textInputLineComponent";
 import { SliderLineComponent } from "../../../../sharedUiComponents/lines/sliderLineComponent";
 import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
 import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
 
 interface IInputTextPropertyGridComponentProps {
     inputText: InputText;
@@ -27,7 +28,8 @@ export class InputTextPropertyGridComponent extends React.Component<IInputTextPr
         return (
             <div className="pane">
                 <CommonControlPropertyGridComponent  lockObject={this.props.lockObject} control={inputText} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <LineContainerComponent title="INPUTTEXT">
+                <hr/>
+                <TextLineComponent label="INPUTTEXT" value=" " color="grey"></TextLineComponent>
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Text" target={inputText} propertyName="text" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Prompt" target={inputText} propertyName="promptMessage" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Max width" target={inputText} propertyName="maxWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -41,7 +43,6 @@ export class InputTextPropertyGridComponent extends React.Component<IInputTextPr
                     <FloatLineComponent lockObject={this.props.lockObject} label="Thickness" target={inputText} propertyName="thickness" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Placeholder text" target={inputText} propertyName="placeholderText" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Placeholder color" target={inputText} propertyName="placeholderColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                </LineContainerComponent>
             </div>
         );
     }

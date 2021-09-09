@@ -3,12 +3,12 @@ import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../../../sharedUiComponents/propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
 import { TextBlock, TextWrapping } from "babylonjs-gui/2D/controls/textBlock";
-import { LineContainerComponent } from "../../../../sharedUiComponents/lines/lineContainerComponent";
 import { TextInputLineComponent } from "../../../../sharedUiComponents/lines/textInputLineComponent";
 import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { OptionsLineComponent } from "../../../../sharedUiComponents/lines/optionsLineComponent";
 import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
+import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
 
 interface ITextBlockPropertyGridComponentProps {
     textBlock: TextBlock;
@@ -32,17 +32,18 @@ export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPr
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent  lockObject={this.props.lockObject} control={textBlock} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <LineContainerComponent title="TEXTBLOCK">
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="Text" target={textBlock} propertyName="text" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <CheckBoxLineComponent label="Resize to fit" target={textBlock} propertyName="resizeToFit" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <OptionsLineComponent label="Wrapping" options={wrappingOptions} target={textBlock} propertyName="textWrapping" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="Line spacing" target={textBlock} propertyName="lineSpacing" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                </LineContainerComponent>
-                <LineContainerComponent title="OUTLINE">
-                    <FloatLineComponent lockObject={this.props.lockObject} label="Outline width" target={textBlock} propertyName="outlineWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="Outline color" target={textBlock} propertyName="outlineColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                </LineContainerComponent>
+                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={textBlock} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <hr />
+                <TextLineComponent label="TEXTBLOCK" value=" " color="grey"></TextLineComponent>
+                <TextInputLineComponent lockObject={this.props.lockObject} label="Text" target={textBlock} propertyName="text" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CheckBoxLineComponent label="Resize to fit" target={textBlock} propertyName="resizeToFit" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <OptionsLineComponent label="Wrapping" options={wrappingOptions} target={textBlock} propertyName="textWrapping" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <TextInputLineComponent lockObject={this.props.lockObject} label="Line spacing" target={textBlock} propertyName="lineSpacing" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <hr />
+                <TextLineComponent label="OUTLINE" value=" " color="grey"></TextLineComponent>
+                <FloatLineComponent lockObject={this.props.lockObject} label="Outline width" target={textBlock} propertyName="outlineWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <TextInputLineComponent lockObject={this.props.lockObject} label="Outline color" target={textBlock} propertyName="outlineColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+
             </div>
         );
     }
