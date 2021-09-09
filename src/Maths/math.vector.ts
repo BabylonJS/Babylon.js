@@ -541,7 +541,7 @@ export class Vector2 {
      * @param time define where the derivative must be done
      * @returns 1st derivative
      */
-     public static Hermite1stDerivative(value1: DeepImmutable<Vector2>, tangent1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, tangent2: DeepImmutable<Vector2>, time: number): Vector2 {
+    public static Hermite1stDerivative(value1: DeepImmutable<Vector2>, tangent1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, tangent2: DeepImmutable<Vector2>, time: number): Vector2 {
         let result = Vector2.Zero();
 
         this.Hermite1stDerivativeToRef(value1, tangent1, value2, tangent2, time, result);
@@ -604,7 +604,7 @@ export class Vector2 {
      * @param vector defines the vector to normalize
      * @param result defines the vector where to store the result
      */
-     public static NormalizeToRef(vector: DeepImmutable<Vector2>, result: Vector2) {
+    public static NormalizeToRef(vector: DeepImmutable<Vector2>, result: Vector2) {
         var len = vector.length();
 
         if (len === 0) {
@@ -752,6 +752,9 @@ export class Vector2 {
  */
 export class Vector3 {
     private static _UpReadOnly = Vector3.Up() as DeepImmutable<Vector3>;
+    private static _LeftHandedForwardReadOnly = Vector3.Forward(false) as DeepImmutable<Vector3>;
+    private static _RightHandedForwardReadOnly = Vector3.Forward(true) as DeepImmutable<Vector3>;
+    private static _RightReadOnly = Vector3.Right() as DeepImmutable<Vector3>;
     private static _ZeroReadOnly = Vector3.Zero() as DeepImmutable<Vector3>;
 
     /** @hidden */
@@ -1670,6 +1673,27 @@ export class Vector3 {
     }
 
     /**
+     * Gets a right Vector3 that must not be updated
+     */
+    public static get RightReadOnly(): DeepImmutable<Vector3> {
+        return Vector3._RightReadOnly;
+    }
+
+    /**
+     * Gets a forward Vector3 that must not be updated
+     */
+    public static get LeftHandedForwardReadOnly(): DeepImmutable<Vector3> {
+        return Vector3._LeftHandedForwardReadOnly;
+    }
+
+    /**
+     * Gets a forward Vector3 that must not be updated
+     */
+    public static get RightHandedForwardReadOnly(): DeepImmutable<Vector3> {
+        return Vector3._RightHandedForwardReadOnly;
+    }
+
+    /**
      * Gets a zero Vector3 that must not be updated
      */
     public static get ZeroReadOnly(): DeepImmutable<Vector3> {
@@ -1926,7 +1950,7 @@ export class Vector3 {
      * @param time define where the derivative must be done
      * @param result define where to store the derivative
      */
-     public static Hermite1stDerivativeToRef(value1: DeepImmutable<Vector3>, tangent1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, tangent2: DeepImmutable<Vector3>, time: number, result: Vector3) {
+    public static Hermite1stDerivativeToRef(value1: DeepImmutable<Vector3>, tangent1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, tangent2: DeepImmutable<Vector3>, time: number, result: Vector3) {
         const t2 = time * time;
 
         result.x = (t2 - time) * 6 * value1.x + (3 * t2 - 4 * time + 1) * tangent1.x + (-t2 + time) * 6 * value2.x + (3 * t2 - 2 * time) * tangent2.x;
@@ -2208,7 +2232,7 @@ export class Vector3 {
      * @param ref variable to store the result to
      * @returns The distance between "ref" and "vector"
      */
-    public static ProjectOnTriangleToRef(vector: DeepImmutable<Vector3>, p0: DeepImmutable<Vector3>, p1: DeepImmutable<Vector3>, p2: DeepImmutable<Vector3>, ref: Vector3) : number {
+    public static ProjectOnTriangleToRef(vector: DeepImmutable<Vector3>, p0: DeepImmutable<Vector3>, p1: DeepImmutable<Vector3>, p2: DeepImmutable<Vector3>, ref: Vector3): number {
         const p1p0 = MathTmp.Vector3[0];
         const p2p0 = MathTmp.Vector3[1];
         const p2p1 = MathTmp.Vector3[2];
@@ -2220,15 +2244,36 @@ export class Vector3 {
         p2.subtractToRef(p0, p2p0);
         p2.subtractToRef(p1, p2p1);
 
-        const p1p0L = Math.max(p1p0.length(), Epsilon);
-        const p2p0L = Math.max(p2p0.length(), Epsilon);
-        const p2p1L = Math.max(p2p1.length(), Epsilon);
+        const p1p0L = p1p0.length();
+        const p2p0L = p2p0.length();
+        const p2p1L = p2p1.length();
+
+        if (p1p0L < Epsilon ||
+            p2p0L < Epsilon ||
+            p2p1L < Epsilon) {
+            // This is a degenerate triangle. As we assume this is part of a non-degenerate mesh,
+            // we will find a better intersection later.
+            // Let's just return one of the extremities
+            ref.copyFrom(p0);
+            return Vector3.Distance(vector, p0);
+        }
 
         // Compute normal and vector to p0
         vector.subtractToRef(p0, vectorp0);
         Vector3.CrossToRef(p1p0, p2p0, normal);
-        normal.normalize();
+        const nl = normal.length();
+        if (nl < Epsilon) {
+            // Extremities are aligned, we are back on the case of a degenerate triangle
+            ref.copyFrom(p0);
+            return Vector3.Distance(vector, p0);
+        }
+        normal.normalizeFromLength(nl);
         let l = vectorp0.length();
+        if (l < Epsilon) {
+            // Vector is p0
+            ref.copyFrom(p0);
+            return 0;
+        }
         vectorp0.normalizeFromLength(l);
 
         // Project to "proj" that lies on the triangle plane
@@ -2312,6 +2357,11 @@ export class Vector3 {
         const e0proj = MathTmp.Vector3[9];
         e0proj.copyFrom(e0).subtractInPlace(proj);
         const e0projL = e0proj.length();
+        if (e0projL < Epsilon) {
+            // Proj is e0
+            ref.copyFrom(e0);
+            return Vector3.Distance(vector, e0);
+        }
         e0proj.normalizeFromLength(e0projL);
         const cosG = Vector3.Dot(r, e0proj);
         const triProj = MathTmp.Vector3[7];
@@ -3057,7 +3107,7 @@ export class Vector4 {
      * @param transformation defines the transformation matrix
      * @returns the transformed Vector4
      */
-     public static TransformCoordinates(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>): Vector4 {
+    public static TransformCoordinates(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>): Vector4 {
         var result = Vector4.Zero();
         Vector4.TransformCoordinatesToRef(vector, transformation, result);
         return result;
@@ -3971,12 +4021,12 @@ export class Quaternion {
     }
 
     /**
-    * Creates a new rotation value to orient an object to look towards the given forward direction with the up direction being oriented like "up", and stores it in the target quaternion.
-    * This function works in left handed mode
-    * @param forward defines the forward direction - Must be normalized and orthogonal to up.
-    * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
-    * @param ref defines the target quaternion.
-    */
+     * Creates a new rotation value to orient an object to look towards the given forward direction with the up direction being oriented like "up", and stores it in the target quaternion.
+     * This function works in left handed mode
+     * @param forward defines the forward direction - Must be normalized and orthogonal to up.
+     * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
+     * @param ref defines the target quaternion.
+     */
     public static FromLookDirectionLHToRef(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, ref: Quaternion): void {
         var rotMat = MathTmp.Matrix[0];
         Matrix.LookDirectionLHToRef(forward, up, rotMat);
@@ -4109,7 +4159,7 @@ export class Quaternion {
      * @param time define where the derivative must be done
      * @param result define where to store the derivative
      */
-    public static Hermite1stDerivativeToRef(value1: DeepImmutable<Quaternion>, tangent1: DeepImmutable<Quaternion>, value2: DeepImmutable<Quaternion>, tangent2: DeepImmutable<Quaternion>, time: number, result: Quaternion)  {
+    public static Hermite1stDerivativeToRef(value1: DeepImmutable<Quaternion>, tangent1: DeepImmutable<Quaternion>, value2: DeepImmutable<Quaternion>, tangent2: DeepImmutable<Quaternion>, time: number, result: Quaternion) {
         const t2 = time * time;
 
         result.x = (t2 - time) * 6 * value1.x + (3 * t2 - 4 * time + 1) * tangent1.x + (-t2 + time) * 6 * value2.x + (3 * t2 - 2 * time) * tangent2.x;
@@ -5314,16 +5364,14 @@ export class Matrix {
     public static RotationAlignToRef(from: DeepImmutable<Vector3>, to: DeepImmutable<Vector3>, result: Matrix): void {
         const c = Vector3.Dot(to, from);
         const m = result._m;
-        if (c < (-1 + Epsilon))
-        {
+        if (c < (-1 + Epsilon)) {
             // from and to are colinear and opposite direction.
             // compute a PI rotation on Z axis
-            m[0] = -1; m[1] =  0; m[2] =  0; m[3] =  0;
-            m[4] =  0; m[5] = -1; m[6] =  0; m[7] =  0;
-            m[8] =  0; m[9] =  0; m[10] = 1; m[11] = 0;
+            m[0] = -1; m[1] = 0; m[2] = 0; m[3] = 0;
+            m[4] = 0; m[5] = -1; m[6] = 0; m[7] = 0;
+            m[8] = 0; m[9] = 0; m[10] = 1; m[11] = 0;
         }
-        else
-        {
+        else {
             const v = Vector3.Cross(to, from);
             const k = 1 / (1 + c);
 
@@ -5657,12 +5705,12 @@ export class Matrix {
     }
 
     /**
-    * Gets a new rotation matrix used to rotate an entity so as it looks in the direction specified by forward from the eye position, the up Vector3 being oriented like "up".
-    * This function works in right handed mode
-    * @param forward defines the forward direction - Must be normalized and orthogonal to up.
-    * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
-    * @returns the new matrix
-    */
+     * Gets a new rotation matrix used to rotate an entity so as it looks in the direction specified by forward from the eye position, the up Vector3 being oriented like "up".
+     * This function works in right handed mode
+     * @param forward defines the forward direction - Must be normalized and orthogonal to up.
+     * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
+     * @returns the new matrix
+     */
     public static LookDirectionRH(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>): Matrix {
         var result = new Matrix();
         Matrix.LookDirectionRHToRef(forward, up, result);
@@ -6268,20 +6316,20 @@ export class Matrix {
  * Same as Tmp but not exported to keep it only for math functions to avoid conflicts
  */
 class MathTmp {
-    public static Vector3: Vector3[] = ArrayTools.BuildArray(11, Vector3.Zero);
-    public static Matrix: Matrix[] = ArrayTools.BuildArray(2, Matrix.Identity);
-    public static Quaternion: Quaternion[] = ArrayTools.BuildArray(3, Quaternion.Zero);
+    public static Vector3 = ArrayTools.BuildTuple(11, Vector3.Zero);
+    public static Matrix = ArrayTools.BuildTuple(2, Matrix.Identity);
+    public static Quaternion = ArrayTools.BuildTuple(3, Quaternion.Zero);
 }
 
 /**
  * @hidden
  */
 export class TmpVectors {
-    public static Vector2: Vector2[] = ArrayTools.BuildArray(3, Vector2.Zero); // 3 temp Vector2 at once should be enough
-    public static Vector3: Vector3[] = ArrayTools.BuildArray(13, Vector3.Zero); // 13 temp Vector3 at once should be enough
-    public static Vector4: Vector4[] = ArrayTools.BuildArray(3, Vector4.Zero); // 3 temp Vector4 at once should be enough
-    public static Quaternion: Quaternion[] = ArrayTools.BuildArray(2, Quaternion.Zero); // 2 temp Quaternion at once should be enough
-    public static Matrix: Matrix[] = ArrayTools.BuildArray(8, Matrix.Identity); // 8 temp Matrices at once should be enough
+    public static Vector2 = ArrayTools.BuildTuple(3, Vector2.Zero); // 3 temp Vector2 at once should be enough
+    public static Vector3 = ArrayTools.BuildTuple(13, Vector3.Zero); // 13 temp Vector3 at once should be enough
+    public static Vector4 = ArrayTools.BuildTuple(3, Vector4.Zero); // 3 temp Vector4 at once should be enough
+    public static Quaternion = ArrayTools.BuildTuple(2, Quaternion.Zero); // 2 temp Quaternion at once should be enough
+    public static Matrix = ArrayTools.BuildTuple(8, Matrix.Identity); // 8 temp Matrices at once should be enough
 }
 
 _TypeStore.RegisteredTypes["BABYLON.Vector2"] = Vector2;

@@ -32,6 +32,7 @@ export enum ConditionalBlockConditions {
 
 /**
  * Block used to apply conditional operation between floats
+ * @since 5.0.0
  */
 export class ConditionalBlock extends NodeMaterialBlock {
 
@@ -166,7 +167,7 @@ export class ConditionalBlock extends NodeMaterialBlock {
     }
 
     protected _dumpPropertiesCode() {
-        var codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.operation = BABYLON.ConditionalBlockConditions.${ConditionalBlockConditions[this.condition]};\r\n`;
+        var codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.condition = BABYLON.ConditionalBlockConditions.${ConditionalBlockConditions[this.condition]};\r\n`;
         return codeString;
     }
 }

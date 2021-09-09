@@ -12,6 +12,7 @@ export interface ICheckBoxLineComponentProps {
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     disabled?: boolean;
     icon? : string;
+    iconLabel? : string;
 }
 
 export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, { isSelected: boolean, isDisabled?: boolean }> {
@@ -83,8 +84,8 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
     render() {
         return (
             <div className="checkBoxLine">
-                {this.props.icon && <img src={this.props.icon} className="icon"/>}
-                <div className="label">
+                {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel}  className="icon"/>}
+                <div className="label" title={this.props.iconLabel}>
                     {this.props.label}
                 </div>
                 <div className="checkBox">

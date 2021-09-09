@@ -1,12 +1,12 @@
 import { Vector3 } from "../../../Maths/math";
 import { Scalar } from "../../../Maths/math.scalar";
-import { InternalTexture } from "../internalTexture";
 import { BaseTexture } from "../baseTexture";
 import { ThinEngine } from "../../../Engines/thinEngine";
 import { Effect } from "../../../Materials/effect";
 import { Constants } from "../../../Engines/constants";
 import { EffectWrapper, EffectRenderer } from "../../../Materials/effectRenderer";
 import { Nullable } from '../../../types';
+import { RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
 
 import "../../../Shaders/hdrFiltering.vertex";
 import "../../../Shaders/hdrFiltering.fragment";
@@ -63,7 +63,7 @@ export class HDRFiltering {
         this.quality = options.hdrScale || this.quality;
     }
 
-    private _createRenderTarget(size: number): InternalTexture {
+    private _createRenderTarget(size: number): RenderTargetWrapper {
         let textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
         if (this._engine.getCaps().textureHalfFloatRender) {
             textureType = Constants.TEXTURETYPE_HALF_FLOAT;
@@ -72,7 +72,7 @@ export class HDRFiltering {
             textureType = Constants.TEXTURETYPE_FLOAT;
         }
 
-        const texture = this._engine.createRenderTargetCubeTexture(size, {
+        const rtWrapper = this._engine.createRenderTargetCubeTexture(size, {
             format: Constants.TEXTUREFORMAT_RGBA,
             type: textureType,
             createMipMaps: true,
@@ -81,14 +81,14 @@ export class HDRFiltering {
             generateStencilBuffer: false,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE
         });
-        this._engine.updateTextureWrappingMode(texture,
+        this._engine.updateTextureWrappingMode(rtWrapper.texture!,
             Constants.TEXTURE_CLAMP_ADDRESSMODE,
             Constants.TEXTURE_CLAMP_ADDRESSMODE,
             Constants.TEXTURE_CLAMP_ADDRESSMODE);
 
-        this._engine.updateTextureSamplingMode(Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, texture, true);
+        this._engine.updateTextureSamplingMode(Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, rtWrapper.texture!, true);
 
-        return texture;
+        return rtWrapper;
     }
 
     private _prefilterInternal(texture: BaseTexture): BaseTexture {
@@ -144,7 +144,6 @@ export class HDRFiltering {
         // Cleanup
         this._effectRenderer.restoreStates();
         this._engine.restoreDefaultFramebuffer();
-        this._engine._releaseFramebufferObjects(outputTexture);
         this._engine._releaseTexture(texture._texture!);
 
         // Internal Swap

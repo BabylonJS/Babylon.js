@@ -175,6 +175,8 @@ var OBJExport = /** @class */ (function () {
     OBJExport.OBJ = function (mesh, materials, matlibname, globalposition) {
         var output = [];
         var v = 1;
+        // keep track of uv index in case mixed meshes are passed in
+        var textureV = 1;
         if (materials) {
             if (!matlibname) {
                 matlibname = 'mat';
@@ -185,11 +187,12 @@ var OBJExport = /** @class */ (function () {
             output.push("g object" + j);
             output.push("o object_" + j);
             //Uses the position of the item in the scene, to the file (this back to normal in the end)
-            var lastMatrix = null;
+            var inverseTransform = null;
             if (globalposition) {
-                var newMatrix = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Matrix"].Translation(mesh[j].position.x, mesh[j].position.y, mesh[j].position.z);
-                lastMatrix = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Matrix"].Translation(-(mesh[j].position.x), -(mesh[j].position.y), -(mesh[j].position.z));
-                mesh[j].bakeTransformIntoVertices(newMatrix);
+                var transform = mesh[j].computeWorldMatrix(true);
+                inverseTransform = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Matrix"]();
+                transform.invertToRef(inverseTransform);
+                mesh[j].bakeTransformIntoVertices(transform);
             }
             //TODO: submeshes (groups)
             //TODO: smoothing groups (s 1, s off);
@@ -208,7 +211,8 @@ var OBJExport = /** @class */ (function () {
             var trunkNormals = g.getVerticesData('normal');
             var trunkUV = g.getVerticesData('uv');
             var trunkFaces = g.getIndices();
-            var curV = 0;
+            var currentV = 0;
+            var currentTextureV = 0;
             if (!trunkVerts || !trunkFaces) {
                 babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Tools"].Warn("There are no position vertices or indices on the mesh!");
                 continue;
@@ -222,7 +226,7 @@ var OBJExport = /** @class */ (function () {
                 else {
                     output.push("v " + trunkVerts[i] + " " + trunkVerts[i + 1] + " " + -trunkVerts[i + 2]);
                 }
-                curV++;
+                currentV++;
             }
             if (trunkNormals != null) {
                 for (i = 0; i < trunkNormals.length; i += 3) {
@@ -232,23 +236,26 @@ var OBJExport = /** @class */ (function () {
             if (trunkUV != null) {
                 for (i = 0; i < trunkUV.length; i += 2) {
                     output.push("vt " + trunkUV[i] + " " + trunkUV[i + 1]);
+                    currentTextureV++;
                 }
             }
             for (i = 0; i < trunkFaces.length; i += 3) {
                 var indices = [String(trunkFaces[i + 2] + v), String(trunkFaces[i + 1] + v), String(trunkFaces[i] + v)];
+                var textureIndices = [String(trunkFaces[i + 2] + textureV), String(trunkFaces[i + 1] + textureV), String(trunkFaces[i] + textureV)];
                 var blanks = ["", "", ""];
                 var facePositions = indices;
-                var faceUVs = trunkUV != null ? indices : blanks;
+                var faceUVs = trunkUV != null ? textureIndices : blanks;
                 var faceNormals = trunkNormals != null ? indices : blanks;
                 output.push("f " + facePositions[0] + "/" + faceUVs[0] + "/" + faceNormals[0] +
                     " " + facePositions[1] + "/" + faceUVs[1] + "/" + faceNormals[1] +
                     " " + facePositions[2] + "/" + faceUVs[2] + "/" + faceNormals[2]);
             }
             //back de previous matrix, to not change the original mesh in the scene
-            if (globalposition && lastMatrix) {
-                mesh[j].bakeTransformIntoVertices(lastMatrix);
+            if (globalposition && inverseTransform) {
+                mesh[j].bakeTransformIntoVertices(inverseTransform);
             }
-            v += curV;
+            v += currentV;
+            textureV += currentTextureV;
         }
         var text = output.join("\n");
         return (text);

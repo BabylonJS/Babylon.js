@@ -477,6 +477,9 @@ export class InputText extends Control implements IFocusableControl {
 
     /** @hidden */
     public processKey(keyCode: number, key?: string, evt?: IKeyboardEvent) {
+        if (this.isReadOnly) {
+            return;
+        }
 
         //return if clipboard event keys (i.e -ctr/cmd + c,v,x)
         if (evt && (evt.ctrlKey || evt.metaKey) && (keyCode === 67 || keyCode === 86 || keyCode === 88)) {
@@ -695,16 +698,32 @@ export class InputText extends Control implements IFocusableControl {
                 return;
             case 222: // Dead
                 if (evt) {
-                    evt.preventDefault();
+                    //add support for single and double quotes
+                    if (evt.code == "Quote") {
+                        if (evt.shiftKey) {
+                            keyCode = 34;
+                            key = '"';
+                        } else {
+                            keyCode = 39;
+                            key = "'";
+                        }
+                    } else {
+                        evt.preventDefault();
+                        this._cursorIndex = -1;
+                        this.deadKey = true;
+                    }
+                } else {
+                    this._cursorIndex = -1;
+                    this.deadKey = true;
                 }
-                this._cursorIndex = -1;
-                this.deadKey = true;
                 break;
         }
         // Printable characters
         if (key &&
             ((keyCode === -1) ||                     // Direct access
                 (keyCode === 32) ||                     // Space
+                (keyCode === 34) ||                     // "    add support for single and double quotes
+                (keyCode === 39) ||                     // '
                 (keyCode > 47 && keyCode < 64) ||       // Numbers
                 (keyCode > 64 && keyCode < 91) ||       // Letters
                 (keyCode > 159 && keyCode < 193) ||     // Special characters
@@ -899,6 +918,7 @@ export class InputText extends Control implements IFocusableControl {
         let marginWidth = this._margin.getValueInPixel(this._host, this._tempParentMeasure.width) * 2;
         if (this._autoStretchWidth) {
             this.width = Math.min(this._maxWidth.getValueInPixel(this._host, this._tempParentMeasure.width), this._textWidth + marginWidth) + "px";
+            this._autoStretchWidth = true; // setting the width will have reset _autoStretchWidth to false!
         }
 
         let rootY = this._fontOffset.ascent + (this._currentMeasure.height - this._fontOffset.height) / 2;
@@ -1025,6 +1045,10 @@ export class InputText extends Control implements IFocusableControl {
             return false;
         }
 
+        if (this.isReadOnly) {
+            return true;
+        }
+
         this._clickedCoordinate = coordinates.x;
         this._isTextHighlightOn = false;
         this._highlightedText = "";
@@ -1045,7 +1069,7 @@ export class InputText extends Control implements IFocusableControl {
         return true;
     }
     public _onPointerMove(target: Control, coordinates: Vector2, pointerId: number, pi: PointerInfoBase): void {
-        if (this._host.focusedControl === this && this._isPointerDown) {
+        if (this._host.focusedControl === this && this._isPointerDown && !this.isReadOnly) {
             this._clickedCoordinate = coordinates.x;
             this._markAsDirty();
             this._updateValueFromCursorIndex(this._cursorOffset);

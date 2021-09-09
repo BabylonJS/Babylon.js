@@ -90,6 +90,7 @@ export class PlaneDragGizmo extends Gizmo {
 
         this.dragBehavior.onDragObservable.add((event) => {
             if (this.attachedNode) {
+                this._handlePivot();
                 // Keep world translation and use it to update world transform
                 // if the node has parent, the local transform properties (position, rotation, scale)
                 // will be recomputed in _matrixChanged function

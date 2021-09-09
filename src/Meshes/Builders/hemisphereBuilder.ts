@@ -33,7 +33,7 @@ export class HemisphereBuilder {
             options.segments = 16;
         }
 
-        var halfSphere = SphereBuilder.CreateSphere("", {slice: 0.5, diameter: options.diameter, segments: options.segments}, scene);
+        var halfSphere = SphereBuilder.CreateSphere("", { slice: 0.5, diameter: options.diameter, segments: options.segments }, scene);
         var disc = Mesh.CreateDisc("", options.diameter / 2, (options.segments * 3) + (4 - options.segments), scene);
         disc.rotation.x = -Math.PI / 2;
         disc.parent = halfSphere;

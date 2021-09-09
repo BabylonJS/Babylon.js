@@ -98,7 +98,7 @@ export class PhysicsEngine implements IPhysicsEngine {
      * Release all resources
      */
     public dispose(): void {
-        this._impostors.forEach(function(impostor) {
+        this._impostors.forEach(function (impostor) {
             impostor.dispose();
         });
         this._physicsPlugin.dispose();
@@ -165,7 +165,7 @@ export class PhysicsEngine implements IPhysicsEngine {
      * @param joint defines the joint to remove
      */
     public removeJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint) {
-        var matchingJoints = this._joints.filter(function(impostorJoint) {
+        var matchingJoints = this._joints.filter(function (impostorJoint) {
             return (impostorJoint.connectedImpostor === connectedImpostor
                 && impostorJoint.joint === joint
                 && impostorJoint.mainImpostor === mainImpostor);

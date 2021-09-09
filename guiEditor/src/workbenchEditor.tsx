@@ -9,12 +9,30 @@ import { WorkbenchComponent } from "./diagram/workbench";
 import { _TypeStore } from "babylonjs/Misc/typeStore";
 import { MessageDialogComponent } from "./sharedComponents/messageDialog";
 import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorerComponent";
-import { Control } from "babylonjs-gui/2D/controls/control";
 
 import { CommandBarComponent } from "./components/commandBarComponent";
 
 require("./main.scss");
 require("./scss/header.scss");
+
+const rectangleIcon: string = require("../public/imgs/rectangleIcon.svg");
+const ellipseIcon: string = require("../public/imgs/ellipseIcon.svg");
+const gridIcon: string = require("../public/imgs/gridIcon.svg");
+const stackPanelIcon: string = require("../public/imgs/stackPanelIcon.svg");
+const textBoxIcon: string = require("../public/imgs/textBoxIcon.svg");
+const sliderIcon: string = require("../public/imgs/sliderIcon.svg");
+const buttonIcon: string = require("../public/imgs/buttonIcon.svg");
+const passwordFieldIcon: string = require("../public/imgs/passwordFieldIcon.svg");
+const checkboxIcon: string = require("../public/imgs/checkboxIcon.svg");
+const imageIcon: string = require("../public/imgs/imageIcon.svg");
+const keyboardIcon: string = require("../public/imgs/keyboardIcon.svg");
+const inputFieldIcon: string = require("../public/imgs/inputFieldIcon.svg");
+const lineIcon: string = require("../public/imgs/lineIcon.svg");
+const displaygridIcon: string = require("../public/imgs/displaygridIcon.svg");
+const colorPickerIcon: string = require("../public/imgs/colorPickerIcon.svg");
+const scrollbarIcon: string = require("../public/imgs/scrollbarIcon.svg");
+const imageSliderIcon: string = require("../public/imgs/imageSliderIcon.svg");
+const radioButtonIcon: string = require("../public/imgs/radioButtonIcon.svg");
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -32,6 +50,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
 
     private _leftWidth = DataStorage.ReadNumber("LeftWidth", 200);
     private _rightWidth = DataStorage.ReadNumber("RightWidth", 300);
+    private _toolBarIconSize = 55;
 
     private _onWidgetKeyUpPointer: any;
     private _popUpWindow: Window;
@@ -71,48 +90,14 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                     return;
                 }
 
-                if (evt.key === "c") {
-                    // Copy
-
-                    let selectedItems = this._workbenchCanvas.selectedGuiNodes;
-                    if (!selectedItems.length) {
-                        return;
-                    }
-
-                    let selectedItem = selectedItems[0] as Control;
-
-                    if (!selectedItem) {
-                        return;
-                    }
-                } else if (evt.key === "v") {
-                    // Paste
+                if (evt.key === "a") //all
+                {
+                    evt.preventDefault();
                 }
             },
             false
         );
-    }
-
-    pasteSelection(copiedNodes: Control[], currentX: number, currentY: number, selectNew = false) {
-        //let originalNode: Nullable<GUINode> = null;
-
-        let newNodes: Control[] = [];
-
-        // Copy to prevent recursive side effects while creating nodes.
-        copiedNodes = copiedNodes.slice();
-
-        // Cancel selection
-        this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-
-        // Create new nodes
-        for (var node of copiedNodes) {
-            let block = node;
-
-            if (!block) {
-                continue;
-            }
-        }
-
-        return newNodes;
+        this.createItems();
     }
 
     showWaitScreen() {
@@ -158,7 +143,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     }
 
     buildColumnLayout() {
-        return `${this._leftWidth}px 4px calc(100% - ${this._leftWidth + 8 + this._rightWidth}px) 4px ${this._rightWidth}px`;
+        return `${this._leftWidth}px 4px ${this._toolBarIconSize}px calc(100% - ${this._leftWidth + this._toolBarIconSize + 8 + this._rightWidth}px) 4px ${this._rightWidth}px`;
     }
 
     emitNewBlock(event: React.DragEvent<HTMLDivElement>) {
@@ -284,6 +269,9 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
 
                     <div id="leftGrab" onPointerDown={(evt) => this.onPointerDown(evt)} onPointerUp={(evt) => this.onPointerUp(evt)} onPointerMove={(evt) => this.resizeColumns(evt)}></div>
                     <SceneExplorerComponent globalState={this.props.globalState}></SceneExplorerComponent>
+                    {
+                        this.createToolbar()
+                    }
                     {/* The gui workbench diagram */}
                     <div
                         className="diagram-container"
@@ -304,6 +292,176 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                 <div className="blocker">GUI Editor runs only on desktop</div>
                 <div className="wait-screen hidden">Processing...please wait</div>
             </Portal>
+        );
+    }
+
+    _items: {
+        label: string,
+        icon?: string,
+        fileButton?: boolean
+        onClick?: () => void,
+        onCheck?: (value: boolean) => void,
+        storeKey?: string,
+        isActive?: boolean,
+        defaultValue?: boolean | string;
+        subItems?: string[];
+    }[];
+
+    createItems() {
+        this._items = [
+            {
+                label: "Image",
+                icon: imageIcon,
+                onClick: () => { this.onCreate("Image") }
+            }, {
+                label: "TextButton",
+                icon: buttonIcon,
+                onClick: () => { this.onCreate("TextButton") }
+            },
+            {
+                label: "Slider",
+                icon: sliderIcon,
+                onClick: () => { this.onCreate("Slider") }
+            },
+            {
+                label: "ColorPicker",
+                icon: colorPickerIcon,
+                onClick: () => { this.onCreate("ColorPicker") }
+            },
+            {
+                label: "ImageButton",
+                icon: buttonIcon,
+                onClick: () => { this.onCreate("ImageButton") }
+            },
+            {
+                label: "Checkbox",
+                icon: checkboxIcon,
+                onClick: () => { this.onCreate("Checkbox") }
+            },
+            {
+                label: "VirtualKeyboard",
+                icon: keyboardIcon,
+                onClick: () => { this.onCreate("VirtualKeyboard") }
+            },
+            {
+                label: "DisplayGrid",
+                icon: displaygridIcon,
+                onClick: () => { this.onCreate("DisplayGrid") }
+            },
+            {
+                label: "Grid",
+                icon: gridIcon,
+                onClick: () => { this.onCreate("Grid") }
+            },
+            {
+                label: "StackPanel",
+                icon: stackPanelIcon,
+                onClick: () => { this.onCreate("StackPanel") }
+            },
+            {
+                label: "Ellipse",
+                icon: ellipseIcon,
+                onClick: () => { this.onCreate("Ellipse") }
+            },
+            {
+                label: "Line",
+                icon: lineIcon,
+                onClick: () => { this.onCreate("Line") }
+            },
+            {
+                label: "Rectangle",
+                icon: rectangleIcon,
+                onClick: () => { this.onCreate("Rectangle") }
+            },
+            {
+                label: "Text",
+                icon: textBoxIcon,
+                onClick: () => { this.onCreate("Text") }
+            },
+            {
+                label: "InputText",
+                icon: inputFieldIcon,
+                onClick: () => { this.onCreate("InputText") }
+            },
+            {
+                label: "InputPassword",
+                icon: passwordFieldIcon,
+                onClick: () => { this.onCreate("InputPassword") }
+            },
+            {
+                label: "ScrollViewer",
+                icon: scrollbarIcon,
+                onClick: () => { this.onCreate("ScrollViewer") }
+            },
+            {
+                label: "ImageBasedSlider",
+                icon: imageSliderIcon,
+                onClick: () => { this.onCreate("ImageBasedSlider") }
+            },
+            {
+                label: "RadioButton",
+                icon: radioButtonIcon,
+                onClick: () => { this.onCreate("RadioButton") }
+            }
+
+        ]
+    }
+    onCreate(value: string): void {
+        let guiElement = GUINodeTools.CreateControlFromString(value);
+        let newGuiNode = this.props.globalState.workbench.appendBlock(guiElement);
+        this.props.globalState.onSelectionChangedObservable.notifyObservers(newGuiNode);
+        this.forceUpdate();
+    }
+
+    createToolbar() {
+        return (
+            <>
+                <div id="toolbarGrab">
+                    {
+                        <div className={"toolbar-content sub1"}>
+                            {
+                                this._items.map(m => {
+                                    return (
+                                        <div className={"toolbar-label" + (m.isActive ? " active" : "")} key={m.label} onClick={() => {
+                                            if (!m.onClick) {
+                                                this.forceUpdate();
+                                                return;
+                                            }
+                                            if (!m.subItems) {
+                                                m.onClick();
+
+                                            }
+                                        }} title={m.label}>
+                                            {
+                                                !m.icon &&
+                                                <div className="toolbar-label-text">
+                                                    {(m.isActive ? "> " : "") + m.label}
+                                                </div>
+                                            }
+                                            {
+                                                m.icon &&
+                                                <div className="toolbar-icon">
+                                                    <img src={m.icon} />
+                                                </div>
+                                            }
+                                            {
+                                                m.onCheck &&
+                                                <input type="checkBox" className="toolbar-label-check"
+                                                    onChange={(evt) => {
+
+                                                        this.forceUpdate();
+                                                        m.onCheck!(evt.target.checked);
+                                                    }}
+                                                    checked={false} />
+                                            }
+                                        </div>
+                                    )
+                                })
+                            }
+                        </div>
+                    }
+                </div>
+            </>
         );
     }
 }

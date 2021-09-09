@@ -183,7 +183,7 @@ export class DisplayGrid extends Control {
                 context.strokeStyle = this._minorLineColor;
                 context.lineWidth = this._minorLineTickness;
 
-                for (var x = -cellCountX / 2; x < cellCountX / 2; x++) {
+                for (var x = -cellCountX / 2 + 1; x < cellCountX / 2; x++) {
                     const cellX = left + x * this.cellWidth;
 
                     context.beginPath();
@@ -193,7 +193,7 @@ export class DisplayGrid extends Control {
                     context.stroke();
                 }
 
-                for (var y = -cellCountY / 2; y < cellCountY / 2; y++) {
+                for (var y = -cellCountY / 2 + 1; y < cellCountY / 2; y++) {
                     const cellY = top + y * this.cellHeight;
 
                     context.beginPath();

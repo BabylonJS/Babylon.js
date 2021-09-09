@@ -76,6 +76,11 @@ export class Texture extends BaseTexture {
      */
     public static ForceSerializeBuffers = false;
 
+    /**
+     * This observable will notify when any texture had a loading error
+     */
+    public static OnTextureLoadErrorObservable = new Observable<BaseTexture>();
+
     /** @hidden */
     public static _CubeTextureParser = (jsonTexture: any, scene: Scene, rootUrl: string): CubeTexture => {
         throw _DevTools.WarnImport("CubeTexture");
@@ -273,9 +278,6 @@ export class Texture extends BaseTexture {
     private _cachedCoordinatesMode: number = -1;
 
     /** @hidden */
-    protected _initialSamplingMode = Texture.BILINEAR_SAMPLINGMODE;
-
-    /** @hidden */
     public _buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null;
     private _deleteBuffer: boolean = false;
     protected _format: Nullable<number> = null;
@@ -310,17 +312,6 @@ export class Texture extends BaseTexture {
     }
 
     /**
-     * Get the current sampling mode associated with the texture.
-     */
-    public get samplingMode(): number {
-        if (!this._texture) {
-            return this._initialSamplingMode;
-        }
-
-        return this._texture.samplingMode;
-    }
-
-    /**
      * Gets a boolean indicating if the texture needs to be inverted on the y axis during loading
      */
     public get invertY(): boolean {
@@ -346,9 +337,8 @@ export class Texture extends BaseTexture {
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      */
     constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | ThinEngine>, noMipmapOrOptions?: boolean | ITextureCreationOptions, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
-            onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null,
-            deleteBuffer: boolean = false, format?: number, mimeType?: string, loaderOptions?: any, creationFlags?: number)
-    {
+        onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null,
+        deleteBuffer: boolean = false, format?: number, mimeType?: string, loaderOptions?: any, creationFlags?: number) {
         super(sceneOrEngine);
 
         this.name = url || "";
@@ -429,9 +419,18 @@ export class Texture extends BaseTexture {
             }
         };
 
+        const errorHandler = (message?: string, exception?: any) => {
+            this._loadingError = true;
+            this._errorObject = { message, exception };
+            if (onError) {
+                onError(message, exception);
+            }
+            Texture.OnTextureLoadErrorObservable.notifyObservers(this);
+        };
+
         if (!this.url) {
             this._delayedOnLoad = load;
-            this._delayedOnError = onError;
+            this._delayedOnError = errorHandler;
             return;
         }
 
@@ -439,7 +438,12 @@ export class Texture extends BaseTexture {
 
         if (!this._texture) {
             if (!scene || !scene.useDelayedTextureLoading) {
-                this._texture = engine.createTexture(this.url, noMipmap, invertY, scene, samplingMode, load, onError, this._buffer, undefined, this._format, null, mimeType, loaderOptions, creationFlags, useSRGBBuffer);
+                try {
+                    this._texture = engine.createTexture(this.url, noMipmap, invertY, scene, samplingMode, load, errorHandler, this._buffer, undefined, this._format, null, mimeType, loaderOptions, creationFlags, useSRGBBuffer);
+                } catch (e) {
+                    errorHandler("error loading", e);
+                    throw e;
+                }
                 if (deleteBuffer) {
                     this._buffer = null;
                 }
@@ -447,7 +451,7 @@ export class Texture extends BaseTexture {
                 this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
 
                 this._delayedOnLoad = load;
-                this._delayedOnError = onError;
+                this._delayedOnError = errorHandler;
             }
         } else {
             if (this._texture.isReady) {
@@ -541,13 +545,13 @@ export class Texture extends BaseTexture {
      */
     public checkTransformsAreIdentical(texture: Nullable<Texture>): boolean {
         return texture !== null &&
-                this.uOffset === texture.uOffset &&
-                this.vOffset === texture.vOffset &&
-                this.uScale === texture.uScale &&
-                this.vScale === texture.vScale &&
-                this.uAng === texture.uAng &&
-                this.vAng === texture.vAng &&
-                this.wAng === texture.wAng;
+            this.uOffset === texture.uOffset &&
+            this.vOffset === texture.vOffset &&
+            this.uScale === texture.uScale &&
+            this.vScale === texture.vScale &&
+            this.uAng === texture.uAng &&
+            this.vAng === texture.vAng &&
+            this.wAng === texture.wAng;
     }
 
     /**
@@ -713,8 +717,23 @@ export class Texture extends BaseTexture {
      * @returns the cloned texture
      */
     public clone(): Texture {
+        const options: ITextureCreationOptions = {
+            noMipmap: this._noMipmap,
+            invertY: this._invertY,
+            samplingMode: this.samplingMode,
+            onLoad: undefined,
+            onError: undefined,
+            buffer: this._texture ? this._texture._buffer : undefined,
+            deleteBuffer: this._deleteBuffer,
+            format: this.textureFormat,
+            mimeType: this.mimeType,
+            loaderOptions: this._loaderOptions,
+            creationFlags: this._creationFlags,
+            useSRGBBuffer: this._useSRGBBuffer,
+        };
+
         return SerializationHelper.Clone(() => {
-            return new Texture(this._texture ? this._texture.url : null, this.getScene(), this._noMipmap, this._invertY, this.samplingMode, undefined, undefined, this._texture ? this._texture._buffer : undefined);
+            return new Texture(this._texture ? this._texture.url : null, this.getScene(), options);
         }, this);
     }
 

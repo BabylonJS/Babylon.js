@@ -1,26 +1,22 @@
 import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../propertyChangedEvent";
+import { IInspectableOptions } from "babylonjs/Misc/iInspectable";
 
 export const Null_Value = Number.MAX_SAFE_INTEGER;
-
-export class ListLineOption {
-    public label: string;
-    public value: number;
-    selected?: boolean;
-}
 
 export interface IOptionsLineComponentProps {
     label: string;
     target: any;
     propertyName: string;
-    options: ListLineOption[];
+    options: IInspectableOptions[];
     noDirectUpdate?: boolean;
     onSelect?: (value: number) => void;
     extractValue?: () => number;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     allowNullValue?: boolean;
     icon?: string;
+    iconLabel? : string;
 }
 
 export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, { value: number }> {
@@ -91,7 +87,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
     render() {
         return (
             <div className="listLine">
-                {this.props.icon && <img src={this.props.icon} color="black" className="icon"/>}
+                {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel}  color="black" className="icon"/>}
                 <div className="label" title={this.props.label}>{this.props.label}</div>
                 <div className="options">
                     <select onChange={(evt) => this.updateValue(evt.target.value)} value={this.state.value ?? ""}>

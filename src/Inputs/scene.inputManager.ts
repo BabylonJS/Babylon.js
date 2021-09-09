@@ -198,7 +198,7 @@ export class InputManager {
 
         var isMeshPicked = pickResult && pickResult.hit && pickResult.pickedMesh ? true : false;
         if (isMeshPicked) {
-            scene.setPointerOverMesh(pickResult!.pickedMesh, evt.pointerId);
+            scene.setPointerOverMesh(pickResult!.pickedMesh, evt.pointerId, pickResult);
 
             if (this._pointerOverMesh && this._pointerOverMesh.actionManager && this._pointerOverMesh.actionManager.hasPointerTriggers) {
                 if (!scene.doNotHandleCursors && canvas) {
@@ -210,7 +210,7 @@ export class InputManager {
                 }
             }
         } else {
-            scene.setPointerOverMesh(null, evt.pointerId);
+            scene.setPointerOverMesh(null, evt.pointerId, pickResult);
         }
 
         for (let step of scene._pointerMoveStage) {
@@ -497,7 +497,12 @@ export class InputManager {
         this._alreadyAttachedTo = elementToAttachTo;
         let engine = scene.getEngine();
 
-        this._deviceInputSystem = DeviceInputSystem.Create(engine);
+        if (!this._deviceInputSystem) {
+            this._deviceInputSystem = DeviceInputSystem.Create(engine);
+        }
+        else {
+            this._deviceInputSystem.configureEvents();
+        }
 
         this._initActionManager = (act: Nullable<AbstractActionManager>, clickInfo: _ClickInfo): Nullable<AbstractActionManager> => {
             if (!this._meshPickProceed) {
@@ -912,8 +917,9 @@ export class InputManager {
      * Force the value of meshUnderPointer
      * @param mesh defines the mesh to use
      * @param pointerId optional pointer id when using more than one pointer. Defaults to 0
+     * @param pickResult optional pickingInfo data used to find mesh
      */
-    public setPointerOverMesh(mesh: Nullable<AbstractMesh>, pointerId: number = 0): void {
+    public setPointerOverMesh(mesh: Nullable<AbstractMesh>, pointerId: number = 0, pickResult?: Nullable<PickingInfo>): void {
         if (this._meshUnderPointerId[pointerId] === mesh) {
             return;
         }
@@ -934,7 +940,7 @@ export class InputManager {
 
             actionManager = mesh._getActionManagerForTrigger(Constants.ACTION_OnPointerOverTrigger);
             if (actionManager) {
-                actionManager.processTrigger(Constants.ACTION_OnPointerOverTrigger, ActionEvent.CreateNew(mesh, undefined, { pointerId }));
+                actionManager.processTrigger(Constants.ACTION_OnPointerOverTrigger, ActionEvent.CreateNew(mesh, undefined, { pointerId, pickResult }));
             }
         } else {
             delete this._meshUnderPointerId[pointerId];

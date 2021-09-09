@@ -252,7 +252,7 @@ export class ArcFollowCamera extends TargetCamera {
 
     private _cartesianCoordinates: Vector3 = Vector3.Zero();
 
-        /** Define the camera target (the mesh it should follow) */
+    /** Define the camera target (the mesh it should follow) */
     private _meshTarget: Nullable<AbstractMesh>;
 
     /**

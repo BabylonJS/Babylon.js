@@ -16,14 +16,14 @@ declare module "../../Engines/thinEngine" {
     }
 }
 
-ThinEngine.prototype._debugPushGroup = function(groupName: string, targetObject?: number): void {
+ThinEngine.prototype._debugPushGroup = function (groupName: string, targetObject?: number): void {
 };
 
-ThinEngine.prototype._debugPopGroup = function(targetObject?: number): void {
+ThinEngine.prototype._debugPopGroup = function (targetObject?: number): void {
 };
 
-ThinEngine.prototype._debugInsertMarker = function(text: string, targetObject?: number): void {
+ThinEngine.prototype._debugInsertMarker = function (text: string, targetObject?: number): void {
 };
 
-ThinEngine.prototype._debugFlushPendingCommands = function(): void {
+ThinEngine.prototype._debugFlushPendingCommands = function (): void {
 };

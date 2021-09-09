@@ -23,7 +23,7 @@ export class LightInformationPropertyTabComponent extends React.Component<IPrope
                     <OptionsLineComponent label="Light" noDirectUpdate={true} valuesAreStrings={true} options={lightOptions} target={lightInformationBlock} propertyName="name" onSelect={(name: any) => {
                         lightInformationBlock.light = scene.getLightByName(name);
                         this.forceUpdate();
-                        this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                        this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                     }} />
                 </LineContainerComponent>
             </div>

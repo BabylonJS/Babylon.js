@@ -293,10 +293,14 @@ function __spreadArrays() {
     return r;
 }
 
-function __spreadArray(to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+function __spreadArray(to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 }
 
 function __await(v) {
@@ -352,19 +356,17 @@ function __importDefault(mod) {
     return (mod && mod.__esModule) ? mod : { default: mod };
 }
 
-function __classPrivateFieldGet(receiver, privateMap) {
-    if (!privateMap.has(receiver)) {
-        throw new TypeError("attempted to get private field on non-instance");
-    }
-    return privateMap.get(receiver);
+function __classPrivateFieldGet(receiver, state, kind, f) {
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 }
 
-function __classPrivateFieldSet(receiver, privateMap, value) {
-    if (!privateMap.has(receiver)) {
-        throw new TypeError("attempted to set private field on non-instance");
-    }
-    privateMap.set(receiver, value);
-    return value;
+function __classPrivateFieldSet(receiver, state, value, kind, f) {
+    if (kind === "m") throw new TypeError("Private method is not writable");
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
 }
 
 
@@ -449,6 +451,8 @@ var OBJExport = /** @class */ (function () {
     OBJExport.OBJ = function (mesh, materials, matlibname, globalposition) {
         var output = [];
         var v = 1;
+        // keep track of uv index in case mixed meshes are passed in
+        var textureV = 1;
         if (materials) {
             if (!matlibname) {
                 matlibname = 'mat';
@@ -459,11 +463,12 @@ var OBJExport = /** @class */ (function () {
             output.push("g object" + j);
             output.push("o object_" + j);
             //Uses the position of the item in the scene, to the file (this back to normal in the end)
-            var lastMatrix = null;
+            var inverseTransform = null;
             if (globalposition) {
-                var newMatrix = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Matrix"].Translation(mesh[j].position.x, mesh[j].position.y, mesh[j].position.z);
-                lastMatrix = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Matrix"].Translation(-(mesh[j].position.x), -(mesh[j].position.y), -(mesh[j].position.z));
-                mesh[j].bakeTransformIntoVertices(newMatrix);
+                var transform = mesh[j].computeWorldMatrix(true);
+                inverseTransform = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Matrix"]();
+                transform.invertToRef(inverseTransform);
+                mesh[j].bakeTransformIntoVertices(transform);
             }
             //TODO: submeshes (groups)
             //TODO: smoothing groups (s 1, s off);
@@ -482,7 +487,8 @@ var OBJExport = /** @class */ (function () {
             var trunkNormals = g.getVerticesData('normal');
             var trunkUV = g.getVerticesData('uv');
             var trunkFaces = g.getIndices();
-            var curV = 0;
+            var currentV = 0;
+            var currentTextureV = 0;
             if (!trunkVerts || !trunkFaces) {
                 babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Tools"].Warn("There are no position vertices or indices on the mesh!");
                 continue;
@@ -496,7 +502,7 @@ var OBJExport = /** @class */ (function () {
                 else {
                     output.push("v " + trunkVerts[i] + " " + trunkVerts[i + 1] + " " + -trunkVerts[i + 2]);
                 }
-                curV++;
+                currentV++;
             }
             if (trunkNormals != null) {
                 for (i = 0; i < trunkNormals.length; i += 3) {
@@ -506,23 +512,26 @@ var OBJExport = /** @class */ (function () {
             if (trunkUV != null) {
                 for (i = 0; i < trunkUV.length; i += 2) {
                     output.push("vt " + trunkUV[i] + " " + trunkUV[i + 1]);
+                    currentTextureV++;
                 }
             }
             for (i = 0; i < trunkFaces.length; i += 3) {
                 var indices = [String(trunkFaces[i + 2] + v), String(trunkFaces[i + 1] + v), String(trunkFaces[i] + v)];
+                var textureIndices = [String(trunkFaces[i + 2] + textureV), String(trunkFaces[i + 1] + textureV), String(trunkFaces[i] + textureV)];
                 var blanks = ["", "", ""];
                 var facePositions = indices;
-                var faceUVs = trunkUV != null ? indices : blanks;
+                var faceUVs = trunkUV != null ? textureIndices : blanks;
                 var faceNormals = trunkNormals != null ? indices : blanks;
                 output.push("f " + facePositions[0] + "/" + faceUVs[0] + "/" + faceNormals[0] +
                     " " + facePositions[1] + "/" + faceUVs[1] + "/" + faceNormals[1] +
                     " " + facePositions[2] + "/" + faceUVs[2] + "/" + faceNormals[2]);
             }
             //back de previous matrix, to not change the original mesh in the scene
-            if (globalposition && lastMatrix) {
-                mesh[j].bakeTransformIntoVertices(lastMatrix);
+            if (globalposition && inverseTransform) {
+                mesh[j].bakeTransformIntoVertices(inverseTransform);
             }
-            v += curV;
+            v += currentV;
+            textureV += currentTextureV;
         }
         var text = output.join("\n");
         return (text);
@@ -1553,7 +1562,8 @@ var _GLTFAnimation = /** @class */ (function () {
                                     animationKeys.push(morphTargetAnimation.getKeys()[i]);
                                 }
                                 else {
-                                    animationKeys.push({ frame: animationGroup.from + (animationGroupFrameDiff / numAnimationKeys) * i,
+                                    animationKeys.push({
+                                        frame: animationGroup.from + (animationGroupFrameDiff / numAnimationKeys) * i,
                                         value: morphTarget.influence,
                                         inTangent: sampleAnimationKeys[0].inTangent ? 0 : undefined,
                                         outTangent: sampleAnimationKeys[0].outTangent ? 0 : undefined
@@ -3031,7 +3041,14 @@ var _Exporter = /** @class */ (function () {
             var headerLength = 12;
             var chunkLengthPrefix = 8;
             var jsonLength = jsonText.length;
+            var encodedJsonText;
             var imageByteLength = 0;
+            // make use of TextEncoder when available
+            if (typeof TextEncoder !== "undefined") {
+                var encoder = new TextEncoder();
+                encodedJsonText = encoder.encode(jsonText);
+                jsonLength = encodedJsonText.length;
+            }
             for (var i = 0; i < _this._orderedImageData.length; ++i) {
                 imageByteLength += _this._orderedImageData[i].data.byteLength;
             }
@@ -3052,8 +3069,22 @@ var _Exporter = /** @class */ (function () {
             jsonChunkBufferView.setUint32(4, 0x4E4F534A, true);
             //json chunk bytes
             var jsonData = new Uint8Array(jsonChunkBuffer, chunkLengthPrefix);
-            for (var i = 0; i < jsonLength; ++i) {
-                jsonData[i] = jsonText.charCodeAt(i);
+            // if TextEncoder was available, we can simply copy the encoded array
+            if (encodedJsonText) {
+                jsonData.set(encodedJsonText);
+            }
+            else {
+                var blankCharCode = "_".charCodeAt(0);
+                for (var i = 0; i < jsonLength; ++i) {
+                    var charCode = jsonText.charCodeAt(i);
+                    // if the character doesn't fit into a single UTF-16 code unit, just put a blank character
+                    if (charCode != jsonText.codePointAt(i)) {
+                        jsonData[i] = blankCharCode;
+                    }
+                    else {
+                        jsonData[i] = charCode;
+                    }
+                }
             }
             //json padding
             var jsonPaddingView = new Uint8Array(jsonChunkBuffer, chunkLengthPrefix + jsonLength);
@@ -3541,7 +3572,7 @@ var _Exporter = /** @class */ (function () {
         var glTFNodeIndex;
         var glTFNode;
         var directDescendents;
-        var nodes = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArray"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArray"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArray"])([], babylonScene.transformNodes), babylonScene.meshes), babylonScene.lights);
+        var nodes = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArray"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArray"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArray"])([], babylonScene.transformNodes, true), babylonScene.meshes, true), babylonScene.lights, true);
         var rootNodesToLeftHanded = [];
         this._convertToRightHandedSystem = !babylonScene.useRightHandedSystem;
         this._convertToRightHandedSystemMap = {};

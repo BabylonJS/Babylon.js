@@ -17,7 +17,7 @@ class BasisFileInfo {
     /**
      * Info about each image of the basis file
      */
-    public images: Array<{levels: Array<{width: number, height: number, transcodedPixels: ArrayBufferView}>}>;
+    public images: Array<{ levels: Array<{ width: number, height: number, transcodedPixels: ArrayBufferView }> }>;
 }
 
 /**
@@ -106,17 +106,17 @@ export class BasisTools {
      */
     public static GetInternalFormatFromBasisFormat(basisFormat: number) {
         // Corrisponding internal formats
-        var COMPRESSED_RGB_S3TC_DXT1_EXT  = 0x83F1;
+        var COMPRESSED_RGB_S3TC_DXT1_EXT = 0x83F1;
         var COMPRESSED_RGBA_S3TC_DXT5_EXT = 0x83F3;
         var RGB_ETC1_Format = 36196;
 
         if (basisFormat === BASIS_FORMATS.cTFETC1) {
             return RGB_ETC1_Format;
-        }else if (basisFormat === BASIS_FORMATS.cTFBC1) {
+        } else if (basisFormat === BASIS_FORMATS.cTFBC1) {
             return COMPRESSED_RGB_S3TC_DXT1_EXT;
-        }else if (basisFormat === BASIS_FORMATS.cTFBC3) {
+        } else if (basisFormat === BASIS_FORMATS.cTFBC3) {
             return COMPRESSED_RGBA_S3TC_DXT5_EXT;
-        }else {
+        } else {
             throw "The chosen Basis transcoder format is not currently supported";
         }
     }
@@ -126,10 +126,10 @@ export class BasisTools {
     private static _actionId = 0;
     private static _CreateWorkerAsync() {
         if (!this._WorkerPromise) {
-            this._WorkerPromise = new Promise((res) => {
+            this._WorkerPromise = new Promise((res, reject) => {
                 if (this._Worker) {
                     res(this._Worker);
-                }else {
+                } else {
                     Tools.LoadFileAsync(BasisTools.WasmModuleURL).then((wasmBinary) => {
                         const workerBlobUrl = URL.createObjectURL(new Blob([`(${workerFunc})()`], { type: "application/javascript" }));
                         this._Worker = new Worker(workerBlobUrl);
@@ -138,11 +138,13 @@ export class BasisTools {
                             if (msg.data.action === "init") {
                                 this._Worker!.removeEventListener("message", initHandler);
                                 res(this._Worker!);
+                            } else if (msg.data.action === "error") {
+                                reject(msg.data.error || "error initializing worker");
                             }
                         };
                         this._Worker.addEventListener("message", initHandler);
-                        this._Worker.postMessage({action: "init", url: BasisTools.JSModuleURL, wasmBinary: wasmBinary});
-                    });
+                        this._Worker.postMessage({ action: "init", url: BasisTools.JSModuleURL, wasmBinary: wasmBinary });
+                    }).catch(reject);
                 }
             });
         }
@@ -166,7 +168,7 @@ export class BasisTools {
                         this._Worker!.removeEventListener("message", messageHandler);
                         if (!msg.data.success) {
                             rej("Transcode is not supported on this device");
-                        }else {
+                        } else {
                             res(msg.data);
                         }
                     }
@@ -175,7 +177,9 @@ export class BasisTools {
 
                 const dataViewCopy = new Uint8Array(dataView.byteLength);
                 dataViewCopy.set(new Uint8Array(dataView.buffer, dataView.byteOffset, dataView.byteLength));
-                this._Worker!.postMessage({action: "transcode", id: actionId, imageData: dataViewCopy, config: config, ignoreSupportedFormats: this._IgnoreSupportedFormats}, [dataViewCopy.buffer]);
+                this._Worker!.postMessage({ action: "transcode", id: actionId, imageData: dataViewCopy, config: config, ignoreSupportedFormats: this._IgnoreSupportedFormats }, [dataViewCopy.buffer]);
+            }, (error) => {
+                rej(error);
             });
         });
     }
@@ -223,7 +227,7 @@ export class BasisTools {
                     engine._uploadDataToTextureDirectly(texture, rootImage.transcodedPixels, i, 0, Constants.TEXTUREFORMAT_RGB, true);
                 }
 
-            }else {
+            } else {
                 texture.width = rootImage.width;
                 texture.height = rootImage.height;
 
@@ -260,11 +264,16 @@ function workerFunc(): void {
     var transcoderModulePromise: Nullable<Promise<any>> = null;
     onmessage = (event) => {
         if (event.data.action === "init") {
-             // Load the transcoder if it hasn't been yet
+            // Load the transcoder if it hasn't been yet
             if (!transcoderModulePromise) {
                 // Override wasm binary
                 Module = { wasmBinary: (event.data.wasmBinary) };
-                importScripts(event.data.url);
+                // make sure we loaded the script correctly
+                try {
+                    importScripts(event.data.url);
+                } catch (e) {
+                    postMessage({ action: "error", error: e });
+                }
                 transcoderModulePromise = new Promise<void>((res) => {
                     Module.onRuntimeInitialized = () => {
                         Module.initializeBasis();
@@ -273,9 +282,9 @@ function workerFunc(): void {
                 });
             }
             transcoderModulePromise.then(() => {
-                postMessage({action: "init"});
+                postMessage({ action: "init" });
             });
-        }else if (event.data.action === "transcode") {
+        } else if (event.data.action === "transcode") {
             // Transcode the basis image and return the resulting pixels
             var config: BasisTranscodeConfiguration = event.data.config;
             var imgData = event.data.imageData;
@@ -327,9 +336,9 @@ function workerFunc(): void {
                 format = -1;
             }
             if (!success) {
-                postMessage({action: "transcode", success: success, id: event.data.id});
-            }else {
-                postMessage({action: "transcode", success: success, id: event.data.id, fileInfo: fileInfo, format: format}, buffers);
+                postMessage({ action: "transcode", success: success, id: event.data.id });
+            } else {
+                postMessage({ action: "transcode", success: success, id: event.data.id, fileInfo: fileInfo, format: format }, buffers);
             }
 
         }
@@ -347,13 +356,13 @@ function workerFunc(): void {
         if (config.supportedCompressionFormats) {
             if (config.supportedCompressionFormats.etc1) {
                 format = _BASIS_FORMAT.cTFETC1;
-            }else if (config.supportedCompressionFormats.s3tc) {
+            } else if (config.supportedCompressionFormats.s3tc) {
                 format = fileInfo.hasAlpha ? _BASIS_FORMAT.cTFBC3 : _BASIS_FORMAT.cTFBC1;
-            }else if (config.supportedCompressionFormats.pvrtc) {
+            } else if (config.supportedCompressionFormats.pvrtc) {
                 // TODO uncomment this after pvrtc bug is fixed is basis transcoder
                 // See discussion here: https://github.com/mrdoob/three.js/issues/16524#issuecomment-498929924
                 // format = _BASIS_FORMAT.cTFPVRTC1_4_OPAQUE_ONLY;
-            }else if (config.supportedCompressionFormats.etc2) {
+            } else if (config.supportedCompressionFormats.etc2) {
                 format = _BASIS_FORMAT.cTFETC2;
             }
         }
@@ -421,23 +430,23 @@ function workerFunc(): void {
         var blockHeight = height / 4;
         for (var blockY = 0; blockY < blockHeight; blockY++) {
             for (var blockX = 0; blockX < blockWidth; blockX++) {
-            var i = srcByteOffset + 8 * (blockY * blockWidth + blockX);
-            c[0] = src[i] | (src[i + 1] << 8);
-            c[1] = src[i + 2] | (src[i + 3] << 8);
-            c[2] = (2 * (c[0] & 0x1f) + 1 * (c[1] & 0x1f)) / 3
+                var i = srcByteOffset + 8 * (blockY * blockWidth + blockX);
+                c[0] = src[i] | (src[i + 1] << 8);
+                c[1] = src[i + 2] | (src[i + 3] << 8);
+                c[2] = (2 * (c[0] & 0x1f) + 1 * (c[1] & 0x1f)) / 3
                     | (((2 * (c[0] & 0x7e0) + 1 * (c[1] & 0x7e0)) / 3) & 0x7e0)
                     | (((2 * (c[0] & 0xf800) + 1 * (c[1] & 0xf800)) / 3) & 0xf800);
-            c[3] = (2 * (c[1] & 0x1f) + 1 * (c[0] & 0x1f)) / 3
+                c[3] = (2 * (c[1] & 0x1f) + 1 * (c[0] & 0x1f)) / 3
                     | (((2 * (c[1] & 0x7e0) + 1 * (c[0] & 0x7e0)) / 3) & 0x7e0)
                     | (((2 * (c[1] & 0xf800) + 1 * (c[0] & 0xf800)) / 3) & 0xf800);
-            for (var row = 0; row < 4; row++) {
-                var m = src[i + 4 + row];
-                var dstI = (blockY * 4 + row) * width + blockX * 4;
-                dst[dstI++] = c[m & 0x3];
-                dst[dstI++] = c[(m >> 2) & 0x3];
-                dst[dstI++] = c[(m >> 4) & 0x3];
-                dst[dstI++] = c[(m >> 6) & 0x3];
-            }
+                for (var row = 0; row < 4; row++) {
+                    var m = src[i + 4 + row];
+                    var dstI = (blockY * 4 + row) * width + blockX * 4;
+                    dst[dstI++] = c[m & 0x3];
+                    dst[dstI++] = c[(m >> 2) & 0x3];
+                    dst[dstI++] = c[(m >> 4) & 0x3];
+                    dst[dstI++] = c[(m >> 6) & 0x3];
+                }
             }
         }
         return dst;

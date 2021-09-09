@@ -11,8 +11,7 @@ import { IKHRMaterialsSpecular } from 'babylonjs-gltf2interface';
 const NAME = "KHR_materials_specular";
 
 /**
- * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1719)
- * !!! Experimental Extension Subject to Changes !!!
+ * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_specular)
  */
 export class KHR_materials_specular implements IGLTFLoaderExtension {
     /**

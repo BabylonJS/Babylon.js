@@ -108,7 +108,6 @@ export class GLTFLoader implements IGLTFLoader {
 
     private _disposed = false;
     private _parent: GLTFFileLoader;
-    private _state: Nullable<GLTFLoaderState> = null;
     private _extensions = new Array<IGLTFLoaderExtension>();
     private _rootUrl: string;
     private _fileName: string;
@@ -153,13 +152,6 @@ export class GLTFLoader implements IGLTFLoader {
 
         delete GLTFLoader._RegisteredExtensions[name];
         return true;
-    }
-
-    /**
-     * The loader state.
-     */
-    public get state(): Nullable<GLTFLoaderState> {
-        return this._state;
     }
 
     /**
@@ -293,7 +285,7 @@ export class GLTFLoader implements IGLTFLoader {
             this._parent._startPerformanceCounter(loadingToReadyCounterName);
             this._parent._startPerformanceCounter(loadingToCompleteCounterName);
 
-            this._setState(GLTFLoaderState.LOADING);
+            this._parent._setState(GLTFLoaderState.LOADING);
             this._extensionsOnLoading();
 
             const promises = new Array<Promise<any>>();
@@ -337,7 +329,7 @@ export class GLTFLoader implements IGLTFLoader {
                 }
 
                 this._extensionsOnReady();
-                this._setState(GLTFLoaderState.READY);
+                this._parent._setState(GLTFLoaderState.READY);
 
                 this._startAnimations();
 
@@ -352,7 +344,7 @@ export class GLTFLoader implements IGLTFLoader {
                         Promise.all(this._completePromises).then(() => {
                             this._parent._endPerformanceCounter(loadingToCompleteCounterName);
 
-                            this._setState(GLTFLoaderState.COMPLETE);
+                            this._parent._setState(GLTFLoaderState.COMPLETE);
 
                             this._parent.onCompleteObservable.notifyObservers(undefined);
                             this._parent.onCompleteObservable.clear();
@@ -458,11 +450,6 @@ export class GLTFLoader implements IGLTFLoader {
                 }
             }
         }
-    }
-
-    private _setState(state: GLTFLoaderState): void {
-        this._state = state;
-        this.log(GLTFLoaderState[this._state]);
     }
 
     private _createRootNode(): INode {
@@ -991,12 +978,14 @@ export class GLTFLoader implements IGLTFLoader {
         const targetNames = mesh.extras ? mesh.extras.targetNames : null;
 
         babylonMesh.morphTargetManager = new MorphTargetManager(babylonMesh.getScene());
+        babylonMesh.morphTargetManager.areUpdatesFrozen = true;
         for (let index = 0; index < primitive.targets.length; index++) {
             const weight = node.weights ? node.weights[index] : mesh.weights ? mesh.weights[index] : 0;
             const name = targetNames ? targetNames[index] : `morphTarget${index}`;
             babylonMesh.morphTargetManager.addTarget(new MorphTarget(name, weight, babylonMesh.getScene()));
             // TODO: tell the target whether it has positions, normals, tangents
         }
+        babylonMesh.morphTargetManager.areUpdatesFrozen = false;
     }
 
     private _loadMorphTargetsAsync(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh, babylonGeometry: Geometry): Promise<void> {
@@ -1697,39 +1686,36 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _loadVertexAccessorAsync(context: string, accessor: IAccessor, kind: string): Promise<VertexBuffer> {
-        if (accessor._babylonVertexBuffer) {
-            return accessor._babylonVertexBuffer;
+        if (accessor._babylonVertexBuffer?.[kind]) {
+            return accessor._babylonVertexBuffer[kind];
+        }
+
+        if (!accessor._babylonVertexBuffer) {
+            accessor._babylonVertexBuffer = {};
         }
 
         if (accessor.sparse) {
-            accessor._babylonVertexBuffer = this._loadFloatAccessorAsync(`/accessors/${accessor.index}`, accessor).then((data) => {
-                return new VertexBuffer(this._babylonScene.getEngine(), data, kind, false);
-            });
-        }
-        // HACK: If byte offset is not a multiple of component type byte length then load as a float array instead of using Babylon buffers.
-        else if (accessor.byteOffset && accessor.byteOffset % VertexBuffer.GetTypeByteLength(accessor.componentType) !== 0) {
-            Logger.Warn("Accessor byte offset is not a multiple of component type byte length");
-            accessor._babylonVertexBuffer = this._loadFloatAccessorAsync(`/accessors/${accessor.index}`, accessor).then((data) => {
+            accessor._babylonVertexBuffer[kind] = this._loadFloatAccessorAsync(context, accessor).then((data) => {
                 return new VertexBuffer(this._babylonScene.getEngine(), data, kind, false);
             });
         }
         // Load joint indices as a float array since the shaders expect float data but glTF uses unsigned byte/short.
         // This prevents certain platforms (e.g. D3D) from having to convert the data to float on the fly.
         else if (kind === VertexBuffer.MatricesIndicesKind || kind === VertexBuffer.MatricesIndicesExtraKind) {
-            accessor._babylonVertexBuffer = this._loadFloatAccessorAsync(`/accessors/${accessor.index}`, accessor).then((data) => {
+            accessor._babylonVertexBuffer[kind] = this._loadFloatAccessorAsync(context, accessor).then((data) => {
                 return new VertexBuffer(this._babylonScene.getEngine(), data, kind, false);
             });
         }
         else {
             const bufferView = ArrayItem.Get(`${context}/bufferView`, this._gltf.bufferViews, accessor.bufferView);
-            accessor._babylonVertexBuffer = this._loadVertexBufferViewAsync(bufferView, kind).then((babylonBuffer) => {
+            accessor._babylonVertexBuffer[kind] = this._loadVertexBufferViewAsync(bufferView, kind).then((babylonBuffer) => {
                 const size = GLTFLoader._GetNumComponents(context, accessor.type);
                 return new VertexBuffer(this._babylonScene.getEngine(), babylonBuffer, kind, false, false, bufferView.byteStride,
                     false, accessor.byteOffset, size, accessor.componentType, accessor.normalized, true, 1, true);
             });
         }
 
-        return accessor._babylonVertexBuffer;
+        return accessor._babylonVertexBuffer[kind];
     }
 
     private _loadMaterialMetallicRoughnessPropertiesAsync(context: string, properties: IMaterialPbrMetallicRoughness, babylonMaterial: Material): Promise<void> {
@@ -1995,7 +1981,7 @@ export class GLTFLoader implements IGLTFLoader {
 
         this.logOpen(`${context}`);
 
-        if (textureInfo.texCoord! >= 2) {
+        if (textureInfo.texCoord! >= 6) {
             throw new Error(`${context}/texCoord: Invalid value (${textureInfo.texCoord})`);
         }
 
@@ -2227,7 +2213,7 @@ export class GLTFLoader implements IGLTFLoader {
             case AccessorComponentType.FLOAT: return Float32Array;
             default: throw new Error(`${context}: Invalid component type ${componentType}`);
         }
-}
+    }
 
     private static _GetTypedArray(context: string, componentType: AccessorComponentType, bufferView: ArrayBufferView, byteOffset: number | undefined, length: number): TypedArrayLike {
         const buffer = bufferView.buffer;
@@ -2235,12 +2221,14 @@ export class GLTFLoader implements IGLTFLoader {
 
         const constructor = GLTFLoader._GetTypedArrayConstructor(`${context}/componentType`, componentType);
 
-        try {
-            return new constructor(buffer, byteOffset, length);
+        const componentTypeLength = VertexBuffer.GetTypeByteLength(componentType);
+        if (byteOffset % componentTypeLength !== 0) {
+            // HACK: Copy the buffer if byte offset is not a multiple of component type byte length.
+            Logger.Warn(`${context}: Copying buffer as byte offset (${byteOffset}) is not a multiple of component type byte length (${componentTypeLength})`);
+            return new constructor(buffer.slice(byteOffset, byteOffset + length * componentTypeLength), 0);
         }
-        catch (e) {
-            throw new Error(`${context}: ${e}`);
-        }
+
+        return new constructor(buffer, byteOffset, length);
     }
 
     private static _GetNumComponents(context: string, type: string): number {

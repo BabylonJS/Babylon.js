@@ -18,6 +18,9 @@ import { Observable } from '../../Misc/observable';
  */
 export class CubeTexture extends BaseTexture {
     private _delayedOnLoad: Nullable<() => void>;
+    private _delayedOnError: Nullable<(message?: string, exception?: any) => void>;
+    private _lodScale: number = 0.8;
+    private _lodOffset: number = 0;
 
     /**
      * Observable triggered once the texture has been loaded.
@@ -187,13 +190,43 @@ export class CubeTexture extends BaseTexture {
         this._forcedExtension = forcedExtension;
         this._loaderOptions = loaderOptions;
         this._useSRGBBuffer = useSRGBBuffer;
+        this._lodScale = lodScale;
+        this._lodOffset = lodOffset;
 
         if (!rootUrl && !files) {
             return;
         }
 
-        const lastDot = rootUrl.lastIndexOf(".");
-        const extension = forcedExtension ? forcedExtension : (lastDot > -1 ? rootUrl.substring(lastDot).toLowerCase() : "");
+        this.updateURL(rootUrl, forcedExtension, onLoad, prefiltered, onError, extensions, this.getScene()?.useDelayedTextureLoading, files);
+    }
+
+    /**
+     * Get the current class name of the texture useful for serialization or dynamic coding.
+     * @returns "CubeTexture"
+     */
+    public getClassName(): string {
+        return "CubeTexture";
+    }
+
+    /**
+     * Update the url (and optional buffer) of this texture if url was null during construction.
+     * @param url the url of the texture
+     * @param forcedExtension defines the extension to use
+     * @param onLoad callback called when the texture is loaded  (defaults to null)
+     * @param prefiltered Defines whether the updated texture is prefiltered or not
+     * @param onError callback called if there was an error during the loading process (defaults to null)
+     * @param extensions defines the suffixes add to the picture name in case six images are in use like _px.jpg...
+     * @param delayLoad defines if the texture should be loaded now (false by default)
+     * @param files defines the six files to load for the different faces in that order: px, py, pz, nx, ny, nz
+     */
+    public updateURL(url: string, forcedExtension?: string, onLoad: Nullable<() => void> = null, prefiltered: boolean = false, onError: Nullable<(message?: string, exception?: any) => void> = null, extensions: Nullable<string[]> = null, delayLoad = false, files: Nullable<string[]> = null): void {
+        if (!this.name || StringTools.StartsWith(this.name, "data:")) {
+            this.name = url;
+        }
+        this.url = url;
+
+        const lastDot = url.lastIndexOf(".");
+        const extension = forcedExtension ? forcedExtension : (lastDot > -1 ? url.substring(lastDot).toLowerCase() : "");
         const isDDS = (extension.indexOf(".dds") === 0);
         const isEnv = (extension.indexOf(".env") === 0);
 
@@ -211,93 +244,33 @@ export class CubeTexture extends BaseTexture {
             }
         }
 
-        this._texture = this._getFromCache(rootUrl, noMipmap, undefined, undefined, useSRGBBuffer);
-
-        if (!files) {
+        if (files) {
+            this._files = files;
+        }
+        else {
             if (!isEnv && !isDDS && !extensions) {
                 extensions = ["_px.jpg", "_py.jpg", "_pz.jpg", "_nx.jpg", "_ny.jpg", "_nz.jpg"];
             }
 
-            files = [];
+            this._files = this._files || [];
+            this._files.length = 0;
 
             if (extensions) {
 
                 for (var index = 0; index < extensions.length; index++) {
-                    files.push(rootUrl + extensions[index]);
+                    this._files.push(url + extensions[index]);
                 }
+                this._extensions = extensions;
             }
         }
 
-        this._files = files;
-
-        let onLoadProcessing = () => {
-            this.onLoadObservable.notifyObservers(this);
-            if (onLoad) {
-                onLoad();
-            }
-        };
-
-        if (!this._texture) {
-            const scene = this.getScene();
-            if (!scene?.useDelayedTextureLoading) {
-                if (prefiltered) {
-                    this._texture = this._getEngine()!.createPrefilteredCubeTexture(rootUrl, scene, lodScale, lodOffset, onLoad, onError, format, forcedExtension, this._createPolynomials);
-                }
-                else {
-                    this._texture = this._getEngine()!.createCubeTexture(rootUrl, scene, files, noMipmap, onLoad, onError, this._format, forcedExtension, false, lodScale, lodOffset, null, loaderOptions, !!this._useSRGBBuffer);
-                }
-                this._texture?.onLoadedObservable.add(() => this.onLoadObservable.notifyObservers(this));
-
-            } else {
-                this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
-            }
-        } else {
-            if (this._texture.isReady) {
-                Tools.SetImmediate(() => onLoadProcessing());
-            } else {
-                this._texture.onLoadedObservable.add(() => onLoadProcessing());
-            }
-        }
-    }
-
-    /**
-     * Get the current class name of the texture useful for serialization or dynamic coding.
-     * @returns "CubeTexture"
-     */
-    public getClassName(): string {
-        return "CubeTexture";
-    }
-
-    /**
-     * Update the url (and optional buffer) of this texture if url was null during construction.
-     * @param url the url of the texture
-     * @param forcedExtension defines the extension to use
-     * @param onLoad callback called when the texture is loaded  (defaults to null)
-     * @param prefiltered Defines whether the updated texture is prefiltered or not
-     */
-    public updateURL(url: string, forcedExtension?: string, onLoad?: () => void, prefiltered: boolean = false): void {
-        if (this.url) {
-            this.releaseInternalTexture();
-            this.getScene()?.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
-        }
-
-        if (!this.name || StringTools.StartsWith(this.name, "data:")) {
-            this.name = url;
-        }
-        this.url = url;
-        this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
-        this._prefiltered = prefiltered;
-        if (this._prefiltered) {
-            this.gammaSpace = false;
-            this.anisotropicFilteringLevel = 1;
-        }
-        this._forcedExtension = forcedExtension || null;
-
-        if (onLoad) {
+        if (delayLoad) {
+            this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
             this._delayedOnLoad = onLoad;
+            this._delayedOnError = onError;
+        } else {
+            this._loadTexture(onLoad, onError);
         }
-
-        this.delayLoad(forcedExtension);
     }
 
     /**
@@ -308,21 +281,12 @@ export class CubeTexture extends BaseTexture {
         if (this.delayLoadState !== Constants.DELAYLOADSTATE_NOTLOADED) {
             return;
         }
+        if (forcedExtension) {
+            this._forcedExtension = forcedExtension;
+        }
 
         this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
-        this._texture = this._getFromCache(this.url, this._noMipmap, undefined, undefined, this._useSRGBBuffer);
-
-        if (!this._texture) {
-            const scene = this.getScene();
-            if (this._prefiltered) {
-                this._texture = this._getEngine()!.createPrefilteredCubeTexture(this.url, scene, 0.8, 0, this._delayedOnLoad, undefined, this._format, forcedExtension, this._createPolynomials);
-            }
-            else {
-                this._texture = this._getEngine()!.createCubeTexture(this.url, scene, this._files, this._noMipmap, this._delayedOnLoad, null, this._format, forcedExtension, false, 0, 0, null, this._loaderOptions, !!this._useSRGBBuffer);
-            }
-
-            this._texture?.onLoadedObservable.add(() => this.onLoadObservable.notifyObservers(this));
-        }
+        this._loadTexture(this._delayedOnLoad, this._delayedOnError);
     }
 
     /**
@@ -347,6 +311,49 @@ export class CubeTexture extends BaseTexture {
         }
 
         this._textureMatrix = value;
+    }
+
+    private _loadTexture(onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null) {
+        const scene = this.getScene();
+        const oldTexture = this._texture;
+        this._texture = this._getFromCache(this.url, this._noMipmap, undefined, undefined, this._useSRGBBuffer);
+
+        let onLoadProcessing = () => {
+            this.onLoadObservable.notifyObservers(this);
+            if (oldTexture) {
+                oldTexture.dispose();
+                this.getScene()?.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+            }
+            if (onLoad) {
+                onLoad();
+            }
+        };
+
+        const errorHandler = (message?: string, exception?: any) => {
+            this._loadingError = true;
+            this._errorObject = { message, exception };
+            if (onError) {
+                onError(message, exception);
+            }
+            Texture.OnTextureLoadErrorObservable.notifyObservers(this);
+        };
+
+        if (!this._texture) {
+            if (this._prefiltered) {
+                this._texture = this._getEngine()!.createPrefilteredCubeTexture(this.url, scene, this._lodScale, this._lodOffset, onLoad, errorHandler, this._format, this._forcedExtension, this._createPolynomials);
+            }
+            else {
+                this._texture = this._getEngine()!.createCubeTexture(this.url, scene, this._files, this._noMipmap, onLoad, errorHandler, this._format, this._forcedExtension, false, this._lodScale, this._lodOffset, null, this._loaderOptions, !!this._useSRGBBuffer);
+            }
+
+            this._texture?.onLoadedObservable.add(() => this.onLoadObservable.notifyObservers(this));
+        } else {
+            if (this._texture.isReady) {
+                Tools.SetImmediate(() => onLoadProcessing());
+            } else {
+                this._texture.onLoadedObservable.add(() => onLoadProcessing());
+            }
+        }
     }
 
     /**
