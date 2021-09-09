@@ -1223,12 +1223,13 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     import { KeyPointComponent } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/curveEditor/graph/keyPoint";
     import { Scene } from "babylonjs/scene";
     import { IAnimatable } from "babylonjs/Animations/animatable.interface";
-    import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
+    import { AnimationGroup, TargetedAnimation } from "babylonjs/Animations/animationGroup";
     export class Context {
         title: string;
         animations: Nullable<Animation[] | TargetedAnimation[]>;
         scene: Scene;
         target: Nullable<IAnimatable>;
+        rootAnimationGroup: Nullable<AnimationGroup>;
         activeAnimations: Animation[];
         activeChannels: {
             [key: number]: string;
@@ -6010,6 +6011,7 @@ declare module INSPECTOR {
         animations: BABYLON.Nullable<BABYLON.Animation[] | BABYLON.TargetedAnimation[]>;
         scene: BABYLON.Scene;
         target: BABYLON.Nullable<BABYLON.IAnimatable>;
+        rootAnimationGroup: BABYLON.Nullable<BABYLON.AnimationGroup>;
         activeAnimations: BABYLON.Animation[];
         activeChannels: {
             [key: number]: string;

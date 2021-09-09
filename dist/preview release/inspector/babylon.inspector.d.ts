@@ -1126,6 +1126,7 @@ declare module INSPECTOR {
         animations: BABYLON.Nullable<BABYLON.Animation[] | BABYLON.TargetedAnimation[]>;
         scene: BABYLON.Scene;
         target: BABYLON.Nullable<BABYLON.IAnimatable>;
+        rootAnimationGroup: BABYLON.Nullable<BABYLON.AnimationGroup>;
         activeAnimations: BABYLON.Animation[];
         activeChannels: {
             [key: number]: string;
