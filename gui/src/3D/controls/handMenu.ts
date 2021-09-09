@@ -39,6 +39,7 @@ export class HandMenu extends TouchHolographicMenu {
         this._handConstraintBehavior = new HandConstraintBehavior();
         this._handConstraintBehavior.linkToXRExperience(xr);
         this.backPlateMargin = 0.15;
+        this.rows = 3;
     }
 
     /**
