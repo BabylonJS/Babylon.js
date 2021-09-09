@@ -29,7 +29,7 @@ export class InputTextPropertyGridComponent extends React.Component<IInputTextPr
             <div className="pane">
                 <CommonControlPropertyGridComponent  lockObject={this.props.lockObject} control={inputText} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <hr/>
-                <TextLineComponent label="INPUTTEXT" value=" " color="grey"></TextLineComponent>
+                <TextLineComponent label="INPUT TEXT" value=" " color="grey"></TextLineComponent>
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Text" target={inputText} propertyName="text" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Prompt" target={inputText} propertyName="promptMessage" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Max width" target={inputText} propertyName="maxWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -37,7 +37,6 @@ export class InputTextPropertyGridComponent extends React.Component<IInputTextPr
                     <SliderLineComponent label="Highligher opacity" minimum={0} maximum={1} step={0.01} target={inputText} propertyName="highligherOpacity" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="On focus select all" target={inputText} propertyName="onFocusSelectAll" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Focused background" target={inputText} propertyName="focusedBackground" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="Max width" target={inputText} propertyName="maxWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Margin" target={inputText} propertyName="margin" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Auto stretch width" target={inputText} propertyName="autoStretchWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Thickness" target={inputText} propertyName="thickness" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
