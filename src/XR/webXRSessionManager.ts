@@ -450,7 +450,9 @@ export class WebXRSessionManager implements IDisposable {
         webglRTWrapper._framebuffer = framebuffer;
         renderTargetTexture._texture = internalTexture;
         renderTargetTexture.disableRescaling();
-        renderTargetTexture.skipInitialClear = true;
+        if (this._sessionMode === 'immersive-ar') {
+            renderTargetTexture.skipInitialClear = true;
+        }
 
         // Store the render target texture for cleanup when the session ends.
         this._renderTargetTextures.push(renderTargetTexture);
