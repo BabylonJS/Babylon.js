@@ -1,12 +1,14 @@
 import { TransformNode } from "../../Meshes/transformNode";
 import { Nullable } from "../../types";
 import { WebXRFeatureName } from "../../XR/webXRFeaturesManager";
+import { WebXREyeTracking } from "../../XR/features/WebXREyeTracking";
 import { WebXRHandTracking, XRHandJoint } from "../../XR/features/WebXRHandTracking";
 import { WebXRExperienceHelper } from "../../XR/webXRExperienceHelper";
 import { Behavior } from "../behavior";
 import { Observer } from "../../Misc/observable";
 import { Scene } from "../../scene";
 import { Quaternion, TmpVectors, Vector3 } from "../../Maths/math.vector";
+import { Ray } from "../../Culling/ray";
 
 /**
  * Zones around the hand
@@ -45,15 +47,57 @@ export enum HandConstraintOrientation {
 }
 
 /**
+ * Orientations for the hand zones and for the attached node
+ */
+export enum HandConstraintVisibility {
+    /**
+     * Constraint is always visible
+     */
+    ALWAYS_VISIBLE,
+    /**
+     * Constraint is only visible when the palm is up
+     */
+    PALM_UP,
+    /**
+     * Constraint is only visible when the user is looking at the constraint.
+     * Uses XR Eye Tracking if enabled/available, otherwise uses camera direction
+     */
+    GAZE_FOCUS,
+    /**
+     * Constraint is only visible when the palm is up and the user is looking at it
+     */
+    PALM_AND_GAZE,
+}
+
+/**
  * Hand constraint behavior that makes the attached `TransformNode` follow hands in XR experiences.
  * @since 5.0.0
  */
 export class HandConstraintBehavior implements Behavior<TransformNode> {
     private _scene: Scene;
     private _node: TransformNode;
+    private _eyeTracking: Nullable<WebXREyeTracking>;
     private _handTracking: Nullable<WebXRHandTracking>;
     private _sceneRenderObserver: Nullable<Observer<Scene>> = null;
     private _zoneAxis: { [id: number]: Vector3 } = {};
+
+    /**
+     * Sets the HandConstraintVisibility level for the hand constraint
+     */
+    public handConstraintVisibility: HandConstraintVisibility = HandConstraintVisibility.PALM_AND_GAZE;
+
+    /**
+     * A number from 0.0 to 1.0, marking how restricted the direction the palm faces is for the attached node to be enabled.
+     * A 1 means the palm must be directly facing the user before the node is enabled, a 0 means it is always enabled.
+     * Used with HandConstraintVisibility.PALM_UP
+     */
+    public palmUpStrictness: number = 0.95;
+
+    /**
+     * The radius in meters around the center of the hand that the user must gaze inside for the attached node to be enabled and appear.
+     * Used with HandConstraintVisibility.GAZE_FOCUS
+     */
+    public gazeProximityRadius: number = 0.15;
 
     /**
      * Offset distance from the hand in meters
@@ -63,7 +107,7 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
     /**
      * Where to place the node regarding the center of the hand.
      */
-    public targetZone: HandConstraintZone = HandConstraintZone.RADIAL_SIDE;
+    public targetZone: HandConstraintZone = HandConstraintZone.ULNAR_SIDE;
 
     /**
      * Orientation mode of the 4 zones around the hand
@@ -75,9 +119,9 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
     public nodeOrientationMode: HandConstraintOrientation = HandConstraintOrientation.HAND_ROTATION;
 
     /**
-     * Set the hand this behavior should follow. If set to "none", it will follow any visible hand (prioritising the right one).
+     * Set the hand this behavior should follow. If set to "none", it will follow any visible hand (prioritising the left one).
      */
-    public handedness: XRHandedness = "right";
+    public handedness: XRHandedness = "none";
 
     /**
      * Rate of interpolation of position and rotation of the attached node.
@@ -91,8 +135,8 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
     constructor() {
         // For a right hand
         this._zoneAxis[HandConstraintZone.ABOVE_FINGER_TIPS] = new Vector3(0, 1, 0);
-        this._zoneAxis[HandConstraintZone.RADIAL_SIDE] = new Vector3(1, 0, 0);
-        this._zoneAxis[HandConstraintZone.ULNAR_SIDE] = new Vector3(-1, 0, 0);
+        this._zoneAxis[HandConstraintZone.RADIAL_SIDE] = new Vector3(-1, 0, 0);
+        this._zoneAxis[HandConstraintZone.ULNAR_SIDE] = new Vector3(1, 0, 0);
         this._zoneAxis[HandConstraintZone.BELOW_WRIST] = new Vector3(0, -1, 0);
     }
 
@@ -101,15 +145,25 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
         return "HandConstraint";
     }
 
+    /** Enable the behavior */
+    public enable() {
+        this._node.setEnabled(true);
+    }
+
+    /** Disable the behavior */
+    public disable() {
+        this._node.setEnabled(false);
+    }
+
     private _getHandPose() {
         if (!this._handTracking) {
             return null;
         }
 
-        // Retrieve any available hand, starting by the right
+        // Retrieve any available hand, starting by the left
         let hand;
         if (this.handedness === "none") {
-            hand = this._handTracking.getHandByHandedness("right") || this._handTracking.getHandByHandedness("left");
+            hand = this._handTracking.getHandByHandedness("left") || this._handTracking.getHandByHandedness("right");
         } else {
             hand = this._handTracking.getHandByHandedness(this.handedness);
         }
@@ -122,13 +176,13 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
             if (wrist && middleMetacarpal && pinkyMetacarpal) {
                 // palm forward
                 const up = TmpVectors.Vector3[0];
-                up.copyFrom(middleMetacarpal.absolutePosition).subtractInPlace(wrist.absolutePosition).normalize();
                 const forward = TmpVectors.Vector3[1];
-                pinkyMetacarpal.absolutePosition.subtractToRef(middleMetacarpal.absolutePosition, forward);
-                forward.normalize();
-                Vector3.CrossToRef(forward, up, forward);
-
                 const left = TmpVectors.Vector3[2];
+                up.copyFrom(middleMetacarpal.absolutePosition).subtractInPlace(wrist.absolutePosition).normalize();
+                forward.copyFrom(pinkyMetacarpal.absolutePosition).subtractInPlace(middleMetacarpal.absolutePosition).normalize();
+
+                // Create vectors for a rotation quaternion, where forward points out from the palm
+                Vector3.CrossToRef(up, forward, forward);
                 Vector3.CrossToRef(forward, up, left);
 
                 const quaternion = Quaternion.FromLookDirectionLH(forward, up);
@@ -162,7 +216,7 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
         }
 
         let lastTick = Date.now();
-        this._scene.onBeforeRenderObservable.add(() => {
+        this._sceneRenderObserver = this._scene.onBeforeRenderObservable.add(() => {
             const pose = this._getHandPose();
 
             this._node.reservedDataStore = this._node.reservedDataStore || {};
@@ -178,8 +232,7 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
                 const cameraLookAtQuaternion = TmpVectors.Quaternion[0];
                 if (camera && (this.zoneOrientationMode === HandConstraintOrientation.LOOK_AT_CAMERA || this.nodeOrientationMode === HandConstraintOrientation.LOOK_AT_CAMERA)) {
                     const toCamera = TmpVectors.Vector3[1];
-                    toCamera.copyFrom(camera.position);
-                    toCamera.subtractInPlace(pose.position).normalize();
+                    toCamera.copyFrom(camera.position).subtractInPlace(pose.position).normalize();
                     if (this._scene.useRightHandedSystem) {
                         Quaternion.FromLookDirectionRHToRef(toCamera, Vector3.UpReadOnly, cameraLookAtQuaternion);
                     } else {
@@ -214,8 +267,66 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
                 this._node.reservedDataStore.nearInteraction.excludedControllerId = pose.controllerId;
             }
 
+            this._setVisibility();
+
             lastTick = Date.now();
         });
+    }
+
+    private _setVisibility() {
+        let palmVisible = true;
+        let gazeVisible = true;
+        const camera = this._scene.activeCamera;
+
+        if (camera) {
+            const cameraForward = camera.getForwardRay();
+            const pose = this._getHandPose();
+
+            if (this.handConstraintVisibility === HandConstraintVisibility.GAZE_FOCUS ||
+                this.handConstraintVisibility === HandConstraintVisibility.PALM_AND_GAZE) {
+                gazeVisible = false;
+                let gaze: Ray | undefined;
+                if (this._eyeTracking) {
+                    gaze = this._eyeTracking.getEyeGaze()!;
+                }
+
+                gaze = gaze || cameraForward;
+
+                const gazeToBehavior = TmpVectors.Vector3[0];
+                if (pose) {
+                    pose.position.subtractToRef(gaze.origin, gazeToBehavior);
+                }
+                else {
+                    this._node.getAbsolutePosition().subtractToRef(gaze.origin, gazeToBehavior);
+                }
+
+                const projectedDistance = Vector3.Dot(gazeToBehavior, gaze.direction);
+                const projectedSquared = projectedDistance * projectedDistance;
+
+                if (projectedDistance > 0) {
+                    const radiusSquared = gazeToBehavior.lengthSquared() - projectedSquared;
+                    if (radiusSquared < (this.gazeProximityRadius * this.gazeProximityRadius)) {
+                        gazeVisible = true;
+                    }
+                }
+            }
+
+            if (this.handConstraintVisibility === HandConstraintVisibility.PALM_UP ||
+                this.handConstraintVisibility === HandConstraintVisibility.PALM_AND_GAZE) {
+                palmVisible = false;
+
+                if (pose) {
+                    const palmDirection = TmpVectors.Vector3[0];
+                    Vector3.LeftHandedForwardReadOnly.rotateByQuaternionToRef(pose.quaternion, palmDirection);
+
+                    if (Vector3.Dot(palmDirection, cameraForward.direction) > ((this.palmUpStrictness * 2) - 1)) {
+                        palmVisible = true;
+                    }
+                }
+            }
+        }
+
+        this._node.setEnabled(palmVisible && gazeVisible);
     }
 
     /**
@@ -230,6 +341,7 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
      * @param xr xr experience
      */
     public linkToXRExperience(xr: WebXRExperienceHelper) {
+        this._eyeTracking = xr.featuresManager.getEnabledFeature(WebXRFeatureName.EYE_TRACKING) as WebXREyeTracking;
         this._handTracking = xr.featuresManager.getEnabledFeature(WebXRFeatureName.HAND_TRACKING) as WebXRHandTracking;
     }
 }
