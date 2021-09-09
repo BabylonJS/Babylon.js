@@ -191,7 +191,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             }
         }
 
-        if (this._ctrlKeyIsPressed) {
+        if (this._ctrlKeyIsPressed && this._focused) {
             if (evt.key === "a") {
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                 let index = 0;
