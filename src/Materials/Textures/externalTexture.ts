@@ -5,6 +5,11 @@ import { InternalTexture } from "./internalTexture";
  * Class used to store an external texture (like GPUExternalTexture in WebGPU)
  */
  export class ExternalTexture {
+     /**
+      * Checks if a texture is an external or internal texture
+      * @param texture the external or internal texture
+      * @returns true if the texture is an external texture, else false
+      */
     public static IsExternalTexture(texture: ExternalTexture | InternalTexture): texture is ExternalTexture {
         return (texture as ExternalTexture).underlyingResource !== undefined;
     }
@@ -43,6 +48,7 @@ import { InternalTexture } from "./internalTexture";
 
     /**
      * Constructs the texture
+     * @param video The video the texture should be wrapped around
      */
     constructor(video: HTMLVideoElement) {
         this._video = video;

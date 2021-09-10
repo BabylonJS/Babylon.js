@@ -516,7 +516,7 @@ export class ShaderMaterial extends Material {
     /**
      * Set a sampler in the shader
      * @param name Define the name of the uniform as defined in the shader
-     * @param buffer Define the value to give to the uniform
+     * @param sampler Define the value to give to the uniform
      * @return the material itself allowing "fluent" like uniform updates
      */
     public setSampler(name: string, sampler: Sampler): ShaderMaterial {
