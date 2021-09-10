@@ -1320,6 +1320,7 @@ export class Effect implements IDisposable {
      * @param name the name of the shader
      * @param pixelShader optional pixel shader content
      * @param vertexShader optional vertex shader content
+     * @param shaderLanguage the language the shader is written in (default: GLSL)
      */
     public static RegisterShader(name: string, pixelShader?: string, vertexShader?: string, shaderLanguage = ShaderLanguage.GLSL) {
         if (pixelShader) {

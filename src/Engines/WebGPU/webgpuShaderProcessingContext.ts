@@ -17,9 +17,6 @@ const _typeToLocationSize: { [key: string]: number } = {
     "mat4x4": 4,
 };
 
-// if true, use only group=0,binding=0 as a known group/binding for the Scene ubo and use group=1,binding=X for all other bindings
-export const SimplifiedKnownBindings = true;
-
 /** @hidden */
 export interface WebGPUBindingInfo {
     groupIndex: number;
@@ -56,6 +53,10 @@ export interface WebGPUBindGroupLayoutEntryInfo {
  * @hidden
  */
 export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
+
+    /** @hidden */
+    public static _SimplifiedKnownBindings = true;  // if true, use only group=0,binding=0 as a known group/binding for the Scene ubo and use group=1,binding=X for all other bindings
+                                                    // if false, see _KnownUBOs for the known groups/bindings used
 
     protected static _SimplifiedKnownUBOs: { [key: string]: WebGPUUniformBufferDescription } = {
         "Scene":   { binding: { groupIndex: 0, bindingIndex: 0 } },
@@ -136,7 +137,7 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
     };
 
     public static get KnownUBOs() {
-        return SimplifiedKnownBindings ? WebGPUShaderProcessingContext._SimplifiedKnownUBOs : WebGPUShaderProcessingContext._KnownUBOs;
+        return WebGPUShaderProcessingContext._SimplifiedKnownBindings ? WebGPUShaderProcessingContext._SimplifiedKnownUBOs : WebGPUShaderProcessingContext._KnownUBOs;
     }
 
     public shaderLanguage: ShaderLanguage;
