@@ -1318,7 +1318,7 @@ export class Control {
         let oldLeft = this._left.getValue(this._host);
         let oldTop = this._top.getValue(this._host);
 
-        if (this._currentMeasure.width == 0 && this._currentMeasure.height == 0) {
+        if (this._currentMeasure.width === 0 && this._currentMeasure.height === 0) {
             let parentMeasure = this.parent?._currentMeasure;
             if (parentMeasure) {
                 this._processMeasures(parentMeasure, this._host.getContext());
