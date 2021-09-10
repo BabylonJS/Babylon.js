@@ -421,7 +421,7 @@ export class CombineAction extends Action {
      * @param condition defines the trigger related conditions
      * @param enableChildrenConditions defines if the children actions conditions should be check before execution
      */
-    constructor(triggerOptions: any, children: Action[], condition?: Condition, enableChildrenConditions = false) {
+    constructor(triggerOptions: any, children: Action[], condition?: Condition, enableChildrenConditions = true) {
         super(triggerOptions, condition);
         this.children = children;
         this.enableChildrenConditions = enableChildrenConditions;
