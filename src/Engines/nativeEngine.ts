@@ -131,6 +131,14 @@ interface INativeEngine {
     readonly COMMAND_SETMATRIX2X2: number;
     readonly COMMAND_SETMATRICES: number;
     readonly COMMAND_SETINT: number;
+    readonly COMMAND_SETINTARRAY: number;
+    readonly COMMAND_SETINTARRAY2: number;
+    readonly COMMAND_SETINTARRAY3: number;
+    readonly COMMAND_SETINTARRAY4: number;
+    readonly COMMAND_SETFLOATARRAY: number;
+    readonly COMMAND_SETFLOATARRAY2: number;
+    readonly COMMAND_SETFLOATARRAY3: number;
+    readonly COMMAND_SETFLOATARRAY4: number;
     readonly COMMAND_SETTEXTURE: number;
     readonly COMMAND_BINDVERTEXARRAY: number;
     readonly COMMAND_SETSTATE: number;
@@ -180,14 +188,14 @@ interface INativeEngine {
     setInt2(uniform: WebGLUniformLocation, int1: number, int2: number): void;
     setInt3(uniform: WebGLUniformLocation, int1: number, int2: number, int3: number): void;
     setInt4(uniform: WebGLUniformLocation, int1: number, int2: number, int3: number, int4: number): void;
-    setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void;
-    setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): void;
-    setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): void;
-    setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): void;
-    setFloatArray(uniform: WebGLUniformLocation, array: Float32Array | number[]): void;
-    setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array | number[]): void;
-    setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array | number[]): void;
-    setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array | number[]): void;
+    // setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void;
+    // setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): void;
+    // setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): void;
+    // setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): void;
+    // setFloatArray(uniform: WebGLUniformLocation, array: Float32Array | number[]): void;
+    // setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array | number[]): void;
+    // setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array | number[]): void;
+    // setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array | number[]): void;
     // setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): void;
     // setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): void;
     setFloat(uniform: WebGLUniformLocation, value: number): void;
@@ -1825,7 +1833,12 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setIntArray(uniform, array);
+        //this._native.setIntArray(uniform, array);
+        this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_SETINTARRAY);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(uniform);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(array.length);
+        this._commandBufferEncoder.encodeCommandArgAsInt32s(array);
+        this._commandBufferEncoder.finishEncodingCommand();
         return true;
     }
 
@@ -1834,7 +1847,12 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setIntArray2(uniform, array);
+        //this._native.setIntArray2(uniform, array);
+        this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_SETINTARRAY2);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(uniform);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(array.length);
+        this._commandBufferEncoder.encodeCommandArgAsInt32s(array);
+        this._commandBufferEncoder.finishEncodingCommand();
         return true;
     }
 
@@ -1843,7 +1861,12 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setIntArray3(uniform, array);
+        //this._native.setIntArray3(uniform, array);
+        this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_SETINTARRAY3);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(uniform);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(array.length);
+        this._commandBufferEncoder.encodeCommandArgAsInt32s(array);
+        this._commandBufferEncoder.finishEncodingCommand();
         return true;
     }
 
@@ -1852,7 +1875,12 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setIntArray4(uniform, array);
+        //this._native.setIntArray4(uniform, array);
+        this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_SETINTARRAY4);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(uniform);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(array.length);
+        this._commandBufferEncoder.encodeCommandArgAsInt32s(array);
+        this._commandBufferEncoder.finishEncodingCommand();
         return true;
     }
 
@@ -1861,7 +1889,12 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setFloatArray(uniform, array);
+        //this._native.setFloatArray(uniform, array);
+        this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_SETFLOATARRAY);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(uniform);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(array.length);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32s(array);
+        this._commandBufferEncoder.finishEncodingCommand();
         return true;
     }
 
@@ -1870,7 +1903,12 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setFloatArray2(uniform, array);
+        //this._native.setFloatArray2(uniform, array);
+        this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_SETFLOATARRAY2);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(uniform);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(array.length);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32s(array);
+        this._commandBufferEncoder.finishEncodingCommand();
         return true;
     }
 
@@ -1879,7 +1917,12 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setFloatArray3(uniform, array);
+        //this._native.setFloatArray3(uniform, array);
+        this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_SETFLOATARRAY3);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(uniform);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(array.length);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32s(array);
+        this._commandBufferEncoder.finishEncodingCommand();
         return true;
     }
 
@@ -1888,7 +1931,12 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setFloatArray4(uniform, array);
+        //this._native.setFloatArray4(uniform, array);
+        this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_SETFLOATARRAY4);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(uniform);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(array.length);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32s(array);
+        this._commandBufferEncoder.finishEncodingCommand();
         return true;
     }
 
@@ -1897,7 +1945,8 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setFloatArray(uniform, array);
+        //this._native.setFloatArray(uniform, array);
+        return this.setFloatArray(uniform, new Float32Array(array));
         return true;
     }
 
@@ -1906,7 +1955,8 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setFloatArray2(uniform, array);
+        //this._native.setFloatArray2(uniform, array);
+        this.setFloatArray2(uniform, new Float32Array(array));
         return true;
     }
 
@@ -1915,7 +1965,8 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setFloatArray3(uniform, array);
+        //this._native.setFloatArray3(uniform, array);
+        this.setFloatArray3(uniform, new Float32Array(array));
         return true;
     }
 
@@ -1924,7 +1975,8 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setFloatArray4(uniform, array);
+        //this._native.setFloatArray4(uniform, array);
+        this.setFloatArray4(uniform, new Float32Array(array));
         return true;
     }
 
