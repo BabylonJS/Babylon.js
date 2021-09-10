@@ -18,7 +18,7 @@ const _typeToLocationSize: { [key: string]: number } = {
 };
 
 // if true, use only group=0,binding=0 as a known group/binding for the Scene ubo and use group=1,binding=X for all other bindings
-const _simplifiedKnownBindings = true;
+export const SimplifiedKnownBindings = true;
 
 /** @hidden */
 export interface WebGPUBindingInfo {
@@ -136,7 +136,7 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
     };
 
     public static get KnownUBOs() {
-        return _simplifiedKnownBindings ? WebGPUShaderProcessingContext._SimplifiedKnownUBOs : WebGPUShaderProcessingContext._KnownUBOs;
+        return SimplifiedKnownBindings ? WebGPUShaderProcessingContext._SimplifiedKnownUBOs : WebGPUShaderProcessingContext._KnownUBOs;
     }
 
     public shaderLanguage: ShaderLanguage;
