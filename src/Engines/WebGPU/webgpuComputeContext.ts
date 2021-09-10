@@ -69,7 +69,7 @@ export class WebGPUComputeContext implements IComputeContext {
                     case ComputeBindingType.StorageTexture: {
                         const texture = object as BaseTexture;
                         const hardwareTexture = texture._texture!._hardwareTexture as WebGPUHardwareTexture;
-                        if ((hardwareTexture.textureAdditionalUsages & WebGPUConstants.TextureUsage.Storage) === 0) {
+                        if ((hardwareTexture.textureAdditionalUsages & WebGPUConstants.TextureUsage.StorageBinding) === 0) {
                             Logger.Error(`computeDispatch: The texture (name=${texture.name}, uniqueId=${texture.uniqueId}) is not a storage texture!`, 50);
                         }
                         if (indexInGroupEntries !== undefined && bindGroupEntriesExist) {

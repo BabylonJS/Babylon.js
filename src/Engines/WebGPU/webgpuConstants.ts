@@ -50,8 +50,8 @@ export enum TextureDimension {
 export enum TextureUsage {
     CopySrc = 1,
     CopyDst = 2,
-    Sampled = 4,
-    Storage = 8,
+    TextureBinding = 4,
+    StorageBinding = 8,
     RenderAttachment = 16
 }
 
@@ -209,7 +209,6 @@ export enum TextureSampleType {
 
 /** @hidden */
 export enum StorageTextureAccess {
-    ReadOnly = "read-only",
     WriteOnly = "write-only"
 }
 
@@ -343,7 +342,7 @@ export enum LoadOp {
 /** @hidden */
 export enum StoreOp {
     Store = "store",
-    Clear = "clear"
+    Discard = "discard"
 }
 
 /** @hidden */
