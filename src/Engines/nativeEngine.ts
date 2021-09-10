@@ -126,6 +126,9 @@ interface INativeEngine {
     readonly COMMAND_DELETEVERTEXARRAY: number;
     readonly COMMAND_DELETEINDEXBUFFER: number;
     readonly COMMAND_DELETEVERTEXBUFFER: number;
+    readonly COMMAND_SETMATRIX: number;
+    readonly COMMAND_SETMATRIX3X3: number;
+    readonly COMMAND_SETMATRIX2X2: number;
     readonly COMMAND_SETMATRICES: number;
     readonly COMMAND_SETTEXTURE: number;
     readonly COMMAND_BINDVERTEXARRAY: number;
@@ -171,7 +174,7 @@ interface INativeEngine {
     setColorWrite(enable: boolean): void;
     setBlendMode(blendMode: number): void;
 
-    setMatrix(uniform: WebGLUniformLocation, matrix: Float32Array): void;
+    //setMatrix(uniform: WebGLUniformLocation, matrix: Float32Array): void;
     setInt(uniform: WebGLUniformLocation, int: number): void;
     setInt2(uniform: WebGLUniformLocation, int1: number, int2: number): void;
     setInt3(uniform: WebGLUniformLocation, int1: number, int2: number, int3: number): void;
@@ -184,8 +187,8 @@ interface INativeEngine {
     setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array | number[]): void;
     setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array | number[]): void;
     setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array | number[]): void;
-    setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): void;
-    setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): void;
+    // setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): void;
+    // setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): void;
     setFloat(uniform: WebGLUniformLocation, value: number): void;
     setFloat2(uniform: WebGLUniformLocation, x: number, y: number): void;
     setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): void;
@@ -1404,7 +1407,13 @@ export class NativeEngine extends Engine {
             return;
         }
 
-        this._native.setMatrix(uniform, matrix.toArray() as Float32Array);
+        //this._native.setMatrix(uniform, matrix.toArray() as Float32Array);
+        const matrixArray = matrix.toArray() as Float32Array;
+        this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_SETMATRIX);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(uniform);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(matrixArray.length);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32s(matrixArray);
+        this._commandBufferEncoder.finishEncodingCommand();
     }
 
     public getRenderWidth(useScreen = false): number {
@@ -1920,7 +1929,12 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setMatrix3x3(uniform, matrix);
+        //this._native.setMatrix3x3(uniform, matrix);
+        this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_SETMATRIX3X3);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(uniform);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(matrix.length);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32s(matrix);
+        this._commandBufferEncoder.finishEncodingCommand();
         return true;
     }
 
@@ -1929,7 +1943,12 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setMatrix2x2(uniform, matrix);
+        //this._native.setMatrix2x2(uniform, matrix);
+        this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_SETMATRIX2X2);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(uniform);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(matrix.length);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32s(matrix);
+        this._commandBufferEncoder.finishEncodingCommand();
         return true;
     }
 
