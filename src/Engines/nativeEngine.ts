@@ -126,6 +126,7 @@ interface INativeEngine {
     readonly COMMAND_DELETEVERTEXARRAY: number;
     readonly COMMAND_DELETEINDEXBUFFER: number;
     readonly COMMAND_DELETEVERTEXBUFFER: number;
+    readonly COMMAND_SETPROGRAM: number;
     readonly COMMAND_SETMATRIX: number;
     readonly COMMAND_SETMATRIX3X3: number;
     readonly COMMAND_SETMATRIX2X2: number;
@@ -172,7 +173,7 @@ interface INativeEngine {
     createProgram(vertexShader: string, fragmentShader: string): any;
     getUniforms(shaderProgram: any, uniformsNames: string[]): WebGLUniformLocation[];
     getAttributes(shaderProgram: any, attributeNames: string[]): number[];
-    setProgram(program: any): void;
+    //setProgram(program: any): void;
 
     setState(culling: boolean, zOffset: number, cullBackFaces: boolean, reverseSide: boolean): void;
     setZOffset(zOffset: number): void;
@@ -1385,7 +1386,10 @@ export class NativeEngine extends Engine {
 
     protected _setProgram(program: WebGLProgram): void {
         if (this._currentProgram !== program) {
-            this._native.setProgram(program);
+            //this._native.setProgram(program);
+            this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_SETPROGRAM);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(program);
+            this._commandBufferEncoder.finishEncodingCommand();
             this._currentProgram = program;
         }
     }
