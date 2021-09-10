@@ -328,7 +328,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                 label: "Grid",
                 icon: gridIcon,
                 onClick: () => { this.onCreate("Grid") }
-            }, 
+            },
             {
                 label: "ScrollViewer",
                 icon: scrollbarIcon,
@@ -359,7 +359,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                 icon: imageIcon,
                 onClick: () => { this.onCreate("Image") }
             },
-           {
+            {
                 label: "DisplayGrid",
                 icon: displaygridIcon,
                 onClick: () => { this.onCreate("DisplayGrid") }
@@ -418,7 +418,11 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     createToolbar() {
         return (
             <>
+
                 <div id="toolbarGrab">
+                    {
+                        <div className="blackLine"></div>
+                    }
                     {
                         <div className={"toolbar-content sub1"}>
                             {
