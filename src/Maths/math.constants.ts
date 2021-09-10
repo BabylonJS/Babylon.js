@@ -16,19 +16,6 @@ export const ToLinearSpace = 2.2;
  */
  export const PHI = (1 + Math.sqrt(5)) / 2;
 
- /**
- * Constant one third of the square root of 3
- * @ignorenaming
- */
-  export const THIRDR3 = Math.sqrt(3) / 3;
-
-/**
- * Constant used to define the isometric grid size in Babylon.js
- * @ignorenaming
- */
- let IsoGridSize = 0.5;
- export { IsoGridSize };
-
 /**
  * Constant used to define the minimal number value in Babylon.js
  * @ignorenaming

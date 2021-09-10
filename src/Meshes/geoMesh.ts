@@ -1,6 +1,6 @@
 import { Vector3, TmpVectors } from "../Maths/math.vector";
 import { Scalar } from '../Maths/math.scalar';
-import { PHI, THIRDR3 } from '../Maths/math.constants';
+import { PHI } from '../Maths/math.constants';
 import { IsoVector } from '../Maths/math.isovector';
 
 
@@ -203,13 +203,14 @@ export class Primary {
     public _calcCoeffs() {
         const m = this._m;
         const n = this._n;
+        const thirdR3 = Math.sqrt(3) / 3;
     
         const LSQD = m * m + n * n + m * n;
     
         this._coau = (m + n) / LSQD;
         this._cobu = -n / LSQD;
-        this._coav = -THIRDR3 * (m - n) / LSQD;
-        this._cobv = THIRDR3 * (2* m + n) / LSQD;
+        this._coav = -thirdR3 * (m - n) / LSQD;
+        this._cobv = thirdR3 * (2* m + n) / LSQD;
     }
     
     
@@ -436,7 +437,7 @@ export class Primary {
         let closest: number = -1;
         let dist: number = -1;
         for (let i = 0; i < len; i++) {
-            cartesian[i] = vertices[i].toCartesianOrigin(new IsoVector(0, 0))
+            cartesian[i] = vertices[i].toCartesianOrigin(new IsoVector(0, 0), 0.5)
             distFromO[i] = distFrom(vertices[i], "O");
             distFromA[i] = distFrom(vertices[i], "A");
             distFromB[i] = distFrom(vertices[i], "B");
