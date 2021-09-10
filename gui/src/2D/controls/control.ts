@@ -1314,14 +1314,14 @@ export class Control {
     }
 
     /** @hidden */
-    public _moveToProjectedPosition(projectedPosition: Vector3, context?: ICanvasRenderingContext): void {
+    public _moveToProjectedPosition(projectedPosition: Vector3): void {
         let oldLeft = this._left.getValue(this._host);
         let oldTop = this._top.getValue(this._host);
 
         if (this._currentMeasure.width == 0 && this._currentMeasure.height == 0) {
             let parentMeasure = this.parent?._currentMeasure;
-            if (parentMeasure && context) {
-                this._processMeasures(parentMeasure, context);
+            if (parentMeasure) {
+                this._processMeasures(parentMeasure, this._host.getContext());
             }
         }
 
