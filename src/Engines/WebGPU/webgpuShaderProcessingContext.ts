@@ -216,8 +216,6 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
         } else {
             this.freeBindingIndex = groups[groups.length - 1] + 1;
         }
-
-        console.log(this.freeGroupIndex, this.freeBindingIndex);
     }
 
     public getAttributeNextLocation(dataType: string, arrayLength: number = 0): number {
