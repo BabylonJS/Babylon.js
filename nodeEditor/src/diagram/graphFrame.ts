@@ -1436,8 +1436,8 @@ export class GraphFrame {
     }
 
     public adjustPorts() {
-        for (var node of this.nodes) {
-            for (var port of node.outputPorts) { // Output
+        for (let node of this.nodes) {
+            for (let port of node.outputPorts) { // Output
                 if (port.exposedOnFrame) {
                     if (port.exposedPortPosition !== -1) {
                         this._exposedOutPorts[port.exposedPortPosition] = port;
