@@ -223,7 +223,7 @@ export class WebGPUEngine extends Engine {
     /** @hidden */
     public _device: GPUDevice;
     private _deviceEnabledExtensions: GPUFeatureName[];
-    private _context: GPUPresentationContext;
+    private _context: GPUCanvasContext;
     private _swapChainTexture: GPUTexture;
     private _mainPassSampleCount: number;
     /** @hidden */
@@ -592,29 +592,33 @@ export class WebGPUEngine extends Engine {
                 throw Error("WebGPU initializations stopped.");
             })
             .then((adapter: GPUAdapter | null) => {
-                this._adapter = adapter!;
-                this._adapterSupportedExtensions = [];
-                this._adapter.features?.forEach((feature) => this._adapterSupportedExtensions.push(feature as WebGPUConstants.FeatureName));
+                if (!adapter) {
+                    throw "Could not retrieve a WebGPU adapter (adapter is null).";
+                } else {
+                    this._adapter = adapter!;
+                    this._adapterSupportedExtensions = [];
+                    this._adapter.features?.forEach((feature) => this._adapterSupportedExtensions.push(feature as WebGPUConstants.FeatureName));
 
-                const deviceDescriptor = this._options.deviceDescriptor;
+                    const deviceDescriptor = this._options.deviceDescriptor;
 
-                if (deviceDescriptor?.requiredFeatures) {
-                    const requestedExtensions = deviceDescriptor.requiredFeatures;
-                    const validExtensions: GPUFeatureName[] = [];
+                    if (deviceDescriptor?.requiredFeatures) {
+                        const requestedExtensions = deviceDescriptor.requiredFeatures;
+                        const validExtensions: GPUFeatureName[] = [];
 
-                    for (let extension of requestedExtensions) {
-                        if (this._adapterSupportedExtensions.indexOf(extension) !== -1) {
-                            validExtensions.push(extension);
+                        for (let extension of requestedExtensions) {
+                            if (this._adapterSupportedExtensions.indexOf(extension) !== -1) {
+                                validExtensions.push(extension);
+                            }
                         }
+
+                        deviceDescriptor.requiredFeatures = validExtensions;
                     }
 
-                    deviceDescriptor.requiredFeatures = validExtensions;
+                    return this._adapter.requestDevice(this._options.deviceDescriptor);
                 }
-
-                return this._adapter.requestDevice(this._options.deviceDescriptor);
             })
-            .then((device: GPUDevice | null) => {
-                this._device = device!;
+            .then((device: GPUDevice) => {
+                this._device = device;
                 this._deviceEnabledExtensions = [];
                 this._device.features?.forEach((feature) => this._deviceEnabledExtensions.push(feature as WebGPUConstants.FeatureName));
 
@@ -635,6 +639,9 @@ export class WebGPUEngine extends Engine {
                         this._restoreEngineAfterContextLost(this.initAsync.bind(this));
                     });
                 }
+            }, (e: any) => {
+                Logger.Error("Could not retrieve a WebGPU device.");
+                Logger.Error(e);
             })
             .then(() => {
                 this._bufferManager = new WebGPUBufferManager(this._device);
@@ -799,7 +806,7 @@ export class WebGPUEngine extends Engine {
     }
 
     private _initializeContextAndSwapChain(): void {
-        this._context = this._canvas.getContext('webgpu') as unknown as GPUPresentationContext;
+        this._context = this._canvas.getContext('webgpu') as unknown as GPUCanvasContext;
         this._configureContext(this._canvas.width, this._canvas.height);
         this._colorFormat = this._options.swapChainFormat!;
         this._mainRenderPassWrapper.colorAttachmentGPUTextures = [new WebGPUHardwareTexture()];
@@ -852,7 +859,7 @@ export class WebGPUEngine extends Engine {
                 sampleCount: 1,
                 dimension: WebGPUConstants.TextureDimension.E2d,
                 format: this._options.swapChainFormat!,
-                usage: WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.Sampled,
+                usage: WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.TextureBinding,
             };
 
             this._mainTextureLastCopy?.destroy();
