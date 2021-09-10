@@ -1445,7 +1445,7 @@ export class GraphFrame {
                 }
             }
 
-            for (var port of node.inputPorts) { // Inports
+            for (let port of node.inputPorts) { // Imports
                 if (port.exposedOnFrame) {
                     if (port.exposedPortPosition !== -1) {
                         this._exposedInPorts[port.exposedPortPosition] = port;
