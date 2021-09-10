@@ -10,7 +10,7 @@ declare type Geometry = import("../Meshes/geometry").Geometry;
 declare type Mesh = import("../Meshes/mesh").Mesh;
 
 import { ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
-import { PolyhedronData } from "./geoMesh";
+declare type PolyhedronData= import("./geoMesh").PolyhedronData;
 
 /**
  * Define an interface for all classes that will get and set the data on vertices
