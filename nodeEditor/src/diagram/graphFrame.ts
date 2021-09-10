@@ -1435,6 +1435,26 @@ export class GraphFrame {
         StringTools.DownloadAsFile(state.hostDocument, json, this._name + ".json");
     }
 
+    public adjustPorts() {
+        for (var node of this.nodes) {
+            for (var port of node.outputPorts) { // Output
+                if (port.exposedOnFrame) {
+                    if (port.exposedPortPosition !== -1) {
+                        this._exposedOutPorts[port.exposedPortPosition] = port;
+                    }
+                }
+            }
+
+            for (var port of node.inputPorts) { // Inports
+                if (port.exposedOnFrame) {
+                    if (port.exposedPortPosition !== -1) {
+                        this._exposedInPorts[port.exposedPortPosition] = port;
+                    }
+                }
+            }
+        }
+    }
+
     public static Parse(serializationData: IFrameData, canvas: GraphCanvasComponent, map?: { [key: number]: number }) {
         let newFrame = new GraphFrame(null, canvas, true);
         const isCollapsed = !!serializationData.isCollapsed;
@@ -1461,23 +1481,7 @@ export class GraphFrame {
             newFrame.refresh();
         }
 
-        for (var node of newFrame.nodes) {
-            for (var port of node.outputPorts) { // Output
-                if (port.exposedOnFrame) {
-                    if (port.exposedPortPosition !== -1) {
-                        newFrame._exposedOutPorts[port.exposedPortPosition] = port;
-                    }
-                }
-            }
-
-            for (var port of node.inputPorts) { // Inports
-                if (port.exposedOnFrame) {
-                    if (port.exposedPortPosition !== -1) {
-                        newFrame._exposedInPorts[port.exposedPortPosition] = port;
-                    }
-                }
-            }
-        }
+        newFrame.adjustPorts();
 
         newFrame.isCollapsed = isCollapsed;
         if (isCollapsed) {
