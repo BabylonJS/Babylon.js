@@ -130,6 +130,7 @@ interface INativeEngine {
     readonly COMMAND_SETMATRIX3X3: number;
     readonly COMMAND_SETMATRIX2X2: number;
     readonly COMMAND_SETMATRICES: number;
+    readonly COMMAND_SETINT: number;
     readonly COMMAND_SETTEXTURE: number;
     readonly COMMAND_BINDVERTEXARRAY: number;
     readonly COMMAND_SETSTATE: number;
@@ -175,7 +176,7 @@ interface INativeEngine {
     setBlendMode(blendMode: number): void;
 
     //setMatrix(uniform: WebGLUniformLocation, matrix: Float32Array): void;
-    setInt(uniform: WebGLUniformLocation, int: number): void;
+    //setInt(uniform: WebGLUniformLocation, int: number): void;
     setInt2(uniform: WebGLUniformLocation, int1: number, int2: number): void;
     setInt3(uniform: WebGLUniformLocation, int1: number, int2: number, int3: number): void;
     setInt4(uniform: WebGLUniformLocation, int1: number, int2: number, int3: number, int4: number): void;
@@ -230,6 +231,7 @@ interface INativeEngine {
 
     setCommandBuffer(commandBuffer: Uint8Array): void;
     setCommandUint32Buffer(commandBuffer: Uint32Array): void;
+    setCommandInt32Buffer(commandBuffer: Int32Array): void;
     setCommandFloat32Buffer(commandBuffer: Float32Array): void;
     submitCommandBuffer(commandCount: number): void;
 }
@@ -851,12 +853,14 @@ class Buffer<T extends ArrayLike<number> & {[n: number]: number, set(array: Arra
 class CommandBufferEncoder {
     private readonly _commandBuffer: Buffer<Uint8Array>;
     private readonly _uint32Buffer: Buffer<Uint32Array>;
+    private readonly _int32Buffer: Buffer<Int32Array>;
     private readonly _float32Buffer: Buffer<Float32Array>;
     private _isCommandBufferScopeActive = false;
 
     public constructor(private readonly _nativeEngine: INativeEngine) {
         this._commandBuffer = new Buffer(Uint8Array, (buffer) => this._nativeEngine.setCommandBuffer(buffer));
         this._uint32Buffer = new Buffer(Uint32Array, (buffer) => this._nativeEngine.setCommandUint32Buffer(buffer));
+        this._int32Buffer = new Buffer(Int32Array, (buffer) => this._nativeEngine.setCommandInt32Buffer(buffer));
         this._float32Buffer = new Buffer(Float32Array, (buffer) => this._nativeEngine.setCommandFloat32Buffer(buffer));
     }
 
@@ -892,6 +896,16 @@ class CommandBufferEncoder {
     public encodeCommandArgAsUInt32s(commandArg: Uint32Array) {
         // console.log(`COMMAND BUFFER:   Encode uint32s: ${commandArg}`);
         this._uint32Buffer.pushValues(commandArg);
+    }
+
+    public encodeCommandArgAsInt32(commandArg: unknown) {
+        // console.log(`COMMAND BUFFER:   Encode uint32: ${commandArg}`);
+        this._int32Buffer.pushValue(commandArg as number);
+    }
+
+    public encodeCommandArgAsInt32s(commandArg: Int32Array) {
+        // console.log(`COMMAND BUFFER:   Encode uint32s: ${commandArg}`);
+        this._int32Buffer.pushValues(commandArg);
     }
 
     public encodeCommandArgAsFloat32(commandArg: unknown) {
@@ -1798,7 +1812,11 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setInt(uniform, int);
+        //this._native.setInt(uniform, int);
+        this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_SETINT);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(uniform);
+        this._commandBufferEncoder.encodeCommandArgAsInt32(int);
+        this._commandBufferEncoder.finishEncodingCommand();
         return true;
     }
 
