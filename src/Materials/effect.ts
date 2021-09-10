@@ -579,14 +579,16 @@ export class Effect implements IDisposable {
             return;
         }
 
+        const shaderStore = EngineShaderStore.GetShadersStore(this._shaderLanguage);
+
         // Is in local store ?
-        if (Effect.ShadersStore[shader + key + "Shader"]) {
-            callback(Effect.ShadersStore[shader + key + "Shader"]);
+        if (shaderStore[shader + key + "Shader"]) {
+            callback(shaderStore[shader + key + "Shader"]);
             return;
         }
 
-        if (optionalKey && Effect.ShadersStore[shader + optionalKey + "Shader"]) {
-            callback(Effect.ShadersStore[shader + optionalKey + "Shader"]);
+        if (optionalKey && shaderStore[shader + optionalKey + "Shader"]) {
+            callback(shaderStore[shader + optionalKey + "Shader"]);
             return;
         }
 
@@ -595,7 +597,7 @@ export class Effect implements IDisposable {
         if (shader[0] === "." || shader[0] === "/" || shader.indexOf("http") > -1) {
             shaderUrl = shader;
         } else {
-            shaderUrl = Effect.ShadersRepository + shader;
+            shaderUrl = EngineShaderStore.GetShadersRepository(this._shaderLanguage) + shader;
         }
 
         // Vertex shader
