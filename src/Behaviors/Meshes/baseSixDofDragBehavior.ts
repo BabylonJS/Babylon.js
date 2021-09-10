@@ -28,6 +28,24 @@ type VirtualMeshInfo = {
 };
 
 /**
+ * Rotation mode of meshes dragged by motion controllers
+ */
+export enum SixDofDragRotationType {
+    /**
+     * Dragged mesh does not rotate
+     */
+    NO_ROTATION,
+    /**
+     * Dragged mesh rotates around the camera, similar to when not using a motion controller
+     */
+    AROUND_USER,
+    /**
+     * Dragged mesh rotates 1:1 with the motion controller
+     */
+    WITH_CONTROLLER,
+}
+
+/**
  * Base behavior for six degrees of freedom interactions in XR experiences.
  * Creates virtual meshes that are dragged around
  * And observables for position/rotation changes
@@ -110,6 +128,10 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
      * Should the behavior allow simultaneous pointers to interact with the owner node.
      */
     public allowMultiPointer: boolean = true;
+    /**
+     * Should the behavior rotate with the motion controller, when one is used.
+     */
+    public motionControllerRotationType: SixDofDragRotationType = WITH_CONTROLLER;
 
     /**
      *  The name of the behavior
