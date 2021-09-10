@@ -325,10 +325,10 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                 onClick: () => { this.onCreate("StackPanel") }
             },
             {
-                label: "DisplayGrid",
-                icon: displaygridIcon,
-                onClick: () => { this.onCreate("DisplayGrid") }
-            },
+                label: "Grid",
+                icon: gridIcon,
+                onClick: () => { this.onCreate("Grid") }
+            }, 
             {
                 label: "ScrollViewer",
                 icon: scrollbarIcon,
@@ -359,10 +359,10 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                 icon: imageIcon,
                 onClick: () => { this.onCreate("Image") }
             },
-            {
-                label: "Grid",
-                icon: gridIcon,
-                onClick: () => { this.onCreate("Grid") }
+           {
+                label: "DisplayGrid",
+                icon: displaygridIcon,
+                onClick: () => { this.onCreate("DisplayGrid") }
             },
             {
                 label: "TextButton",

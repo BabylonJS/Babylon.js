@@ -47,6 +47,8 @@ import { FloatLineComponent } from "../../sharedUiComponents/lines/floatLineComp
 import { Color3LineComponent } from "../../sharedUiComponents/lines/color3LineComponent";
 import { TextInputLineComponent } from "../../sharedUiComponents/lines/textInputLineComponent";
 import { ParentingPropertyGridComponent } from "../parentingPropertyGridComponent";
+import { DisplayGridPropertyGridComponent } from "./propertyGrids/gui/displayGridPropertyGridComponent";
+import { DisplayGrid } from "babylonjs-gui/2D/controls/displayGrid";
 
 require("./propertyTab.scss");
 const adtIcon: string = require("../../../public/imgs/adtIcon.svg");
@@ -60,7 +62,6 @@ const stackPanelIcon: string = require("../../../public/imgs/stackPanelIconDark.
 const textBoxIcon: string = require("../../../public/imgs/textBoxIconDark.svg");
 const sliderIcon: string = require("../../../public/imgs/sliderIconDark.svg");
 const buttonIcon: string = require("../../../public/imgs/buttonIconDark.svg");
-const passwordFieldIcon: string = require("../../../public/imgs/passwordFieldIconDark.svg");
 const checkboxIcon: string = require("../../../public/imgs/checkboxIconDark.svg");
 const imageIcon: string = require("../../../public/imgs/imageIconDark.svg");
 const keyboardIcon: string = require("../../../public/imgs/keyboardIconDark.svg");
@@ -70,7 +71,7 @@ const displaygridIcon: string = require("../../../public/imgs/displaygridIconDar
 const colorPickerIcon: string = require("../../../public/imgs/colorPickerIconDark.svg");
 const scrollbarIcon: string = require("../../../public/imgs/scrollbarIconDark.svg");
 const imageSliderIcon: string = require("../../../public/imgs/imageSliderIconDark.svg");
-const radioButtonIcon: string = require("../../../public/imgs/radioButtonIcon.svg"); //TODO needs to be dark
+const radioButtonIcon: string = require("../../../public/imgs/radioButtonIconDark.svg");
 const MAX_TEXTURE_SIZE = 16384; //2^14
 
 interface IPropertyTabComponentProps {
@@ -287,6 +288,10 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             case "Line": {
                 const line = this.state.currentNode as Line;
                 return <LinePropertyGridComponent line={line} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
+            } 
+            case "Line": {
+                const displayGrid = this.state.currentNode as DisplayGrid;
+                return <DisplayGridPropertyGridComponent displayGrid={displayGrid} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
             }
             case "Button": {
                 const control = this.state.currentNode as Control;
@@ -346,6 +351,12 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             }
             case "Line": {
                 return lineIcon;
+            }
+            case "DisplayGrid": {
+                return displaygridIcon;
+            }
+            case "VirtualKeyboard": {
+                return keyboardIcon;
             }
             case "Button": {
                 return buttonIcon;
