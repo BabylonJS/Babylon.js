@@ -10419,6 +10419,11 @@ declare module BABYLON {
          */
         setTriggerParameter(value: any): void;
         /**
+         * Internal only - Returns if the current condition allows to run the action
+         * @hidden
+         */
+        _evaluateConditionForCurrentFrame(): boolean;
+        /**
          * Internal only - executes current action event
          * @hidden
          */
@@ -10927,12 +10932,17 @@ declare module BABYLON {
          */
         children: Action[];
         /**
+         * defines if the children actions conditions should be check before execution
+         */
+        enableChildrenConditions: boolean;
+        /**
          * Instantiate the action
          * @param triggerOptions defines the trigger options
          * @param children defines the list of aggregated animations to run
          * @param condition defines the trigger related conditions
+         * @param enableChildrenConditions defines if the children actions conditions should be check before execution
          */
-        constructor(triggerOptions: any, children: Action[], condition?: Condition);
+        constructor(triggerOptions: any, children: Action[], condition?: Condition, enableChildrenConditions?: boolean);
         /** @hidden */
         _prepare(): void;
         /**
