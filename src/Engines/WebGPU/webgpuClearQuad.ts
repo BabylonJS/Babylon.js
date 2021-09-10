@@ -9,6 +9,7 @@ import { WebGPUEngine } from "../webgpuEngine";
 import { WebGPUCacheRenderPipeline } from "./webgpuCacheRenderPipeline";
 import { WebGPUCacheRenderPipelineTree } from "./webgpuCacheRenderPipelineTree";
 import { WebGPUPipelineContext } from "./webgpuPipelineContext";
+import { SimplifiedKnownBindings } from "./webgpuShaderProcessingContext";
 
 import "../../Shaders/clearQuad.vertex";
 import "../../Shaders/clearQuad.fragment";
@@ -104,13 +105,19 @@ export class WebGPUClearQuad {
                 this._device.createBindGroup({
                     layout: bindGroupLayouts[0],
                     entries: []
-                }),
+                })
+            );
+            if (!SimplifiedKnownBindings) {
+                bindGroups.push(
+                    this._device.createBindGroup({
+                        layout: bindGroupLayouts[1],
+                        entries: []
+                    }),
+                );
+            }
+            bindGroups.push(
                 this._device.createBindGroup({
-                    layout: bindGroupLayouts[1],
-                    entries: []
-                }),
-                this._device.createBindGroup({
-                    layout: bindGroupLayouts[2],
+                    layout: bindGroupLayouts[SimplifiedKnownBindings ? 1 : 2],
                     entries: [{
                         binding: 0,
                         resource: {
