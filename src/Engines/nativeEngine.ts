@@ -149,6 +149,7 @@ interface INativeEngine {
     readonly COMMAND_SETFLOAT4: number;
     readonly COMMAND_SETTEXTUREWRAPMODE: number;
     readonly COMMAND_DRAWINDEXED: number;
+    readonly COMMAND_DRAW: number;
     readonly COMMAND_CLEAR: number;
     readonly COMMAND_SETSTENCIL: number;
 
@@ -225,8 +226,8 @@ interface INativeEngine {
     bindFrameBuffer(framebuffer: WebGLFramebuffer): void;
     unbindFrameBuffer(framebuffer: WebGLFramebuffer): void;
 
-    drawIndexed(fillMode: number, indexStart: number, indexCount: number): void;
-    draw(fillMode: number, vertexStart: number, vertexCount: number): void;
+    // drawIndexed(fillMode: number, indexStart: number, indexCount: number): void;
+    // draw(fillMode: number, vertexStart: number, vertexCount: number): void;
 
     clear(color: IColor4Like | undefined, depth: number | undefined, stencil: number | undefined): void;
 
@@ -1310,7 +1311,12 @@ export class NativeEngine extends Engine {
         // if (instancesCount) {
         //     this._gl.drawArraysInstanced(drawMode, verticesStart, verticesCount, instancesCount);
         // } else {
-        this._native.draw(fillMode, verticesStart, verticesCount);
+        //this._native.draw(fillMode, verticesStart, verticesCount);
+        this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_DRAW);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesStart);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesCount);
+        this._commandBufferEncoder.finishEncodingCommand();
         // }
     }
 
