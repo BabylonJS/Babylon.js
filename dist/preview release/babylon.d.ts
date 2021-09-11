@@ -679,6 +679,16 @@ declare module BABYLON {
          * Text width.
          */
         readonly width: number;
+        /**
+         * distance (in pixels) parallel to the baseline from the alignment point given by the CanvasRenderingContext2D.textAlign
+         * property to the left side of the bounding rectangle of the given text
+         */
+        readonly actualBoundingBoxLeft: number;
+        /**
+         * distance (in pixels) parallel to the baseline from the alignment point given by the CanvasRenderingContext2D.textAlign
+         * property to the right side of the bounding rectangle of the given text
+         */
+        readonly actualBoundingBoxRight: number;
     }
     /**
      * Class used to abstract canvas rendering
@@ -10409,6 +10419,11 @@ declare module BABYLON {
          */
         setTriggerParameter(value: any): void;
         /**
+         * Internal only - Returns if the current condition allows to run the action
+         * @hidden
+         */
+        _evaluateConditionForCurrentFrame(): boolean;
+        /**
          * Internal only - executes current action event
          * @hidden
          */
@@ -10917,12 +10932,17 @@ declare module BABYLON {
          */
         children: Action[];
         /**
+         * defines if the children actions conditions should be check before execution
+         */
+        enableChildrenConditions: boolean;
+        /**
          * Instantiate the action
          * @param triggerOptions defines the trigger options
          * @param children defines the list of aggregated animations to run
          * @param condition defines the trigger related conditions
+         * @param enableChildrenConditions defines if the children actions conditions should be check before execution
          */
-        constructor(triggerOptions: any, children: Action[], condition?: Condition);
+        constructor(triggerOptions: any, children: Action[], condition?: Condition, enableChildrenConditions?: boolean);
         /** @hidden */
         _prepare(): void;
         /**
@@ -50924,6 +50944,61 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * The WebXR Eye Tracking feature grabs eye data from the device and provides it in an easy-access format.
+     * Currently only enabled for BabylonNative applications.
+     */
+    export class WebXREyeTracking extends WebXRAbstractFeature {
+        private _latestEyeSpace;
+        private _gazeRay;
+        /**
+         * The module's name
+         */
+        static readonly Name: string;
+        /**
+         * The (Babylon) version of this module.
+         * This is an integer representing the implementation version.
+         * This number does not correspond to the WebXR specs version
+         */
+        static readonly Version: number;
+        /**
+         * This observable will notify registered observers when eye tracking starts
+         */
+        readonly onEyeTrackingStartedObservable: Observable<Ray>;
+        /**
+         * This observable will notify registered observers when eye tracking ends
+         */
+        readonly onEyeTrackingEndedObservable: Observable<void>;
+        /**
+         * This observable will notify registered observers on each frame that has valid tracking
+         */
+        readonly onEyeTrackingFrameUpdateObservable: Observable<Ray>;
+        /**
+         * Creates a new instance of the XR eye tracking feature.
+         * @param _xrSessionManager An instance of WebXRSessionManager.
+         */
+        constructor(_xrSessionManager: WebXRSessionManager);
+        /**
+         * Dispose this feature and all of the resources attached.
+         */
+        dispose(): void;
+        /**
+         * Returns whether the gaze data is valid or not
+         * @returns true if the data is valid
+         */
+        get isEyeGazeValid(): boolean;
+        /**
+         * Get a reference to the gaze ray. This data is valid while eye tracking persists, and will be set to null when gaze data is no longer available
+         * @returns a reference to the gaze ray if it exists and is valid, returns null otherwise.
+         */
+        getEyeGaze(): Nullable<Ray>;
+        protected _onXRFrame(frame: XRFrame): void;
+        private _eyeTrackingStartListener;
+        private _eyeTrackingEndListener;
+        private _init;
+    }
+}
+declare module BABYLON {
+    /**
      * X-Y values for axes in WebXR
      */
     export interface IWebXRMotionControllerAxesValue {
@@ -53641,15 +53716,53 @@ declare module BABYLON {
         HAND_ROTATION = 1
     }
     /**
+     * Orientations for the hand zones and for the attached node
+     */
+    export enum HandConstraintVisibility {
+        /**
+         * Constraint is always visible
+         */
+        ALWAYS_VISIBLE = 0,
+        /**
+         * Constraint is only visible when the palm is up
+         */
+        PALM_UP = 1,
+        /**
+         * Constraint is only visible when the user is looking at the constraint.
+         * Uses XR Eye Tracking if enabled/available, otherwise uses camera direction
+         */
+        GAZE_FOCUS = 2,
+        /**
+         * Constraint is only visible when the palm is up and the user is looking at it
+         */
+        PALM_AND_GAZE = 3
+    }
+    /**
      * Hand constraint behavior that makes the attached `TransformNode` follow hands in XR experiences.
      * @since 5.0.0
      */
     export class HandConstraintBehavior implements Behavior<TransformNode> {
         private _scene;
         private _node;
+        private _eyeTracking;
         private _handTracking;
         private _sceneRenderObserver;
         private _zoneAxis;
+        /**
+         * Sets the HandConstraintVisibility level for the hand constraint
+         */
+        handConstraintVisibility: HandConstraintVisibility;
+        /**
+         * A number from 0.0 to 1.0, marking how restricted the direction the palm faces is for the attached node to be enabled.
+         * A 1 means the palm must be directly facing the user before the node is enabled, a 0 means it is always enabled.
+         * Used with HandConstraintVisibility.PALM_UP
+         */
+        palmUpStrictness: number;
+        /**
+         * The radius in meters around the center of the hand that the user must gaze inside for the attached node to be enabled and appear.
+         * Used with HandConstraintVisibility.GAZE_FOCUS
+         */
+        gazeProximityRadius: number;
         /**
          * Offset distance from the hand in meters
          */
@@ -53667,7 +53780,7 @@ declare module BABYLON {
          */
         nodeOrientationMode: HandConstraintOrientation;
         /**
-         * Set the hand this behavior should follow. If set to "none", it will follow any visible hand (prioritising the right one).
+         * Set the hand this behavior should follow. If set to "none", it will follow any visible hand (prioritising the left one).
          */
         handedness: XRHandedness;
         /**
@@ -53681,6 +53794,10 @@ declare module BABYLON {
         constructor();
         /** gets or sets behavior's name */
         get name(): string;
+        /** Enable the behavior */
+        enable(): void;
+        /** Disable the behavior */
+        disable(): void;
         private _getHandPose;
         /**
          * Initializes the hand constraint behavior
@@ -53691,6 +53808,7 @@ declare module BABYLON {
          * @param node defines the node to attach the behavior to
          */
         attach(node: TransformNode): void;
+        private _setVisibility;
         /**
          * Detaches the behavior from the `TransformNode`
          */
@@ -86929,61 +87047,6 @@ declare module BABYLON {
         protected _onXRFrame(_xrFrame: XRFrame): void;
         private _attachController;
         private _detachController;
-    }
-}
-declare module BABYLON {
-    /**
-     * The WebXR Eye Tracking feature grabs eye data from the device and provides it in an easy-access format.
-     * Currently only enabled for BabylonNative applications.
-     */
-    export class WebXREyeTracking extends WebXRAbstractFeature {
-        private _latestEyeSpace;
-        private _gazeRay;
-        /**
-         * The module's name
-         */
-        static readonly Name: string;
-        /**
-         * The (Babylon) version of this module.
-         * This is an integer representing the implementation version.
-         * This number does not correspond to the WebXR specs version
-         */
-        static readonly Version: number;
-        /**
-         * This observable will notify registered observers when eye tracking starts
-         */
-        readonly onEyeTrackingStartedObservable: Observable<Ray>;
-        /**
-         * This observable will notify registered observers when eye tracking ends
-         */
-        readonly onEyeTrackingEndedObservable: Observable<void>;
-        /**
-         * This observable will notify registered observers on each frame that has valid tracking
-         */
-        readonly onEyeTrackingFrameUpdateObservable: Observable<Ray>;
-        /**
-         * Creates a new instance of the XR eye tracking feature.
-         * @param _xrSessionManager An instance of WebXRSessionManager.
-         */
-        constructor(_xrSessionManager: WebXRSessionManager);
-        /**
-         * Dispose this feature and all of the resources attached.
-         */
-        dispose(): void;
-        /**
-         * Returns whether the gaze data is valid or not
-         * @returns true if the data is valid
-         */
-        get isEyeGazeValid(): boolean;
-        /**
-         * Get a reference to the gaze ray. This data is valid while eye tracking persists, and will be set to null when gaze data is no longer available
-         * @returns a reference to the gaze ray if it exists and is valid, returns null otherwise.
-         */
-        getEyeGaze(): Nullable<Ray>;
-        protected _onXRFrame(frame: XRFrame): void;
-        private _eyeTrackingStartListener;
-        private _eyeTrackingEndListener;
-        private _init;
     }
 }
 declare module BABYLON {

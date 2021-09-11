@@ -45248,7 +45248,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                     _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                 }
             }
-            if (_this._ctrlKeyIsPressed) {
+            if (_this._ctrlKeyIsPressed && _this._focused) {
                 if (evt.key === "a") {
                     _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                     var index_1 = 0;
@@ -48153,10 +48153,14 @@ var TextInputLineComponent = /** @class */ (function (_super) {
     };
     TextInputLineComponent.prototype.updateValue = function (value) {
         if (this.props.numbersOnly) {
-            if (/[^0-9\.\p\x\%]/g.test(value)) {
+            var checkValue = value;
+            if (value[0] === "-") {
+                checkValue = value.substr(1);
+            }
+            if (/[^0-9\.\p\x\%]/g.test(checkValue)) {
                 return;
             }
-            if (value === "") {
+            if (!value) {
                 value = "0";
             }
         }

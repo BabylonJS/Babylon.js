@@ -247,6 +247,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
                 if (this._graphCanvas.selectedFrame) {
                     this._copiedFrame = this._graphCanvas.selectedFrame;
+                    this._copiedFrame.serialize(true);
                     return;
                 }
 
@@ -295,6 +296,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                         }
                         this._graphCanvas._frameIsMoving = false;
                     }
+
+                    newFrame.adjustPorts();
 
                     if (this._copiedFrame.isCollapsed) {
                         newFrame.isCollapsed = true;
