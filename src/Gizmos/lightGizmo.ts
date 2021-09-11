@@ -5,7 +5,7 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
-
+import { Node } from "../node";
 import { StandardMaterial } from '../Materials/standardMaterial';
 import { Light } from '../Lights/light';
 import { Scene } from '../scene';
@@ -60,6 +60,18 @@ export class LightGizmo extends Gizmo {
         }, PointerEventTypes.POINTERDOWN);
     }
     private _light: Nullable<Light> = null;
+
+    /**
+     * Override attachedNode because lightgizmo only support attached mesh
+     * It will return the attached mesh (if any) and setting an attached node will log
+     * a warning
+     */
+    public get attachedNode() {
+        return this.attachedMesh;
+    }
+    public set attachedNode(value: Nullable<Node>) {
+        console.warn("Nodes cannot be attached to LightGizmo. Attach to a mesh instead.");
+    }
 
     /**
      * The light that the gizmo is attached to

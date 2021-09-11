@@ -197,7 +197,7 @@ export class CubeTexture extends BaseTexture {
             return;
         }
 
-        this.updateURL(rootUrl, forcedExtension, onLoad, prefiltered, onError, extensions, this.getScene()?.useDelayedTextureLoading);
+        this.updateURL(rootUrl, forcedExtension, onLoad, prefiltered, onError, extensions, this.getScene()?.useDelayedTextureLoading, files);
     }
 
     /**
@@ -217,8 +217,9 @@ export class CubeTexture extends BaseTexture {
      * @param onError callback called if there was an error during the loading process (defaults to null)
      * @param extensions defines the suffixes add to the picture name in case six images are in use like _px.jpg...
      * @param delayLoad defines if the texture should be loaded now (false by default)
+     * @param files defines the six files to load for the different faces in that order: px, py, pz, nx, ny, nz
      */
-    public updateURL(url: string, forcedExtension?: string, onLoad: Nullable<() => void> = null, prefiltered: boolean = false, onError: Nullable<(message?: string, exception?: any) => void> = null, extensions: Nullable<string[]> = null, delayLoad = false): void {
+    public updateURL(url: string, forcedExtension?: string, onLoad: Nullable<() => void> = null, prefiltered: boolean = false, onError: Nullable<(message?: string, exception?: any) => void> = null, extensions: Nullable<string[]> = null, delayLoad = false, files: Nullable<string[]> = null): void {
         if (!this.name || StringTools.StartsWith(this.name, "data:")) {
             this.name = url;
         }
@@ -242,32 +243,33 @@ export class CubeTexture extends BaseTexture {
                 this.anisotropicFilteringLevel = 1;
             }
         }
-        if (this._files) {
-            this._files.length = 0;
-        } else {
-            this._files = [];
+
+        if (files) {
+            this._files = files;
         }
-
-        if (!isEnv && !isDDS && !extensions) {
-            extensions = ["_px.jpg", "_py.jpg", "_pz.jpg", "_nx.jpg", "_ny.jpg", "_nz.jpg"];
-        }
-
-        if (extensions) {
-
-            for (var index = 0; index < extensions.length; index++) {
-                this._files.push(url + extensions[index]);
+        else {
+            if (!isEnv && !isDDS && !extensions) {
+                extensions = ["_px.jpg", "_py.jpg", "_pz.jpg", "_nx.jpg", "_ny.jpg", "_nz.jpg"];
             }
-            this._extensions = extensions;
-        }
-        if (delayLoad) {
 
+            this._files = this._files || [];
+            this._files.length = 0;
+
+            if (extensions) {
+
+                for (var index = 0; index < extensions.length; index++) {
+                    this._files.push(url + extensions[index]);
+                }
+                this._extensions = extensions;
+            }
+        }
+
+        if (delayLoad) {
             this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
             this._delayedOnLoad = onLoad;
             this._delayedOnError = onError;
-
         } else {
             this._loadTexture(onLoad, onError);
-
         }
     }
 

@@ -410,14 +410,21 @@ export class CombineAction extends Action {
     public children: Action[];
 
     /**
+     * defines if the children actions conditions should be check before execution
+     */
+    public enableChildrenConditions: boolean;
+
+    /**
      * Instantiate the action
      * @param triggerOptions defines the trigger options
      * @param children defines the list of aggregated animations to run
      * @param condition defines the trigger related conditions
+     * @param enableChildrenConditions defines if the children actions conditions should be check before execution
      */
-    constructor(triggerOptions: any, children: Action[], condition?: Condition) {
+    constructor(triggerOptions: any, children: Action[], condition?: Condition, enableChildrenConditions = true) {
         super(triggerOptions, condition);
         this.children = children;
+        this.enableChildrenConditions = enableChildrenConditions;
     }
 
     /** @hidden */
@@ -432,8 +439,10 @@ export class CombineAction extends Action {
      * Execute the action and executes all the aggregated actions.
      */
     public execute(evt: ActionEvent): void {
-        for (var index = 0; index < this.children.length; index++) {
-            this.children[index].execute(evt);
+        for (const action of this.children) {
+            if (!this.enableChildrenConditions || action._evaluateConditionForCurrentFrame()) {
+                action.execute(evt);
+            }
         }
     }
 
