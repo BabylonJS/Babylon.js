@@ -1,6 +1,7 @@
 import { ExternalTexture } from "../../Materials/Textures/externalTexture";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { Sampler } from "../../Materials/Textures/sampler";
+import { WebGPUDataBuffer } from "../../Meshes/WebGPU/webgpuDataBuffer";
 import { Nullable } from "../../types";
 import { Constants } from "../constants";
 import { IMaterialContext } from "../IMaterialContext";
@@ -28,10 +29,12 @@ export class WebGPUMaterialContext implements IMaterialContext {
     public numExternalTextures: number;
     public samplers: { [name: string]: Nullable<IWebGPUMaterialContextSamplerCache> };
     public textures: { [name: string]: Nullable<IWebGPUMaterialContextTextureCache> };
+    public uniformBuffers: { [name: string]: WebGPUDataBuffer };
 
     constructor() {
         this.samplers = {};
         this.textures = {};
+        this.uniformBuffers = {};
         this.uniqueId = WebGPUMaterialContext._Counter++;
         this.numFloatTextures = 0;
         this.numExternalTextures = 0;
@@ -75,5 +78,9 @@ export class WebGPUMaterialContext implements IMaterialContext {
         }
 
         textureCache.texture = texture;
+    }
+
+    public setUniformBuffer(name: string, buffer: WebGPUDataBuffer): void {
+        this.uniformBuffers[name] = buffer;
     }
 }
