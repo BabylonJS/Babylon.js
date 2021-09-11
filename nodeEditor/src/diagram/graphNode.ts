@@ -15,6 +15,8 @@ import { GraphFrame } from './graphFrame';
 
 export class GraphNode {
     private _visual: HTMLDivElement;
+    private _headerContainer: HTMLDivElement;
+    private _promotionWarning: HTMLDivElement;
     private _header: HTMLDivElement;
     private _connections: HTMLDivElement;
     private _inputsContainer: HTMLDivElement;
@@ -307,9 +309,9 @@ export class GraphNode {
         this._comments.title = this.block.comments || "";
         
         if (this.block.willBeGeneratedIntoVertexShaderFromFragmentShader) {
-            this._visual.classList.add("promoted");
+            this._promotionWarning.classList.add("visible");
         } else {
-            this._visual.classList.remove("promoted");
+            this._promotionWarning.classList.remove("visible");
         }
     }
 
@@ -406,10 +408,18 @@ export class GraphNode {
         this._visual.addEventListener("pointerup", evt => this._onUp(evt));
         this._visual.addEventListener("pointermove", evt => this._onMove(evt));
 
+        this._headerContainer = root.ownerDocument!.createElement("div");
+        this._headerContainer.classList.add("header-container");
+        this._visual.appendChild(this._headerContainer);
+
         this._header = root.ownerDocument!.createElement("div");
         this._header.classList.add("header");
+        this._headerContainer.appendChild(this._header);
 
-        this._visual.appendChild(this._header);
+        this._promotionWarning = root.ownerDocument!.createElement("div");
+        this._promotionWarning.classList.add("promotion-warning");
+        this._promotionWarning.title = "For optimization reasons, this block will be promoted to the vertex shader. You can force it to render in the fragment shader by setting its target to Fragment";
+        this._headerContainer.appendChild(this._promotionWarning);
 
         this._connections = root.ownerDocument!.createElement("div");
         this._connections.classList.add("connections");
