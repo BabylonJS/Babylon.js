@@ -138,29 +138,34 @@ export class Action implements IAction {
     }
 
     /**
+     * Internal only - Returns if the current condition allows to run the action
+     * @hidden
+     */
+     public _evaluateConditionForCurrentFrame(): boolean {
+        const condition = this._condition;
+        if (!condition) {
+            return true;
+        }
+
+        const currentRenderId = this._actionManager.getScene().getRenderId();
+
+        // We cache the current evaluation for the current frame
+        if (condition._evaluationId !== currentRenderId) {
+            condition._evaluationId = currentRenderId;
+            condition._currentResult = condition.isValid();
+        }
+
+        return condition._currentResult;
+    }
+
+    /**
      * Internal only - executes current action event
      * @hidden
      */
     public _executeCurrent(evt?: ActionEvent): void {
-        if (this._nextActiveAction._condition) {
-            var condition = this._nextActiveAction._condition;
-            var currentRenderId = this._actionManager.getScene().getRenderId();
-
-            // We cache the current evaluation for the current frame
-            if (condition._evaluationId === currentRenderId) {
-                if (!condition._currentResult) {
-                    return;
-                }
-            } else {
-                condition._evaluationId = currentRenderId;
-
-                if (!condition.isValid()) {
-                    condition._currentResult = false;
-                    return;
-                }
-
-                condition._currentResult = true;
-            }
+        const isConditionValid = this._evaluateConditionForCurrentFrame();
+        if (!isConditionValid) {
+            return;
         }
 
         this.onBeforeExecuteObservable.notifyObservers(this);

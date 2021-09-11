@@ -811,16 +811,11 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     export const Null_Value: number;
-    export class ListLineOption {
-        label: string;
-        value: number;
-        selected?: boolean;
-    }
     export interface IOptionsLineComponentProps {
         label: string;
         target: any;
         propertyName: string;
-        options: ListLineOption[];
+        options: BABYLON.IInspectableOptions[];
         noDirectUpdate?: boolean;
         onSelect?: (value: number) => void;
         extractValue?: () => number;
@@ -1131,6 +1126,7 @@ declare module INSPECTOR {
         animations: BABYLON.Nullable<BABYLON.Animation[] | BABYLON.TargetedAnimation[]>;
         scene: BABYLON.Scene;
         target: BABYLON.Nullable<BABYLON.IAnimatable>;
+        rootAnimationGroup: BABYLON.Nullable<BABYLON.AnimationGroup>;
         activeAnimations: BABYLON.Animation[];
         activeChannels: {
             [key: number]: string;

@@ -491,6 +491,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
         if (this._beforeRenderObserver) {
             this._scene.onBeforeRenderObservable.remove(this._beforeRenderObserver);
         }
+        this._dragPlane.dispose();
         this.releaseDrag();
     }
 }

@@ -8665,21 +8665,14 @@ var GLTFLoader = /** @class */ (function () {
             accessor._babylonVertexBuffer = {};
         }
         if (accessor.sparse) {
-            accessor._babylonVertexBuffer[kind] = this._loadFloatAccessorAsync("/accessors/" + accessor.index, accessor).then(function (data) {
-                return new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"](_this._babylonScene.getEngine(), data, kind, false);
-            });
-        }
-        // HACK: If byte offset is not a multiple of component type byte length then load as a float array instead of using Babylon buffers.
-        else if (accessor.byteOffset && accessor.byteOffset % babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].GetTypeByteLength(accessor.componentType) !== 0) {
-            babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Logger"].Warn("Accessor byte offset is not a multiple of component type byte length");
-            accessor._babylonVertexBuffer[kind] = this._loadFloatAccessorAsync("/accessors/" + accessor.index, accessor).then(function (data) {
+            accessor._babylonVertexBuffer[kind] = this._loadFloatAccessorAsync(context, accessor).then(function (data) {
                 return new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"](_this._babylonScene.getEngine(), data, kind, false);
             });
         }
         // Load joint indices as a float array since the shaders expect float data but glTF uses unsigned byte/short.
         // This prevents certain platforms (e.g. D3D) from having to convert the data to float on the fly.
         else if (kind === babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].MatricesIndicesKind || kind === babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].MatricesIndicesExtraKind) {
-            accessor._babylonVertexBuffer[kind] = this._loadFloatAccessorAsync("/accessors/" + accessor.index, accessor).then(function (data) {
+            accessor._babylonVertexBuffer[kind] = this._loadFloatAccessorAsync(context, accessor).then(function (data) {
                 return new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"](_this._babylonScene.getEngine(), data, kind, false);
             });
         }
@@ -9123,12 +9116,13 @@ var GLTFLoader = /** @class */ (function () {
         var buffer = bufferView.buffer;
         byteOffset = bufferView.byteOffset + (byteOffset || 0);
         var constructor = GLTFLoader._GetTypedArrayConstructor(context + "/componentType", componentType);
-        try {
-            return new constructor(buffer, byteOffset, length);
+        var componentTypeLength = babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].GetTypeByteLength(componentType);
+        if (byteOffset % componentTypeLength !== 0) {
+            // HACK: Copy the buffer if byte offset is not a multiple of component type byte length.
+            babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Logger"].Warn(context + ": Copying buffer as byte offset (" + byteOffset + ") is not a multiple of component type byte length (" + componentTypeLength + ")");
+            return new constructor(buffer.slice(byteOffset, byteOffset + length * componentTypeLength), 0);
         }
-        catch (e) {
-            throw new Error(context + ": " + e);
-        }
+        return new constructor(buffer, byteOffset, length);
     };
     GLTFLoader._GetNumComponents = function (context, type) {
         switch (type) {
