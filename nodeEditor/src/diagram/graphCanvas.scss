@@ -469,6 +469,10 @@
                 grid-template-columns: 100%;
                 color: white;
 
+                &.promoted {
+                    outline: red solid 4px;
+                }
+
                 &.hidden {
                     display: none;
                 }

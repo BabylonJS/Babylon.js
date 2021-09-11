@@ -59,7 +59,7 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
                     }
                     {
                         (this.props.block._originalTargetIsNeutral) &&
-                        <OptionsLineComponent label="Target" options={targetOptions} target={this.props.block} propertyName="target" onSelect={(value: any) => {
+                        <OptionsLineComponent label="Target" options={targetOptions} target={this.props.block} propertyName="target" onSelect={() => {
                             this.forceUpdate();
 
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers();
@@ -68,7 +68,7 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
                     }
                     {
                         (!this.props.block._originalTargetIsNeutral) &&
-                        <TextLineComponent label="Type" value={NodeMaterialBlockTargets[this.props.block.target]} />
+                        <TextLineComponent label="Target" value={NodeMaterialBlockTargets[this.props.block.target]} />
                     }
                     <TextLineComponent label="Type" value={this.props.block.getClassName()} />
                     <TextInputLineComponent globalState={this.props.globalState} label="Comments" propertyName="comments" target={this.props.block}
