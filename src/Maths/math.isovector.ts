@@ -1,13 +1,13 @@
 import { Logger } from "../Misc/logger";
 import { Vector3} from "./math.vector";
-import { _TypeStore } from '../Misc/typeStore';
 
 /**
- * Class representing an isovector containing 2 INTEGER coordinates
+ * Class representing an isovector a vector containing 2 INTEGER coordinates
  * x axis is horizontal
  * y axis is 60 deg counter clockwise from positive y axis
+ * @hidden
  */
-export class IsoVector {
+export class _IsoVector {
     /**
      * Creates a new isovector from the given x and y coordinates
      * @param x defines the first coordinate, must be an integer
@@ -35,8 +35,8 @@ export class IsoVector {
      * Gets a new IsoVector copied from the IsoVector
      * @returns a new IsoVector
      */
-    public clone(): IsoVector {
-        return new IsoVector(this.x, this.y);
+    public clone(): _IsoVector {
+        return new _IsoVector(this.x, this.y);
     }
 
     /**
@@ -45,7 +45,7 @@ export class IsoVector {
      * @param other an IsoVector a center of rotation
      * @returns the rotated IsoVector
      */
-    public rotate60About(other: IsoVector) { //other IsoVector
+    public rotate60About(other: _IsoVector) { //other IsoVector
         let x: number = this.x;
         this.x = other.x + other.y - this.y;
         this.y = x + this.y - other.x;
@@ -58,7 +58,7 @@ export class IsoVector {
      * @param other an IsoVector as center of rotation
      * @returns the rotated IsoVector
      */
-    public rotateNeg60About(other: IsoVector) {
+    public rotateNeg60About(other: _IsoVector) {
         let x = this.x;
         this.x = x + this.y - other.y;
         this.y = other.x + other.y - x;
@@ -70,7 +70,7 @@ export class IsoVector {
      * Rotates one IsoVector 120 degrees counter clockwise about the center of the triangle
      * Please note that this is an in place operation
      * @param m integer a measure a Primary triangle of order (m, n) m > n
-     * @param n integer a measure for a Primary triangle of order (m, n)
+     * @param n >= 0 integer a measure for a Primary triangle of order (m, n)
      * @returns the rotated IsoVector
      */
     public rotate120(m: number, n: number) { //m, n integers
@@ -93,7 +93,7 @@ export class IsoVector {
      * Rotates one IsoVector 120 degrees clockwise about the center of the triangle
      * Please note that this is an in place operation
      * @param m integer a measure a Primary triangle of order (m, n) m > n
-     * @param n integer a measure for a Primary triangle of order (m, n)
+     * @param n >= 0 integer a measure for a Primary triangle of order (m, n)
      * @returns the rotated IsoVector
      */
     public rotateNeg120(m: number, n: number) { //m, n integers
@@ -116,7 +116,7 @@ export class IsoVector {
      * @param origin an IsoVector
      * @returns Point as a Vector3 
      */
-    public toCartesianOrigin(origin: IsoVector, isoGridSize: number) {
+    public toCartesianOrigin(origin: _IsoVector, isoGridSize: number) {
         const point = Vector3.Zero();
         point.x = origin.x + 2 * this.x * isoGridSize + this.y * isoGridSize;
         point.y = origin.y + Math.sqrt(3) * this.y * isoGridSize;
@@ -129,8 +129,8 @@ export class IsoVector {
      * Gets a new IsoVector(0, 0)
      * @returns a new IsoVector
      */
-    public static Zero(): IsoVector {
-        return new IsoVector(0, 0);
+    public static Zero(): _IsoVector {
+        return new _IsoVector(0, 0);
     }
 }
 

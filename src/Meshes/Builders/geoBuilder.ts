@@ -5,7 +5,7 @@ import { Mesh } from "../../Meshes/mesh";
 import { PolyhedronBuilder } from ".././Builders/polyhedronBuilder";
 import { Nullable } from '../../types';
 import { Logger } from "../../Misc/logger";
-import { Primary, GeoData} from "../geoMesh"
+import { _PrimaryIsoTriangle, GeodesicData} from "../geoMesh"
 
 Mesh.CreateGeodesicSphere = (name: string, options: { m?: number, n: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number }, scene: Scene): Mesh => {
     return GeoBuilder.CreateGeodesicSphere(name, options, scene);
@@ -52,12 +52,12 @@ Mesh.CreateGeodesicSphere = (name: string, options: { m?: number, n: number, siz
             m = temp;
             Logger.Warn("n > m therefore m and n swapped");
         }
-        const primTri: Primary = new Primary;
+        const primTri: _PrimaryIsoTriangle = new _PrimaryIsoTriangle;
         primTri.build(m, n);
-        const geoData = GeoData.BuildGeoData(primTri);
+        const geodesicData = GeodesicData.BuildGeodesicData(primTri);
         
         const geoOptions: object = {
-            custom: geoData,
+            custom: geodesicData,
             size: options.size,
             sizeX: options.sizeX,
             sizeY: options.sizeY,

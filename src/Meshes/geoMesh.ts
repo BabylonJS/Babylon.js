@@ -1,7 +1,7 @@
 import { Vector3, TmpVectors } from "../Maths/math.vector";
 import { Scalar } from '../Maths/math.scalar';
 import { PHI } from '../Maths/math.constants';
-import { IsoVector } from '../Maths/math.isovector';
+import { _IsoVector } from '../Maths/math.isovector';
 
 
 
@@ -10,12 +10,12 @@ import { IsoVector } from '../Maths/math.isovector';
  * When O is the isovector (0, 0), A is isovector (m, n)
  * @hidden
  */
-export class Primary {
+export class _PrimaryIsoTriangle {
     //properties
     public _m: number;
     public _n: number;
     public _cartesian: Vector3[] = [];
-    public _vertices: IsoVector[] = [];
+    public _vertices: _IsoVector[] = [];
     public _max: number[] = [];
     public _min: number[] = [];
     public _vecToIdx: {[key: string]: number};
@@ -23,9 +23,9 @@ export class Primary {
     public _closestTo: number[][] = [];
 
     public _innerFacets: string[][] = [];
-    public _isoVecsABOB: IsoVector[][] = [];
-    public _isoVecsOBOA: IsoVector[][] = [];
-    public _isoVecsBAOA: IsoVector[][] = [];
+    public _isoVecsABOB: _IsoVector[][] = [];
+    public _isoVecsOBOA: _IsoVector[][] = [];
+    public _isoVecsBAOA: _IsoVector[][] = [];
     public _vertexTypes: number[][] = [];
 
     public _coau: number;
@@ -45,7 +45,7 @@ export class Primary {
     )
 
     /**
-    * Creates the Primary Triangle OAB
+    * Creates the _PrimaryIsoTriangle Triangle OAB
     * @param m an integer
     * @param n an integer
     */
@@ -66,16 +66,16 @@ export class Primary {
         n1 = n / g;
     
         let fr: any; //face to the right of current face
-        let rot: any; //rotation about which vertex for fr
+        let rot: string; //rotation about which vertex for fr 
         let O: number;
         let A: number;
         let B: number;
-        const Ovec: IsoVector = IsoVector.Zero();
-        const Avec = new IsoVector(m, n);
-        const Bvec = new IsoVector(-n, m + n);
-        let OAvec: IsoVector = IsoVector.Zero();
-        let ABvec: IsoVector = IsoVector.Zero();
-        let OBvec: IsoVector = IsoVector.Zero();
+        const Ovec: _IsoVector = _IsoVector.Zero();
+        const Avec = new _IsoVector(m, n);
+        const Bvec = new _IsoVector(-n, m + n);
+        let OAvec: _IsoVector = _IsoVector.Zero();
+        let ABvec: _IsoVector = _IsoVector.Zero();
+        let OBvec: _IsoVector = _IsoVector.Zero();
         let verts: number[] = [];
         let idx: string;
         let idxR: string;
@@ -233,12 +233,12 @@ export class Primary {
         let m = this._m;
         let n = this._n;
     
-        const B = new IsoVector(-n, m + n)
+        const B = new _IsoVector(-n, m + n)
     
         for (let y = 1; y < m + n; y++) {
-            const point = new IsoVector(this._min[y], y);
-            const prev = new IsoVector(this._min[y - 1], y - 1);
-            const next = new IsoVector(this._min[y + 1], y + 1);
+            const point = new _IsoVector(this._min[y], y);
+            const prev = new _IsoVector(this._min[y - 1], y - 1);
+            const next = new _IsoVector(this._min[y + 1], y + 1);
             const pointR = point.clone();
             const prevR = prev.clone();
             const nextR = next.clone();
@@ -247,9 +247,9 @@ export class Primary {
             prevR.rotate60About(B);
             nextR.rotate60About(B);
     
-            const maxPoint = new IsoVector(this._max[pointR.y], pointR.y);
-            const maxPrev = new IsoVector(this._max[pointR.y - 1], pointR.y - 1);
-            const maxLeftPrev = new IsoVector( this._max[pointR.y - 1] - 1, pointR.y - 1);
+            const maxPoint = new _IsoVector(this._max[pointR.y], pointR.y);
+            const maxPrev = new _IsoVector(this._max[pointR.y - 1], pointR.y - 1);
+            const maxLeftPrev = new _IsoVector( this._max[pointR.y - 1] - 1, pointR.y - 1);
     
             if ((pointR.x !== maxPoint.x) || (pointR.y !== maxPoint.y)) {
                 if (pointR.x !== maxPrev.x) { // type2
@@ -281,7 +281,7 @@ export class Primary {
     };
 
     public _mapABOBtoOBOA() {
-        let point = new IsoVector(0, 0);
+        const point = new _IsoVector(0, 0);
         for (let i = 0; i < this._isoVecsABOB.length; i++) {
             const temp = [];
             for (let j = 0; j < 3; j++) {
@@ -297,7 +297,7 @@ export class Primary {
     };
 
     public _mapABOBtoBAOA() {
-        let point = new IsoVector(0, 0);
+        const point = new _IsoVector(0, 0);
         for (let i = 0; i < this._isoVecsABOB.length; i++) {
             const temp = [];
             for (let j = 0; j < 3; j++) {
@@ -313,7 +313,7 @@ export class Primary {
         
     };
 
-    public _MapToFace(faceNb: number, geoData: PolyhedronData) {
+    public _MapToFace(faceNb: number, geodesicData: PolyhedronData) {
         const F = this._IDATA.face[faceNb];
         const Oidx = F[2];
         const Aidx = F[1];
@@ -337,7 +337,7 @@ export class Primary {
             tempVec  = x.scale(this._cartesian[i].x).add(y.scale(this._cartesian[i].y)).add(O);
             mapped[i] = [tempVec.x, tempVec.y, tempVec.z];
             idx = faceNb + "|" + this._vertices[i].x + "|" + this._vertices[i].y;
-            geoData.vertex[this._vecToIdx[idx]] = [tempVec.x, tempVec.y, tempVec.z];
+            geodesicData.vertex[this._vecToIdx[idx]] = [tempVec.x, tempVec.y, tempVec.z];
         }
     };
 
@@ -350,17 +350,17 @@ export class Primary {
      */
 
     public build(m: number, n: number) {
-        const vertices = new Array<IsoVector>();
+        const vertices = new Array<_IsoVector>();
     
-        const O:IsoVector = IsoVector.Zero();
-        const A:IsoVector = new IsoVector(m, n);
-        const B:IsoVector = new IsoVector(-n, m + n);
+        const O:_IsoVector = _IsoVector.Zero();
+        const A:_IsoVector = new _IsoVector(m, n);
+        const B:_IsoVector = new _IsoVector(-n, m + n);
         vertices.push(O, A, B);
     
         //max internal isoceles triangle vertices
         for (let y = n; y < m + 1 ; y++) {
             for (let x = 0; x < m + 1 - y; x++ ) {
-                vertices.push(new IsoVector(x, y));
+                vertices.push(new _IsoVector(x, y));
             }
         }
     
@@ -371,18 +371,18 @@ export class Primary {
             const n1 = n / g; 
     
             for (let i = 1; i < g; i++) {
-                vertices.push(new IsoVector(i * m1, i * n1)); //OA
-                vertices.push(new IsoVector(-i * n1, i * (m1 + n1)));  //OB
-                vertices.push(new IsoVector(m - i * (m1 + n1), n + i * m1)); // AB
+                vertices.push(new _IsoVector(i * m1, i * n1)); //OA
+                vertices.push(new _IsoVector(-i * n1, i * (m1 + n1)));  //OB
+                vertices.push(new _IsoVector(m - i * (m1 + n1), n + i * m1)); // AB
             }; 
     
             //lower rows vertices and their rotations
             const ratio = m / n;
             for (let y = 1; y < n; y++) {
                 for (let x = 0; x < y * ratio; x++) {
-                    vertices.push(new IsoVector(x, y));
-                    vertices.push(new IsoVector(x, y).rotate120(m , n));
-                    vertices.push(new IsoVector(x, y).rotateNeg120(m , n));
+                    vertices.push(new _IsoVector(x, y));
+                    vertices.push(new _IsoVector(x, y).rotate120(m , n));
+                    vertices.push(new _IsoVector(x, y).rotateNeg120(m , n));
                 }
             }
         }
@@ -414,7 +414,7 @@ export class Primary {
         };
 
         //calculates the distance of a vertex from a given primary vertex
-        const  distFrom = (vert: IsoVector, primVert: string) => {
+        const  distFrom = (vert: _IsoVector, primVert: string) => {
             const v = vert.clone();
             if (primVert === "A") {
                 v.rotateNeg120(m, n);
@@ -437,7 +437,7 @@ export class Primary {
         let closest: number = -1;
         let dist: number = -1;
         for (let i = 0; i < len; i++) {
-            cartesian[i] = vertices[i].toCartesianOrigin(new IsoVector(0, 0), 0.5)
+            cartesian[i] = vertices[i].toCartesianOrigin(new _IsoVector(0, 0), 0.5)
             distFromO[i] = distFrom(vertices[i], "O");
             distFromA[i] = distFrom(vertices[i], "A");
             distFromB[i] = distFrom(vertices[i], "B");
@@ -523,7 +523,7 @@ export class PolyhedronData {
 /**
  * This class Extends the PolyhedronData Class to provide measures for a Geodesic Polyhedron
  */
-export class GeoData extends PolyhedronData{
+export class GeodesicData extends PolyhedronData{
 
     /**
      * @hidden
@@ -544,7 +544,7 @@ export class GeoData extends PolyhedronData{
     /**
      * @hidden
      */
-    public _innerToData(face : number, primTri: Primary) {
+    public _innerToData(face : number, primTri: _PrimaryIsoTriangle) {
         for (let i = 0; i < primTri._innerFacets.length; i++) {
             this.face.push(primTri._innerFacets[i].map((el) => primTri._vecToIdx[face + el]));
         }
@@ -552,7 +552,7 @@ export class GeoData extends PolyhedronData{
     /**
      * @hidden
      */
-    public _mapABOBtoDATA(faceNb: number, primTri: Primary) {
+    public _mapABOBtoDATA(faceNb: number, primTri: _PrimaryIsoTriangle) {
         const fr = primTri._IDATA._edgematch[faceNb][0];
         for (let i = 0; i < primTri._isoVecsABOB.length; i++) {
             const temp = [];
@@ -570,7 +570,7 @@ export class GeoData extends PolyhedronData{
     /**
      * @hidden
      */
-    public _mapOBOAtoDATA(faceNb: number, primTri: Primary) {
+    public _mapOBOAtoDATA(faceNb: number, primTri: _PrimaryIsoTriangle) {
         const fr = primTri._IDATA._edgematch[faceNb][0];
         for (let i = 0; i < primTri._isoVecsOBOA.length; i++) {
             const temp = [];
@@ -588,7 +588,7 @@ export class GeoData extends PolyhedronData{
     /**
      * @hidden
      */
-    public _mapBAOAtoDATA(faceNb: number, primTri: Primary) {
+    public _mapBAOAtoDATA(faceNb: number, primTri: _PrimaryIsoTriangle) {
         const fr = primTri._IDATA._edgematch[faceNb][2];
         for (let i = 0; i < primTri._isoVecsBAOA.length; i++) {
             const temp = [];
@@ -606,7 +606,7 @@ export class GeoData extends PolyhedronData{
     /**
      * @hidden
      */
-    public _orderData(primTri: Primary) {
+    public _orderData(primTri: _PrimaryIsoTriangle) {
         const nearTo: any = [];
         for (let i = 0; i < 13; i++) {
             nearTo[i] = [];
@@ -745,9 +745,9 @@ export class GeoData extends PolyhedronData{
      * @hidden
      */
 
-    public static BuildGeoData(primTri: Primary) {
+    public static BuildGeodesicData(primTri: _PrimaryIsoTriangle) {
         
-        const geoDATA = new GeoData("Geodesic-m-n", "Geodesic", [ [0, PHI, -1], [-PHI, 1, 0], [-1, 0, -PHI], [1, 0, -PHI], [PHI, 1, 0], [0, PHI, 1], [-1, 0, PHI], [-PHI, -1, 0], [0, -PHI, -1], [PHI, -1, 0], [1, 0, PHI], [0, -PHI, 1]], [])
+        const geodesicData = new GeodesicData("Geodesic-m-n", "Geodesic", [ [0, PHI, -1], [-PHI, 1, 0], [-1, 0, -PHI], [1, 0, -PHI], [PHI, 1, 0], [0, PHI, 1], [-1, 0, PHI], [-PHI, -1, 0], [0, -PHI, -1], [PHI, -1, 0], [1, 0, PHI], [0, -PHI, 1]], [])
 
         primTri._setIndices();
         primTri._calcCoeffs();
@@ -757,22 +757,22 @@ export class GeoData extends PolyhedronData{
         primTri._mapABOBtoBAOA();
 
         for (let f = 0; f < primTri._IDATA.face.length; f++) {
-            primTri._MapToFace(f, geoDATA);
-            geoDATA._innerToData(f, primTri);
+            primTri._MapToFace(f, geodesicData);
+            geodesicData._innerToData(f, primTri);
             if(primTri._IDATA._edgematch[f][1] === "B") {
-                geoDATA._mapABOBtoDATA(f, primTri);
+                geodesicData._mapABOBtoDATA(f, primTri);
             };
             if(primTri._IDATA._edgematch[f][1] === "O") {
-                geoDATA._mapOBOAtoDATA(f, primTri);
+                geodesicData._mapOBOAtoDATA(f, primTri);
             };
             if(primTri._IDATA._edgematch[f][3] === "A") {
-                geoDATA._mapBAOAtoDATA(f, primTri);
+                geodesicData._mapBAOAtoDATA(f, primTri);
             };
         };
 
-        geoDATA._orderData(primTri);
+        geodesicData._orderData(primTri);
         const radius = 1;
-        geoDATA.vertex = geoDATA.vertex.map(function (el) {
+        geodesicData.vertex = geodesicData.vertex.map(function (el) {
             var a = el[0];
             var b = el[1];
             var c = el[2];
@@ -783,7 +783,7 @@ export class GeoData extends PolyhedronData{
             return el;
         });
 
-        return geoDATA;
+        return geodesicData;
     }
 
 }
