@@ -1,5 +1,4 @@
 import { Logger } from "../../Misc/logger";
-import { WebGPUDataBuffer } from "../../Meshes/WebGPU/webgpuDataBuffer";
 import { WebGPUCacheSampler } from "./webgpuCacheSampler";
 import { WebGPUMaterialContext } from "./webgpuMaterialContext";
 import { WebGPUPipelineContext } from "./webgpuPipelineContext";
@@ -49,9 +48,11 @@ export class WebGPUCacheBindGroups {
      * Note that all uniform buffers have an offset of 0 in Babylon and we don't have a use case where we would have the same buffer used with different capacity values:
      * that means we don't need to factor in the offset/size of the buffer in the cache, only the id
      */
-    public getBindGroups(webgpuPipelineContext: WebGPUPipelineContext, materialContext: WebGPUMaterialContext, uniformsBuffers: { [name: string]: WebGPUDataBuffer }): GPUBindGroup[] {
+    public getBindGroups(webgpuPipelineContext: WebGPUPipelineContext, materialContext: WebGPUMaterialContext): GPUBindGroup[] {
         let bindGroups: GPUBindGroup[] | undefined = undefined;
         let node = WebGPUCacheBindGroups._Cache;
+
+        const uniformsBuffers = materialContext.uniformBuffers;
 
         // If there is at least one external texture to bind, we must recreate the bind groups each time because we need to retrieve a new texture each frame (by calling device.importExternalTexture)
         const cacheIsDisabled = this.disabled || materialContext.numExternalTextures > 0;
