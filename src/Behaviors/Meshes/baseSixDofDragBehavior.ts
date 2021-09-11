@@ -131,7 +131,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
     /**
      * Should the behavior rotate with the motion controller, when one is used.
      */
-    public motionControllerRotationType: SixDofDragRotationType = WITH_CONTROLLER;
+    public motionControllerRotationType: SixDofDragRotationType = SixDofDragRotationType.WITH_CONTROLLER;
 
     /**
      *  The name of the behavior
@@ -348,9 +348,11 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
 
                     // Calculate controller drag distance in controller space
                     const originDragDifference = TmpVectors.Vector3[0];
+                    const zDragDirection = TmpVectors.Vector3[1];
                     pointerInfo.pickInfo.ray.origin.subtractToRef(virtualMeshesInfo.lastOriginPosition, originDragDifference);
                     virtualMeshesInfo.lastOriginPosition.copyFrom(pointerInfo.pickInfo.ray.origin);
-                    const localOriginDragDifference = -Vector3.Dot(originDragDifference, pointerInfo.pickInfo.ray.direction);
+                    virtualMeshesInfo.pivotMesh.position.subtractToRef(this._pointerCamera?.globalPosition || pointerInfo.pickInfo.ray.origin, zDragDirection);
+                    const localOriginDragDifference = -Vector3.Dot(originDragDifference, zDragDirection);
 
                     virtualMeshesInfo.originMesh.addChild(virtualMeshesInfo.dragMesh);
                     virtualMeshesInfo.originMesh.addChild(virtualMeshesInfo.pivotMesh);
