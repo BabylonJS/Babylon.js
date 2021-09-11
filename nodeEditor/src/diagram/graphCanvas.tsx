@@ -247,6 +247,35 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         }
     }
 
+    private static _RefreshNode = (node: GraphNode, visitedNodes: Set<GraphNode>, visitedLinks: Set<NodeLink>) => {
+        node.refresh();
+
+        const links = node.links;
+
+        // refresh first the nodes so that the right types are assigned to the auto-detect ports
+        links.forEach((link) => {
+            const nodeA = link.nodeA, nodeB = link.nodeB;
+
+            if (!visitedNodes.has(nodeA)) {
+                visitedNodes.add(nodeA);
+                this._RefreshNode(nodeA, visitedNodes, visitedLinks);
+            }
+
+            if (nodeB && !visitedNodes.has(nodeB)) {
+                visitedNodes.add(nodeB);
+                this._RefreshNode(nodeB, visitedNodes, visitedLinks);
+            }
+        });
+
+        // then refresh the links to display the right color between ports
+        links.forEach((link) => {
+            if (!visitedLinks.has(link)) {
+                visitedLinks.add(link);
+                link.update();
+            }
+        });
+    };
+
     public getGridPosition(position: number, useCeil = false) {
         let gridSize = this.gridSize;
 		if (gridSize === 0) {
@@ -872,45 +901,13 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         pointA.connectTo(pointB);
         this.connectPorts(pointA, pointB);
 
-        if (pointB.innerType === NodeMaterialBlockConnectionPointTypes.AutoDetect) {
-            // need to potentially propagate the type of pointA to other ports of blocks connected to owner of pointB
+        // Need to potentially propagate the type of pointA to other ports of blocks connected to owner of pointB
+        // We also need to check if we want to display the promotion warning
 
-            const refreshNode = (node: GraphNode) => {
-                node.refresh();
+        const visitedNodes = new Set<GraphNode>([nodeA]);
+        const visitedLinks = new Set<NodeLink>([nodeB.links[nodeB.links.length - 1]]);
 
-                const links = node.links;
-
-                // refresh first the nodes so that the right types are assigned to the auto-detect ports
-                links.forEach((link) => {
-                    const nodeA = link.nodeA, nodeB = link.nodeB;
-
-                    if (!visitedNodes.has(nodeA)) {
-                        visitedNodes.add(nodeA);
-                        refreshNode(nodeA);
-                    }
-
-                    if (nodeB && !visitedNodes.has(nodeB)) {
-                        visitedNodes.add(nodeB);
-                        refreshNode(nodeB);
-                    }
-                });
-
-                // then refresh the links to display the right color between ports
-                links.forEach((link) => {
-                    if (!visitedLinks.has(link)) {
-                        visitedLinks.add(link);
-                        link.update();
-                    }
-                });
-            };
-
-            const visitedNodes = new Set<GraphNode>([nodeA]);
-            const visitedLinks = new Set<NodeLink>([nodeB.links[nodeB.links.length - 1]]);
-
-            refreshNode(nodeB);
-        } else {
-            nodeB.refresh();
-        }
+        GraphCanvasComponent._RefreshNode(nodeB, visitedNodes, visitedLinks);
 
         linksToNotifyForDispose?.forEach((link) => {
             link.onDisposedObservable.notifyObservers(link);

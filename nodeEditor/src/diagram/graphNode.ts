@@ -305,7 +305,12 @@ export class GraphNode {
         }
         this._comments.innerHTML = this.block.comments || "";
         this._comments.title = this.block.comments || "";
-
+        
+        if (this.block.willBeGeneratedIntoVertexShaderFromFragmentShader) {
+            this._visual.classList.add("promoted");
+        } else {
+            this._visual.classList.remove("promoted");
+        }
     }
 
     private _onDown(evt: PointerEvent) {
