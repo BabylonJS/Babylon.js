@@ -69,8 +69,6 @@ export class WebGPUCacheBindGroups {
         let bindGroups: GPUBindGroup[] | undefined = undefined;
         let node = WebGPUCacheBindGroups._Cache;
 
-        const uniformsBuffers = materialContext.uniformBuffers;
-
         const cacheIsDisabled = this.disabled || materialContext.forceBindGroupCreation;
         if (!cacheIsDisabled) {
             if (!materialContext.isDirty) {
@@ -79,7 +77,7 @@ export class WebGPUCacheBindGroups {
             }
 
             for (const bufferName of webgpuPipelineContext.shaderProcessingContext.uniformBufferNames) {
-                const uboId = uniformsBuffers[bufferName].uniqueId;
+                const uboId = materialContext.uniformBuffers[bufferName].uniqueId;
                 let nextNode = node.values[uboId];
                 if (!nextNode) {
                     nextNode = new WebGPUBindGroupCacheNode();
@@ -190,13 +188,13 @@ export class WebGPUCacheBindGroups {
                         Logger.Error(`Texture "${name}" could not be bound. entry=${JSON.stringify(entry)}, materialContext=${JSON.stringify(materialContext, (key: string, value: any) => key === 'texture' || key === 'sampler' ? '<no dump>' : value)}`, 50);
                     }
                 } else if (entry.buffer) {
-                    const dataBuffer = uniformsBuffers[name];
+                    const dataBuffer = materialContext.uniformBuffers[name];
                     if (dataBuffer) {
                         const webgpuBuffer = dataBuffer.underlyingResource as GPUBuffer;
                         (entries[j].resource as GPUBufferBinding).buffer = webgpuBuffer;
                         (entries[j].resource as GPUBufferBinding).size = dataBuffer.capacity;
                     } else {
-                        Logger.Error(`Can't find UBO "${name}". entry=${JSON.stringify(entry)}, _uniformsBuffers=${JSON.stringify(uniformsBuffers)}`, 50);
+                        Logger.Error(`Can't find UBO "${name}". entry=${JSON.stringify(entry)}, _uniformsBuffers=${JSON.stringify(materialContext.uniformBuffers)}`, 50);
                     }
                 }
             }
