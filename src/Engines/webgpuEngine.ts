@@ -2809,7 +2809,7 @@ export class WebGPUEngine extends Engine {
         }
 
         let textureState = 0;
-        if (!this._caps.textureFloatLinearFiltering && this._currentMaterialContext.numFloatTextures > 0) {
+        if (!this._caps.textureFloatLinearFiltering && this._currentMaterialContext.hasFloatTextures) {
             let bitVal = 1;
             for (let i = 0; i < webgpuPipelineContext.shaderProcessingContext.textureNames.length; ++i) {
                 const textureName = webgpuPipelineContext.shaderProcessingContext.textureNames[i];

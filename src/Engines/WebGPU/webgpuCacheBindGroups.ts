@@ -21,16 +21,29 @@ export class WebGPUCacheBindGroups {
 
     public static NumBindGroupsCreatedTotal = 0;
     public static NumBindGroupsCreatedLastFrame = 0;
+    public static NumBindGroupsLookupLastFrame = 0;
+    public static NumBindGroupsNoLookupLastFrame = 0;
 
     private static _Cache: WebGPUBindGroupCacheNode = new WebGPUBindGroupCacheNode();
 
     private static _NumBindGroupsCreatedCurrentFrame = 0;
+    private static _NumBindGroupsLookupCurrentFrame = 0;
+    private static _NumBindGroupsNoLookupCurrentFrame = 0;
 
     private _device: GPUDevice;
     private _cacheSampler: WebGPUCacheSampler;
     private _engine: WebGPUEngine;
 
     public disabled = false;
+
+    public static get Statistics() {
+        return {
+            totalCreated: WebGPUCacheBindGroups.NumBindGroupsCreatedTotal,
+            lastFrameCreated: WebGPUCacheBindGroups.NumBindGroupsCreatedLastFrame,
+            lookupLastFrame: WebGPUCacheBindGroups.NumBindGroupsLookupLastFrame,
+            noLookupLastFrame: WebGPUCacheBindGroups.NumBindGroupsNoLookupLastFrame,
+        };
+    }
 
     constructor(device: GPUDevice, cacheSampler: WebGPUCacheSampler, engine: WebGPUEngine) {
         this._device = device;
@@ -40,7 +53,11 @@ export class WebGPUCacheBindGroups {
 
     public endFrame(): void {
         WebGPUCacheBindGroups.NumBindGroupsCreatedLastFrame = WebGPUCacheBindGroups._NumBindGroupsCreatedCurrentFrame;
+        WebGPUCacheBindGroups.NumBindGroupsLookupLastFrame = WebGPUCacheBindGroups._NumBindGroupsLookupCurrentFrame;
+        WebGPUCacheBindGroups.NumBindGroupsNoLookupLastFrame = WebGPUCacheBindGroups._NumBindGroupsNoLookupCurrentFrame;
         WebGPUCacheBindGroups._NumBindGroupsCreatedCurrentFrame = 0;
+        WebGPUCacheBindGroups._NumBindGroupsLookupCurrentFrame = 0;
+        WebGPUCacheBindGroups._NumBindGroupsNoLookupCurrentFrame = 0;
     }
 
     /**
@@ -54,9 +71,13 @@ export class WebGPUCacheBindGroups {
 
         const uniformsBuffers = materialContext.uniformBuffers;
 
-        // If there is at least one external texture to bind, we must recreate the bind groups each time because we need to retrieve a new texture each frame (by calling device.importExternalTexture)
-        const cacheIsDisabled = this.disabled || materialContext.numExternalTextures > 0;
+        const cacheIsDisabled = this.disabled || materialContext.forceBindGroupCreation;
         if (!cacheIsDisabled) {
+            if (!materialContext.isDirty) {
+                WebGPUCacheBindGroups._NumBindGroupsNoLookupCurrentFrame++;
+                return materialContext.bindGroups;
+            }
+
             for (const bufferName of webgpuPipelineContext.shaderProcessingContext.uniformBufferNames) {
                 const uboId = uniformsBuffers[bufferName].uniqueId;
                 let nextNode = node.values[uboId];
@@ -90,11 +111,16 @@ export class WebGPUCacheBindGroups {
             bindGroups = node.bindGroups;
         }
 
+        materialContext.isDirty = false;
+
         if (bindGroups) {
+            materialContext.bindGroups = bindGroups;
+            WebGPUCacheBindGroups._NumBindGroupsLookupCurrentFrame++;
             return bindGroups;
         }
 
         bindGroups = [];
+        materialContext.bindGroups = bindGroups;
 
         if (!cacheIsDisabled) {
             node.bindGroups = bindGroups;
