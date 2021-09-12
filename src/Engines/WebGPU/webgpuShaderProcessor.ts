@@ -124,7 +124,7 @@ export abstract class WebGPUShaderProcessor {
                 const name = this.webgpuProcessingContext.bindGroupLayoutEntryInfo[i][entry.binding].name;
                 const nameInArrayOfTexture = this.webgpuProcessingContext.bindGroupLayoutEntryInfo[i][entry.binding].nameInArrayOfTexture;
                 if (entry) {
-                    if (entry.texture || entry.externalTexture) {
+                    if (entry.texture || entry.externalTexture || entry.storageTexture) {
                         this.webgpuProcessingContext.textureNames.push(nameInArrayOfTexture!);
                     } else if (entry.sampler) {
                         this.webgpuProcessingContext.samplerNames.push(name);
@@ -151,7 +151,7 @@ export abstract class WebGPUShaderProcessor {
                         binding: entry.binding,
                         resource: undefined as any,
                     });
-                } else if (entry.texture) {
+                } else if (entry.texture || entry.storageTexture) {
                     entries.push({
                         binding: entry.binding,
                         resource: undefined as any,
@@ -177,7 +177,7 @@ export abstract class WebGPUShaderProcessor {
         }
     }
 
-    protected _addTextureBindingDescription(name: string, textureInfo: WebGPUTextureDescription, textureIndex: number, dimension: Nullable<GPUTextureViewDimension>, isVertex: boolean): void {
+    protected _addTextureBindingDescription(name: string, textureInfo: WebGPUTextureDescription, textureIndex: number, dimension: Nullable<GPUTextureViewDimension>, format: Nullable<GPUTextureFormat>, isVertex: boolean): void {
         let { groupIndex, bindingIndex } = textureInfo.textures[textureIndex];
         if (!this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex]) {
             this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex] = [];
@@ -190,6 +190,16 @@ export abstract class WebGPUShaderProcessor {
                     binding: bindingIndex,
                     visibility: 0,
                     externalTexture: {},
+                });
+            } else if (format) {
+                len = this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex].push({
+                    binding: bindingIndex,
+                    visibility: 0,
+                    storageTexture: {
+                        access: WebGPUConstants.StorageTextureAccess.WriteOnly,
+                        format,
+                        viewDimension: dimension,
+                    },
                 });
             } else {
                 len = this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex].push({

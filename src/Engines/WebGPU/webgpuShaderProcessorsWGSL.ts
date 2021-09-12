@@ -42,6 +42,10 @@ const gpuTextureViewDimensionByWebGPUTextureFunction: { [key: string]: Nullable<
     "texture_depth_cube": WebGPUConstants.TextureViewDimension.Cube,
     "texture_depth_cube_array": WebGPUConstants.TextureViewDimension.CubeArray,
     "texture_depth_multisampled_2d": WebGPUConstants.TextureViewDimension.E2d,
+    "texture_storage_1d": WebGPUConstants.TextureViewDimension.E1d,
+    "texture_storage_2d": WebGPUConstants.TextureViewDimension.E2d,
+    "texture_storage_2d_array": WebGPUConstants.TextureViewDimension.E2dArray,
+    "texture_storage_3d": WebGPUConstants.TextureViewDimension.E3d,
     "texture_external": null
 };
 
@@ -57,7 +61,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
 
     public shaderLanguage = ShaderLanguage.WGSL;
     public uniformRegexp = /uniform\s+(\w+)\s*:\s*(.+)\s*;/;
-    public textureRegexp = /var\s+(\w+)\s*:\s*((array<\s*)?(texture_\w+)\s*(<\s*(f32|i32|u32)\s*>)?\s*(,\s*\w+\s*>\s*)?);/;
+    public textureRegexp = /var\s+(\w+)\s*:\s*((array<\s*)?(texture_\w+)\s*(<\s*(.+)\s*>)?\s*(,\s*\w+\s*>\s*)?);/;
     public noPrecision = true;
     public removeCommentsBeforeProcessing = true;
 
@@ -160,13 +164,16 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
             const type = match[2]; // texture_2d<f32> or array<texture_2d_array<f32>, 5> for eg
             const isArrayOfTexture = !!match[3];
             const textureFunc = match[4]; // texture_2d, texture_depth_2d, etc
+            const isStorageTexture = textureFunc.indexOf("storage") > 0;
             const componentType = match[6]; // f32 or i32 or u32 or undefined
+            const storageTextureFormat = isStorageTexture ? componentType.substring(0, componentType.indexOf(",")).trim() as GPUTextureFormat : null;
 
             let arraySize = isArrayOfTexture ? this._getArraySize(name, type, preProcessors)[2] : 0;
             let textureInfo = this.webgpuProcessingContext.availableTextures[name];
             if (!textureInfo) {
                 textureInfo = {
                     isTextureArray: arraySize > 0,
+                    isStorageTexture,
                     textures: [],
                     sampleType: WebGPUConstants.TextureSampleType.Float,
                 };
@@ -200,7 +207,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
                     texture = `[[group(${groupIndex}), binding(${bindingIndex})]] ${texture}`;
                 }
 
-                this._addTextureBindingDescription(name, textureInfo, i, textureDimension, !isFragment);
+                this._addTextureBindingDescription(name, textureInfo, i, textureDimension, storageTextureFormat, !isFragment);
             }
         }
 

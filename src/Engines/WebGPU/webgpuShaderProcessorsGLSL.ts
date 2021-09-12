@@ -103,6 +103,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor implements 
                     textureInfo = {
                         autoBindSampler: true,
                         isTextureArray: arraySize > 0,
+                        isStorageTexture: false,
                         textures: [],
                         sampleType: WebGPUConstants.TextureSampleType.Float,
                     };
@@ -172,7 +173,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor implements 
                 this._addSamplerBindingDescription(samplerName, samplerInfo, !isFragment);
 
                 for (let i = 0; i < arraySize; ++i) {
-                    this._addTextureBindingDescription(name, textureInfo, i, textureDimension, !isFragment);
+                    this._addTextureBindingDescription(name, textureInfo, i, textureDimension, null, !isFragment);
                 }
             }
             else {
