@@ -27,8 +27,9 @@ export interface WebGPUBindingInfo {
 export interface WebGPUTextureDescription {
     autoBindSampler?: boolean;
     isTextureArray: boolean;
+    isStorageTexture: boolean;
     textures: Array<WebGPUBindingInfo>;
-    sampleType: GPUTextureSampleType;
+    sampleType?: GPUTextureSampleType; // not used if the texture is a storage texture
 }
 
 /** @hidden */

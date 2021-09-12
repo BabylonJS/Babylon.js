@@ -151,7 +151,7 @@ export class WebGPUCacheBindGroups {
                     } else {
                         Logger.Error(`Sampler "${name}" could not be bound. entry=${JSON.stringify(entry)}, materialContext=${JSON.stringify(materialContext, (key: string, value: any) => key === 'texture' || key === 'sampler' ? '<no dump>' : value)}`, 50);
                     }
-                } else if (entry.texture) {
+                } else if (entry.texture || entry.storageTexture) {
                     const bindingInfo = materialContext.textures[name];
                     if (bindingInfo) {
                         if (this._engine.dbgSanityChecks && bindingInfo.texture === null) {
