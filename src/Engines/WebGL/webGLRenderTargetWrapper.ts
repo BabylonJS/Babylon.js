@@ -49,7 +49,7 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
 
     /**
      * Shares the depth buffer of this render target with another render target.
-     * *
+     * @hidden
      * @param renderTarget Destination renderTarget
      */
     public _shareDepth(renderTarget: WebGLRenderTargetWrapper): void {
@@ -61,8 +61,8 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
 
         if (renderTarget._depthStencilBuffer) {
             gl.deleteRenderbuffer(renderTarget._depthStencilBuffer);
-            renderTarget._depthStencilBuffer = this._depthStencilBuffer;
         }
+        renderTarget._depthStencilBuffer = this._depthStencilBuffer;
 
         this._engine._bindUnboundFramebuffer(framebuffer);
         gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthbuffer);
