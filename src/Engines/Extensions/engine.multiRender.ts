@@ -187,9 +187,9 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: RenderTargetTe
             samplingModes = options.samplingModes;
         }
         if (this.webGLVersion > 1 &&
-            (options.depthTextureFormat == Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 ||
-             options.depthTextureFormat == Constants.TEXTUREFORMAT_DEPTH24 ||
-             options.depthTextureFormat == Constants.TEXTUREFORMAT_DEPTH32_FLOAT)) {
+            (options.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 ||
+             options.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24 ||
+             options.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH32_FLOAT)) {
             depthTextureFormat = options.depthTextureFormat;
         }
 
@@ -211,7 +211,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: RenderTargetTe
     rtWrapper._framebuffer = framebuffer;
     rtWrapper._depthStencilBuffer = depthStencilBuffer;
     rtWrapper._generateDepthBuffer = !generateDepthTexture && generateDepthBuffer;
-    rtWrapper._generateStencilBuffer = !generateDepthTexture && generateStencilBuffer;
+    rtWrapper._generateStencilBuffer = !useStencilTexture && generateStencilBuffer;
     rtWrapper._attachments = attachments;
 
     for (var i = 0; i < textureCount; i++) {
@@ -285,16 +285,16 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: RenderTargetTe
         } else {
             if (depthTextureFormat == Constants.TEXTUREFORMAT_DEPTH32_FLOAT) {
                 depthTextureType = Constants.TEXTURETYPE_FLOAT;
-                glDepthTextureType= gl.FLOAT;
+                glDepthTextureType = gl.FLOAT;
                 glDepthTextureInternalFormat = gl.DEPTH_COMPONENT32F;
             } else if (depthTextureFormat == Constants.TEXTUREFORMAT_DEPTH24) {
                 depthTextureType = Constants.TEXTURETYPE_UNSIGNED_INT;
-                glDepthTextureType= gl.UNSIGNED_INT;
+                glDepthTextureType = gl.UNSIGNED_INT;
                 glDepthTextureInternalFormat = gl.DEPTH_COMPONENT24;
                 glDepthTextureAttachment = gl.DEPTH_ATTACHMENT;
             } else if (depthTextureFormat == Constants.TEXTUREFORMAT_DEPTH24_STENCIL8) {
                 depthTextureType = Constants.TEXTURETYPE_UNSIGNED_INT_24_8;
-                glDepthTextureType= gl.UNSIGNED_INT_24_8;
+                glDepthTextureType = gl.UNSIGNED_INT_24_8;
                 glDepthTextureInternalFormat = gl.DEPTH24_STENCIL8;
                 glDepthTextureFormat = gl.DEPTH_STENCIL;
                 glDepthTextureAttachment = gl.DEPTH_STENCIL_ATTACHMENT;
