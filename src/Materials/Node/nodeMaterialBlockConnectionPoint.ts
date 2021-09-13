@@ -313,7 +313,7 @@ export class NodeMaterialConnectionPoint {
             if (endpoint.ownerBlock.target === NodeMaterialBlockTargets.Vertex) {
                 return true;
             }
-    
+
             if (endpoint.ownerBlock.target === NodeMaterialBlockTargets.Neutral || endpoint.ownerBlock.target === NodeMaterialBlockTargets.VertexAndFragment) {
                 if (endpoint.ownerBlock.outputs.some((o) => o.isDirectlyConnectedToVertexOutput)) {
                     return true;
