@@ -38,6 +38,13 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
         return false;
     }
 
+    componentWillUnmount() {
+        if (this.props.globalState.blockKeyboardEvents = true) {
+            this.updateValue(this.state.value, true);
+            this.props.globalState.blockKeyboardEvents = false;
+        }
+    }
+
     raiseOnPropertyChanged(newValue: string, previousValue: string) {
         if (this.props.onChange) {
             this.props.onChange(newValue);
@@ -61,7 +68,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
         this._localChange = true;
         const store = this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!];
 
-        if (this.props.validator && raisePropertyChanged) {
+        if (this.props.validator) {
             if (this.props.validator(value) == false) {
                 value = store;
             }
@@ -78,8 +85,8 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
 
             if (this.props.propertyName === "name") {
                 if (this.props.target[this.props.propertyName] !== value) {
-                     // Name was rejected
-                     this.setState({ value: this.props.target[this.props.propertyName] });
+                    // Name was rejected
+                    this.setState({ value: this.props.target[this.props.propertyName] });
                 }
             }
         }
@@ -104,7 +111,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                             }} onBlur={(evt) => {
                                 this.updateValue(evt.target.value, true);
                                 this.props.globalState.blockKeyboardEvents = false;
-                            }}/>
+                            }} />
                     </>}
                     {!this.props.multilines && <>
                         <input value={this.state.value}
@@ -118,8 +125,8 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                             }} onBlur={(evt) => {
                                 this.updateValue(evt.target.value, true);
                                 this.props.globalState.blockKeyboardEvents = false;
-                            }}/>
-                        </>}
+                            }} />
+                    </>}
                 </div>
             </div>
         );

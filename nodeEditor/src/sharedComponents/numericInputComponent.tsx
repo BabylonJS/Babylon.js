@@ -35,6 +35,12 @@ export class NumericInputComponent extends React.Component<INumericInputComponen
         return false;
     }
 
+    componentWillUnmount() {
+        if (this.props.globalState.blockKeyboardEvents = true) {
+            this.props.globalState.blockKeyboardEvents = false;
+        }
+    }
+
     updateValue(evt: any) {
         let value = evt.target.value;
 
@@ -64,7 +70,7 @@ export class NumericInputComponent extends React.Component<INumericInputComponen
                         {`${this.props.label}: `}
                     </div>
                 }
-                <input type="number" 
+                <input type="number"
                     onFocus={() => this.props.globalState.blockKeyboardEvents = true}
                     onBlur={evt => {
                         this.props.globalState.blockKeyboardEvents = false;
