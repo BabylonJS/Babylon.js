@@ -259,6 +259,7 @@ declare module NODEEDITOR {
         private serializePortData;
         serialize(saveCollapsedState: boolean): IFrameData;
         export(): void;
+        adjustPorts(): void;
         static Parse(serializationData: IFrameData, canvas: GraphCanvasComponent, map?: {
             [key: number]: number;
         }): GraphFrame;
