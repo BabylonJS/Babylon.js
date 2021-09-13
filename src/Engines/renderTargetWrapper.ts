@@ -188,7 +188,7 @@ export class RenderTargetWrapper {
 
     /**
      * Shares the depth buffer of this render target with another render target.
-     * *
+     * @hidden
      * @param renderTarget Destination renderTarget
      */
     public _shareDepth(renderTarget: RenderTargetWrapper): void {
