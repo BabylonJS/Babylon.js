@@ -35,6 +35,10 @@ export interface IMultiRenderTargetOptions {
      */
     generateDepthTexture?: boolean;
     /**
+     * Define depth texture format to use
+     */
+    depthTextueFormat?: number;
+    /**
      * Define the number of desired draw buffers
      */
     textureCount?: number;
