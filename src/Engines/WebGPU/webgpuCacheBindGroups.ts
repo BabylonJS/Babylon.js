@@ -76,8 +76,8 @@ export class WebGPUCacheBindGroups {
                 return materialContext.bindGroups;
             }
 
-            for (const bufferName of webgpuPipelineContext.shaderProcessingContext.uniformBufferNames) {
-                const uboId = materialContext.uniformBuffers[bufferName].uniqueId;
+            for (const bufferName of webgpuPipelineContext.shaderProcessingContext.bufferNames) {
+                const uboId = materialContext.buffers[bufferName]?.uniqueId ?? 0;
                 let nextNode = node.values[uboId];
                 if (!nextNode) {
                     nextNode = new WebGPUBindGroupCacheNode();
@@ -188,13 +188,13 @@ export class WebGPUCacheBindGroups {
                         Logger.Error(`Texture "${name}" could not be bound. entry=${JSON.stringify(entry)}, materialContext=${JSON.stringify(materialContext, (key: string, value: any) => key === 'texture' || key === 'sampler' ? '<no dump>' : value)}`, 50);
                     }
                 } else if (entry.buffer) {
-                    const dataBuffer = materialContext.uniformBuffers[name];
+                    const dataBuffer = materialContext.buffers[name];
                     if (dataBuffer) {
                         const webgpuBuffer = dataBuffer.underlyingResource as GPUBuffer;
                         (entries[j].resource as GPUBufferBinding).buffer = webgpuBuffer;
                         (entries[j].resource as GPUBufferBinding).size = dataBuffer.capacity;
                     } else {
-                        Logger.Error(`Can't find UBO "${name}". entry=${JSON.stringify(entry)}, _uniformsBuffers=${JSON.stringify(materialContext.uniformBuffers)}`, 50);
+                        Logger.Error(`Can't find buffer "${name}". entry=${JSON.stringify(entry)}, buffers=${JSON.stringify(materialContext.buffers)}`, 50);
                     }
                 }
             }

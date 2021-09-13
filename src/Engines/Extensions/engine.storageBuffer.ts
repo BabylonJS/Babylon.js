@@ -1,6 +1,8 @@
 import { ThinEngine } from "../../Engines/thinEngine";
 import { DataBuffer } from '../../Buffers/dataBuffer';
-import { DataArray } from "../../types";
+import { DataArray, Nullable } from "../../types";
+
+declare type StorageBuffer = import("../../Buffers/storageBuffer").StorageBuffer;
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
@@ -30,6 +32,13 @@ declare module "../../Engines/thinEngine" {
          * @returns If not undefined, returns the (promise) buffer (as provided by the 4th parameter) filled with the data, else it returns a (promise) Uint8Array with the data read from the storage buffer
          */
         readFromStorageBuffer(storageBuffer: DataBuffer, offset?: number, size?: number, buffer?: ArrayBufferView): Promise<ArrayBufferView>;
+
+        /**
+         * Sets a storage buffer in the shader
+         * @param name Defines the name of the storage buffer as defined in the shader
+         * @param sampler Defines the value to give to the uniform
+         */
+        setStorageBuffer(name: string, buffer: Nullable<StorageBuffer>): void;
     }
 }
 
@@ -42,4 +51,8 @@ ThinEngine.prototype.updateStorageBuffer = function (buffer: DataBuffer, data: D
 
 ThinEngine.prototype.readFromStorageBuffer = function (storageBuffer: DataBuffer, offset?: number, size?: number, buffer?: ArrayBufferView): Promise<ArrayBufferView> {
     throw new Error("readFromStorageBuffer: Unsupported method in this engine!");
+};
+
+ThinEngine.prototype.setStorageBuffer = function (name: string, buffer: Nullable<StorageBuffer>): void {
+    throw new Error("setStorageBuffer: Unsupported method in this engine!");
 };

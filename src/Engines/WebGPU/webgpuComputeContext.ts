@@ -23,7 +23,6 @@ export class WebGPUComputeContext implements IComputeContext {
         if (!bindingsMapping) {
             throw new Error("WebGPUComputeContext.getBindGroups: bindingsMapping is required until browsers support reflection for wgsl shaders!");
         }
-        // TODO WEBGPU: add a cache for bind groups?
         if (this._bindGroups.length === 0) {
             const bindGroupEntriesExist = this._bindGroupEntries.length > 0;
             for (const key in bindings) {

@@ -14,7 +14,6 @@ import { IEffectFallbacks } from './iEffectFallbacks';
 import { ShaderStore as EngineShaderStore } from '../Engines/shaderStore';
 import { ShaderLanguage } from "../Engines/Processors/iShaderProcessor";
 import { CodeStringParsingTools } from "../Misc/codeStringParsingTools";
-import { Sampler } from "./Textures/sampler";
 
 declare type Engine = import("../Engines/engine").Engine;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
@@ -22,6 +21,8 @@ declare type ThinTexture = import("../Materials/Textures/thinTexture").ThinTextu
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
 declare type ExternalTexture = import("./Textures/externalTexture").ExternalTexture;
+declare type Sampler = import("./Textures/sampler").Sampler;
+declare type StorageBuffer = import("../Buffers/storageBuffer").StorageBuffer;
 
 /**
  * Options to be used when creating an effect.
@@ -947,6 +948,15 @@ export class Effect implements IDisposable {
      */
     public bindUniformBlock(blockName: string, index: number): void {
         this._engine.bindUniformBlock(this._pipelineContext!, blockName, index);
+    }
+
+    /**
+     * Sets a storage buffer on the engine to be used in the shader.
+     * @param name Name of the storage buffer variable.
+     * @param buffer Storage buffer to set.
+     */
+    public setStorageBuffer(name: string, buffer: Nullable<StorageBuffer>): void {
+        this._engine.setStorageBuffer(name, buffer);
     }
 
     /**
