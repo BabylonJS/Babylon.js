@@ -17,6 +17,7 @@ interface ITextInputLineComponentProps {
 
 export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, { value: string }> {
     private _localChange = false;
+    private _onFocus = false;
 
     constructor(props: ITextInputLineComponentProps) {
         super(props);
@@ -39,9 +40,8 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
     }
 
     componentWillUnmount() {
-        if (this.props.globalState.blockKeyboardEvents = true) {
+        if (this._onFocus) {
             this.updateValue(this.state.value, true);
-            this.props.globalState.blockKeyboardEvents = false;
         }
     }
 
@@ -101,7 +101,10 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                 <div className="value">
                     {this.props.multilines && <>
                         <textarea value={this.state.value}
-                            onFocus={() => this.props.globalState.blockKeyboardEvents = true}
+                            onFocus={() => {
+                                this.props.globalState.blockKeyboardEvents = true;
+                                this._onFocus = true;
+                            }}
                             onChange={(evt) => this.updateValue(evt.target.value, false)}
                             onKeyDown={(evt) => {
                                 if (evt.keyCode !== 13) {
@@ -111,11 +114,15 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                             }} onBlur={(evt) => {
                                 this.updateValue(evt.target.value, true);
                                 this.props.globalState.blockKeyboardEvents = false;
+                                this._onFocus = false;
                             }} />
                     </>}
                     {!this.props.multilines && <>
                         <input value={this.state.value}
-                            onFocus={() => this.props.globalState.blockKeyboardEvents = true}
+                            onFocus={() => {
+                                this.props.globalState.blockKeyboardEvents = true;
+                                this._onFocus = true;
+                            }}
                             onChange={(evt) => this.updateValue(evt.target.value, false)}
                             onKeyDown={(evt) => {
                                 if (evt.keyCode !== 13) {
@@ -125,6 +132,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                             }} onBlur={(evt) => {
                                 this.updateValue(evt.target.value, true);
                                 this.props.globalState.blockKeyboardEvents = false;
+                                this._onFocus = false;
                             }} />
                     </>}
                 </div>
