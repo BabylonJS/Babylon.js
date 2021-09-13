@@ -283,16 +283,16 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: RenderTargetTe
         if (this.webGLVersion < 2) {
             glDepthTextureInternalFormat = gl.DEPTH_COMPONENT;
         } else {
-            if (depthTextureFormat == Constants.TEXTUREFORMAT_DEPTH32_FLOAT) {
+            if (depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH32_FLOAT) {
                 depthTextureType = Constants.TEXTURETYPE_FLOAT;
                 glDepthTextureType = gl.FLOAT;
                 glDepthTextureInternalFormat = gl.DEPTH_COMPONENT32F;
-            } else if (depthTextureFormat == Constants.TEXTUREFORMAT_DEPTH24) {
+            } else if (depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24) {
                 depthTextureType = Constants.TEXTURETYPE_UNSIGNED_INT;
                 glDepthTextureType = gl.UNSIGNED_INT;
                 glDepthTextureInternalFormat = gl.DEPTH_COMPONENT24;
                 glDepthTextureAttachment = gl.DEPTH_ATTACHMENT;
-            } else if (depthTextureFormat == Constants.TEXTUREFORMAT_DEPTH24_STENCIL8) {
+            } else if (depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24_STENCIL8) {
                 depthTextureType = Constants.TEXTURETYPE_UNSIGNED_INT_24_8;
                 glDepthTextureType = gl.UNSIGNED_INT_24_8;
                 glDepthTextureInternalFormat = gl.DEPTH24_STENCIL8;
