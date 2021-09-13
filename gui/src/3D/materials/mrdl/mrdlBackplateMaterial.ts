@@ -217,7 +217,7 @@ export class MRDLBackplateMaterial extends PushMaterial {
         this._activeEffect.setFloat("_Iridescence_Intensity_", 0.45);
         this._activeEffect.setFloat("_Iridescence_Edge_Intensity_", 1);
         this._activeEffect.setDirectColor4("_Iridescence_Tint_", new Color4(1, 1, 1, 1));
-        this._activeEffect.setTexture("_Iridescent_Map_", new Texture("https://github.com/rgerd/TestAssets/blob/master/PNG/BackplateIridescence.png", this.getScene()));
+        this._activeEffect.setTexture("_Iridescent_Map_", new Texture("https://raw.githubusercontent.com/rgerd/TestAssets/master/PNG/BackplateIridescence.png", this.getScene()));
         this._activeEffect.setFloat("_Angle_", -45);
         this._activeEffect.setFloat("_Reflected_", true ? 1.0 : 0.0);
         this._activeEffect.setFloat("_Frequency_", 0.96);
