@@ -279,7 +279,9 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: RenderTargetTe
         var glDepthTextureFormat = gl.DEPTH_COMPONENT;
         var glDepthTextureType = gl.UNSIGNED_SHORT;
         var glAttachment = gl.DEPTH_ATTACHMENT;
-        if (this.webGLVersion > 1) {
+        if (this.webGLVersion < 1) {
+            glDepthTextureInternalFormat = gl.DEPTH_COMPONENT;
+        } else {
             if (depthTextureFormat == Constants.TEXTUREFORMAT_DEPTH32_FLOAT) {
                 depthTextureType = Constants.TEXTURETYPE_FLOAT;
                 glDepthTextureType= gl.FLOAT;
