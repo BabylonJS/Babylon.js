@@ -162,6 +162,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: RenderTargetTe
     var generateDepthBuffer = true;
     var generateStencilBuffer = false;
     var generateDepthTexture = false;
+    var depthTextureFormat = Constants.TEXTUREFORMAT_DEPTH16;
     var textureCount = 1;
 
     var defaultType = Constants.TEXTURETYPE_UNSIGNED_INT;
@@ -184,6 +185,10 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: RenderTargetTe
         }
         if (options.samplingModes) {
             samplingModes = options.samplingModes;
+        }
+        if (this.webGLVersion > 1 &&
+            (options.depthTextureFormat == Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 || options.depthTextureFormat == Constants.TEXTUREFORMAT_DEPTH32_FLOAT)) {
+            depthTextureFormat = options.depthTextureFormat;
         }
 
     }
@@ -267,25 +272,27 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: RenderTargetTe
         // Depth texture
         var depthTexture = new InternalTexture(this, InternalTextureSource.Depth);
 
-        var depthTextureFormat = Constants.TEXTUREFORMAT_DEPTH16;
-        if (this.webGLVersion > 1 &&
-            (options.depthTextueFormat == Constants.TEXTUREFORMAT_DEPTH32_FLOAT ||
-            options.depthTextueFormat == Constants.TEXTUREFORMAT_DEPTH24_STENCIL8)) {
-            depthTextureFormat = options.depthTextueFormat;
-        }
-
         var depthTextureType = Constants.TEXTURETYPE_UNSIGNED_SHORT;
-        var glInternalDepthTextureFormat = gl.DEPTH_COMPONENT;
+        var glDepthTextureInternalFormat = gl.DEPTH_COMPONENT16;
+        var glDepthTextureFormat = gl.DEPTH_COMPONENT;
         var glDepthTextureType = gl.UNSIGNED_SHORT;
+        var glAttachmentType = gl.DEPTH_ATTACHMENT;
         if (this.webGLVersion > 1) {
             if (depthTextureFormat == Constants.TEXTUREFORMAT_DEPTH32_FLOAT) {
                 depthTextureType = Constants.TEXTURETYPE_FLOAT;
-                glInternalDepthTextureFormat = gl.DEPTH_COMPONENT32F;
                 glDepthTextureType= gl.FLOAT;
+                glDepthTextureInternalFormat = gl.DEPTH_COMPONENT32F;
+            } else if (depthTextureFormat == Constants.TEXTUREFORMAT_DEPTH24) {
+                depthTextureType = Constants.TEXTURETYPE_UNSIGNED_INT;
+                glDepthTextureType= gl.UNSIGNED_INT;
+                glDepthTextureInternalFormat = gl.DEPTH_COMPONENT24;
+                glAttachmentType = gl.DEPTH_ATTACHMENT;
             } else if (depthTextureFormat == Constants.TEXTUREFORMAT_DEPTH24_STENCIL8) {
                 depthTextureType = Constants.TEXTURETYPE_UNSIGNED_INT_24_8;
-                glInternalDepthTextureFormat = gl.DEPTH24_STENCIL8;
-                glDepthTextureType= gl.UNSIGNED_INT;
+                glDepthTextureType= gl.UNSIGNED_INT_24_8;
+                glDepthTextureInternalFormat = gl.DEPTH24_STENCIL8;
+                glDepthTextureFormat = gl.DEPTH_STENCIL;
+                glAttachmentType = gl.DEPTH_STENCIL_ATTACHMENT;
             }
         }
 
@@ -298,18 +305,18 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: RenderTargetTe
         gl.texImage2D(
             gl.TEXTURE_2D,
             0,
-            glInternalDepthTextureFormat,
+            glDepthTextureInternalFormat,
             width,
             height,
             0,
-            gl.DEPTH_COMPONENT,
+            glDepthTextureFormat,
             glDepthTextureType,
             null
         );
 
         gl.framebufferTexture2D(
             gl.FRAMEBUFFER,
-            gl.DEPTH_ATTACHMENT,
+            glAttachmentType,
             gl.TEXTURE_2D,
             depthTexture._hardwareTexture!.underlyingResource,
             0
