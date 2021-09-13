@@ -203,12 +203,12 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: RenderTargetTe
     var textures: InternalTexture[] = [];
     var attachments: number[] = [];
 
-    var depthStencilBuffer = this._setupFramebufferDepthAttachments(generateStencilBuffer, generateDepthBuffer, width, height);
+    var depthStencilBuffer = this._setupFramebufferDepthAttachments(!generateDepthTexture && generateStencilBuffer, !generateDepthTexture && generateDepthBuffer, width, height);
 
     rtWrapper._framebuffer = framebuffer;
     rtWrapper._depthStencilBuffer = depthStencilBuffer;
-    rtWrapper._generateDepthBuffer = generateDepthBuffer;
-    rtWrapper._generateStencilBuffer = generateStencilBuffer;
+    rtWrapper._generateDepthBuffer = !generateDepthTexture && generateDepthBuffer;
+    rtWrapper._generateStencilBuffer = !generateDepthTexture && generateStencilBuffer;
     rtWrapper._attachments = attachments;
 
     for (var i = 0; i < textureCount; i++) {
@@ -276,7 +276,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: RenderTargetTe
         var glDepthTextureInternalFormat = gl.DEPTH_COMPONENT16;
         var glDepthTextureFormat = gl.DEPTH_COMPONENT;
         var glDepthTextureType = gl.UNSIGNED_SHORT;
-        var glAttachmentType = gl.DEPTH_ATTACHMENT;
+        var glAttachment = gl.DEPTH_ATTACHMENT;
         if (this.webGLVersion > 1) {
             if (depthTextureFormat == Constants.TEXTUREFORMAT_DEPTH32_FLOAT) {
                 depthTextureType = Constants.TEXTURETYPE_FLOAT;
@@ -286,13 +286,13 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: RenderTargetTe
                 depthTextureType = Constants.TEXTURETYPE_UNSIGNED_INT;
                 glDepthTextureType= gl.UNSIGNED_INT;
                 glDepthTextureInternalFormat = gl.DEPTH_COMPONENT24;
-                glAttachmentType = gl.DEPTH_ATTACHMENT;
+                glAttachment = gl.DEPTH_ATTACHMENT;
             } else if (depthTextureFormat == Constants.TEXTUREFORMAT_DEPTH24_STENCIL8) {
                 depthTextureType = Constants.TEXTURETYPE_UNSIGNED_INT_24_8;
                 glDepthTextureType= gl.UNSIGNED_INT_24_8;
                 glDepthTextureInternalFormat = gl.DEPTH24_STENCIL8;
                 glDepthTextureFormat = gl.DEPTH_STENCIL;
-                glAttachmentType = gl.DEPTH_STENCIL_ATTACHMENT;
+                glAttachment = gl.DEPTH_STENCIL_ATTACHMENT;
             }
         }
 
@@ -316,7 +316,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: RenderTargetTe
 
         gl.framebufferTexture2D(
             gl.FRAMEBUFFER,
-            glAttachmentType,
+            glAttachment,
             gl.TEXTURE_2D,
             depthTexture._hardwareTexture!.underlyingResource,
             0
