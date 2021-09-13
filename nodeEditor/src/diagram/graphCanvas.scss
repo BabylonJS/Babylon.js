@@ -519,8 +519,8 @@
                 .promotion-warning {
                     grid-row: 1;
                     grid-column: 2;
-                    background-color: red;
-                    display: none;              
+                    display: none;  
+                    z-index: 10;            
 
                     &.visible {
                         display: grid;
