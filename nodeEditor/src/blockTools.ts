@@ -124,7 +124,7 @@ export class BlockTools {
                 return new TextureBlock("Texture", nodeMaterial.mode === NodeMaterialModes.Particle);
             case "ReflectionTextureBlock":
                 return new ReflectionTextureBlock("Reflection texture");
-            case "LightBlock":
+            case "LightsBlock":
                 return new LightBlock("Lights");
             case "FogBlock":
                 return new FogBlock("Fog");
