@@ -23546,7 +23546,7 @@ declare module BABYLON {
 declare module BABYLON {
     /**
      * Renders to multiple views with a single draw call
-     * @see https://www.khronos.org/registry/webgl/extensions/WEBGL_multiview/
+     * @see https://www.khronos.org/registry/webgl/extensions/OVR_multiview2/
      */
     export class MultiviewRenderTarget extends RenderTargetTexture {
         /**
@@ -25958,6 +25958,7 @@ declare module BABYLON {
         private _speedRatio;
         private _weight;
         private _syncRoot;
+        private _frameToSyncFromJump;
         /**
          * Gets or sets a boolean indicating if the animatable must be disposed and removed at the end of the animation.
          * This will only apply for non looping animation (default is true)
