@@ -4,7 +4,7 @@ import { Constants } from '../../Engines/constants';
 
 /**
  * Renders to multiple views with a single draw call
- * @see https://www.khronos.org/registry/webgl/extensions/WEBGL_multiview/
+ * @see https://www.khronos.org/registry/webgl/extensions/OVR_multiview2/
  */
 export class MultiviewRenderTarget extends RenderTargetTexture {
     /**
