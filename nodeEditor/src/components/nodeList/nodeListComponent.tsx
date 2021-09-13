@@ -92,7 +92,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         "FogBlock": "Applies fog to the scene with an increasing opacity based on distance from the camera",
         "FogColorBlock": "The system value for fog color pulled from the scene",
         "ImageProcessingBlock": "Provides access to all of the Babylon image processing properties",
-        "LightsBlock": "Outputs diffuse and specular contributions from one or more scene lights",
+        "LightBlock": "Outputs diffuse and specular contributions from one or more scene lights",
         "LightInformationBlock": "Provides the direction, color and intensity of a selected light based on its world position",
         "ReflectionTextureBlock": "Creates a reflection from the input texture",
         "ViewDirectionBlock": "Outputs the direction vector of where the camera is aimed",
@@ -254,7 +254,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Procedural__Texture: ["ScreenPositionBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
             Round: ["RoundBlock", "CeilingBlock", "FloorBlock"],
-            Scene: ["FogBlock", "CameraPositionBlock", "CameraParametersBlock", "FogColorBlock", "ImageProcessingBlock", "LightsBlock", "LightInformationBlock", "ViewDirectionBlock", "SceneDepthBlock"],
+            Scene: ["FogBlock", "CameraPositionBlock", "CameraParametersBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock", "SceneDepthBlock"],
         };
 
         switch (this.props.globalState.mode) {
