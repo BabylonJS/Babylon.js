@@ -205,7 +205,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: RenderTargetTe
     var textures: InternalTexture[] = [];
     var attachments: number[] = [];
 
-    var useStencilTexture = this.webGLVersion > 1 && generateDepthTexture && options.depthTextureFormat == Constants.TEXTUREFORMAT_DEPTH24_STENCIL8;
+    var useStencilTexture = this.webGLVersion > 1 && generateDepthTexture && options.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24_STENCIL8;
     var depthStencilBuffer = this._setupFramebufferDepthAttachments(!useStencilTexture && generateStencilBuffer, !generateDepthTexture && generateDepthBuffer, width, height);
 
     rtWrapper._framebuffer = framebuffer;
