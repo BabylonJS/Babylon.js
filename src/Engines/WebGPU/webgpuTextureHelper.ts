@@ -475,6 +475,8 @@ export class WebGPUTextureHelper {
 
     public static GetWebGPUTextureFormat(type: number, format: number, useSRGBBuffer = false): GPUTextureFormat {
         switch (format) {
+            case Constants.TEXTUREFORMAT_DEPTH16:
+                return WebGPUConstants.TextureFormat.Depth16Unorm;
             case Constants.TEXTUREFORMAT_DEPTH24_STENCIL8:
                 return WebGPUConstants.TextureFormat.Depth24PlusStencil8;
             case Constants.TEXTUREFORMAT_DEPTH32_FLOAT:
