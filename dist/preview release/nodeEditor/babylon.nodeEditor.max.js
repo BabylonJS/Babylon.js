@@ -60562,6 +60562,27 @@ var GraphFrame = /** @class */ (function () {
         var json = _serializationTools__WEBPACK_IMPORTED_MODULE_1__["SerializationTools"].Serialize(state.nodeMaterial, state, this);
         _sharedUiComponents_stringTools__WEBPACK_IMPORTED_MODULE_2__["StringTools"].DownloadAsFile(state.hostDocument, json, this._name + ".json");
     };
+    GraphFrame.prototype.adjustPorts = function () {
+        for (var _i = 0, _a = this.nodes; _i < _a.length; _i++) {
+            var node = _a[_i];
+            for (var _b = 0, _c = node.outputPorts; _b < _c.length; _b++) { // Output
+                var port = _c[_b];
+                if (port.exposedOnFrame) {
+                    if (port.exposedPortPosition !== -1) {
+                        this._exposedOutPorts[port.exposedPortPosition] = port;
+                    }
+                }
+            }
+            for (var _d = 0, _e = node.inputPorts; _d < _e.length; _d++) { // Imports
+                var port = _e[_d];
+                if (port.exposedOnFrame) {
+                    if (port.exposedPortPosition !== -1) {
+                        this._exposedInPorts[port.exposedPortPosition] = port;
+                    }
+                }
+            }
+        }
+    };
     GraphFrame.Parse = function (serializationData, canvas, map) {
         var newFrame = new GraphFrame(null, canvas, true);
         var isCollapsed = !!serializationData.isCollapsed;
@@ -60575,10 +60596,10 @@ var GraphFrame = /** @class */ (function () {
         if (serializationData.blocks && map) {
             var _loop_2 = function () {
                 var actualId = map[blockId];
-                var node_1 = canvas.nodes.filter(function (n) { return n.block.uniqueId === actualId; });
-                if (node_1.length) {
-                    newFrame.nodes.push(node_1[0]);
-                    node_1[0].enclosingFrameId = newFrame.id;
+                var node = canvas.nodes.filter(function (n) { return n.block.uniqueId === actualId; });
+                if (node.length) {
+                    newFrame.nodes.push(node[0]);
+                    node[0].enclosingFrameId = newFrame.id;
                 }
             };
             for (var _i = 0, _a = serializationData.blocks; _i < _a.length; _i++) {
@@ -60589,25 +60610,7 @@ var GraphFrame = /** @class */ (function () {
         else {
             newFrame.refresh();
         }
-        for (var _b = 0, _c = newFrame.nodes; _b < _c.length; _b++) {
-            var node = _c[_b];
-            for (var _d = 0, _e = node.outputPorts; _d < _e.length; _d++) { // Output
-                var port = _e[_d];
-                if (port.exposedOnFrame) {
-                    if (port.exposedPortPosition !== -1) {
-                        newFrame._exposedOutPorts[port.exposedPortPosition] = port;
-                    }
-                }
-            }
-            for (var _f = 0, _g = node.inputPorts; _f < _g.length; _f++) { // Inports
-                var port = _g[_f];
-                if (port.exposedOnFrame) {
-                    if (port.exposedPortPosition !== -1) {
-                        newFrame._exposedInPorts[port.exposedPortPosition] = port;
-                    }
-                }
-            }
-        }
+        newFrame.adjustPorts();
         newFrame.isCollapsed = isCollapsed;
         if (isCollapsed) {
             canvas._frameIsMoving = true;
@@ -60615,8 +60618,8 @@ var GraphFrame = /** @class */ (function () {
             var diff = serializationData.x - newFrame.x;
             newFrame._moveFrame(diff, 0);
             newFrame.cleanAccumulation();
-            for (var _h = 0, _j = newFrame.nodes; _h < _j.length; _h++) {
-                var selectedNode = _j[_h];
+            for (var _b = 0, _c = newFrame.nodes; _b < _c.length; _b++) {
+                var selectedNode = _c[_b];
                 selectedNode.refresh();
             }
             canvas._frameIsMoving = false;
@@ -63357,6 +63360,7 @@ var GraphEditor = /** @class */ (function (_super) {
                 _this._copiedFrame = null;
                 if (_this._graphCanvas.selectedFrame) {
                     _this._copiedFrame = _this._graphCanvas.selectedFrame;
+                    _this._copiedFrame.serialize(true);
                     return;
                 }
                 var selectedItems = _this._graphCanvas.selectedNodes;
@@ -63399,6 +63403,7 @@ var GraphEditor = /** @class */ (function (_super) {
                         }
                         _this._graphCanvas._frameIsMoving = false;
                     }
+                    newFrame.adjustPorts();
                     if (_this._copiedFrame.isCollapsed) {
                         newFrame.isCollapsed = true;
                     }
