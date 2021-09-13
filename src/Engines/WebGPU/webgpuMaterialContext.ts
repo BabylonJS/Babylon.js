@@ -28,7 +28,7 @@ export class WebGPUMaterialContext implements IMaterialContext {
     public isDirty: boolean;
     public samplers: { [name: string]: Nullable<IWebGPUMaterialContextSamplerCache> };
     public textures: { [name: string]: Nullable<IWebGPUMaterialContextTextureCache> };
-    public uniformBuffers: { [name: string]: WebGPUDataBuffer };
+    public buffers: { [name: string]: Nullable<WebGPUDataBuffer> };
 
     public bindGroups: GPUBindGroup[]; // cache of the bind groups. Will be reused for the next draw if isDirty=false
 
@@ -53,7 +53,7 @@ export class WebGPUMaterialContext implements IMaterialContext {
     public reset(): void {
         this.samplers = {};
         this.textures = {};
-        this.uniformBuffers = {};
+        this.buffers = {};
         this.isDirty = true;
         this._numFloatTextures = 0;
         this._numExternalTextures = 0;
@@ -109,9 +109,9 @@ export class WebGPUMaterialContext implements IMaterialContext {
         this.isDirty ||= currentTextureId !== (texture?.uniqueId ?? -1);
     }
 
-    public setUniformBuffer(name: string, buffer: WebGPUDataBuffer): void {
-        this.isDirty ||= buffer.uniqueId !== this.uniformBuffers[name]?.uniqueId;
+    public setBuffer(name: string, buffer: Nullable<WebGPUDataBuffer>): void {
+        this.isDirty ||= buffer?.uniqueId !== this.buffers[name]?.uniqueId;
 
-        this.uniformBuffers[name] = buffer;
+        this.buffers[name] = buffer;
     }
 }

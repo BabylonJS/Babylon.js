@@ -1,7 +1,7 @@
 import { Nullable } from '../../types';
 import { IShaderProcessor, ShaderLanguage } from '../Processors/iShaderProcessor';
 import { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
-import { WebGPUShaderProcessingContext, WebGPUUniformBufferDescription } from './webgpuShaderProcessingContext';
+import { WebGPUShaderProcessingContext, WebGPUBufferDescription } from './webgpuShaderProcessingContext';
 import * as WebGPUConstants from './webgpuConstants';
 import { Logger } from '../../Misc/logger';
 import { ThinEngine } from "../thinEngine";
@@ -191,7 +191,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor implements 
         if (match != null) {
             const name = match[1];
 
-            let uniformBufferInfo = this.webgpuProcessingContext.availableUBOs[name];
+            let uniformBufferInfo = this.webgpuProcessingContext.availableBuffers[name];
             if (!uniformBufferInfo) {
                 const knownUBO = WebGPUShaderProcessingContext.KnownUBOs[name];
 
@@ -203,10 +203,10 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor implements 
                 }
 
                 uniformBufferInfo = { binding };
-                this.webgpuProcessingContext.availableUBOs[name] = uniformBufferInfo;
+                this.webgpuProcessingContext.availableBuffers[name] = uniformBufferInfo;
             }
 
-            this._addUniformBufferBindingDescription(name, uniformBufferInfo, !isFragment);
+            this._addBufferBindingDescription(name, uniformBufferInfo, WebGPUConstants.BufferBindingType.Uniform, !isFragment);
 
             uniformBuffer = uniformBuffer.replace("uniform", `layout(set = ${uniformBufferInfo.binding.groupIndex}, binding = ${uniformBufferInfo.binding.bindingIndex}) uniform`);
         }
@@ -271,7 +271,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor implements 
         return code;
     }
 
-    protected _generateLeftOverUBOCode(name: string, uniformBufferDescription: WebGPUUniformBufferDescription): string {
+    protected _generateLeftOverUBOCode(name: string, uniformBufferDescription: WebGPUBufferDescription): string {
         let ubo = `layout(set = ${uniformBufferDescription.binding.groupIndex}, binding = ${uniformBufferDescription.binding.bindingIndex}) uniform ${name} {\n    `;
         for (let leftOverUniform of this.webgpuProcessingContext.leftOverUniforms) {
             if (leftOverUniform.length > 0) {

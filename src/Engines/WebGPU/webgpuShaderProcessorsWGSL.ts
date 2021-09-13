@@ -1,7 +1,7 @@
 import { Nullable } from '../../types';
 import { IShaderProcessor, ShaderLanguage } from '../Processors/iShaderProcessor';
 import { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
-import { WebGPUShaderProcessingContext, WebGPUUniformBufferDescription } from './webgpuShaderProcessingContext';
+import { WebGPUShaderProcessingContext, WebGPUBufferDescription } from './webgpuShaderProcessingContext';
 import * as WebGPUConstants from './webgpuConstants';
 import { Logger } from '../../Misc/logger';
 import { ThinEngine } from "../thinEngine";
@@ -223,9 +223,9 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
         vertexCode = this._processSamplers(vertexCode, true);
         fragmentCode = this._processSamplers(fragmentCode, false);
 
-        // Add the group/binding info to the uniform buffer declarations (var<uniform> XXX:YYY)
-        vertexCode = this._processCustomUniformBuffers(vertexCode, true);
-        fragmentCode = this._processCustomUniformBuffers(fragmentCode, false);
+        // Add the group/binding info to the uniform/storage buffer declarations (var<uniform> XXX:YYY or var<storage(,read_write|read)> XXX:YYY)
+        vertexCode = this._processCustomBuffers(vertexCode, true);
+        fragmentCode = this._processCustomBuffers(fragmentCode, false);
 
         // Builds the leftover UBOs.
         const leftOverUBO = this._buildLeftOverUBO();
@@ -337,7 +337,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
         return { vertexCode, fragmentCode };
     }
 
-    protected _generateLeftOverUBOCode(name: string, uniformBufferDescription: WebGPUUniformBufferDescription): string {
+    protected _generateLeftOverUBOCode(name: string, uniformBufferDescription: WebGPUBufferDescription): string {
         let ubo = `[[block]] struct ${name} {\n`;
         for (let leftOverUniform of this.webgpuProcessingContext.leftOverUniforms) {
             const type = leftOverUniform.type.replace(/^(.*?)(<.*>)?$/, "$1");
@@ -430,21 +430,23 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
         return code;
     }
 
-    private _processCustomUniformBuffers(code: string, isVertex: boolean): string {
-        const instantiateUniformBufferRegexp = new RegExp(/var<\s*uniform\s*>\s+(\S+)\s*:\s*(\S+)\s*;/gm);
+    private _processCustomBuffers(code: string, isVertex: boolean): string {
+        const instantiateBufferRegexp = new RegExp(/var<\s*(uniform|storage)\s*(,\s*(read|read_write)\s*)?>\s+(\S+)\s*:\s*(\S+)\s*;/gm);
 
         while (true) {
-            const match = instantiateUniformBufferRegexp.exec(code);
+            const match = instantiateBufferRegexp.exec(code);
             if (match === null) {
                 break;
             }
 
-            let name = match[1];
-            const structName = match[2];
+            let type = match[1];
+            let decoration = match[3];
+            let name = match[4];
+            const structName = match[5];
 
-            let uniformBufferInfo = this.webgpuProcessingContext.availableUBOs[name];
-            if (!uniformBufferInfo) {
-                const knownUBO = WebGPUShaderProcessingContext.KnownUBOs[structName];
+            let bufferInfo = this.webgpuProcessingContext.availableBuffers[name];
+            if (!bufferInfo) {
+                const knownUBO = type === "uniform" ? WebGPUShaderProcessingContext.KnownUBOs[structName] : null;
 
                 let binding;
                 if (knownUBO) {
@@ -457,14 +459,14 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
                     binding = this.webgpuProcessingContext.getNextFreeUBOBinding();
                 }
 
-                uniformBufferInfo = { binding };
-                this.webgpuProcessingContext.availableUBOs[name] = uniformBufferInfo;
+                bufferInfo = { binding };
+                this.webgpuProcessingContext.availableBuffers[name] = bufferInfo;
             }
 
-            this._addUniformBufferBindingDescription(name, this.webgpuProcessingContext.availableUBOs[name], isVertex);
+            this._addBufferBindingDescription(name, this.webgpuProcessingContext.availableBuffers[name], decoration === "read_write" ? WebGPUConstants.BufferBindingType.Storage : type === "storage" ? WebGPUConstants.BufferBindingType.ReadOnlyStorage : WebGPUConstants.BufferBindingType.Uniform, isVertex);
 
-            const groupIndex = uniformBufferInfo.binding.groupIndex;
-            const bindingIndex = uniformBufferInfo.binding.bindingIndex;
+            const groupIndex = bufferInfo.binding.groupIndex;
+            const bindingIndex = bufferInfo.binding.bindingIndex;
 
             const part1 = code.substring(0, match.index);
             const insertPart = `[[group(${groupIndex}), binding(${bindingIndex})]] `;
@@ -472,7 +474,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
 
             code = part1 + insertPart + part2;
 
-            instantiateUniformBufferRegexp.lastIndex += insertPart.length;
+            instantiateBufferRegexp.lastIndex += insertPart.length;
         }
 
         return code;

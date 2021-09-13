@@ -19,6 +19,7 @@ import { Engine } from '../Engines/engine';
 import { ShaderLanguage } from "../Engines/Processors/iShaderProcessor";
 import { UniformBuffer } from "./uniformBuffer";
 import { Sampler } from "./Textures/sampler";
+import { StorageBuffer } from "../Buffers/storageBuffer";
 
 declare type ExternalTexture = import("./Textures/externalTexture").ExternalTexture;
 
@@ -69,6 +70,11 @@ export interface IShaderMaterialOptions {
     samplerObjects: string[];
 
     /**
+     * The list of storage buffer names used in the shader
+     */
+    storageBuffers: string[];
+
+     /**
      * The list of defines used in the shader
      */
     defines: string[];
@@ -116,6 +122,7 @@ export class ShaderMaterial extends Material {
     private _vectors4Arrays: { [name: string]: number[] } = {};
     private _uniformBuffers: { [name: string]: UniformBuffer } = {};
     private _samplers: { [name: string]: Sampler } = {};
+    private _storageBuffers: { [name: string]: StorageBuffer } = {};
     private _cachedWorldViewMatrix = new Matrix();
     private _cachedWorldViewProjectionMatrix = new Matrix();
     private _renderId: number;
@@ -155,6 +162,7 @@ export class ShaderMaterial extends Material {
             samplers: [],
             externalTextures: [],
             samplerObjects: [],
+            storageBuffers: [],
             defines: [],
             useClipPlane: false,
             ...options
@@ -524,6 +532,21 @@ export class ShaderMaterial extends Material {
             this._options.samplerObjects.push(name);
         }
         this._samplers[name] = sampler;
+
+        return this;
+    }
+
+    /**
+     * Set a storage buffer in the shader
+     * @param name Define the name of the storage buffer as defined in the shader
+     * @param buffer Define the value to give to the uniform
+     * @return the material itself allowing "fluent" like uniform updates
+     */
+     public setStorageBuffer(name: string, buffer: StorageBuffer): ShaderMaterial {
+        if (this._options.storageBuffers.indexOf(name) === -1) {
+            this._options.storageBuffers.push(name);
+        }
+        this._storageBuffers[name] = buffer;
 
         return this;
     }
@@ -1038,6 +1061,10 @@ export class ShaderMaterial extends Material {
                 effect.setSampler(name, this._samplers[name]);
             }
 
+            // Storage buffers
+            for (name in this._storageBuffers) {
+                effect.setStorageBuffer(name, this._storageBuffers[name]);
+            }
         }
 
         if (effect && mesh && (mustRebind || !this.isFrozen)) {
@@ -1246,6 +1273,11 @@ export class ShaderMaterial extends Material {
         // Samplers
         for (var key in this._samplers) {
             result.setSampler(key, this._samplers[key]);
+        }
+
+        // Storag buffers
+        for (var key in this._storageBuffers) {
+            result.setStorageBuffer(key, this._storageBuffers[key]);
         }
 
         return result;

@@ -39,7 +39,7 @@ export interface WebGPUSamplerDescription {
 }
 
 /** @hidden */
-export interface WebGPUUniformBufferDescription {
+export interface WebGPUBufferDescription {
     binding: WebGPUBindingInfo;
 }
 
@@ -59,7 +59,7 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
     public static _SimplifiedKnownBindings = true;  // if true, use only group=0,binding=0 as a known group/binding for the Scene ubo and use group=1,binding=X for all other bindings
                                                     // if false, see _KnownUBOs for the known groups/bindings used
 
-    protected static _SimplifiedKnownUBOs: { [key: string]: WebGPUUniformBufferDescription } = {
+    protected static _SimplifiedKnownUBOs: { [key: string]: WebGPUBufferDescription } = {
         "Scene":   { binding: { groupIndex: 0, bindingIndex: 0 } },
         "Light0":  { binding: { groupIndex: -1, bindingIndex: -1 } },
         "Light1":  { binding: { groupIndex: -1, bindingIndex: -1 } },
@@ -97,7 +97,7 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
         "Mesh":     { binding: { groupIndex: -1, bindingIndex: -1 } },
     };
 
-    protected static _KnownUBOs: { [key: string]: WebGPUUniformBufferDescription } = {
+    protected static _KnownUBOs: { [key: string]: WebGPUBufferDescription } = {
         "Scene":   { binding: { groupIndex: 0, bindingIndex: 0 } },
 
         "Light0":  { binding: { groupIndex: 1, bindingIndex: 0 } },
@@ -149,7 +149,7 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
 
     public availableVaryings: { [key: string]: number };
     public availableAttributes: { [key: string]: number };
-    public availableUBOs: { [key: string]: WebGPUUniformBufferDescription };
+    public availableBuffers: { [key: string]: WebGPUBufferDescription };
     public availableTextures: { [key: string]: WebGPUTextureDescription };
     public availableSamplers: { [key: string]: WebGPUSamplerDescription };
 
@@ -159,7 +159,7 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
     public bindGroupLayoutEntries: GPUBindGroupLayoutEntry[][];
     public bindGroupLayoutEntryInfo: WebGPUBindGroupLayoutEntryInfo[][];
     public bindGroupEntries: GPUBindGroupEntry[][];
-    public uniformBufferNames: string[]; // list of all uniform buffer names used in the shader
+    public bufferNames: string[]; // list of all uniform/storage buffer names used in the shader
     public textureNames: string[]; // list of all texture names used in the shader
     public samplerNames: string[]; // list of all sampler names used in the shader
     public attributeNamesFromEffect: string[];
@@ -178,7 +178,7 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
 
         this.availableVaryings = {};
         this.availableAttributes = {};
-        this.availableUBOs = {};
+        this.availableBuffers = {};
         this.availableTextures = {};
         this.availableSamplers = {};
 
@@ -186,7 +186,7 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
         this.bindGroupLayoutEntries = [];
         this.bindGroupLayoutEntryInfo = [];
         this.bindGroupEntries = [];
-        this.uniformBufferNames = [];
+        this.bufferNames = [];
         this.textureNames = [];
         this.samplerNames = [];
 

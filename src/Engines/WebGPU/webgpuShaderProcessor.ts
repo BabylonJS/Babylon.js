@@ -1,6 +1,6 @@
 import { Nullable } from "../../types";
 import * as WebGPUConstants from './webgpuConstants';
-import { WebGPUSamplerDescription, WebGPUShaderProcessingContext, WebGPUTextureDescription, WebGPUUniformBufferDescription } from "./webgpuShaderProcessingContext";
+import { WebGPUSamplerDescription, WebGPUShaderProcessingContext, WebGPUTextureDescription, WebGPUBufferDescription } from "./webgpuShaderProcessingContext";
 
 /** @hidden */
 export abstract class WebGPUShaderProcessor {
@@ -73,7 +73,7 @@ export abstract class WebGPUShaderProcessor {
     protected webgpuProcessingContext: WebGPUShaderProcessingContext;
 
     protected abstract _getArraySize(name: string, type: string, preProcessors: { [key: string]: string }): [string, string, number];
-    protected abstract _generateLeftOverUBOCode(name: string, uniformBufferDescription: WebGPUUniformBufferDescription): string;
+    protected abstract _generateLeftOverUBOCode(name: string, uniformBufferDescription: WebGPUBufferDescription): string;
 
     protected _addUniformToLeftOverUBO(name: string, uniformType: string, preProcessors: { [key: string]: string }): void {
         let length = 0;
@@ -98,14 +98,14 @@ export abstract class WebGPUShaderProcessor {
             return "";
         }
         const name = "LeftOver";
-        let availableUBO = this.webgpuProcessingContext.availableUBOs[name];
+        let availableUBO = this.webgpuProcessingContext.availableBuffers[name];
         if (!availableUBO) {
             availableUBO = {
                 binding: this.webgpuProcessingContext.getNextFreeUBOBinding(),
             };
-            this.webgpuProcessingContext.availableUBOs[name] = availableUBO;
-            this._addUniformBufferBindingDescription(name, availableUBO, true);
-            this._addUniformBufferBindingDescription(name, availableUBO, false);
+            this.webgpuProcessingContext.availableBuffers[name] = availableUBO;
+            this._addBufferBindingDescription(name, availableUBO, WebGPUConstants.BufferBindingType.Uniform, true);
+            this._addBufferBindingDescription(name, availableUBO, WebGPUConstants.BufferBindingType.Uniform, false);
         }
 
         return this._generateLeftOverUBOCode(name, availableUBO);
@@ -129,7 +129,7 @@ export abstract class WebGPUShaderProcessor {
                     } else if (entry.sampler) {
                         this.webgpuProcessingContext.samplerNames.push(name);
                     } else  if (entry.buffer) {
-                        this.webgpuProcessingContext.uniformBufferNames.push(name);
+                        this.webgpuProcessingContext.bufferNames.push(name);
                     }
                 }
             }
@@ -249,7 +249,7 @@ export abstract class WebGPUShaderProcessor {
         }
     }
 
-    protected _addUniformBufferBindingDescription(name: string, uniformBufferInfo: WebGPUUniformBufferDescription, isVertex: boolean): void {
+    protected _addBufferBindingDescription(name: string, uniformBufferInfo: WebGPUBufferDescription, bufferType: GPUBufferBindingType, isVertex: boolean): void {
         let { groupIndex, bindingIndex } = uniformBufferInfo.binding;
         if (!this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex]) {
             this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex] = [];
@@ -260,7 +260,7 @@ export abstract class WebGPUShaderProcessor {
                 binding: bindingIndex,
                 visibility: 0,
                 buffer: {
-                    type: WebGPUConstants.BufferBindingType.Uniform,
+                    type: bufferType,
                 },
             });
             this.webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex][bindingIndex] = { name, index: len - 1 };
