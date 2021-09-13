@@ -25,6 +25,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
     private _localChange = false;
     private _store: number;
     private _regExp: RegExp;
+    private _onFocus = false;
 
     constructor(props: IFloatLineComponentProps) {
         super(props);
@@ -59,11 +60,10 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
     }
 
     componentWillUnmount() {
-        if (this.props.globalState.blockKeyboardEvents = true) {
+        if (this._onFocus) {
             if (this.props.onEnter) {
                 this.props.onEnter(this._store);
             }
-            this.props.globalState.blockKeyboardEvents = false;
         }
     }
 
@@ -130,6 +130,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                         <div className={className}>
                             <input type="number" step={this.props.step || "0.01"} className="numeric-input"
                                 onBlur={(evt) => {
+                                    this._onFocus = false;
                                     this.props.globalState.blockKeyboardEvents = false;
                                     if (this.props.onEnter) {
                                         this.props.onEnter(this._store);
@@ -143,7 +144,10 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                                         this.props.onEnter(this._store);
                                     }
                                 }}
-                                onFocus={() => this.props.globalState.blockKeyboardEvents = true}
+                                onFocus={() => {
+                                    this.props.globalState.blockKeyboardEvents = true;
+                                    this._onFocus = true;
+                                }}
                                 value={this.state.value} onChange={(evt) => this.updateValue(evt.target.value)} />
                         </div>
                     </div>
