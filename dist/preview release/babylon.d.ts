@@ -7388,6 +7388,8 @@ declare module BABYLON {
         get endpoints(): NodeMaterialConnectionPoint[];
         /** Gets a boolean indicating if that output point is connected to at least one input */
         get hasEndpoints(): boolean;
+        /** Gets a boolean indicating that this connection has a path to the vertex output*/
+        get isDirectlyConnectedToVertexOutput(): boolean;
         /** Gets a boolean indicating that this connection will be used in the vertex shader */
         get isConnectedInVertexShader(): boolean;
         /** Gets a boolean indicating that this connection will be used in the fragment shader */
@@ -20773,6 +20775,8 @@ declare module BABYLON {
          * @param defines defines the material defines to update
          */
         replaceRepeatableContent(vertexShaderState: NodeMaterialBuildState, fragmentShaderState: NodeMaterialBuildState, mesh: AbstractMesh, defines: NodeMaterialDefines): void;
+        /** Gets a boolean indicating that the code of this block will be promoted to vertex shader even if connected to fragment output */
+        get willBeGeneratedIntoVertexShaderFromFragmentShader(): boolean;
         /**
          * Checks if the block is ready
          * @param mesh defines the mesh to be rendered

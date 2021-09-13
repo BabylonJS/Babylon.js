@@ -385,6 +385,7 @@ declare module NODEEDITOR {
         get selectionContainer(): HTMLDivElement;
         get frameContainer(): HTMLDivElement;
         constructor(props: IGraphCanvasComponentProps);
+        private static _RefreshNode;
         getGridPosition(position: number, useCeil?: boolean): number;
         getGridPositionCeil(position: number): number;
         updateTransform(): void;
@@ -1247,6 +1248,8 @@ declare module NODEEDITOR {
     export class GraphNode {
         block: BABYLON.NodeMaterialBlock;
         private _visual;
+        private _headerContainer;
+        private _promotionWarning;
         private _header;
         private _connections;
         private _inputsContainer;
