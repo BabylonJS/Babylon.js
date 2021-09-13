@@ -13,6 +13,8 @@ import { NodeLink } from './nodeLink';
 import { NodePort } from './nodePort';
 import { GraphFrame } from './graphFrame';
 
+const triangle = require("../../imgs/triangle.svg");
+
 export class GraphNode {
     private _visual: HTMLDivElement;
     private _headerContainer: HTMLDivElement;
@@ -419,6 +421,9 @@ export class GraphNode {
         this._promotionWarning = root.ownerDocument!.createElement("div");
         this._promotionWarning.classList.add("promotion-warning");
         this._promotionWarning.title = "For optimization reasons, this block will be promoted to the vertex shader. You can force it to render in the fragment shader by setting its target to Fragment";
+        const img = root.ownerDocument!.createElement("img");
+        img.src = triangle;
+        this._promotionWarning.appendChild(img);
         this._headerContainer.appendChild(this._promotionWarning);
 
         this._connections = root.ownerDocument!.createElement("div");
