@@ -267,6 +267,28 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: RenderTargetTe
         // Depth texture
         var depthTexture = new InternalTexture(this, InternalTextureSource.Depth);
 
+        var depthTextureFormat = Constants.TEXTUREFORMAT_DEPTH16;
+        if (this.webGLVersion > 1 &&
+            (options.depthTextueFormat == Constants.TEXTUREFORMAT_DEPTH32_FLOAT ||
+            options.depthTextueFormat == Constants.TEXTUREFORMAT_DEPTH24_STENCIL8)) {
+            depthTextureFormat = options.depthTextueFormat;
+        }
+
+        var depthTextureType = Constants.TEXTURETYPE_UNSIGNED_SHORT;
+        var glInternalDepthTextureFormat = gl.DEPTH_COMPONENT;
+        var glDepthTextureType = gl.UNSIGNED_SHORT;
+        if (this.webGLVersion > 1) {
+            if (depthTextureFormat == Constants.TEXTUREFORMAT_DEPTH32_FLOAT) {
+                depthTextureType = Constants.TEXTURETYPE_FLOAT;
+                glInternalDepthTextureFormat = gl.DEPTH_COMPONENT32F;
+                glDepthTextureType= gl.FLOAT;
+            } else if (depthTextureFormat == Constants.TEXTUREFORMAT_DEPTH24_STENCIL8) {
+                depthTextureType = Constants.TEXTURETYPE_UNSIGNED_INT_24_8;
+                glInternalDepthTextureFormat = gl.DEPTH24_STENCIL8;
+                glDepthTextureType= gl.UNSIGNED_INT;
+            }
+        }
+
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, depthTexture._hardwareTexture!.underlyingResource);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
@@ -276,12 +298,12 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: RenderTargetTe
         gl.texImage2D(
             gl.TEXTURE_2D,
             0,
-            this.webGLVersion < 2 ? gl.DEPTH_COMPONENT : gl.DEPTH_COMPONENT16,
+            glInternalDepthTextureFormat,
             width,
             height,
             0,
             gl.DEPTH_COMPONENT,
-            gl.UNSIGNED_SHORT,
+            glDepthTextureType,
             null
         );
 
@@ -301,8 +323,8 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: RenderTargetTe
         depthTexture.samples = 1;
         depthTexture.generateMipMaps = generateMipMaps;
         depthTexture.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
-        depthTexture.format = Constants.TEXTUREFORMAT_DEPTH16;
-        depthTexture.type = Constants.TEXTURETYPE_UNSIGNED_SHORT;
+        depthTexture.format = depthTextureFormat;
+        depthTexture.type = depthTextureType;
 
         textures.push(depthTexture);
         this._internalTexturesCache.push(depthTexture);
