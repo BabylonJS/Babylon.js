@@ -171,7 +171,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
             generateDepthTexture: generateDepthTexture,
             depthTextureFormat: depthTextureFormat,
             types: types,
-            textureCount: count,
+            textureCount: count
         };
 
         this._count = count;

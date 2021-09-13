@@ -187,7 +187,9 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: RenderTargetTe
             samplingModes = options.samplingModes;
         }
         if (this.webGLVersion > 1 &&
-            (options.depthTextureFormat == Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 || options.depthTextureFormat == Constants.TEXTUREFORMAT_DEPTH32_FLOAT)) {
+            (options.depthTextureFormat == Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 ||
+             options.depthTextureFormat == Constants.TEXTUREFORMAT_DEPTH24 ||
+             options.depthTextureFormat == Constants.TEXTUREFORMAT_DEPTH32_FLOAT)) {
             depthTextureFormat = options.depthTextureFormat;
         }
 
