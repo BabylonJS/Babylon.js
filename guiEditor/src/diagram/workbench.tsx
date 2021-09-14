@@ -282,8 +282,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         await this.globalState.guiTexture.parseFromSnippetAsync(snippedId);
         this.loadToEditor();
         if (this.props.globalState.customLoad) {
-            this.props.globalState.customLoad!.action(this.globalState.guiTexture.snippetId).then(() => {
-            }).catch((err) => {
+            this.props.globalState.customLoad.action(this.globalState.guiTexture.snippetId).catch((err) => {
                 alert("Unable to load your GUI");
             });
         }
