@@ -56,6 +56,7 @@ export class GlobalState {
     onDraggingStartObservable = new Observable<void>();
     draggedControl: Nullable<Control> = null;
     draggedControlDirection: DragOverLocation;
+    isSaving = false;
     storeEditorData: (serializationObject: any) => void;
 
     customSave?: { label: string; action: (data: string) => Promise<void> };
