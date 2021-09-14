@@ -1,14 +1,14 @@
 import { Scene } from "../../scene";
-import { Vector3, Vector4, Vector2 } from "../../Maths/math.vector";
+import { Vector3, Vector2 } from "../../Maths/math.vector";
 import { Color4 } from '../../Maths/math.color';
 import { Mesh } from "../../Meshes/mesh";
 import { VertexData } from "../mesh.vertexData";
 import { Nullable, FloatArray } from '../../types';
 import { Logger } from "../../Misc/logger";
-import { _PrimaryIsoTriangle, GeodesicData, PolyhedronData} from "../geoMesh"
+import { _PrimaryIsoTriangle, GeodesicData, PolyhedronData} from "../geodesicMesh"
 import { VertexBuffer } from "../../Buffers";
 
-VertexData.CreateGoldbergSphere = function(options: { size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, goldbergData: PolyhedronData): VertexData {
+VertexData.CreateGoldberg = function(options: { size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, sideOrientation?: number }, goldbergData: PolyhedronData): VertexData {
 
     const size = options.size;
     const sizeX: number = options.sizeX || size || 1;
@@ -54,7 +54,7 @@ VertexData.CreateGoldbergSphere = function(options: { size?: number, sizeX?: num
         index += verts.length;
     }
 
-    VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
+    VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
 
     const vertexData = new VertexData();
     vertexData.positions = positions;
@@ -65,51 +65,64 @@ VertexData.CreateGoldbergSphere = function(options: { size?: number, sizeX?: num
 };
 
 /**
- * Class adding properties and methods to a Goldberg Mesh
- * @hidden
+ * Class adding properties and methods to a Mesh to form a Goldberg Mesh
+ * Not intended to be used for the direct creation of a Goldberg Mesh
  */
-export class _GoldbergMesh extends Mesh {
+export class Goldberg extends Mesh {
 
+    /**
+     * @constructor
+     * @param name The value used by scene.getMeshByName() to do a lookup.
+     * @param scene The scene to add this mesh to.
+     * @param source An optional Mesh from which geometry is shared, cloned.
+     * @param geodesicData the data describing the vertices and faces of a geodesic polyhedron
+     * @param goldbergData the data describing the vertices and faces of a goldberg polyhedron
+     */
     constructor(
         name: string,
         scene: Nullable<Scene> = null,
-        geodesicData: GeodesicData,
-        goldbergData: PolyhedronData
+        source: Nullable<Mesh> = null,
+        geodesicData: Nullable<GeodesicData>,
+        goldbergData: Nullable<PolyhedronData>
     ) {
-        super(name, scene);
+        super(name, scene, source);
 
         scene = this.getScene();
 
-        this._nbSharedFaces = geodesicData._sharedNodes;
-        this._nbUnsharedFaces = geodesicData._poleNodes;
-        this._adjacentFaces = geodesicData._adjacentFaces;
-        this._nbFaces = this._nbSharedFaces + this._nbUnsharedFaces;
-        this._nbFacesAtPole = (this._nbUnsharedFaces - 12) / 12;
-        for (let f = 0; f < geodesicData.vertex.length; f++) {
-            this._faceCenters.push(Vector3.FromArray(geodesicData.vertex[f]));
-            this._faceColors.push(new Color4(1, 1, 1, 1));
-        };
-        for (let f = 0; f < goldbergData.face.length; f++) {
-            const verts = goldbergData.face[f];
-            const a = Vector3.FromArray(goldbergData.vertex[verts[0]]);
-            const b = Vector3.FromArray(goldbergData.vertex[verts[2]]);
-            const c = Vector3.FromArray(goldbergData.vertex[verts[1]]);
-            const ba = b.subtract(a);
-            const ca = c.subtract(a);
-            const norm = Vector3.Cross(ca, ba).normalize();
-            const z = Vector3.Cross(ca, norm).normalize();
-            this._faceXaxis.push(ca.normalize());
-            this._faceYaxis.push(norm);
-            this._faceZaxis.push(z);
+        if (geodesicData) {
+            this._nbSharedFaces = geodesicData._sharedNodes;
+            this._nbUnsharedFaces = geodesicData._poleNodes;
+            this._adjacentFaces = geodesicData._adjacentFaces;
+            this._nbFaces = this._nbSharedFaces + this._nbUnsharedFaces;
+            this._nbFacesAtPole = (this._nbUnsharedFaces - 12) / 12;
+            for (let f = 0; f < geodesicData.vertex.length; f++) {
+                this._faceCenters.push(Vector3.FromArray(geodesicData.vertex[f]));
+                this._faceColors.push(new Color4(1, 1, 1, 1));
+            };
+        }
+        if (goldbergData) {
+            for (let f = 0; f < goldbergData.face.length; f++) {
+                const verts = goldbergData.face[f];
+                const a = Vector3.FromArray(goldbergData.vertex[verts[0]]);
+                const b = Vector3.FromArray(goldbergData.vertex[verts[2]]);
+                const c = Vector3.FromArray(goldbergData.vertex[verts[1]]);
+                const ba = b.subtract(a);
+                const ca = c.subtract(a);
+                const norm = Vector3.Cross(ca, ba).normalize();
+                const z = Vector3.Cross(ca, norm).normalize();
+                this._faceXaxis.push(ca.normalize());
+                this._faceYaxis.push(norm);
+                this._faceZaxis.push(z);
         };
         this._setMetadata();
+        }
     }
 
     private _faceColors: Color4[] = [];  
     private _faceCenters: Vector3[] = [];
-    public _faceZaxis: Vector3[] = [];
-    public _faceXaxis: Vector3[] = [];
-    public _faceYaxis: Vector3[] = [];
+    private _faceZaxis: Vector3[] = [];
+    private _faceXaxis: Vector3[] = [];
+    private _faceYaxis: Vector3[] = [];
     private _nbSharedFaces: number;
     private _nbUnsharedFaces: number;
     private _nbFaces: number;
@@ -304,8 +317,8 @@ export class _GoldbergMesh extends Mesh {
 	}
 };
 
-Mesh.CreateGoldbergSphere = (name: string, options: { m?: number, n: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number }, scene: Scene): _GoldbergMesh => {
-    return GoldbergBuilder.CreateGoldbergSphere(name, options, scene);
+Mesh.CreateGoldberg = (name: string, options: { m?: number, n: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, updatable?: boolean, sideOrientation?: number }, scene: Scene): Goldberg => {
+    return GoldbergBuilder.CreateGoldberg(name, options, scene);
 };
 
 /**
@@ -331,7 +344,7 @@ Mesh.CreateGoldbergSphere = (name: string, options: { m?: number, n: number, siz
      * @param scene defines the hosting scene 
      * @returns Geodesic mesh
      */
-    public static CreateGoldbergSphere(name: string, options: { m?: number, n?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Nullable<Scene> = null): _GoldbergMesh {
+    public static CreateGoldberg(name: string, options: { m?: number, n?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, updatable?: boolean, sideOrientation?: number }, scene: Nullable<Scene> = null): Goldberg {
         let m: number = options.m || 1;
         if (m !== Math.floor(m)) {
             m === Math.floor(m);
@@ -353,17 +366,24 @@ Mesh.CreateGoldbergSphere = (name: string, options: { m?: number, n: number, siz
         const geodesicData = GeodesicData.BuildGeodesicData(primTri);
         const goldbergData = geodesicData._toGoldbergData();
 
-        const goldberg = new _GoldbergMesh(name, scene, geodesicData, goldbergData);
+        const goldberg = new Goldberg(name, scene, null, geodesicData, goldbergData);
 
         options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
         goldberg._originalBuilderSideOrientation = options.sideOrientation;
         
         
 
-        const vertexData = VertexData.CreateGoldbergSphere(options, goldbergData)
+        const vertexData = VertexData.CreateGoldberg(options, goldbergData)
 
         vertexData.applyToMesh(goldberg, options.updatable);
 
         return goldberg;        
     }
- }
+
+    public static CreateGoldbergFromMesh(mesh: Mesh): Goldberg {
+        const goldberg = new Goldberg(mesh.name, mesh.getScene(), mesh, null, null);
+        goldberg.refreshFaceData();
+        return goldberg;
+    }
+}
+

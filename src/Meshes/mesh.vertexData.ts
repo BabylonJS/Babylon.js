@@ -10,7 +10,7 @@ declare type Geometry = import("../Meshes/geometry").Geometry;
 declare type Mesh = import("../Meshes/mesh").Mesh;
 
 import { ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
-declare type PolyhedronData= import("./geoMesh").PolyhedronData;
+declare type PolyhedronData= import("./geodesicMesh").PolyhedronData;
 
 /**
  * Define an interface for all classes that will get and set the data on vertices
@@ -1118,7 +1118,7 @@ export class VertexData {
      * @param goldBergData polyhedronData defining the Goldberg polyhedron
      * @returns GoldbergSphere mesh
      */
-     public static CreateGoldbergSphere(
+     public static CreateGoldberg(
         options: {
             m?: number;
             n?: number;
@@ -1126,8 +1126,6 @@ export class VertexData {
             sizeX?: number;
             sizeY?: number;
             sizeZ?: number;
-            faceUV?: Vector4[];
-            faceColors?: Color4[];
             updatable?: boolean;
             sideOrientation?: number;
         },

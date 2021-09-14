@@ -4563,7 +4563,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param scene defines the hosting scene 
      * @returns GoldbergSphere mesh
      */
-     public static CreateGoldbergSphere(
+     public static CreateGoldberg(
         name: string,
         options: {
             m?: number;
@@ -4572,8 +4572,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             sizeX?: number;
             sizeY?: number;
             sizeZ?: number;
-            faceUV?: Vector4[];
-            faceColors?: Color4[];
             updatable?: boolean;
             sideOrientation?: number;
         },
