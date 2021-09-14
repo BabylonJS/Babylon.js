@@ -9,6 +9,7 @@ import { Observable } from "babylonjs/Misc/observable";
  * Interface used to specify creation options for the gui editor
  */
 export interface IGUIEditorOptions {
+    customLoad: { label: string; action: (data: string) => Promise<void>; } | undefined;
     hostElement?: HTMLElement;
     customSave?: { label: string; action: (data: string) => Promise<void> };
     currentSnippetToken?: string;
@@ -50,6 +51,7 @@ export class GUIEditor {
         globalState.hostElement = hostElement;
         globalState.hostDocument = hostElement.ownerDocument!;
         globalState.customSave = options.customSave;
+        globalState.customLoad = options.customLoad;
         globalState.hostWindow = hostElement.ownerDocument!.defaultView!;
 
         const graphEditor = React.createElement(WorkbenchEditor, {
