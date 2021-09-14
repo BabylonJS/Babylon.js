@@ -12,28 +12,28 @@ import { _IsoVector } from '../Maths/math.isovector';
  */
 export class _PrimaryIsoTriangle {
     //properties
-    public _m: number;
-    public _n: number;
-    public _cartesian: Vector3[] = [];
-    public _vertices: _IsoVector[] = [];
-    public _max: number[] = [];
-    public _min: number[] = [];
-    public _vecToIdx: {[key: string]: number};
-    public _vertByDist: {[key: string]: any};
-    public _closestTo: number[][] = [];
+    public m: number;
+    public n: number;
+    public cartesian: Vector3[] = [];
+    public vertices: _IsoVector[] = [];
+    public max: number[] = [];
+    public min: number[] = [];
+    public vecToIdx: {[key: string]: number};
+    public vertByDist: {[key: string]: any};
+    public closestTo: number[][] = [];
 
-    public _innerFacets: string[][] = [];
-    public _isoVecsABOB: _IsoVector[][] = [];
-    public _isoVecsOBOA: _IsoVector[][] = [];
-    public _isoVecsBAOA: _IsoVector[][] = [];
-    public _vertexTypes: number[][] = [];
+    public innerFacets: string[][] = [];
+    public isoVecsABOB: _IsoVector[][] = [];
+    public isoVecsOBOA: _IsoVector[][] = [];
+    public isoVecsBAOA: _IsoVector[][] = [];
+    public vertexTypes: number[][] = [];
 
-    public _coau: number;
-    public _cobu: number;
-    public _coav: number;
-    public _cobv: number;
+    public coau: number;
+    public cobu: number;
+    public coav: number;
+    public cobv: number;
 
-    public _IDATA: PolyhedronData = new PolyhedronData("icosahedron", 
+    public IDATA: PolyhedronData = new PolyhedronData("icosahedron", 
         "Regular", 
         [ [0, PHI, -1], [-PHI, 1, 0], [-1, 0, -PHI], [1, 0, -PHI], [PHI, 1, 0], [0, PHI, 1], [-1, 0, PHI], [-PHI, -1, 0], [0, -PHI, -1], [PHI, -1, 0], [1, 0, PHI], [0, -PHI, 1]], 
         [
@@ -45,17 +45,17 @@ export class _PrimaryIsoTriangle {
     )
 
     /**
-    * Creates the _PrimaryIsoTriangle Triangle OAB
+    * Creates the PrimaryIsoTriangle Triangle OAB
     * @param m an integer
     * @param n an integer
     */
      
     //operators
-    public _setIndices() {
+    public setIndices() {
         let indexCount = 12; // 12 vertices already assigned
         const vecToIdx: {[key: string]: number} = {}; //maps iso-vectors to indexCount;
-        const m = this._m;
-        const n = this._n;
+        const m = this.m;
+        const n = this.n;
         let g = m; // hcf of m, n when n != 0
         let m1 = 1;
         let n1 = 0;
@@ -83,15 +83,15 @@ export class _PrimaryIsoTriangle {
         let isoIdR: string;
 
         const closestTo = [];
-        const vDist = this._vertByDist;
+        const vDist = this.vertByDist;
 
-        this._IDATA._edgematch = [ [1, "B"], [2, "B"], [3, "B"], [4, "B"], [0, "B"], [10, "O", 14, "A"], [11, "O", 10, "A"], [12, "O", 11, "A"], [13, "O", 12, "A"], [14, "O", 13, "A"], [0, "O"], [1, "O"], [2, "O"], [3, "O"], [4, "O"], [19, "B", 5, "A"], [15, "B", 6, "A"], [16, "B", 7, "A"], [17, "B", 8, "A"], [18, "B", 9, "A"] ];
+        this.IDATA.edgematch = [ [1, "B"], [2, "B"], [3, "B"], [4, "B"], [0, "B"], [10, "O", 14, "A"], [11, "O", 10, "A"], [12, "O", 11, "A"], [13, "O", 12, "A"], [14, "O", 13, "A"], [0, "O"], [1, "O"], [2, "O"], [3, "O"], [4, "O"], [19, "B", 5, "A"], [15, "B", 6, "A"], [16, "B", 7, "A"], [17, "B", 8, "A"], [18, "B", 9, "A"] ];
     
     
         /***edges AB to OB***** rotation about B*/
         for (let f = 0; f < 20; f++) { //f current face
     
-            verts = this._IDATA.face[f];
+            verts = this.IDATA.face[f];
             O = verts[2];
             A = verts[1];
             B = verts[0];
@@ -119,8 +119,8 @@ export class _PrimaryIsoTriangle {
             }
     
             //for edge vertices
-            fr = this._IDATA._edgematch[f][0];
-            rot = this._IDATA._edgematch[f][1];
+            fr = this.IDATA.edgematch[f][0];
+            rot = this.IDATA.edgematch[f][1];
             if (rot === "B") {
                     for (let i = 1; i < g; i++) {
                         ABvec.x = m - i * (m1 + n1);
@@ -145,8 +145,8 @@ export class _PrimaryIsoTriangle {
                     }
             };
     
-            fr = this._IDATA._edgematch[f][2];
-            rot = this._IDATA._edgematch[f][3];       
+            fr = this.IDATA.edgematch[f][2];
+            rot = this.IDATA.edgematch[f][3];       
             if (rot && rot === "A") {
                     for (let i = 1; i < g; i++) {
                         OAvec.x = i * m1;
@@ -160,8 +160,8 @@ export class _PrimaryIsoTriangle {
             };
     
     
-            for (let i = 0; i < this._vertices.length; i++) {
-                isoId = this._vertices[i].x + "|" + this._vertices[i].y
+            for (let i = 0; i < this.vertices.length; i++) {
+                isoId = this.vertices[i].x + "|" + this.vertices[i].y
                 idx = f + "|" + isoId;
                 if (!(idx in vecToIdx)) {
                     vecToIdx[idx] = indexCount++;
@@ -196,49 +196,49 @@ export class _PrimaryIsoTriangle {
                 closestTo[vecToIdx[idx]] = [verts[vDist[isoId][0]], vDist[isoId][1], idx];
             }
         };
-        this._closestTo = closestTo;
-        this._vecToIdx = vecToIdx;
+        this.closestTo = closestTo;
+        this.vecToIdx = vecToIdx;
     }
 
-    public _calcCoeffs() {
-        const m = this._m;
-        const n = this._n;
+    public calcCoeffs() {
+        const m = this.m;
+        const n = this.n;
         const thirdR3 = Math.sqrt(3) / 3;
     
         const LSQD = m * m + n * n + m * n;
     
-        this._coau = (m + n) / LSQD;
-        this._cobu = -n / LSQD;
-        this._coav = -thirdR3 * (m - n) / LSQD;
-        this._cobv = thirdR3 * (2* m + n) / LSQD;
+        this.coau = (m + n) / LSQD;
+        this.cobu = -n / LSQD;
+        this.coav = -thirdR3 * (m - n) / LSQD;
+        this.cobv = thirdR3 * (2* m + n) / LSQD;
     }
     
     
-    public _createInnerFacets() {
-        const m = this._m;
-        const n = this._n;
+    public createInnerFacets() {
+        const m = this.m;
+        const n = this.n;
         for (let y = 0; y < n + m + 1; y++) {
-            for (let x = this._min[y]; x < this._max[y] + 1; x++) {
-                if (x < this._max[y] && x < this._max[y + 1] + 1) {
-                    this._innerFacets.push(["|" + x + "|" + y, "|" + x + "|" + (y + 1), "|" + (x + 1) + "|" + y]);
+            for (let x = this.min[y]; x < this.max[y] + 1; x++) {
+                if (x < this.max[y] && x < this.max[y + 1] + 1) {
+                    this.innerFacets.push(["|" + x + "|" + y, "|" + x + "|" + (y + 1), "|" + (x + 1) + "|" + y]);
                 }
-                if ( y > 0 && x < this._max[y - 1] && x + 1 < this._max[y] + 1) {
-                    this._innerFacets.push(["|" + x + "|" + y, "|" + (x + 1) + "|" + y, "|" + (x + 1) + "|" + (y - 1)]);
+                if ( y > 0 && x < this.max[y - 1] && x + 1 < this.max[y] + 1) {
+                    this.innerFacets.push(["|" + x + "|" + y, "|" + (x + 1) + "|" + y, "|" + (x + 1) + "|" + (y - 1)]);
                 }
             }    
         }
     }
 
-    public _edgeVecsABOB() {
-        let m = this._m;
-        let n = this._n;
+    public edgeVecsABOB() {
+        let m = this.m;
+        let n = this.n;
     
         const B = new _IsoVector(-n, m + n)
     
         for (let y = 1; y < m + n; y++) {
-            const point = new _IsoVector(this._min[y], y);
-            const prev = new _IsoVector(this._min[y - 1], y - 1);
-            const next = new _IsoVector(this._min[y + 1], y + 1);
+            const point = new _IsoVector(this.min[y], y);
+            const prev = new _IsoVector(this.min[y - 1], y - 1);
+            const next = new _IsoVector(this.min[y + 1], y + 1);
             const pointR = point.clone();
             const prevR = prev.clone();
             const nextR = next.clone();
@@ -247,97 +247,97 @@ export class _PrimaryIsoTriangle {
             prevR.rotate60About(B);
             nextR.rotate60About(B);
     
-            const maxPoint = new _IsoVector(this._max[pointR.y], pointR.y);
-            const maxPrev = new _IsoVector(this._max[pointR.y - 1], pointR.y - 1);
-            const maxLeftPrev = new _IsoVector( this._max[pointR.y - 1] - 1, pointR.y - 1);
+            const maxPoint = new _IsoVector(this.max[pointR.y], pointR.y);
+            const maxPrev = new _IsoVector(this.max[pointR.y - 1], pointR.y - 1);
+            const maxLeftPrev = new _IsoVector( this.max[pointR.y - 1] - 1, pointR.y - 1);
     
             if ((pointR.x !== maxPoint.x) || (pointR.y !== maxPoint.y)) {
                 if (pointR.x !== maxPrev.x) { // type2
                     //up
-                    this._vertexTypes.push([1, 0, 0]);
-                    this._isoVecsABOB.push([point, maxPrev, maxLeftPrev]);
+                    this.vertexTypes.push([1, 0, 0]);
+                    this.isoVecsABOB.push([point, maxPrev, maxLeftPrev]);
                     //down
-                    this._vertexTypes.push([1, 0, 0]);
-                    this._isoVecsABOB.push([point, maxLeftPrev, maxPoint]);
+                    this.vertexTypes.push([1, 0, 0]);
+                    this.isoVecsABOB.push([point, maxLeftPrev, maxPoint]);
                 }
                 else if (pointR.y === nextR.y) { // type1
                     //up
-                    this._vertexTypes.push([1, 1, 0]);
-                    this._isoVecsABOB.push([point, prev, maxPrev]);
+                    this.vertexTypes.push([1, 1, 0]);
+                    this.isoVecsABOB.push([point, prev, maxPrev]);
                     //down
-                    this._vertexTypes.push([1, 0, 1]);
-                    this._isoVecsABOB.push([point, maxPrev, next]);
+                    this.vertexTypes.push([1, 0, 1]);
+                    this.isoVecsABOB.push([point, maxPrev, next]);
                 }
                 else { // type 0
                     //up
-                    this._vertexTypes.push([1, 1, 0]);
-                    this._isoVecsABOB.push([point, prev, maxPrev])
+                    this.vertexTypes.push([1, 1, 0]);
+                    this.isoVecsABOB.push([point, prev, maxPrev])
                     //down
-                    this._vertexTypes.push([1, 0, 0]);
-                    this._isoVecsABOB.push([point, maxPrev, maxPoint]);
+                    this.vertexTypes.push([1, 0, 0]);
+                    this.isoVecsABOB.push([point, maxPrev, maxPoint]);
                 }
             };
         };
     };
 
-    public _mapABOBtoOBOA() {
+    public mapABOBtoOBOA() {
         const point = new _IsoVector(0, 0);
-        for (let i = 0; i < this._isoVecsABOB.length; i++) {
+        for (let i = 0; i < this.isoVecsABOB.length; i++) {
             const temp = [];
             for (let j = 0; j < 3; j++) {
-                point.x = this._isoVecsABOB[i][j].x;
-                point.y = this._isoVecsABOB[i][j].y;
-                if (this._vertexTypes[i][j] === 0) {
-                    point.rotateNeg120(this._m, this._n);
+                point.x = this.isoVecsABOB[i][j].x;
+                point.y = this.isoVecsABOB[i][j].y;
+                if (this.vertexTypes[i][j] === 0) {
+                    point.rotateNeg120(this.m, this.n);
                 }
                 temp.push(point.clone());
             }
-            this._isoVecsOBOA.push(temp);
+            this.isoVecsOBOA.push(temp);
         }
     };
 
-    public _mapABOBtoBAOA() {
+    public mapABOBtoBAOA() {
         const point = new _IsoVector(0, 0);
-        for (let i = 0; i < this._isoVecsABOB.length; i++) {
+        for (let i = 0; i < this.isoVecsABOB.length; i++) {
             const temp = [];
             for (let j = 0; j < 3; j++) {
-                point.x = this._isoVecsABOB[i][j].x;
-                point.y = this._isoVecsABOB[i][j].y;
-                if (this._vertexTypes[i][j] === 1) {
-                    point.rotate120(this._m, this._n);
+                point.x = this.isoVecsABOB[i][j].x;
+                point.y = this.isoVecsABOB[i][j].y;
+                if (this.vertexTypes[i][j] === 1) {
+                    point.rotate120(this.m, this.n);
                 }
                 temp.push(point.clone());
             }
-            this._isoVecsBAOA.push(temp);
+            this.isoVecsBAOA.push(temp);
         }
         
     };
 
-    public _MapToFace(faceNb: number, geodesicData: PolyhedronData) {
-        const F = this._IDATA.face[faceNb];
+    public MapToFace(faceNb: number, geodesicData: PolyhedronData) {
+        const F = this.IDATA.face[faceNb];
         const Oidx = F[2];
         const Aidx = F[1];
         const Bidx = F[0];
     
-        const O = Vector3.FromArray(this._IDATA.vertex[Oidx]);
-        const A = Vector3.FromArray(this._IDATA.vertex[Aidx]);
-        const B = Vector3.FromArray(this._IDATA.vertex[Bidx]);
+        const O = Vector3.FromArray(this.IDATA.vertex[Oidx]);
+        const A = Vector3.FromArray(this.IDATA.vertex[Aidx]);
+        const B = Vector3.FromArray(this.IDATA.vertex[Bidx]);
     
         const OA = A.subtract(O);
         const OB = B.subtract(O);
     
-        let x: Vector3 = OA.scale(this._coau).add(OB.scale(this._cobu));
-        let y: Vector3 = OA.scale(this._coav).add(OB.scale(this._cobv));
+        let x: Vector3 = OA.scale(this.coau).add(OB.scale(this.cobu));
+        let y: Vector3 = OA.scale(this.coav).add(OB.scale(this.cobv));
         
         const mapped = [];
     
         let idx: string; 
         let tempVec: Vector3 = TmpVectors.Vector3[0]
-        for (var i = 0; i < this._cartesian.length; i++) {
-            tempVec  = x.scale(this._cartesian[i].x).add(y.scale(this._cartesian[i].y)).add(O);
+        for (var i = 0; i < this.cartesian.length; i++) {
+            tempVec  = x.scale(this.cartesian[i].x).add(y.scale(this.cartesian[i].y)).add(O);
             mapped[i] = [tempVec.x, tempVec.y, tempVec.z];
-            idx = faceNb + "|" + this._vertices[i].x + "|" + this._vertices[i].y;
-            geodesicData.vertex[this._vecToIdx[idx]] = [tempVec.x, tempVec.y, tempVec.z];
+            idx = faceNb + "|" + this.vertices[i].x + "|" + this.vertices[i].y;
+            geodesicData.vertex[this.vecToIdx[idx]] = [tempVec.x, tempVec.y, tempVec.z];
         }
     };
 
@@ -490,13 +490,13 @@ export class _PrimaryIsoTriangle {
             vertByDist[vertData[v][2] + "|" + vertData[v][3]] = [vertData[v][0], vertData[v][1], v];
         }
 
-        this._m = m;
-        this._n = n;
-        this._vertices = vertices;
-        this._vertByDist = vertByDist;
-        this._cartesian = cartesian;
-        this._min = min;
-        this._max = max;
+        this.m = m;
+        this.n = n;
+        this.vertices = vertices;
+        this.vertByDist = vertByDist;
+        this.cartesian = cartesian;
+        this.min = min;
+        this.max = max;
     
         return this;
     }
@@ -508,7 +508,7 @@ export class _PrimaryIsoTriangle {
 
 export class PolyhedronData {
 
-    public _edgematch: any[][];
+    public edgematch: any[][];
 
     constructor (
         public name: string,
@@ -528,90 +528,90 @@ export class GeodesicData extends PolyhedronData{
     /**
      * @hidden
      */
-    public _edgematch: any[][];
+    public edgematch: any[][];
     /**
      * @hidden
      */
-    public _adjacentFaces: number[][];
+    public adjacentFaces: number[][];
     /**
      * @hidden
      */
-    public _sharedNodes: number;
+    public sharedNodes: number;
     /**
      * @hidden
      */
-    public _poleNodes: number;
+    public poleNodes: number;
     /**
      * @hidden
      */
-    public _innerToData(face : number, primTri: _PrimaryIsoTriangle) {
-        for (let i = 0; i < primTri._innerFacets.length; i++) {
-            this.face.push(primTri._innerFacets[i].map((el) => primTri._vecToIdx[face + el]));
+    public innerToData(face : number, primTri: _PrimaryIsoTriangle) {
+        for (let i = 0; i < primTri.innerFacets.length; i++) {
+            this.face.push(primTri.innerFacets[i].map((el) => primTri.vecToIdx[face + el]));
         }
     };
     /**
      * @hidden
      */
-    public _mapABOBtoDATA(faceNb: number, primTri: _PrimaryIsoTriangle) {
-        const fr = primTri._IDATA._edgematch[faceNb][0];
-        for (let i = 0; i < primTri._isoVecsABOB.length; i++) {
+    public mapABOBtoDATA(faceNb: number, primTri: _PrimaryIsoTriangle) {
+        const fr = primTri.IDATA.edgematch[faceNb][0];
+        for (let i = 0; i < primTri.isoVecsABOB.length; i++) {
             const temp = [];
             for (let j = 0; j < 3; j++) {
-                if (primTri._vertexTypes[i][j] === 0) {
-                    temp.push(faceNb + "|" + primTri._isoVecsABOB[i][j].x + "|" + primTri._isoVecsABOB[i][j].y);
+                if (primTri.vertexTypes[i][j] === 0) {
+                    temp.push(faceNb + "|" + primTri.isoVecsABOB[i][j].x + "|" + primTri.isoVecsABOB[i][j].y);
                 }
                 else {
-                    temp.push(fr + "|" + primTri._isoVecsABOB[i][j].x + "|" + primTri._isoVecsABOB[i][j].y);
+                    temp.push(fr + "|" + primTri.isoVecsABOB[i][j].x + "|" + primTri.isoVecsABOB[i][j].y);
                 }
             }
-            this.face.push([primTri._vecToIdx[temp[0]], primTri._vecToIdx[temp[1]], primTri._vecToIdx[temp[2]]]);
+            this.face.push([primTri.vecToIdx[temp[0]], primTri.vecToIdx[temp[1]], primTri.vecToIdx[temp[2]]]);
         }
     };
     /**
      * @hidden
      */
-    public _mapOBOAtoDATA(faceNb: number, primTri: _PrimaryIsoTriangle) {
-        const fr = primTri._IDATA._edgematch[faceNb][0];
-        for (let i = 0; i < primTri._isoVecsOBOA.length; i++) {
+    public mapOBOAtoDATA(faceNb: number, primTri: _PrimaryIsoTriangle) {
+        const fr = primTri.IDATA.edgematch[faceNb][0];
+        for (let i = 0; i < primTri.isoVecsOBOA.length; i++) {
             const temp = [];
             for (let j = 0; j < 3; j++) {
-                if (primTri._vertexTypes[i][j] === 1) {
-                    temp.push(faceNb + "|" + primTri._isoVecsOBOA[i][j].x + "|" + primTri._isoVecsOBOA[i][j].y);
+                if (primTri.vertexTypes[i][j] === 1) {
+                    temp.push(faceNb + "|" + primTri.isoVecsOBOA[i][j].x + "|" + primTri.isoVecsOBOA[i][j].y);
                 }
                 else {
-                    temp.push(fr + "|" + primTri._isoVecsOBOA[i][j].x + "|" + primTri._isoVecsOBOA[i][j].y);
+                    temp.push(fr + "|" + primTri.isoVecsOBOA[i][j].x + "|" + primTri.isoVecsOBOA[i][j].y);
                 }
             }
-            this.face.push([primTri._vecToIdx[temp[0]], primTri._vecToIdx[temp[1]], primTri._vecToIdx[temp[2]]]);
+            this.face.push([primTri.vecToIdx[temp[0]], primTri.vecToIdx[temp[1]], primTri.vecToIdx[temp[2]]]);
         }
     };
     /**
      * @hidden
      */
-    public _mapBAOAtoDATA(faceNb: number, primTri: _PrimaryIsoTriangle) {
-        const fr = primTri._IDATA._edgematch[faceNb][2];
-        for (let i = 0; i < primTri._isoVecsBAOA.length; i++) {
+    public mapBAOAtoDATA(faceNb: number, primTri: _PrimaryIsoTriangle) {
+        const fr = primTri.IDATA.edgematch[faceNb][2];
+        for (let i = 0; i < primTri.isoVecsBAOA.length; i++) {
             const temp = [];
             for (let j = 0; j < 3; j++) {
-                if (primTri._vertexTypes[i][j] === 1) {
-                    temp.push(faceNb + "|" + primTri._isoVecsBAOA[i][j].x + "|" + primTri._isoVecsBAOA[i][j].y);
+                if (primTri.vertexTypes[i][j] === 1) {
+                    temp.push(faceNb + "|" + primTri.isoVecsBAOA[i][j].x + "|" + primTri.isoVecsBAOA[i][j].y);
                 }
                 else {
-                    temp.push(fr + "|" + primTri._isoVecsBAOA[i][j].x + "|" + primTri._isoVecsBAOA[i][j].y);
+                    temp.push(fr + "|" + primTri.isoVecsBAOA[i][j].x + "|" + primTri.isoVecsBAOA[i][j].y);
                 }
             }
-            this.face.push([primTri._vecToIdx[temp[0]], primTri._vecToIdx[temp[1]], primTri._vecToIdx[temp[2]]]);
+            this.face.push([primTri.vecToIdx[temp[0]], primTri.vecToIdx[temp[1]], primTri.vecToIdx[temp[2]]]);
         }
     };
     /**
      * @hidden
      */
-    public _orderData(primTri: _PrimaryIsoTriangle) {
+    public orderData(primTri: _PrimaryIsoTriangle) {
         const nearTo: any = [];
         for (let i = 0; i < 13; i++) {
             nearTo[i] = [];
         }
-        const close = primTri._closestTo;
+        const close = primTri.closestTo;
         for (let i = 0; i < close.length; i++) {
            if (close[i][0] > -1) {
                if(close[i][1] > 0) {
@@ -661,15 +661,15 @@ export class GeodesicData extends PolyhedronData{
             }
         }
 
-        this._sharedNodes = nearTo[12].length
-        this._poleNodes = this.vertex.length - this._sharedNodes;
+        this.sharedNodes = nearTo[12].length
+        this.poleNodes = this.vertex.length - this.sharedNodes;
 
     }
 
     /**
      * @hidden
      */
-    public _setOrder(m: number, faces: number[]) {
+    public setOrder(m: number, faces: number[]) {
         const adjVerts: number[] = []
         const dualFaces: number[] = [];
         let face: any = faces.pop();
@@ -693,13 +693,13 @@ export class GeodesicData extends PolyhedronData{
                 f++
             }
         }
-        this._adjacentFaces.push(adjVerts);
+        this.adjacentFaces.push(adjVerts);
         return dualFaces; 
     }
     /**
      * @hidden
      */
-    public _toGoldbergData(): PolyhedronData {
+    public toGoldbergData(): PolyhedronData {
         const goldbergData: PolyhedronData = new PolyhedronData("GeoDual", "Goldberg", [], []);
         goldbergData.name = "GD dual";
         const verticesNb: number = this.vertex.length;
@@ -717,9 +717,9 @@ export class GeodesicData extends PolyhedronData{
         let cz = 0;
         let face = [];
         let vertex = [];
-        this._adjacentFaces = [];
+        this.adjacentFaces = [];
         for(let m = 0; m < map.length; m++) {
-            goldbergData.face[m] = this._setOrder(m, map[m].concat([]));
+            goldbergData.face[m] = this.setOrder(m, map[m].concat([]));
             map[m].forEach((el: number) => {
                 cx = 0;
                 cy = 0;
@@ -749,28 +749,28 @@ export class GeodesicData extends PolyhedronData{
         
         const geodesicData = new GeodesicData("Geodesic-m-n", "Geodesic", [ [0, PHI, -1], [-PHI, 1, 0], [-1, 0, -PHI], [1, 0, -PHI], [PHI, 1, 0], [0, PHI, 1], [-1, 0, PHI], [-PHI, -1, 0], [0, -PHI, -1], [PHI, -1, 0], [1, 0, PHI], [0, -PHI, 1]], [])
 
-        primTri._setIndices();
-        primTri._calcCoeffs();
-        primTri._createInnerFacets();
-        primTri._edgeVecsABOB();
-        primTri._mapABOBtoOBOA();
-        primTri._mapABOBtoBAOA();
+        primTri.setIndices();
+        primTri.calcCoeffs();
+        primTri.createInnerFacets();
+        primTri.edgeVecsABOB();
+        primTri.mapABOBtoOBOA();
+        primTri.mapABOBtoBAOA();
 
-        for (let f = 0; f < primTri._IDATA.face.length; f++) {
-            primTri._MapToFace(f, geodesicData);
-            geodesicData._innerToData(f, primTri);
-            if(primTri._IDATA._edgematch[f][1] === "B") {
-                geodesicData._mapABOBtoDATA(f, primTri);
+        for (let f = 0; f < primTri.IDATA.face.length; f++) {
+            primTri.MapToFace(f, geodesicData);
+            geodesicData.innerToData(f, primTri);
+            if(primTri.IDATA.edgematch[f][1] === "B") {
+                geodesicData.mapABOBtoDATA(f, primTri);
             };
-            if(primTri._IDATA._edgematch[f][1] === "O") {
-                geodesicData._mapOBOAtoDATA(f, primTri);
+            if(primTri.IDATA.edgematch[f][1] === "O") {
+                geodesicData.mapOBOAtoDATA(f, primTri);
             };
-            if(primTri._IDATA._edgematch[f][3] === "A") {
-                geodesicData._mapBAOAtoDATA(f, primTri);
+            if(primTri.IDATA.edgematch[f][3] === "A") {
+                geodesicData.mapBAOAtoDATA(f, primTri);
             };
         };
 
-        geodesicData._orderData(primTri);
+        geodesicData.orderData(primTri);
         const radius = 1;
         geodesicData.vertex = geodesicData.vertex.map(function (el) {
             var a = el[0];

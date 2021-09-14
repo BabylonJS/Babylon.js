@@ -90,9 +90,9 @@ export class Goldberg extends Mesh {
         scene = this.getScene();
 
         if (geodesicData) {
-            this._nbSharedFaces = geodesicData._sharedNodes;
-            this._nbUnsharedFaces = geodesicData._poleNodes;
-            this._adjacentFaces = geodesicData._adjacentFaces;
+            this._nbSharedFaces = geodesicData.sharedNodes;
+            this._nbUnsharedFaces = geodesicData.poleNodes;
+            this._adjacentFaces = geodesicData.adjacentFaces;
             this._nbFaces = this._nbSharedFaces + this._nbUnsharedFaces;
             this._nbFacesAtPole = (this._nbUnsharedFaces - 12) / 12;
             for (let f = 0; f < geodesicData.vertex.length; f++) {
@@ -364,7 +364,7 @@ Mesh.CreateGoldberg = (name: string, options: { m?: number, n: number, size?: nu
         const primTri: _PrimaryIsoTriangle = new _PrimaryIsoTriangle();
         primTri.build(m, n);
         const geodesicData = GeodesicData.BuildGeodesicData(primTri);
-        const goldbergData = geodesicData._toGoldbergData();
+        const goldbergData = geodesicData.toGoldbergData();
 
         const goldberg = new Goldberg(name, scene, null, geodesicData, goldbergData);
 
