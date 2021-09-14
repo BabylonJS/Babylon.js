@@ -1,7 +1,7 @@
 import * as WebGPUConstants from './webgpuConstants';
 import { Constants } from '../constants';
 import { WebGPUTextureHelper } from "./webgpuTextureHelper";
-import { Sampler } from "../../Materials/textures/sampler";
+import { Sampler } from "../../Materials/Textures/sampler";
 
 const filterToBits = [
     0 | 0 << 1 | 0 << 2, // not used
