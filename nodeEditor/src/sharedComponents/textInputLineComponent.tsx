@@ -68,7 +68,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
         this._localChange = true;
         const store = this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!];
 
-        if (this.props.validator) {
+        if (this.props.validator && raisePropertyChanged) {
             if (this.props.validator(value) == false) {
                 value = store;
             }
@@ -82,13 +82,6 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
 
         if (this.props.propertyName) {
             this.props.target[this.props.propertyName] = value;
-
-            if (this.props.propertyName === "name") {
-                if (this.props.target[this.props.propertyName] !== value) {
-                    // Name was rejected
-                    this.setState({ value: this.props.target[this.props.propertyName] });
-                }
-            }
         }
     }
 
