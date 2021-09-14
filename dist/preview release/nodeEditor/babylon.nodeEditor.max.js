@@ -62178,6 +62178,7 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
                                 if (inputBlock.isConstant) {
                                     _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                                 }
+                                _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                             } })));
             }
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialBlockConnectionPointTypes"].Vector2:
