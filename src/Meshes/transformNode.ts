@@ -363,7 +363,7 @@ export class TransformNode extends Node {
      * Returns a Vector3.
      */
     public get absolutePosition(): Vector3 {
-        return this._absolutePosition;
+        return this.getAbsolutePosition();
     }
 
     /**
