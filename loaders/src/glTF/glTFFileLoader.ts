@@ -538,14 +538,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
             return this._loadFile(scene, fileOrUrl, (data) => {
                 const arrayBuffer = data as ArrayBuffer;
                 this._unpackBinaryAsync(new DataReader({
-                    readAsync: (byteOffset, byteLength) => {
-                        if (byteOffset + byteLength > arrayBuffer.byteLength) {
-                            return Promise.reject("ArrayBuffer not big enough to be read.");
-                        }
-
-                        const array = new Uint8Array(arrayBuffer, byteOffset, byteLength);
-                        return Promise.resolve(array);
-                    },
+                    readAsync: (byteOffset, byteLength) => Promise.resolve(new Uint8Array(arrayBuffer, byteOffset, byteLength)),
                     byteLength: arrayBuffer.byteLength
                 })).then((loaderData) => {
                     onSuccess(loaderData);
