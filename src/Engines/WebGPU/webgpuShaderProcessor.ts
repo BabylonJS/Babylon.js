@@ -136,7 +136,7 @@ export abstract class WebGPUShaderProcessor {
         }
     }
 
-    protected _preCreateBindGroups(): void {
+    protected _preCreateBindGroupEntries(): void {
         const bindGroupEntries = this.webgpuProcessingContext.bindGroupEntries;
 
         for (let i = 0; i < this.webgpuProcessingContext.bindGroupLayoutEntries.length; i++) {
@@ -146,17 +146,7 @@ export abstract class WebGPUShaderProcessor {
             for (let j = 0; j < setDefinition.length; j++) {
                 const entry = this.webgpuProcessingContext.bindGroupLayoutEntries[i][j];
 
-                if (entry.sampler) {
-                    entries.push({
-                        binding: entry.binding,
-                        resource: undefined as any,
-                    });
-                } else if (entry.texture || entry.storageTexture) {
-                    entries.push({
-                        binding: entry.binding,
-                        resource: undefined as any,
-                    });
-                } else if (entry.externalTexture) {
+                if (entry.sampler || entry.texture || entry.storageTexture || entry.externalTexture) {
                     entries.push({
                         binding: entry.binding,
                         resource: undefined as any,
