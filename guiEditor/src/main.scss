@@ -48,6 +48,11 @@
     grid-row: 1 / span 3;
     grid-column: 3;
     height: 100%;
+
+    .blackLine {
+        height:  5px;
+        background: black;
+    }
     .toolbar-label {
         color:white;
         padding: 5px;
