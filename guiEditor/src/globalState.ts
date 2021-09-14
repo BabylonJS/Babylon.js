@@ -59,6 +59,7 @@ export class GlobalState {
     storeEditorData: (serializationObject: any) => void;
 
     customSave?: { label: string; action: (data: string) => Promise<void> };
+    customLoad?: { label: string; action: (data: string) => Promise<void> };
     public constructor() {
         this.controlCamera = DataStorage.ReadBoolean("ControlCamera", true);
 

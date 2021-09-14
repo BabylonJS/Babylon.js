@@ -156,66 +156,73 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         const adt = this.props.globalState.guiTexture;
         const content = JSON.stringify(adt.serializeContent());
 
-        const xmlHttp = new XMLHttpRequest();
-        xmlHttp.onreadystatechange = () => {
-            if (xmlHttp.readyState == 4) {
-                if (xmlHttp.status == 200) {
-                    const snippet = JSON.parse(xmlHttp.responseText);
-                    const oldId = adt.snippetId;
-                    adt.snippetId = snippet.id;
-                    if (snippet.version && snippet.version != "0") {
-                        adt.snippetId += "#" + snippet.version;
-                    }
-                    this.forceUpdate();
-                    if (navigator.clipboard) {
-                        navigator.clipboard.writeText(adt.snippetId);
-                    }
-
-                    const windowAsAny = window as any;
-
-                    if (windowAsAny.Playground && oldId) {
-                        windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
-                            regex: new RegExp(oldId, "g"),
-                            replace: `parseFromSnippetAsync("${adt.snippetId}`,
-                        });
-                    }
-
-                    this.props.globalState.customSave!.action(adt.snippetId).then(() => {
-                    }).catch((err) => {
-                        alert("Unable to save your GUI");
-                    });
-
-                    alert("GUI saved with ID: " + adt.snippetId + " (please note that the id was also saved to your clipboard)");
-                } else {
-                    alert("Unable to save your GUI");
+        if (this.props.globalState.customSave) {
+            this.props.globalState.customSave!.action(content).then((resolve) => {
+                adt.snippetId = (resolve as unknown as string);
+                this.forceUpdate();
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(adt.snippetId);
                 }
-            }
-        };
-
-        xmlHttp.open("POST", AdvancedDynamicTexture.SnippetUrl + (adt.snippetId ? "/" + adt.snippetId : ""), true);
-        xmlHttp.setRequestHeader("Content-Type", "application/json");
-
-        const dataToSend = {
-            payload: JSON.stringify({
-                gui: content,
-            }),
-            name: "",
-            description: "",
-            tags: "",
-        };
-
-        xmlHttp.send(JSON.stringify(dataToSend));
+                alert("GUI saved with ID: " + adt.snippetId + " (please note that the id was also saved to your clipboard)");
+            }).catch((err) => {
+                alert(err);
+            });
+        }
+        else {
+            const xmlHttp = new XMLHttpRequest();
+            xmlHttp.onreadystatechange = () => {
+                if (xmlHttp.readyState == 4) {
+                    if (xmlHttp.status == 200) {
+                        const snippet = JSON.parse(xmlHttp.responseText);
+                        const oldId = adt.snippetId;
+                        adt.snippetId = snippet.id;
+                        if (snippet.version && snippet.version != "0") {
+                            adt.snippetId += "#" + snippet.version;
+                        }
+                        this.forceUpdate();
+                        if (navigator.clipboard) {
+                            navigator.clipboard.writeText(adt.snippetId);
+                        }
+    
+                        const windowAsAny = window as any;
+    
+                        if (windowAsAny.Playground && oldId) {
+                            windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
+                                regex: new RegExp(oldId, "g"),
+                                replace: `parseFromSnippetAsync("${adt.snippetId}`,
+                            });
+                        }
+                        alert("GUI saved with ID: " + adt.snippetId + " (please note that the id was also saved to your clipboard)");
+                    } else {
+                        alert("Unable to save your GUI");
+                    }
+                }
+            };
+    
+            xmlHttp.open("POST", AdvancedDynamicTexture.SnippetUrl + (adt.snippetId ? "/" + adt.snippetId : ""), true);
+            xmlHttp.setRequestHeader("Content-Type", "application/json");
+    
+            const dataToSend = {
+                payload: JSON.stringify({
+                    gui: content,
+                }),
+                name: "",
+                description: "",
+                tags: "",
+            };
+    
+            xmlHttp.send(JSON.stringify(dataToSend));
+        }
     }
 
     loadFromSnippet() {
         const snippedId = window.prompt("Please enter the snippet ID to use");
-
         if (!snippedId) {
             return;
         }
         this.props.globalState.workbench.loadFromSnippet(snippedId);
     }
-    
+
     renderProperties() {
         const className = this.state.currentNode?.getClassName();
         switch (className) {
