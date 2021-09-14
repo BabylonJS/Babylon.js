@@ -309,7 +309,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor implements 
         fragmentCode = leftOverUBO + fragmentCode;
 
         this._collectBindingNames();
-        this._preCreateBindGroups();
+        this._preCreateBindGroupEntries();
 
         this._preProcessors = null as any;
 
