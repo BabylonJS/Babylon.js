@@ -103,6 +103,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                 if (inputBlock.isConstant) {
                                     this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                                 }
+                                this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                             }}/>
                         }
                     </>
