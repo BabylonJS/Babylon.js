@@ -1587,6 +1587,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             if (this._isAnimationSheetEnabled) {
                 particle._initialStartSpriteCellID = this.startSpriteCellID;
                 particle._initialEndSpriteCellID = this.endSpriteCellID;
+                particle._initialSpriteCellLoop = this.spriteCellLoop;
             }
 
             // Inherited Velocity
@@ -2271,6 +2272,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         serializationObject.minInitialRotation = particleSystem.minInitialRotation;
         serializationObject.maxInitialRotation = particleSystem.maxInitialRotation;
         serializationObject.startSpriteCellID = particleSystem.startSpriteCellID;
+        serializationObject.spriteCellLoop = particleSystem.spriteCellLoop;
         serializationObject.endSpriteCellID = particleSystem.endSpriteCellID;
         serializationObject.spriteCellChangeSpeed = particleSystem.spriteCellChangeSpeed;
         serializationObject.spriteCellWidth = particleSystem.spriteCellWidth;
@@ -2748,6 +2750,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         // Animation sheet
         particleSystem.startSpriteCellID = parsedParticleSystem.startSpriteCellID;
         particleSystem.endSpriteCellID = parsedParticleSystem.endSpriteCellID;
+        particleSystem.spriteCellLoop = parsedParticleSystem.spriteCellLoop ?? true;
         particleSystem.spriteCellWidth = parsedParticleSystem.spriteCellWidth;
         particleSystem.spriteCellHeight = parsedParticleSystem.spriteCellHeight;
         particleSystem.spriteCellChangeSpeed = parsedParticleSystem.spriteCellChangeSpeed;
