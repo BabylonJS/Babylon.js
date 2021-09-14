@@ -16,8 +16,8 @@ import { GroundBuilder } from "./Builders/groundBuilder";
 import { TubeBuilder } from "./Builders/tubeBuilder";
 import { PolyhedronBuilder } from "./Builders/polyhedronBuilder";
 import { IcoSphereBuilder } from "./Builders/icoSphereBuilder";
-import { GeoBuilder } from "./Builders/geoBuilder";
-import { GoldbergBuilder, _GoldbergMesh } from "./Builders/goldbergBuilder";
+import { GeoBuilder } from "./Builders/geodesicBuilder";
+import { GoldbergBuilder, Goldberg } from "./Builders/goldbergBuilder";
 import { DecalBuilder } from "./Builders/decalBuilder";
 import { CapsuleBuilder, ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
 import { Vector4, Vector3, Vector2 } from "../Maths/math.vector";
@@ -574,8 +574,8 @@ export class MeshBuilder {
      * @param scene defines the hosting scene 
      * @returns GoldbergSphere mesh
      */
-     public static CreateGoldbergSphere(name: string, options: { m?: number, n?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Nullable<Scene> = null): _GoldbergMesh {
-        return GoldbergBuilder.CreateGoldbergSphere(name, options, scene);
+     public static CreateGoldberg(name: string, options: { m?: number, n?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, updatable?: boolean, sideOrientation?: number }, scene: Nullable<Scene> = null): Goldberg {
+        return GoldbergBuilder.CreateGoldberg(name, options, scene);
     }
 
 

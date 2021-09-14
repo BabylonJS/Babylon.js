@@ -2,10 +2,10 @@ import { Scene } from "../../scene";
 import { Vector4 } from "../../Maths/math.vector";
 import { Color4 } from '../../Maths/math.color';
 import { Mesh } from "../../Meshes/mesh";
-import { PolyhedronBuilder } from ".././Builders/polyhedronBuilder";
+import { PolyhedronBuilder } from "./polyhedronBuilder";
 import { Nullable } from '../../types';
 import { Logger } from "../../Misc/logger";
-import { _PrimaryIsoTriangle, GeodesicData} from "../geoMesh"
+import { _PrimaryIsoTriangle, GeodesicData} from "../geodesicMesh"
 
 Mesh.CreateGeodesicSphere = (name: string, options: { m?: number, n: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number }, scene: Scene): Mesh => {
     return GeoBuilder.CreateGeodesicSphere(name, options, scene);
