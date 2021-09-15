@@ -59,7 +59,7 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
         }
 
         this.props.globalState.particleSystemBlendMode = newOne;
-        this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+        this.props.globalState.onUpdateRequiredObservable.notifyObservers(null);
 
         DataStorage.WriteNumber("DefaultParticleSystemBlendMode", newOne);
 

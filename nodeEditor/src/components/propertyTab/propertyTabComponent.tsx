@@ -87,7 +87,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     }
 
     processInputBlockUpdate(ib: InputBlock) {
-        this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+        this.props.globalState.onUpdateRequiredObservable.notifyObservers(ib);
 
         if (ib.isConstant) {
             this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);

@@ -145,6 +145,8 @@ export class NodeLink {
             this._graphCanvas.links.splice(this._graphCanvas.links.indexOf(this), 1);
 
             this._portA.connectionPoint.disconnectFrom(this._portB!.connectionPoint);
+
+            GraphCanvasComponent._RefreshNode(this._nodeB);
         }
 
         if (notify) {
