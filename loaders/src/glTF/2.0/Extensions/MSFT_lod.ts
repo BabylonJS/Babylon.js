@@ -179,18 +179,21 @@ export class MSFT_lod implements IGLTFLoaderExtension {
                     }
 
                     const lod0 = transformNodes[transformNodes.length - 1];
-                    if (fullArray && lod0) {
-                        const screenCoverages = lod0.metadata?.gltf?.extras?.MSFT_screencoverage as any[];
+                    if (fullArray && lod0 && this._isMesh(lod0)) {
+                        const screenCoverages = lod0.metadata?.gltf?.extras?.MSFT_screencoverage as number[];
 
                         if (screenCoverages && screenCoverages.length) {
                             screenCoverages.reverse();
-                            (lod0 as Mesh).useLODScreenCoverage = true;
+                            lod0.useLODScreenCoverage = true;
                             for (let i = 0; i < transformNodes.length - 1; i++) {
-                                (lod0 as Mesh).addLODLevel(screenCoverages[i + 1], transformNodes[i] as Mesh);
+                                const transformNode = transformNodes[i];
+                                if (transformNode && this._isMesh(transformNode)) {
+                                    lod0.addLODLevel(screenCoverages[i + 1], transformNode);
+                                }
                             }
                             if (screenCoverages[0] > 0) {
                                 // Adding empty LOD
-                                (lod0 as Mesh).addLODLevel(screenCoverages[0], null);
+                                lod0.addLODLevel(screenCoverages[0], null);
                             }
                         }
                     }
@@ -348,6 +351,10 @@ export class MSFT_lod implements IGLTFLoaderExtension {
         }
 
         return null;
+    }
+
+    private _isMesh(mesh: TransformNode | Mesh): mesh is Mesh {
+        return !!(mesh as Mesh).addLODLevel;
     }
 
     private _loadBufferLOD(bufferLODs: Array<IBufferInfo>, indexLOD: number): void {
