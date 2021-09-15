@@ -4,6 +4,7 @@ import { GLTFLoader, ArrayItem } from "../glTFLoader";
 
 import { Material } from 'babylonjs/Materials/material';
 import { Mesh } from 'babylonjs/Meshes/mesh';
+import { Node } from 'babylonjs/node';
 import { AbstractMesh } from 'babylonjs/Meshes/abstractMesh';
 import { INode, IMeshPrimitive, IMesh } from '../glTFLoaderInterfaces';
 import { IKHRMaterialVariants_Mapping, IKHRMaterialVariants_Variant, IKHRMaterialVariants_Variants } from 'babylonjs-gltf2interface';
@@ -203,6 +204,72 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
                                 extensionMetadata.variants[variant.name].push({
                                     mesh: babylonMesh,
                                     material: babylonMaterial
+                                });
+
+                                // Replace the target when original mesh is cloned
+                                babylonMesh.onClonedObservable.add((newOne: Node) => {
+                                    const newMesh = newOne as Mesh;
+                                    let metadata: Nullable<IExtensionMetadata> = null;
+                                    let newRoot: Nullable<Node> = newMesh;
+
+                                    // Find root to get medata
+                                    do {
+                                        newRoot = newRoot!.parent;
+                                        if (!newRoot) {
+                                            return;
+                                        }
+                                        metadata = KHR_materials_variants._GetExtensionMetadata(newRoot as Mesh);
+                                    }
+                                    while (metadata === null);
+
+                                    // Need to clone the metadata on the root (first time only)
+                                    if (metadata === KHR_materials_variants._GetExtensionMetadata(root)) {
+                                        // Copy main metadata
+                                        newRoot.metadata = {};
+                                        for (var key in root.metadata) {
+                                            newRoot.metadata[key] = root.metadata[key];
+                                        }
+
+                                        // Copy the gltf metadata
+                                        newRoot.metadata.gltf = [];
+                                        for (var key in root.metadata.gltf) {
+                                            newRoot.metadata.gltf[key] = root.metadata.gltf[key];
+                                        }
+
+                                        // Duplicate the extension specific metadata
+                                        newRoot.metadata.gltf[NAME] = { lastSelected: null, original: [], variants: {} };
+                                        for (var original of metadata.original) {
+                                            newRoot.metadata.gltf[NAME].original.push({
+                                                mesh: original.mesh,
+                                                material: original.material
+                                            });
+                                        }
+                                        for (var key in metadata.variants) {
+                                            if (metadata.variants.hasOwnProperty(key)) {
+                                                newRoot.metadata.gltf[NAME].variants[key] = [];
+                                                for (var variantEntry of metadata.variants[key]) {
+                                                    newRoot.metadata.gltf[NAME].variants[key].push({
+                                                        mesh: variantEntry.mesh,
+                                                        material: variantEntry.material
+                                                    });
+                                                }
+                                            }
+                                        }
+
+                                        metadata = newRoot.metadata.gltf[NAME];
+                                    }
+
+                                    // Relocate
+                                    for (var target of metadata!.original) {
+                                        if (target.mesh === babylonMesh) {
+                                            target.mesh = newMesh;
+                                        }
+                                    }
+                                    for (var target of metadata!.variants[variant.name]) {
+                                        if (target.mesh === babylonMesh) {
+                                            target.mesh = newMesh;
+                                        }
+                                    }
                                 });
                             }
                         }));
