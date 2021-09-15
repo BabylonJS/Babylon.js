@@ -287,7 +287,7 @@ export class ComputeShader {
             const texture = binding.object as BaseTexture;
 
             if (!sampler || !texture._texture || !sampler.compareSampler(texture._texture)) {
-                this._samplers[key] = new Sampler().set(
+                this._samplers[key] = new Sampler().setParameters(
                     texture.wrapU,
                     texture.wrapV,
                     texture.wrapR,
