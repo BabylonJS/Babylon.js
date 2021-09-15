@@ -33644,6 +33644,10 @@ declare module BABYLON {
          */
         get onEnabledStateChangedObservable(): Observable<boolean>;
         /**
+         * An event triggered when the node is cloned
+         */
+        get onClonedObservable(): Observable<Node>;
+        /**
          * Creates a new Node
          * @param name the name and id to be given to this node
          * @param scene the scene this node will be added to
@@ -34123,7 +34127,7 @@ declare module BABYLON {
         /**
          * Sets the Vector3 "result" as the rotated Vector3 "localAxis" in the same rotation than the mesh.
          * localAxis is expressed in the mesh local space.
-         * result is computed in the Wordl space from the mesh World matrix.
+         * result is computed in the World space from the mesh World matrix.
          * @param localAxis axis to rotate
          * @param result the resulting transformnode
          * @returns this TransformNode.

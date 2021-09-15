@@ -641,7 +641,7 @@ export class TransformNode extends Node {
     /**
      * Sets the Vector3 "result" as the rotated Vector3 "localAxis" in the same rotation than the mesh.
      * localAxis is expressed in the mesh local space.
-     * result is computed in the Wordl space from the mesh World matrix.
+     * result is computed in the World space from the mesh World matrix.
      * @param localAxis axis to rotate
      * @param result the resulting transformnode
      * @returns this TransformNode.
