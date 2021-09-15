@@ -60,7 +60,7 @@ import { InternalTexture } from "./internalTexture";
      * @returns true if fully ready
      */
     public isReady(): boolean {
-        return true;
+        return this._video.readyState >= this._video.HAVE_CURRENT_DATA;
     }
 
     /**
