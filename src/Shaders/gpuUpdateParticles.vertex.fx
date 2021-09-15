@@ -161,7 +161,7 @@ uniform sampler2D noiseSampler;
 #endif
 
 #ifdef ANIMATESHEET
-uniform vec3 cellInfos;
+uniform vec4 cellInfos;
 #endif
 
 
@@ -445,7 +445,13 @@ void main() {
     float cellStartOffset = 0.;
 #endif    
 
-    float ratio = clamp(mod(cellStartOffset + cellInfos.z * offsetAge, life) / life, 0., 1.0);
+    float ratio = 0.;
+    if (cellInfos.w == 1.0) {
+        ratio = clamp(mod(cellStartOffset + cellInfos.z * offsetAge, life) / life, 0., 1.0);
+    }
+    else {
+        ratio = clamp(cellStartOffset + cellInfos.z * offsetAge / life, 0., 1.0);
+    }
 
     outCellIndex = float(int(cellInfos.x + ratio * dist));
 #endif
