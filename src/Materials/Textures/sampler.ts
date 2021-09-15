@@ -123,7 +123,7 @@ export class Sampler {
      * @param comparisonFunction comparison function (default: 0 - no comparison function)
      * @returns the current sampler instance
      */
-    public set(wrapU = Constants.TEXTURE_WRAP_ADDRESSMODE, wrapV = Constants.TEXTURE_WRAP_ADDRESSMODE, wrapR = Constants.TEXTURE_WRAP_ADDRESSMODE, anisotropicFilteringLevel = 1, samplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE, comparisonFunction = 0): Sampler {
+    public setParameters(wrapU = Constants.TEXTURE_WRAP_ADDRESSMODE, wrapV = Constants.TEXTURE_WRAP_ADDRESSMODE, wrapR = Constants.TEXTURE_WRAP_ADDRESSMODE, anisotropicFilteringLevel = 1, samplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE, comparisonFunction = 0): Sampler {
         this._cachedWrapU = wrapU;
         this._cachedWrapV = wrapV;
         this._cachedWrapR = wrapR;
