@@ -61,6 +61,7 @@ const textureFormat = [
     { label: "Depth24/Stencil8", normalizable: 0, hideType: true, value: Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 },
     { label: "Depth32 float", normalizable: 0, hideType: true, value: Constants.TEXTUREFORMAT_DEPTH32_FLOAT },
     { label: "Depth16", normalizable: 0, value: Constants.TEXTUREFORMAT_DEPTH16 },
+    { label: "Depth24", normalizable: 0, value: Constants.TEXTUREFORMAT_DEPTH24 },
     { label: "RGBA BPTC UNorm", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM },
     { label: "RGB BPTC UFloat", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT },
     { label: "RGB BPTC SFloat", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT },
