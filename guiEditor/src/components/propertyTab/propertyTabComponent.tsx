@@ -453,7 +453,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         noDirectUpdate={true}
                         onSelect={(value: any) => {
                             this._sizeOption = value;
-                            if (this._sizeOption != (sizeOptions.length)) {
+                            if (this._sizeOption !== (sizeOptions.length)) {
                                 const newSize = sizeValues[this._sizeOption];
                                 this.props.globalState.workbench.resizeGuiTexture(newSize);
                             }
