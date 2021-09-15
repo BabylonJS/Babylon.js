@@ -1215,6 +1215,10 @@ export class Tools {
      * @returns whether or not the current user agent is safari
      */
     public static IsSafari(): boolean {
+        if (!DomManagement.IsNavigatorAvailable()) {
+            return false;
+        }
+
         return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     }
 }

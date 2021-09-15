@@ -23,6 +23,15 @@ interface IFileRequestInfo extends IFileRequest {
     _total?: number;
 }
 
+function readAsync(arrayBuffer: ArrayBuffer, byteOffset: number, byteLength: number): Promise<Uint8Array> {
+    try {
+        return Promise.resolve(new Uint8Array(arrayBuffer, byteOffset, byteLength));
+    }
+    catch (e) {
+        return Promise.reject(e);
+    }
+}
+
 /**
  * Mode that determines the coordinate system to use.
  */
@@ -530,7 +539,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
                 this._unpackBinaryAsync(new DataReader(dataBuffer)).then((loaderData) => {
                     fileRequest.onCompleteObservable.notifyObservers(fileRequest);
                     onSuccess(loaderData);
-                }, onError);
+                }, onError ? (error) => onError(undefined, error) : undefined);
 
                 return fileRequest;
             }
@@ -538,11 +547,11 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
             return this._loadFile(scene, fileOrUrl, (data) => {
                 const arrayBuffer = data as ArrayBuffer;
                 this._unpackBinaryAsync(new DataReader({
-                    readAsync: (byteOffset, byteLength) => Promise.resolve(new Uint8Array(arrayBuffer, byteOffset, byteLength)),
+                    readAsync: (byteOffset, byteLength) => readAsync(arrayBuffer, byteOffset, byteLength),
                     byteLength: arrayBuffer.byteLength
                 })).then((loaderData) => {
                     onSuccess(loaderData);
-                }, onError);
+                }, onError ? (error) => onError(undefined, error) : undefined);
             }, true, onError);
         }
 
@@ -643,7 +652,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
 
             this._validate(scene, arrayBuffer);
             return this._unpackBinaryAsync(new DataReader({
-                readAsync: (byteOffset, byteLength) => Promise.resolve(new Uint8Array(arrayBuffer, byteOffset, byteLength)),
+                readAsync: (byteOffset, byteLength) => readAsync(arrayBuffer, byteOffset, byteLength),
                 byteLength: arrayBuffer.byteLength
             }));
         }

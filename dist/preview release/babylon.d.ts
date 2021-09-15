@@ -1146,6 +1146,8 @@ declare module BABYLON {
         static readonly TEXTUREFORMAT_DEPTH32_FLOAT: number;
         /** Depth 16 bits */
         static readonly TEXTUREFORMAT_DEPTH16: number;
+        /** Depth 24 bits */
+        static readonly TEXTUREFORMAT_DEPTH24: number;
         /** Compressed BC7 */
         static readonly TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM: number;
         /** Compressed BC6 unsigned float */
@@ -17950,6 +17952,10 @@ declare module BABYLON {
          * Define if a depth texture is required instead of a depth buffer
          */
         generateDepthTexture?: boolean;
+        /**
+         * Define depth texture format to use
+         */
+        depthTextureFormat?: number;
         /**
          * Define the number of desired draw buffers
          */
@@ -51459,6 +51465,7 @@ declare module BABYLON {
         private static _GetPluginForDirectLoad;
         private static _GetPluginForFilename;
         private static _GetDirectLoad;
+        private static _FormatErrorMessage;
         private static _LoadData;
         private static _GetFileInfo;
         /**

@@ -80,7 +80,7 @@ export class GUINodeTools {
                 element.height = "40px";
                 return element;
             case "VirtualKeyboard":
-                element = VirtualKeyboard.CreateDefaultLayout();
+                element = VirtualKeyboard.CreateDefaultLayout("VirtualKeyboard");
                 element.addKeysRow(["1", "2", "3", "\u2190"]);
                 return element;
             case "Image":

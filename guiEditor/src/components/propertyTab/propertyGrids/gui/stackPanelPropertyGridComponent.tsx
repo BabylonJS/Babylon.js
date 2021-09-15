@@ -4,8 +4,8 @@ import { PropertyChangedEvent } from "../../../../sharedUiComponents/propertyCha
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
 import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { StackPanel } from "babylonjs-gui/2D/controls/stackPanel";
-import { LineContainerComponent } from "../../../../sharedUiComponents/lines/lineContainerComponent";
 import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
+import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
 
 interface IStackPanelPropertyGridComponentProps {
     stackPanel: StackPanel,
@@ -23,11 +23,11 @@ export class StackPanelPropertyGridComponent extends React.Component<IStackPanel
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent  lockObject={this.props.lockObject} control={stackPanel} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <LineContainerComponent title="STACKPANEL">
-                    <CheckBoxLineComponent label="Clip children" target={stackPanel} propertyName="clipChildren" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <CheckBoxLineComponent label="Vertical" target={stackPanel} propertyName="isVertical" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                </LineContainerComponent>
+                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={stackPanel} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <hr />
+                <TextLineComponent label="STACKPANEL" value=" " color="grey"></TextLineComponent>
+                <CheckBoxLineComponent label="Clip children" target={stackPanel} propertyName="clipChildren" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CheckBoxLineComponent label="Vertical" target={stackPanel} propertyName="isVertical" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
             </div>
         );
     }
