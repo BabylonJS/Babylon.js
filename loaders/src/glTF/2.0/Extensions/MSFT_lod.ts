@@ -167,7 +167,7 @@ export class MSFT_lod implements IGLTFLoaderExtension {
                     this._nodeSignalLODs[indexLOD] = this._nodeSignalLODs[indexLOD] || new Deferred();
                 }
 
-                const assign = (babylonTransformNode: TransformNode, index: number) => {
+                const assignChild = (babylonTransformNode: TransformNode, index: number) => {
                     babylonTransformNode.setEnabled(false);
                     transformNodes[index] = babylonTransformNode;
 
@@ -196,7 +196,7 @@ export class MSFT_lod implements IGLTFLoaderExtension {
                     }
                 };
 
-                const promise = this._loader.loadNodeAsync(`/nodes/${nodeLOD.index}`, nodeLOD, (node: TransformNode) => assign(node, indexLOD)).then((babylonMesh) => {
+                const promise = this._loader.loadNodeAsync(`/nodes/${nodeLOD.index}`, nodeLOD, (node: TransformNode) => assignChild(node, indexLOD)).then((babylonMesh) => {
                     const screenCoverages = (nodeLODs[nodeLODs.length - 1]._babylonTransformNode as Mesh).metadata?.gltf?.extras?.MSFT_screencoverage;
 
                     if (indexLOD !== 0 && !screenCoverages) {
@@ -208,6 +208,7 @@ export class MSFT_lod implements IGLTFLoaderExtension {
                         }
                     }
 
+                    assign(babylonMesh);
                     babylonMesh.setEnabled(true);
                     return babylonMesh;
                 });
