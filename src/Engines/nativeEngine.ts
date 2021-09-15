@@ -153,6 +153,11 @@ interface INativeEngine {
     readonly COMMAND_CLEAR: number;
     readonly COMMAND_SETSTENCIL: number;
 
+    readonly COMMAND_VALIDATION_COMMAND: number;
+    readonly COMMAND_VALIDATION_UINT32: number;
+    readonly COMMAND_VALIDATION_INT32: number;
+    readonly COMMAND_VALIDATION_FLOAT: number;
+
     dispose(): void;
 
     requestAnimationFrame(callback: () => void): void;
@@ -206,10 +211,11 @@ interface INativeEngine {
     setViewPort(x: number, y: number, width: number, height: number): void;
     setStencil(mask: number, stencilOpFail: number, depthOpFail: number, depthOpPass: number, func: number, ref: number): void;
 
-    setCommandBuffer(commandBuffer: Uint8Array): void;
-    setCommandUint32Buffer(commandBuffer: Uint32Array): void;
-    setCommandInt32Buffer(commandBuffer: Int32Array): void;
-    setCommandFloat32Buffer(commandBuffer: Float32Array): void;
+    setCommandBuffer(buffer: Uint8Array): void;
+    setCommandUint32Buffer(buffer: Uint32Array): void;
+    setCommandInt32Buffer(buffer: Int32Array): void;
+    setCommandFloat32Buffer(buffer: Float32Array): void;
+    setCommandValidationBuffer(buffer: Uint8Array): void;
     submitCommandBuffer(commandCount: number): void;
 }
 
@@ -800,7 +806,7 @@ class Buffer<T extends ArrayLike<number> & {[n: number]: number, set(array: Arra
     private index = 0;
 
     public constructor(typedArray: new (size: number) => T, onBufferChanged: (buffer: T) => void) {
-        this.buffer = new typedArray(10240);
+        this.buffer = new typedArray(50000);
         onBufferChanged(this.buffer);
     }
 
@@ -832,13 +838,18 @@ class CommandBufferEncoder {
     private readonly _uint32Buffer: Buffer<Uint32Array>;
     private readonly _int32Buffer: Buffer<Int32Array>;
     private readonly _float32Buffer: Buffer<Float32Array>;
+    private readonly _validationBuffer?: Buffer<Uint8Array>;
     private _isCommandBufferScopeActive = false;
 
-    public constructor(private readonly _nativeEngine: INativeEngine) {
+    public constructor(private readonly _nativeEngine: INativeEngine, enableValidation = false) {
         this._commandBuffer = new Buffer(Uint8Array, (buffer) => this._nativeEngine.setCommandBuffer(buffer));
         this._uint32Buffer = new Buffer(Uint32Array, (buffer) => this._nativeEngine.setCommandUint32Buffer(buffer));
         this._int32Buffer = new Buffer(Int32Array, (buffer) => this._nativeEngine.setCommandInt32Buffer(buffer));
         this._float32Buffer = new Buffer(Float32Array, (buffer) => this._nativeEngine.setCommandFloat32Buffer(buffer));
+
+        if (enableValidation) {
+            this._validationBuffer = new Buffer(Uint8Array, (buffer) => this._nativeEngine.setCommandValidationBuffer(buffer));
+        }
     }
 
     public beginCommandScope() {
@@ -863,36 +874,63 @@ class CommandBufferEncoder {
     public beginEncodingCommand(command: number) {
         // console.log(`COMMAND BUFFER: Encode command: ${command}`);
         this._commandBuffer.pushValue(command);
+        if (this._validationBuffer) {
+            this._validationBuffer.pushValue(this._nativeEngine.COMMAND_VALIDATION_COMMAND);
+        }
     }
 
     public encodeCommandArgAsUInt32(commandArg: unknown) {
         // console.log(`COMMAND BUFFER:   Encode uint32: ${commandArg}`);
         this._uint32Buffer.pushValue(commandArg as number);
+        if (this._validationBuffer) {
+            this._validationBuffer.pushValue(this._nativeEngine.COMMAND_VALIDATION_UINT32);
+            this._validationBuffer.pushValue(1);
+        }
     }
 
     public encodeCommandArgAsUInt32s(commandArg: Uint32Array) {
         // console.log(`COMMAND BUFFER:   Encode uint32s: ${commandArg}`);
         this._uint32Buffer.pushValues(commandArg);
+        if (this._validationBuffer) {
+            this._validationBuffer.pushValue(this._nativeEngine.COMMAND_VALIDATION_UINT32);
+            this._validationBuffer.pushValue(commandArg.length);
+        }
     }
 
     public encodeCommandArgAsInt32(commandArg: unknown) {
         // console.log(`COMMAND BUFFER:   Encode uint32: ${commandArg}`);
         this._int32Buffer.pushValue(commandArg as number);
+        if (this._validationBuffer) {
+            this._validationBuffer.pushValue(this._nativeEngine.COMMAND_VALIDATION_INT32);
+            this._validationBuffer.pushValue(1);
+        }
     }
 
     public encodeCommandArgAsInt32s(commandArg: Int32Array) {
         // console.log(`COMMAND BUFFER:   Encode uint32s: ${commandArg}`);
         this._int32Buffer.pushValues(commandArg);
+        if (this._validationBuffer) {
+            this._validationBuffer.pushValue(this._nativeEngine.COMMAND_VALIDATION_INT32);
+            this._validationBuffer.pushValue(commandArg.length);
+        }
     }
 
     public encodeCommandArgAsFloat32(commandArg: unknown) {
         // console.log(`COMMAND BUFFER:   Encode float32: ${commandArg}`);
         this._float32Buffer.pushValue(commandArg as number);
+        if (this._validationBuffer) {
+            this._validationBuffer.pushValue(this._nativeEngine.COMMAND_VALIDATION_FLOAT);
+            this._validationBuffer.pushValue(1);
+        }
     }
 
     public encodeCommandArgAsFloat32s(commandArg: Float32Array) {
         // console.log(`COMMAND BUFFER:   Encode float32s: ${commandArg}`);
         this._float32Buffer.pushValues(commandArg);
+        if (this._validationBuffer) {
+            this._validationBuffer.pushValue(this._nativeEngine.COMMAND_VALIDATION_FLOAT);
+            this._validationBuffer.pushValue(commandArg.length);
+        }
     }
 
     public finishEncodingCommand() {
@@ -907,6 +945,7 @@ class CommandBufferEncoder {
             this._commandBuffer.reset();
             this._uint32Buffer.reset();
             this._float32Buffer.reset();
+            this._validationBuffer?.reset();
         }
     }
 }
