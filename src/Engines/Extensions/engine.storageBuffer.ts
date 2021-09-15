@@ -36,7 +36,7 @@ declare module "../../Engines/thinEngine" {
         /**
          * Sets a storage buffer in the shader
          * @param name Defines the name of the storage buffer as defined in the shader
-         * @param sampler Defines the value to give to the uniform
+         * @param buffer Defines the value to give to the uniform
          */
         setStorageBuffer(name: string, buffer: Nullable<StorageBuffer>): void;
     }
