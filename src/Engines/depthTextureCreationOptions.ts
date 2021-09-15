@@ -12,4 +12,6 @@ export class DepthTextureCreationOptions {
     isCube?: boolean;
     /** Specifies the sample count of the depth/stencil texture texture */
     samples?: number;
+    /** Specifies the depth texture format to use */
+    depthTextureFormat?: number;
 }
