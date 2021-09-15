@@ -32,6 +32,7 @@ import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proc
 import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
 import { Layer } from "babylonjs/Layers/layer";
 import { DataStorage } from "babylonjs/Misc/dataStorage";
+import { NodeMaterialBlock } from "babylonjs/Materials/Node/nodeMaterialBlock";
 
 export class PreviewManager {
     private _nodeMaterial: NodeMaterial;
@@ -39,7 +40,7 @@ export class PreviewManager {
 
     private _onPreviewCommandActivatedObserver: Nullable<Observer<boolean>>;
     private _onAnimationCommandActivatedObserver: Nullable<Observer<void>>;
-    private _onUpdateRequiredObserver: Nullable<Observer<void>>;
+    private _onUpdateRequiredObserver: Nullable<Observer<Nullable<NodeMaterialBlock>>>;
     private _onPreviewBackgroundChangedObserver: Nullable<Observer<void>>;
     private _onBackFaceCullingChangedObserver: Nullable<Observer<void>>;
     private _onDepthPrePassChangedObserver: Nullable<Observer<void>>;
