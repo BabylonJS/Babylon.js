@@ -406,7 +406,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             { label: "Web (1920)", value: 0 },
             { label: "Phone (720)", value: 1 },
             { label: "Square (1200)", value: 2 },
-            { label: "Custom", value: 3 }];
+            ];
         const sizeValues = [
             new Vector2(1920, 1080),
             new Vector2(750, 1334),
@@ -434,8 +434,15 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         onSelect={(value: boolean) => {
                             this.props.globalState.onResponsiveChangeObservable.notifyObservers(value);
                             DataStorage.WriteBoolean("Responsive", value);
+                            this._sizeOption = sizeOptions.length;
+                            if (value) {
+                                this._sizeOption = 0;
+                                this.props.globalState.workbench.resizeGuiTexture(sizeValues[this._sizeOption]);
+                            }
+                            this.forceUpdate();
                         }}
                     />
+                    {DataStorage.ReadBoolean("Responsive", true) &&
                     <OptionsLineComponent
                         label=""
                         iconLabel="Size"
@@ -446,19 +453,19 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         noDirectUpdate={true}
                         onSelect={(value: any) => {
                             this._sizeOption = value;
-                            if (this._sizeOption != (sizeOptions.length - 1)) {
+                            if (this._sizeOption !== (sizeOptions.length)) {
                                 const newSize = sizeValues[this._sizeOption];
                                 this.props.globalState.workbench.resizeGuiTexture(newSize);
                             }
                             this.forceUpdate();
                         }}
-                    />
-                    {this._sizeOption == (sizeOptions.length - 1) &&
+                    />}
+                    {this._sizeOption == (sizeOptions.length) &&
                         <div className="divider">
                             <FloatLineComponent
                                 icon={canvasSizeIcon}
                                 iconLabel="Canvas Size"
-                                label="X"
+                                label="W"
                                 target={this.state.textureSize}
                                 propertyName="x"
                                 isInteger={true}
@@ -471,7 +478,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 }} ></FloatLineComponent>
                             <FloatLineComponent
                                 icon={canvasSizeIcon}
-                                label="Y"
+                                label="H"
                                 target={this.state.textureSize}
                                 propertyName="y"
                                 isInteger={true}
