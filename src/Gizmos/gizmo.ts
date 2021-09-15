@@ -338,7 +338,7 @@ export class Gizmo implements IDisposable {
             if (light.getTypeID)
             {
                 const type = light.getTypeID();
-                if (type === Light.LIGHTTYPEID_DIRECTIONALLIGHT || type === Light.LIGHTTYPEID_SPOTLIGHT|| type === Light.LIGHTTYPEID_POINTLIGHT) {
+                if (type === Light.LIGHTTYPEID_DIRECTIONALLIGHT || type === Light.LIGHTTYPEID_SPOTLIGHT || type === Light.LIGHTTYPEID_POINTLIGHT) {
                     const parent = light.parent;
 
                     if (parent) {
