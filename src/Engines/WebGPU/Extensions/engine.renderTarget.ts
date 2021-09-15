@@ -104,11 +104,14 @@ WebGPUEngine.prototype._createDepthStencilTexture = function (size: RenderTarget
         comparisonFunction: 0,
         generateStencil: false,
         samples: 1,
+        depthTextureFormat: Constants.TEXTUREFORMAT_DEPTH16,
         ...options
     };
 
-    // TODO WEBGPU allow to choose the format?
-    internalTexture.format = internalOptions.generateStencil ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT;
+    // TODO WebGPU We set the format to Depth32 if depthTextureFormat=Depth16 because Chrome does not support Depth16 yet
+    internalTexture.format =
+        internalOptions.generateStencil ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 :
+        internalOptions.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH16 ? Constants.TEXTUREFORMAT_DEPTH32_FLOAT : internalOptions.depthTextureFormat;
 
     this._setupDepthStencilTexture(internalTexture, size, internalOptions.generateStencil, internalOptions.bilinearFiltering, internalOptions.comparisonFunction, internalOptions.samples);
 
