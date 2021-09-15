@@ -16,6 +16,7 @@ import { PointerEventTypes, PointerInfo } from '../Events/pointerEvents';
 import { LinesMesh } from '../Meshes/linesMesh';
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
 import { ShadowLight } from "../Lights/shadowLight";
+import { Light } from "../Lights/light";
 
 /**
  * Cache built by each axis. Used for managing state between all elements of gizmo for enhanced UI
@@ -332,23 +333,29 @@ export class Gizmo implements IDisposable {
                 lmat.copyFrom(bone.getWorldMatrix());
             }
             bone.markAsDirty();
-        } else if (this._attachedNode.getClassName() === "SpotLight" || this._attachedNode.getClassName() === "PointLight" || this._attachedNode.getClassName() === "DirectionalLight") {
-            var light = this._attachedNode as ShadowLight;
-            const parent = light.parent;
+        } else {
+            const light = this._attachedNode as ShadowLight;
+            if (light.getTypeID)
+            {
+                const type = light.getTypeID();
+                if (type === Light.LIGHTTYPEID_DIRECTIONALLIGHT || type === Light.LIGHTTYPEID_SPOTLIGHT|| type === Light.LIGHTTYPEID_POINTLIGHT) {
+                    const parent = light.parent;
 
-            if (parent) {
-                var invParent = this._tempMatrix1;
-                var nodeLocalMatrix = this._tempMatrix2;
-                parent.getWorldMatrix().invertToRef(invParent);
-                light.getWorldMatrix().multiplyToRef(invParent, nodeLocalMatrix);
-                nodeLocalMatrix.decompose(undefined, this._tempQuaternion, this._tempVector);
-            } else {
-                this._attachedNode._worldMatrix.decompose(undefined, this._tempQuaternion, this._tempVector);
+                    if (parent) {
+                        var invParent = this._tempMatrix1;
+                        var nodeLocalMatrix = this._tempMatrix2;
+                        parent.getWorldMatrix().invertToRef(invParent);
+                        light.getWorldMatrix().multiplyToRef(invParent, nodeLocalMatrix);
+                        nodeLocalMatrix.decompose(undefined, this._tempQuaternion, this._tempVector);
+                    } else {
+                        this._attachedNode._worldMatrix.decompose(undefined, this._tempQuaternion, this._tempVector);
+                    }
+                    // setter doesn't copy values. Need a new Vector3
+                    light.position = new Vector3(this._tempVector.x, this._tempVector.y, this._tempVector.z);
+                    Vector3.Backward(false).rotateByQuaternionToRef(this._tempQuaternion, this._tempVector);
+                    light.direction = new Vector3(this._tempVector.x, this._tempVector.y, this._tempVector.z);
+                }
             }
-            // setter doesn't copy values. Need a new Vector3
-            light.position = new Vector3(this._tempVector.x, this._tempVector.y, this._tempVector.z);
-            Vector3.Backward(false).rotateByQuaternionToRef(this._tempQuaternion, this._tempVector);
-            light.direction = new Vector3(this._tempVector.x, this._tempVector.y, this._tempVector.z);
         }
     }
 
