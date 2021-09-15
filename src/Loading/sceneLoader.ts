@@ -448,7 +448,20 @@ export class SceneLoader {
         return null;
     }
 
-    private static _LoadData(fileInfo: IFileInfo, scene: Scene, onSuccess: (plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync, data: any, responseURL?: string) => void, onProgress: ((event: ISceneLoaderProgressEvent) => void) | undefined, onError: (message: string, exception?: any) => void, onDispose: () => void, pluginExtension: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
+    private static _FormatErrorMessage(fileInfo: IFileInfo, message?: string, exception?: any): string {
+        let errorMessage = "Unable to load from " + fileInfo.url;
+
+        if (message) {
+            errorMessage += `: ${message}`;
+        }
+        else if (exception) {
+            errorMessage += `: ${exception}`;
+        }
+
+        return errorMessage;
+    }
+
+    private static _LoadData(fileInfo: IFileInfo, scene: Scene, onSuccess: (plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync, data: any, responseURL?: string) => void, onProgress: ((event: ISceneLoaderProgressEvent) => void) | undefined, onError: (message?: string, exception?: any) => void, onDispose: () => void, pluginExtension: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
         const directLoad = SceneLoader._GetDirectLoad(fileInfo.url);
         const registeredPlugin = pluginExtension ? SceneLoader._GetPluginForExtension(pluginExtension) : (directLoad ? SceneLoader._GetPluginForDirectLoad(fileInfo.url) : SceneLoader._GetPluginForFilename(fileInfo.url));
 
@@ -520,7 +533,7 @@ export class SceneLoader {
             }
 
             const errorCallback = (request?: WebRequest, exception?: LoadFileError) => {
-                onError(request?.statusText || exception?.message || "Unknown error", exception);
+                onError(request?.statusText, exception);
             };
 
             const fileOrUrl = fileInfo.file || fileInfo.url;
@@ -667,11 +680,11 @@ export class SceneLoader {
             scene._removePendingData(loadingToken);
         };
 
-        var errorHandler = (message: string, exception?: any) => {
-            let errorMessage = "Unable to import meshes from " + fileInfo.url + ": " + message;
+        var errorHandler = (message?: string, exception?: any) => {
+            const errorMessage = SceneLoader._FormatErrorMessage(fileInfo, message, exception);
 
             if (onError) {
-                onError(scene, errorMessage, exception);
+                onError(scene, errorMessage, new Error(errorMessage));
             } else {
                 Logger.Error(errorMessage);
                 // should the exception be thrown?
@@ -839,10 +852,11 @@ export class SceneLoader {
             scene._removePendingData(loadingToken);
         };
 
-        var errorHandler = (message: Nullable<string>, exception?: any) => {
-            let errorMessage = "Unable to load from " + fileInfo.url + (message ? ": " + message : "");
+        var errorHandler = (message?: string, exception?: any) => {
+            const errorMessage = SceneLoader._FormatErrorMessage(fileInfo, message, exception);
+
             if (onError) {
-                onError(scene, errorMessage, exception);
+                onError(scene, errorMessage, new Error(errorMessage));
             } else {
                 Logger.Error(errorMessage);
                 // should the exception be thrown?
@@ -950,15 +964,11 @@ export class SceneLoader {
             scene._removePendingData(loadingToken);
         };
 
-        var errorHandler = (message: Nullable<string>, exception?: any) => {
-            let errorMessage = "Unable to load assets from " + fileInfo.url + (message ? ": " + message : "");
-
-            if (exception && exception.message) {
-                errorMessage += ` (${exception.message})`;
-            }
+        var errorHandler = (message?: string, exception?: any) => {
+            const errorMessage = SceneLoader._FormatErrorMessage(fileInfo, message, exception);
 
             if (onError) {
-                onError(scene, errorMessage, exception);
+                onError(scene, errorMessage, new Error(errorMessage));
             } else {
                 Logger.Error(errorMessage);
                 // should the exception be thrown?
