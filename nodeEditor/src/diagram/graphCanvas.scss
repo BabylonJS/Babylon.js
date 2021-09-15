@@ -514,6 +514,16 @@
                     border-top-left-radius: 7px;
                     background: black;
                     color: white;
+
+                    &.constant {
+                        border-color: #464348;
+                        background: #464348;
+                    }
+            
+                    &.inspector {
+                        border-color: #66491b;
+                        background: #66491b;
+                    }
                 }
 
                 .promotion-warning {
@@ -539,16 +549,6 @@
                     white-space: nowrap;
                     text-overflow: ellipsis;
                     overflow: hidden;
-
-                    &.constant {
-                        border-color: #464348;
-                        background: #464348;
-                    }
-            
-                    &.inspector {
-                        border-color: #66491b;
-                        background: #66491b;
-                    }
                 }
 
                 .connections {
