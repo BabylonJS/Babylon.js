@@ -503,12 +503,34 @@
                     }
                 }
 
-                .header {
+                .header-container {
                     grid-row: 1;
                     grid-column: 1;
+                    display: grid;
+                    grid-template-columns: 1fr auto;
+                    grid-template-rows: 100%;
                     border: 4px solid black;
                     border-top-right-radius: 7px;
                     border-top-left-radius: 7px;
+                    background: black;
+                    color: white;
+                }
+
+                .promotion-warning {
+                    grid-row: 1;
+                    grid-column: 2;
+                    display: none;  
+                    z-index: 10;            
+
+                    &.visible {
+                        display: grid;
+                        width: 20px;
+                    }
+                }
+
+                .header {
+                    grid-row: 1;
+                    grid-column: 1;
                     font-size: 16px;
                     text-align: center;
                     margin-top: -1px;
@@ -517,8 +539,6 @@
                     white-space: nowrap;
                     text-overflow: ellipsis;
                     overflow: hidden;
-                    background: black;
-                    color: white;
 
                     &.constant {
                         border-color: #464348;

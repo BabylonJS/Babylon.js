@@ -1940,6 +1940,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             this.disableFacetData();
         }
 
+        this._uniformBuffer.dispose();
+
         this.onAfterWorldMatrixUpdateObservable.clear();
         this.onCollideObservable.clear();
         this.onCollisionPositionChangeObservable.clear();

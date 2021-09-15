@@ -259,6 +259,7 @@ declare module NODEEDITOR {
         private serializePortData;
         serialize(saveCollapsedState: boolean): IFrameData;
         export(): void;
+        adjustPorts(): void;
         static Parse(serializationData: IFrameData, canvas: GraphCanvasComponent, map?: {
             [key: number]: number;
         }): GraphFrame;
@@ -384,6 +385,7 @@ declare module NODEEDITOR {
         get selectionContainer(): HTMLDivElement;
         get frameContainer(): HTMLDivElement;
         constructor(props: IGraphCanvasComponentProps);
+        private static _RefreshNode;
         getGridPosition(position: number, useCeil?: boolean): number;
         getGridPositionCeil(position: number): number;
         updateTransform(): void;
@@ -437,10 +439,12 @@ declare module NODEEDITOR {
         private _localChange;
         private _store;
         private _regExp;
+        private _onFocus;
         constructor(props: IFloatLineComponentProps);
         shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: {
             value: string;
         }): boolean;
+        componentWillUnmount(): void;
         raiseOnPropertyChanged(newValue: number, previousValue: number): void;
         updateValue(valueString: string): void;
         render(): JSX.Element;
@@ -868,10 +872,12 @@ declare module NODEEDITOR {
         value: string;
     }> {
         private _localChange;
+        private _onFocus;
         constructor(props: ITextInputLineComponentProps);
         shouldComponentUpdate(nextProps: ITextInputLineComponentProps, nextState: {
             value: string;
         }): boolean;
+        componentWillUnmount(): void;
         raiseOnPropertyChanged(newValue: string, previousValue: string): void;
         updateValue(value: string, raisePropertyChanged: boolean): void;
         render(): JSX.Element;
@@ -1246,6 +1252,8 @@ declare module NODEEDITOR {
     export class GraphNode {
         block: BABYLON.NodeMaterialBlock;
         private _visual;
+        private _headerContainer;
+        private _promotionWarning;
         private _header;
         private _connections;
         private _inputsContainer;

@@ -7922,6 +7922,14 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+function readAsync(arrayBuffer, byteOffset, byteLength) {
+    try {
+        return Promise.resolve(new Uint8Array(arrayBuffer, byteOffset, byteLength));
+    }
+    catch (e) {
+        return Promise.reject(e);
+    }
+}
 /**
  * Mode that determines the coordinate system to use.
  */
@@ -8342,17 +8350,17 @@ var GLTFFileLoader = /** @class */ (function () {
                 this._unpackBinaryAsync(new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataReader"](dataBuffer)).then(function (loaderData) {
                     fileRequest_1.onCompleteObservable.notifyObservers(fileRequest_1);
                     onSuccess(loaderData);
-                }, onError);
+                }, onError ? function (error) { return onError(undefined, error); } : undefined);
                 return fileRequest_1;
             }
             return this._loadFile(scene, fileOrUrl, function (data) {
                 var arrayBuffer = data;
                 _this._unpackBinaryAsync(new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataReader"]({
-                    readAsync: function (byteOffset, byteLength) { return Promise.resolve(new Uint8Array(arrayBuffer, byteOffset, byteLength)); },
+                    readAsync: function (byteOffset, byteLength) { return readAsync(arrayBuffer, byteOffset, byteLength); },
                     byteLength: arrayBuffer.byteLength
                 })).then(function (loaderData) {
                     onSuccess(loaderData);
-                }, onError);
+                }, onError ? function (error) { return onError(undefined, error); } : undefined);
             }, true, onError);
         }
         return this._loadFile(scene, fileOrUrl, function (data) {
@@ -8443,7 +8451,7 @@ var GLTFFileLoader = /** @class */ (function () {
             var arrayBuffer_1 = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["FileTools"].DecodeBase64UrlToBinary(data);
             this._validate(scene, arrayBuffer_1);
             return this._unpackBinaryAsync(new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataReader"]({
-                readAsync: function (byteOffset, byteLength) { return Promise.resolve(new Uint8Array(arrayBuffer_1, byteOffset, byteLength)); },
+                readAsync: function (byteOffset, byteLength) { return readAsync(arrayBuffer_1, byteOffset, byteLength); },
                 byteLength: arrayBuffer_1.byteLength
             }));
         }
