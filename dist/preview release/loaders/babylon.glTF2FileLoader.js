@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!************************************************************************************!*\
-  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \************************************************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \*****************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -2060,8 +2060,8 @@ var KHR_materials_variants = /** @class */ (function () {
                 assign(babylonMesh);
                 if (babylonMesh instanceof babylonjs_Meshes_mesh__WEBPACK_IMPORTED_MODULE_1__["Mesh"]) {
                     var babylonDrawMode = _glTFLoader__WEBPACK_IMPORTED_MODULE_0__["GLTFLoader"]._GetDrawMode(context, primitive.mode);
-                    var root = _this._loader.rootBabylonMesh;
-                    var metadata = (root.metadata = root.metadata || {});
+                    var root_1 = _this._loader.rootBabylonMesh;
+                    var metadata = (root_1.metadata = root_1.metadata || {});
                     var gltf = (metadata.gltf = metadata.gltf || {});
                     var extensionMetadata_1 = (gltf[NAME] = gltf[NAME] || { lastSelected: null, original: [], variants: {} });
                     // Store the original material.
@@ -2070,7 +2070,7 @@ var KHR_materials_variants = /** @class */ (function () {
                         var mapping = extension.mappings[mappingIndex];
                         var material = _glTFLoader__WEBPACK_IMPORTED_MODULE_0__["ArrayItem"].Get(extensionContext + "/mappings/" + mappingIndex + "/material", _this._loader.gltf.materials, mapping.material);
                         promises.push(_this._loader._loadMaterialAsync("#/materials/" + mapping.material, material, babylonMesh, babylonDrawMode, function (babylonMaterial) {
-                            for (var mappingVariantIndex = 0; mappingVariantIndex < mapping.variants.length; ++mappingVariantIndex) {
+                            var _loop_2 = function (mappingVariantIndex) {
                                 var variantIndex = mapping.variants[mappingVariantIndex];
                                 var variant = _glTFLoader__WEBPACK_IMPORTED_MODULE_0__["ArrayItem"].Get("/extensions/" + NAME + "/variants/" + variantIndex, _this._variants, variantIndex);
                                 extensionMetadata_1.variants[variant.name] = extensionMetadata_1.variants[variant.name] || [];
@@ -2078,6 +2078,71 @@ var KHR_materials_variants = /** @class */ (function () {
                                     mesh: babylonMesh,
                                     material: babylonMaterial
                                 });
+                                // Replace the target when original mesh is cloned
+                                babylonMesh.onClonedObservable.add(function (newOne) {
+                                    var newMesh = newOne;
+                                    var metadata = null;
+                                    var newRoot = newMesh;
+                                    // Find root to get medata
+                                    do {
+                                        newRoot = newRoot.parent;
+                                        if (!newRoot) {
+                                            return;
+                                        }
+                                        metadata = KHR_materials_variants._GetExtensionMetadata(newRoot);
+                                    } while (metadata === null);
+                                    // Need to clone the metadata on the root (first time only)
+                                    if (metadata === KHR_materials_variants._GetExtensionMetadata(root_1)) {
+                                        // Copy main metadata
+                                        newRoot.metadata = {};
+                                        for (var key in root_1.metadata) {
+                                            newRoot.metadata[key] = root_1.metadata[key];
+                                        }
+                                        // Copy the gltf metadata
+                                        newRoot.metadata.gltf = [];
+                                        for (var key in root_1.metadata.gltf) {
+                                            newRoot.metadata.gltf[key] = root_1.metadata.gltf[key];
+                                        }
+                                        // Duplicate the extension specific metadata
+                                        newRoot.metadata.gltf[NAME] = { lastSelected: null, original: [], variants: {} };
+                                        for (var _i = 0, _a = metadata.original; _i < _a.length; _i++) {
+                                            var original = _a[_i];
+                                            newRoot.metadata.gltf[NAME].original.push({
+                                                mesh: original.mesh,
+                                                material: original.material
+                                            });
+                                        }
+                                        for (var key in metadata.variants) {
+                                            if (metadata.variants.hasOwnProperty(key)) {
+                                                newRoot.metadata.gltf[NAME].variants[key] = [];
+                                                for (var _b = 0, _c = metadata.variants[key]; _b < _c.length; _b++) {
+                                                    var variantEntry = _c[_b];
+                                                    newRoot.metadata.gltf[NAME].variants[key].push({
+                                                        mesh: variantEntry.mesh,
+                                                        material: variantEntry.material
+                                                    });
+                                                }
+                                            }
+                                        }
+                                        metadata = newRoot.metadata.gltf[NAME];
+                                    }
+                                    // Relocate
+                                    for (var _d = 0, _e = metadata.original; _d < _e.length; _d++) {
+                                        var target = _e[_d];
+                                        if (target.mesh === babylonMesh) {
+                                            target.mesh = newMesh;
+                                        }
+                                    }
+                                    for (var _f = 0, _g = metadata.variants[variant.name]; _f < _g.length; _f++) {
+                                        var target = _g[_f];
+                                        if (target.mesh === babylonMesh) {
+                                            target.mesh = newMesh;
+                                        }
+                                    }
+                                });
+                            };
+                            for (var mappingVariantIndex = 0; mappingVariantIndex < mapping.variants.length; ++mappingVariantIndex) {
+                                _loop_2(mappingVariantIndex);
                             }
                         }));
                     };
@@ -2782,7 +2847,7 @@ var MSFT_lod = /** @class */ (function () {
                     _this._nodeIndexLOD = indexLOD;
                     _this._nodeSignalLODs[indexLOD] = _this._nodeSignalLODs[indexLOD] || new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Deferred"]();
                 }
-                var assign_1 = function (babylonTransformNode, index) {
+                var assignChild = function (babylonTransformNode, index) {
                     var _a, _b, _c;
                     babylonTransformNode.setEnabled(false);
                     transformNodes[index] = babylonTransformNode;
@@ -2793,13 +2858,16 @@ var MSFT_lod = /** @class */ (function () {
                         }
                     }
                     var lod0 = transformNodes[transformNodes.length - 1];
-                    if (fullArray && lod0) {
+                    if (fullArray && lod0 && _this._isMesh(lod0)) {
                         var screenCoverages = (_c = (_b = (_a = lod0.metadata) === null || _a === void 0 ? void 0 : _a.gltf) === null || _b === void 0 ? void 0 : _b.extras) === null || _c === void 0 ? void 0 : _c.MSFT_screencoverage;
                         if (screenCoverages && screenCoverages.length) {
                             screenCoverages.reverse();
                             lod0.useLODScreenCoverage = true;
                             for (var i = 0; i < transformNodes.length - 1; i++) {
-                                lod0.addLODLevel(screenCoverages[i + 1], transformNodes[i]);
+                                var transformNode = transformNodes[i];
+                                if (transformNode && _this._isMesh(transformNode)) {
+                                    lod0.addLODLevel(screenCoverages[i + 1], transformNode);
+                                }
                             }
                             if (screenCoverages[0] > 0) {
                                 // Adding empty LOD
@@ -2808,7 +2876,7 @@ var MSFT_lod = /** @class */ (function () {
                         }
                     }
                 };
-                var promise = _this._loader.loadNodeAsync("/nodes/" + nodeLOD.index, nodeLOD, function (node) { return assign_1(node, indexLOD); }).then(function (babylonMesh) {
+                var promise = _this._loader.loadNodeAsync("/nodes/" + nodeLOD.index, nodeLOD, function (node) { return assignChild(node, indexLOD); }).then(function (babylonMesh) {
                     var _a, _b, _c;
                     var screenCoverages = (_c = (_b = (_a = nodeLODs[nodeLODs.length - 1]._babylonTransformNode.metadata) === null || _a === void 0 ? void 0 : _a.gltf) === null || _b === void 0 ? void 0 : _b.extras) === null || _c === void 0 ? void 0 : _c.MSFT_screencoverage;
                     if (indexLOD !== 0 && !screenCoverages) {
@@ -2819,6 +2887,7 @@ var MSFT_lod = /** @class */ (function () {
                             delete previousNodeLOD._babylonTransformNode;
                         }
                     }
+                    assign(babylonMesh);
                     babylonMesh.setEnabled(true);
                     return babylonMesh;
                 });
@@ -2944,6 +3013,9 @@ var MSFT_lod = /** @class */ (function () {
             }
         }
         return null;
+    };
+    MSFT_lod.prototype._isMesh = function (mesh) {
+        return !!mesh.addLODLevel;
     };
     MSFT_lod.prototype._loadBufferLOD = function (bufferLODs, indexLOD) {
         var bufferLOD = bufferLODs[indexLOD];
