@@ -474,6 +474,8 @@ export class InstancedMesh extends AbstractMesh {
 
         result.computeWorldMatrix(true);
 
+        this.onClonedObservable.notifyObservers(result);
+
         return result;
     }
 
