@@ -1,11 +1,12 @@
 import { Nullable } from '../../types';
-import { IShaderProcessor, ShaderLanguage } from '../Processors/iShaderProcessor';
+import { IShaderProcessor } from '../Processors/iShaderProcessor';
 import { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 import { WebGPUShaderProcessingContext, WebGPUBufferDescription } from './webgpuShaderProcessingContext';
 import * as WebGPUConstants from './webgpuConstants';
 import { Logger } from '../../Misc/logger';
 import { ThinEngine } from "../thinEngine";
 import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
+import { ShaderLanguage } from "../../Materials/shaderLanguage";
 
 /** @hidden */
 export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor implements IShaderProcessor {

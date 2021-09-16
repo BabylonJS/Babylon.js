@@ -9,7 +9,7 @@ import { Effect } from './effect';
 import { DataBuffer } from '../Buffers/dataBuffer';
 import { DrawWrapper } from "./drawWrapper";
 import { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
-import { ShaderLanguage } from "../Engines/Processors/iShaderProcessor";
+import { ShaderLanguage } from "./shaderLanguage";
 
 // Prevents ES6 Crash if not imported.
 import "../Shaders/postprocess.vertex";

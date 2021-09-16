@@ -2,7 +2,7 @@ import { EngineStore } from './engineStore';
 import { IInternalTextureLoader } from '../Materials/Textures/internalTextureLoader';
 import { Effect, IEffectCreationOptions } from '../Materials/effect';
 import { _DevTools } from '../Misc/devTools';
-import { IShaderProcessor, ShaderLanguage } from './Processors/iShaderProcessor';
+import { IShaderProcessor } from './Processors/iShaderProcessor';
 import { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import { UniformBuffer } from '../Materials/uniformBuffer';
 import { Nullable, DataArray, IndicesArray } from '../types';
@@ -41,6 +41,7 @@ import { StencilStateComposer } from "../States/stencilStateComposer";
 import { StorageBuffer } from "../Buffers/storageBuffer";
 import { IAudioEngineOptions } from '../Audio/Interfaces/IAudioEngineOptions';
 import { IStencilState } from "../States/IStencilState";
+import { ShaderLanguage } from "../Materials/shaderLanguage";
 
 declare type WebRequest = import("../Misc/webRequest").WebRequest;
 declare type LoadFileError = import("../Misc/fileTools").LoadFileError;

@@ -1,4 +1,4 @@
-import { ShaderLanguage } from "./Processors/iShaderProcessor";
+import { ShaderLanguage } from "../Materials/shaderLanguage";
 
 /**
  * Defines the shader related stores and directory

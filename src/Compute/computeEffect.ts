@@ -6,7 +6,7 @@ import { DomManagement } from "../Misc/domManagement";
 import { ShaderProcessor } from "../Engines/Processors/shaderProcessor";
 import { ProcessingOptions } from "../Engines/Processors/shaderProcessingOptions";
 import { ShaderStore } from '../Engines/shaderStore';
-import { ShaderLanguage } from "../Engines/Processors/iShaderProcessor";
+import { ShaderLanguage } from "../Materials/shaderLanguage";
 
 declare type Engine = import("../Engines/engine").Engine;
 

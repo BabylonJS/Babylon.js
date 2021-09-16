@@ -1,17 +1,8 @@
+import { ShaderLanguage } from "../../Materials/shaderLanguage";
 import { Nullable } from "../../types";
 import { ShaderProcessingContext } from "./shaderProcessingOptions";
 
 declare type ThinEngine = import("../thinEngine").ThinEngine;
-
-/**
- * Language of the shader code
- */
-export enum ShaderLanguage {
-    /** language is GLSL (used by WebGL) */
-    GLSL,
-    /** language is WGSL (used by WebGPU) */
-    WGSL
-}
 
 /** @hidden */
 export interface IShaderProcessor {

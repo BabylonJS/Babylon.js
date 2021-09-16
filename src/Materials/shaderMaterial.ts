@@ -16,7 +16,7 @@ import { Color3, Color4 } from '../Maths/math.color';
 import { EffectFallbacks } from './effectFallbacks';
 import { WebRequest } from '../Misc/webRequest';
 import { Engine } from '../Engines/engine';
-import { ShaderLanguage } from "../Engines/Processors/iShaderProcessor";
+import { ShaderLanguage } from "./shaderLanguage";
 import { UniformBuffer } from "./uniformBuffer";
 import { Sampler } from "./Textures/sampler";
 import { StorageBuffer } from "../Buffers/storageBuffer";
