@@ -14,7 +14,7 @@ export class Vector4PropertyTabComponent extends React.Component<IVector4Propert
     render() {
         return (
             <Vector4LineComponent globalState={this.props.globalState} label="Value" target={this.props.inputBlock} propertyName="value" onChange={() => {
-                this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.inputBlock);
             }}></Vector4LineComponent>
         );
     }

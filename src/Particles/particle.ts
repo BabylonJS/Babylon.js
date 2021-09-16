@@ -91,6 +91,8 @@ export class Particle {
     public _initialStartSpriteCellID: number;
     /** @hidden */
     public _initialEndSpriteCellID: number;
+    /** @hidden */
+    public _initialSpriteCellLoop: boolean;
 
     /** @hidden */
     public _currentColorGradient: Nullable<ColorGradient>;
@@ -184,8 +186,13 @@ export class Particle {
         }
 
         let dist = (this._initialEndSpriteCellID - this._initialStartSpriteCellID);
-        let ratio = Scalar.Clamp(((offsetAge * changeSpeed) % this.lifeTime) / this.lifeTime);
-
+        let ratio: number;
+        if (this._initialSpriteCellLoop) {
+            ratio = Scalar.Clamp(((offsetAge * changeSpeed) % this.lifeTime) / this.lifeTime);
+        }
+        else {
+            ratio = Scalar.Clamp((offsetAge * changeSpeed) / this.lifeTime);
+        }
         this.cellIndex = this._initialStartSpriteCellID + (ratio * dist) | 0;
     }
 
@@ -300,6 +307,7 @@ export class Particle {
         if (this.particleSystem.isAnimationSheetEnabled) {
             other._initialStartSpriteCellID = this._initialStartSpriteCellID;
             other._initialEndSpriteCellID = this._initialEndSpriteCellID;
+            other._initialSpriteCellLoop = this._initialSpriteCellLoop;
         }
         if (this.particleSystem.useRampGradients) {
             if (other.remapData && this.remapData) {

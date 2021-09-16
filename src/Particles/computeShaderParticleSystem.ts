@@ -91,7 +91,7 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
             this._simParamsComputeShader.addUniform("limitVelocityDamping", 1);
         }
         if (this._parent.isAnimationSheetEnabled) {
-            this._simParamsComputeShader.addUniform("cellInfos", 3);
+            this._simParamsComputeShader.addUniform("cellInfos", 4);
         }
         if (this._parent.noiseTexture) {
             this._simParamsComputeShader.addUniform("noiseStrength", 3);

@@ -63,7 +63,7 @@ struct Particle {
     #endif
 
     #ifdef ANIMATESHEET
-        cellInfos : vec3<f32>;
+        cellInfos : vec4<f32>;
     #endif
 
     #ifdef NOISE
@@ -466,7 +466,13 @@ fn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {
                 let cellStartOffset : f32 = 0.;
             #endif    
 
-            let ratio : f32 = clamp(((cellStartOffset + params.cellInfos.z * offsetAge) % life) / life, 0., 1.0);
+            var ratio : f32;
+            if (params.cellInfos.w == 1.0) {
+                ratio = clamp(((cellStartOffset + params.cellInfos.z * offsetAge) % life) / life, 0., 1.0);
+            }
+            else {
+                ratio = clamp((cellStartOffset + params.cellInfos.z * offsetAge) / life, 0., 1.0);
+            }
 
             particlesOut.particles[index].cellIndex = f32(i32(params.cellInfos.x + ratio * dist));
         #endif

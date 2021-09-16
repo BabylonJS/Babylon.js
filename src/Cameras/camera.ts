@@ -1272,6 +1272,9 @@ export class Camera extends Node {
     public clone(name: string): Camera {
         const camera = SerializationHelper.Clone(Camera.GetConstructorFromName(this.getClassName(), name, this.getScene(), this.interaxialDistance, this.isStereoscopicSideBySide), this);
         camera.name = name;
+
+        this.onClonedObservable.notifyObservers(camera);
+
         return camera;
     }
 
