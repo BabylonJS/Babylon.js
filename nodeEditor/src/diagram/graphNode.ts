@@ -38,7 +38,7 @@ export class GraphNode {
     private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphFrame | GraphNode | NodeLink | NodePort | FramePortData>>>;
     private _onSelectionBoxMovedObserver: Nullable<Observer<ClientRect | DOMRect>>;
     private _onFrameCreatedObserver: Nullable<Observer<GraphFrame>>;
-    private _onUpdateRequiredObserver: Nullable<Observer<void>>;
+    private _onUpdateRequiredObserver: Nullable<Observer<Nullable<NodeMaterialBlock>>>;
     private _ownerCanvas: GraphCanvasComponent;
     private _isSelected: boolean;
     private _displayManager: Nullable<IDisplayManager> = null;
@@ -191,7 +191,10 @@ export class GraphNode {
             }
         });
 
-        this._onUpdateRequiredObserver = this._globalState.onUpdateRequiredObservable.add(() => {
+        this._onUpdateRequiredObserver = this._globalState.onUpdateRequiredObservable.add((block) => {
+            if (block !== this.block) {
+                return;
+            }
             this.refresh();
         });
 
@@ -286,8 +289,9 @@ export class GraphNode {
             this._visual.style.background = this._displayManager.getBackgroundColor(this.block);
             let additionalClass = this._displayManager.getHeaderClass(this.block);
             this._header.classList.value = "header";
+            this._headerContainer.classList.value = "header-container";
             if (additionalClass) {
-                this._header.classList.add(additionalClass);
+                this._headerContainer.classList.add(additionalClass);
             }
         } else {
             this._header.innerHTML = this.block.name;
