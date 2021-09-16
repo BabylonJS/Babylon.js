@@ -1288,7 +1288,8 @@ export class NativeEngine extends Engine {
         this._native.setViewPort(viewport.x, viewport.y, viewport.width, viewport.height);
     }
 
-    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false, cullBackFaces?: boolean, stencil?: IStencilState): void {
+    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false, cullBackFaces?: boolean, stencil?: IStencilState, zOffsetUnit: number = 0): void {
+        // TODO. zOffsetUnit
         this._native.setState(culling, zOffset, this.cullBackFaces ?? cullBackFaces ?? true, reverseSide);
     }
 
@@ -1312,7 +1313,7 @@ export class NativeEngine extends Engine {
     }
 
     /**
-     * Set the z offset to apply to current rendering
+     * Set the z offset Factor to apply to current rendering
      * @param value defines the offset to apply
      */
     public setZOffset(value: number): void {
@@ -1320,11 +1321,31 @@ export class NativeEngine extends Engine {
     }
 
     /**
-     * Gets the current value of the zOffset
-     * @returns the current zOffset state
+     * Gets the current value of the zOffset Factor
+     * @returns the current zOffset Factor state
      */
     public getZOffset(): number {
-        return this._native.getZOffset();
+        const zOffset = this._native.getZOffset();
+        return this.useReverseDepthBuffer ? -zOffset : zOffset;
+    }
+
+    /**
+     * Set the z offset Unit to apply to current rendering
+     * @param value defines the offset to apply
+     */
+    public setZOffsetUnit(value: number): void {
+        // TODO.
+        this._depthCullingState.zOffsetUnit = this.useReverseDepthBuffer ? -value : value;
+    }
+
+    /**
+     * Gets the current value of the zOffset Unit
+     * @returns the current zOffset Unit state
+     */
+    public getZOffsetUnit(): number {
+        // TODO.
+        const zOffsetUnit = this._depthCullingState.zOffsetUnit;
+        return this.useReverseDepthBuffer ? -zOffsetUnit : zOffsetUnit;
     }
 
     /**
