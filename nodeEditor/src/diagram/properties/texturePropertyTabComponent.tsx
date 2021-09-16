@@ -149,7 +149,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
     render() {
         let url = "";
 
-        let texture = this.textureBlock.texture as BaseTexture;
+        let texture = (this.textureBlock as TextureBlock).hasImageSource ? null : this.textureBlock.texture as BaseTexture;
         if (texture && texture.name && texture.name.substring(0, 4) !== "data") {
             url = texture.name;
         }
@@ -247,29 +247,29 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                     {
                         texture && texture.updateSamplingMode &&
                         <OptionsLineComponent label="Sampling" options={samplingMode} target={texture} noDirectUpdate={true} propertyName="samplingMode" onSelect={(value) => {
-                            texture.updateSamplingMode(value as number);
+                            texture!.updateSamplingMode(value as number);
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
                         }} />
                     }
                     {
                         texture && isInReflectionMode &&
                         <OptionsLineComponent label="Reflection mode" options={reflectionModeOptions} target={texture} propertyName="coordinatesMode" onSelect={(value: any) => {
-                            texture.coordinatesMode = value;
+                            texture!.coordinatesMode = value;
                             this.forceUpdate();
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
                         }} />
                     }                    
                     {
                         texture && !isInReflectionMode && !isFrozenTexture &&
-                        <CheckBoxLineComponent label="Clamp U" isSelected={() => texture.wrapU === Texture.CLAMP_ADDRESSMODE} onSelect={(value) => {
-                            texture.wrapU = value ? Texture.CLAMP_ADDRESSMODE : Texture.WRAP_ADDRESSMODE;
+                        <CheckBoxLineComponent label="Clamp U" isSelected={() => texture!.wrapU === Texture.CLAMP_ADDRESSMODE} onSelect={(value) => {
+                            texture!.wrapU = value ? Texture.CLAMP_ADDRESSMODE : Texture.WRAP_ADDRESSMODE;
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
                         }} />
                     }
                     {
                         texture && !isInReflectionMode && !isFrozenTexture &&
-                        <CheckBoxLineComponent label="Clamp V" isSelected={() => texture.wrapV === Texture.CLAMP_ADDRESSMODE} onSelect={(value) => {
-                            texture.wrapV = value ? Texture.CLAMP_ADDRESSMODE : Texture.WRAP_ADDRESSMODE;
+                        <CheckBoxLineComponent label="Clamp V" isSelected={() => texture!.wrapV === Texture.CLAMP_ADDRESSMODE} onSelect={(value) => {
+                            texture!.wrapV = value ? Texture.CLAMP_ADDRESSMODE : Texture.WRAP_ADDRESSMODE;
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
                         }} />
                     }        
@@ -328,39 +328,42 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                         />
                     }
                 </LineContainerComponent>
-                <LineContainerComponent title="SOURCE">
-                    <CheckBoxLineComponent label="Embed static texture" isSelected={() => this.state.isEmbedded} onSelect={value => {
-                        this.setState({isEmbedded: value});
-                        this.textureBlock.texture = null;
-                        this.updateAfterTextureLoad();
-                    }}/>
-                    {
-                        isInReflectionMode &&
-                        <CheckBoxLineComponent label="Load as cube texture" isSelected={() => this.state.loadAsCubeTexture} 
-                            onSelect={value => this.setState({loadAsCubeTexture: value})}/> 
-                    }
-                    {
-                        isInReflectionMode && this.state.loadAsCubeTexture &&
-                        <CheckBoxLineComponent label="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Texture is prefiltered" isSelected={() => this.state.textureIsPrefiltered} 
-                            onSelect={value => this.setState({textureIsPrefiltered: value})}/> 
-                    }
-                    {
-                        this.state.isEmbedded &&
-                        <FileButtonLineComponent label="Upload" onClick={(file) => this.replaceTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
-                    }
-                    {
-                        !this.state.isEmbedded &&
-                        <TextInputLineComponent label="Link" globalState={this.props.globalState} value={url} onChange={newUrl => this.replaceTextureWithUrl(newUrl)}/>
-                    }
-                    {
-                        !this.state.isEmbedded && url &&
-                        <ButtonLineComponent label="Refresh" onClick={() => this.replaceTextureWithUrl(url + "?nocache=" + this._generateRandomForCache())}/>
-                    }
-                    {
-                        texture &&
-                        <ButtonLineComponent label="Remove" onClick={() => this.removeTexture()}/>
-                    }
-                </LineContainerComponent>
+                {
+                    !(this.textureBlock as TextureBlock).hasImageSource &&
+                    <LineContainerComponent title="SOURCE">
+                        <CheckBoxLineComponent label="Embed static texture" isSelected={() => this.state.isEmbedded} onSelect={value => {
+                            this.setState({isEmbedded: value});
+                            this.textureBlock.texture = null;
+                            this.updateAfterTextureLoad();
+                        }}/>
+                        {
+                            isInReflectionMode &&
+                            <CheckBoxLineComponent label="Load as cube texture" isSelected={() => this.state.loadAsCubeTexture} 
+                                onSelect={value => this.setState({loadAsCubeTexture: value})}/> 
+                        }
+                        {
+                            isInReflectionMode && this.state.loadAsCubeTexture &&
+                            <CheckBoxLineComponent label="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Texture is prefiltered" isSelected={() => this.state.textureIsPrefiltered} 
+                                onSelect={value => this.setState({textureIsPrefiltered: value})}/> 
+                        }
+                        {
+                            this.state.isEmbedded &&
+                            <FileButtonLineComponent label="Upload" onClick={(file) => this.replaceTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
+                        }
+                        {
+                            !this.state.isEmbedded &&
+                            <TextInputLineComponent label="Link" globalState={this.props.globalState} value={url} onChange={newUrl => this.replaceTextureWithUrl(newUrl)}/>
+                        }
+                        {
+                            !this.state.isEmbedded && url &&
+                            <ButtonLineComponent label="Refresh" onClick={() => this.replaceTextureWithUrl(url + "?nocache=" + this._generateRandomForCache())}/>
+                        }
+                        {
+                            texture &&
+                            <ButtonLineComponent label="Remove" onClick={() => this.removeTexture()}/>
+                        }
+                    </LineContainerComponent>
+                }
                 <GenericPropertyTabComponent globalState={this.props.globalState} block={this.props.block}/>
             </div>
         );

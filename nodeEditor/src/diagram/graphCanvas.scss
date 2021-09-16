@@ -619,7 +619,15 @@
                         }
                     }
 
+                    &.image-source-block {  
+                        margin-top: 5px;                        
+                    }
+
                     &.regular-texture-block {  
+                        margin-top: 60px;                        
+                    }
+
+                    &.reduced-texture-block {  
                         margin-top: 30px;                        
                     }
 
