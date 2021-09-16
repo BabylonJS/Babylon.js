@@ -15,7 +15,7 @@ import { WebGPUPipelineContext, IWebGPURenderPipelineStageDescriptor } from './W
 import { IPipelineContext } from './IPipelineContext';
 import { DataBuffer } from '../Buffers/dataBuffer';
 import { BaseTexture } from "../Materials/Textures/baseTexture";
-import { IShaderProcessor, ShaderLanguage } from "./Processors/iShaderProcessor";
+import { IShaderProcessor } from "./Processors/iShaderProcessor";
 import { WebGPUShaderProcessorGLSL } from "./WebGPU/webgpuShaderProcessorsGLSL";
 import { WebGPUShaderProcessorWGSL } from "./WebGPU/webgpuShaderProcessorsWGSL";
 import { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
@@ -49,6 +49,7 @@ import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
 import { TwgslOptions, WebGPUTintWASM } from "./WebGPU/webgpuTintWASM";
 import { ExternalTexture } from "../Materials/Textures/externalTexture";
 import { WebGPUShaderProcessor } from "./WebGPU/webgpuShaderProcessor";
+import { ShaderLanguage } from "../Materials/shaderLanguage";
 
 declare function importScripts(...urls: string[]): void;
 

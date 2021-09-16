@@ -1,4 +1,4 @@
-import { ShaderLanguage } from "../Processors/iShaderProcessor";
+import { ShaderLanguage } from "../../Materials/shaderLanguage";
 import { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 
 const _maxGroups = 4;

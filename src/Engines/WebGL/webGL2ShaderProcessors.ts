@@ -1,5 +1,6 @@
+import { ShaderLanguage } from "../../Materials/shaderLanguage";
 import { Nullable } from '../../types';
-import { IShaderProcessor, ShaderLanguage } from '../Processors/iShaderProcessor';
+import { IShaderProcessor } from '../Processors/iShaderProcessor';
 import { ShaderProcessingContext } from '../Processors/shaderProcessingOptions';
 
 declare type ThinEngine = import("../thinEngine").ThinEngine;

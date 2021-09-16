@@ -12,7 +12,7 @@ import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, ICo
 import { ThinEngine } from '../Engines/thinEngine';
 import { IEffectFallbacks } from './iEffectFallbacks';
 import { ShaderStore as EngineShaderStore } from '../Engines/shaderStore';
-import { ShaderLanguage } from "../Engines/Processors/iShaderProcessor";
+import { ShaderLanguage } from "./shaderLanguage";
 import { CodeStringParsingTools } from "../Misc/codeStringParsingTools";
 
 declare type Engine = import("../Engines/engine").Engine;

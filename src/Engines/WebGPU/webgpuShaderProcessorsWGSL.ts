@@ -1,5 +1,5 @@
 import { Nullable } from '../../types';
-import { IShaderProcessor, ShaderLanguage } from '../Processors/iShaderProcessor';
+import { IShaderProcessor } from '../Processors/iShaderProcessor';
 import { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 import { WebGPUShaderProcessingContext, WebGPUBufferDescription } from './webgpuShaderProcessingContext';
 import * as WebGPUConstants from './webgpuConstants';
@@ -17,6 +17,7 @@ import "../../ShadersWGSL/ShadersInclude/morphTargetsVertexDeclaration";
 import "../../ShadersWGSL/ShadersInclude/morphTargetsVertexGlobal";
 import "../../ShadersWGSL/ShadersInclude/morphTargetsVertexGlobalDeclaration";
 import "../../ShadersWGSL/ShadersInclude/sceneUboDeclaration";
+import { ShaderLanguage } from "../../Materials/shaderLanguage";
 
 const builtInName_vertex_index = "gl_VertexID";
 const builtInName_instance_index = "gl_InstanceID";
