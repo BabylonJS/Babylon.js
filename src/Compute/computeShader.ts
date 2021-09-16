@@ -203,6 +203,23 @@ export class ComputeShader {
     }
 
     /**
+     * Binds a sampler to the shader
+     * @param name Binding name of the sampler
+     * @param sampler Sampler to bind
+     */
+     public setSampler(name: string, sampler: Sampler): void {
+        const current = this._bindings[name];
+
+        this._contextIsDirty ||= !current || !sampler.compareSampler(current.object);
+
+        this._bindings[name] = {
+            type: ComputeBindingType.Sampler,
+            object: sampler,
+            indexInGroupEntries: current?.indexInGroupEntries,
+        };
+    }
+
+    /**
      * Specifies that the compute shader is ready to be executed (the compute effect and all the resources are ready)
      * @returns true if the compute shader is ready to be executed
      */
