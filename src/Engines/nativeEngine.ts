@@ -145,6 +145,9 @@ interface INativeEngine {
     readonly COMMAND_SETSTATE: number;
     readonly COMMAND_SETZOFFSET: number;
     readonly COMMAND_SETDEPTHTEST: number;
+    readonly COMMAND_SETDEPTHWRITE: number;
+    readonly COMMAND_SETCOLORWRITE: number;
+    readonly COMMAND_SETBLENDMODE: number;
     readonly COMMAND_SETFLOAT: number;
     readonly COMMAND_SETFLOAT2: number;
     readonly COMMAND_SETFLOAT3: number;
@@ -180,11 +183,6 @@ interface INativeEngine {
     createProgram(vertexShader: string, fragmentShader: string): any;
     getUniforms(shaderProgram: any, uniformsNames: string[]): WebGLUniformLocation[];
     getAttributes(shaderProgram: any, attributeNames: string[]): number[];
-
-    getDepthWrite(): boolean;
-    setDepthWrite(enable: boolean): void;
-    setColorWrite(enable: boolean): void;
-    setBlendMode(blendMode: number): void;
 
     createTexture(): WebGLTexture;
     loadTexture(texture: WebGLTexture, data: ArrayBufferView, generateMips: boolean, invertY: boolean, onSuccess: () => void, onError: () => void): void;
@@ -969,6 +967,7 @@ export class NativeEngine extends Engine {
     private _stencilOpDepthFail: number = Constants.KEEP;
     private _stencilOpStencilDepthPass: number = Constants.REPLACE;
     private _zOffset: number = 0;
+    private _depthWrite: boolean = true;
 
     public getHardwareScalingLevel(): number {
         return this._native.getHardwareScalingLevel();
@@ -1532,7 +1531,7 @@ export class NativeEngine extends Engine {
      * @returns the current depth writing state
      */
     public getDepthWrite(): boolean {
-        return this._native.getDepthWrite();
+        return this._depthWrite;
     }
 
     public getDepthFunction(): Nullable<number> {
@@ -1598,7 +1597,10 @@ export class NativeEngine extends Engine {
      * @param enable defines the state to set
      */
     public setDepthWrite(enable: boolean): void {
-        this._native.setDepthWrite(enable);
+        this._depthWrite = enable;
+        this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_SETDEPTHWRITE);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(Number(enable));
+        this._commandBufferEncoder.finishEncodingCommand();
     }
 
     /**
@@ -1606,8 +1608,10 @@ export class NativeEngine extends Engine {
      * @param enable defines the state to set
      */
     public setColorWrite(enable: boolean): void {
-        this._native.setColorWrite(enable);
         this._colorWrite = enable;
+        this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_SETCOLORWRITE);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(Number(enable));
+        this._commandBufferEncoder.finishEncodingCommand();
     }
 
     /**
@@ -1806,7 +1810,9 @@ export class NativeEngine extends Engine {
 
         mode = this._getNativeAlphaMode(mode);
 
-        this._native.setBlendMode(mode);
+        this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_SETBLENDMODE);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(mode);
+        this._commandBufferEncoder.finishEncodingCommand();
 
         if (!noDepthWriteChange) {
             this.setDepthWrite(mode === Constants.ALPHA_DISABLE);
