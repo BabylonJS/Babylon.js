@@ -4583,11 +4583,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /**
      * Extends a mesh to a Goldberg mesh
      * @param mesh the mesh to convert
-     * @warning  the mesh to convert MUST be an exported then imported Goldberg Mesh     
-     * @returns Goldberg mesh
+     * Warning  the mesh to convert MUST be an import of a peviously exported Goldberg mesh     
      */
-    public static toGoldberg(mesh: Mesh): Mesh {
-        return mesh;
+    public static ToGoldberg(mesh: Mesh) {
     }
 
     /**
