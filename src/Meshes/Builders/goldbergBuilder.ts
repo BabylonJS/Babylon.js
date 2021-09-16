@@ -571,7 +571,7 @@ function GoldbergCreate<TBase extends isMesh>(Base: TBase) {
 
 const GoldbergMesh = GoldbergCreate(Mesh);
 
-Mesh.toGoldberg =  (mesh: Mesh) : Mesh => {
+Mesh.ToGoldberg =  (mesh: Mesh) : Mesh => {
     const metadata = mesh.metadata;
     metadata.faceCenters = metadata.faceCenters.map((el: Vector3) => new Vector3(el._x, el._y, el._z));
     metadata.faceZaxis = metadata.faceZaxis.map((el: Vector3) => new Vector3(el._x, el._y, el._z));
