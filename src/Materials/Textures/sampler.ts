@@ -145,7 +145,8 @@ export class Sampler {
             this._cachedWrapR === other._cachedWrapR &&
             this._cachedAnisotropicFilteringLevel === other._cachedAnisotropicFilteringLevel &&
             this.samplingMode === other.samplingMode &&
-            this._comparisonFunction === other._comparisonFunction;
+            this._comparisonFunction === other._comparisonFunction &&
+            this._useMipMaps === other._useMipMaps;
     }
 
 }
