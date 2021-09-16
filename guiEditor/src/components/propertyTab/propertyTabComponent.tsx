@@ -152,68 +152,62 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         }
     }
 
-    saveToSnippetServerHelper = (content: string, adt: AdvancedDynamicTexture, success: Nullable<boolean>) => {
-        const xmlHttp = new XMLHttpRequest();
-        xmlHttp.onreadystatechange = () => {
-            if (xmlHttp.readyState == 4) {
-                if (xmlHttp.status == 200) {
-                    const snippet = JSON.parse(xmlHttp.responseText);
-                    const oldId = adt.snippetId;
-                    adt.snippetId = snippet.id;
-                    if (snippet.version && snippet.version != "0") {
-                        adt.snippetId += "#" + snippet.version;
+    saveToSnippetServerHelper = (content: string, adt: AdvancedDynamicTexture) => {
+        return new Promise((resolve, reject) => {
+            const xmlHttp = new XMLHttpRequest();
+            xmlHttp.onreadystatechange = () => {
+                if (xmlHttp.readyState == 4) {
+                    if (xmlHttp.status == 200) {
+                        const snippet = JSON.parse(xmlHttp.responseText);
+                        const oldId = adt.snippetId;
+                        adt.snippetId = snippet.id;
+                        if (snippet.version && snippet.version != "0") {
+                            adt.snippetId += "#" + snippet.version;
+                        }
+                        const windowAsAny = window as any;
+                        if (windowAsAny.Playground && oldId) {
+                            windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
+                                regex: new RegExp(oldId, "g"),
+                                replace: `parseFromSnippetAsync("${adt.snippetId}`,
+                            });
+                        }
+                        resolve(adt.snippetId);
+                    } else {
+                        reject();
                     }
-                    const windowAsAny = window as any;
-                    if (windowAsAny.Playground && oldId) {
-                        windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
-                            regex: new RegExp(oldId, "g"),
-                            replace: `parseFromSnippetAsync("${adt.snippetId}`,
-                        });
-                    }
-                    success = true;
-                } else {
-                    success = false;
                 }
-            }
-            success = false;
-        };
+            };
 
-        xmlHttp.open("POST", AdvancedDynamicTexture.SnippetUrl + (adt.snippetId ? "/" + adt.snippetId : ""), true);
-        xmlHttp.setRequestHeader("Content-Type", "application/json");
-        const dataToSend = {
-            payload: JSON.stringify({
-                gui: content,
-            }),
-            name: "",
-            description: "",
-            tags: "",
-        };
-        xmlHttp.send(JSON.stringify(dataToSend));
+            xmlHttp.open("POST", AdvancedDynamicTexture.SnippetUrl + (adt.snippetId ? "/" + adt.snippetId : ""), true);
+            xmlHttp.setRequestHeader("Content-Type", "application/json");
+            const dataToSend = {
+                payload: JSON.stringify({
+                    gui: content,
+                }),
+                name: "",
+                description: "",
+                tags: "",
+            };
+            xmlHttp.send(JSON.stringify(dataToSend));
+        });
     }
 
     saveToSnippetServer = async () => {
         const adt = this.props.globalState.guiTexture;
         const content = JSON.stringify(adt.serializeContent());
-        let success = null;
-        if (this.props.globalState.customSave) {
-            await this.props.globalState.customSave!.action(content).then((resolve) => {
-                adt.snippetId = (resolve as unknown as string);
-                success = true;
-            }).catch((err) => {
-                alert(err);
-            });
-        }
-        else {
-            while (success === null) {
-                this.saveToSnippetServerHelper(content, adt, success);
-            };
-        }
+
+        const savePromise = this.props.globalState.customSave?.action || this.saveToSnippetServerHelper;
+        savePromise(content, adt).then((resolve: unknown) => {
+            adt.snippetId = (resolve as unknown as string);
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(adt.snippetId);
+            }
+            alert("GUI saved with ID: " + adt.snippetId + " (please note that the id was also saved to your clipboard)");
+        }).catch((err: any) => {
+            alert(err);
+        })
 
         this.forceUpdate();
-        if (navigator.clipboard && success) {
-            navigator.clipboard.writeText(adt.snippetId);
-        }
-        alert(success ? "GUI saved with ID: " + adt.snippetId + " (please note that the id was also saved to your clipboard)" : "Unable to save your GUI");
     }
 
     loadFromSnippet() {
