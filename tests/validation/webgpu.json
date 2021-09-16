@@ -149,6 +149,11 @@
             "title": "update sampler info",
             "renderCount": 5,
             "playgroundId": "#7GKK8E#20"
+        },
+        {
+            "title": "wgsl in shadermaterial",
+            "renderCount": 15,
+            "playgroundId": "#8RU8Q3#79"
         }
     ]
 }
