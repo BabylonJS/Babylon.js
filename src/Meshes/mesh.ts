@@ -2672,7 +2672,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     public clone(name: string = "", newParent: Nullable<Node> = null, doNotCloneChildren?: boolean, clonePhysicsImpostor: boolean = true): Mesh {
         return new Mesh(name, this.getScene(), newParent, this, doNotCloneChildren, clonePhysicsImpostor);
     }
-
+    
     /**
      * Releases resources associated with this mesh.
      * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
@@ -4524,7 +4524,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param scene defines the hosting scene 
      * @returns Geodesic mesh
      */
-     public static CreateGeodesicSphere(
+     public static CreateGeodesic(
         name: string,
         options: {
             m?: number;
@@ -4545,12 +4545,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
-     * Creates the Mesh for a Goldberg Sphere Polyhedron
+     * Creates the Mesh for a Goldberg Polyhedron
      * @param name defines the name of the mesh
      * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty
      * * m number of horizontal steps along an isogrid
      * * n number of angled steps along an isogrid
-     * * size the size of the Goldberg Sphere, optional default 1
+     * * size the size of the Goldberg, optional default 1
      * * sizeX allows stretching in the x direction, optional, default size
      * * sizeY allows stretching in the y direction, optional, default size
      * * sizeZ allows stretching in the z direction, optional, default size
@@ -4561,7 +4561,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
      * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
      * @param scene defines the hosting scene 
-     * @returns GoldbergSphere mesh
+     * @returns Goldberg mesh
      */
      public static CreateGoldberg(
         name: string,
@@ -4578,6 +4578,16 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         scene: Scene
     ): Mesh {
         throw _DevTools.WarnImport("MeshBuilder");
+    }
+
+    /**
+     * Extends a mesh to a Goldberg mesh
+     * @param mesh the mesh to convert
+     * @warning  the mesh to convert MUST be an exported then imported Goldberg Mesh     
+     * @returns Goldberg mesh
+     */
+    public static toGoldberg(mesh: Mesh): Mesh {
+        return mesh;
     }
 
     /**

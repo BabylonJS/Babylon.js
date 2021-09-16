@@ -3,7 +3,7 @@ import { Vector3, Vector2 } from "../../Maths/math.vector";
 import { Color4 } from '../../Maths/math.color';
 import { Mesh } from "../../Meshes/mesh";
 import { VertexData } from "../mesh.vertexData";
-import { Nullable, FloatArray } from '../../types';
+import { Nullable, FloatArray, IndicesArray } from '../../types';
 import { Logger } from "../../Misc/logger";
 import { _PrimaryIsoTriangle, GeodesicData, PolyhedronData} from "../geodesicMesh"
 import { VertexBuffer } from "../../Buffers";
@@ -68,7 +68,7 @@ VertexData.CreateGoldberg = function(options: { size?: number, sizeX?: number, s
  * Class adding properties and methods to a Mesh to form a Goldberg Mesh
  * Not intended to be used for the direct creation of a Goldberg Mesh
  */
-export class Goldberg extends Mesh {
+//export class Goldberg extends Mesh {
 
     /**
      * @constructor
@@ -78,7 +78,7 @@ export class Goldberg extends Mesh {
      * @param geodesicData the data describing the vertices and faces of a geodesic polyhedron
      * @param goldbergData the data describing the vertices and faces of a goldberg polyhedron
      */
-    constructor(
+/*    constructor(
         name: string,
         scene: Nullable<Scene> = null,
         source: Nullable<Mesh> = null,
@@ -319,7 +319,7 @@ export class Goldberg extends Mesh {
 
 Mesh.CreateGoldberg = (name: string, options: { m?: number, n: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, updatable?: boolean, sideOrientation?: number }, scene: Scene): Goldberg => {
     return GoldbergBuilder.CreateGoldberg(name, options, scene);
-};
+}; */
 
 /**
  * Class containing static functions to help procedurally build a Goldberg mesh
@@ -344,7 +344,7 @@ Mesh.CreateGoldberg = (name: string, options: { m?: number, n: number, size?: nu
      * @param scene defines the hosting scene 
      * @returns Geodesic mesh
      */
-    public static CreateGoldberg(name: string, options: { m?: number, n?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, updatable?: boolean, sideOrientation?: number }, scene: Nullable<Scene> = null): Goldberg {
+    public static CreateGoldberg(name: string, options: { m?: number, n?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, updatable?: boolean, sideOrientation?: number }, scene: Nullable<Scene> = null): Mesh {
         let m: number = options.m || 1;
         if (m !== Math.floor(m)) {
             m === Math.floor(m);
@@ -366,24 +366,241 @@ Mesh.CreateGoldberg = (name: string, options: { m?: number, n: number, size?: nu
         const geodesicData = GeodesicData.BuildGeodesicData(primTri);
         const goldbergData = geodesicData.toGoldbergData();
 
-        const goldberg = new Goldberg(name, scene, null, geodesicData, goldbergData);
+        const goldberg = new GoldbergMesh(name);
 
         options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
         goldberg._originalBuilderSideOrientation = options.sideOrientation;
         
-        
-
         const vertexData = VertexData.CreateGoldberg(options, goldbergData)
 
         vertexData.applyToMesh(goldberg, options.updatable);
 
+        goldberg.nbSharedFaces = geodesicData.sharedNodes;
+        goldberg.nbUnsharedFaces = geodesicData.poleNodes;
+        goldberg.adjacentFaces = geodesicData.adjacentFaces;
+        goldberg.nbFaces = goldberg.nbSharedFaces + goldberg.nbUnsharedFaces;
+        goldberg.nbFacesAtPole = (goldberg.nbUnsharedFaces - 12) / 12;
+        for (let f = 0; f < geodesicData.vertex.length; f++) {
+            goldberg.faceCenters.push(Vector3.FromArray(geodesicData.vertex[f]));
+            goldberg.faceColors.push(new Color4(1, 1, 1, 1));
+        };
+
+        for (let f = 0; f < goldbergData.face.length; f++) {
+            const verts = goldbergData.face[f];
+            const a = Vector3.FromArray(goldbergData.vertex[verts[0]]);
+            const b = Vector3.FromArray(goldbergData.vertex[verts[2]]);
+            const c = Vector3.FromArray(goldbergData.vertex[verts[1]]);
+            const ba = b.subtract(a);
+            const ca = c.subtract(a);
+            const norm = Vector3.Cross(ca, ba).normalize();
+            const z = Vector3.Cross(ca, norm).normalize();
+            goldberg.faceXaxis.push(ca.normalize());
+            goldberg.faceYaxis.push(norm);
+            goldberg.faceZaxis.push(z);
+        }
+        goldberg.setMetadata();
+
         return goldberg;        
     }
+}
 
-    public static CreateGoldbergFromMesh(mesh: Mesh): Goldberg {
-        const goldberg = new Goldberg(mesh.name, mesh.getScene(), mesh, null, null);
-        goldberg.refreshFaceData();
-        return goldberg;
-    }
+type MeshExtendToGoldberg<T = {}> = new (...args: any[]) => T;
+
+type isMesh = MeshExtendToGoldberg<Mesh>;
+
+function GoldbergCreate<TBase extends isMesh>(Base: TBase) {
+    return class Goldberg extends Base {
+        public faceColors: Color4[] = [];  
+        public faceCenters: Vector3[] = [];
+        public faceZaxis: Vector3[] = [];
+        public faceXaxis: Vector3[] = [];
+        public faceYaxis: Vector3[] = [];
+        public nbSharedFaces: number;
+        public nbUnsharedFaces: number;
+        public nbFaces: number;
+        public nbFacesAtPole: number;
+        public adjacentFaces: number[][];
+
+        public setMetadata() {
+            this.metadata = {
+                nbSharedFaces: this.nbSharedFaces,
+                nbUnsharedFaces: this.nbUnsharedFaces,
+                nbFacesAtPole: this.nbFacesAtPole,
+                nbFaces: this.nbFaces,
+                faceCenters: this.faceCenters,
+                faceXaxis: this.faceXaxis,
+                faceYaxis: this.faceYaxis,
+                faceZaxis: this.faceZaxis,
+                adjacentFaces: this.adjacentFaces
+            }
+        }
+
+        public relFace(poleOrShared: number, fromPole?: number): number {
+            if (fromPole === void 0) {
+                if (poleOrShared > this.nbUnsharedFaces - 1) {
+                    Logger.Warn("Maximum number of unshared faces used");
+                    poleOrShared = this.nbUnsharedFaces - 1;
+                }
+                return this.nbUnsharedFaces + poleOrShared;
+            }
+            if (poleOrShared > 11) {
+                Logger.Warn("Last pole used");
+                poleOrShared = 11;
+            }
+            if (fromPole > this.nbFacesAtPole - 1) {
+                Logger.Warn("Maximum number of faces at a pole used");
+                fromPole = this.nbFacesAtPole - 1;
+            }
+            return 12 + poleOrShared * this.nbFacesAtPole + fromPole;
+        }
+
+        public refreshFaceData() {
+            this.nbSharedFaces = this.metadata.nbSharedFaces;
+            this.nbUnsharedFaces = this.metadata.nbUnsharedFaces;
+            this.nbFacesAtPole = this.metadata.nbFacesAtPole;
+            this.adjacentFaces = this.metadata.adjacentFaces;
+            this.nbFaces = this.metadata.nbFaces;
+            this.faceCenters = this.metadata.faceCenters,
+            this.faceXaxis = this.metadata.faceXaxis,
+            this.faceYaxis = this.metadata.faceYaxis,
+            this.faceZaxis = this.metadata.faceZaxis
+        }
+
+        public changeFaceColors(colorRange : any[][]): number[] {
+            for ( let i = 0; i < colorRange.length; i++) {
+                const min: number = colorRange[i][0];
+                const max: number = colorRange[i][1];
+                const col: Color4 = colorRange[i][2];
+                for ( let f = min; f < max + 1; f++ ) {
+                    this.faceColors[f] = col;
+                }
+            }
+            const newCols: number[] = [];
+            for (let f = 0; f < 12; f++) {
+                for (let i = 0; i < 5; i++) {
+                    newCols.push(this.faceColors[f].r, this.faceColors[f].g, this.faceColors[f].b, this.faceColors[f].a)
+                }
+            }
+            for (let f = 12; f < this.faceColors.length; f++) {
+                for (let i = 0; i < 6; i++) {
+                    newCols.push(this.faceColors[f].r, this.faceColors[f].g, this.faceColors[f].b, this.faceColors[f].a)
+                }
+            }
+            return newCols;
+        }
+    
+        public setFaceColors(colorRange : any[][]) {
+            const newCols = this.changeFaceColors(colorRange);
+            this.setVerticesData(VertexBuffer.ColorKind, newCols);
+        };
+
+    
+        public updateFaceColors(colorRange : any[][]) {
+            const newCols = this.changeFaceColors(colorRange);
+            this.updateVerticesData(VertexBuffer.ColorKind, newCols);
+        }
+    
+        private changeFaceUVs(uvRange : any[][]): FloatArray {
+            const uvs: FloatArray = this.getVerticesData(VertexBuffer.UVKind)!!;
+            for ( let i = 0; i < uvRange.length; i++) {
+                const min: number = uvRange[i][0];
+                const max: number = uvRange[i][1];
+                const center: Vector2 = uvRange[i][2]
+                const radius: number = uvRange[i][3];
+                const angle: number = uvRange[i][4];
+                const points5: number[] = [];
+                const points6: number[] = [];
+                let u:number;
+                let v: number;
+                for (let p = 0; p < 5; p++ ) {
+                    u = center.x + radius * Math.cos(angle + p * Math.PI / 2.5);
+                    v = center.y + radius * Math.sin(angle + p * Math.PI / 2.5);
+                    if ( u < 0) {
+                        u = 0;
+                    }
+                    if (u > 1) {
+                        u = 1;
+                    }
+                    points5.push(u, v);
+                }
+                for (let p = 0; p < 6; p++ ) {
+                    u = center.x + radius * Math.cos(angle + p * Math.PI / 3);
+                    v = center.y + radius * Math.sin(angle + p * Math.PI / 3);
+                    if ( u < 0) {
+                        u = 0;
+                    }
+                    if (u > 1) {
+                        u = 1;
+                    }
+                    points6.push(u, v);
+                }
+                for ( let f = min; f < Math.min(12, max + 1); f++ ) {
+                    for (let p = 0; p < 5; p++) {
+                        uvs[10 * f + 2 * p] = points5[2 * p];
+                        uvs[10 * f + 2 * p + 1] = points5[2 * p + 1];
+                    }
+                }
+                for ( let f = Math.max(12, min); f < max + 1; f++ ) {
+                    for (let p = 0; p < 6; p++) {
+                        //120 + 12 * (f - 12) = 12 * f - 24
+                        uvs[12 * f - 24 + 2 * p] = points6[2 * p];
+                        uvs[12 * f - 23 + 2 * p] = points6[2 * p + 1];
+                    }
+                }
+            }
+            return uvs;
+        }
+    
+        public setFaceUVs(uvRange : any[][]) {
+            const newUVs: FloatArray = this.changeFaceUVs(uvRange);
+            this.setVerticesData(VertexBuffer.UVKind, newUVs);
+        };
+    
+        public updateFaceUVs(uvRange : any[][]) {
+            const newUVs = this.changeFaceUVs(uvRange);
+            this.updateVerticesData(VertexBuffer.UVKind, newUVs);
+        }
+    
+        public placeOnFaceAt(mesh: Mesh, face: number, position: Vector3) {
+            const orientation = Vector3.RotationFromAxis(this.faceXaxis[face], this.faceYaxis[face], this.faceZaxis[face]);
+            mesh.rotation = orientation;
+            mesh.position = this.faceCenters[face].add(this.faceXaxis[face].scale(position.x)).add(this.faceYaxis[face].scale(position.y)).add(this.faceZaxis[face].scale(position.z));
+        }
+    };
+}
+
+const GoldbergMesh = GoldbergCreate(Mesh);
+
+Mesh.toGoldberg =  (mesh: Mesh) : Mesh => {
+    const metadata = mesh.metadata;
+    metadata.faceCenters = metadata.faceCenters.map((el: Vector3) => new Vector3(el._x, el._y, el._z));
+    metadata.faceZaxis = metadata.faceZaxis.map((el: Vector3) => new Vector3(el._x, el._y, el._z));
+    metadata.faceXaxis = metadata.faceXaxis.map((el: Vector3) => new Vector3(el._x, el._y, el._z));
+    metadata.faceYaxis = metadata.faceYaxis.map((el: Vector3) => new Vector3(el._x, el._y, el._z));
+    const positions: Nullable<FloatArray> = mesh.getVerticesData(VertexBuffer.PositionKind);
+    const normals: Nullable<FloatArray> = mesh.getVerticesData(VertexBuffer.NormalKind);
+    const colors: Nullable<FloatArray> = mesh.getVerticesData(VertexBuffer.ColorKind);
+    const uvs: Nullable<FloatArray> = mesh.getVerticesData(VertexBuffer.UVKind);
+    const indices: Nullable<IndicesArray> = mesh.getIndices();
+
+    const vertexData = new VertexData();
+    vertexData.positions = positions;
+    vertexData.indices = indices;
+    vertexData.normals = normals;
+    vertexData.colors = colors;
+    vertexData.uvs = uvs;
+
+    let updatable = mesh.isVertexBufferUpdatable(VertexBuffer.PositionKind);
+    updatable = updatable && mesh.isVertexBufferUpdatable(VertexBuffer.NormalKind);
+    updatable = updatable && mesh.isVertexBufferUpdatable(VertexBuffer.ColorKind);
+    updatable = updatable && mesh.isVertexBufferUpdatable(VertexBuffer.UVKind);
+
+    const goldberg = new GoldbergMesh(mesh.name);
+    vertexData.applyToMesh(goldberg, updatable);
+    goldberg.metadata = metadata;
+    goldberg.refreshFaceData();
+    goldberg.material = mesh.material;
+    mesh.dispose();
+    return goldberg;
 }
 

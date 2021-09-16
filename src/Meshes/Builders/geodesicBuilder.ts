@@ -7,8 +7,8 @@ import { Nullable } from '../../types';
 import { Logger } from "../../Misc/logger";
 import { _PrimaryIsoTriangle, GeodesicData} from "../geodesicMesh"
 
-Mesh.CreateGeodesicSphere = (name: string, options: { m?: number, n: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number }, scene: Scene): Mesh => {
-    return GeoBuilder.CreateGeodesicSphere(name, options, scene);
+Mesh.CreateGeodesic = (name: string, options: { m?: number, n: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number }, scene: Scene): Mesh => {
+    return GeoBuilder.CreateGeodesic(name, options, scene);
 };
 
 /**
@@ -35,7 +35,7 @@ Mesh.CreateGeodesicSphere = (name: string, options: { m?: number, n: number, siz
      * @param scene defines the hosting scene 
      * @returns Geodesic mesh
      */
-    public static CreateGeodesicSphere(name: string, options: { m?: number, n?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Nullable<Scene> = null): Mesh {
+    public static CreateGeodesic(name: string, options: { m?: number, n?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Nullable<Scene> = null): Mesh {
         let m: number = options.m || 1;
         if (m !== Math.floor(m)) {
             m === Math.floor(m);

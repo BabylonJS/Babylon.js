@@ -17,7 +17,7 @@ import { TubeBuilder } from "./Builders/tubeBuilder";
 import { PolyhedronBuilder } from "./Builders/polyhedronBuilder";
 import { IcoSphereBuilder } from "./Builders/icoSphereBuilder";
 import { GeoBuilder } from "./Builders/geodesicBuilder";
-import { GoldbergBuilder, Goldberg } from "./Builders/goldbergBuilder";
+import { GoldbergBuilder } from "./Builders/goldbergBuilder";
 import { DecalBuilder } from "./Builders/decalBuilder";
 import { CapsuleBuilder, ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
 import { Vector4, Vector3, Vector2 } from "../Maths/math.vector";
@@ -549,19 +549,19 @@ export class MeshBuilder {
      * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
      * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
      * @param scene defines the hosting scene 
-     * @returns Geodesic mesh
+     * @returns Mesh
      */
-    public static CreateGeodesicSphere(name: string, options: { m?: number, n?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Nullable<Scene> = null): Mesh {
-        return GeoBuilder.CreateGeodesicSphere(name, options, scene);
+    public static CreateGeodesic(name: string, options: { m?: number, n?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Nullable<Scene> = null): Mesh {
+        return GeoBuilder.CreateGeodesic(name, options, scene);
     }
 
     /**
-     * Creates the Mesh for a Goldberg Sphere Polyhedron
+     * Creates the Mesh for a Goldberg Polyhedron
      * @param name defines the name of the mesh
      * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty
      * * m number of horizontal steps along an isogrid
      * * n number of angled steps along an isogrid
-     * * size the size of the Goldberg Sphere, optional default 1
+     * * size the size of the Goldberg, optional default 1
      * * sizeX allows stretching in the x direction, optional, default size
      * * sizeY allows stretching in the y direction, optional, default size
      * * sizeZ allows stretching in the z direction, optional, default size
@@ -572,9 +572,9 @@ export class MeshBuilder {
      * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
      * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
      * @param scene defines the hosting scene 
-     * @returns GoldbergSphere mesh
+     * @returns Mesh
      */
-     public static CreateGoldberg(name: string, options: { m?: number, n?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, updatable?: boolean, sideOrientation?: number }, scene: Nullable<Scene> = null): Goldberg {
+     public static CreateGoldberg(name: string, options: { m?: number, n?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, updatable?: boolean, sideOrientation?: number }, scene: Nullable<Scene> = null): Mesh {
         return GoldbergBuilder.CreateGoldberg(name, options, scene);
     }
 
