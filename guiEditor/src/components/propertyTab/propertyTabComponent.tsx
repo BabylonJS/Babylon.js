@@ -47,12 +47,31 @@ import { FloatLineComponent } from "../../sharedUiComponents/lines/floatLineComp
 import { Color3LineComponent } from "../../sharedUiComponents/lines/color3LineComponent";
 import { TextInputLineComponent } from "../../sharedUiComponents/lines/textInputLineComponent";
 import { ParentingPropertyGridComponent } from "../parentingPropertyGridComponent";
+import { DisplayGridPropertyGridComponent } from "./propertyGrids/gui/displayGridPropertyGridComponent";
+import { DisplayGrid } from "babylonjs-gui/2D/controls/displayGrid";
 
 require("./propertyTab.scss");
 const adtIcon: string = require("../../../public/imgs/adtIcon.svg");
 const responsiveIcon: string = require("../../../public/imgs/responsiveIcon.svg");
 const canvasSizeIcon: string = require("../../../public/imgs/canvasSizeIcon.svg");
 const artboardColorIcon: string = require("../../../public/imgs/artboardColorIcon.svg");
+const rectangleIcon: string = require("../../../public/imgs/rectangleIconDark.svg");
+const ellipseIcon: string = require("../../../public/imgs/ellipseIconDark.svg");
+const gridIcon: string = require("../../../public/imgs/gridIconDark.svg");
+const stackPanelIcon: string = require("../../../public/imgs/stackPanelIconDark.svg");
+const textBoxIcon: string = require("../../../public/imgs/textBoxIconDark.svg");
+const sliderIcon: string = require("../../../public/imgs/sliderIconDark.svg");
+const buttonIcon: string = require("../../../public/imgs/buttonIconDark.svg");
+const checkboxIcon: string = require("../../../public/imgs/checkboxIconDark.svg");
+const imageIcon: string = require("../../../public/imgs/imageIconDark.svg");
+const keyboardIcon: string = require("../../../public/imgs/keyboardIconDark.svg");
+const inputFieldIcon: string = require("../../../public/imgs/inputFieldIconDark.svg");
+const lineIcon: string = require("../../../public/imgs/lineIconDark.svg");
+const displaygridIcon: string = require("../../../public/imgs/displaygridIconDark.svg");
+const colorPickerIcon: string = require("../../../public/imgs/colorPickerIconDark.svg");
+const scrollbarIcon: string = require("../../../public/imgs/scrollbarIconDark.svg");
+const imageSliderIcon: string = require("../../../public/imgs/imageSliderIconDark.svg");
+const radioButtonIcon: string = require("../../../public/imgs/radioButtonIconDark.svg");
 const MAX_TEXTURE_SIZE = 16384; //2^14
 
 interface IPropertyTabComponentProps {
@@ -269,6 +288,10 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             case "Line": {
                 const line = this.state.currentNode as Line;
                 return <LinePropertyGridComponent line={line} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
+            } 
+            case "Line": {
+                const displayGrid = this.state.currentNode as DisplayGrid;
+                return <DisplayGridPropertyGridComponent displayGrid={displayGrid} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
             }
             case "Button": {
                 const control = this.state.currentNode as Control;
@@ -283,13 +306,73 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         return null;
     }
 
+
+    renderControlIcon() {
+        const className = this.state.currentNode?.getClassName();
+        switch (className) {
+            case "TextBlock": {
+                return textBoxIcon;
+            }
+            case "InputText": {
+                return inputFieldIcon;
+            }
+            case "ColorPicker": {
+                return colorPickerIcon;
+            }
+            case "Image": {
+                return imageIcon;
+            }
+            case "Slider": {
+                return sliderIcon;
+            }
+            case "ImageBasedSlider": {
+                return imageSliderIcon;
+            }
+            case "Rectangle": {
+                return rectangleIcon;
+            }
+            case "StackPanel": {
+                return stackPanelIcon;
+            }
+            case "Grid": {
+                return gridIcon;
+            }
+            case "ScrollViewer": {
+                return scrollbarIcon;
+            }
+            case "Ellipse": {
+                return ellipseIcon;
+            }
+            case "Checkbox": {
+                return checkboxIcon;
+            }
+            case "RadioButton": {
+                return radioButtonIcon;
+            }
+            case "Line": {
+                return lineIcon;
+            }
+            case "DisplayGrid": {
+                return displaygridIcon;
+            }
+            case "VirtualKeyboard": {
+                return keyboardIcon;
+            }
+            case "Button": {
+                return buttonIcon;
+            }
+        }
+        return adtIcon;
+    }
+
+
     render() {
 
         if (this.state.currentNode && this.props.globalState.workbench.selectedGuiNodes.length === 1) {
             return (
                 <div id="ge-propertyTab">
                     <div id="header">
-                        <img id="logo" src={adtIcon} />
+                        <img id="logo" src={this.renderControlIcon()} />
                         <div id="title">
                             <TextInputLineComponent noUnderline={true} lockObject={this._lockObject} label="" target={this.state.currentNode} propertyName="name" onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
                         </div>
@@ -323,7 +406,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             { label: "Web (1920)", value: 0 },
             { label: "Phone (720)", value: 1 },
             { label: "Square (1200)", value: 2 },
-            { label: "Custom", value: 3 }];
+            ];
         const sizeValues = [
             new Vector2(1920, 1080),
             new Vector2(750, 1334),
@@ -351,8 +434,15 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         onSelect={(value: boolean) => {
                             this.props.globalState.onResponsiveChangeObservable.notifyObservers(value);
                             DataStorage.WriteBoolean("Responsive", value);
+                            this._sizeOption = sizeOptions.length;
+                            if (value) {
+                                this._sizeOption = 0;
+                                this.props.globalState.workbench.resizeGuiTexture(sizeValues[this._sizeOption]);
+                            }
+                            this.forceUpdate();
                         }}
                     />
+                    {DataStorage.ReadBoolean("Responsive", true) &&
                     <OptionsLineComponent
                         label=""
                         iconLabel="Size"
@@ -363,19 +453,19 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         noDirectUpdate={true}
                         onSelect={(value: any) => {
                             this._sizeOption = value;
-                            if (this._sizeOption != (sizeOptions.length - 1)) {
+                            if (this._sizeOption !== (sizeOptions.length)) {
                                 const newSize = sizeValues[this._sizeOption];
                                 this.props.globalState.workbench.resizeGuiTexture(newSize);
                             }
                             this.forceUpdate();
                         }}
-                    />
-                    {this._sizeOption == (sizeOptions.length - 1) &&
+                    />}
+                    {this._sizeOption == (sizeOptions.length) &&
                         <div className="divider">
                             <FloatLineComponent
                                 icon={canvasSizeIcon}
                                 iconLabel="Canvas Size"
-                                label="X"
+                                label="W"
                                 target={this.state.textureSize}
                                 propertyName="x"
                                 isInteger={true}
@@ -388,7 +478,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 }} ></FloatLineComponent>
                             <FloatLineComponent
                                 icon={canvasSizeIcon}
-                                label="Y"
+                                label="H"
                                 target={this.state.textureSize}
                                 propertyName="y"
                                 isInteger={true}

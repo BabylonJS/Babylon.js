@@ -34,6 +34,8 @@ declare module BABYLON {
         static OnEngineResizeObservable: Observable<Engine>;
         /** Register handler that is triggered when the scene has been loaded (engine.html) */
         static OnLoadCompleteObservable: Observable<Engine>;
+        /** Register asset manager progress event (engine.html) */
+        static OnAssetManagerProgress: (event: ProgressEvent) => void;
         /** Loads a babylon gltf scene file (engine.html) */
         static LoadSceneFile(sceneFile: string, queryString?: string): void;
         private static SceneParsingEnabled;
@@ -170,8 +172,12 @@ declare module BABYLON {
         static ShowSceneLoader(): void;
         /** Hides the default page scene loader. */
         static HideSceneLoader(): void;
-        /** Update the default page scene loader status. */
+        /** Update the default page scene loader full status. */
         static UpdateLoaderStatus(status: string, details: string, state: number): void;
+        /** Update the default page scene loader details only. */
+        static UpdateLoaderDetails(details: string, state: number): void;
+        /** Update the default page scene loader progress only. */
+        static UpdateLoaderProgress(progress: string, state: number): void;
         /** Gets all the created engine instances */
         static GetEngineInstances(): BABYLON.Engine[];
         /** Get the last create engine instance */
@@ -1228,7 +1234,7 @@ declare module BABYLON {
      * Asset Preloader Interface (https://doc.babylonjs.com/divingDeeper/importers/assetManager)
      */
     interface IAssetPreloader {
-        addPreloaderTasks(assetsManager: BABYLON.AssetsManager): void;
+        addPreloaderTasks(assetsManager: BABYLON.PreloadAssetsManager): void;
     }
     /**
      * Http Request Header
@@ -1339,6 +1345,60 @@ declare module BABYLON {
         hidePoint(hide?: boolean): void;
         drawPoint(position: BABYLON.Vector3): void;
         drawLine(points: BABYLON.Vector3[], color?: BABYLON.Color3): void;
+    }
+    /**
+     * Preload Assets Manager Classes (Note: No Progress Events For Textures)
+     * @class PreloadAssetsManager - All rights reserved (c) 2020 Mackey Kinard
+     */
+    class PreloadAssetsManager extends BABYLON.AssetsManager {
+        /**
+         * Add a ContainerAssetTask to the list of active tasks
+         * Note: Progress Tracking Supported
+         * @param taskName defines the name of the new task
+         * @param meshesNames defines the name of meshes to load
+         * @param rootUrl defines the root url to use to locate files
+         * @param sceneFilename defines the filename of the scene file
+         * @returns a new ContainerAssetTask object
+         */
+        addContainerTask(taskName: string, meshesNames: any, rootUrl: string, sceneFilename: string): BABYLON.ContainerAssetTask;
+        /**
+         * Add a MeshAssetTask to the list of active tasks
+         * Note: Progress Tracking Supported
+         * @param taskName defines the name of the new task
+         * @param meshesNames defines the name of meshes to load
+         * @param rootUrl defines the root url to use to locate files
+         * @param sceneFilename defines the filename of the scene file
+         * @returns a new MeshAssetTask object
+         */
+        addMeshTask(taskName: string, meshesNames: any, rootUrl: string, sceneFilename: string): BABYLON.MeshAssetTask;
+        /**
+         * Add a TextFileAssetTask to the list of active tasks
+         * Note: Progress Tracking Supported
+         * @param taskName defines the name of the new task
+         * @param url defines the url of the file to load
+         * @returns a new TextFileAssetTask object
+         */
+        addTextFileTask(taskName: string, url: string): BABYLON.TextFileAssetTask;
+        /**
+         * Add a BinaryFileAssetTask to the list of active tasks
+         * Note: Progress Tracking Supported
+         * @param taskName defines the name of the new task
+         * @param url defines the url of the file to load
+         * @returns a new BinaryFileAssetTask object
+         */
+        addBinaryFileTask(taskName: string, url: string): BABYLON.BinaryFileAssetTask;
+        /**
+         * Add a ImageAssetTask to the list of active tasks
+         * Note: Progress Tracking Supported
+         * @param taskName defines the name of the new task
+         * @param url defines the url of the file to load
+         * @returns a new ImageAssetTask object
+         */
+        addImageTask(taskName: string, url: string): BABYLON.ImageAssetTask;
+        /**
+         * Handle Preloading Progress Events
+         */
+        private handlePreloadingProgress;
     }
     /**
      * Babylon Utility Classes
@@ -1780,6 +1840,7 @@ declare class CVTOOLS_unity_metadata implements BABYLON.GLTF2.IGLTFLoaderExtensi
     /** @hidden */
     startParsing(): void;
     /** @hidden */
+    /** @hidden */
     loadSceneAsync(context: string, scene: BABYLON.GLTF2.IScene): BABYLON.Nullable<Promise<void>>;
     private loadSceneExAsync;
     private _processActiveMeshes;
@@ -1793,8 +1854,6 @@ declare class CVTOOLS_unity_metadata implements BABYLON.GLTF2.IGLTFLoaderExtensi
     private _getCachedLightmapByIndex;
     /** @hidden */
     createMaterial(context: string, material: BABYLON.GLTF2.IMaterial, babylonDrawMode: number): BABYLON.Nullable<BABYLON.Material>;
-    /** @hidden */
-    loadDataUrlAsync(context: string, uri: string): Promise<ArrayBufferView>;
     /** @hidden */
     _loadSkinAsync(context: string, node: BABYLON.GLTF2.INode, skin: BABYLON.GLTF2.ISkin): Promise<void>;
     /** @hidden */

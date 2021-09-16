@@ -692,6 +692,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         };
 
         this.onMeshReadyObservable = new Observable(this._internalMeshDataInfo._onMeshReadyObserverAdded);
+
+        if (source) {
+            source.onClonedObservable.notifyObservers(this);
+        }
     }
 
     // Methods

@@ -1146,6 +1146,8 @@ declare module BABYLON {
         static readonly TEXTUREFORMAT_DEPTH32_FLOAT: number;
         /** Depth 16 bits */
         static readonly TEXTUREFORMAT_DEPTH16: number;
+        /** Depth 24 bits */
+        static readonly TEXTUREFORMAT_DEPTH24: number;
         /** Compressed BC7 */
         static readonly TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM: number;
         /** Compressed BC6 unsigned float */
@@ -7388,6 +7390,8 @@ declare module BABYLON {
         get endpoints(): NodeMaterialConnectionPoint[];
         /** Gets a boolean indicating if that output point is connected to at least one input */
         get hasEndpoints(): boolean;
+        /** Gets a boolean indicating that this connection has a path to the vertex output*/
+        get isDirectlyConnectedToVertexOutput(): boolean;
         /** Gets a boolean indicating that this connection will be used in the vertex shader */
         get isConnectedInVertexShader(): boolean;
         /** Gets a boolean indicating that this connection will be used in the fragment shader */
@@ -13149,6 +13153,10 @@ declare module BABYLON {
          */
         spriteCellHeight: number;
         /**
+         * If using a spritesheet (isAnimationSheetEnabled), defines wether the sprite animation is looping
+         */
+        spriteCellLoop: boolean;
+        /**
          * This allows the system to random pick the start cell ID between startSpriteCellID and endSpriteCellID
          */
         spriteRandomStartCell: boolean;
@@ -14115,6 +14123,8 @@ declare module BABYLON {
         _initialStartSpriteCellID: number;
         /** @hidden */
         _initialEndSpriteCellID: number;
+        /** @hidden */
+        _initialSpriteCellLoop: boolean;
         /** @hidden */
         _currentColorGradient: Nullable<ColorGradient>;
         /** @hidden */
@@ -15254,6 +15264,10 @@ declare module BABYLON {
          * If using a spritesheet (isAnimationSheetEnabled) defines the last sprite cell to display
          */
         endSpriteCellID: number;
+        /**
+         * If using a spritesheet (isAnimationSheetEnabled), defines wether the sprite animation is looping
+         */
+        spriteCellLoop: boolean;
         /**
          * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell width to use
          */
@@ -17948,6 +17962,10 @@ declare module BABYLON {
          * Define if a depth texture is required instead of a depth buffer
          */
         generateDepthTexture?: boolean;
+        /**
+         * Define depth texture format to use
+         */
+        depthTextureFormat?: number;
         /**
          * Define the number of desired draw buffers
          */
@@ -20773,6 +20791,8 @@ declare module BABYLON {
          * @param defines defines the material defines to update
          */
         replaceRepeatableContent(vertexShaderState: NodeMaterialBuildState, fragmentShaderState: NodeMaterialBuildState, mesh: AbstractMesh, defines: NodeMaterialDefines): void;
+        /** Gets a boolean indicating that the code of this block will be promoted to vertex shader even if connected to fragment output */
+        get willBeGeneratedIntoVertexShaderFromFragmentShader(): boolean;
         /**
          * Checks if the block is ready
          * @param mesh defines the mesh to be rendered
@@ -23546,7 +23566,7 @@ declare module BABYLON {
 declare module BABYLON {
     /**
      * Renders to multiple views with a single draw call
-     * @see https://www.khronos.org/registry/webgl/extensions/WEBGL_multiview/
+     * @see https://www.khronos.org/registry/webgl/extensions/OVR_multiview2/
      */
     export class MultiviewRenderTarget extends RenderTargetTexture {
         /**
@@ -25958,6 +25978,7 @@ declare module BABYLON {
         private _speedRatio;
         private _weight;
         private _syncRoot;
+        private _frameToSyncFromJump;
         /**
          * Gets or sets a boolean indicating if the animatable must be disposed and removed at the end of the animation.
          * This will only apply for non looping animation (default is true)
@@ -33623,6 +33644,10 @@ declare module BABYLON {
          */
         get onEnabledStateChangedObservable(): Observable<boolean>;
         /**
+         * An event triggered when the node is cloned
+         */
+        get onClonedObservable(): Observable<Node>;
+        /**
          * Creates a new Node
          * @param name the name and id to be given to this node
          * @param scene the scene this node will be added to
@@ -34102,7 +34127,7 @@ declare module BABYLON {
         /**
          * Sets the Vector3 "result" as the rotated Vector3 "localAxis" in the same rotation than the mesh.
          * localAxis is expressed in the mesh local space.
-         * result is computed in the Wordl space from the mesh World matrix.
+         * result is computed in the World space from the mesh World matrix.
          * @param localAxis axis to rotate
          * @param result the resulting transformnode
          * @returns this TransformNode.
@@ -51454,6 +51479,7 @@ declare module BABYLON {
         private static _GetPluginForDirectLoad;
         private static _GetPluginForFilename;
         private static _GetDirectLoad;
+        private static _FormatErrorMessage;
         private static _LoadData;
         private static _GetFileInfo;
         /**
@@ -52531,6 +52557,15 @@ declare module BABYLON {
             customRigMappings?: {
                 right: XRHandMeshRigMapping;
                 left: XRHandMeshRigMapping;
+            };
+            /**
+             * Override the colors of the hand meshes.
+             */
+            customColors?: {
+                base?: Color3;
+                fresnel?: Color3;
+                fingerColor?: Color3;
+                tipFresnel?: Color3;
             };
         };
     }

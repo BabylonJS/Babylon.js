@@ -559,8 +559,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     onDown(evt: React.PointerEvent<HTMLElement>) {
         this._rootContainer.current?.setPointerCapture(evt.pointerId);
-
-        if (!this._isOverGUINode) {
+        if (!this._isOverGUINode && !evt.button) {
             this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         }
 

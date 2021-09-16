@@ -74,6 +74,7 @@
 - Added `DO_NOT_ALTER_FILE_COORDINATES` flag to STL loader ([AlbertoPa](https://github.com/AlbertoPa))
 - Added support for pure geometry files to OBJ loader ([Deltakosh](https://github.com/deltakosh))
 - Added an observable for when loader state changed. ([bghgary](https://github.com/bghgary))
+- Fixed an issue where errors for loading certain assets (e.g. <20-byte GLBs) are not catchable. ([bghgary](https://github.com/bghgary))
 
 ### Navigation
 
@@ -301,6 +302,7 @@
 - Fix issue with deadzones for gamepads being negatively affected by sensibility values ([PolygonalSun](https://github.com/PolygonalSun))
 - Fix parsing of particle systems sub emitters ([#10882](https://github.com/BabylonJS/Babylon.js/issues/10882)) ([Popov72](https://github.com/Popov72))
 - Fix bug in NME where a link could not be recreated after being deleted ([Popov72](https://github.com/Popov72))
+- Fix small typo in transformNode getDirectionToRef method definition. ([PirateJC](https://github.com/piratejc))
 
 ## Breaking changes
 

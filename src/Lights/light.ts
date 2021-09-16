@@ -590,6 +590,9 @@ export abstract class Light extends Node implements ISortableLight {
             clonedLight.parent = newParent;
         }
         clonedLight.setEnabled(this.isEnabled());
+
+        this.onClonedObservable.notifyObservers(clonedLight);
+
         return clonedLight;
     }
 
