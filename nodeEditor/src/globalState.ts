@@ -24,8 +24,8 @@ export class GlobalState {
     onSelectionChangedObservable = new Observable<Nullable<GraphNode | NodeLink | GraphFrame | NodePort | FramePortData>>();
     onRebuildRequiredObservable = new Observable<boolean>();
     onBuiltObservable = new Observable<void>();
-    onResetRequiredObservable = new Observable<void>();
-    onUpdateRequiredObservable = new Observable<void>();
+    onResetRequiredObservable = new Observable<void>();    
+    onUpdateRequiredObservable = new Observable<Nullable<NodeMaterialBlock>>();
     onZoomToFitRequiredObservable = new Observable<void>();
     onReOrganizedRequiredObservable = new Observable<void>();
     onLogRequiredObservable = new Observable<LogEntry>();

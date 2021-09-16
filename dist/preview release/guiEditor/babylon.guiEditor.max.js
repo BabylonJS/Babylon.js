@@ -44639,7 +44639,6 @@ var PropertyTabComponent = /** @class */ (function (_super) {
             { label: "Web (1920)", value: 0 },
             { label: "Phone (720)", value: 1 },
             { label: "Square (1200)", value: 2 },
-            { label: "Custom", value: 3 }
         ];
         var sizeValues = [
             new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1920, 1080),
@@ -44659,23 +44658,30 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "RESPONSIVE", iconLabel: "A responsive layout for the AdvancedDynamicTexture will resize the UI layout and reflow controls to accommodate different device screen sizes", icon: responsiveIcon, isSelected: function () { return babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].ReadBoolean("Responsive", true); }, onSelect: function (value) {
                         _this.props.globalState.onResponsiveChangeObservable.notifyObservers(value);
                         babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].WriteBoolean("Responsive", value);
-                    } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_25__["OptionsLineComponent"], { label: "", iconLabel: "Size", options: sizeOptions, icon: canvasSizeIcon, target: this, propertyName: "_sizeOption", noDirectUpdate: true, onSelect: function (value) {
-                        _this._sizeOption = value;
-                        if (_this._sizeOption != (sizeOptions.length - 1)) {
-                            var newSize = sizeValues[_this._sizeOption];
-                            _this.props.globalState.workbench.resizeGuiTexture(newSize);
+                        _this._sizeOption = sizeOptions.length;
+                        if (value) {
+                            _this._sizeOption = 0;
+                            _this.props.globalState.workbench.resizeGuiTexture(sizeValues[_this._sizeOption]);
                         }
                         _this.forceUpdate();
                     } }),
-                this._sizeOption == (sizeOptions.length - 1) &&
+                babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].ReadBoolean("Responsive", true) &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_25__["OptionsLineComponent"], { label: "", iconLabel: "Size", options: sizeOptions, icon: canvasSizeIcon, target: this, propertyName: "_sizeOption", noDirectUpdate: true, onSelect: function (value) {
+                            _this._sizeOption = value;
+                            if (_this._sizeOption !== (sizeOptions.length)) {
+                                var newSize = sizeValues[_this._sizeOption];
+                                _this.props.globalState.workbench.resizeGuiTexture(newSize);
+                            }
+                            _this.forceUpdate();
+                        } }),
+                this._sizeOption == (sizeOptions.length) &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "divider" },
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_26__["FloatLineComponent"], { icon: canvasSizeIcon, iconLabel: "Canvas Size", label: "X", target: this.state.textureSize, propertyName: "x", isInteger: true, min: 1, max: MAX_TEXTURE_SIZE, onChange: function (newvalue) {
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_26__["FloatLineComponent"], { icon: canvasSizeIcon, iconLabel: "Canvas Size", label: "W", target: this.state.textureSize, propertyName: "x", isInteger: true, min: 1, max: MAX_TEXTURE_SIZE, onChange: function (newvalue) {
                                 if (!isNaN(newvalue)) {
                                     _this.props.globalState.workbench.resizeGuiTexture(new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](newvalue, _this.state.textureSize.y));
                                 }
                             } }),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_26__["FloatLineComponent"], { icon: canvasSizeIcon, label: "Y", target: this.state.textureSize, propertyName: "y", isInteger: true, min: 1, max: MAX_TEXTURE_SIZE, onChange: function (newvalue) {
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_26__["FloatLineComponent"], { icon: canvasSizeIcon, label: "H", target: this.state.textureSize, propertyName: "y", isInteger: true, min: 1, max: MAX_TEXTURE_SIZE, onChange: function (newvalue) {
                                 if (!isNaN(newvalue)) {
                                     _this.props.globalState.workbench.resizeGuiTexture(new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](_this.state.textureSize.x, newvalue));
                                 }

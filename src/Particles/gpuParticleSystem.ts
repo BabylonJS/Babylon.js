@@ -1568,7 +1568,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             this.particleEmitterType.applyToShader(this._updateBuffer);
         }
         if (this._isAnimationSheetEnabled) {
-            this._updateBuffer.setFloat3("cellInfos", this.startSpriteCellID, this.endSpriteCellID, this.spriteCellChangeSpeed);
+            this._updateBuffer.setFloat4("cellInfos", this.startSpriteCellID, this.endSpriteCellID, this.spriteCellChangeSpeed, this.spriteCellLoop ? 1 : 0);
         }
         if (this.noiseTexture) {
             this._updateBuffer.setVector3("noiseStrength", this.noiseStrength);
