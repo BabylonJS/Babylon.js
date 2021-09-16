@@ -33,11 +33,11 @@ export class RadioButtonPropertyGridComponent extends React.Component<IRadioButt
                 <hr/>
                 <TextLineComponent label="RADIO BUTTON" value=" " color="grey"></TextLineComponent>
                 <div className="divider">
-                <FloatLineComponent icon={strokeWeightIcon} lockObject={this.props.lockObject} label="" target={radioButton} propertyName="thickness" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <FloatLineComponent icon={scaleIcon} lockObject={this.props.lockObject} label="" target={radioButton} propertyName="checkSizeRatio" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <FloatLineComponent iconLabel="Stroke Weight" icon={strokeWeightIcon} lockObject={this.props.lockObject} label="" target={radioButton} propertyName="thickness" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <FloatLineComponent iconLabel="Check Size Ratio" icon={scaleIcon} lockObject={this.props.lockObject} label="" target={radioButton} propertyName="checkSizeRatio" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </div>
                 <TextInputLineComponent lockObject={this.props.lockObject} label="Group" target={radioButton} propertyName="group" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <CheckBoxLineComponent icon={checkboxIcon} label="" target={radioButton} propertyName="isChecked" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CheckBoxLineComponent iconLabel="Is Checked" icon={checkboxIcon} label="" target={radioButton} propertyName="isChecked" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
             </div>
         );
     }
