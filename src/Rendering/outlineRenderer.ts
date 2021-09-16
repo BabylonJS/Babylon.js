@@ -107,9 +107,14 @@ export class OutlineRenderer implements ISceneComponent {
     public scene: Scene;
 
     /**
-     * Defines a zOffset to prevent zFighting between the overlay and the mesh.
+     * Defines a zOffset default Factor to prevent zFighting between the overlay and the mesh.
      */
     public zOffset = 1;
+
+    /**
+     * Defines a zOffset default Unit to prevent zFighting between the overlay and the mesh.
+     */
+    public zOffsetUnit = 4; // 4 to account for projection a bit by default
 
     private _engine: Engine;
     private _savedDepthWrite: boolean;
@@ -216,10 +221,13 @@ export class OutlineRenderer implements ISceneComponent {
         }
 
         engine.setZOffset(-this.zOffset);
+        engine.setZOffsetUnit(-this.zOffsetUnit);
+
         renderingMesh._processRendering(effectiveMesh, subMesh, effect, material.fillMode, batch, hardwareInstancedRendering,
             (isInstance, world) => { effect.setMatrix("world", world); });
 
         engine.setZOffset(0);
+        engine.setZOffsetUnit(0);
     }
 
     /**

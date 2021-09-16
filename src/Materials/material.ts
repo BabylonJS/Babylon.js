@@ -577,10 +577,16 @@ export class Material implements IAnimatable {
     public pointSize = 1.0;
 
     /**
-     * Stores the z offset value
+     * Stores the z offset Factor value
      */
     @serialize()
     public zOffset = 0;
+
+    /**
+     * Stores the z offset Unit value
+     */
+     @serialize()
+     public zOffsetUnit = 0;
 
     public get wireframe(): boolean {
         switch (this._fillMode) {
@@ -951,7 +957,7 @@ export class Material implements IAnimatable {
         var reverse = orientation === Material.ClockWiseSideOrientation;
 
         engine.enableEffect(effect ? effect : this._getDrawWrapper());
-        engine.setState(this.backFaceCulling, this.zOffset, false, reverse, this.cullBackFaces, this.stencil);
+        engine.setState(this.backFaceCulling, this.zOffset, false, reverse, this.cullBackFaces, this.stencil, this.zOffsetUnit);
 
         return reverse;
     }
