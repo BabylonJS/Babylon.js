@@ -1095,17 +1095,17 @@ export class VertexData {
      * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
      * @returns the VertexData of the Polyhedron
      */
-     public static CreateGeodesicSphere(options: { m?: number, n?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
+     public static CreateGeodesic(options: { m?: number, n?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
         throw _DevTools.WarnImport("geoBuilder");
     }
 
     /**
-     * Creates the Mesh for a Goldberg Sphere Polyhedron
+     * Creates the Mesh for a Goldberg Polyhedron
      * @param name defines the name of the mesh
      * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty
      * * m number of horizontal steps along an isogrid
      * * n number of angled steps along an isogrid
-     * * size the size of the Goldberg Sphere, optional default 1
+     * * size the size of the Goldberg, optional default 1
      * * sizeX allows stretching in the x direction, optional, default size
      * * sizeY allows stretching in the y direction, optional, default size
      * * sizeZ allows stretching in the z direction, optional, default size
