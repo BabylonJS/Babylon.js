@@ -247,25 +247,31 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         }
     }
 
-    private static _RefreshNode = (node: GraphNode, visitedNodes: Set<GraphNode>, visitedLinks: Set<NodeLink>) => {
+    public static _RefreshNode = (node: GraphNode, visitedNodes?: Set<GraphNode>, visitedLinks?: Set<NodeLink>) => {
         node.refresh();
 
         const links = node.links;
 
-        // refresh first the nodes so that the right types are assigned to the auto-detect ports
-        links.forEach((link) => {
-            const nodeA = link.nodeA, nodeB = link.nodeB;
+        if (visitedNodes) {            
+            // refresh first the nodes so that the right types are assigned to the auto-detect ports
+            links.forEach((link) => {
+                const nodeA = link.nodeA, nodeB = link.nodeB;
 
-            if (!visitedNodes.has(nodeA)) {
-                visitedNodes.add(nodeA);
-                this._RefreshNode(nodeA, visitedNodes, visitedLinks);
-            }
+                if (!visitedNodes.has(nodeA)) {
+                    visitedNodes.add(nodeA);
+                    this._RefreshNode(nodeA, visitedNodes, visitedLinks);
+                }
 
-            if (nodeB && !visitedNodes.has(nodeB)) {
-                visitedNodes.add(nodeB);
-                this._RefreshNode(nodeB, visitedNodes, visitedLinks);
-            }
-        });
+                if (nodeB && !visitedNodes.has(nodeB)) {
+                    visitedNodes.add(nodeB);
+                    this._RefreshNode(nodeB, visitedNodes, visitedLinks);
+                }
+            });
+        }
+
+        if (!visitedLinks) {
+            return;
+        }
 
         // then refresh the links to display the right color between ports
         links.forEach((link) => {

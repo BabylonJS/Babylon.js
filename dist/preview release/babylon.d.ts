@@ -7475,6 +7475,43 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Block used to provide an image for a TextureBlock
+     */
+    export class ImageSourceBlock extends NodeMaterialBlock {
+        private _samplerName;
+        protected _texture: Nullable<Texture>;
+        /**
+         * Gets or sets the texture associated with the node
+         */
+        get texture(): Nullable<Texture>;
+        set texture(texture: Nullable<Texture>);
+        /**
+         * Gets the sampler name associated with this image source
+         */
+        get samplerName(): string;
+        /**
+         * Creates a new ImageSourceBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the output component
+         */
+        get output(): NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+        protected _dumpPropertiesCode(): string;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Block used to read a texture from a sampler
      */
     export class TextureBlock extends NodeMaterialBlock {
@@ -7489,6 +7526,7 @@ declare module BABYLON {
         private _mainUVName;
         private _mainUVDefineName;
         private _fragmentOnly;
+        private _imageSource;
         protected _texture: Nullable<Texture>;
         /**
          * Gets or sets the texture associated with the node
@@ -7499,6 +7537,10 @@ declare module BABYLON {
          * Gets the sampler name associated with this texture
          */
         get samplerName(): string;
+        /**
+         * Gets a boolean indicating that this block is linked to an ImageSourceBlock
+         */
+        get hasImageSource(): boolean;
         /**
          * Gets or sets a boolean indicating if content needs to be converted to gamma space
          */
@@ -7525,6 +7567,10 @@ declare module BABYLON {
          * Gets the uv input component
          */
         get uv(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the source input component
+         */
+        get source(): NodeMaterialConnectionPoint;
         /**
          * Gets the rgba output component
          */
@@ -19331,9 +19377,13 @@ declare module BABYLON {
          */
         pointSize: number;
         /**
-         * Stores the z offset value
+         * Stores the z offset Factor value
          */
         zOffset: number;
+        /**
+         * Stores the z offset Unit value
+         */
+        zOffsetUnit: number;
         get wireframe(): boolean;
         /**
          * Sets the state of wireframe mode
@@ -20370,7 +20420,7 @@ declare module BABYLON {
         /**
          * Input blocks
          */
-        textureBlocks: (TextureBlock | ReflectionTextureBaseBlock | RefractionBlock | CurrentScreenBlock | ParticleTextureBlock)[];
+        textureBlocks: (ImageSourceBlock | TextureBlock | ReflectionTextureBaseBlock | RefractionBlock | CurrentScreenBlock | ParticleTextureBlock)[];
         /**
          * Bindable blocks (Blocks that need to set data to the effect)
          */
@@ -21674,7 +21724,7 @@ declare module BABYLON {
          * Gets the list of texture blocks
          * @returns an array of texture blocks
          */
-        getTextureBlocks(): (TextureBlock | ReflectionTextureBaseBlock | RefractionBlock | CurrentScreenBlock | ParticleTextureBlock)[];
+        getTextureBlocks(): (TextureBlock | ReflectionTextureBaseBlock | RefractionBlock | CurrentScreenBlock | ParticleTextureBlock | ImageSourceBlock)[];
         /**
          * Specifies if the material uses a texture
          * @param texture defines the texture to check against the material
@@ -39235,6 +39285,7 @@ declare module BABYLON {
         protected _cull: Nullable<boolean>;
         protected _cullFace: Nullable<number>;
         protected _zOffset: number;
+        protected _zOffsetUnit: number;
         protected _frontFace: Nullable<number>;
         /**
          * Initializes the state.
@@ -39243,6 +39294,8 @@ declare module BABYLON {
         get isDirty(): boolean;
         get zOffset(): number;
         set zOffset(value: number);
+        get zOffsetUnit(): number;
+        set zOffsetUnit(value: number);
         get cullFace(): Nullable<number>;
         set cullFace(value: Nullable<number>);
         get cull(): Nullable<boolean>;
@@ -40322,18 +40375,29 @@ declare module BABYLON {
          * @param reverseSide defines if culling must be reversed (CCW if false, CW if true)
          * @param cullBackFaces true to cull back faces, false to cull front faces (if culling is enabled)
          * @param stencil stencil states to set
+         * @param zOffsetUnit defines the value to apply to zOffsetUnit (0 by default)
          */
-        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean, cullBackFaces?: boolean, stencil?: IStencilState): void;
+        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean, cullBackFaces?: boolean, stencil?: IStencilState, zOffsetUnit?: number): void;
         /**
-         * Set the z offset to apply to current rendering
+         * Set the z offset Factor to apply to current rendering
          * @param value defines the offset to apply
          */
         setZOffset(value: number): void;
         /**
-         * Gets the current value of the zOffset
-         * @returns the current zOffset state
+         * Gets the current value of the zOffset Factor
+         * @returns the current zOffset Factor state
          */
         getZOffset(): number;
+        /**
+         * Set the z offset Unit to apply to current rendering
+         * @param value defines the offset to apply
+         */
+        setZOffsetUnit(value: number): void;
+        /**
+         * Gets the current value of the zOffset Unit
+         * @returns the current zOffset Unit state
+         */
+        getZOffsetUnit(): number;
         /** @hidden */
         _bindUnboundFramebuffer(framebuffer: Nullable<WebGLFramebuffer>): void;
         /** @hidden */
@@ -60583,12 +60647,15 @@ declare module BABYLON {
         enableEffect(effect: Nullable<Effect | DrawWrapper>): void;
         /**
          * Set various states to the webGL context
-         * @param culling defines backface culling state
+         * @param culling defines culling state: true to enable culling, false to disable it
          * @param zOffset defines the value to apply to zOffset (0 by default)
          * @param force defines if states must be applied even if cache is up to date
          * @param reverseSide defines if culling must be reversed (CCW if false, CW if true)
+         * @param cullBackFaces true to cull back faces, false to cull front faces (if culling is enabled)
+         * @param stencil stencil states to set
+         * @param zOffsetUnit defines the value to apply to zOffsetUnit (0 by default)
          */
-        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean): void;
+        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean, cullBackFaces?: boolean, stencil?: IStencilState, zOffsetUnit?: number): void;
         /**
          * Set the value of an uniform to an array of int32
          * @param uniform defines the webGL uniform location where to store the value
@@ -62234,7 +62301,8 @@ declare module BABYLON {
         setCullFace(cullFace: number): void;
         setClampDepth(clampDepth: boolean): void;
         resetDepthCullingState(): void;
-        setDepthCullingState(cullEnabled: boolean, frontFace: number, cullFace: number, zOffset: number, depthTestEnabled: boolean, depthWriteEnabled: boolean, depthCompare: Nullable<number>): void;
+        setDepthCullingState(cullEnabled: boolean, frontFace: number, cullFace: number, zOffset: number, zOffsetUnit: number, depthTestEnabled: boolean, depthWriteEnabled: boolean, depthCompare: Nullable<number>): void;
+        setDepthBias(depthBias: number): void;
         setDepthBiasSlopeScale(depthBiasSlopeScale: number): void;
         setColorFormat(format: GPUTextureFormat): void;
         setMRTAttachments(attachments: number[], textureArray: InternalTexture[]): void;
@@ -62345,6 +62413,8 @@ declare module BABYLON {
         constructor(cache: WebGPUCacheRenderPipeline);
         get zOffset(): number;
         set zOffset(value: number);
+        get zOffsetUnit(): number;
+        set zOffsetUnit(value: number);
         get cullFace(): Nullable<number>;
         set cullFace(value: Nullable<number>);
         get cull(): Nullable<boolean>;
@@ -63231,15 +63301,16 @@ declare module BABYLON {
         setDitheringState(value: boolean): void;
         setRasterizerState(value: boolean): void;
         /**
-         * Set various states to the context
+         * Set various states to the webGL context
          * @param culling defines culling state: true to enable culling, false to disable it
          * @param zOffset defines the value to apply to zOffset (0 by default)
          * @param force defines if states must be applied even if cache is up to date
          * @param reverseSide defines if culling must be reversed (CCW if false, CW if true)
          * @param cullBackFaces true to cull back faces, false to cull front faces (if culling is enabled)
          * @param stencil stencil states to set
+         * @param zOffsetUnit defines the value to apply to zOffsetUnit (0 by default)
          */
-        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean, cullBackFaces?: boolean, stencil?: IStencilState): void;
+        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean, cullBackFaces?: boolean, stencil?: IStencilState, zOffsetUnit?: number): void;
         private _draw;
         /**
          * Draw a list of indexed primitives
@@ -63769,22 +63840,32 @@ declare module BABYLON {
         getRenderWidth(useScreen?: boolean): number;
         getRenderHeight(useScreen?: boolean): number;
         setViewport(viewport: IViewportLike, requiredWidth?: number, requiredHeight?: number): void;
-        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean, cullBackFaces?: boolean, stencil?: IStencilState): void;
+        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean, cullBackFaces?: boolean, stencil?: IStencilState, zOffsetUnit?: number): void;
         /**
          * Gets the client rect of native canvas.  Needed for InputManager.
          * @returns a client rectangle
          */
         getInputElementClientRect(): Nullable<DOMRect>;
         /**
-         * Set the z offset to apply to current rendering
+         * Set the z offset Factor to apply to current rendering
          * @param value defines the offset to apply
          */
         setZOffset(value: number): void;
         /**
-         * Gets the current value of the zOffset
-         * @returns the current zOffset state
+         * Gets the current value of the zOffset Factor
+         * @returns the current zOffset Factor state
          */
         getZOffset(): number;
+        /**
+         * Set the z offset Unit to apply to current rendering
+         * @param value defines the offset to apply
+         */
+        setZOffsetUnit(value: number): void;
+        /**
+         * Gets the current value of the zOffset Unit
+         * @returns the current zOffset Unit state
+         */
+        getZOffsetUnit(): number;
         /**
          * Enable or disable depth buffering
          * @param enable defines the state to set
@@ -83372,9 +83453,13 @@ declare module BABYLON {
          */
         scene: Scene;
         /**
-         * Defines a zOffset to prevent zFighting between the overlay and the mesh.
+         * Defines a zOffset default Factor to prevent zFighting between the overlay and the mesh.
          */
         zOffset: number;
+        /**
+         * Defines a zOffset default Unit to prevent zFighting between the overlay and the mesh.
+         */
+        zOffsetUnit: number;
         private _engine;
         private _savedDepthWrite;
         private _nameForDrawWrapper;

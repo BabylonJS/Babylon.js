@@ -2710,15 +2710,16 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * Set various states to the context
+     * Set various states to the webGL context
      * @param culling defines culling state: true to enable culling, false to disable it
      * @param zOffset defines the value to apply to zOffset (0 by default)
      * @param force defines if states must be applied even if cache is up to date
      * @param reverseSide defines if culling must be reversed (CCW if false, CW if true)
      * @param cullBackFaces true to cull back faces, false to cull front faces (if culling is enabled)
      * @param stencil stencil states to set
+     * @param zOffsetUnit defines the value to apply to zOffsetUnit (0 by default)
      */
-    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false, cullBackFaces?: boolean, stencil?: IStencilState): void {
+    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false, cullBackFaces?: boolean, stencil?: IStencilState, zOffsetUnit: number = 0): void {
         // Culling
         if (this._depthCullingState.cull !== culling || force) {
             this._depthCullingState.cull = culling;
@@ -2732,6 +2733,7 @@ export class WebGPUEngine extends Engine {
 
         // Z offset
         this.setZOffset(zOffset);
+        this.setZOffsetUnit(zOffsetUnit);
 
         // Front face
         // var frontFace = reverseSide ? this._gl.CW : this._gl.CCW;

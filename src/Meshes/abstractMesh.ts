@@ -1426,7 +1426,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         if (this._boundingInfo) {
             this._boundingInfo.update(effectiveMesh.worldMatrixFromCache);
         } else {
-            this._boundingInfo = new BoundingInfo(this.absolutePosition, this.absolutePosition, effectiveMesh.worldMatrixFromCache);
+            this._boundingInfo = new BoundingInfo(this.position, this.position, effectiveMesh.worldMatrixFromCache);
         }
         this._updateSubMeshesBoundingInfo(effectiveMesh.worldMatrixFromCache);
         return this;
