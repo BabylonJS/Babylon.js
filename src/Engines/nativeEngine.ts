@@ -140,6 +140,9 @@ interface INativeEngine {
     readonly COMMAND_SETFLOATARRAY2: number;
     readonly COMMAND_SETFLOATARRAY3: number;
     readonly COMMAND_SETFLOATARRAY4: number;
+    readonly COMMAND_SETTEXTURESAMPLING: number;
+    readonly COMMAND_SETTEXTUREWRAPMODE: number;
+    readonly COMMAND_SETTEXTUREANISOTROPICLEVEL: number;
     readonly COMMAND_SETTEXTURE: number;
     readonly COMMAND_BINDVERTEXARRAY: number;
     readonly COMMAND_SETSTATE: number;
@@ -152,7 +155,6 @@ interface INativeEngine {
     readonly COMMAND_SETFLOAT2: number;
     readonly COMMAND_SETFLOAT3: number;
     readonly COMMAND_SETFLOAT4: number;
-    readonly COMMAND_SETTEXTUREWRAPMODE: number;
     readonly COMMAND_BINDFRAMEBUFFER: number;
     readonly COMMAND_UNBINDFRAMEBUFFER: number;
     readonly COMMAND_DELETEFRAMEBUFFER: number;
@@ -191,8 +193,6 @@ interface INativeEngine {
     loadCubeTextureWithMips(texture: WebGLTexture, data: Array<Array<ArrayBufferView>>, onSuccess: () => void, onError: () => void): void;
     getTextureWidth(texture: WebGLTexture): number;
     getTextureHeight(texture: WebGLTexture): number;
-    setTextureSampling(texture: WebGLTexture, filter: number): void; // filter is a NativeFilter.XXXX value.
-    setTextureAnisotropicLevel(texture: WebGLTexture, value: number): void;
     copyTexture(desination: Nullable<WebGLTexture>, source: Nullable<WebGLTexture>): void;
     deleteTexture(texture: Nullable<WebGLTexture>): void;
     createImageBitmap(data: ArrayBufferView): ImageBitmap;
@@ -2188,7 +2188,7 @@ export class NativeEngine extends Engine {
         if (texture._hardwareTexture) {
             var webGLTexture = texture._hardwareTexture.underlyingResource;
             var filter = this._getNativeSamplingMode(samplingMode);
-            this._native.setTextureSampling(webGLTexture, filter);
+            this._setTextureSampling(webGLTexture, filter);
         }
 
         this._internalTexturesCache.push(texture);
@@ -2326,7 +2326,7 @@ export class NativeEngine extends Engine {
                     texture.isReady = true;
 
                     var filter = this._getNativeSamplingMode(samplingMode);
-                    this._native.setTextureSampling(webGLTexture, filter);
+                    this._setTextureSampling(webGLTexture, filter);
 
                     if (scene) {
                         scene._removePendingData(texture);
@@ -2617,7 +2617,7 @@ export class NativeEngine extends Engine {
     public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
         if (texture._hardwareTexture) {
             var filter = this._getNativeSamplingMode(samplingMode);
-            this._native.setTextureSampling(texture._hardwareTexture.underlyingResource, filter);
+            this._setTextureSampling(texture._hardwareTexture.underlyingResource, filter);
         }
         texture.samplingMode = samplingMode;
     }
@@ -2741,6 +2741,14 @@ export class NativeEngine extends Engine {
         return true;
     }
 
+    // filter is a NativeFilter.XXXX value.
+    private _setTextureSampling(texture: WebGLTexture, filter: number) {
+        this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_SETTEXTURESAMPLING);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(texture);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(filter);
+        this._commandBufferEncoder.finishEncodingCommand();
+    }
+
     // addressModes are NativeAddressMode.XXXX values.
     private _setTextureWrapMode(texture: WebGLTexture, addressModeU: number, addressModeV: number, addressModeW: number) {
         this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_SETTEXTUREWRAPMODE);
@@ -2769,7 +2777,10 @@ export class NativeEngine extends Engine {
         }
 
         if (internalTexture._cachedAnisotropicFilteringLevel !== value) {
-            this._native.setTextureAnisotropicLevel(internalTexture._hardwareTexture.underlyingResource, value);
+            this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_SETTEXTUREANISOTROPICLEVEL);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(internalTexture._hardwareTexture.underlyingResource);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(value);
+            this._commandBufferEncoder.finishEncodingCommand();
             internalTexture._cachedAnisotropicFilteringLevel = value;
         }
     }
