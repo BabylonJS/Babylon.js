@@ -101,7 +101,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
     }
 
     public varyingProcessor(varying: string, isFragment: boolean, preProcessors: { [key: string]: string }, processingContext: Nullable<ShaderProcessingContext>) {
-        const varyingRegex = new RegExp(/\s*varying\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s*:\s*(.+)\s*;/gm);
+        const varyingRegex = /\s*varying\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s*:\s*(.+)\s*;/gm;
         const match = varyingRegex.exec(varying);
         if (match !== null) {
             const varyingType = match[2];
@@ -127,7 +127,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
     }
 
     public attributeProcessor(attribute: string, preProcessors: { [key: string]: string }, processingContext: Nullable<ShaderProcessingContext>) {
-        const attribRegex = new RegExp(/\s*attribute\s+(\S+)\s*:\s*(.+)\s*;/gm);
+        const attribRegex = /\s*attribute\s+(\S+)\s*:\s*(.+)\s*;/gm;
         const match = attribRegex.exec(attribute);
         if (match !== null) {
             const attributeType = match[2];
@@ -388,7 +388,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
     }
 
     private _processSamplers(code: string, isVertex: boolean): string {
-        const samplerRegexp = new RegExp(/var\s+(\w+Sampler)\s*:\s*(sampler|sampler_comparison)\s*;/gm);
+        const samplerRegexp = /var\s+(\w+Sampler)\s*:\s*(sampler|sampler_comparison)\s*;/gm;
 
         while (true) {
             const match = samplerRegexp.exec(code);
@@ -432,7 +432,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
     }
 
     private _processCustomBuffers(code: string, isVertex: boolean): string {
-        const instantiateBufferRegexp = new RegExp(/var<\s*(uniform|storage)\s*(,\s*(read|read_write)\s*)?>\s+(\S+)\s*:\s*(\S+)\s*;/gm);
+        const instantiateBufferRegexp = /var<\s*(uniform|storage)\s*(,\s*(read|read_write)\s*)?>\s+(\S+)\s*:\s*(\S+)\s*;/gm;
 
         while (true) {
             const match = instantiateBufferRegexp.exec(code);
