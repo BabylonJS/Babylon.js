@@ -148,6 +148,9 @@ interface INativeEngine {
     readonly COMMAND_SETFLOAT3: number;
     readonly COMMAND_SETFLOAT4: number;
     readonly COMMAND_SETTEXTUREWRAPMODE: number;
+    readonly COMMAND_BINDFRAMEBUFFER: number;
+    readonly COMMAND_UNBINDFRAMEBUFFER: number;
+    readonly COMMAND_DELETEFRAMEBUFFER: number;
     readonly COMMAND_DRAWINDEXED: number;
     readonly COMMAND_DRAW: number;
     readonly COMMAND_CLEAR: number;
@@ -199,9 +202,6 @@ interface INativeEngine {
     resizeImageBitmap(image: ImageBitmap, bufferWidth: number, bufferHeight: number) : Uint8Array;
 
     createFrameBuffer(texture: WebGLTexture, width: number, height: number, format: number, generateStencilBuffer: boolean, generateDepthBuffer: boolean, generateMips: boolean): WebGLFramebuffer;
-    deleteFrameBuffer(framebuffer: WebGLFramebuffer): void;
-    bindFrameBuffer(framebuffer: WebGLFramebuffer): void;
-    unbindFrameBuffer(framebuffer: WebGLFramebuffer): void;
 
     getRenderWidth(): number;
     getRenderHeight(): number;
@@ -1138,11 +1138,15 @@ export class NativeEngine extends Engine {
     public _bindUnboundFramebuffer(framebuffer: Nullable<WebGLFramebuffer>) {
         if (this._currentFramebuffer !== framebuffer) {
             if (this._currentFramebuffer) {
-                this._native.unbindFrameBuffer(this._currentFramebuffer!);
+                this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_UNBINDFRAMEBUFFER);
+                this._commandBufferEncoder.encodeCommandArgAsUInt32(this._currentFramebuffer);
+                this._commandBufferEncoder.finishEncodingCommand();
             }
 
             if (framebuffer) {
-                this._native.bindFrameBuffer(framebuffer);
+                this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_BINDFRAMEBUFFER);
+                this._commandBufferEncoder.encodeCommandArgAsUInt32(framebuffer);
+                this._commandBufferEncoder.finishEncodingCommand();
             }
 
             this._currentFramebuffer = framebuffer;
@@ -2363,7 +2367,9 @@ export class NativeEngine extends Engine {
 
     public _releaseFramebufferObjects(texture: InternalTexture): void {
         if (texture._framebuffer) {
-            this._native.deleteFrameBuffer(texture._framebuffer);
+            this._commandBufferEncoder.beginEncodingCommand(this._native.COMMAND_DELETEFRAMEBUFFER);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(texture._framebuffer);
+            this._commandBufferEncoder.finishEncodingCommand();
             texture._framebuffer = null;
         }
     }
