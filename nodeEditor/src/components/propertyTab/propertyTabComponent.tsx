@@ -435,6 +435,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             StringTools.DownloadAsFile(this.props.globalState.hostDocument, this.props.globalState.nodeMaterial!.generateCode(), "code.txt");
                         }} />
                         <ButtonLineComponent label="Export shaders" onClick={() => {
+                            this.props.globalState.nodeMaterial.build();
                             StringTools.DownloadAsFile(this.props.globalState.hostDocument, this.props.globalState.nodeMaterial!.compiledShaders, "shaders.txt");
                         }} />
                         {

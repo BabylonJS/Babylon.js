@@ -7,6 +7,7 @@ import { RefractionBlock } from './Blocks/PBR/refractionBlock';
 import { CurrentScreenBlock } from './Blocks/Dual/currentScreenBlock';
 import { ParticleTextureBlock } from './Blocks/Particle/particleTextureBlock';
 import { Scene } from '../../scene';
+import { ImageSourceBlock } from './Blocks/Dual/imageSourceBlock';
 
 /**
  * Class used to store shared data between 2 NodeMaterialBuildState
@@ -35,7 +36,7 @@ export class NodeMaterialBuildStateSharedData {
     /**
      * Input blocks
      */
-    public textureBlocks = new Array<TextureBlock | ReflectionTextureBaseBlock | RefractionBlock | CurrentScreenBlock | ParticleTextureBlock>();
+    public textureBlocks = new Array<TextureBlock | ReflectionTextureBaseBlock | RefractionBlock | CurrentScreenBlock | ParticleTextureBlock | ImageSourceBlock>();
 
     /**
      * Bindable blocks (Blocks that need to set data to the effect)

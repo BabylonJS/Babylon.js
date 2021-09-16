@@ -157,7 +157,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         "GreaterOrEqualBlock": "Return a value if an operand is greater or equal to a second operand", 
         "XorBlock": "Return a value if (a xor b) > 0", 
         "OrBlock": "Return a value if (a or b) > 0", 
-        "AndBlock": "Return a value if (a and b) > 0"
+        "AndBlock": "Return a value if (a and b) > 0",
+        "ImageSourceBlock": "Centralize texture access for TextureBlocks"
     };
     
     private _customFrameList: {[key: string]: string};
@@ -238,7 +239,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Animation: ["BonesBlock", "MorphTargetsBlock"],
             Color_Management: ["ReplaceColorBlock", "PosterizeBlock", "GradientBlock", "DesaturateBlock"],
             Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
-            Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock", "ReflectionTextureBlock", "TimeBlock", "DeltaTimeBlock", "FragCoordBlock", "ScreenSizeBlock"],
+            Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock", "ReflectionTextureBlock", "TimeBlock", "DeltaTimeBlock", "FragCoordBlock", "ScreenSizeBlock", "ImageSourceBlock"],
             Interpolation: ["LerpBlock", "StepBlock", "SmoothStepBlock", "NLerpBlock"],
             Logical: ["EqualBlock", "NotEqualBlock", "LessThanBlock", "LessOrEqualBlock", "GreaterThanBlock", "GreaterOrEqualBlock", "XorBlock", "OrBlock", "AndBlock"],
             Math__Standard: ["AddBlock", "DivideBlock", "MaxBlock", "MinBlock", "ModBlock", "MultiplyBlock", "NegateBlock", "OneMinusBlock", "ReciprocalBlock", "ScaleBlock", "SignBlock", "SqrtBlock", "SubtractBlock"],
