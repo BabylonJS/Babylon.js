@@ -144,6 +144,7 @@ interface INativeEngine {
     readonly COMMAND_BINDVERTEXARRAY: number;
     readonly COMMAND_SETSTATE: number;
     readonly COMMAND_SETZOFFSET: number;
+    readonly COMMAND_SETDEPTHTEST: number;
     readonly COMMAND_SETFLOAT: number;
     readonly COMMAND_SETFLOAT2: number;
     readonly COMMAND_SETFLOAT3: number;
@@ -180,7 +181,6 @@ interface INativeEngine {
     getUniforms(shaderProgram: any, uniformsNames: string[]): WebGLUniformLocation[];
     getAttributes(shaderProgram: any, attributeNames: string[]): number[];
 
-    setDepthTest(enable: number): void;
     getDepthWrite(): boolean;
     setDepthWrite(enable: boolean): void;
     setColorWrite(enable: boolean): void;
@@ -1522,7 +1522,9 @@ export class NativeEngine extends Engine {
      * @param enable defines the state to set
      */
     public setDepthBuffer(enable: boolean): void {
-        this._native.setDepthTest(enable ? this._currentDepthTest : this._native.DEPTH_TEST_ALWAYS);
+        this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_SETDEPTHTEST);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(enable ? this._currentDepthTest : this._native.DEPTH_TEST_ALWAYS);
+        this._commandBufferEncoder.finishEncodingCommand();
     }
 
     /**
@@ -1585,7 +1587,10 @@ export class NativeEngine extends Engine {
         }
 
         this._currentDepthTest = nativeDepthFunc;
-        this._native.setDepthTest(this._currentDepthTest);
+        this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_SETDEPTHTEST);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(this._currentDepthTest);
+        this._commandBufferEncoder.finishEncodingCommand();
+
     }
 
     /**
