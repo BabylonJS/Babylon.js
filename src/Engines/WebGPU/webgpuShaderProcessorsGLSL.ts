@@ -42,7 +42,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor implements 
     public varyingProcessor(varying: string, isFragment: boolean, preProcessors: { [key: string]: string }, processingContext: Nullable<ShaderProcessingContext>) {
         this._preProcessors = preProcessors;
 
-        const varyingRegex = new RegExp(/\s*varying\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s+(\S+)\s*;/gm);
+        const varyingRegex = /\s*varying\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s+(\S+)\s*;/gm;
         const match = varyingRegex.exec(varying);
         if (match != null) {
             const varyingType = match[1];
@@ -69,7 +69,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor implements 
     public attributeProcessor(attribute: string, preProcessors: { [key: string]: string }, processingContext: Nullable<ShaderProcessingContext>) {
         this._preProcessors = preProcessors;
 
-        const attribRegex = new RegExp(/\s*attribute\s+(\S+)\s+(\S+)\s*;/gm);
+        const attribRegex = /\s*attribute\s+(\S+)\s+(\S+)\s*;/gm;
         const match = attribRegex.exec(attribute);
         if (match != null) {
             const attributeType = match[1];
@@ -87,7 +87,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor implements 
     public uniformProcessor(uniform: string, isFragment: boolean, preProcessors: { [key: string]: string }, processingContext: Nullable<ShaderProcessingContext>): string {
         this._preProcessors = preProcessors;
 
-        const uniformRegex = new RegExp(/\s*uniform\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s+(\S+)\s*;/gm);
+        const uniformRegex = /\s*uniform\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s+(\S+)\s*;/gm;
 
         const match = uniformRegex.exec(uniform);
         if (match != null) {
@@ -186,7 +186,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor implements 
     }
 
     public uniformBufferProcessor(uniformBuffer: string, isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>): string {
-        const uboRegex = new RegExp(/uniform\s+(\w+)/gm);
+        const uboRegex = /uniform\s+(\w+)/gm;
 
         const match = uboRegex.exec(uniformBuffer);
         if (match != null) {
