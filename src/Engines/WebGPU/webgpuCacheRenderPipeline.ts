@@ -13,17 +13,18 @@ enum StatePosition {
     //DepthBiasClamp = 1, // not used, so remove it to improve perf
     StencilReadMask = 0,
     StencilWriteMask = 1,
-    DepthBiasSlopeScale = 2,
-    MRTAttachments1 = 3,
-    MRTAttachments2 = 4,
-    DepthStencilState = 5,
-    RasterizationState = 6,
-    ColorStates = 7,
-    ShaderStage = 8,
-    TextureStage = 9,
-    VertexState = 10, // vertex state will consume positions 10, 11, ... depending on the number of vertex inputs
+    DepthBias = 2,
+    DepthBiasSlopeScale = 3,
+    MRTAttachments1 = 4,
+    MRTAttachments2 = 5,
+    DepthStencilState = 6,
+    RasterizationState = 7,
+    ColorStates = 8,
+    ShaderStage = 9,
+    TextureStage = 10,
+    VertexState = 11, // vertex state will consume positions 11, 12, ... depending on the number of vertex inputs
 
-    NumStates = 11
+    NumStates = 12
 }
 
 const textureFormatToIndex: { [name: string]: number } = {
@@ -208,7 +209,7 @@ export abstract class WebGPUCacheRenderPipeline {
         this.setAlphaToCoverage(false);
         this.resetDepthCullingState();
         this.setClampDepth(false);
-        //this.setDepthBias(0);
+        this.setDepthBias(0);
         //this.setDepthBiasClamp(0);
         this._webgpuColorFormat = [WebGPUConstants.TextureFormat.BGRA8Unorm];
         this.setColorFormat(WebGPUConstants.TextureFormat.BGRA8Unorm);
@@ -311,10 +312,10 @@ export abstract class WebGPUCacheRenderPipeline {
     }
 
     public resetDepthCullingState(): void {
-        this.setDepthCullingState(false, 2, 1, 0, true, true, Constants.ALWAYS);
+        this.setDepthCullingState(false, 2, 1, 0, 0, true, true, Constants.ALWAYS);
     }
 
-    public setDepthCullingState(cullEnabled: boolean, frontFace: number, cullFace: number, zOffset: number, depthTestEnabled: boolean, depthWriteEnabled: boolean, depthCompare: Nullable<number>): void {
+    public setDepthCullingState(cullEnabled: boolean, frontFace: number, cullFace: number, zOffset: number, zOffsetUnit: number, depthTestEnabled: boolean, depthWriteEnabled: boolean, depthCompare: Nullable<number>): void {
         this._depthWriteEnabled = depthWriteEnabled;
         this._depthTestEnabled = depthTestEnabled;
         this._depthCompare = (depthCompare ?? Constants.ALWAYS) - 0x0200;
@@ -322,17 +323,19 @@ export abstract class WebGPUCacheRenderPipeline {
         this._cullEnabled = cullEnabled;
         this._frontFace = frontFace;
         this.setDepthBiasSlopeScale(zOffset);
+        this.setDepthBias(zOffsetUnit);
     }
 
-    /*public setDepthBias(depthBias: number): void {
+    public setDepthBias(depthBias: number): void {
         if (this._depthBias !== depthBias) {
             this._depthBias = depthBias;
-            this._states[StatePosition.DepthBias] = depthBias.toString();
+            this._states[StatePosition.DepthBias] = depthBias;
             this._isDirty = true;
+            this._stateDirtyLowestIndex = Math.min(this._stateDirtyLowestIndex, StatePosition.DepthBias);
         }
     }
 
-    public setDepthBiasClamp(depthBiasClamp: number): void {
+    /*public setDepthBiasClamp(depthBiasClamp: number): void {
         if (this._depthBiasClamp !== depthBiasClamp) {
             this._depthBiasClamp = depthBiasClamp;
             this._states[StatePosition.DepthBiasClamp] = depthBiasClamp.toString();

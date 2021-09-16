@@ -18,6 +18,7 @@ export class DepthCullingState {
     protected _cull: Nullable<boolean>;
     protected _cullFace: Nullable<number>;
     protected _zOffset: number;
+    protected _zOffsetUnit: number;
     protected _frontFace: Nullable<number>;
 
     /**
@@ -43,6 +44,19 @@ export class DepthCullingState {
         }
 
         this._zOffset = value;
+        this._isZOffsetDirty = true;
+    }
+
+    public get zOffsetUnit(): number {
+        return this._zOffsetUnit;
+    }
+
+    public set zOffsetUnit(value: number) {
+        if (this._zOffsetUnit === value) {
+            return;
+        }
+
+        this._zOffsetUnit = value;
         this._isZOffsetDirty = true;
     }
 
@@ -131,6 +145,7 @@ export class DepthCullingState {
         this._cullFace = null;
         this._cull = null;
         this._zOffset = 0;
+        this._zOffsetUnit = 0;
         this._frontFace = null;
 
         this._isDepthTestDirty = true;
@@ -189,9 +204,9 @@ export class DepthCullingState {
 
         // zOffset
         if (this._isZOffsetDirty) {
-            if (this.zOffset) {
+            if (this.zOffset || this.zOffsetUnit) {
                 gl.enable(gl.POLYGON_OFFSET_FILL);
-                gl.polygonOffset(this.zOffset, 0);
+                gl.polygonOffset(this.zOffset, this.zOffsetUnit);
             } else {
                 gl.disable(gl.POLYGON_OFFSET_FILL);
             }
