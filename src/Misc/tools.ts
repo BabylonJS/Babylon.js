@@ -674,7 +674,7 @@ export class Tools {
                         }
                     };
                     fileReader.readAsArrayBuffer(blob!);
-                });
+                }, mimeType);
             } else {
                 Tools.EncodeScreenshotCanvasData(successCallback, mimeType, fileName, canvas);
             }
