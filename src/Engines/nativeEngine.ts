@@ -146,6 +146,7 @@ interface INativeEngine {
     readonly COMMAND_SETTEXTURE: number;
     readonly COMMAND_BINDVERTEXARRAY: number;
     readonly COMMAND_SETSTATE: number;
+    readonly COMMAND_DELETEPROGRAM: number;
     readonly COMMAND_SETZOFFSET: number;
     readonly COMMAND_SETDEPTHTEST: number;
     readonly COMMAND_SETDEPTHWRITE: number;
@@ -1400,12 +1401,13 @@ export class NativeEngine extends Engine {
         }
     }
 
-    public _releaseEffect(effect: Effect): void {
-        // TODO: is this where we can call a deleteProgram function on NativeEngine?
-    }
-
     public _deletePipelineContext(pipelineContext: IPipelineContext): void {
-        // TODO
+        const nativePipelineContext = pipelineContext as NativePipelineContext;
+        if (nativePipelineContext && nativePipelineContext.nativeProgram) {
+            this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_DELETEPROGRAM);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(nativePipelineContext.nativeProgram)
+            this._commandBufferEncoder.finishEncodingCommand();
+        }
     }
 
     public getUniforms(pipelineContext: IPipelineContext, uniformsNames: string[]): WebGLUniformLocation[] {
@@ -2825,10 +2827,6 @@ export class NativeEngine extends Engine {
             this._commandBufferEncoder.finishEncodingCommand();
             delete buffer.nativeVertexBuffer;
         }
-    }
-
-    public releaseEffects() {
-        // TODO
     }
 
     /**

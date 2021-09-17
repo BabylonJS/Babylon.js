@@ -2431,16 +2431,20 @@ export class ThinEngine {
 
     /** @hidden */
     public _releaseEffect(effect: Effect): void {
+        console.log("RELEASE EFFECT");
         if (this._compiledEffects[effect._key]) {
             delete this._compiledEffects[effect._key];
 
-            this._deletePipelineContext(effect.getPipelineContext() as WebGLPipelineContext);
+            const pipelineContext = effect.getPipelineContext();
+            if (pipelineContext) {
+                this._deletePipelineContext(pipelineContext);
+            }
         }
     }
 
     /** @hidden */
     public _deletePipelineContext(pipelineContext: IPipelineContext): void {
-        let webGLPipelineContext = pipelineContext as WebGLPipelineContext;
+        const webGLPipelineContext = pipelineContext as WebGLPipelineContext;
         if (webGLPipelineContext && webGLPipelineContext.program) {
             webGLPipelineContext.program.__SPECTOR_rebuildProgram = null;
 
