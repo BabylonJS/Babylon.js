@@ -45,6 +45,7 @@
 - Modified behavior for FreeCamera and ArcRotateCamera so that default mouse dragging movements now account for what button was used to initiate it ([PolygonalSun](https://github.com/PolygonalSun))
 - Added coroutine capabilities to `Observable`s ([syntheticmagus](https://github.com/syntheticmagus))
 - Added a global OnTextureLoadErrorObservable to handle texture loading errors during model load ([RaananW](https://github.com/RaananW))
+- Add support to encode and decode .env environment textures using WebP instead of PNG ([simonihmig](https://github.com/simonihmig))
 
 ### Engine
 
