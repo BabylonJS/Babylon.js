@@ -7475,6 +7475,35 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Defines a connection point to be used for points with a custom object type
+     */
+    export class NodeMaterialConnectionPointCustomObject<T extends NodeMaterialBlock> extends NodeMaterialConnectionPoint {
+        private _blockType;
+        private _blockName;
+        private _nameForCheking?;
+        /**
+         * Creates a new connection point
+         * @param name defines the connection point name
+         * @param ownerBlock defines the block hosting this connection point
+         * @param direction defines the direction of the connection point
+         */
+        constructor(name: string, ownerBlock: NodeMaterialBlock, direction: NodeMaterialConnectionPointDirection, _blockType: new (...args: any[]) => T, _blockName: string, _nameForCheking?: string | undefined);
+        /**
+         * Gets a number indicating if the current point can be connected to another point
+         * @param connectionPoint defines the other connection point
+         * @returns a number defining the compatibility state
+         */
+        checkCompatibilityState(connectionPoint: NodeMaterialConnectionPoint): NodeMaterialConnectionPointCompatibilityStates;
+        /**
+         * Creates a block suitable to be used as an input for this input point.
+         * If null is returned, a block based on the point type will be created.
+         * @returns The returned string parameter is the name of the output point of NodeMaterialBlock (first parameter of the returned array) that can be connected to the input
+         */
+        createCustomInputBlock(): Nullable<[NodeMaterialBlock, string]>;
+    }
+}
+declare module BABYLON {
+    /**
      * Block used to provide an image for a TextureBlock
      */
     export class ImageSourceBlock extends NodeMaterialBlock {
@@ -7495,6 +7524,7 @@ declare module BABYLON {
          */
         constructor(name: string);
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
+        isReady(): boolean;
         /**
          * Gets the current class name
          * @returns the class name
@@ -7503,7 +7533,7 @@ declare module BABYLON {
         /**
          * Gets the output component
          */
-        get output(): NodeMaterialConnectionPoint;
+        get source(): NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
         protected _dumpPropertiesCode(): string;
         serialize(): any;
@@ -7752,35 +7782,6 @@ declare module BABYLON {
         protected _dumpPropertiesCode(): string;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Defines a connection point to be used for points with a custom object type
-     */
-    export class NodeMaterialConnectionPointCustomObject<T extends NodeMaterialBlock> extends NodeMaterialConnectionPoint {
-        private _blockType;
-        private _blockName;
-        private _nameForCheking?;
-        /**
-         * Creates a new connection point
-         * @param name defines the connection point name
-         * @param ownerBlock defines the block hosting this connection point
-         * @param direction defines the direction of the connection point
-         */
-        constructor(name: string, ownerBlock: NodeMaterialBlock, direction: NodeMaterialConnectionPointDirection, _blockType: new (...args: any[]) => T, _blockName: string, _nameForCheking?: string | undefined);
-        /**
-         * Gets a number indicating if the current point can be connected to another point
-         * @param connectionPoint defines the other connection point
-         * @returns a number defining the compatibility state
-         */
-        checkCompatibilityState(connectionPoint: NodeMaterialConnectionPoint): NodeMaterialConnectionPointCompatibilityStates;
-        /**
-         * Creates a block suitable to be used as an input for this input point.
-         * If null is returned, a block based on the point type will be created.
-         * @returns The returned string parameter is the name of the output point of NodeMaterialBlock (first parameter of the returned array) that can be connected to the input
-         */
-        createCustomInputBlock(): Nullable<[NodeMaterialBlock, string]>;
     }
 }
 declare module BABYLON {
@@ -43594,37 +43595,40 @@ declare module BABYLON {
          * @param fileName defines the filename to download. If present, the result will automatically be downloaded
          * @param invertY true to invert the picture in the Y dimension
          * @param toArrayBuffer true to convert the data to an ArrayBuffer (encoded as `mimeType`) instead of a base64 string
+         * @param quality defines the quality of the result
          */
-        static DumpData(width: number, height: number, data: ArrayBufferView, successCallback?: (data: string | ArrayBuffer) => void, mimeType?: string, fileName?: string, invertY?: boolean, toArrayBuffer?: boolean): void;
+        static DumpData(width: number, height: number, data: ArrayBufferView, successCallback?: (data: string | ArrayBuffer) => void, mimeType?: string, fileName?: string, invertY?: boolean, toArrayBuffer?: boolean, quality?: number): void;
         /**
          * Dumps an array buffer
          * @param width defines the rendering width
          * @param height defines the rendering height
          * @param data the data array
-         * @param successCallback defines the callback triggered once the data are available
          * @param mimeType defines the mime type of the result
          * @param fileName defines the filename to download. If present, the result will automatically be downloaded
          * @param invertY true to invert the picture in the Y dimension
          * @param toArrayBuffer true to convert the data to an ArrayBuffer (encoded as `mimeType`) instead of a base64 string
+         * @param quality defines the quality of the result
          * @return a promise that resolve to the final data
          */
-        static DumpDataAsync(width: number, height: number, data: ArrayBufferView, mimeType?: string, fileName?: string, invertY?: boolean, toArrayBuffer?: boolean): Promise<string | ArrayBuffer>;
+        static DumpDataAsync(width: number, height: number, data: ArrayBufferView, mimeType?: string, fileName?: string, invertY?: boolean, toArrayBuffer?: boolean, quality?: number): Promise<string | ArrayBuffer>;
         /**
          * Converts the canvas data to blob.
          * This acts as a polyfill for browsers not supporting the to blob function.
          * @param canvas Defines the canvas to extract the data from
          * @param successCallback Defines the callback triggered once the data are available
          * @param mimeType Defines the mime type of the result
+         * @param quality defines the quality of the result
          */
-        static ToBlob(canvas: HTMLCanvasElement, successCallback: (blob: Nullable<Blob>) => void, mimeType?: string): void;
+        static ToBlob(canvas: HTMLCanvasElement, successCallback: (blob: Nullable<Blob>) => void, mimeType?: string, quality?: number): void;
         /**
          * Encodes the canvas data to base 64 or automatically download the result if filename is defined
          * @param successCallback defines the callback triggered once the data are available
          * @param mimeType defines the mime type of the result
          * @param fileName defines he filename to download. If present, the result will automatically be downloaded
          * @param canvas canvas to get the data from. If not provided, use the default screenshot canvas
+         * @param quality defines the quality of the result
          */
-        static EncodeScreenshotCanvasData(successCallback?: (data: string) => void, mimeType?: string, fileName?: string, canvas?: HTMLCanvasElement): void;
+        static EncodeScreenshotCanvasData(successCallback?: (data: string) => void, mimeType?: string, fileName?: string, canvas?: HTMLCanvasElement, quality?: number): void;
         /**
          * Downloads a blob in the browser
          * @param blob defines the blob to download
@@ -63611,11 +63615,15 @@ declare module BABYLON {
     /**
      * Raw texture data and descriptor sufficient for WebGL texture upload
      */
-    export interface EnvironmentTextureInfo {
+    export type EnvironmentTextureInfo = EnvironmentTextureInfoV1 | EnvironmentTextureInfoV2;
+    /**
+     * v1 of EnvironmentTextureInfo
+     */
+    interface EnvironmentTextureInfoV1 {
         /**
          * Version of the environment map
          */
-        version: number;
+        version: 1;
         /**
          * Width of image
          */
@@ -63628,6 +63636,31 @@ declare module BABYLON {
          * Specular information stored in the file.
          */
         specular: any;
+    }
+    /**
+     * v2 of EnvironmentTextureInfo
+     */
+    interface EnvironmentTextureInfoV2 {
+        /**
+         * Version of the environment map
+         */
+        version: 2;
+        /**
+         * Width of image
+         */
+        width: number;
+        /**
+         * Irradiance information stored in the file.
+         */
+        irradiance: any;
+        /**
+         * Specular information stored in the file.
+         */
+        specular: any;
+        /**
+         * The mime type used to encode the image data.
+         */
+        imageType: string;
     }
     /**
      * Defines One Image in the file. It requires only the position in the file
@@ -63662,6 +63695,19 @@ declare module BABYLON {
         lodGenerationScale: number;
     }
     /**
+     * Options for creating environment textures
+     */
+    export interface CreateEnvTextureOptions {
+        /**
+         * The mime type of encoded images.
+         */
+        imageType?: string;
+        /**
+         * the image quality of encoded WebP images.
+         */
+        imageQuality?: number;
+    }
+    /**
      * Sets of helpers addressing the serialization and deserialization of environment texture
      * stored in a BabylonJS env file.
      * Those files are usually stored as .env files.
@@ -63674,15 +63720,25 @@ declare module BABYLON {
         /**
          * Gets the environment info from an env file.
          * @param data The array buffer containing the .env bytes.
-         * @returns the environment file info (the json header) if successfully parsed.
+         * @returns the environment file info (the json header) if successfully parsed, normalized to the latest supported version.
          */
-        static GetEnvInfo(data: ArrayBufferView): Nullable<EnvironmentTextureInfo>;
+        static GetEnvInfo(data: ArrayBufferView): Nullable<EnvironmentTextureInfoV2>;
+        /**
+         * Normalizes any supported version of the environment file info to the latest version
+         * @param info environment file info on any supported version
+         * @returns environment file info in the latest supported version
+         * @private
+         */
+        private static normalizeEnvInfo;
         /**
          * Creates an environment texture from a loaded cube texture.
          * @param texture defines the cube texture to convert in env file
+         * @param options options for the conversion process
+         * @param options.imageType the mime type for the encoded images, with support for "image/png" (default) and "image/webp"
+         * @param options.imageQuality the image quality of encoded WebP images.
          * @return a promise containing the environment data if successful.
          */
-        static CreateEnvTextureAsync(texture: BaseTexture): Promise<ArrayBuffer>;
+        static CreateEnvTextureAsync(texture: BaseTexture, options?: CreateEnvTextureOptions): Promise<ArrayBuffer>;
         /**
          * Creates a JSON representation of the spherical data.
          * @param texture defines the texture containing the polynomials
@@ -63709,9 +63765,10 @@ declare module BABYLON {
          * Uploads the levels of image data to the GPU.
          * @param texture defines the internal texture to upload to
          * @param imageData defines the array buffer views of image data [mipmap][face]
+         * @param imageType the mime type of the image data
          * @returns a promise
          */
-        static UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBufferView[][]): Promise<void>;
+        static UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBufferView[][], imageType?: string): Promise<void>;
         /**
          * Uploads spherical polynomials information to the texture.
          * @param texture defines the texture we are trying to upload the information to
