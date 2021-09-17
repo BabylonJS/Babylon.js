@@ -274,17 +274,17 @@ export class TextureBlock extends NodeMaterialBlock {
         if (!defines._areTexturesDirty) {
             return;
         }
-    
+
         if (this._mainUVDefineName !== undefined) {
             defines.setValue(this._mainUVDefineName, false, true);
         }
     }
-    
+
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         if (!defines._areTexturesDirty) {
             return;
         }
-    
+
         if (!this.texture || !this.texture.getTextureMatrix) {
             if (this._isMixed) {
                 defines.setValue(this._defineName, false, true);
@@ -292,7 +292,7 @@ export class TextureBlock extends NodeMaterialBlock {
             }
             return;
         }
-    
+
         defines.setValue(this._linearDefineName, this.convertToGammaSpace, true);
         defines.setValue(this._gammaDefineName, this.convertToLinearSpace, true);
         if (this._isMixed) {
@@ -307,7 +307,7 @@ export class TextureBlock extends NodeMaterialBlock {
             }
         }
     }
-    
+
     public isReady() {
         if (this.texture && !this.texture.isReadyOrNotBlocking()) {
             return false;
