@@ -20,8 +20,7 @@ import "../Materials/Textures/baseTexture.polynomial";
 import "../Shaders/rgbdEncode.fragment";
 import "../Shaders/rgbdDecode.fragment";
 
-type EnvironmentTextureImageType = 'image/png' | 'image/webp';
-const defaultEnvironmentTextureImageType: EnvironmentTextureImageType = 'image/png';
+const defaultEnvironmentTextureImageType = 'image/png';
 
 /**
  * Raw texture data and descriptor sufficient for WebGL texture upload
@@ -48,9 +47,9 @@ export interface EnvironmentTextureInfo {
     specular: any;
 
     /**
-     * The image type used to encode the image data.
+     * The mime type used to encode the image data.
      */
-    imageType?: EnvironmentTextureImageType;
+    imageType?: string;
 }
 
 /**
@@ -104,11 +103,14 @@ interface EnvironmentTextureIrradianceInfoV1 {
     xy: Array<number>;
 }
 
+/**
+ * Options for creating environment textures
+ */
 export interface CreateEnvTextureOptions {
     /**
      * The mime type of encoded images.
      */
-    imageType?: EnvironmentTextureImageType;
+    imageType?: string;
 
     /**
      * the image quality of encoded WebP images.
@@ -445,7 +447,7 @@ export class EnvironmentTextureTools {
      * @param imageType the mime type of the image data
      * @returns a promise
      */
-    public static UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBufferView[][], imageType: EnvironmentTextureImageType = defaultEnvironmentTextureImageType): Promise<void> {
+    public static UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBufferView[][], imageType: string = defaultEnvironmentTextureImageType): Promise<void> {
         if (!Tools.IsExponentOfTwo(texture.width)) {
             throw new Error("Texture size must be a power of two");
         }
