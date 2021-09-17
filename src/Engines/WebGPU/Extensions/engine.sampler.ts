@@ -19,7 +19,6 @@ Effect.prototype.setSampler = function(name: string, sampler: Nullable<Sampler>)
     this._engine.setSampler(name, sampler);
 };
 
-
 WebGPUEngine.prototype.setSampler = function (name: string, sampler: Nullable<Sampler>): void {
     this._currentMaterialContext?.setSampler(name, sampler);
 };
