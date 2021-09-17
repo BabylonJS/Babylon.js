@@ -603,8 +603,31 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             newNode = this.addValueNode(data);
         } 
         else {
-            let block = BlockTools.GetBlockFromString(data, this.props.globalState.nodeMaterial.getScene(), this.props.globalState.nodeMaterial)!;   
+            let block = BlockTools.GetBlockFromString(data, this.props.globalState.nodeMaterial.getScene(), this.props.globalState.nodeMaterial);   
             
+            // check for custom block
+            if (!block) {                
+                let storageData = localStorage.getItem(data);
+                if(!storageData) {      
+                    this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(`Error loading ${data}`);
+                    return;
+                }  
+
+                // load the block's script synchronously
+                let script = document.createElement("script");
+                script.innerHTML = JSON.parse(storageData);
+                script.onerror = () => {
+                    this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(`Error loading ${data}`);                                                        
+                };
+                document.head.appendChild(script);
+
+                block = BlockTools.GetBlockFromString(data, this.props.globalState.nodeMaterial.getScene(), this.props.globalState.nodeMaterial);
+                if (!block) {
+                    this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(`Error loading ${data}`);                                                        
+                    return;
+                }
+            }
+
             if (block.isUnique) {
                 const className = block.getClassName();
                 for (var other of this._blocks) {

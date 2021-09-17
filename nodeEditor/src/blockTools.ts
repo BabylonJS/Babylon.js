@@ -81,6 +81,7 @@ import { ScreenSizeBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/screen
 import { MatrixBuilderBlock } from 'babylonjs/Materials/Node/Blocks/matrixBuilderBlock';
 import { SceneDepthBlock } from 'babylonjs/Materials/Node/Blocks/Dual/sceneDepthBlock';
 import { ImageSourceBlock } from 'babylonjs/Materials/Node/Blocks/Dual/imageSourceBlock';
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
@@ -554,6 +555,12 @@ export class BlockTools {
                 return andBlock;
             case "ImageSourceBlock":
                 return new ImageSourceBlock("ImageSource");
+        }
+
+        // check for custom block
+        const CustomBlockType = _TypeStore.GetClass("BABYLON." + data);
+        if (CustomBlockType) {
+            return new CustomBlockType(data.slice(0, -5));
         }
 
         return null;
