@@ -9,9 +9,9 @@ import { Observable } from "babylonjs/Misc/observable";
  * Interface used to specify creation options for the gui editor
  */
 export interface IGUIEditorOptions {
-    customLoad: { label: string; action: (data: string) => Promise<void>; } | undefined;
+    customLoad: { label: string; action: (data: string) => Promise<string>; } | undefined;
     hostElement?: HTMLElement;
-    customSave?: { label: string; action: (data: string) => Promise<void> };
+    customSave?: { label: string; action: (data: string) => Promise<string> };
     currentSnippetToken?: string;
     customLoadObservable?: Observable<any>;
 }

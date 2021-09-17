@@ -153,7 +153,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     }
 
     saveToSnippetServerHelper = (content: string, adt: AdvancedDynamicTexture) : Promise<string> => {
-        return new Promise((resolve, reject) => {
+        return new Promise((snippetId, reject) => {
             const xmlHttp = new XMLHttpRequest();
             xmlHttp.onreadystatechange = () => {
                 if (xmlHttp.readyState == 4) {
@@ -171,9 +171,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 replace: `parseFromSnippetAsync("${adt.snippetId}`,
                             });
                         }
-                        resolve(adt.snippetId);
+                        snippetId(adt.snippetId);
                     } else {
-                        reject("string");
+                        reject("Unable to save your GUI");
                     }
                 }
             };
@@ -198,8 +198,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         const content = JSON.stringify(adt.serializeContent());
 
         const savePromise = this.props.globalState.customSave?.action || this.saveToSnippetServerHelper;
-        savePromise(content, adt).then((resolve: string) => {
-            adt.snippetId = resolve;
+        savePromise(content, adt).then((snippetId: string) => {
+            adt.snippetId = snippetId;
             if (navigator.clipboard) {
                 navigator.clipboard.writeText(adt.snippetId);
             }
