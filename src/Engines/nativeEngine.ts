@@ -2219,10 +2219,6 @@ export class NativeEngine extends Engine {
 
                 EnvironmentTextureTools.UploadEnvSpherical(texture, info);
 
-                if (info.version !== 1) {
-                    throw new Error(`Unsupported babylon environment map version "${info.version}"`);
-                }
-
                 let specularInfo = info.specular as EnvironmentTextureSpecularInfoV1;
                 if (!specularInfo) {
                     throw new Error(`Nothing else parsed so far`);

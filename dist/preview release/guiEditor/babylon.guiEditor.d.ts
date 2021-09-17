@@ -147,10 +147,15 @@ declare module GUIEDITOR {
         onDraggingStartObservable: BABYLON.Observable<void>;
         draggedControl: BABYLON.Nullable<Control>;
         draggedControlDirection: DragOverLocation;
+        isSaving: boolean;
         storeEditorData: (serializationObject: any) => void;
         customSave?: {
             label: string;
-            action: (data: string) => Promise<void>;
+            action: (data: string) => Promise<string>;
+        };
+        customLoad?: {
+            label: string;
+            action: (data: string) => Promise<string>;
         };
         constructor();
     }
@@ -779,7 +784,8 @@ declare module GUIEDITOR {
         load(file: File): void;
         save(saveCallback: () => void): void;
         saveLocally: () => void;
-        saveToSnippetServer: () => void;
+        saveToSnippetServerHelper: (content: string, adt: AdvancedDynamicTexture) => Promise<string>;
+        saveToSnippetServer: () => Promise<void>;
         loadFromSnippet(): void;
         renderProperties(): JSX.Element | null;
         renderControlIcon(): string;
@@ -1079,10 +1085,14 @@ declare module GUIEDITOR {
      * Interface used to specify creation options for the gui editor
      */
     export interface IGUIEditorOptions {
+        customLoad: {
+            label: string;
+            action: (data: string) => Promise<string>;
+        } | undefined;
         hostElement?: HTMLElement;
         customSave?: {
             label: string;
-            action: (data: string) => Promise<void>;
+            action: (data: string) => Promise<string>;
         };
         currentSnippetToken?: string;
         customLoadObservable?: BABYLON.Observable<any>;
