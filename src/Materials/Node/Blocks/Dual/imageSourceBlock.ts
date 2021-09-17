@@ -1,7 +1,7 @@
 import { NodeMaterialBlock } from '../../nodeMaterialBlock';
 import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
+import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from '../../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
 import { _TypeStore } from '../../../../Misc/typeStore';
 import { Nullable } from '../../../../types';
@@ -12,6 +12,7 @@ import { Effect } from '../../../effect';
 import { NodeMaterial } from '../../nodeMaterial';
 import { Mesh } from '../../../../Meshes/mesh';
 import { Scene } from '../../../../scene';
+import { NodeMaterialConnectionPointCustomObject } from '../../nodeMaterialConnectionPointCustomObject';
 /**
  * Block used to provide an image for a TextureBlock
  */
@@ -61,7 +62,8 @@ export class ImageSourceBlock extends NodeMaterialBlock {
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.VertexAndFragment);
 
-        this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Object);
+        this.registerOutput("source", NodeMaterialBlockConnectionPointTypes.Object, NodeMaterialBlockTargets.VertexAndFragment,
+            new NodeMaterialConnectionPointCustomObject("source", this, NodeMaterialConnectionPointDirection.Output, ImageSourceBlock, "ImageSourceBlock"));
     }
 
     public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
@@ -70,6 +72,14 @@ export class ImageSourceBlock extends NodeMaterialBlock {
         }
 
         effect.setTexture(this._samplerName, this.texture);
+    }
+
+    public isReady() {
+        if (this.texture && !this.texture.isReadyOrNotBlocking()) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -83,7 +93,7 @@ export class ImageSourceBlock extends NodeMaterialBlock {
     /**
      * Gets the output component
      */
-    public get output(): NodeMaterialConnectionPoint {
+    public get source(): NodeMaterialConnectionPoint {
         return this._outputs[0];
     }
 
