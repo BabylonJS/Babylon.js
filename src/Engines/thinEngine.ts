@@ -455,8 +455,7 @@ export class ThinEngine {
     private _currentTextureChannel = -1;
     /** @hidden */
     protected _boundTexturesCache: { [key: string]: Nullable<InternalTexture> } = {};
-    /** @hidden */
-    public _currentEffect: Nullable<Effect>;
+    protected _currentEffect: Nullable<Effect>;
     /** @hidden */
     protected _currentProgram: Nullable<WebGLProgram>;
     protected _compiledEffects: { [key: string]: Effect } = {};
