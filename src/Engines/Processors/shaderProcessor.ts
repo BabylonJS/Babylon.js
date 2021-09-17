@@ -10,6 +10,7 @@ import { ShaderDefineArithmeticOperator } from './Expressions/Operators/shaderDe
 import { ProcessingOptions } from './shaderProcessingOptions';
 import { _DevTools } from '../../Misc/devTools';
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
+import { CodeStringParsingTools } from "../../Misc/codeStringParsingTools";
 
 declare type WebRequest = import("../../Misc/webRequest").WebRequest;
 declare type LoadFileError = import("../../Misc/fileTools").LoadFileError;
@@ -29,6 +30,9 @@ export class ShaderProcessor {
     }
 
     public static Process(sourceCode: string, options: ProcessingOptions, callback: (migratedCode: string) => void, engine: ThinEngine) {
+        if (options.processor?.removeCommentsBeforeProcessing) {
+            sourceCode = CodeStringParsingTools.RemoveComments(sourceCode);
+        }
         this._ProcessIncludes(sourceCode, options, (codeWithIncludes) => {
             let migratedCode = this._ProcessShaderConversion(codeWithIncludes, options, engine);
             callback(migratedCode);
@@ -36,6 +40,9 @@ export class ShaderProcessor {
     }
 
     public static PreProcess(sourceCode: string, options: ProcessingOptions, callback: (migratedCode: string) => void, engine: ThinEngine) {
+        if (options.processor?.removeCommentsBeforeProcessing) {
+            sourceCode = CodeStringParsingTools.RemoveComments(sourceCode);
+        }
         this._ProcessIncludes(sourceCode, options, (codeWithIncludes) => {
             let migratedCode = this._ApplyPreProcessing(codeWithIncludes, options, engine);
             callback(migratedCode);

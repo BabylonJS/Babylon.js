@@ -13,7 +13,6 @@ import { ThinEngine } from '../Engines/thinEngine';
 import { IEffectFallbacks } from './iEffectFallbacks';
 import { ShaderStore as EngineShaderStore } from '../Engines/shaderStore';
 import { ShaderLanguage } from "./shaderLanguage";
-import { CodeStringParsingTools } from "../Misc/codeStringParsingTools";
 
 declare type Engine = import("../Engines/engine").Engine;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
@@ -167,7 +166,8 @@ export class Effect implements IDisposable {
     public _multiTarget: boolean = false;
 
     private static _uniqueIdSeed = 0;
-    private _engine: Engine;
+    /** @hidden */
+    public _engine: Engine;
     private _uniformBuffersNamesList: string[];
     private _uniformsNames: string[];
     private _samplers: { [key: string]: number } = {};
@@ -338,9 +338,6 @@ export class Effect implements IDisposable {
 
         };
         this._loadShader(vertexSource, "Vertex", "", (vertexCode) => {
-            if (processorOptions.processor?.removeCommentsBeforeProcessing) {
-                vertexCode = CodeStringParsingTools.RemoveComments(vertexCode);
-            }
             ShaderProcessor.Initialize(processorOptions);
             ShaderProcessor.Process(vertexCode, processorOptions, (migratedVertexCode) => {
                 this._rawVertexSourceCode = vertexCode;
@@ -352,9 +349,6 @@ export class Effect implements IDisposable {
             }, this._engine);
         });
         this._loadShader(fragmentSource, "Fragment", "Pixel", (fragmentCode) => {
-            if (processorOptions.processor?.removeCommentsBeforeProcessing) {
-                fragmentCode = CodeStringParsingTools.RemoveComments(fragmentCode);
-            }
             this._rawFragmentSourceCode = fragmentCode;
             shaderCodes[1] = fragmentCode;
             shadersLoaded();
@@ -891,24 +885,6 @@ export class Effect implements IDisposable {
     }
 
     /**
-     * Sets an external texture on the engine to be used in the shader.
-     * @param name Name of the external texture variable.
-     * @param texture Texture to set.
-     */
-    public setExternalTexture(name: string, texture: Nullable<ExternalTexture>): void {
-        this._engine.setExternalTexture(name, texture);
-    }
-
-    /**
-     * Sets a sampler on the engine to be used in the shader.
-     * @param name Name of the sampler variable.
-     * @param sampler Sampler to set.
-     */
-    public setSampler(name: string, sampler: Nullable<Sampler>): void {
-        this._engine.setSampler(name, sampler);
-    }
-
-    /**
      * Sets a texture to be the input of the specified post process. (To use the output, pass in the next post process in the pipeline)
      * @param channel Name of the sampler variable.
      * @param postProcess Post process to get the input texture from.
@@ -948,15 +924,6 @@ export class Effect implements IDisposable {
      */
     public bindUniformBlock(blockName: string, index: number): void {
         this._engine.bindUniformBlock(this._pipelineContext!, blockName, index);
-    }
-
-    /**
-     * Sets a storage buffer on the engine to be used in the shader.
-     * @param name Name of the storage buffer variable.
-     * @param buffer Storage buffer to set.
-     */
-    public setStorageBuffer(name: string, buffer: Nullable<StorageBuffer>): void {
-        this._engine.setStorageBuffer(name, buffer);
     }
 
     /**
