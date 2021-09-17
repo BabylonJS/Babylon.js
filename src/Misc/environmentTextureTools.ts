@@ -21,15 +21,46 @@ import "../Shaders/rgbdEncode.fragment";
 import "../Shaders/rgbdDecode.fragment";
 
 const defaultEnvironmentTextureImageType = 'image/png';
+const currentVersion = 2;
 
 /**
  * Raw texture data and descriptor sufficient for WebGL texture upload
  */
-export interface EnvironmentTextureInfo {
+export type EnvironmentTextureInfo = EnvironmentTextureInfoV1 | EnvironmentTextureInfoV2;
+
+/**
+ * v1 of EnvironmentTextureInfo
+ */
+interface EnvironmentTextureInfoV1 {
     /**
      * Version of the environment map
      */
-    version: number;
+    version: 1;
+
+    /**
+     * Width of image
+     */
+    width: number;
+
+    /**
+     * Irradiance information stored in the file.
+     */
+    irradiance: any;
+
+    /**
+     * Specular information stored in the file.
+     */
+    specular: any;
+}
+
+/**
+ * v2 of EnvironmentTextureInfo
+ */
+interface EnvironmentTextureInfoV2 {
+    /**
+     * Version of the environment map
+     */
+    version: 2;
 
     /**
      * Width of image
@@ -49,7 +80,7 @@ export interface EnvironmentTextureInfo {
     /**
      * The mime type used to encode the image data.
      */
-    imageType?: string;
+    imageType: string;
 }
 
 /**
@@ -133,9 +164,9 @@ export class EnvironmentTextureTools {
     /**
      * Gets the environment info from an env file.
      * @param data The array buffer containing the .env bytes.
-     * @returns the environment file info (the json header) if successfully parsed.
+     * @returns the environment file info (the json header) if successfully parsed, normalized to the latest supported version.
      */
-    public static GetEnvInfo(data: ArrayBufferView): Nullable<Required<EnvironmentTextureInfo>> {
+    public static GetEnvInfo(data: ArrayBufferView): Nullable<EnvironmentTextureInfoV2> {
         let dataView = new DataView(data.buffer, data.byteOffset, data.byteLength);
         let pos = 0;
 
@@ -154,6 +185,7 @@ export class EnvironmentTextureTools {
         }
 
         let manifest: EnvironmentTextureInfo = JSON.parse(manifestString);
+        manifest = EnvironmentTextureTools.normalizeEnvInfo(manifest);
         if (manifest.specular) {
             // Extend the header with the position of the payload.
             manifest.specular.specularDataPosition = pos;
@@ -161,11 +193,28 @@ export class EnvironmentTextureTools {
             manifest.specular.lodGenerationScale = manifest.specular.lodGenerationScale || 0.8;
         }
 
-        if (!manifest.imageType) {
-            manifest.imageType = defaultEnvironmentTextureImageType;
+        return manifest;
+    }
+
+    /**
+     * Normalizes any supported version of the environment file info to the latest version
+     * @param info environment file info on any supported version
+     * @returns environment file info in the latest supported version
+     * @private
+     */
+    private static normalizeEnvInfo(info: EnvironmentTextureInfo): EnvironmentTextureInfoV2 {
+        if (info.version > currentVersion) {
+            throw new Error(`Unsupported babylon environment map version "${info.version}". Latest supported version is "${currentVersion}".`);
         }
 
-        return manifest as Required<EnvironmentTextureInfo>;
+        if (info.version === 2) {
+            return info;
+        }
+
+        // Migrate a v1 info to v2
+        info = {...info, version: 2, imageType: defaultEnvironmentTextureImageType};
+
+        return info;
     }
 
     /**
@@ -247,7 +296,7 @@ export class EnvironmentTextureTools {
 
         // Creates the json header for the env texture
         let info: EnvironmentTextureInfo = {
-            version: 1,
+            version: currentVersion,
             width: cubeWidth,
             imageType,
             irradiance: this._CreateEnvTextureIrradiance(texture),
@@ -342,9 +391,7 @@ export class EnvironmentTextureTools {
      * @return the views described by info providing access to the underlying buffer
      */
     public static CreateImageDataArrayBufferViews(data: ArrayBufferView, info: EnvironmentTextureInfo): Array<Array<ArrayBufferView>> {
-        if (info.version !== 1) {
-            throw new Error(`Unsupported babylon environment map version "${info.version}"`);
-        }
+        info = EnvironmentTextureTools.normalizeEnvInfo(info);
 
         const specularInfo = info.specular as EnvironmentTextureSpecularInfoV1;
 
@@ -375,9 +422,7 @@ export class EnvironmentTextureTools {
      * @returns a promise
      */
     public static UploadEnvLevelsAsync(texture: InternalTexture, data: ArrayBufferView, info: EnvironmentTextureInfo): Promise<void> {
-        if (info.version !== 1) {
-            throw new Error(`Unsupported babylon environment map version "${info.version}"`);
-        }
+        info = EnvironmentTextureTools.normalizeEnvInfo(info);
 
         const specularInfo = info.specular as EnvironmentTextureSpecularInfoV1;
         if (!specularInfo) {
@@ -649,9 +694,7 @@ export class EnvironmentTextureTools {
      * @param info defines the environment texture info retrieved through the GetEnvInfo method
      */
     public static UploadEnvSpherical(texture: InternalTexture, info: EnvironmentTextureInfo): void {
-        if (info.version !== 1) {
-            Logger.Warn('Unsupported babylon environment map version "' + info.version + '"');
-        }
+        info = EnvironmentTextureTools.normalizeEnvInfo(info);
 
         let irradianceInfo = info.irradiance as EnvironmentTextureIrradianceInfoV1;
         if (!irradianceInfo) {
