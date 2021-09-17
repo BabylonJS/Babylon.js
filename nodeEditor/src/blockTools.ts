@@ -80,6 +80,7 @@ import { FragCoordBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fragCoo
 import { ScreenSizeBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/screenSizeBlock';
 import { MatrixBuilderBlock } from 'babylonjs/Materials/Node/Blocks/matrixBuilderBlock';
 import { SceneDepthBlock } from 'babylonjs/Materials/Node/Blocks/Dual/sceneDepthBlock';
+import { ImageSourceBlock } from 'babylonjs/Materials/Node/Blocks/Dual/imageSourceBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
@@ -551,6 +552,8 @@ export class BlockTools {
                 let andBlock = new ConditionalBlock("And");
                 andBlock.condition = ConditionalBlockConditions.And;
                 return andBlock;
+            case "ImageSourceBlock":
+                return new ImageSourceBlock("ImageSource");
         }
 
         return null;
