@@ -277,7 +277,9 @@ export class TextureBlock extends NodeMaterialBlock {
             return;
         }
 
-        defines.setValue(this._mainUVDefineName, false);
+        if (this._mainUVDefineName !== undefined) {
+            defines.setValue(this._mainUVDefineName, false, true);
+        }
     }
 
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
@@ -286,22 +288,24 @@ export class TextureBlock extends NodeMaterialBlock {
         }
 
         if (!this.texture || !this.texture.getTextureMatrix) {
-            defines.setValue(this._defineName, false);
-            defines.setValue(this._mainUVDefineName, true);
+            if (this._isMixed) {
+                defines.setValue(this._defineName, false, true);
+                defines.setValue(this._mainUVDefineName, true, true);
+            }
             return;
         }
 
-        defines.setValue(this._linearDefineName, this.convertToGammaSpace);
-        defines.setValue(this._gammaDefineName, this.convertToLinearSpace);
+        defines.setValue(this._linearDefineName, this.convertToGammaSpace, true);
+        defines.setValue(this._gammaDefineName, this.convertToLinearSpace, true);
         if (this._isMixed) {
             if (!this.texture.getTextureMatrix().isIdentityAs3x2()) {
                 defines.setValue(this._defineName, true);
                 if (defines[this._mainUVDefineName] == undefined) {
-                    defines.setValue(this._mainUVDefineName, false);
+                    defines.setValue(this._mainUVDefineName, false, true);
                 }
             } else {
-                defines.setValue(this._defineName, false);
-                defines.setValue(this._mainUVDefineName, true);
+                defines.setValue(this._defineName, false, true);
+                defines.setValue(this._mainUVDefineName, true, true);
             }
         }
     }
