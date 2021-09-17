@@ -1711,8 +1711,9 @@ export class ThinEngine {
      * @param reverseSide defines if culling must be reversed (CCW if false, CW if true)
      * @param cullBackFaces true to cull back faces, false to cull front faces (if culling is enabled)
      * @param stencil stencil states to set
+     * @param zOffsetUnit defines the value to apply to zOffsetUnit (0 by default)
      */
-    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false, cullBackFaces?: boolean, stencil?: IStencilState): void {
+    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false, cullBackFaces?: boolean, stencil?: IStencilState, zOffsetUnit: number = 0): void {
         // Culling
         if (this._depthCullingState.cull !== culling || force) {
             this._depthCullingState.cull = culling;
@@ -1726,6 +1727,7 @@ export class ThinEngine {
 
         // Z offset
         this.setZOffset(zOffset);
+        this.setZOffsetUnit(zOffsetUnit);
 
         // Front face
         var frontFace = reverseSide ? this._gl.CW : this._gl.CCW;
@@ -1737,7 +1739,7 @@ export class ThinEngine {
     }
 
     /**
-     * Set the z offset to apply to current rendering
+     * Set the z offset Factor to apply to current rendering
      * @param value defines the offset to apply
      */
     public setZOffset(value: number): void {
@@ -1745,11 +1747,29 @@ export class ThinEngine {
     }
 
     /**
-     * Gets the current value of the zOffset
-     * @returns the current zOffset state
+     * Gets the current value of the zOffset Factor
+     * @returns the current zOffset Factor state
      */
     public getZOffset(): number {
-        return this._depthCullingState.zOffset;
+        const zOffset = this._depthCullingState.zOffset;
+        return this.useReverseDepthBuffer ? -zOffset : zOffset;
+    }
+
+    /**
+     * Set the z offset Unit to apply to current rendering
+     * @param value defines the offset to apply
+     */
+    public setZOffsetUnit(value: number): void {
+        this._depthCullingState.zOffsetUnit = this.useReverseDepthBuffer ? -value : value;
+    }
+
+    /**
+     * Gets the current value of the zOffset Unit
+     * @returns the current zOffset Unit state
+     */
+    public getZOffsetUnit(): number {
+        const zOffsetUnit = this._depthCullingState.zOffsetUnit;
+        return this.useReverseDepthBuffer ? -zOffsetUnit : zOffsetUnit;
     }
 
     /** @hidden */

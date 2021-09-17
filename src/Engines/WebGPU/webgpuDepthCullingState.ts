@@ -32,6 +32,20 @@ export class WebGPUDepthCullingState extends DepthCullingState {
         this._cache.setDepthBiasSlopeScale(value);
     }
 
+    public get zOffsetUnit(): number {
+        return this._zOffsetUnit;
+    }
+
+    public set zOffsetUnit(value: number) {
+        if (this._zOffsetUnit === value) {
+            return;
+        }
+
+        this._zOffsetUnit = value;
+        this._isZOffsetDirty = true;
+        this._cache.setDepthBias(value);
+    }
+
     public get cullFace(): Nullable<number> {
         return this._cullFace;
     }
