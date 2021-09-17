@@ -105,7 +105,15 @@ interface EnvironmentTextureIrradianceInfoV1 {
 }
 
 export interface CreateEnvTextureOptions {
+    /**
+     * The mime type of encoded images.
+     */
     imageType?: EnvironmentTextureImageType;
+
+    /**
+     * the image quality of encoded WebP images.
+     */
+    imageQuality?: number;
 }
 
 /**
@@ -163,6 +171,7 @@ export class EnvironmentTextureTools {
      * @param texture defines the cube texture to convert in env file
      * @param options options for the conversion process
      * @param options.imageType the mime type for the encoded images, with support for "image/png" (default) and "image/webp"
+     * @param options.imageQuality the image quality of encoded WebP images.
      * @return a promise containing the environment data if successful.
      */
     public static async CreateEnvTextureAsync(texture: BaseTexture, options: CreateEnvTextureOptions = {}): Promise<ArrayBuffer> {
@@ -223,7 +232,7 @@ export class EnvironmentTextureTools {
 
                 const rgbdEncodedData = await engine._readTexturePixels(tempTexture, faceWidth, faceWidth);
 
-                const imageEncodedData = await Tools.DumpDataAsync(faceWidth, faceWidth, rgbdEncodedData, imageType, undefined, false, true);
+                const imageEncodedData = await Tools.DumpDataAsync(faceWidth, faceWidth, rgbdEncodedData, imageType, undefined, false, true, options.imageQuality);
 
                 specularTextures[i * 6 + face] = imageEncodedData as ArrayBuffer;
 
