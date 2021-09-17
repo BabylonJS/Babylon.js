@@ -20,6 +20,9 @@ import "../Materials/Textures/baseTexture.polynomial";
 import "../Shaders/rgbdEncode.fragment";
 import "../Shaders/rgbdDecode.fragment";
 
+type EnvironmentTextureImageType = 'image/png' | 'image/webp';
+const defaultEnvironmentTextureImageType: EnvironmentTextureImageType = 'image/png';
+
 /**
  * Raw texture data and descriptor sufficient for WebGL texture upload
  */
@@ -43,6 +46,11 @@ export interface EnvironmentTextureInfo {
      * Specular information stored in the file.
      */
     specular: any;
+
+    /**
+     * The image type used to encode the image data.
+     */
+    imageType?: EnvironmentTextureImageType;
 }
 
 /**
@@ -96,6 +104,10 @@ interface EnvironmentTextureIrradianceInfoV1 {
     xy: Array<number>;
 }
 
+export interface CreateEnvTextureOptions {
+    imageType?: EnvironmentTextureImageType;
+}
+
 /**
  * Sets of helpers addressing the serialization and deserialization of environment texture
  * stored in a BabylonJS env file.
@@ -113,7 +125,7 @@ export class EnvironmentTextureTools {
      * @param data The array buffer containing the .env bytes.
      * @returns the environment file info (the json header) if successfully parsed.
      */
-    public static GetEnvInfo(data: ArrayBufferView): Nullable<EnvironmentTextureInfo> {
+    public static GetEnvInfo(data: ArrayBufferView): Nullable<Required<EnvironmentTextureInfo>> {
         let dataView = new DataView(data.buffer, data.byteOffset, data.byteLength);
         let pos = 0;
 
@@ -139,19 +151,27 @@ export class EnvironmentTextureTools {
             manifest.specular.lodGenerationScale = manifest.specular.lodGenerationScale || 0.8;
         }
 
-        return manifest;
+        if (!manifest.imageType) {
+            manifest.imageType = defaultEnvironmentTextureImageType;
+        }
+
+        return manifest as Required<EnvironmentTextureInfo>;
     }
 
     /**
      * Creates an environment texture from a loaded cube texture.
      * @param texture defines the cube texture to convert in env file
+     * @param options options for the conversion process
+     * @param options.imageType the mime type for the encoded images, with support for "image/png" (default) and "image/webp"
      * @return a promise containing the environment data if successful.
      */
-    public static async CreateEnvTextureAsync(texture: BaseTexture): Promise<ArrayBuffer> {
+    public static async CreateEnvTextureAsync(texture: BaseTexture, options: CreateEnvTextureOptions = {}): Promise<ArrayBuffer> {
         let internalTexture = texture.getInternalTexture();
         if (!internalTexture) {
             return Promise.reject("The cube texture is invalid.");
         }
+
+        const imageType = options.imageType ?? defaultEnvironmentTextureImageType;
 
         let engine = internalTexture.getEngine() as Engine;
 
@@ -203,9 +223,9 @@ export class EnvironmentTextureTools {
 
                 const rgbdEncodedData = await engine._readTexturePixels(tempTexture, faceWidth, faceWidth);
 
-                const pngEncodedata = await Tools.DumpDataAsync(faceWidth, faceWidth, rgbdEncodedData, "image/png", undefined, false, true);
+                const imageEncodedData = await Tools.DumpDataAsync(faceWidth, faceWidth, rgbdEncodedData, imageType, undefined, false, true);
 
-                specularTextures[i * 6 + face] = pngEncodedata as ArrayBuffer;
+                specularTextures[i * 6 + face] = imageEncodedData as ArrayBuffer;
 
                 tempTexture.dispose();
             }
@@ -218,6 +238,7 @@ export class EnvironmentTextureTools {
         let info: EnvironmentTextureInfo = {
             version: 1,
             width: cubeWidth,
+            imageType,
             irradiance: this._CreateEnvTextureIrradiance(texture),
             specular: {
                 mipmaps: [],
@@ -357,7 +378,7 @@ export class EnvironmentTextureTools {
 
         const imageData = EnvironmentTextureTools.CreateImageDataArrayBufferViews(data, info);
 
-        return EnvironmentTextureTools.UploadLevelsAsync(texture, imageData);
+        return EnvironmentTextureTools.UploadLevelsAsync(texture, imageData, info.imageType);
     }
 
     private static _OnImageReadyAsync(image: HTMLImageElement | ImageBitmap, engine: Engine, expandTexture: boolean,
@@ -412,9 +433,10 @@ export class EnvironmentTextureTools {
      * Uploads the levels of image data to the GPU.
      * @param texture defines the internal texture to upload to
      * @param imageData defines the array buffer views of image data [mipmap][face]
+     * @param imageType the mime type of the image data
      * @returns a promise
      */
-    public static UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBufferView[][]): Promise<void> {
+    public static UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBufferView[][], imageType: EnvironmentTextureImageType = defaultEnvironmentTextureImageType): Promise<void> {
         if (!Tools.IsExponentOfTwo(texture.width)) {
             throw new Error("Texture size must be a power of two");
         }
@@ -528,7 +550,7 @@ export class EnvironmentTextureTools {
             for (let face = 0; face < 6; face++) {
                 // Constructs an image element from image data
                 let bytes = imageData[i][face];
-                let blob = new Blob([bytes], { type: 'image/png' });
+                let blob = new Blob([bytes], { type: imageType });
                 let url = URL.createObjectURL(blob);
                 let promise: Promise<void>;
 
