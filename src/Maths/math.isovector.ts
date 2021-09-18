@@ -1,5 +1,5 @@
 import { Logger } from "../Misc/logger";
-import { Vector3} from "./math.vector";
+import { Vector3 } from "./math.vector";
 
 /**
  * Class representing an isovector a vector containing 2 INTEGER coordinates
@@ -28,7 +28,6 @@ export class _IsoVector {
             }
     }
 
-
     // Operators
 
     /**
@@ -51,7 +50,7 @@ export class _IsoVector {
         this.y = x + this.y - other.x;
         return this;
     }
-    
+
     /**
      * Rotates one IsoVector 60 degrees clockwise about another
      * Please note that this is an in place operation
@@ -63,8 +62,8 @@ export class _IsoVector {
         this.x = x + this.y - other.y;
         this.y = other.x + other.y - x;
         return this;
-    };
-    
+    }
+
     /**
      * For an equilateral triangle OAB with O at isovector (0, 0) and A at isovector (m, n)
      * Rotates one IsoVector 120 degrees counter clockwise about the center of the triangle
@@ -87,7 +86,7 @@ export class _IsoVector {
         this.y = n + x;
         return this;
     }
-    
+
     /**
      * For an equilateral triangle OAB with O at isovector (0, 0) and A at isovector (m, n)
      * Rotates one IsoVector 120 degrees clockwise about the center of the triangle
@@ -105,23 +104,23 @@ export class _IsoVector {
             n === Math.floor(n);
             Logger.Warn("n is not an integer,   floor(n) used");
         }
-        let x = this.x
+        let x = this.x;
         this.x = this.y - n;
         this.y = m + n - x - this.y;
         return this;
-    };
-    
+    }
+
     /**
      * Transforms an IsoVector to one in Cartesian 3D space based on an isovector
      * @param origin an IsoVector
-     * @returns Point as a Vector3 
+     * @returns Point as a Vector3
      */
     public toCartesianOrigin(origin: _IsoVector, isoGridSize: number) {
         const point = Vector3.Zero();
         point.x = origin.x + 2 * this.x * isoGridSize + this.y * isoGridSize;
         point.y = origin.y + Math.sqrt(3) * this.y * isoGridSize;
         return point;
-    };
+    }
 
     // Statics
 
@@ -133,5 +132,3 @@ export class _IsoVector {
         return new _IsoVector(0, 0);
     }
 }
-
-
