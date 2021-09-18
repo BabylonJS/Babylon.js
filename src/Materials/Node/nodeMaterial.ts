@@ -838,7 +838,7 @@ export class NodeMaterial extends PushMaterial {
 
                 tempName = this.name + this._buildId;
 
-                defines.markAsUnprocessed();
+                defines.markAllAsDirty();
 
                 buildId = this._buildId;
             }
@@ -905,7 +905,7 @@ export class NodeMaterial extends PushMaterial {
 
                 tempName = this.name + this._buildId;
 
-                defines.markAsUnprocessed();
+                defines.markAllAsDirty();
 
                 buildId = this._buildId;
             }
@@ -977,7 +977,7 @@ export class NodeMaterial extends PushMaterial {
 
                 tempName = this.name + this._buildId + "_" + blendMode;
 
-                defines!.markAsUnprocessed();
+                defines!.markAllAsDirty();
 
                 buildId = this._buildId;
             }
@@ -989,7 +989,7 @@ export class NodeMaterial extends PushMaterial {
             const particleSystemDefinesJoinedCurrent = particleSystemDefines.join("\n");
 
             if (particleSystemDefinesJoinedCurrent !== particleSystemDefinesJoined) {
-                defines!.markAsUnprocessed();
+                defines!.markAllAsDirty();
                 particleSystemDefinesJoined = particleSystemDefinesJoinedCurrent;
             }
 

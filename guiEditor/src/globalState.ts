@@ -56,9 +56,11 @@ export class GlobalState {
     onDraggingStartObservable = new Observable<void>();
     draggedControl: Nullable<Control> = null;
     draggedControlDirection: DragOverLocation;
+    isSaving = false;
     storeEditorData: (serializationObject: any) => void;
 
-    customSave?: { label: string; action: (data: string) => Promise<void> };
+    customSave?: { label: string; action: (data: string) => Promise<string> };
+    customLoad?: { label: string; action: (data: string) => Promise<string> };
     public constructor() {
         this.controlCamera = DataStorage.ReadBoolean("ControlCamera", true);
 
