@@ -2,9 +2,9 @@ import { Constants } from "../../Engines/constants";
 import { Nullable } from "../../types";
 
 /**
- * Class used to store a sampler data
+ * Class used to store a texture sampler data
  */
-export class Sampler {
+export class TextureSampler {
     /**
      * Gets the sampling mode of the texture
      */
@@ -123,7 +123,7 @@ export class Sampler {
      * @param comparisonFunction comparison function (default: 0 - no comparison function)
      * @returns the current sampler instance
      */
-    public setParameters(wrapU = Constants.TEXTURE_WRAP_ADDRESSMODE, wrapV = Constants.TEXTURE_WRAP_ADDRESSMODE, wrapR = Constants.TEXTURE_WRAP_ADDRESSMODE, anisotropicFilteringLevel = 1, samplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE, comparisonFunction = 0): Sampler {
+    public setParameters(wrapU = Constants.TEXTURE_WRAP_ADDRESSMODE, wrapV = Constants.TEXTURE_WRAP_ADDRESSMODE, wrapR = Constants.TEXTURE_WRAP_ADDRESSMODE, anisotropicFilteringLevel = 1, samplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE, comparisonFunction = 0): TextureSampler {
         this._cachedWrapU = wrapU;
         this._cachedWrapV = wrapV;
         this._cachedWrapR = wrapR;
@@ -139,7 +139,7 @@ export class Sampler {
      * @param other sampler to compare with
      * @returns true if the samplers have the same parametres, else false
      */
-    public compareSampler(other: Sampler): boolean {
+    public compareSampler(other: TextureSampler): boolean {
         return this._cachedWrapU === other._cachedWrapU &&
             this._cachedWrapV === other._cachedWrapV &&
             this._cachedWrapR === other._cachedWrapR &&

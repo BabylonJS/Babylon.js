@@ -1,7 +1,7 @@
 import { ThinEngine } from "../../Engines/thinEngine";
 import { Nullable } from "../../types";
 
-declare type Sampler = import("../../Materials/Textures/sampler").Sampler;
+declare type Sampler = import("../../Materials/Textures/textureSampler").TextureSampler;
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {

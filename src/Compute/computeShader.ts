@@ -12,7 +12,7 @@ import { UniqueIdGenerator } from "../Misc/uniqueIdGenerator";
 import { IComputeContext } from "./IComputeContext";
 import { StorageBuffer } from "../Buffers/storageBuffer";
 import { Logger } from "../Misc/logger";
-import { Sampler } from "../Materials/Textures/sampler";
+import { TextureSampler } from "../Materials/Textures/textureSampler";
 
 /**
  * Defines the options associated with the creation of a compute shader.
@@ -51,7 +51,7 @@ export class ComputeShader {
     private _effect: ComputeEffect;
     private _cachedDefines: string;
     private _bindings: ComputeBindingList = {};
-    private _samplers: { [key: string]: Sampler } = {};
+    private _samplers: { [key: string]: TextureSampler } = {};
     private _context: IComputeContext;
     private _contextIsDirty = false;
 
@@ -203,11 +203,11 @@ export class ComputeShader {
     }
 
     /**
-     * Binds a sampler to the shader
+     * Binds a texture sampler to the shader
      * @param name Binding name of the sampler
      * @param sampler Sampler to bind
      */
-     public setSampler(name: string, sampler: Sampler): void {
+     public setTextureSampler(name: string, sampler: TextureSampler): void {
         const current = this._bindings[name];
 
         this._contextIsDirty ||= !current || !sampler.compareSampler(current.object);
@@ -304,7 +304,7 @@ export class ComputeShader {
             const texture = binding.object as BaseTexture;
 
             if (!sampler || !texture._texture || !sampler.compareSampler(texture._texture)) {
-                this._samplers[key] = new Sampler().setParameters(
+                this._samplers[key] = new TextureSampler().setParameters(
                     texture.wrapU,
                     texture.wrapV,
                     texture.wrapR,

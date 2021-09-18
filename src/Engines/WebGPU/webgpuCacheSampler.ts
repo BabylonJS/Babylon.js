@@ -1,7 +1,7 @@
 import * as WebGPUConstants from './webgpuConstants';
 import { Constants } from '../constants';
 import { WebGPUTextureHelper } from "./webgpuTextureHelper";
-import { Sampler } from "../../Materials/Textures/sampler";
+import { TextureSampler } from "../../Materials/Textures/textureSampler";
 
 const filterToBits = [
     0 | 0 << 1 | 0 << 2, // not used
@@ -61,7 +61,7 @@ export class WebGPUCacheSampler {
         this.disabled = false;
     }
 
-    public static GetSamplerHashCode(sampler: Sampler): number {
+    public static GetSamplerHashCode(sampler: TextureSampler): number {
         let code =
             filterToBits[sampler.samplingMode] +
             comparisonFunctionToBits[(sampler._comparisonFunction || 0x0202) - 0x0200 + 1] +
@@ -75,7 +75,7 @@ export class WebGPUCacheSampler {
         return code;
     }
 
-    private static _GetSamplerFilterDescriptor(sampler: Sampler, anisotropy: number): {
+    private static _GetSamplerFilterDescriptor(sampler: TextureSampler, anisotropy: number): {
         magFilter: GPUFilterMode,
         minFilter: GPUFilterMode,
         mipmapFilter: GPUFilterMode,
@@ -223,7 +223,7 @@ export class WebGPUCacheSampler {
         return WebGPUConstants.AddressMode.Repeat;
     }
 
-    private static _GetSamplerWrappingDescriptor(sampler: Sampler): {
+    private static _GetSamplerWrappingDescriptor(sampler: TextureSampler): {
         addressModeU: GPUAddressMode,
         addressModeV: GPUAddressMode,
         addressModeW: GPUAddressMode
@@ -235,7 +235,7 @@ export class WebGPUCacheSampler {
         };
     }
 
-    private static _GetSamplerDescriptor(sampler: Sampler): GPUSamplerDescriptor {
+    private static _GetSamplerDescriptor(sampler: TextureSampler): GPUSamplerDescriptor {
         const anisotropy = sampler.useMipMaps ? (sampler._cachedAnisotropicFilteringLevel ?? 1) : 1;
         const filterDescriptor = this._GetSamplerFilterDescriptor(sampler, anisotropy);
         return {
@@ -246,7 +246,7 @@ export class WebGPUCacheSampler {
         };
     }
 
-    public getSampler(sampler: Sampler, bypassCache = false, hash = 0): GPUSampler {
+    public getSampler(sampler: TextureSampler, bypassCache = false, hash = 0): GPUSampler {
         if (this.disabled) {
             return this._device.createSampler(WebGPUCacheSampler._GetSamplerDescriptor(sampler));
         }

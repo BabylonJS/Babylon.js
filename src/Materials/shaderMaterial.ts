@@ -18,7 +18,7 @@ import { WebRequest } from '../Misc/webRequest';
 import { Engine } from '../Engines/engine';
 import { ShaderLanguage } from "./shaderLanguage";
 import { UniformBuffer } from "./uniformBuffer";
-import { Sampler } from "./Textures/sampler";
+import { TextureSampler } from "./Textures/textureSampler";
 import { StorageBuffer } from "../Buffers/storageBuffer";
 
 declare type ExternalTexture = import("./Textures/externalTexture").ExternalTexture;
@@ -121,7 +121,7 @@ export class ShaderMaterial extends Material {
     private _vectors3Arrays: { [name: string]: number[] } = {};
     private _vectors4Arrays: { [name: string]: number[] } = {};
     private _uniformBuffers: { [name: string]: UniformBuffer } = {};
-    private _samplers: { [name: string]: Sampler } = {};
+    private _textureSamplers: { [name: string]: TextureSampler } = {};
     private _storageBuffers: { [name: string]: StorageBuffer } = {};
     private _cachedWorldViewMatrix = new Matrix();
     private _cachedWorldViewProjectionMatrix = new Matrix();
@@ -522,16 +522,16 @@ export class ShaderMaterial extends Material {
     }
 
     /**
-     * Set a sampler in the shader
+     * Set a texture sampler in the shader
      * @param name Define the name of the uniform as defined in the shader
      * @param sampler Define the value to give to the uniform
      * @return the material itself allowing "fluent" like uniform updates
      */
-    public setSampler(name: string, sampler: Sampler): ShaderMaterial {
+    public setTextureSampler(name: string, sampler: TextureSampler): ShaderMaterial {
         if (this._options.samplerObjects.indexOf(name) === -1) {
             this._options.samplerObjects.push(name);
         }
-        this._samplers[name] = sampler;
+        this._textureSamplers[name] = sampler;
 
         return this;
     }
@@ -1057,8 +1057,8 @@ export class ShaderMaterial extends Material {
             }
 
             // Samplers
-            for (name in this._samplers) {
-                effect.setSampler(name, this._samplers[name]);
+            for (name in this._textureSamplers) {
+                effect.setTextureSampler(name, this._textureSamplers[name]);
             }
 
             // Storage buffers
@@ -1271,8 +1271,8 @@ export class ShaderMaterial extends Material {
         }
 
         // Samplers
-        for (var key in this._samplers) {
-            result.setSampler(key, this._samplers[key]);
+        for (var key in this._textureSamplers) {
+            result.setTextureSampler(key, this._textureSamplers[key]);
         }
 
         // Storag buffers

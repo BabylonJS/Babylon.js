@@ -1,7 +1,7 @@
 import { StorageBuffer } from "../../Buffers/storageBuffer";
 import { IComputeContext } from "../../Compute/IComputeContext";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
-import { Sampler } from "../../Materials/Textures/sampler";
+import { TextureSampler } from "../../Materials/Textures/textureSampler";
 import { UniformBuffer } from "../../Materials/uniformBuffer";
 import { Logger } from "../../Misc/logger";
 import { ComputeBindingList, ComputeBindingMapping, ComputeBindingType } from "../Extensions/engine.computeShader";
@@ -42,7 +42,7 @@ export class WebGPUComputeContext implements IComputeContext {
 
                 switch (type) {
                     case ComputeBindingType.Sampler: {
-                        const sampler = object as Sampler;
+                        const sampler = object as TextureSampler;
                         if (indexInGroupEntries !== undefined && bindGroupEntriesExist) {
                             entries[indexInGroupEntries].resource = this._cacheSampler.getSampler(sampler);
                         } else {

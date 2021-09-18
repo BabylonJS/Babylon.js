@@ -1,6 +1,6 @@
 import { ExternalTexture } from "../../Materials/Textures/externalTexture";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
-import { Sampler } from "../../Materials/Textures/sampler";
+import { TextureSampler } from "../../Materials/Textures/textureSampler";
 import { WebGPUDataBuffer } from "../../Meshes/WebGPU/webgpuDataBuffer";
 import { Nullable } from "../../types";
 import { Constants } from "../constants";
@@ -9,7 +9,7 @@ import { WebGPUCacheSampler } from "./webgpuCacheSampler";
 
 /** @hidden */
 interface IWebGPUMaterialContextSamplerCache {
-    sampler: Nullable<Sampler>;
+    sampler: Nullable<TextureSampler>;
     hashCode: number;
 }
 
@@ -59,7 +59,7 @@ export class WebGPUMaterialContext implements IMaterialContext {
         this._numExternalTextures = 0;
     }
 
-    public setSampler(name: string, sampler: Nullable<Sampler>): void {
+    public setSampler(name: string, sampler: Nullable<TextureSampler>): void {
         let samplerCache = this.samplers[name];
         let currentHashCode = -1;
         if (!samplerCache) {
