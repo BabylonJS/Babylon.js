@@ -2676,7 +2676,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     public clone(name: string = "", newParent: Nullable<Node> = null, doNotCloneChildren?: boolean, clonePhysicsImpostor: boolean = true): Mesh {
         return new Mesh(name, this.getScene(), newParent, this, doNotCloneChildren, clonePhysicsImpostor);
     }
-    
+
     /**
      * Releases resources associated with this mesh.
      * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
@@ -4525,7 +4525,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
      * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
      * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
-     * @param scene defines the hosting scene 
+     * @param scene defines the hosting scene
      * @returns Geodesic mesh
      */
      public static CreateGeodesic(
@@ -4564,7 +4564,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
      * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
      * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
-     * @param scene defines the hosting scene 
+     * @param scene defines the hosting scene
      * @returns Goldberg mesh
      */
      public static CreateGoldberg(
@@ -4587,7 +4587,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /**
      * Extends a mesh to a Goldberg mesh
      * @param mesh the mesh to convert
-     * Warning  the mesh to convert MUST be an import of a peviously exported Goldberg mesh     
+     * Warning  the mesh to convert MUST be an import of a peviously exported Goldberg mesh
      */
     public static ToGoldberg(mesh: Mesh) {
     }

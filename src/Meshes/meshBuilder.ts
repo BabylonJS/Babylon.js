@@ -16,7 +16,7 @@ import { GroundBuilder } from "./Builders/groundBuilder";
 import { TubeBuilder } from "./Builders/tubeBuilder";
 import { PolyhedronBuilder } from "./Builders/polyhedronBuilder";
 import { IcoSphereBuilder } from "./Builders/icoSphereBuilder";
-import { GeoBuilder } from "./Builders/geodesicBuilder";
+import { GeodesicBuilder } from "./Builders/geodesicBuilder";
 import { GoldbergBuilder } from "./Builders/goldbergBuilder";
 import { DecalBuilder } from "./Builders/decalBuilder";
 import { CapsuleBuilder, ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
@@ -548,11 +548,11 @@ export class MeshBuilder {
      * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
      * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
      * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
-     * @param scene defines the hosting scene 
+     * @param scene defines the hosting scene
      * @returns Mesh
      */
     public static CreateGeodesic(name: string, options: { m?: number, n?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Nullable<Scene> = null): Mesh {
-        return GeoBuilder.CreateGeodesic(name, options, scene);
+        return GeodesicBuilder.CreateGeodesic(name, options, scene);
     }
 
     /**
@@ -571,13 +571,12 @@ export class MeshBuilder {
      * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
      * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
      * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
-     * @param scene defines the hosting scene 
+     * @param scene defines the hosting scene
      * @returns Mesh
      */
      public static CreateGoldberg(name: string, options: { m?: number, n?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, updatable?: boolean, sideOrientation?: number }, scene: Nullable<Scene> = null): Mesh {
         return GoldbergBuilder.CreateGoldberg(name, options, scene);
     }
-
 
     /**
      * Creates a decal mesh.
