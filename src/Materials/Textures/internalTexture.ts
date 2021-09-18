@@ -3,7 +3,7 @@ import { Nullable, int } from "../../types";
 import { ICanvas, ICanvasRenderingContext } from "../../Engines/ICanvas";
 import { _DevTools } from '../../Misc/devTools';
 import { HardwareTextureWrapper } from "./hardwareTextureWrapper";
-import { Sampler } from "./sampler";
+import { TextureSampler } from "./textureSampler";
 
 declare type ThinEngine = import("../../Engines/thinEngine").ThinEngine;
 declare type BaseTexture = import("../../Materials/Textures/baseTexture").BaseTexture;
@@ -79,7 +79,7 @@ export enum InternalTextureSource {
  * Class used to store data associated with WebGL texture data for the engine
  * This class should not be used directly
  */
-export class InternalTexture extends Sampler {
+export class InternalTexture extends TextureSampler {
 
     /** @hidden */
     public static _UpdateRGBDAsync = (internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial>, lodScale: number, lodOffset: number): Promise<void> => {

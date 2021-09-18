@@ -19,9 +19,6 @@ declare type InternalTexture = import("../Materials/Textures/internalTexture").I
 declare type ThinTexture = import("../Materials/Textures/thinTexture").ThinTexture;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
-declare type ExternalTexture = import("./Textures/externalTexture").ExternalTexture;
-declare type Sampler = import("./Textures/sampler").Sampler;
-declare type StorageBuffer = import("../Buffers/storageBuffer").StorageBuffer;
 
 /**
  * Options to be used when creating an effect.
