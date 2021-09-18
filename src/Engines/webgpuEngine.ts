@@ -463,6 +463,18 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
+     * Gets an object containing information about the current engine context
+     * @returns an object containing the vendor, the renderer and the version of the current engine context
+     */
+    public getInfo() {
+        return {
+            vendor: "unknown vendor",
+            renderer: "unknown renderer",
+            version: "unknown version",
+        };
+    }
+
+    /**
      * True to be in compatibility mode, meaning rendering in the same way than OpenGL.
      * Setting the property to false will improve performances, but can lead to rendering artifacts.
      * See @TODO WEBGPU DOC PAGE
