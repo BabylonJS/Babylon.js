@@ -9,6 +9,7 @@ var engineName;
 var currentTestName;
 var numTestsOk = 0;
 var failedTests = [];
+var forceUseReverseDepthBuffer;
 
 // Random replacement
 var seed = 1;
@@ -150,7 +151,8 @@ async function evaluate(test, resultCanvas, result, renderImage, waitRing, done)
     currentScene.dispose();
     currentScene = null;
     engine.setHardwareScalingLevel(1);
-    if (engine.useReverseDepthBuffer) {
+    engine.useReverseDepthBuffer = forceUseReverseDepthBuffer;
+    if (forceUseReverseDepthBuffer) {
         engine.setDepthFunction(BABYLON.Constants.GEQUAL);
     } else {
         engine.setDepthFunction(BABYLON.Constants.LEQUAL);
@@ -480,6 +482,8 @@ function init(_engineName, useReverseDepthBuffer) {
         wasmZSTDDecoder: GetAbsoluteUrl("../../dist/preview%20release/zstddec.wasm"),
     };
 
+    forceUseReverseDepthBuffer = useReverseDepthBuffer == 1 || useReverseDepthBuffer == "true";
+
     canvas = document.createElement("canvas");
     canvas.className = "renderCanvas";
     document.body.appendChild(canvas);
@@ -510,8 +514,8 @@ function init(_engineName, useReverseDepthBuffer) {
 
         engine = new BABYLON.WebGPUEngine(canvas, options);
         engine.enableOfflineSupport = false;
-        engine.useReverseDepthBuffer = useReverseDepthBuffer == 1 || useReverseDepthBuffer == "true";
-        if (engine.useReverseDepthBuffer) console.log("Forcing reverse depth buffer in all tests");
+        engine.useReverseDepthBuffer = forceUseReverseDepthBuffer;
+        if (forceUseReverseDepthBuffer) console.log("Forcing reverse depth buffer in all tests");
         return new Promise((resolve) => {
             engine.initAsync(glslangOptions, twgslOptions).then(() => resolve());
         });
@@ -519,8 +523,8 @@ function init(_engineName, useReverseDepthBuffer) {
         engine = new BABYLON.Engine(canvas, false, { useHighPrecisionFloats: true, disableWebGL2Support: engineName === "webgl1" ? true : false });
         engine.enableOfflineSupport = false;
         engine.setDitheringState(false);
-        engine.useReverseDepthBuffer = useReverseDepthBuffer == 1 || useReverseDepthBuffer == "true";
-        if (engine.useReverseDepthBuffer) console.log("Forcing reverse depth buffer in all tests");
+        engine.useReverseDepthBuffer = forceUseReverseDepthBuffer;
+        if (forceUseReverseDepthBuffer) console.log("Forcing reverse depth buffer in all tests");
         return Promise.resolve();
     }
 }

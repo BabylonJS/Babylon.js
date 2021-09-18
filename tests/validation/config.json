@@ -1352,9 +1352,8 @@
         {
             "title": "Sample depth texture",
             "renderCount": 5,
-            "playgroundId": "#8RU8Q3#80",
-            "referenceImage": "sampleDepthTexture.png",
-            "excludeFromAutomaticTesting": true
+            "playgroundId": "#8RU8Q3#81",
+            "referenceImage": "sampleDepthTexture.png"
         }
     ]
 }
