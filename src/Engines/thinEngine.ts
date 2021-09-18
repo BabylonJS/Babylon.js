@@ -1321,6 +1321,14 @@ export class ThinEngine {
     }
 
     /**
+     * Gets an object containing information about the current engine context
+     * @returns an object containing the vendor, the renderer and the version of the current engine context
+     */
+    public getInfo() {
+        return this.getGlInfo();
+    }
+
+    /**
      * Gets an object containing information about the current webGL context
      * @returns an object containing the vendor, the renderer and the version of the current webGL context
      */
