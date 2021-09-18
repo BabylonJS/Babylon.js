@@ -1,5 +1,4 @@
 import { Nullable } from '../../types';
-import { IShaderProcessor } from '../Processors/iShaderProcessor';
 import { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 import { WebGPUShaderProcessingContext, WebGPUBufferDescription } from './webgpuShaderProcessingContext';
 import * as WebGPUConstants from './webgpuConstants';
@@ -9,7 +8,7 @@ import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
 
 /** @hidden */
-export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor implements IShaderProcessor {
+export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
 
     protected _missingVaryings: Array<string> = [];
     protected _textureArrayProcessing: Array<string> = [];

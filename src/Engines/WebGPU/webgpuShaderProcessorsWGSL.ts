@@ -1,11 +1,11 @@
 import { Nullable } from '../../types';
-import { IShaderProcessor } from '../Processors/iShaderProcessor';
 import { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 import { WebGPUShaderProcessingContext, WebGPUBufferDescription } from './webgpuShaderProcessingContext';
 import * as WebGPUConstants from './webgpuConstants';
 import { Logger } from '../../Misc/logger';
 import { ThinEngine } from "../thinEngine";
 import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
+import { CodeStringParsingTools } from "../../Misc/codeStringParsingTools";
 
 import "../../ShadersWGSL/ShadersInclude/bonesDeclaration";
 import "../../ShadersWGSL/ShadersInclude/bonesVertex";
@@ -51,7 +51,7 @@ const gpuTextureViewDimensionByWebGPUTextureFunction: { [key: string]: Nullable<
 };
 
  /** @hidden */
-export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements IShaderProcessor {
+export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
     protected _attributesWGSL: string[];
     protected _attributesDeclWGSL: string[];
@@ -64,7 +64,6 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
     public uniformRegexp = /uniform\s+(\w+)\s*:\s*(.+)\s*;/;
     public textureRegexp = /var\s+(\w+)\s*:\s*((array<\s*)?(texture_\w+)\s*(<\s*(.+)\s*>)?\s*(,\s*\w+\s*>\s*)?);/;
     public noPrecision = true;
-    public removeCommentsBeforeProcessing = true;
 
     protected _getArraySize(name: string, uniformType: string, preProcessors: { [key: string]: string }): [string, string, number] {
         let length = 0;
@@ -98,6 +97,10 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor implements 
         this._varyingsWGSL = [];
         this._varyingsDeclWGSL = [];
         this._varyingNamesWGSL = [];
+    }
+
+    public preProcessShaderCode(code: string): string {
+        return CodeStringParsingTools.RemoveComments(code);
     }
 
     public varyingProcessor(varying: string, isFragment: boolean, preProcessors: { [key: string]: string }, processingContext: Nullable<ShaderProcessingContext>) {

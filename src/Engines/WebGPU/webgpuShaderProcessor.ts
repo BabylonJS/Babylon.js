@@ -1,9 +1,11 @@
+import { ShaderLanguage } from "../../Materials/shaderLanguage";
 import { Nullable } from "../../types";
+import { IShaderProcessor } from "../Processors/iShaderProcessor";
 import * as WebGPUConstants from './webgpuConstants';
 import { WebGPUSamplerDescription, WebGPUShaderProcessingContext, WebGPUTextureDescription, WebGPUBufferDescription } from "./webgpuShaderProcessingContext";
 
 /** @hidden */
-export abstract class WebGPUShaderProcessor {
+export abstract class WebGPUShaderProcessor implements IShaderProcessor {
 
     public static readonly AutoSamplerSuffix = "Sampler";
 
@@ -69,6 +71,8 @@ export abstract class WebGPUShaderProcessor {
         "samplerArrayShadow": true,
         "sampler": false,
     };
+
+    public shaderLanguage = ShaderLanguage.GLSL;
 
     protected webgpuProcessingContext: WebGPUShaderProcessingContext;
 
