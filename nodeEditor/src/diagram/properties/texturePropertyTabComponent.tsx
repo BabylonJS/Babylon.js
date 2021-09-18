@@ -241,6 +241,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                             target={this.props.block}
                             onValueChanged={() => {
                                 this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
+                                this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                             }}
                         />
                     }

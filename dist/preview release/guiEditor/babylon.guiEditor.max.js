@@ -44370,49 +44370,65 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 alert("Unable to save your GUI");
             }
         };
-        _this.saveToSnippetServer = function () {
-            var adt = _this.props.globalState.guiTexture;
-            var content = JSON.stringify(adt.serializeContent());
-            var xmlHttp = new XMLHttpRequest();
-            xmlHttp.onreadystatechange = function () {
-                if (xmlHttp.readyState == 4) {
-                    if (xmlHttp.status == 200) {
-                        var snippet = JSON.parse(xmlHttp.responseText);
-                        var oldId = adt.snippetId;
-                        adt.snippetId = snippet.id;
-                        if (snippet.version && snippet.version != "0") {
-                            adt.snippetId += "#" + snippet.version;
+        _this.saveToSnippetServerHelper = function (content, adt) {
+            return new Promise(function (resolve, reject) {
+                var xmlHttp = new XMLHttpRequest();
+                xmlHttp.onreadystatechange = function () {
+                    if (xmlHttp.readyState == 4) {
+                        if (xmlHttp.status == 200) {
+                            var snippet = JSON.parse(xmlHttp.responseText);
+                            var oldId = adt.snippetId;
+                            adt.snippetId = snippet.id;
+                            if (snippet.version && snippet.version != "0") {
+                                adt.snippetId += "#" + snippet.version;
+                            }
+                            var windowAsAny = window;
+                            if (windowAsAny.Playground && oldId) {
+                                windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
+                                    regex: new RegExp(oldId, "g"),
+                                    replace: "parseFromSnippetAsync(\"" + adt.snippetId,
+                                });
+                            }
+                            resolve(adt.snippetId);
                         }
-                        _this.forceUpdate();
-                        if (navigator.clipboard) {
-                            navigator.clipboard.writeText(adt.snippetId);
+                        else {
+                            reject("Unable to save your GUI");
                         }
-                        var windowAsAny = window;
-                        if (windowAsAny.Playground && oldId) {
-                            windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
-                                regex: new RegExp(oldId, "g"),
-                                replace: "parseFromSnippetAsync(\"" + adt.snippetId,
-                            });
-                        }
-                        alert("GUI saved with ID: " + adt.snippetId + " (please note that the id was also saved to your clipboard)");
                     }
-                    else {
-                        alert("Unable to save your GUI");
-                    }
-                }
-            };
-            xmlHttp.open("POST", babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_23__["AdvancedDynamicTexture"].SnippetUrl + (adt.snippetId ? "/" + adt.snippetId : ""), true);
-            xmlHttp.setRequestHeader("Content-Type", "application/json");
-            var dataToSend = {
-                payload: JSON.stringify({
-                    gui: content,
-                }),
-                name: "",
-                description: "",
-                tags: "",
-            };
-            xmlHttp.send(JSON.stringify(dataToSend));
+                };
+                xmlHttp.open("POST", babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_23__["AdvancedDynamicTexture"].SnippetUrl + (adt.snippetId ? "/" + adt.snippetId : ""), true);
+                xmlHttp.setRequestHeader("Content-Type", "application/json");
+                var dataToSend = {
+                    payload: JSON.stringify({
+                        gui: content,
+                    }),
+                    name: "",
+                    description: "",
+                    tags: "",
+                };
+                xmlHttp.send(JSON.stringify(dataToSend));
+            });
         };
+        _this.saveToSnippetServer = function () { return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(_this, void 0, void 0, function () {
+            var adt, content, savePromise;
+            var _a;
+            return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_b) {
+                adt = this.props.globalState.guiTexture;
+                content = JSON.stringify(adt.serializeContent());
+                savePromise = ((_a = this.props.globalState.customSave) === null || _a === void 0 ? void 0 : _a.action) || this.saveToSnippetServerHelper;
+                savePromise(content, adt).then(function (snippetId) {
+                    adt.snippetId = snippetId;
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(adt.snippetId);
+                    }
+                    alert("GUI saved with ID: " + adt.snippetId + " (please note that the id was also saved to your clipboard)");
+                }).catch(function (err) {
+                    alert(err);
+                });
+                this.forceUpdate();
+                return [2 /*return*/];
+            });
+        }); };
         _this.state = { currentNode: null, textureSize: new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1200, 1200) };
         _this.props.globalState.onSaveObservable.add(function () {
             _this.save(_this.saveLocally);
@@ -45756,6 +45772,11 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                     case 1:
                         _a.sent();
                         this.loadToEditor();
+                        if (this.props.globalState.customLoad) {
+                            this.props.globalState.customLoad.action(this.globalState.guiTexture.snippetId).catch(function (err) {
+                                alert("Unable to load your GUI");
+                            });
+                        }
                         return [2 /*return*/];
                 }
             });
@@ -46312,6 +46333,7 @@ var GlobalState = /** @class */ (function () {
         this.onDraggingEndObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onDraggingStartObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.draggedControl = null;
+        this.isSaving = false;
         this.controlCamera = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadBoolean("ControlCamera", true);
         var r = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("BackgroundColorR", 0.12549019607843137);
         var g = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("BackgroundColorG", 0.09803921568627451);
@@ -46381,6 +46403,7 @@ var GUIEditor = /** @class */ (function () {
         globalState.hostElement = hostElement;
         globalState.hostDocument = hostElement.ownerDocument;
         globalState.customSave = options.customSave;
+        globalState.customLoad = options.customLoad;
         globalState.hostWindow = hostElement.ownerDocument.defaultView;
         var graphEditor = react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_workbenchEditor__WEBPACK_IMPORTED_MODULE_3__["WorkbenchEditor"], {
             globalState: globalState,
