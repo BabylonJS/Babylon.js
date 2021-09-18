@@ -304,6 +304,7 @@
 - Fix parsing of particle systems sub emitters ([#10882](https://github.com/BabylonJS/Babylon.js/issues/10882)) ([Popov72](https://github.com/Popov72))
 - Fix bug in NME where a link could not be recreated after being deleted ([Popov72](https://github.com/Popov72))
 - Fix small typo in transformNode getDirectionToRef method definition. ([PirateJC](https://github.com/piratejc))
+- Fix textures not properly inverting along the vertical axis when using ImageBitmaps ([nmrugg](https://github.com/nmrugg))
 
 ## Breaking changes
 
