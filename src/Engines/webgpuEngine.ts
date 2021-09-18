@@ -959,6 +959,13 @@ export class WebGPUEngine extends Engine {
 
         this._configureContext(width, height);
         this._initializeMainAttachments();
+
+        if (this.snapshotRendering) {
+            // reset snapshot rendering so that the next frame will record a new list of bundles
+            this.snapshotRendering = false;
+            this.snapshotRendering = true;
+        }
+
         return true;
     }
 
@@ -2421,9 +2428,9 @@ export class WebGPUEngine extends Engine {
         if (this._currentRenderPass) {
             const gpuWrapper = this._currentRenderTarget!.texture!._hardwareTexture as WebGPUHardwareTexture;
             if (this._snapshotRenderingPlayBundles) {
-                gpuWrapper._bundleLists[gpuWrapper._currentLayer]?.run(this._currentRenderPass);
+                gpuWrapper._bundleLists?.[gpuWrapper._currentLayer]?.run(this._currentRenderPass);
                 if (this._snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST) {
-                    this._reportDrawCall(gpuWrapper._bundleLists[gpuWrapper._currentLayer]?.numDrawCalls);
+                    this._reportDrawCall(gpuWrapper._bundleLists?.[gpuWrapper._currentLayer]?.numDrawCalls);
                 }
             } else if (this._snapshotRenderingRecordBundles) {
                 if (!gpuWrapper._bundleLists) {
