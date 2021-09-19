@@ -49,6 +49,7 @@ import { TextInputLineComponent } from "../../sharedUiComponents/lines/textInput
 import { ParentingPropertyGridComponent } from "../parentingPropertyGridComponent";
 import { DisplayGridPropertyGridComponent } from "./propertyGrids/gui/displayGridPropertyGridComponent";
 import { DisplayGrid } from "babylonjs-gui/2D/controls/displayGrid";
+import { Button } from "babylonjs-gui/2D/controls/button";
 
 require("./propertyTab.scss");
 const adtIcon: string = require("../../../public/imgs/adtIcon.svg");
@@ -302,8 +303,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 return <DisplayGridPropertyGridComponent displayGrid={displayGrid} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
             }
             case "Button": {
-                const control = this.state.currentNode as Control;
-                return <ControlPropertyGridComponent key="buttonMenu" control={control} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
+                const button = this.state.currentNode as Button;
+                return <RectanglePropertyGridComponent key="buttonMenu" rectangle={button} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
             }
         }
 
