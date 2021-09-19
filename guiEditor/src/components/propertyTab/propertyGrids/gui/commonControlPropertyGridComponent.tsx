@@ -10,6 +10,7 @@ import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lo
 import { CommandButtonComponent } from "../../../commandButtonComponent";
 import { Image } from "babylonjs-gui/2D/controls/image";
 import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
+import { DataStorage } from "babylonjs/Misc/dataStorage";
 
 const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");
 const verticalMarginIcon: string = require("../../../../sharedUiComponents/imgs/verticalMarginIcon.svg");
@@ -45,8 +46,10 @@ interface ICommonControlPropertyGridComponentProps {
 export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
     private _width = this.props.control.width;
     private _height = this.props.control.height;
+    private _responsive : boolean = false; 
     constructor(props: ICommonControlPropertyGridComponentProps) {
         super(props);
+        this._responsive = DataStorage.ReadBoolean("Responsive", true);
     }
 
     private _updateAlignment(alignment: string, value: number) {
@@ -62,7 +65,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
 
     private _checkAndUpdateValues(propertyName: string, value: string) {
         //check if it contains either a px or a % sign
-        let percentage = false;
+        let percentage = this._responsive;
         if (value.charAt(value.length - 1) == '%') {
             percentage = true;
         }
