@@ -8,15 +8,14 @@ let fs = require('fs');
  * Template creating hidden ts file containing the shaders.
  */
 let tsShaderTemplate = 
-`import { Effect } from "##EFFECTLOCATION_PLACEHOLDER##";
+`import { ShaderStore } from "##SHADERSTORELOCATION_PLACEHOLDER##";
 ##INCLUDES_PLACEHOLDER##
 let name = '##NAME_PLACEHOLDER##';
 let shader = \`##SHADER_PLACEHOLDER##\`;
 
-Effect.##SHADERSTORE_PLACEHOLDER##[name] = shader;
+ShaderStore.##SHADERSTORE_PLACEHOLDER##[name] = shader;
 ##EXPORT_PLACEHOLDER##
 `;
-
 
 /**
  * Get the shaders name from their path.
@@ -83,6 +82,8 @@ function main(isCore) {
             const directory = path.dirname(normalized);
             const shaderName = getShaderName(filename);
             const tsFilename = filename.replace('.fx', '.ts').replace('.wgsl', '.ts');
+            const isWGSL = directory.indexOf("ShadersWGSL") > -1;
+            const appendDirName = isWGSL ? "WGSL" : "";
             let fxData = file.contents.toString();
 
             // Remove Trailing whitespace...
@@ -97,30 +98,30 @@ function main(isCore) {
 `;
                 }
                 else {
-                    includeText = includeText + `import "babylonjs/Shaders/ShadersInclude/${entry}";
+                    includeText = includeText + `import "babylonjs/Shaders${appendDirName}/ShadersInclude/${entry}";
 `;
                 }
             });
 
             // Chose shader store.
             const isInclude = directory.indexOf("ShadersInclude") > -1;
-            const shaderStore = isInclude ? "IncludesShadersStore" : "ShadersStore";
-            let effectLocation;
+            const shaderStore = isInclude ? `IncludesShadersStore${appendDirName}` : `ShadersStore${appendDirName}`;
+            let shaderStoreLocation;
             if (isCore) {
                 if (isInclude) {
-                    effectLocation = "../../Materials/effect";
+                    shaderStoreLocation = "../../Engines/shaderStore";
                     includeText = includeText.replace(/ShadersInclude\//g, "");
                 }
                 else {
-                    effectLocation = "../Materials/effect";
+                    shaderStoreLocation = "../Engines/shaderStore";
                 }
             }
             else {
-                effectLocation = "babylonjs/Materials/effect";
+                shaderStoreLocation = "babylonjs/Engines/shaderStore";
             }
 
             // Fill template in.
-            let tsContent = tsShaderTemplate.replace('##EFFECTLOCATION_PLACEHOLDER##', effectLocation);
+            let tsContent = tsShaderTemplate.replace('##SHADERSTORELOCATION_PLACEHOLDER##', shaderStoreLocation);
             tsContent = tsContent.replace('##INCLUDES_PLACEHOLDER##', includeText);
             tsContent = tsContent.replace('##NAME_PLACEHOLDER##', shaderName);
             tsContent = tsContent.replace('##SHADER_PLACEHOLDER##', fxData);

@@ -12,6 +12,7 @@ import { UniqueIdGenerator } from "../Misc/uniqueIdGenerator";
 import { IComputeContext } from "./IComputeContext";
 import { StorageBuffer } from "../Buffers/storageBuffer";
 import { Logger } from "../Misc/logger";
+import { TextureSampler } from "../Materials/Textures/textureSampler";
 
 /**
  * Defines the options associated with the creation of a compute shader.
@@ -40,8 +41,6 @@ export interface IComputeShaderOptions {
     processFinalCode?: Nullable<(code: string) => string>;
 }
 
-type Sampler = { wrapU: number, wrapV: number, wrapR: number, anisotropicFilteringLevel: number, samplingMode: number };
-
 /**
  * The ComputeShader object lets you execute a compute shader on your GPU (if supported by the engine)
  */
@@ -52,7 +51,7 @@ export class ComputeShader {
     private _effect: ComputeEffect;
     private _cachedDefines: string;
     private _bindings: ComputeBindingList = {};
-    private _samplers: { [key: string]: Sampler } = {};
+    private _samplers: { [key: string]: TextureSampler } = {};
     private _context: IComputeContext;
     private _contextIsDirty = false;
 
@@ -96,10 +95,10 @@ export class ComputeShader {
      * @param name Defines the name of the compute shader in the scene
      * @param engine Defines the engine the compute shader belongs to
      * @param shaderPath Defines  the route to the shader code in one of three ways:
-     *  * object: { compute: "custom" }, used with ShaderStore.ShadersStore["customComputeShader"]
+     *  * object: { compute: "custom" }, used with ShaderStore.ShadersStoreWGSL["customComputeShader"]
      *  * object: { computeElement: "HTMLElementId" }, used with shader code in script tags
      *  * object: { computeSource: "compute shader code string" using with string containing the shader code
-     *  * string: try first to find the code in ShaderStore.ShadersStore[shaderPath + "ComputeShader"]. If not, assumes it is a file with name shaderPath.compute.fx in index.html folder.
+     *  * string: try first to find the code in ShaderStore.ShadersStoreWGSL[shaderPath + "ComputeShader"]. If not, assumes it is a file with name shaderPath.compute.fx in index.html folder.
      * @param options Define the options used to create the shader
      */
     constructor(name: string, engine: ThinEngine, shaderPath: any, options: Partial<IComputeShaderOptions> = {}) {
@@ -204,6 +203,23 @@ export class ComputeShader {
     }
 
     /**
+     * Binds a texture sampler to the shader
+     * @param name Binding name of the sampler
+     * @param sampler Sampler to bind
+     */
+     public setTextureSampler(name: string, sampler: TextureSampler): void {
+        const current = this._bindings[name];
+
+        this._contextIsDirty ||= !current || !sampler.compareSampler(current.object);
+
+        this._bindings[name] = {
+            type: ComputeBindingType.Sampler,
+            object: sampler,
+            indexInGroupEntries: current?.indexInGroupEntries,
+        };
+    }
+
+    /**
      * Specifies that the compute shader is ready to be executed (the compute effect and all the resources are ready)
      * @returns true if the compute shader is ready to be executed
      */
@@ -259,14 +275,6 @@ export class ComputeShader {
         return true;
     }
 
-    private _compareSampler(texture: BaseTexture, sampler: Sampler): boolean {
-        return texture.wrapU === sampler.wrapU &&
-            texture.wrapV === sampler.wrapV &&
-            texture.wrapR === sampler.wrapR &&
-            texture.anisotropicFilteringLevel === sampler.anisotropicFilteringLevel &&
-            texture._texture?.samplingMode === sampler.samplingMode;
-    }
-
     /**
      * Dispatches (executes) the compute shader
      * @param x Number of workgroups to execute on the X dimension
@@ -295,14 +303,15 @@ export class ComputeShader {
             const sampler = this._samplers[key];
             const texture = binding.object as BaseTexture;
 
-            if (!sampler || !this._compareSampler(texture, sampler)) {
-                this._samplers[key] = {
-                    wrapU: texture.wrapU,
-                    wrapV: texture.wrapV,
-                    wrapR: texture.wrapR,
-                    anisotropicFilteringLevel: texture.anisotropicFilteringLevel,
-                    samplingMode: texture._texture!.samplingMode,
-                };
+            if (!sampler || !texture._texture || !sampler.compareSampler(texture._texture)) {
+                this._samplers[key] = new TextureSampler().setParameters(
+                    texture.wrapU,
+                    texture.wrapV,
+                    texture.wrapR,
+                    texture.anisotropicFilteringLevel,
+                    texture._texture!.samplingMode,
+                    texture._texture?._comparisonFunction,
+                );
                 this._contextIsDirty = true;
             }
         }
