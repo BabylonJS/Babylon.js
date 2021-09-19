@@ -638,6 +638,13 @@ export class ThinEngine {
         this._snapshotRenderingMode = mode;
     }
 
+    /**
+     * Creates a new snapshot at the next frame using the current snapshotRenderingMode
+     */
+    public snapshotRenderingReset(): void {
+        this.snapshotRendering = false;
+    }
+
     private _checkForMobile: () => void;
 
     private static _createCanvas(width: number, height: number): ICanvas {
