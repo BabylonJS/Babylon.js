@@ -6,6 +6,7 @@ import { DomManagement } from "../Misc/domManagement";
 import { ShaderProcessor } from "../Engines/Processors/shaderProcessor";
 import { ProcessingOptions } from "../Engines/Processors/shaderProcessingOptions";
 import { ShaderStore } from '../Engines/shaderStore';
+import { ShaderLanguage } from "../Materials/shaderLanguage";
 
 declare type Engine = import("../Engines/engine").Engine;
 
@@ -97,6 +98,10 @@ export class ComputeEffect {
     public _computeSourceCode: string = "";
     private _rawComputeSourceCode: string = "";
     private _entryPoint: string;
+    private _shaderLanguage = ShaderLanguage.WGSL;
+    private _shaderStore: { [key: string]: string };
+    private _shaderRepository: string;
+    private _includeShaderStore: { [key: string]: string };
 
     /**
      * Creates a compute effect that can be used to execute a compute shader
@@ -116,6 +121,10 @@ export class ComputeEffect {
         this.onError = options.onError;
         this.onCompiled = options.onCompiled;
         this._entryPoint = options.entryPoint ?? "main";
+
+        this._shaderStore = ShaderStore.GetShadersStore(this._shaderLanguage);
+        this._shaderRepository = ShaderStore.GetShadersRepository(this._shaderLanguage);
+        this._includeShaderStore = ShaderStore.GetIncludesShadersStore(this._shaderLanguage);
 
         let computeSource: any;
 
@@ -140,8 +149,8 @@ export class ComputeEffect {
             shouldUseHighPrecisionShader: false,
             processor: null,
             supportsUniformBuffers: this._engine.supportsUniformBuffers,
-            shadersRepository: ShaderStore.ShadersRepository,
-            includesShadersStore: ShaderStore.IncludesShadersStore,
+            shadersRepository: this._shaderRepository,
+            includesShadersStore: this._includeShaderStore,
             version: (this._engine.version * 100).toString(),
             platformName: this._engine.shaderPlatformName,
             processingContext: null,
@@ -287,13 +296,13 @@ export class ComputeEffect {
         }
 
         // Is in local store ?
-        if (ShaderStore.ShadersStore[shader + key + "Shader"]) {
-            callback(ShaderStore.ShadersStore[shader + key + "Shader"]);
+        if (this._shaderStore[shader + key + "Shader"]) {
+            callback(this._shaderStore[shader + key + "Shader"]);
             return;
         }
 
-        if (optionalKey && ShaderStore.ShadersStore[shader + optionalKey + "Shader"]) {
-            callback(ShaderStore.ShadersStore[shader + optionalKey + "Shader"]);
+        if (optionalKey && this._shaderStore[shader + optionalKey + "Shader"]) {
+            callback(this._shaderStore[shader + optionalKey + "Shader"]);
             return;
         }
 
@@ -302,7 +311,7 @@ export class ComputeEffect {
         if (shader[0] === "." || shader[0] === "/" || shader.indexOf("http") > -1) {
             shaderUrl = shader;
         } else {
-            shaderUrl = ShaderStore.ShadersRepository + shader;
+            shaderUrl = this._shaderRepository + shader;
         }
 
         this._engine._loadFile(shaderUrl + "." + key.toLowerCase() + ".fx", callback);
@@ -429,6 +438,6 @@ export class ComputeEffect {
      * @param computeShader compute shader content
      */
     public static RegisterShader(name: string, computeShader: string) {
-        ShaderStore.ShadersStore[`${name}ComputeShader`] = computeShader;
+        ShaderStore.GetShadersStore(ShaderLanguage.WGSL)[`${name}ComputeShader`] = computeShader;
     }
 }

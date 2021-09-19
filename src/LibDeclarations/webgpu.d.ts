@@ -19,11 +19,20 @@ interface GPUSupportedLimits {
     readonly maxStorageBuffersPerShaderStage: GPUSize32;
     readonly maxStorageTexturesPerShaderStage: GPUSize32;
     readonly maxUniformBuffersPerShaderStage: GPUSize32;
-    readonly maxUniformBufferBindingSize: GPUSize32;
-    readonly maxStorageBufferBindingSize: GPUSize32;
+    readonly maxUniformBufferBindingSize: GPUSize64;
+    readonly maxStorageBufferBindingSize: GPUSize64;
+    readonly minUniformBufferOffsetAlignment: GPUSize32;
+    readonly minStorageBufferOffsetAlignment: GPUSize32;
     readonly maxVertexBuffers: GPUSize32;
     readonly maxVertexAttributes: GPUSize32;
     readonly maxVertexBufferArrayStride: GPUSize32;
+    readonly maxInterStageShaderComponents: GPUSize32;
+    readonly maxComputeWorkgroupStorageSize: GPUSize32;
+    readonly maxComputeInvocationsPerWorkgroup: GPUSize32;
+    readonly maxComputeWorkgroupSizeX: GPUSize32;
+    readonly maxComputeWorkgroupSizeY: GPUSize32;
+    readonly maxComputeWorkgroupSizeZ: GPUSize32;
+    readonly maxComputeWorkgroupsPerDimension: GPUSize32;
 }
 
 type GPUSupportedFeatures = ReadonlySet<string>;
@@ -45,6 +54,7 @@ declare class GPU {
 
 interface GPURequestAdapterOptions {
     powerPreference?: GPUPowerPreference;
+    forceFallbackAdapter?: boolean; /* default=false */
 }
 
 type GPUPowerPreference = "low-power" | "high-performance";
@@ -55,13 +65,14 @@ declare class GPUAdapter {
     readonly name: string;
     readonly features: GPUSupportedFeatures;
     readonly limits: GPUSupportedLimits;
+    readonly isFallbackAdapter: boolean;
 
-    requestDevice(descriptor?: GPUDeviceDescriptor): Promise<GPUDevice | null>;
+    requestDevice(descriptor?: GPUDeviceDescriptor): Promise<GPUDevice>;
 }
 
 interface GPUDeviceDescriptor extends GPUObjectDescriptorBase {
     requiredFeatures?: GPUFeatureName[]; /* default=[] */
-    requiredLimits?: { [name: string]: GPUSize32 }; /* default={} */
+    requiredLimits?: { [name: string]: GPUSize64 }; /* default={} */
 }
 
 type GPUFeatureName =
@@ -262,7 +273,7 @@ declare class GPUExternalTexture implements GPUObjectBase {
 
 interface GPUExternalTextureDescriptor extends GPUObjectDescriptorBase {
     source: HTMLVideoElement;
-    colorSpace: GPUPredefinedColorSpace; /* default="srgb" */
+    colorSpace?: GPUPredefinedColorSpace; /* default="srgb" */
 }
 
 declare class GPUSampler implements GPUObjectBase {
@@ -278,7 +289,7 @@ interface GPUSamplerDescriptor extends GPUObjectDescriptorBase {
     minFilter?: GPUFilterMode; /* default="nearest" */
     mipmapFilter?: GPUFilterMode; /* default="nearest" */
     lodMinClamp?: number; /* default=0 */
-    lodMaxClamp?: number; /* default=0xffffffff */
+    lodMaxClamp?: number; /* default=32 */
     compare?: GPUCompareFunction;
     maxAnisotropy?: number; /* default=1 */
 }
@@ -346,7 +357,7 @@ interface GPUTextureBindingLayout {
     multisampled?: boolean; /* default=false */
 }
 
-type GPUStorageTextureAccess = "read-only" | "write-only";
+type GPUStorageTextureAccess = "write-only";
 
 interface GPUStorageTextureBindingLayout {
     access: GPUStorageTextureAccess;
@@ -431,7 +442,10 @@ interface GPUPipelineBase {
 interface GPUProgrammableStage {
     module: GPUShaderModule;
     entryPoint: string | Uint32Array;
+    constants?: { [name: string]: GPUPipelineConstantValue };
 }
+
+type GPUPipelineConstantValue = number; // May represent WGSL’s bool, f32, i32, u32.
 
 declare class GPUComputePipeline implements GPUObjectBase, GPUPipelineBase {
     private __brand: void;
@@ -505,9 +519,9 @@ interface GPUBlendState {
 type GPUColorWriteFlags = number;
 
 interface GPUBlendComponent {
+    operation?: GPUBlendOperation; /* default="add" */
     srcFactor?: GPUBlendFactor; /* default="one" */
     dstFactor?: GPUBlendFactor; /* default="zero" */
-    operation?: GPUBlendOperation; /* default="add" */
 }
 
 type GPUBlendFactor =
@@ -600,7 +614,7 @@ type GPUVertexFormat =
     | "sint32x3"
     | "sint32x4";
 
-type GPUInputStepMode = "vertex" | "instance";
+type GPUVertexStepMode = "vertex" | "instance";
 
 interface GPUVertexState extends GPUProgrammableStage {
     buffers?: GPUVertexBufferLayout[]; /* default=[] */
@@ -608,7 +622,7 @@ interface GPUVertexState extends GPUProgrammableStage {
 
 interface GPUVertexBufferLayout {
     arrayStride: GPUSize64;
-    stepMode?: GPUInputStepMode; /* default="vertex" */
+    stepMode?: GPUVertexStepMode; /* default="vertex" */
     attributes: GPUVertexAttribute[];
 }
 
@@ -694,6 +708,11 @@ interface GPUImageCopyTexture {
     mipLevel?: GPUIntegerCoordinate; /* default=0 */
     origin?: GPUOrigin3D; /* default={} */
     aspect?: GPUTextureAspect; /* default="all" */
+}
+
+interface GPUImageCopyTextureTagged extends GPUImageCopyTexture {
+    colorSpace: GPUPredefinedColorSpace; /* default="srgb" */
+    premultipliedAlpha: boolean; /* default=false */
 }
 
 interface GPUImageCopyExternalImage {
@@ -874,7 +893,13 @@ interface GPURenderPassDepthStencilAttachment {
 
 type GPULoadOp = "load";
 
-type GPUStoreOp = "store" | "clear";
+type GPUStoreOp = "store" | "discard";
+
+interface GPURenderPassLayout extends GPUObjectDescriptorBase {
+    colorFormats: GPUTextureFormat[];
+    depthStencilFormat?: GPUTextureFormat;
+    sampleCount?: GPUSize32; /* default=1 */
+}
 
 declare class GPURenderBundle implements GPUObjectBase {
     private __brand: void;
@@ -930,10 +955,9 @@ declare class GPURenderBundleEncoder implements GPUObjectBase, GPUProgrammablePa
     finish(descriptor?: GPURenderBundleDescriptor): GPURenderBundle;
 }
 
-interface GPURenderBundleEncoderDescriptor extends GPUObjectDescriptorBase {
-    colorFormats: GPUTextureFormat[];
-    depthStencilFormat?: GPUTextureFormat;
-    sampleCount?: GPUSize32; /* default=1 */
+interface GPURenderBundleEncoderDescriptor extends GPURenderPassLayout {
+    depthReadOnly?: boolean; /* default=false */
+    stencilReadOnly?: boolean; /* default=false */
 }
 
 // @todo: to be removed
@@ -974,7 +998,7 @@ declare class GPUQueue implements GPUObjectBase {
 
     copyExternalImageToTexture(
         source: GPUImageCopyExternalImage,
-        destination: GPUImageCopyTexture,
+        destination: GPUImageCopyTextureTagged,
         copySize: GPUExtent3D
     ): void;
 }
@@ -1001,10 +1025,13 @@ type GPUPipelineStatisticName =
     | "fragment-shader-invocations"
     | "compute-shader-invocations";
 
-declare class GPUPresentationContext {
+declare class GPUCanvasContext {
     private __brand: void;
 
-    configure(descriptor?: GPUPresentationConfiguration): void;
+    readonly canvas: HTMLCanvasElement | OffscreenCanvas;
+
+    configure(configuration?: GPUCanvasConfiguration): void;
+    unconfigure(): void;
 
     getPreferredFormat(adapter: GPUAdapter): GPUTextureFormat;
     getCurrentTexture(): GPUTexture;
@@ -1014,10 +1041,11 @@ type GPUCanvasCompositingAlphaMode =
     | "opaque"
     | "premultiplied";
 
-interface GPUPresentationConfiguration extends GPUObjectDescriptorBase {
+interface GPUCanvasConfiguration extends GPUObjectDescriptorBase {
     device: GPUDevice;
     format: GPUTextureFormat;
     usage?: GPUTextureUsageFlags; /* default=0x10 - GPUTextureUsage.RENDER_ATTACHMENT */
+    colorSpace?: GPUPredefinedColorSpace; /* default="srgb" */
     compositingAlphaMode?: GPUCanvasCompositingAlphaMode; /* default="opaque" */
     size: GPUExtent3D;
 }

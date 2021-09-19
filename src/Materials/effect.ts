@@ -12,6 +12,7 @@ import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, ICo
 import { ThinEngine } from '../Engines/thinEngine';
 import { IEffectFallbacks } from './iEffectFallbacks';
 import { ShaderStore as EngineShaderStore } from '../Engines/shaderStore';
+import { ShaderLanguage } from "./shaderLanguage";
 
 declare type Engine = import("../Engines/engine").Engine;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
@@ -75,6 +76,10 @@ export interface IEffectCreationOptions {
      * Is this effect rendering to several color attachments ?
      */
     multiTarget?: boolean;
+    /**
+     * The language the shader is written in (default: GLSL)
+     */
+    shaderLanguage?: ShaderLanguage;
 }
 
 /**
@@ -158,7 +163,8 @@ export class Effect implements IDisposable {
     public _multiTarget: boolean = false;
 
     private static _uniqueIdSeed = 0;
-    private _engine: Engine;
+    /** @hidden */
+    public _engine: Engine;
     private _uniformBuffersNamesList: string[];
     private _uniformsNames: string[];
     private _samplers: { [key: string]: number } = {};
@@ -179,6 +185,7 @@ export class Effect implements IDisposable {
     private _vertexSourceCodeOverride: string = "";
     private _fragmentSourceCodeOverride: string = "";
     private _transformFeedbackVaryings: Nullable<string[]> = null;
+    private _shaderLanguage: ShaderLanguage;
     /**
      * Compiled shader to webGL program.
      * @hidden
@@ -211,10 +218,11 @@ export class Effect implements IDisposable {
      * @param onError Callback that will be called if an error occurs during shader compilation.
      * @param indexParameters Parameters to be used with Babylons include syntax to iterate over an array (eg. {lights: 10})
      * @param key Effect Key identifying uniquely compiled shader variants
+     * @param shaderLanguage the language the shader is written in (default: GLSL)
      */
     constructor(baseName: any, attributesNamesOrOptions: string[] | IEffectCreationOptions, uniformsNamesOrEngine: string[] | ThinEngine, samplers: Nullable<string[]> = null,
         engine?: ThinEngine, defines: Nullable<string> = null,
-        fallbacks: Nullable<IEffectFallbacks> = null, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null, indexParameters?: any, key: string = "") {
+        fallbacks: Nullable<IEffectFallbacks> = null, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null, indexParameters?: any, key: string = "", shaderLanguage = ShaderLanguage.GLSL) {
         this.name = baseName;
         this._key = key;
 
@@ -234,6 +242,7 @@ export class Effect implements IDisposable {
             this._indexParameters = options.indexParameters;
             this._transformFeedbackVaryings = options.transformFeedbackVaryings || null;
             this._multiTarget = !!options.multiTarget;
+            this._shaderLanguage = options.shaderLanguage ?? ShaderLanguage.GLSL;
 
             if (options.uniformBuffersNames) {
                 this._uniformBuffersNamesList = options.uniformBuffersNames.slice();
@@ -250,6 +259,7 @@ export class Effect implements IDisposable {
             this._samplerList = samplers ? <string[]>samplers.slice() : [];
             this._attributesNames = (<string[]>attributesNamesOrOptions);
             this._uniformBuffersNamesList = [];
+            this._shaderLanguage = shaderLanguage;
 
             this.onError = onError;
             this.onCompiled = onCompiled;
@@ -291,17 +301,17 @@ export class Effect implements IDisposable {
             fragmentSource = baseName.fragment || baseName;
         }
 
-        this._processingContext = this._engine._getShaderProcessingContext();
+        this._processingContext = this._engine._getShaderProcessingContext(this._shaderLanguage);
 
         const processorOptions: ProcessingOptions = {
             defines: this.defines.split("\n"),
             indexParameters: this._indexParameters,
             isFragment: false,
             shouldUseHighPrecisionShader: this._engine._shouldUseHighPrecisionShader,
-            processor: this._engine._shaderProcessor,
+            processor: this._engine._getShaderProcessor(this._shaderLanguage),
             supportsUniformBuffers: this._engine.supportsUniformBuffers,
-            shadersRepository: Effect.ShadersRepository,
-            includesShadersStore: Effect.IncludesShadersStore,
+            shadersRepository: EngineShaderStore.GetShadersRepository(this._shaderLanguage),
+            includesShadersStore: EngineShaderStore.GetIncludesShadersStore(this._shaderLanguage),
             version: (this._engine.version * 100).toString(),
             platformName: this._engine.shaderPlatformName,
             processingContext: this._processingContext,
@@ -347,8 +357,8 @@ export class Effect implements IDisposable {
             var vertex = baseName.vertexElement || baseName.vertex || baseName.spectorName || baseName;
             var fragment = baseName.fragmentElement || baseName.fragment || baseName.spectorName || baseName;
 
-            this._vertexSourceCode = "#define SHADER_NAME vertex:" + vertex + "\n" + migratedVertexCode;
-            this._fragmentSourceCode = "#define SHADER_NAME fragment:" + fragment + "\n" + migratedFragmentCode;
+            this._vertexSourceCode = (this._shaderLanguage === ShaderLanguage.WGSL ? "//" : "") + "#define SHADER_NAME vertex:" + vertex + "\n" + migratedVertexCode;
+            this._fragmentSourceCode = (this._shaderLanguage === ShaderLanguage.WGSL ? "//" : "") + "#define SHADER_NAME fragment:" + fragment + "\n" + migratedFragmentCode;
         } else {
             this._vertexSourceCode = migratedVertexCode;
             this._fragmentSourceCode = migratedFragmentCode;
@@ -561,14 +571,16 @@ export class Effect implements IDisposable {
             return;
         }
 
+        const shaderStore = EngineShaderStore.GetShadersStore(this._shaderLanguage);
+
         // Is in local store ?
-        if (Effect.ShadersStore[shader + key + "Shader"]) {
-            callback(Effect.ShadersStore[shader + key + "Shader"]);
+        if (shaderStore[shader + key + "Shader"]) {
+            callback(shaderStore[shader + key + "Shader"]);
             return;
         }
 
-        if (optionalKey && Effect.ShadersStore[shader + optionalKey + "Shader"]) {
-            callback(Effect.ShadersStore[shader + optionalKey + "Shader"]);
+        if (optionalKey && shaderStore[shader + optionalKey + "Shader"]) {
+            callback(shaderStore[shader + optionalKey + "Shader"]);
             return;
         }
 
@@ -577,7 +589,7 @@ export class Effect implements IDisposable {
         if (shader[0] === "." || shader[0] === "/" || shader.indexOf("http") > -1) {
             shaderUrl = shader;
         } else {
-            shaderUrl = Effect.ShadersRepository + shader;
+            shaderUrl = EngineShaderStore.GetShadersRepository(this._shaderLanguage) + shader;
         }
 
         // Vertex shader
@@ -1282,14 +1294,15 @@ export class Effect implements IDisposable {
      * @param name the name of the shader
      * @param pixelShader optional pixel shader content
      * @param vertexShader optional vertex shader content
+     * @param shaderLanguage the language the shader is written in (default: GLSL)
      */
-    public static RegisterShader(name: string, pixelShader?: string, vertexShader?: string) {
+    public static RegisterShader(name: string, pixelShader?: string, vertexShader?: string, shaderLanguage = ShaderLanguage.GLSL) {
         if (pixelShader) {
-            Effect.ShadersStore[`${name}PixelShader`] = pixelShader;
+            EngineShaderStore.GetShadersStore(shaderLanguage)[`${name}PixelShader`] = pixelShader;
         }
 
         if (vertexShader) {
-            Effect.ShadersStore[`${name}VertexShader`] = vertexShader;
+            EngineShaderStore.GetShadersStore(shaderLanguage)[`${name}VertexShader`] = vertexShader;
         }
     }
 
