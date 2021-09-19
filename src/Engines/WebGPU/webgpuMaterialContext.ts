@@ -1,21 +1,23 @@
+import { ExternalTexture } from "../../Materials/Textures/externalTexture";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
+import { TextureSampler } from "../../Materials/Textures/textureSampler";
+import { WebGPUDataBuffer } from "../../Meshes/WebGPU/webgpuDataBuffer";
 import { Nullable } from "../../types";
+import { Constants } from "../constants";
 import { IMaterialContext } from "../IMaterialContext";
-import { WebGPUCacheBindGroups } from "./webgpuCacheBindGroups";
+import { WebGPUCacheSampler } from "./webgpuCacheSampler";
 
 /** @hidden */
 interface IWebGPUMaterialContextSamplerCache {
-    firstTextureName: string;
+    sampler: Nullable<TextureSampler>;
+    hashCode: number;
 }
 
 /** @hidden */
 interface IWebGPUMaterialContextTextureCache {
-    texture: InternalTexture;
-    wrapU?: Nullable<number>;
-    wrapV?: Nullable<number>;
-    wrapR?: Nullable<number>;
-    anisotropicFilteringLevel?: Nullable<number>;
-    samplingMode?: Nullable<number>;
+    texture: Nullable<InternalTexture | ExternalTexture>;
+    isFloatTexture: boolean;
+    isExternalTexture: boolean;
 }
 
 /** @hidden */
@@ -23,40 +25,93 @@ export class WebGPUMaterialContext implements IMaterialContext {
     private static _Counter = 0;
 
     public uniqueId: number;
+    public isDirty: boolean;
     public samplers: { [name: string]: Nullable<IWebGPUMaterialContextSamplerCache> };
     public textures: { [name: string]: Nullable<IWebGPUMaterialContextTextureCache> };
+    public buffers: { [name: string]: Nullable<WebGPUDataBuffer> };
 
-    private _cacheBindGroups: WebGPUCacheBindGroups;
+    public bindGroups: GPUBindGroup[]; // cache of the bind groups. Will be reused for the next draw if isDirty=false
 
-    constructor(cachBindGroups: WebGPUCacheBindGroups) {
-        this._cacheBindGroups = cachBindGroups;
-        this.samplers = {};
-        this.textures = {};
-        this.uniqueId = WebGPUMaterialContext._Counter++;
+    public get forceBindGroupCreation() {
+        // If there is at least one external texture to bind, we must recreate the bind groups each time
+        // because we need to retrieve a new texture each frame (by calling device.importExternalTexture)
+        return this._numExternalTextures > 0;
     }
 
-    public setTexture(name: string, internalTexture: Nullable<InternalTexture>): boolean {
-        const textureCache = this.textures[name];
+    public get hasFloatTextures() {
+        return this._numFloatTextures > 0;
+    }
+
+    protected _numFloatTextures: number;
+    protected _numExternalTextures: number;
+
+    constructor() {
+        this.uniqueId = WebGPUMaterialContext._Counter++;
+        this.reset();
+    }
+
+    public reset(): void {
+        this.samplers = {};
+        this.textures = {};
+        this.buffers = {};
+        this.isDirty = true;
+        this._numFloatTextures = 0;
+        this._numExternalTextures = 0;
+    }
+
+    public setSampler(name: string, sampler: Nullable<TextureSampler>): void {
+        let samplerCache = this.samplers[name];
+        let currentHashCode = -1;
+        if (!samplerCache) {
+            this.samplers[name] = samplerCache = { sampler, hashCode: 0 };
+        } else {
+            currentHashCode = samplerCache.hashCode;
+        }
+
+        samplerCache.sampler = sampler;
+        samplerCache.hashCode = sampler ? WebGPUCacheSampler.GetSamplerHashCode(sampler) : 0;
+
+        this.isDirty ||= currentHashCode !== samplerCache.hashCode;
+    }
+
+    public setTexture(name: string, texture: Nullable<InternalTexture | ExternalTexture>): void {
+        let textureCache = this.textures[name];
+        let currentTextureId = -1;
         if (!textureCache) {
-            return false;
+            this.textures[name] = textureCache = { texture, isFloatTexture: false, isExternalTexture: false };
+        } else {
+            currentTextureId = textureCache.texture?.uniqueId ?? -1;
         }
 
-        const curTexture = textureCache.texture;
-        if (curTexture !== null && curTexture === internalTexture &&
-            (textureCache.wrapU !== internalTexture._cachedWrapU || textureCache.wrapV !== internalTexture._cachedWrapV || textureCache.wrapR !== internalTexture._cachedWrapR ||
-                textureCache.anisotropicFilteringLevel !== internalTexture._cachedAnisotropicFilteringLevel || textureCache.samplingMode !== internalTexture.samplingMode)) {
-            // the sampler used to sample the texture must be updated, so we need to clear the bind group cache entries that are using
-            // this texture so that the bind groups are re-created with the right sampler
-            textureCache.wrapU = internalTexture._cachedWrapU;
-            textureCache.wrapV = internalTexture._cachedWrapV;
-            textureCache.wrapR = internalTexture._cachedWrapR;
-            textureCache.anisotropicFilteringLevel = internalTexture._cachedAnisotropicFilteringLevel;
-            textureCache.samplingMode = internalTexture.samplingMode;
-            this._cacheBindGroups.clearTextureEntries(curTexture.uniqueId);
+        if (textureCache.isExternalTexture) {
+            this._numExternalTextures--;
+        }
+        if (textureCache.isFloatTexture) {
+            this._numFloatTextures--;
         }
 
-        textureCache.texture = internalTexture!;
+        if (texture) {
+            textureCache.isFloatTexture = texture.type === Constants.TEXTURETYPE_FLOAT;
+            textureCache.isExternalTexture = ExternalTexture.IsExternalTexture(texture);
+            if (textureCache.isFloatTexture) {
+                this._numFloatTextures++;
+            }
+            if (textureCache.isExternalTexture) {
+                this._numExternalTextures++;
+            }
+        } else {
+            textureCache.isFloatTexture = false;
+            textureCache.isExternalTexture = false;
+        }
 
-        return true;
+        textureCache.texture = texture;
+
+        this.isDirty ||= currentTextureId !== (texture?.uniqueId ?? -1);
+    }
+
+    public setBuffer(name: string, buffer: Nullable<WebGPUDataBuffer>): void {
+        this.isDirty ||= buffer?.uniqueId !== this.buffers[name]?.uniqueId;
+
+        this.buffers[name] = buffer;
     }
 }

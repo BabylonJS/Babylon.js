@@ -218,6 +218,8 @@ export class Constants {
   public static readonly TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV = 14;
   /** FLOAT_32_UNSIGNED_INT_24_8_REV */
   public static readonly TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV = 15;
+  /** UNDEFINED */
+  public static readonly TEXTURETYPE_UNDEFINED = 16;
 
   /** nearest is mag = nearest and min = nearest and no mip */
   public static readonly TEXTURE_NEAREST_SAMPLINGMODE = 1;
