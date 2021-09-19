@@ -51,7 +51,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
 
     private _updateAlignment(alignment: string, value: number) {
         const control = this.props.control;
-        if (control.typeName == "TextBlock") {
+        if (control.typeName === "TextBlock" && (this.props.control as TextBlock).resizeToFit === false) {
             (this.props.control as any)["text" + alignment.charAt(0).toUpperCase() + alignment.slice(1)] = value;
         }
         else {
@@ -79,7 +79,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         const control = this.props.control;
         var horizontalAlignment = this.props.control.horizontalAlignment;
         var verticalAlignment = this.props.control.verticalAlignment;
-        if (control.typeName == "TextBlock") {
+        if (control.typeName === "TextBlock" && (this.props.control as TextBlock).resizeToFit === false) {
             horizontalAlignment = (this.props.control as TextBlock).textHorizontalAlignment;
             verticalAlignment = (this.props.control as TextBlock).textVerticalAlignment;
         }
