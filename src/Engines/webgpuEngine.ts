@@ -351,6 +351,14 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
+     * Creates a new snapshot at the next frame using the current snapshotRenderingMode
+     */
+    public snapshotRenderingReset(): void {
+        this.snapshotRendering = false;
+        this.snapshotRendering = true;
+    }
+
+    /**
      * Enables or disables the snapshot rendering mode
      * Note that the WebGL engine does not support snapshot rendering so setting the value won't have any effect for this engine
      */
@@ -962,8 +970,7 @@ export class WebGPUEngine extends Engine {
 
         if (this.snapshotRendering) {
             // reset snapshot rendering so that the next frame will record a new list of bundles
-            this.snapshotRendering = false;
-            this.snapshotRendering = true;
+            this.snapshotRenderingReset();
         }
 
         return true;
