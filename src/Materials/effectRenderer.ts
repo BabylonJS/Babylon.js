@@ -9,6 +9,7 @@ import { Effect } from './effect';
 import { DataBuffer } from '../Buffers/dataBuffer';
 import { DrawWrapper } from "./drawWrapper";
 import { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
+import { ShaderLanguage } from "./shaderLanguage";
 
 // Prevents ES6 Crash if not imported.
 import "../Shaders/postprocess.vertex";
@@ -215,6 +216,10 @@ interface EffectWrapperCreationOptions {
      * The friendly name of the effect displayed in Spector.
      */
     name?: string;
+    /**
+     * The language the shader is written in (default: GLSL)
+     */
+     shaderLanguage?: ShaderLanguage;
 }
 
 /**
@@ -290,7 +295,10 @@ export class EffectWrapper {
                 creationOptions.samplerNames,
                 defines,
                 undefined,
-                creationOptions.onCompiled
+                creationOptions.onCompiled,
+                undefined,
+                undefined,
+                creationOptions.shaderLanguage,
             );
         } else {
             this.effect = new Effect(effectCreationOptions,
@@ -301,6 +309,10 @@ export class EffectWrapper {
                 defines,
                 undefined,
                 creationOptions.onCompiled,
+                undefined,
+                undefined,
+                undefined,
+                creationOptions.shaderLanguage,
             );
 
             this._onContextRestoredObserver = creationOptions.engine.onContextRestoredObservable.add(() => {

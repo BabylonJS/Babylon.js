@@ -14,10 +14,10 @@ import { VertexBuffer } from "../Buffers/buffer";
 import { WebGPUPipelineContext, IWebGPURenderPipelineStageDescriptor } from './WebGPU/webgpuPipelineContext';
 import { IPipelineContext } from './IPipelineContext';
 import { DataBuffer } from '../Buffers/dataBuffer';
-import { WebGPUDataBuffer } from '../Meshes/WebGPU/webgpuDataBuffer';
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { IShaderProcessor } from "./Processors/iShaderProcessor";
-import { WebGPUShaderProcessor } from "./WebGPU/webgpuShaderProcessors";
+import { WebGPUShaderProcessorGLSL } from "./WebGPU/webgpuShaderProcessorsGLSL";
+import { WebGPUShaderProcessorWGSL } from "./WebGPU/webgpuShaderProcessorsWGSL";
 import { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import { WebGPUShaderProcessingContext } from "./WebGPU/webgpuShaderProcessingContext";
 import { Tools } from "../Misc/tools";
@@ -47,9 +47,9 @@ import { WebGPUOcclusionQuery } from "./WebGPU/webgpuOcclusionQuery";
 import { Observable } from "../Misc/observable";
 import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
 import { TwgslOptions, WebGPUTintWASM } from "./WebGPU/webgpuTintWASM";
-
-import "../Shaders/clearQuad.vertex";
-import "../Shaders/clearQuad.fragment";
+import { ExternalTexture } from "../Materials/Textures/externalTexture";
+import { WebGPUShaderProcessor } from "./WebGPU/webgpuShaderProcessor";
+import { ShaderLanguage } from "../Materials/shaderLanguage";
 
 declare function importScripts(...urls: string[]): void;
 
@@ -223,7 +223,7 @@ export class WebGPUEngine extends Engine {
     /** @hidden */
     public _device: GPUDevice;
     private _deviceEnabledExtensions: GPUFeatureName[];
-    private _context: GPUPresentationContext;
+    private _context: GPUCanvasContext;
     private _swapChainTexture: GPUTexture;
     private _mainPassSampleCount: number;
     /** @hidden */
@@ -308,13 +308,12 @@ export class WebGPUEngine extends Engine {
     // Effect is on the parent class
     // protected _currentEffect: Nullable<Effect> = null;
     private _defaultMaterialContext: WebGPUMaterialContext;
-    private _currentMaterialContext: WebGPUMaterialContext;
+    /** @hidden */
+    public _currentMaterialContext: WebGPUMaterialContext;
     private _currentDrawContext: WebGPUDrawContext | undefined;
     private _currentOverrideVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }> = null;
     private _currentIndexBuffer: Nullable<DataBuffer> = null;
     private __colorWrite = true;
-    /** @hidden */
-    public _uniformsBuffers: { [name: string]: WebGPUDataBuffer } = {};
     private _forceEnableEffect = false;
 
     // TODO WEBGPU remove those variables when code stabilized
@@ -349,6 +348,14 @@ export class WebGPUEngine extends Engine {
         } else {
             this._snapshotRenderingMode = mode;
         }
+    }
+
+    /**
+     * Creates a new snapshot at the next frame using the current snapshotRenderingMode
+     */
+    public snapshotRenderingReset(): void {
+        this.snapshotRendering = false;
+        this.snapshotRendering = true;
     }
 
     /**
@@ -464,6 +471,18 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
+     * Gets an object containing information about the current engine context
+     * @returns an object containing the vendor, the renderer and the version of the current engine context
+     */
+    public getInfo() {
+        return {
+            vendor: "unknown vendor",
+            renderer: "unknown renderer",
+            version: "unknown version",
+        };
+    }
+
+    /**
      * True to be in compatibility mode, meaning rendering in the same way than OpenGL.
      * Setting the property to false will improve performances, but can lead to rendering artifacts.
      * See @TODO WEBGPU DOC PAGE
@@ -548,7 +567,8 @@ export class WebGPUEngine extends Engine {
 
         this._sharedInit(canvas, !!options.doNotHandleTouchAction, options.audioEngine);
 
-        this._shaderProcessor = this._getShaderProcessor();
+        this._shaderProcessor = new WebGPUShaderProcessorGLSL();
+        this._shaderProcessorWGSL = new WebGPUShaderProcessorWGSL();
 
         this._invertYFinalFramebuffer = (!!this._options.forceCopyForInvertYFinalFramebuffer || !this._canvas.style) && !this._options.disableCopyForInvertYFinalFramebuffer;
         if (!this._invertYFinalFramebuffer) {
@@ -590,29 +610,33 @@ export class WebGPUEngine extends Engine {
                 throw Error("WebGPU initializations stopped.");
             })
             .then((adapter: GPUAdapter | null) => {
-                this._adapter = adapter!;
-                this._adapterSupportedExtensions = [];
-                this._adapter.features?.forEach((feature) => this._adapterSupportedExtensions.push(feature as WebGPUConstants.FeatureName));
+                if (!adapter) {
+                    throw "Could not retrieve a WebGPU adapter (adapter is null).";
+                } else {
+                    this._adapter = adapter!;
+                    this._adapterSupportedExtensions = [];
+                    this._adapter.features?.forEach((feature) => this._adapterSupportedExtensions.push(feature as WebGPUConstants.FeatureName));
 
-                const deviceDescriptor = this._options.deviceDescriptor;
+                    const deviceDescriptor = this._options.deviceDescriptor;
 
-                if (deviceDescriptor?.requiredFeatures) {
-                    const requestedExtensions = deviceDescriptor.requiredFeatures;
-                    const validExtensions: GPUFeatureName[] = [];
+                    if (deviceDescriptor?.requiredFeatures) {
+                        const requestedExtensions = deviceDescriptor.requiredFeatures;
+                        const validExtensions: GPUFeatureName[] = [];
 
-                    for (let extension of requestedExtensions) {
-                        if (this._adapterSupportedExtensions.indexOf(extension) !== -1) {
-                            validExtensions.push(extension);
+                        for (let extension of requestedExtensions) {
+                            if (this._adapterSupportedExtensions.indexOf(extension) !== -1) {
+                                validExtensions.push(extension);
+                            }
                         }
+
+                        deviceDescriptor.requiredFeatures = validExtensions;
                     }
 
-                    deviceDescriptor.requiredFeatures = validExtensions;
+                    return this._adapter.requestDevice(this._options.deviceDescriptor);
                 }
-
-                return this._adapter.requestDevice(this._options.deviceDescriptor);
             })
-            .then((device: GPUDevice | null) => {
-                this._device = device!;
+            .then((device: GPUDevice) => {
+                this._device = device;
                 this._deviceEnabledExtensions = [];
                 this._device.features?.forEach((feature) => this._deviceEnabledExtensions.push(feature as WebGPUConstants.FeatureName));
 
@@ -633,6 +657,9 @@ export class WebGPUEngine extends Engine {
                         this._restoreEngineAfterContextLost(this.initAsync.bind(this));
                     });
                 }
+            }, (e: any) => {
+                Logger.Error("Could not retrieve a WebGPU device.");
+                Logger.Error(e);
             })
             .then(() => {
                 this._bufferManager = new WebGPUBufferManager(this._device);
@@ -797,7 +824,7 @@ export class WebGPUEngine extends Engine {
     }
 
     private _initializeContextAndSwapChain(): void {
-        this._context = this._canvas.getContext('webgpu') as unknown as GPUPresentationContext;
+        this._context = this._canvas.getContext('webgpu') as unknown as GPUCanvasContext;
         this._configureContext(this._canvas.width, this._canvas.height);
         this._colorFormat = this._options.swapChainFormat!;
         this._mainRenderPassWrapper.colorAttachmentGPUTextures = [new WebGPUHardwareTexture()];
@@ -850,7 +877,7 @@ export class WebGPUEngine extends Engine {
                 sampleCount: 1,
                 dimension: WebGPUConstants.TextureDimension.E2d,
                 format: this._options.swapChainFormat!,
-                usage: WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.Sampled,
+                usage: WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.TextureBinding,
             };
 
             this._mainTextureLastCopy?.destroy();
@@ -940,20 +967,28 @@ export class WebGPUEngine extends Engine {
 
         this._configureContext(width, height);
         this._initializeMainAttachments();
+
+        if (this.snapshotRendering) {
+            // reset snapshot rendering so that the next frame will record a new list of bundles
+            this.snapshotRenderingReset();
+        }
+
         return true;
     }
 
-    /**
-     * Gets a shader processor implementation fitting with the current engine type.
-     * @returns The shader processor implementation.
-     */
-    protected _getShaderProcessor(): Nullable<IShaderProcessor> {
-        return new WebGPUShaderProcessor();
+    private _shaderProcessorWGSL: Nullable<IShaderProcessor>;
+
+    /** @hidden */
+    public _getShaderProcessor(shaderLanguage: ShaderLanguage): Nullable<IShaderProcessor> {
+        if (shaderLanguage === ShaderLanguage.WGSL) {
+            return this._shaderProcessorWGSL;
+        }
+        return this._shaderProcessor;
     }
 
     /** @hidden */
-    public _getShaderProcessingContext(): Nullable<ShaderProcessingContext> {
-        return new WebGPUShaderProcessingContext();
+    public _getShaderProcessingContext(shaderLanguage: ShaderLanguage): Nullable<ShaderProcessingContext> {
+        return new WebGPUShaderProcessingContext(shaderLanguage);
     }
 
     //------------------------------------------------------------------------------
@@ -1427,10 +1462,11 @@ export class WebGPUEngine extends Engine {
      * @param onCompiled defines a function to call when the effect creation is successful
      * @param onError defines a function to call when the effect creation has failed
      * @param indexParameters defines an object containing the index values to use to compile shaders (like the maximum number of simultaneous lights)
+     * @param shaderLanguage the language the shader is written in (default: GLSL)
      * @returns the new Effect
      */
     public createEffect(baseName: any, attributesNamesOrOptions: string[] | IEffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers?: string[], defines?: string, fallbacks?: EffectFallbacks,
-        onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any): Effect {
+        onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any, shaderLanguage = ShaderLanguage.GLSL): Effect {
         const vertex = baseName.vertexElement || baseName.vertex || baseName.vertexToken || baseName.vertexSource || baseName;
         const fragment = baseName.fragmentElement || baseName.fragment || baseName.fragmentToken || baseName.fragmentSource || baseName;
         const globalDefines = this._getGlobalDefines()!;
@@ -1450,7 +1486,7 @@ export class WebGPUEngine extends Engine {
 
             return compiledEffect;
         }
-        var effect = new Effect(baseName, attributesNamesOrOptions, uniformsNamesOrEngine, samplers, this, defines, fallbacks, onCompiled, onError, indexParameters, name);
+        var effect = new Effect(baseName, attributesNamesOrOptions, uniformsNamesOrEngine, samplers, this, defines, fallbacks, onCompiled, onError, indexParameters, name, shaderLanguage);
         this._compiledEffects[name] = effect;
 
         return effect;
@@ -1464,10 +1500,19 @@ export class WebGPUEngine extends Engine {
         return this._compileRawShaderToSpirV(shaderVersion + (defines ? defines + "\n" : "") + source, type);
     }
 
-    private _createPipelineStageDescriptor(vertexShader: Uint32Array, fragmentShader: Uint32Array): IWebGPURenderPipelineStageDescriptor {
-        if (this._tintWASM) {
-            vertexShader = this._tintWASM.convertSpirV2WGSL(vertexShader) as any;
-            fragmentShader = this._tintWASM.convertSpirV2WGSL(fragmentShader) as any;
+    private _getWGSLShader(source: string, type: string, defines: Nullable<string>, shaderVersion: string): string {
+        if (defines) {
+            defines = "//" + defines.split("\n").join("\n//") + "\n";
+        } else {
+            defines = "";
+        }
+        return defines + source;
+    }
+
+    private _createPipelineStageDescriptor(vertexShader: Uint32Array | string, fragmentShader: Uint32Array | string, shaderLanguage: ShaderLanguage): IWebGPURenderPipelineStageDescriptor {
+        if (this._tintWASM && shaderLanguage === ShaderLanguage.GLSL) {
+            vertexShader = this._tintWASM.convertSpirV2WGSL(vertexShader as Uint32Array) as any;
+            fragmentShader = this._tintWASM.convertSpirV2WGSL(fragmentShader as Uint32Array) as any;
         }
 
         return {
@@ -1486,21 +1531,21 @@ export class WebGPUEngine extends Engine {
         };
     }
 
-    private _compileRawPipelineStageDescriptor(vertexCode: string, fragmentCode: string): IWebGPURenderPipelineStageDescriptor {
-        var vertexShader = this._compileRawShaderToSpirV(vertexCode, "vertex");
-        var fragmentShader = this._compileRawShaderToSpirV(fragmentCode, "fragment");
+    private _compileRawPipelineStageDescriptor(vertexCode: string, fragmentCode: string, shaderLanguage: ShaderLanguage): IWebGPURenderPipelineStageDescriptor {
+        var vertexShader = shaderLanguage === ShaderLanguage.GLSL ? this._compileRawShaderToSpirV(vertexCode, "vertex") : vertexCode;
+        var fragmentShader = shaderLanguage === ShaderLanguage.GLSL ? this._compileRawShaderToSpirV(fragmentCode, "fragment") : fragmentCode;
 
-        return this._createPipelineStageDescriptor(vertexShader, fragmentShader);
+        return this._createPipelineStageDescriptor(vertexShader, fragmentShader, shaderLanguage);
     }
 
-    private _compilePipelineStageDescriptor(vertexCode: string, fragmentCode: string, defines: Nullable<string>): IWebGPURenderPipelineStageDescriptor {
+    private _compilePipelineStageDescriptor(vertexCode: string, fragmentCode: string, defines: Nullable<string>, shaderLanguage: ShaderLanguage): IWebGPURenderPipelineStageDescriptor {
         this.onBeforeShaderCompilationObservable.notifyObservers(this);
 
         var shaderVersion = "#version 450\n";
-        var vertexShader = this._compileShaderToSpirV(vertexCode, "vertex", defines, shaderVersion);
-        var fragmentShader = this._compileShaderToSpirV(fragmentCode, "fragment", defines, shaderVersion);
+        var vertexShader = shaderLanguage === ShaderLanguage.GLSL ? this._compileShaderToSpirV(vertexCode, "vertex", defines, shaderVersion) : this._getWGSLShader(vertexCode, "vertex", defines, shaderVersion);
+        var fragmentShader = shaderLanguage === ShaderLanguage.GLSL ? this._compileShaderToSpirV(fragmentCode, "fragment", defines, shaderVersion) : this._getWGSLShader(fragmentCode, "fragment", defines, shaderVersion);
 
-        let program = this._createPipelineStageDescriptor(vertexShader, fragmentShader);
+        let program = this._createPipelineStageDescriptor(vertexShader, fragmentShader, shaderLanguage);
 
         this.onAfterShaderCompilationObservable.notifyObservers(this);
 
@@ -1543,7 +1588,7 @@ export class WebGPUEngine extends Engine {
      * @returns the new context
      */
     public createMaterialContext(): WebGPUMaterialContext | undefined {
-        return new WebGPUMaterialContext(this._cacheBindGroups);
+        return new WebGPUMaterialContext();
     }
 
     /**
@@ -1561,6 +1606,7 @@ export class WebGPUEngine extends Engine {
         transformFeedbackVaryings: Nullable<string[]>,
         key: string) {
         const webGpuContext = pipelineContext as WebGPUPipelineContext;
+        const shaderLanguage = webGpuContext.shaderProcessingContext.shaderLanguage;
 
         if (this.dbgShowShaderCode) {
             console.log(defines);
@@ -1576,10 +1622,9 @@ export class WebGPUEngine extends Engine {
         };
 
         if (createAsRaw) {
-            webGpuContext.stages = this._compileRawPipelineStageDescriptor(vertexSourceCode, fragmentSourceCode);
-        }
-        else {
-            webGpuContext.stages = this._compilePipelineStageDescriptor(vertexSourceCode, fragmentSourceCode, defines);
+            webGpuContext.stages = this._compileRawPipelineStageDescriptor(vertexSourceCode, fragmentSourceCode, shaderLanguage);
+        } else {
+            webGpuContext.stages = this._compilePipelineStageDescriptor(vertexSourceCode, fragmentSourceCode, defines, shaderLanguage);
         }
     }
 
@@ -1862,23 +1907,18 @@ export class WebGPUEngine extends Engine {
         this._textureHelper.createGPUTextureForInternalTexture(texture, width, height, depth, additionalUsages);
     }
 
-    private _setInternalTexture(name: string, internalTexture: Nullable<InternalTexture>, baseName?: string, textureIndex = 0): void {
+    /** @hidden */
+    public _setInternalTexture(name: string, texture: Nullable<InternalTexture | ExternalTexture>, baseName?: string, textureIndex = 0): void {
         baseName = baseName ?? name;
-        if (this._currentEffect && !this._currentMaterialContext.setTexture(name, internalTexture)) {
+        if (this._currentEffect) {
             const webgpuPipelineContext = this._currentEffect._pipelineContext as WebGPUPipelineContext;
-            const availableSampler = webgpuPipelineContext.shaderProcessingContext.availableSamplers[baseName];
-            if (availableSampler) {
-                this._currentMaterialContext.samplers[baseName] = {
-                    firstTextureName: name,
-                };
-                this._currentMaterialContext.textures[name] = {
-                    texture: internalTexture!,
-                    wrapU: internalTexture?._cachedWrapU,
-                    wrapV: internalTexture?._cachedWrapV,
-                    wrapR: internalTexture?._cachedWrapR,
-                    anisotropicFilteringLevel: internalTexture?._cachedAnisotropicFilteringLevel,
-                    samplingMode: internalTexture?.samplingMode,
-                };
+            const availableTexture = webgpuPipelineContext.shaderProcessingContext.availableTextures[baseName];
+
+            this._currentMaterialContext.setTexture(name, texture);
+
+            if (availableTexture && availableTexture.autoBindSampler) {
+                const samplerName = baseName + WebGPUShaderProcessor.AutoSamplerSuffix;
+                this._currentMaterialContext.setSampler(samplerName, texture as InternalTexture); // we can safely cast to InternalTexture because ExternalTexture always has autoBindSampler = false
             }
         }
     }
@@ -2395,9 +2435,9 @@ export class WebGPUEngine extends Engine {
         if (this._currentRenderPass) {
             const gpuWrapper = this._currentRenderTarget!.texture!._hardwareTexture as WebGPUHardwareTexture;
             if (this._snapshotRenderingPlayBundles) {
-                gpuWrapper._bundleLists[gpuWrapper._currentLayer]?.run(this._currentRenderPass);
+                gpuWrapper._bundleLists?.[gpuWrapper._currentLayer]?.run(this._currentRenderPass);
                 if (this._snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST) {
-                    this._reportDrawCall(gpuWrapper._bundleLists[gpuWrapper._currentLayer]?.numDrawCalls);
+                    this._reportDrawCall(gpuWrapper._bundleLists?.[gpuWrapper._currentLayer]?.numDrawCalls);
                 }
             } else if (this._snapshotRenderingRecordBundles) {
                 if (!gpuWrapper._bundleLists) {
@@ -2798,11 +2838,11 @@ export class WebGPUEngine extends Engine {
         }
 
         let textureState = 0;
-        if (!this._caps.textureFloatLinearFiltering) {
+        if (!this._caps.textureFloatLinearFiltering && this._currentMaterialContext.hasFloatTextures) {
             let bitVal = 1;
-            for (let i = 0; i < webgpuPipelineContext.shaderProcessingContext.samplerNames.length; ++i) {
-                const samplerName = webgpuPipelineContext.shaderProcessingContext.samplerNames[i];
-                const texture = this._currentMaterialContext.textures[samplerName]?.texture;
+            for (let i = 0; i < webgpuPipelineContext.shaderProcessingContext.textureNames.length; ++i) {
+                const textureName = webgpuPipelineContext.shaderProcessingContext.textureNames[i];
+                const texture = this._currentMaterialContext.textures[textureName]?.texture;
                 if (texture?.type === Constants.TEXTURETYPE_FLOAT) {
                     textureState |= bitVal;
                 }
@@ -2811,7 +2851,7 @@ export class WebGPUEngine extends Engine {
         }
 
         const pipeline = this._cacheRenderPipeline.getRenderPipeline(fillMode, this._currentEffect!, this.currentSampleCount, textureState);
-        const bindGroups = this._cacheBindGroups.getBindGroups(webgpuPipelineContext, this._currentMaterialContext, this._uniformsBuffers);
+        const bindGroups = this._cacheBindGroups.getBindGroups(webgpuPipelineContext, this._currentMaterialContext);
 
         if (!this._snapshotRenderingRecordBundles) {
             if (mustUpdateViewport) {
