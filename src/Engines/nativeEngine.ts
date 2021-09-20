@@ -798,35 +798,47 @@ export interface NativeEngineOptions {
 }
 
 /** @hidden */
-// TODO: Handle growing/shrinking
 class Buffer<T extends ArrayLike<number> & {[n: number]: number, set(array: ArrayLike<number>, offset?: number): void}> {
-    private buffer: T;
-    private index = 0;
+    private readonly _setBufferSize: (size: number) => void;
+    private _buffer: T;
+    private _index = 0;
 
     public constructor(typedArray: new (size: number) => T, onBufferChanged: (buffer: T) => void) {
-        this.buffer = new typedArray(50000);
-        onBufferChanged(this.buffer);
+        this._setBufferSize = (size: number) => {
+            this._buffer = new typedArray(size);
+            onBufferChanged(this._buffer);
+        }
+
+        this._setBufferSize(1024);
     }
 
     public get length() {
-        return this.index;
+        return this._index;
     }
 
     public pushValue(value: number) {
-        if (this.index >= this.buffer.length) {
-            throw new Error(`Buffer is full.`);
-        }
-
-        this.buffer[this.index++] = value;
+        this._ensureCapacity(1);
+        this._buffer[this._index++] = value;
     }
 
     public pushValues(values: ArrayLike<number>) {
-        this.buffer.set(values, this.index);
-        this.index += values.length;
+        this._ensureCapacity(values.length);
+        this._buffer.set(values, this._index);
+        this._index += values.length;
     }
 
     public reset() {
-        this.index = 0;
+        this._index = 0;
+    }
+
+    private _ensureCapacity(additionalElements: number) {
+        if (this._index + additionalElements > this._buffer.length) {
+            additionalElements = Math.max(this._index + additionalElements - this._buffer.length, this._buffer.length / 2);
+            const oldBuffer = this._buffer;
+            console.log("Growing buffer from " + this._buffer.length + " to " + (this._buffer.length + additionalElements));
+            this._setBufferSize(this._buffer.length + additionalElements);
+            this._buffer.set(oldBuffer);
+        }
     }
 }
 
@@ -937,7 +949,7 @@ class CommandBufferEncoder {
         }
     }
 
-    public _submitCommandBuffer() {
+    private _submitCommandBuffer() {
         if (this._commandBuffer.length > 0) {
             this._nativeEngine.submitCommandBuffer(this._commandBuffer.length);
             this._commandBuffer.reset();
@@ -2142,7 +2154,7 @@ export class NativeEngine extends Engine {
 
         if (!!texture &&
             !!texture._hardwareTexture) {
-            const source = canvas.getCanvasTexture(); // Change this to loadCanvasTexture, then call create/delete
+            const source = canvas.getCanvasTexture();
             const destination = texture._hardwareTexture.underlyingResource;
             this._native.copyTexture(destination, source);
             texture.isReady = true;
