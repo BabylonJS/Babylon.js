@@ -162,6 +162,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
     };
     
     private _customFrameList: {[key: string]: string};
+    private _customBlockList: {[key: string]: string};
 
     constructor(props: INodeListComponentProps) {
         super(props);
@@ -171,6 +172,11 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         let frameJson = localStorage.getItem("Custom-Frame-List");
         if(frameJson) {
             this._customFrameList = JSON.parse(frameJson);
+        }
+
+        let blockJson = localStorage.getItem("Custom-Block-List");
+        if(blockJson) {
+            this._customBlockList = JSON.parse(blockJson);
         }
 
         this._onResetRequiredObserver = this.props.globalState.onResetRequiredObservable.add(() => {
@@ -226,16 +232,62 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             }        
     }
 
+    loadCustomBlock(file: File) {
+        Tools.ReadFile(file, async (data) => {
+            // get Block Data from file
+            let decoder = new TextDecoder("utf-8");
+            const blockData = JSON.parse(decoder.decode(data));
+            let blockName = (blockData.name || "") + "CustomBlock";
+            let blockToolTip = blockData.comments || "";
+
+            try {
+                localStorage.setItem(blockName, JSON.stringify(blockData));
+            } catch (error) {
+                this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("Error Saving Block");
+                return;
+            }
+
+            let blockJson = localStorage.getItem("Custom-Block-List");
+            let blockList:  {[key: string]: string} = {};
+            if(blockJson) {
+                blockList = JSON.parse(blockJson); 
+            }
+            blockList[blockName] = blockToolTip;
+            localStorage.setItem("Custom-Block-List", JSON.stringify(blockList));
+                this._customBlockList = blockList;
+                this.forceUpdate();
+
+        }, undefined, true);
+    }
+
+    removeBlock(value : string) : void {
+        let blockJson = localStorage.getItem("Custom-Block-List");
+            if(blockJson) {
+                let blockList = JSON.parse(blockJson);
+                delete blockList[value];
+                localStorage.removeItem(value);
+                localStorage.setItem("Custom-Block-List", JSON.stringify(blockList));
+                this._customBlockList = blockList;
+                this.forceUpdate();
+            }        
+    }
+
     render() {
 
         let customFrameNames: string[] = [];
         for(let frame in this._customFrameList){
             customFrameNames.push(frame);
         }
+
+        let customBlockNames: string[] = [];
+        for(let block in this._customBlockList){
+            customBlockNames.push(block);
+        }
         
         // Block types used to create the menu from
         const allBlocks: any = {
             Custom_Frames: customFrameNames,
+            Custom_Blocks: customBlockNames,
             Animation: ["BonesBlock", "MorphTargetsBlock"],
             Color_Management: ["ReplaceColorBlock", "PosterizeBlock", "GradientBlock", "DesaturateBlock"],
             Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
@@ -299,7 +351,10 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 if(key === "Custom_Frames") {
                     return <DraggableLineWithButtonComponent key={block} data={block} tooltip={this._customFrameList[block] || ""} iconImage={deleteButton} iconTitle="Delete"
                     onIconClick={ value => this.removeItem(value)}/>;
-                }
+                } else if(key === "Custom_Blocks") {
+                    return <DraggableLineWithButtonComponent key={block} data={block} tooltip={this._customBlockList[block] || ""} iconImage={deleteButton} iconTitle="Delete"
+                    onIconClick={ value => this.removeBlock(value)}/>;
+                }        
                 return <DraggableLineComponent key={block} data={block} tooltip={ NodeListComponent._Tooltips[block] || ""}/>;
 
             });
@@ -310,7 +365,13 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                     this.loadCustomFrame(file);
                 }}/>;
                 blockList.push(line);
-            }         
+            } else if(key === "Custom_Blocks") {
+                let line =  <LineWithFileButtonComponent key="add..."title={"Add Custom Block"} closed={false}
+                label="Add..." uploadName={'custom-block-upload'} iconImage={addButton} accept=".json" onIconClick={(file) => {
+                    this.loadCustomBlock(file);
+                }}/>;
+                blockList.push(line);
+            }
             if(blockList.length) {
                 blockMenu.push(
                     <LineContainerComponent key={key + " blocks"} title={key.replace("__", ": ").replace("_", " ")} closed={false}>
