@@ -7,7 +7,7 @@ import { Nullable } from '../../types';
 import { Logger } from "../../Misc/logger";
 import { _PrimaryIsoTriangle, GeodesicData } from "../geodesicMesh";
 
-Mesh.CreateGeodesic = (name: string, options: { m?: number, n: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number }, scene: Scene): Mesh => {
+Mesh.CreateGeodesic = (name: string, options: { m?: number, n: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number }, scene: Scene): Mesh => {
     return GeodesicBuilder.CreateGeodesic(name, options, scene);
 };
 
@@ -17,6 +17,7 @@ Mesh.CreateGeodesic = (name: string, options: { m?: number, n: number, size?: nu
  export class GeodesicBuilder {
     /**
      * Creates the Mesh for a Geodesic Polyhedron
+     * @see https://en.wikipedia.org/wiki/Geodesic_polyhedron
      * @param name defines the name of the mesh
      * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty
      * * m number of horizontal steps along an isogrid
