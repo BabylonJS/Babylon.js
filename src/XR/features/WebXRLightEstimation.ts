@@ -11,6 +11,8 @@ import { Color3 } from "../../Maths/math.color";
 import { Vector3 } from "../../Maths/math.vector";
 import { DirectionalLight } from "../../Lights/directionalLight";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
+import { SphericalHarmonics, SphericalPolynomial } from "../../Maths/sphericalPolynomial";
+import { LightConstants } from "../../Lights/lightConstants";
 
 /**
  * Options for Light Estimation feature
@@ -22,7 +24,7 @@ export interface IWebXRLightEstimationOptions {
     disableCubeMapReflection?: boolean;
     /**
      * Should the scene's env texture be set to the cube map reflection texture
-     * Note that this doesn't work is disableCubeMapReflection is set to false
+     * Note that this doesn't work is disableCubeMapReflection if set to false
      */
     setSceneEnvironmentTexture?: boolean;
     /**
@@ -41,8 +43,7 @@ export interface IWebXRLightEstimationOptions {
      */
     createDirectionalLightSource?: boolean;
     /**
-     * Instead of using preferred reflection format use srgba8 to initialize the light probe
-     * Defaults to true.
+     * Define the format to be used for the light estimation texture.
      */
     reflectionFormat?: XRReflectionFormat;
     /**
@@ -50,6 +51,11 @@ export interface IWebXRLightEstimationOptions {
      * Use this when you use those vectors and don't want their values to change outside of the light estimation feature
      */
     disableVectorReuse?: boolean;
+
+    /**
+     * disable applying the spherical polynomial to the cube map texture
+     */
+    disableSphericalPolynomial?: boolean;
 }
 
 /**
@@ -68,6 +74,10 @@ export interface IWebXRLightEstimation {
      * The direction from the light source
      */
     lightDirection: Vector3;
+    /**
+     * Spherical harmonics coefficients of the light source
+     */
+    sphericalHarmonics: SphericalHarmonics;
 }
 
 /**
@@ -85,6 +95,7 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
     private _lightDirection: Vector3 = Vector3.Up().negateInPlace();
     private _lightColor: Color3 = Color3.White();
     private _intensity: number = 1;
+    private _sphericalHarmonics: SphericalHarmonics = new SphericalHarmonics();
     private _cubeMapPollTime = Date.now();
     private _lightEstimationPollTime = Date.now();
 
@@ -104,7 +115,7 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
      * Once other systems support this feature we will need to change this to be dynamic.
      * see https://github.com/immersive-web/lighting-estimation/blob/main/lighting-estimation-explainer.md#cube-map-open-questions
      */
-    private ReflectionCubeMapTextureSize: number = 16;
+    private _ReflectionCubeMapTextureSize: number = 16;
 
     /**
      * If createDirectionalLightSource is set to true this light source will be created automatically.
@@ -138,6 +149,7 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
             this.directionalLight.position = new Vector3(0, 8, 0);
             // intensity will be set later
             this.directionalLight.intensity = 0;
+            this.directionalLight.falloffType = LightConstants.FALLOFF_GLTF;
         }
 
         // https://immersive-web.github.io/lighting-estimation/
@@ -161,7 +173,8 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
             return {
                 lightColor: this._lightColor,
                 lightDirection: this._lightDirection,
-                lightIntensity: this._intensity
+                lightIntensity: this._intensity,
+                sphericalHarmonics: this._sphericalHarmonics
             };
 
         }
@@ -177,14 +190,14 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
 
     private _getXRGLBinding(): XRWebGLBinding {
         if (this._xrWebGLBinding === null) {
-            let context = this._getCanvasContext();
+            const context = this._getCanvasContext();
             this._xrWebGLBinding = new XRWebGLBinding(this._xrSessionManager.session, context);
         }
         return this._xrWebGLBinding;
     }
 
     /**
-     * Event Listener to for "reflectionchange" events.
+     * Event Listener for "reflectionchange" events.
      */
     private _updateReflectionCubeMap = (): void => {
         if (!this._xrLightProbe) {
@@ -200,26 +213,27 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
         }
         const lp = this._getXRGLBinding().getReflectionCubeMap(this._xrLightProbe);
         if (lp && this._reflectionCubeMap) {
-            if (this._reflectionCubeMap._texture) {
-                this._reflectionCubeMap._texture.dispose();
+            if (!this._reflectionCubeMap._texture) {
+                const internalTexture = new InternalTexture(this._xrSessionManager.scene.getEngine(), InternalTextureSource.Unknown);
+                internalTexture.isCube = true;
+                internalTexture.invertY = false;
+                internalTexture._useSRGBBuffer = this.options.reflectionFormat === 'srgba8';
+                internalTexture.format = Constants.TEXTUREFORMAT_RGBA;
+                internalTexture.generateMipMaps = true;
+                internalTexture.type = this.options.reflectionFormat !== 'srgba8' ? Constants.TEXTURETYPE_HALF_FLOAT : Constants.TEXTURETYPE_UNSIGNED_BYTE;
+                internalTexture.samplingMode = Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR;
+                internalTexture.width = this._ReflectionCubeMapTextureSize;
+                internalTexture.height = this._ReflectionCubeMapTextureSize;
+                internalTexture._cachedWrapU = Constants.TEXTURE_WRAP_ADDRESSMODE;
+                internalTexture._cachedWrapV = Constants.TEXTURE_WRAP_ADDRESSMODE;
+                internalTexture._hardwareTexture = new WebGLHardwareTexture(lp, this._getCanvasContext() as WebGLRenderingContext);
+                this._reflectionCubeMap._texture = internalTexture;
+            } else {
+                this._reflectionCubeMap._texture._hardwareTexture?.set(lp);
+                this._reflectionCubeMap._texture.getEngine().resetTextureCache();
             }
-            const internalTexture = new InternalTexture(this._xrSessionManager.scene.getEngine(), InternalTextureSource.Unknown);
-            internalTexture.isCube = true;
-            internalTexture.invertY = false;
-            internalTexture._useSRGBBuffer = this.options.reflectionFormat === 'srgba8';
-            internalTexture.format = Constants.TEXTUREFORMAT_RGBA;
-            internalTexture.generateMipMaps = false;
-            internalTexture.type = this.options.reflectionFormat !== 'srgba8' ? Constants.TEXTURETYPE_HALF_FLOAT : Constants.TEXTURETYPE_UNSIGNED_BYTE;
-            internalTexture.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
-            internalTexture.width = this.ReflectionCubeMapTextureSize;
-            internalTexture.height = this.ReflectionCubeMapTextureSize;
-            internalTexture._cachedWrapU = Constants.TEXTURE_WRAP_ADDRESSMODE;
-            internalTexture._cachedWrapV = Constants.TEXTURE_WRAP_ADDRESSMODE;
-            internalTexture._hardwareTexture = new WebGLHardwareTexture(lp, this._getCanvasContext() as WebGLRenderingContext);
-            this._reflectionCubeMap._texture = internalTexture;
             this._reflectionCubeMap._texture.isReady = true;
             this._xrSessionManager.scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
-            this._reflectionCubeMap.hasAlpha = true;
 
             this.onReflectionCubeMapUpdatedObservable.notifyObservers(this._reflectionCubeMap);
         }
@@ -267,7 +281,7 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
     public detach(): boolean {
         const detached = super.detach();
 
-        if (this._xrLightProbe !== null) {
+        if (this._xrLightProbe !== null && !this.options.disableCubeMapReflection) {
             this._xrLightProbe.removeEventListener('reflectionchange', this._updateReflectionCubeMap);
             this._xrLightProbe = null;
         }
@@ -340,6 +354,11 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
                     this._xrLightEstimate.primaryLightIntensity.y / this._intensity,
                     this._xrLightEstimate.primaryLightIntensity.z / this._intensity
                 );
+                this._sphericalHarmonics.updateFromFloatsArray(this._xrLightEstimate.sphericalHarmonicsCoefficients);
+                if (this._reflectionCubeMap && !this.options.disableSphericalPolynomial) {
+                    this._reflectionCubeMap.sphericalPolynomial = this._reflectionCubeMap.sphericalPolynomial || new SphericalPolynomial();
+                    this._reflectionCubeMap.sphericalPolynomial?.updateFromHarmonics(this._sphericalHarmonics);
+                }
 
                 // direction from instead of direction to
                 this._lightDirection.negateInPlace();
