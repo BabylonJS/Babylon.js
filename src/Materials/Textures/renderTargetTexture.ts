@@ -982,6 +982,15 @@ export class RenderTargetTexture extends Texture {
             if (dumpForDebug) {
                 Tools.DumpFramebuffer(this.getRenderWidth(), this.getRenderHeight(), engine);
             }
+        } else {
+            // Clear
+            if (this.onClearObservable.hasObservers()) {
+                this.onClearObservable.notifyObservers(engine);
+            } else {
+                if (!this.skipInitialClear) {
+                    engine.clear(this.clearColor || scene.clearColor, true, true, true);
+                }
+            }
         }
 
         // Unbind

@@ -9,6 +9,7 @@ import { GUID } from '../../Misc/guid';
 import { DepthTextureCreationOptions } from '../depthTextureCreationOptions';
 import { IWebRequest } from '../../Misc/interfaces/iWebRequest';
 import { Constants } from '../constants';
+import { RenderTargetWrapper } from "../renderTargetWrapper";
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
@@ -17,9 +18,10 @@ declare module "../../Engines/thinEngine" {
          * This is only available in WebGL 2.
          * @param size The size of face edge in the cube texture.
          * @param options The options defining the cube texture.
+         * @param rtWrapper The render target wrapper for which the depth/stencil texture must be created
          * @returns The cube texture
          */
-        _createDepthStencilCubeTexture(size: number, options: DepthTextureCreationOptions): InternalTexture;
+        _createDepthStencilCubeTexture(size: number, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture;
 
         /**
          * Creates a cube texture
@@ -103,8 +105,8 @@ declare module "../../Engines/thinEngine" {
     }
 }
 
-ThinEngine.prototype._createDepthStencilCubeTexture = function (size: number, options: DepthTextureCreationOptions): InternalTexture {
-    var internalTexture = new InternalTexture(this, InternalTextureSource.Unknown);
+ThinEngine.prototype._createDepthStencilCubeTexture = function (size: number, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
+    var internalTexture = new InternalTexture(this, InternalTextureSource.DepthStencil);
     internalTexture.isCube = true;
 
     if (this.webGLVersion === 1) {
@@ -123,6 +125,9 @@ ThinEngine.prototype._createDepthStencilCubeTexture = function (size: number, op
     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, internalTexture, true);
 
     this._setupDepthStencilTexture(internalTexture, size, internalOptions.generateStencil, internalOptions.bilinearFiltering, internalOptions.comparisonFunction);
+
+    rtWrapper._depthStencilTexture = internalTexture;
+    rtWrapper._depthStencilTextureWithStencil = internalOptions.generateStencil;
 
     // Create the depth/stencil buffer
     for (var face = 0; face < 6; face++) {

@@ -223,8 +223,9 @@ export class SpriteRenderer {
 
         const culling = engine.depthCullingState.cull || true;
         const zOffset = engine.depthCullingState.zOffset;
+        const zOffsetUnit = engine.depthCullingState.zOffsetUnit;
 
-        engine.setState(culling, zOffset, false, false);
+        engine.setState(culling, zOffset, false, false, undefined, undefined, zOffsetUnit);
 
         // Render
         engine.enableEffect(drawWrapper);
@@ -280,7 +281,7 @@ export class SpriteRenderer {
 
         // Restore Right Handed
         if (useRightHandedSystem) {
-            this._scene!.getEngine().setState(culling, zOffset, false, true);
+            this._scene!.getEngine().setState(culling, zOffset, false, true, undefined, undefined, zOffsetUnit);
         }
 
         engine.unbindInstanceAttributes();

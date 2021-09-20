@@ -9,6 +9,7 @@ import { ShaderDefineExpression } from './Expressions/shaderDefineExpression';
 import { ShaderDefineArithmeticOperator } from './Expressions/Operators/shaderDefineArithmeticOperator';
 import { ProcessingOptions } from './shaderProcessingOptions';
 import { _DevTools } from '../../Misc/devTools';
+import { ShaderLanguage } from "../../Materials/shaderLanguage";
 
 declare type WebRequest = import("../../Misc/webRequest").WebRequest;
 declare type LoadFileError = import("../../Misc/fileTools").LoadFileError;
@@ -28,6 +29,9 @@ export class ShaderProcessor {
     }
 
     public static Process(sourceCode: string, options: ProcessingOptions, callback: (migratedCode: string) => void, engine: ThinEngine) {
+        if (options.processor?.preProcessShaderCode) {
+            sourceCode = options.processor.preProcessShaderCode(sourceCode);
+        }
         this._ProcessIncludes(sourceCode, options, (codeWithIncludes) => {
             let migratedCode = this._ProcessShaderConversion(codeWithIncludes, options, engine);
             callback(migratedCode);
@@ -35,6 +39,9 @@ export class ShaderProcessor {
     }
 
     public static PreProcess(sourceCode: string, options: ProcessingOptions, callback: (migratedCode: string) => void, engine: ThinEngine) {
+        if (options.processor?.preProcessShaderCode) {
+            sourceCode = options.processor.preProcessShaderCode(sourceCode);
+        }
         this._ProcessIncludes(sourceCode, options, (codeWithIncludes) => {
             let migratedCode = this._ApplyPreProcessing(codeWithIncludes, options, engine);
             callback(migratedCode);
@@ -50,6 +57,10 @@ export class ShaderProcessor {
     }
 
     private static _ProcessPrecision(source: string, options: ProcessingOptions): string {
+        if (options.processor?.noPrecision) {
+            return source;
+        }
+
         const shouldUseHighPrecisionShader = options.shouldUseHighPrecisionShader;
 
         if (source.indexOf("precision highp float") === -1) {
@@ -258,7 +269,7 @@ export class ShaderProcessor {
         return rootNode.process(preprocessors, options);
     }
 
-    private static _PreparePreProcessors(options: ProcessingOptions, engine: ThinEngine, addGLES = true): { [key: string]: string } {
+    private static _PreparePreProcessors(options: ProcessingOptions, engine: ThinEngine): { [key: string]: string } {
         let defines = options.defines;
         let preprocessors: { [key: string]: string } = {};
 
@@ -268,7 +279,7 @@ export class ShaderProcessor {
             preprocessors[split[0]] = split.length > 1 ? split[1] : "";
         }
 
-        if (addGLES) {
+        if (options.processor?.shaderLanguage === ShaderLanguage.GLSL) {
             preprocessors["GL_ES"] = "true";
         }
         preprocessors["__VERSION__"] = options.version;
@@ -288,7 +299,7 @@ export class ShaderProcessor {
         }
 
         // Already converted
-        if (preparedSourceCode.indexOf("#version 3") !== -1) {
+        if (options.processor.shaderLanguage === ShaderLanguage.GLSL && preparedSourceCode.indexOf("#version 3") !== -1) {
             return preparedSourceCode.replace("#version 300 es", "");
         }
 
@@ -321,7 +332,7 @@ export class ShaderProcessor {
 
         const defines = options.defines;
 
-        let preprocessors = this._PreparePreProcessors(options, engine, false);
+        let preprocessors = this._PreparePreProcessors(options, engine);
 
         // General pre processing
         if (options.processor?.preProcessor) {

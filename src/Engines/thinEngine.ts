@@ -41,6 +41,7 @@ import { StencilStateComposer } from "../States/stencilStateComposer";
 import { StorageBuffer } from "../Buffers/storageBuffer";
 import { IAudioEngineOptions } from '../Audio/Interfaces/IAudioEngineOptions';
 import { IStencilState } from "../States/IStencilState";
+import { ShaderLanguage } from "../Materials/shaderLanguage";
 
 declare type WebRequest = import("../Misc/webRequest").WebRequest;
 declare type LoadFileError = import("../Misc/fileTools").LoadFileError;
@@ -235,10 +236,12 @@ export class ThinEngine {
         Effect.ShadersRepository = value;
     }
 
-    // Public members
+    protected _shaderProcessor: Nullable<IShaderProcessor>;
 
     /** @hidden */
-    public _shaderProcessor: Nullable<IShaderProcessor>;
+    public _getShaderProcessor(shaderLanguage: ShaderLanguage): Nullable<IShaderProcessor> {
+        return this._shaderProcessor;
+    }
 
     /**
      * Gets or sets a boolean that indicates if textures must be forced to power of 2 size even if not required
@@ -452,7 +455,6 @@ export class ThinEngine {
     private _currentTextureChannel = -1;
     /** @hidden */
     protected _boundTexturesCache: { [key: string]: Nullable<InternalTexture> } = {};
-    /** @hidden */
     protected _currentEffect: Nullable<Effect>;
     /** @hidden */
     protected _currentProgram: Nullable<WebGLProgram>;
@@ -634,6 +636,13 @@ export class ThinEngine {
 
     public set snapshotRenderingMode(mode: number) {
         this._snapshotRenderingMode = mode;
+    }
+
+    /**
+     * Creates a new snapshot at the next frame using the current snapshotRenderingMode
+     */
+    public snapshotRenderingReset(): void {
+        this.snapshotRendering = false;
     }
 
     private _checkForMobile: () => void;
@@ -888,7 +897,7 @@ export class ThinEngine {
         }
 
         // Shader processor
-        this._shaderProcessor = this._getShaderProcessor();
+        this._shaderProcessor = this.webGLVersion > 1 ? new WebGL2ShaderProcessor() : new WebGLShaderProcessor();
 
         // Detect if we are running on a faulty buggy OS.
         this._badOS = /iPad/i.test(navigator.userAgent) || /iPhone/i.test(navigator.userAgent);
@@ -955,16 +964,8 @@ export class ThinEngine {
         this._renderingCanvas = canvas;
     }
 
-    /**
-     * Gets a shader processor implementation fitting with the current engine type.
-     * @returns The shader processor implementation.
-     */
-    protected _getShaderProcessor(): Nullable<IShaderProcessor> {
-        return (this.webGLVersion > 1 ? new WebGL2ShaderProcessor() : new WebGLShaderProcessor());
-    }
-
     /** @hidden */
-    public _getShaderProcessingContext(): Nullable<ShaderProcessingContext> {
+    public _getShaderProcessingContext(shaderLanguage: ShaderLanguage): Nullable<ShaderProcessingContext> {
         return null;
     }
 
@@ -1324,6 +1325,14 @@ export class ThinEngine {
         }
 
         this._currentTextureChannel = -1;
+    }
+
+    /**
+     * Gets an object containing information about the current engine context
+     * @returns an object containing the vendor, the renderer and the version of the current engine context
+     */
+    public getInfo() {
+        return this.getGlInfo();
     }
 
     /**
@@ -1717,8 +1726,9 @@ export class ThinEngine {
      * @param reverseSide defines if culling must be reversed (CCW if false, CW if true)
      * @param cullBackFaces true to cull back faces, false to cull front faces (if culling is enabled)
      * @param stencil stencil states to set
+     * @param zOffsetUnit defines the value to apply to zOffsetUnit (0 by default)
      */
-    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false, cullBackFaces?: boolean, stencil?: IStencilState): void {
+    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false, cullBackFaces?: boolean, stencil?: IStencilState, zOffsetUnit: number = 0): void {
         // Culling
         if (this._depthCullingState.cull !== culling || force) {
             this._depthCullingState.cull = culling;
@@ -1732,6 +1742,7 @@ export class ThinEngine {
 
         // Z offset
         this.setZOffset(zOffset);
+        this.setZOffsetUnit(zOffsetUnit);
 
         // Front face
         var frontFace = reverseSide ? this._gl.CW : this._gl.CCW;
@@ -1743,7 +1754,7 @@ export class ThinEngine {
     }
 
     /**
-     * Set the z offset to apply to current rendering
+     * Set the z offset Factor to apply to current rendering
      * @param value defines the offset to apply
      */
     public setZOffset(value: number): void {
@@ -1751,11 +1762,29 @@ export class ThinEngine {
     }
 
     /**
-     * Gets the current value of the zOffset
-     * @returns the current zOffset state
+     * Gets the current value of the zOffset Factor
+     * @returns the current zOffset Factor state
      */
     public getZOffset(): number {
-        return this._depthCullingState.zOffset;
+        const zOffset = this._depthCullingState.zOffset;
+        return this.useReverseDepthBuffer ? -zOffset : zOffset;
+    }
+
+    /**
+     * Set the z offset Unit to apply to current rendering
+     * @param value defines the offset to apply
+     */
+    public setZOffsetUnit(value: number): void {
+        this._depthCullingState.zOffsetUnit = this.useReverseDepthBuffer ? -value : value;
+    }
+
+    /**
+     * Gets the current value of the zOffset Unit
+     * @returns the current zOffset Unit state
+     */
+    public getZOffsetUnit(): number {
+        const zOffsetUnit = this._depthCullingState.zOffsetUnit;
+        return this.useReverseDepthBuffer ? -zOffsetUnit : zOffsetUnit;
     }
 
     /** @hidden */
@@ -2526,11 +2555,12 @@ export class ThinEngine {
      * @param onCompiled defines a function to call when the effect creation is successful
      * @param onError defines a function to call when the effect creation has failed
      * @param indexParameters defines an object containing the index values to use to compile shaders (like the maximum number of simultaneous lights)
+     * @param shaderLanguage the language the shader is written in (default: GLSL)
      * @returns the new Effect
      */
     public createEffect(baseName: any, attributesNamesOrOptions: string[] | IEffectCreationOptions, uniformsNamesOrEngine: string[] | ThinEngine, samplers?: string[], defines?: string,
         fallbacks?: IEffectFallbacks,
-        onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any): Effect {
+        onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any, shaderLanguage = ShaderLanguage.GLSL): Effect {
         var vertex = baseName.vertexElement || baseName.vertex || baseName.vertexToken || baseName.vertexSource || baseName;
         var fragment = baseName.fragmentElement || baseName.fragment || baseName.fragmentToken || baseName.fragmentSource || baseName;
         const globalDefines = this._getGlobalDefines()!;
@@ -2550,7 +2580,7 @@ export class ThinEngine {
 
             return compiledEffect;
         }
-        var effect = new Effect(baseName, attributesNamesOrOptions, uniformsNamesOrEngine, samplers, this, defines, fallbacks, onCompiled, onError, indexParameters, name);
+        var effect = new Effect(baseName, attributesNamesOrOptions, uniformsNamesOrEngine, samplers, this, defines, fallbacks, onCompiled, onError, indexParameters, name, shaderLanguage);
         this._compiledEffects[name] = effect;
 
         return effect;
