@@ -5,21 +5,7 @@ import { Effect } from '../../Materials/effect';
 import { WebGPUShaderProcessingContext } from './webgpuShaderProcessingContext';
 import { UniformBuffer } from "../../Materials/uniformBuffer";
 import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from '../../Maths/math.like';
-
-const _uniformSizes: { [type: string]: number } = {
-    "bool": 1,
-    "int": 1,
-    "float": 1,
-    "vec2": 2,
-    "ivec2": 2,
-    "vec3": 3,
-    "ivec3": 3,
-    "vec4": 4,
-    "ivec4": 4,
-    "mat2": 4,
-    "mat3": 12,
-    "mat4": 16
-};
+import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
 
 /** @hidden */
 export interface IWebGPUPipelineContextVertexInputsCache {
@@ -43,7 +29,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
 
     public shaderProcessingContext: WebGPUShaderProcessingContext;
 
-    public leftOverUniformsByName: { [name: string]: string };
+    protected _leftOverUniformsByName: { [name: string]: string };
 
     public sources: {
         vertex: string,
@@ -57,7 +43,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
     public bindGroupLayouts: GPUBindGroupLayout[];
 
     /**
-     * Stores the uniform buffer
+     * Stores the left-over uniform buffer
      */
     public uniformBuffer: Nullable<UniformBuffer>;
 
@@ -82,7 +68,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
     constructor(shaderProcessingContext: WebGPUShaderProcessingContext, engine: WebGPUEngine) {
         this._name = "unnamed";
         this.shaderProcessingContext = shaderProcessingContext;
-        this.leftOverUniformsByName = {};
+        this._leftOverUniformsByName = {};
         this.engine = engine;
     }
 
@@ -99,7 +85,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
         // this._fragmentSourceCodeOverride = "";
         // this._vertexSourceCodeOverride = "";
 
-        const foundSamplers = this.shaderProcessingContext.availableSamplers;
+        const foundSamplers = this.shaderProcessingContext.availableTextures;
         let index: number;
         for (index = 0; index < samplerList.length; index++) {
             const name = samplerList[index];
@@ -146,10 +132,10 @@ export class WebGPUPipelineContext implements IPipelineContext {
         this.uniformBuffer = new UniformBuffer(this.engine, undefined, undefined, "leftOver-" + this._name);
 
         for (let leftOverUniform of this.shaderProcessingContext.leftOverUniforms) {
-            const size = _uniformSizes[leftOverUniform.type];
+            const type = leftOverUniform.type.replace(/^(.*?)(<.*>)?$/, "$1");
+            const size = WebGPUShaderProcessor.UniformSizes[type];
             this.uniformBuffer.addUniform(leftOverUniform.name, size, leftOverUniform.length);
-            // TODO WEBGPU. Replace with info from uniform buffer class
-            this.leftOverUniformsByName[leftOverUniform.name] = leftOverUniform.type;
+            this._leftOverUniformsByName[leftOverUniform.name] = leftOverUniform.type;
         }
 
         this.uniformBuffer.create();
@@ -170,7 +156,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @param value Value to be set.
      */
     public setInt(uniformName: string, value: number): void {
-        if (!this.uniformBuffer || !this.leftOverUniformsByName[uniformName]) {
+        if (!this.uniformBuffer || !this._leftOverUniformsByName[uniformName]) {
             return;
         }
         this.uniformBuffer.updateInt(uniformName, value);
@@ -183,7 +169,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @param y Second int in int2.
      */
     public setInt2(uniformName: string, x: number, y: number): void {
-        if (!this.uniformBuffer || !this.leftOverUniformsByName[uniformName]) {
+        if (!this.uniformBuffer || !this._leftOverUniformsByName[uniformName]) {
             return;
         }
         this.uniformBuffer.updateInt2(uniformName, x, y);
@@ -197,7 +183,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @param z Third int in int3.
      */
     public setInt3(uniformName: string, x: number, y: number, z: number): void {
-        if (!this.uniformBuffer || !this.leftOverUniformsByName[uniformName]) {
+        if (!this.uniformBuffer || !this._leftOverUniformsByName[uniformName]) {
             return;
         }
         this.uniformBuffer.updateInt3(uniformName, x, y, z);
@@ -212,7 +198,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @param w Fourth int in int4.
      */
     public setInt4(uniformName: string, x: number, y: number, z: number, w: number): void {
-        if (!this.uniformBuffer || !this.leftOverUniformsByName[uniformName]) {
+        if (!this.uniformBuffer || !this._leftOverUniformsByName[uniformName]) {
             return;
         }
         this.uniformBuffer.updateInt4(uniformName, x, y, z, w);
@@ -224,7 +210,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @param array array to be set.
      */
     public setIntArray(uniformName: string, array: Int32Array): void {
-        if (!this.uniformBuffer || !this.leftOverUniformsByName[uniformName]) {
+        if (!this.uniformBuffer || !this._leftOverUniformsByName[uniformName]) {
             return;
         }
         this.uniformBuffer.updateIntArray(uniformName, array);
@@ -263,7 +249,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @param array array to be set.
      */
     public setArray(uniformName: string, array: number[]): void {
-        if (!this.uniformBuffer || !this.leftOverUniformsByName[uniformName]) {
+        if (!this.uniformBuffer || !this._leftOverUniformsByName[uniformName]) {
             return;
         }
         this.uniformBuffer.updateArray(uniformName, array);
@@ -303,7 +289,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @param matrices matrices to be set.
      */
     public setMatrices(uniformName: string, matrices: Float32Array): void {
-        if (!this.uniformBuffer || !this.leftOverUniformsByName[uniformName]) {
+        if (!this.uniformBuffer || !this._leftOverUniformsByName[uniformName]) {
             return;
         }
         this.uniformBuffer.updateMatrices(uniformName, matrices);
@@ -315,7 +301,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @param matrix matrix to be set.
      */
     public setMatrix(uniformName: string, matrix: IMatrixLike): void {
-        if (!this.uniformBuffer || !this.leftOverUniformsByName[uniformName]) {
+        if (!this.uniformBuffer || !this._leftOverUniformsByName[uniformName]) {
             return;
         }
         this.uniformBuffer.updateMatrix(uniformName, matrix);
@@ -327,7 +313,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @param matrix matrix to be set.
      */
     public setMatrix3x3(uniformName: string, matrix: Float32Array): void {
-        if (!this.uniformBuffer || !this.leftOverUniformsByName[uniformName]) {
+        if (!this.uniformBuffer || !this._leftOverUniformsByName[uniformName]) {
             return;
         }
         this.uniformBuffer.updateMatrix3x3(uniformName, matrix);
@@ -339,7 +325,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @param matrix matrix to be set.
      */
     public setMatrix2x2(uniformName: string, matrix: Float32Array): void {
-        if (!this.uniformBuffer || !this.leftOverUniformsByName[uniformName]) {
+        if (!this.uniformBuffer || !this._leftOverUniformsByName[uniformName]) {
             return;
         }
         this.uniformBuffer.updateMatrix2x2(uniformName, matrix);
@@ -352,7 +338,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @returns this effect.
      */
     public setFloat(uniformName: string, value: number): void {
-        if (!this.uniformBuffer || !this.leftOverUniformsByName[uniformName]) {
+        if (!this.uniformBuffer || !this._leftOverUniformsByName[uniformName]) {
             return;
         }
         this.uniformBuffer.updateFloat(uniformName, value);
@@ -374,7 +360,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @param y Second float in float2.
      */
     public setFloat2(uniformName: string, x: number, y: number): void {
-        if (!this.uniformBuffer || !this.leftOverUniformsByName[uniformName]) {
+        if (!this.uniformBuffer || !this._leftOverUniformsByName[uniformName]) {
             return;
         }
         this.uniformBuffer.updateFloat2(uniformName, x, y);
@@ -397,7 +383,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @param z Third float in float3.
      */
     public setFloat3(uniformName: string, x: number, y: number, z: number): void {
-        if (!this.uniformBuffer || !this.leftOverUniformsByName[uniformName]) {
+        if (!this.uniformBuffer || !this._leftOverUniformsByName[uniformName]) {
             return;
         }
         this.uniformBuffer.updateFloat3(uniformName, x, y, z);
@@ -422,7 +408,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @returns this effect.
      */
     public setFloat4(uniformName: string, x: number, y: number, z: number, w: number): void {
-        if (!this.uniformBuffer || !this.leftOverUniformsByName[uniformName]) {
+        if (!this.uniformBuffer || !this._leftOverUniformsByName[uniformName]) {
             return;
         }
         this.uniformBuffer.updateFloat4(uniformName, x, y, z, w);

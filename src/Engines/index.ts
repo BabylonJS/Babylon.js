@@ -27,3 +27,4 @@ export * from "./engineFactory";
 export * from "./IMaterialContext";
 export * from "./IDrawContext";
 export * from "./shaderStore";
+export * from "./Processors/iShaderProcessor";
