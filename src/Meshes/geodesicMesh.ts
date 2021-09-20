@@ -17,7 +17,7 @@ export class _PrimaryIsoTriangle {
     public max: number[] = [];
     public min: number[] = [];
     public vecToIdx: {[key: string]: number};
-    public vertByDist: {[key: string]: any};
+    public vertByDist: {[key: string]: number[]};
     public closestTo: number[][] = [];
 
     public innerFacets: string[][] = [];
@@ -63,8 +63,8 @@ export class _PrimaryIsoTriangle {
         m1 = m / g;
         n1 = n / g;
 
-        let fr: any; //face to the right of current face
-        let rot: string; //rotation about which vertex for fr
+        let fr: number | string; //face to the right of current face
+        let rot: number | string; //rotation about which vertex for fr
         let O: number;
         let A: number;
         let B: number;
@@ -80,7 +80,7 @@ export class _PrimaryIsoTriangle {
         let isoId: string;
         let isoIdR: string;
 
-        const closestTo = [];
+        const closestTo: number[][] = [];
         const vDist = this.vertByDist;
 
         this.IDATA.edgematch = [ [1, "B"], [2, "B"], [3, "B"], [4, "B"], [0, "B"], [10, "O", 14, "A"], [11, "O", 10, "A"], [12, "O", 11, "A"], [13, "O", 12, "A"], [14, "O", 13, "A"], [0, "O"], [1, "O"], [2, "O"], [3, "O"], [4, "O"], [19, "B", 5, "A"], [15, "B", 6, "A"], [16, "B", 7, "A"], [17, "B", 8, "A"], [18, "B", 9, "A"] ];
@@ -116,8 +116,8 @@ export class _PrimaryIsoTriangle {
             }
 
             //for edge vertices
-            fr = this.IDATA.edgematch[f][0];
-            rot = this.IDATA.edgematch[f][1];
+            fr = <number>this.IDATA.edgematch[f][0];
+            rot = <string>this.IDATA.edgematch[f][1];
             if (rot === "B") {
                     for (let i = 1; i < g; i++) {
                         ABvec.x = m - i * (m1 + n1);
@@ -142,8 +142,8 @@ export class _PrimaryIsoTriangle {
                     }
             }
 
-            fr = this.IDATA.edgematch[f][2];
-            rot = this.IDATA.edgematch[f][3];
+            fr = <number>this.IDATA.edgematch[f][2];
+            rot = <string>this.IDATA.edgematch[f][3];
             if (rot && rot === "A") {
                     for (let i = 1; i < g; i++) {
                         OAvec.x = i * m1;
@@ -165,7 +165,7 @@ export class _PrimaryIsoTriangle {
                         closestTo[vecToIdx[idx]] = [-vDist[isoId][0], vDist[isoId][1], vecToIdx[idx]];
                     }
                     else {
-                        closestTo[vecToIdx[idx]] = [verts[vDist[isoId][0]], vDist[isoId][1], idx];
+                        closestTo[vecToIdx[idx]] = [verts[vDist[isoId][0]], vDist[isoId][1], vecToIdx[idx]];
                     }
                 }
             }
@@ -189,7 +189,7 @@ export class _PrimaryIsoTriangle {
                 closestTo[vecToIdx[idx]] = [-vDist[isoId][0], vDist[isoId][1], vecToIdx[idx]];
             }
             else {
-                closestTo[vecToIdx[idx]] = [verts[vDist[isoId][0]], vDist[isoId][1], idx];
+                closestTo[vecToIdx[idx]] = [verts[vDist[isoId][0]], vDist[isoId][1], vecToIdx[idx]];
             }
         }
         this.closestTo = closestTo;
@@ -422,12 +422,12 @@ export class _PrimaryIsoTriangle {
             return v.x + v.y;
         };
 
-        const cartesian = new Array<Vector3>();
-        const distFromO = new Array<number>();
-        const distFromA = new Array<number>();
-        const distFromB = new Array<number>();
-        const vertByDist: {[key: string]: any} = {};
-        const vertData = new Array<any>();
+        const cartesian: Vector3[] = [];
+        const distFromO: number[] = [];
+        const distFromA: number[] = [];
+        const distFromB: number[] = [];
+        const vertByDist: {[key: string]: number[]} = {};
+        const vertData: number[][] = [];
         let closest: number = -1;
         let dist: number = -1;
         for (let i = 0; i < len; i++) {
@@ -502,7 +502,7 @@ export class _PrimaryIsoTriangle {
 
 export class PolyhedronData {
 
-    public edgematch: any[][];
+    public edgematch: (number | string)[][];
 
     constructor (
         public name: string,
@@ -522,7 +522,7 @@ export class GeodesicData extends PolyhedronData{
     /**
      * @hidden
      */
-    public edgematch: any[][];
+    public edgematch: (number | string)[][];
     /**
      * @hidden
      */
@@ -601,11 +601,11 @@ export class GeodesicData extends PolyhedronData{
      * @hidden
      */
     public orderData(primTri: _PrimaryIsoTriangle) {
-        const nearTo: any = [];
+        const nearTo: number[][][] = [];
         for (let i = 0; i < 13; i++) {
             nearTo[i] = [];
         }
-        const close = primTri.closestTo;
+        const close: number[][] = primTri.closestTo;
         for (let i = 0; i < close.length; i++) {
            if (close[i][0] > -1) {
                if (close[i][1] > 0) {
@@ -617,7 +617,7 @@ export class GeodesicData extends PolyhedronData{
            }
         }
 
-        const near = [];
+        const near: number[] = [];
         for (let i = 0; i < 12; i++) {
             near[i] = i;
         }
@@ -665,7 +665,7 @@ export class GeodesicData extends PolyhedronData{
     public setOrder(m: number, faces: number[]) {
         const adjVerts: number[] = [];
         const dualFaces: number[] = [];
-        let face: any = faces.pop();
+        let face: number = <number>faces.pop();
         dualFaces.push(face);
         let index = this.face[face].indexOf(m);
         index = (index + 2) % 3;

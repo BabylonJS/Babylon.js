@@ -8,7 +8,7 @@ import { Logger } from "../../Misc/logger";
 import { _PrimaryIsoTriangle, GeodesicData, PolyhedronData } from "../geodesicMesh";
 import { VertexBuffer } from "../../Buffers/buffer";
 
-VertexData.CreateGoldberg = function(options: { size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, sideOrientation?: number }, goldbergData: PolyhedronData): VertexData {
+VertexData.CreateGoldberg = function(options: { size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, sideOrientation?: number }, goldbergData: PolyhedronData): VertexData {
 
     const size = options.size;
     const sizeX: number = options.sizeX || size || 1;
@@ -69,12 +69,13 @@ VertexData.CreateGoldberg = function(options: { size?: number, sizeX?: number, s
  */
  export class GoldbergBuilder {
     /**
-     * Creates the Mesh for a Geodesic Polyhedron
+     * Creates the Mesh for a Goldberg Polyhedron which is made from 12 pentagonal and the rest hexagonal faces
+     * @see https://en.wikipedia.org/wiki/Goldberg_polyhedron
      * @param name defines the name of the mesh
      * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty
      * * m number of horizontal steps along an isogrid
      * * n number of angled steps along an isogrid
-     * * size the size of the Geodesic, optional default 1
+     * * size the size of the Goldberg, optional default 1
      * * sizeX allows stretching in the x direction, optional, default size
      * * sizeY allows stretching in the y direction, optional, default size
      * * sizeZ allows stretching in the z direction, optional, default size
@@ -85,7 +86,7 @@ VertexData.CreateGoldberg = function(options: { size?: number, sizeX?: number, s
      * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
      * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
      * @param scene defines the hosting scene
-     * @returns Geodesic mesh
+     * @returns Goldberg mesh
      */
     public static CreateGoldberg(name: string, options: { m?: number, n?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, updatable?: boolean, sideOrientation?: number }, scene: Nullable<Scene> = null): Mesh {
         let m: number = options.m || 1;
@@ -147,10 +148,20 @@ VertexData.CreateGoldberg = function(options: { size?: number, sizeX?: number, s
     }
 }
 
+/**
+ * Standard Generic type to extend a class
+ */
 type MeshExtendToGoldberg<T = {}> = new (...args: any[]) => T;
 
+/**
+ * Restrict the type to extending a Mesh
+ */
 type isMesh = MeshExtendToGoldberg<Mesh>;
 
+/**
+ * Mixin to extend the Mesh class to a Goldberg class
+ * When applied to extend a mesh tthe mesh must be an import of a previously exported Goldberg mesh
+ */
 function GoldbergCreate<TBase extends isMesh>(Base: TBase) {
     return class Goldberg extends Base {
         public faceColors: Color4[] = [];
@@ -209,11 +220,11 @@ function GoldbergCreate<TBase extends isMesh>(Base: TBase) {
             this.faceZaxis = this.metadata.faceZaxis;
         }
 
-        public changeFaceColors(colorRange : any[][]): number[] {
+        public changeFaceColors(colorRange : (number | Color4)[][]): number[] {
             for (let i = 0; i < colorRange.length; i++) {
-                const min: number = colorRange[i][0];
-                const max: number = colorRange[i][1];
-                const col: Color4 = colorRange[i][2];
+                const min: number = <number>colorRange[i][0];
+                const max: number = <number>colorRange[i][1];
+                const col: Color4 = <Color4>colorRange[i][2];
                 for (let f = min; f < max + 1; f++) {
                     this.faceColors[f] = col;
                 }
@@ -232,24 +243,24 @@ function GoldbergCreate<TBase extends isMesh>(Base: TBase) {
             return newCols;
         }
 
-        public setFaceColors(colorRange : any[][]) {
+        public setFaceColors(colorRange : (number | Color4)[][]) {
             const newCols = this.changeFaceColors(colorRange);
             this.setVerticesData(VertexBuffer.ColorKind, newCols);
         }
 
-        public updateFaceColors(colorRange : any[][]) {
+        public updateFaceColors(colorRange : (number | Color4)[][]) {
             const newCols = this.changeFaceColors(colorRange);
             this.updateVerticesData(VertexBuffer.ColorKind, newCols);
         }
 
-        private changeFaceUVs(uvRange : any[][]): FloatArray {
+        private changeFaceUVs(uvRange : (number | Vector2)[][]): FloatArray {
             const uvs: FloatArray = this.getVerticesData(VertexBuffer.UVKind)!!;
             for (let i = 0; i < uvRange.length; i++) {
-                const min: number = uvRange[i][0];
-                const max: number = uvRange[i][1];
-                const center: Vector2 = uvRange[i][2];
-                const radius: number = uvRange[i][3];
-                const angle: number = uvRange[i][4];
+                const min: number = <number>uvRange[i][0];
+                const max: number = <number>uvRange[i][1];
+                const center: Vector2 = <Vector2>uvRange[i][2];
+                const radius: number = <number>uvRange[i][3];
+                const angle: number = <number>uvRange[i][4];
                 const points5: number[] = [];
                 const points6: number[] = [];
                 let u: number;
@@ -293,12 +304,12 @@ function GoldbergCreate<TBase extends isMesh>(Base: TBase) {
             return uvs;
         }
 
-        public setFaceUVs(uvRange : any[][]) {
+        public setFaceUVs(uvRange : (number | Vector2)[][]) {
             const newUVs: FloatArray = this.changeFaceUVs(uvRange);
             this.setVerticesData(VertexBuffer.UVKind, newUVs);
         }
 
-        public updateFaceUVs(uvRange : any[][]) {
+        public updateFaceUVs(uvRange : (number | Vector2)[][]) {
             const newUVs = this.changeFaceUVs(uvRange);
             this.updateVerticesData(VertexBuffer.UVKind, newUVs);
         }
@@ -311,6 +322,9 @@ function GoldbergCreate<TBase extends isMesh>(Base: TBase) {
     };
 }
 
+/**
+ * Function to use when extending the mesh class to a Goldberg class
+ */
 const GoldbergMesh = GoldbergCreate(Mesh);
 
 Mesh.ToGoldberg =  (mesh: Mesh) : Mesh => {
