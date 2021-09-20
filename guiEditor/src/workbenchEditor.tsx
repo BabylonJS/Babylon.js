@@ -268,7 +268,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                     {/* Node creation menu */}
 
                     <div id="leftGrab" onPointerDown={(evt) => this.onPointerDown(evt)} onPointerUp={(evt) => this.onPointerUp(evt)} onPointerMove={(evt) => this.resizeColumns(evt)}></div>
-                    <SceneExplorerComponent globalState={this.props.globalState}></SceneExplorerComponent>
+                    <SceneExplorerComponent globalState={this.props.globalState} noExpand={true}></SceneExplorerComponent>
                     {
                         this.createToolbar()
                     }

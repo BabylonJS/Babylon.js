@@ -23,7 +23,6 @@ export interface ITreeItemSelectableComponentProps {
 }
 
 export class TreeItemSelectableComponent extends React.Component<ITreeItemSelectableComponentProps, { isExpanded: boolean, isSelected: boolean, isHovered: boolean, dragOverLocation: DragOverLocation }> {
-    private _wasSelected = false;
     dragOverHover: boolean;
     private _onSelectionChangedObservable: Nullable<Observer<any>>;
     private _onDraggingEndObservable: Nullable<Observer<any>>;
@@ -81,29 +80,16 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
         }
     }
 
-    componentDidMount() {
-        if (this.state.isSelected) {
-            this.scrollIntoView();
-        }
-    }
-
     componentWillUnmount() {
         this.props.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObservable);
         this.props.globalState.onParentingChangeObservable.remove(this._onDraggingEndObservable);
         this.props.globalState.onParentingChangeObservable.remove(this._onDraggingStartObservable);
-    }
-    componentDidUpdate() {
-        if (this.state.isSelected && !this._wasSelected) {
-            this.scrollIntoView();
-        }
-        this._wasSelected = false;
     }
 
     onSelect() {
         if (!this.props.globalState.onSelectionChangedObservable) {
             return;
         }
-        this._wasSelected = true;
         const entity = this.props.entity;
         this.props.globalState.onSelectionChangedObservable.notifyObservers(entity);
         this.props.globalState.selectionLock = true;
