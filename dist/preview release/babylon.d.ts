@@ -2355,9 +2355,10 @@ declare module BABYLON {
          * @param onError callback called when the image fails to load
          * @param offlineProvider offline provider for caching
          * @param mimeType optional mime type
+         * @param imageBitmapOptions optional the options to use when creating an ImageBitmap
          * @returns the HTMLImageElement of the loaded image
          */
-        static LoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string): Nullable<HTMLImageElement>;
+        static LoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string, imageBitmapOptions?: ImageBitmapOptions): Nullable<HTMLImageElement>;
         /**
          * Reads a file from a File object
          * @param file defines the file to load
@@ -41192,10 +41193,11 @@ declare module BABYLON {
          * @param onError callback called when the image fails to load
          * @param offlineProvider offline provider for caching
          * @param mimeType optional mime type
+         * @param imageBitmapOptions optional the options to use when creating an ImageBitmap
          * @returns the HTMLImageElement of the loaded image
          * @hidden
          */
-        static _FileToolsLoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string): Nullable<HTMLImageElement>;
+        static _FileToolsLoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string, imageBitmapOptions?: ImageBitmapOptions): Nullable<HTMLImageElement>;
         /**
          * @hidden
          */
@@ -43750,9 +43752,10 @@ declare module BABYLON {
          * @param onError callback called when the image fails to load
          * @param offlineProvider offline provider for caching
          * @param mimeType optional mime type
+         * @param imageBitmapOptions optional the options to use when creating an ImageBitmap
          * @returns the HTMLImageElement of the loaded image
          */
-        static LoadImage(input: string | ArrayBuffer | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string): Nullable<HTMLImageElement>;
+        static LoadImage(input: string | ArrayBuffer | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string, imageBitmapOptions?: ImageBitmapOptions): Nullable<HTMLImageElement>;
         /**
          * Loads a file from a url
          * @param url url string, ArrayBuffer, or Blob to load
