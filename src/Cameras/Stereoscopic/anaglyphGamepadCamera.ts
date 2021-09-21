@@ -3,9 +3,7 @@ import { GamepadCamera } from "../../Cameras/gamepadCamera";
 import { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
 import { Node } from "../../node";
-
-// Side effect import to define the stereoscopic mode.
-import "../RigModes/stereoscopicAnaglyphRigMode";
+import { setStereoscopicAnaglyphRigMode } from "../RigModes/stereoscopicAnaglyphRigMode";
 
 Node.AddNodeConstructor("AnaglyphGamepadCamera", (name, scene, options) => {
     return () => new AnaglyphGamepadCamera(name, Vector3.Zero(), options.interaxial_distance, scene);
@@ -36,4 +34,6 @@ export class AnaglyphGamepadCamera extends GamepadCamera {
     public getClassName(): string {
         return "AnaglyphGamepadCamera";
     }
+
+    protected _setRigMode = setStereoscopicAnaglyphRigMode.bind(this);
 }

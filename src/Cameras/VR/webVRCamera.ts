@@ -15,13 +15,11 @@ import { Ray } from "../../Culling/ray";
 import { HemisphericLight } from "../../Lights/hemisphericLight";
 import { Logger } from '../../Misc/logger';
 import { VRMultiviewToSingleviewPostProcess } from '../../PostProcesses/vrMultiviewToSingleviewPostProcess';
-
-// Side effect import to define the stereoscopic mode.
-import "../RigModes/webVRRigMode";
+import { Tools } from '../../Misc/tools';
+import { setWebVRRigMode } from "../RigModes/webVRRigMode";
 
 // Side effect import to add webvr support to engine
 import "../../Engines/Extensions/engine.webVR";
-import { Tools } from '../../Misc/tools';
 
 Node.AddNodeConstructor("WebVRFreeCamera", (name, scene) => {
     return () => new WebVRFreeCamera(name, Vector3.Zero(), scene);
@@ -330,6 +328,8 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
             }
         });
     }
+
+    protected _setRigMode = setWebVRRigMode.bind(this);
 
     /**
      * Gets the device distance from the ground in meters.
