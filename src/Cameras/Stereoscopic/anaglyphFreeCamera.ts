@@ -35,5 +35,5 @@ export class AnaglyphFreeCamera extends FreeCamera {
         return "AnaglyphFreeCamera";
     }
 
-    protected _setRigMode = setStereoscopicAnaglyphRigMode.bind(this);
+    protected _setRigMode = setStereoscopicAnaglyphRigMode.bind(null, this);
 }
