@@ -137,9 +137,10 @@ export class FileTools {
      * @param onError callback called when the image fails to load
      * @param offlineProvider offline provider for caching
      * @param mimeType optional mime type
+     * @param imageBitmapOptions optional the options to use when creating an ImageBitmap
      * @returns the HTMLImageElement of the loaded image
      */
-    public static LoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType: string = ""): Nullable<HTMLImageElement> {
+    public static LoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType: string = "", imageBitmapOptions?: ImageBitmapOptions): Nullable<HTMLImageElement> {
         let url: string;
         let usingObjectURL = false;
 
@@ -164,7 +165,7 @@ export class FileTools {
 
         if (typeof Image === "undefined" || (engine?._features.forceBitmapOverHTMLImageElement ?? false)) {
             FileTools.LoadFile(url, (data) => {
-                engine!.createImageBitmap(new Blob([data], { type: mimeType }), { premultiplyAlpha: "none" }).then((imgBmp) => {
+                engine!.createImageBitmap(new Blob([data], { type: mimeType }), { premultiplyAlpha: "none", ...imageBitmapOptions }).then((imgBmp) => {
                     onLoad(imgBmp);
                     if (usingObjectURL) {
                         URL.revokeObjectURL(url);

@@ -264,22 +264,49 @@ export class SphericalHarmonics {
     }
 
     /**
+     * update the spherical harmonics coefficients from the given array
+     * @param data defines the 9x3 coefficients (l00, l1-1, l10, l11, l2-2, l2-1, l20, l21, l22)
+     * @returns the spherical harmonics (this)
+     */
+    public updateFromArray(data: ArrayLike<ArrayLike<number>>): SphericalHarmonics {
+        Vector3.FromArrayToRef(data[0], 0, this.l00);
+        Vector3.FromArrayToRef(data[1], 0, this.l1_1);
+        Vector3.FromArrayToRef(data[2], 0, this.l10);
+        Vector3.FromArrayToRef(data[3], 0, this.l11);
+        Vector3.FromArrayToRef(data[4], 0, this.l2_2);
+        Vector3.FromArrayToRef(data[5], 0, this.l2_1);
+        Vector3.FromArrayToRef(data[6], 0, this.l20);
+        Vector3.FromArrayToRef(data[7], 0, this.l21);
+        Vector3.FromArrayToRef(data[8], 0, this.l22);
+        return this;
+    }
+
+    /**
+     * update the spherical harmonics coefficients from the given floats array
+     * @param data defines the 9x3 coefficients (l00, l1-1, l10, l11, l2-2, l2-1, l20, l21, l22)
+     * @returns the spherical harmonics (this)
+     */
+    public updateFromFloatsArray(data: ArrayLike<number>): SphericalHarmonics {
+        Vector3.FromFloatsToRef(data[0], data[1], data[2], this.l00);
+        Vector3.FromFloatsToRef(data[3], data[4], data[5], this.l1_1);
+        Vector3.FromFloatsToRef(data[6], data[7], data[8], this.l10);
+        Vector3.FromFloatsToRef(data[9], data[10], data[11], this.l11);
+        Vector3.FromFloatsToRef(data[12], data[13], data[14], this.l2_2);
+        Vector3.FromFloatsToRef(data[15], data[16], data[17], this.l2_1);
+        Vector3.FromFloatsToRef(data[18], data[19], data[20], this.l20);
+        Vector3.FromFloatsToRef(data[21], data[22], data[23], this.l21);
+        Vector3.FromFloatsToRef(data[24], data[25], data[26], this.l22);
+        return this;
+    }
+
+    /**
      * Constructs a spherical harmonics from an array.
      * @param data defines the 9x3 coefficients (l00, l1-1, l10, l11, l2-2, l2-1, l20, l21, l22)
      * @returns the spherical harmonics
      */
     public static FromArray(data: ArrayLike<ArrayLike<number>>): SphericalHarmonics {
         const sh = new SphericalHarmonics();
-        Vector3.FromArrayToRef(data[0], 0, sh.l00);
-        Vector3.FromArrayToRef(data[1], 0, sh.l1_1);
-        Vector3.FromArrayToRef(data[2], 0, sh.l10);
-        Vector3.FromArrayToRef(data[3], 0, sh.l11);
-        Vector3.FromArrayToRef(data[4], 0, sh.l2_2);
-        Vector3.FromArrayToRef(data[5], 0, sh.l2_1);
-        Vector3.FromArrayToRef(data[6], 0, sh.l20);
-        Vector3.FromArrayToRef(data[7], 0, sh.l21);
-        Vector3.FromArrayToRef(data[8], 0, sh.l22);
-        return sh;
+        return sh.updateFromArray(data);
     }
 
     // Keep for references.
@@ -405,29 +432,50 @@ export class SphericalPolynomial {
     }
 
     /**
+     * Updates the spherical polynomial from harmonics
+     * @param harmonics the spherical harmonics
+     * @returns the spherical polynomial
+     */
+    public updateFromHarmonics(harmonics: SphericalHarmonics): SphericalPolynomial {
+        this._harmonics = harmonics;
+
+        this.x.copyFrom(harmonics.l11);
+        this.x.scaleInPlace(1.02333).scaleInPlace(-1);
+        this.y.copyFrom(harmonics.l1_1);
+        this.y.scaleInPlace(1.02333).scaleInPlace(-1);
+        this.z.copyFrom(harmonics.l10);
+        this.z.scaleInPlace(1.02333);
+
+        this.xx.copyFrom(harmonics.l00);
+        TmpVectors.Vector3[0].copyFrom(harmonics.l20).scaleInPlace(0.247708);
+        TmpVectors.Vector3[1].copyFrom(harmonics.l22).scaleInPlace(0.429043);
+        this.xx.scaleInPlace(0.886277).subtractInPlace(TmpVectors.Vector3[0]).addInPlace(TmpVectors.Vector3[1]);
+        this.yy.copyFrom(harmonics.l00);
+        this.yy.scaleInPlace(0.886277).subtractInPlace(TmpVectors.Vector3[0]).subtractInPlace(TmpVectors.Vector3[1]);
+        this.zz.copyFrom(harmonics.l00);
+        TmpVectors.Vector3[0].copyFrom(harmonics.l20).scaleInPlace(0.495417);
+        this.zz.scaleInPlace(0.886277).addInPlace(TmpVectors.Vector3[0]);
+
+        this.yz.copyFrom(harmonics.l2_1);
+        this.yz.scaleInPlace(0.858086).scaleInPlace(-1);
+        this.zx.copyFrom(harmonics.l21);
+        this.zx.scaleInPlace(0.858086).scaleInPlace(-1);
+        this.xy.copyFrom(harmonics.l2_2);
+        this.xy.scaleInPlace(0.858086);
+
+        this.scaleInPlace(1.0 / Math.PI);
+
+        return this;
+    }
+
+    /**
      * Gets the spherical polynomial from harmonics
      * @param harmonics the spherical harmonics
      * @returns the spherical polynomial
      */
     public static FromHarmonics(harmonics: SphericalHarmonics): SphericalPolynomial {
         var result = new SphericalPolynomial();
-        result._harmonics = harmonics;
-
-        result.x = harmonics.l11.scale(1.02333).scale(-1);
-        result.y = harmonics.l1_1.scale(1.02333).scale(-1);
-        result.z = harmonics.l10.scale(1.02333);
-
-        result.xx = harmonics.l00.scale(0.886277).subtract(harmonics.l20.scale(0.247708)).add(harmonics.l22.scale(0.429043));
-        result.yy = harmonics.l00.scale(0.886277).subtract(harmonics.l20.scale(0.247708)).subtract(harmonics.l22.scale(0.429043));
-        result.zz = harmonics.l00.scale(0.886277).add(harmonics.l20.scale(0.495417));
-
-        result.yz = harmonics.l2_1.scale(0.858086).scale(-1);
-        result.zx = harmonics.l21.scale(0.858086).scale(-1);
-        result.xy = harmonics.l2_2.scale(0.858086);
-
-        result.scaleInPlace(1.0 / Math.PI);
-
-        return result;
+        return result.updateFromHarmonics(harmonics);
     }
 
     /**

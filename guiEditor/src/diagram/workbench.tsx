@@ -435,6 +435,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             }
         }
         this.globalState.draggedControl = null;
+        this.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
     }
 
     private _isNotChildInsert(control: Nullable<Control>, draggedControl: Nullable<Control>) {

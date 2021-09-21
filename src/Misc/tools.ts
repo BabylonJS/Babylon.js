@@ -353,10 +353,11 @@ export class Tools {
      * @param onError callback called when the image fails to load
      * @param offlineProvider offline provider for caching
      * @param mimeType optional mime type
+     * @param imageBitmapOptions optional the options to use when creating an ImageBitmap
      * @returns the HTMLImageElement of the loaded image
      */
-    public static LoadImage(input: string | ArrayBuffer | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string): Nullable<HTMLImageElement> {
-        return FileTools.LoadImage(input, onLoad, onError, offlineProvider, mimeType);
+    public static LoadImage(input: string | ArrayBuffer | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string, imageBitmapOptions?: ImageBitmapOptions): Nullable<HTMLImageElement> {
+        return FileTools.LoadImage(input, onLoad, onError, offlineProvider, mimeType, imageBitmapOptions);
     }
 
     /**
