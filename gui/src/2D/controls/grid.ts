@@ -514,7 +514,7 @@ export class Grid extends Container {
             let childSerializationObject = { value: rd?.getValue(this.host), unit: rd?.unit };
             serializationObject.rows.push(childSerializationObject);
         }
-        this.children.forEach(child => {
+        this.children.forEach((child) => {
             serializationObject.tags.push(child._tag);
         });
     }
@@ -523,7 +523,7 @@ export class Grid extends Container {
     public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
         super._parseFromContent(serializedObject, host);
         let children: Control[] = [];
-        this.children.forEach(child => {
+        this.children.forEach((child) => {
             children.push(child);
         });
         this.removeRowDefinition(0);
