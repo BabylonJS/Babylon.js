@@ -1,5 +1,5 @@
 import { Nullable } from "babylonjs/types";
-import { SerializationHelper } from "babylonjs/Misc/decorators";
+import { SerializationHelper, serialize } from "babylonjs/Misc/decorators";
 import { Matrix, Vector2, Vector3, Vector4 } from "babylonjs/Maths/math.vector";
 import { IAnimatable } from "babylonjs/Animations/animatable.interface";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
@@ -42,12 +42,448 @@ class MRDLSliderBarMaterialDefines extends MaterialDefines {
  * Class used to render Slider Bar material with MRDL
  */
 export class MRDLSliderBarMaterial extends PushMaterial {
-    // TODO: Allow access through member variables
+    /**
+     * URL pointing to the texture used to define the coloring for the Iridescent Map effect.
+     */
+    public static BLUE_GRADIENT_TEXTURE_URL = "https://raw.githubusercontent.com/rgerd/TestAssets/master/PNG/BlueGradient.png";
+    private _blueGradientTexture: Texture;
+
+    /**
+     * Gets or sets the corner Radius on the slider bar.
+     */
+    @serialize()
+    public radius = 0.6;
+
+    /**
+     * Gets or sets the Bevel Front on the slider bar.
+     */
+    @serialize()
+    public bevelFront = 0.6;
+
+    /**
+     * Gets or sets the Bevel Front Stretch on the slider bar.
+     */
+    @serialize()
+    public bevelFrontStretch = 0.077;
+
+    /**
+     * Gets or sets the Bevel Back on the slider bar.
+     */
+    @serialize()
+    public bevelBack = 0;
+
+    /**
+     * Gets or sets the Bevel Back Stretch on the slider bar.
+     */
+    @serialize()
+    public bevelBackStretch = 0;
+
+    /**
+     * Gets or sets the top left Radii Multiplier.
+     */
+    @serialize()
+    public radiusTopLeft = 1.0;
+
+    /**
+     * Gets or sets the top left Radii Multiplier.
+     */
+    @serialize()
+    public radiusTopRight = 1.0;
+
+    /**
+    * Gets or sets the top left Radii Multiplier.
+    */
+    @serialize()
+    public radiusBottomLeft = 1.0;
+
+    /**
+     * Gets or sets the top left Radii Multiplier.
+     */
+    @serialize()
+    public radiusBottomRight = 1.0;
+
+    /**
+     * Gets or sets whether Bulge is enabled.
+     * Default is false.
+     */
+    @serialize()
+    public bulgeEnabled = false;
+
+    /**
+     * Gets or sets the Bulge Height.
+     */
+    @serialize()
+    public bulgeHeight = -0.323;
+
+    /**
+     * Gets or sets the Bulge Radius.
+     */
+    @serialize()
+    public bulgeRadius = 0.73;
+
+    /**
+     * Gets or sets the Sun Intensity.
+     */
+    @serialize()
+    public sunIntensity = 1.102;
+
+    /**
+     * Gets or sets the Sun Theta.
+     */
+    @serialize()
+    public sunTheta = 0.76;
+
+    /**
+     * Gets or sets the Sun Phi.
+     */
+    @serialize()
+    public sunPhi = 0.526;
+
+    /**
+     * Gets or sets the Indirect Diffuse.
+     */
+    @serialize()
+    public indirectDiffuse = 0.658;
+
+    /**
+     * Gets or sets the base albedo.
+     */
+    @serialize()
+    public albedo = new Color4(0.0117647, 0.505882, 0.996078, 1);
+
+    /**
+     * Gets or sets the Specular value.
+     */
+    @serialize()
+    public specular = 0;
+
+    /**
+     * Gets or sets the Shininess value.
+     */
+    @serialize()
+    public shininess = 10;
+
+    /**
+     * Gets or sets the Sharpness value.
+     */
+    @serialize()
+    public sharpness = 0;
+
+    /**
+     * Gets or sets the Subsurface value.
+     */
+    @serialize()
+    public subsurface = 0;
+
+    /**
+     * Gets or sets the left gradient color.
+     */
+    @serialize()
+    public leftGradientColor = new Color4(0.0117647, 0.505882, 0.996078, 1);
+
+    /**
+     * Gets or sets the right gradient color.
+     */
+    @serialize()
+    public rightGradientColor = new Color4(0.0117647, 0.505882, 0.996078, 1);
+
+    /**
+     * Gets or sets the reflection value.
+     */
+    @serialize()
+    public reflection = 0.749;
+
+    /**
+     * Gets or sets the front reflect value.
+     */
+    @serialize()
+    public frontReflect = 0;
+
+    /**
+     * Gets or sets the edge reflect value.
+     */
+    @serialize()
+    public edgeReflect = 0.09;
+
+    /**
+     * Gets or sets the power value.
+     */
+    @serialize()
+    public power = 8.13;
+
+    /**
+     * Gets or sets the sky color.
+     */
+    @serialize()
+    public skyColor = new Color4(0.0117647, 0.964706, 0.996078, 1);
+
+    /**
+     * Gets or sets the horizon color.
+     */
+    @serialize()
+    public horizonColor = new Color4(0.0117647, 0.333333, 0.996078, 1);
+
+    /**
+     * Gets or sets the ground color.
+     */
+    @serialize()
+    public groundColor = new Color4(0, 0.254902, 0.996078, 1);
+
+    /**
+     * Gets or sets the horizon power value.
+     */
+    @serialize()
+    public horizonPower = 1;
+
+    /**
+     * Gets or sets the finger occlusion width value.
+     */
+    @serialize()
+    public width = 0.02;
+
+    /**
+     * Gets or sets the finger occlusion fuzz value.
+     */
+    @serialize()
+    public fuzz = 0.5;
+
+    /**
+     * Gets or sets the minimum finger occlusion fuzz value.
+     */
+    @serialize()
+    public minFuzz = 0.001;
+
+    /**
+     * Gets or sets the finger occlusion clip fade value.
+     */
+    @serialize()
+    public clipFade = 0.01;
+
+    /**
+     * Gets or sets the hue shift value.
+     */
+    @serialize()
+    public hueShift = 0;
+
+    /**
+     * Gets or sets the saturation shift value.
+     */
+    @serialize()
+    public saturationShift = 0;
+
+    /**
+     * Gets or sets the value shift.
+     */
+    @serialize()
+    public valueShift = 0;
+
+    /**
+     * Gets or sets the position of the hover glow effect.
+     */
+    @serialize()
+    public blobPosition = new Vector3(0, 0, 0.1);
+
+    /**
+     * Gets or sets the intensity of the hover glow effect.
+     */
+    @serialize()
+    public blobIntensity = 0.5; 
+
+    /**
+     * Gets or sets the near size of the hover glow effect.
+     */
+    @serialize()
+    public blobNearSize = 0.01;
+     
+     /**
+     * Gets or sets the far size of the hover glow effect.
+     */
+    @serialize()
+    public blobFarSize = 0.03;
+
+    /**
+     * Gets or sets the distance considered "near" to the mesh, which controls the size of the hover glow effect (see blobNearSize).
+     */
+    @serialize()
+    public blobNearDistance = 0;
+
+    /**
+     * Gets or sets the distance considered "far" from the mesh, which controls the size of the hover glow effect (see blobFarSize).
+     */
+    @serialize()
+    public blobFarDistance = 0.08;
+
+    /**
+     * Gets or sets the length of the hover glow effect fade.
+     */
+    @serialize()
+    public blobFadeLength = 0.576;
+
+    /**
+     * Gets or sets the progress of the hover glow effect selection animation corresponding to the left pointer (0.0 - 1.0).
+     */
+    @serialize()
+    public blobPulse = 0;
+
+    /**
+     * Gets or sets the opacity of the hover glow effect corresponding to the left pointer (0.0 - 1.0). Default is 0.
+     */
+    @serialize()
+    public blobFade = 1;
+
+    /**
+     * Gets or sets the position of the hover glow effect.
+     */
+     @serialize()
+     public blobPosition2 = new Vector3(0.2, 0, 0.1);
+
+    /**
+     * Gets or sets the size of the hover glow effect when the right pointer is considered "near" to the mesh (see blobNearDistance).
+     */
+    @serialize()
+    public blobNearSize2 = 0.01;
+
+    /**
+     * Gets or sets the progress of the hover glow effect selection animation corresponding to the right pointer (0.0 - 1.0).
+     */
+    @serialize()
+    public blobPulse2 = 0;
+
+    /**
+     * Gets or sets the opacity of the hover glow effect corresponding to the right pointer (0.0 - 1.0). Default is 1.
+     */
+    @serialize()
+    public blobFade2 = 1;
+
+    /**
+     * Gets or sets the texture of the hover glow effect.
+     */
+    @serialize()
+    public blobTexture = new Texture("", this.getScene());
+
+    /**
+     * Gets or sets the finger position for left index.
+     */
+    @serialize()
+    public leftIndexPosition = new Vector3(0, 0, 1);
+
+    /**
+     * Gets or sets the finger position for right index.
+     */
+    @serialize()
+    public rightIndexPosition = new Vector3(-1, -1, -1);
+
+    /**
+     * Gets or sets the finger position for left index middle position.
+     */
+    @serialize()
+    public leftIndexMiddlePosition = new Vector3(0, 0, 0);
+
+    /**
+     * Gets or sets the finger position for right index middle position.
+     */
+    @serialize()
+    public rightIndexMiddlePosition = new Vector3(0, 0, 0);
+
+    /**
+     * Gets or sets the Decal Scle for XY.
+     */
+    @serialize()
+    public decalScaleXY = new Vector2(1.5,1.5);
+
+    /**
+     * Gets or sets decalFrontOnly
+     * Default is true
+     */
+    @serialize()
+    public decalFrontOnly = true;
+
+
+    /**
+     * Gets or sets the Rim Light intensity.
+     */
+    @serialize()
+    public rimIntensity = 0.287;
+
+    /**
+     * Gets or sets the Rim Light hue shift value.
+     */
+    @serialize()
+    public rimHueShift = 0;
+
+    /**
+     * Gets or sets the Rim Light saturation shift value.
+     */
+    @serialize()
+    public rimSaturationShift = 0;
+
+    /**
+     * Gets or sets the Rim Light value shift.
+     */
+    @serialize()
+    public rimValueShift = -1;
+
+    /**
+     * Gets or sets the intensity of the iridescence effect.
+     */
+    @serialize()
+    public iridescenceIntensity = 0;
+
+    /**
+     * @hidden
+     */
+    public useGlobalLeftIndex = 1.0;
+
+    /**
+     * @hidden
+     */
+    public useGlobalRightIndex = 1.0;
+
+    /**
+     * @hidden
+     */
+    public globalLeftIndexTipProximity = 0.0;
+
+    /**
+     * @hidden
+     */
+    public globalRightIndexTipProximity = 0.0;
+
+    /**
+     * @hidden
+     */
+    public globalLeftIndexTipPosition =  new Vector4(0.5, 0.0, -0.55, 1.0);
+
+    /**
+     * @hidden
+     */
+    public globaRightIndexTipPosition =  new Vector4(0.0, 0.0, 0.0, 1.0);
+
+    /**
+     * @hidden
+     */
+    public globalLeftThumbTipPosition =  new Vector4(0.5, 0.0, -0.55, 1.0);
+
+    /**
+     * @hidden
+     */
+    public globalRightThumbTipPosition =  new Vector4(0.0, 0.0, 0.0, 1.0);
+
+    /**
+     * @hidden
+     */
+    public globalLeftIndexMiddlePosition =  new Vector4(0.5, 0.0, -0.55, 1.0);
+
+    /**
+     * @hidden
+     */
+    public globalRightIndexMiddlePosition =  new Vector4(0.0, 0.0, 0.0, 1.0);
 
     constructor(name: string, scene: Scene) {
         super(name, scene);
         this.alphaMode = Constants.ALPHA_DISABLE;
         this.backFaceCulling = false;
+        this._blueGradientTexture = new Texture(MRDLSliderBarMaterial.BLUE_GRADIENT_TEXTURE_URL, scene, true, false, Texture.NEAREST_SAMPLINGMODE);
     }
 
     public needAlphaBlending(): boolean {
@@ -202,52 +638,52 @@ export class MRDLSliderBarMaterial extends PushMaterial {
         this._activeEffect.setVector3("cameraPosition", this.getScene().activeCamera!.position);
 
         // "Round Rect"
-        this._activeEffect.setFloat("_Radius_", 0.6);
-        this._activeEffect.setFloat("_Bevel_Front_", 0.6);
-        this._activeEffect.setFloat("_Bevel_Front_Stretch_", 0.077);
-        this._activeEffect.setFloat("_Bevel_Back_", 0);
-        this._activeEffect.setFloat("_Bevel_Back_Stretch_", 0);
+        this._activeEffect.setFloat("_Radius_", this.radius);
+        this._activeEffect.setFloat("_Bevel_Front_", this.bevelFront);
+        this._activeEffect.setFloat("_Bevel_Front_Stretch_", this.bevelFrontStretch);
+        this._activeEffect.setFloat("_Bevel_Back_", this.bevelBack);
+        this._activeEffect.setFloat("_Bevel_Back_Stretch_", this.bevelBackStretch);
 
         // "Radii Multipliers"
-        this._activeEffect.setFloat("_Radius_Top_Left_", 1);
-        this._activeEffect.setFloat("_Radius_Top_Right_", 1.0);
-        this._activeEffect.setFloat("_Radius_Bottom_Left_", 1.0);
-        this._activeEffect.setFloat("_Radius_Bottom_Right_", 1.0);
+        this._activeEffect.setFloat("_Radius_Top_Left_", this.radiusTopLeft);
+        this._activeEffect.setFloat("_Radius_Top_Right_", this.radiusTopRight);
+        this._activeEffect.setFloat("_Radius_Bottom_Left_", this.radiusBottomLeft);
+        this._activeEffect.setFloat("_Radius_Bottom_Right_", this.radiusBottomRight);
 
         // "Bulge"
-        this._activeEffect.setFloat("_Bulge_Enabled_", false ? 1.0 : 0.0);
-        this._activeEffect.setFloat("_Bulge_Height_", -0.323);
-        this._activeEffect.setFloat("_Bulge_Radius_", 0.73);
+        this._activeEffect.setFloat("_Bulge_Enabled_", this.bulgeEnabled ? 1.0 : 0.0);
+        this._activeEffect.setFloat("_Bulge_Height_", this.bulgeHeight);
+        this._activeEffect.setFloat("_Bulge_Radius_", this.bulgeRadius);
 
         // "Sun"
-        this._activeEffect.setFloat("_Sun_Intensity_", 1.102);
-        this._activeEffect.setFloat("_Sun_Theta_", 0.76);
-        this._activeEffect.setFloat("_Sun_Phi_", 0.526);
-        this._activeEffect.setFloat("_Indirect_Diffuse_", 0.658);
+        this._activeEffect.setFloat("_Sun_Intensity_", this.sunIntensity);
+        this._activeEffect.setFloat("_Sun_Theta_", this.sunTheta);
+        this._activeEffect.setFloat("_Sun_Phi_", this.sunPhi);
+        this._activeEffect.setFloat("_Indirect_Diffuse_", this.indirectDiffuse);
 
         // "Diffuse And Specular"
-        this._activeEffect.setDirectColor4("_Albedo_", new Color4(0.0117647, 0.505882, 0.996078, 1));
-        this._activeEffect.setFloat("_Specular_", 0);
-        this._activeEffect.setFloat("_Shininess_", 10);
-        this._activeEffect.setFloat("_Sharpness_", 0);
-        this._activeEffect.setFloat("_Subsurface_", 0);
+        this._activeEffect.setDirectColor4("_Albedo_", this.albedo);
+        this._activeEffect.setFloat("_Specular_", this.specular);
+        this._activeEffect.setFloat("_Shininess_", this.shininess);
+        this._activeEffect.setFloat("_Sharpness_", this.sharpness);
+        this._activeEffect.setFloat("_Subsurface_", this.subsurface);
 
         // "Gradient"
-        this._activeEffect.setDirectColor4("_Left_Color_", new Color4(0.0117647, 0.505882, 0.996078, 1));
-        this._activeEffect.setDirectColor4("_Right_Color_", new Color4(0.0117647, 0.505882, 0.996078, 1));
+        this._activeEffect.setDirectColor4("_Left_Color_", this.leftGradientColor);
+        this._activeEffect.setDirectColor4("_Right_Color_", this.rightGradientColor);
 
         // "Reflection"
-        this._activeEffect.setFloat("_Reflection_", 0.749);
-        this._activeEffect.setFloat("_Front_Reflect_", 0);
-        this._activeEffect.setFloat("_Edge_Reflect_", 0.09);
-        this._activeEffect.setFloat("_Power_", 8.13);
+        this._activeEffect.setFloat("_Reflection_", this.reflection);
+        this._activeEffect.setFloat("_Front_Reflect_", this.frontReflect);
+        this._activeEffect.setFloat("_Edge_Reflect_", this.edgeReflect);
+        this._activeEffect.setFloat("_Power_", this.power);
 
         // "Sky Environment"
         //define SKY_ENABLED true;
-        this._activeEffect.setDirectColor4("_Sky_Color_", new Color4(0.0117647, 0.964706, 0.996078, 1));
-        this._activeEffect.setDirectColor4("_Horizon_Color_", new Color4(0.0117647, 0.333333, 0.996078, 1));
-        this._activeEffect.setDirectColor4("_Ground_Color_", new Color4(0, 0.254902, 0.996078, 1));
-        this._activeEffect.setFloat("_Horizon_Power_", 1);
+        this._activeEffect.setDirectColor4("_Sky_Color_", this.skyColor);
+        this._activeEffect.setDirectColor4("_Horizon_Color_", this.horizonColor);
+        this._activeEffect.setDirectColor4("_Ground_Color_", this.groundColor);
+        this._activeEffect.setFloat("_Horizon_Power_", this.horizonPower);
 
         // "Mapped Environment"
         //define ENV_ENABLE false;
@@ -256,77 +692,77 @@ export class MRDLSliderBarMaterial extends PushMaterial {
 
         // "FingerOcclusion"
         //define OCCLUSION_ENABLED false;
-        this._activeEffect.setFloat("_Width_", 0.02);
-        this._activeEffect.setFloat("_Fuzz_", 0.5);
-        this._activeEffect.setFloat("_Min_Fuzz_", 0.001);
-        this._activeEffect.setFloat("_Clip_Fade_", 0.01);
+        this._activeEffect.setFloat("_Width_", this.width);
+        this._activeEffect.setFloat("_Fuzz_", this.fuzz);
+        this._activeEffect.setFloat("_Min_Fuzz_", this.minFuzz);
+        this._activeEffect.setFloat("_Clip_Fade_", this.clipFade);
 
         // "View Based Color Shift"
-        this._activeEffect.setFloat("_Hue_Shift_", 0);
-        this._activeEffect.setFloat("_Saturation_Shift_", 0);
-        this._activeEffect.setFloat("_Value_Shift_", 0);
+        this._activeEffect.setFloat("_Hue_Shift_", this.hueShift);
+        this._activeEffect.setFloat("_Saturation_Shift_", this.saturationShift);
+        this._activeEffect.setFloat("_Value_Shift_", this.valueShift);
 
         // "Blob"
         //define BLOB_ENABLE false;
-        this._activeEffect.setVector3("_Blob_Position_", new Vector3(0, 0, 0.1));
-        this._activeEffect.setFloat("_Blob_Intensity_", 0.5);
-        this._activeEffect.setFloat("_Blob_Near_Size_", 0.01);
-        this._activeEffect.setFloat("_Blob_Far_Size_", 0.03);
-        this._activeEffect.setFloat("_Blob_Near_Distance_", 0);
-        this._activeEffect.setFloat("_Blob_Far_Distance_", 0.08);
-        this._activeEffect.setFloat("_Blob_Fade_Length_", 0.576);
-        this._activeEffect.setFloat("_Blob_Pulse_", 0);
-        this._activeEffect.setFloat("_Blob_Fade_", 1);
+        this._activeEffect.setVector3("_Blob_Position_", this.blobPosition);
+        this._activeEffect.setFloat("_Blob_Intensity_", this.blobIntensity);
+        this._activeEffect.setFloat("_Blob_Near_Size_", this.blobNearSize);
+        this._activeEffect.setFloat("_Blob_Far_Size_", this.blobFarSize);
+        this._activeEffect.setFloat("_Blob_Near_Distance_", this.blobNearDistance);
+        this._activeEffect.setFloat("_Blob_Far_Distance_", this.blobFarDistance);
+        this._activeEffect.setFloat("_Blob_Fade_Length_", this.blobFadeLength);
+        this._activeEffect.setFloat("_Blob_Pulse_", this.blobPulse);
+        this._activeEffect.setFloat("_Blob_Fade_", this.blobFade);
 
         // "Blob Texture"
-        this._activeEffect.setTexture("_Blob_Texture_", new Texture("", this.getScene()));
+        this._activeEffect.setTexture("_Blob_Texture_", this.blobTexture);
 
         // "Blob 2"
         //define BLOB_ENABLE_2 true;
-        this._activeEffect.setVector3("_Blob_Position_2_", new Vector3(0.2, 0, 0.1));
-        this._activeEffect.setFloat("_Blob_Near_Size_2_", 0.01);
-        this._activeEffect.setFloat("_Blob_Pulse_2_", 0);
-        this._activeEffect.setFloat("_Blob_Fade_2_", 1);
+        this._activeEffect.setVector3("_Blob_Position_2_", this.blobPosition2);
+        this._activeEffect.setFloat("_Blob_Near_Size_2_", this.blobNearSize2);
+        this._activeEffect.setFloat("_Blob_Pulse_2_", this.blobPulse2);
+        this._activeEffect.setFloat("_Blob_Fade_2_", this.blobFade2);
 
         // "Finger Positions"
-        this._activeEffect.setVector3("_Left_Index_Pos_", new Vector3(0, 0, 1));
-        this._activeEffect.setVector3("_Right_Index_Pos_", new Vector3(-1, -1, -1));
-        this._activeEffect.setVector3("_Left_Index_Middle_Pos_", new Vector3(0, 0, 0));
-        this._activeEffect.setVector3("_Right_Index_Middle_Pos_", new Vector3(0, 0, 0));
+        this._activeEffect.setVector3("_Left_Index_Pos_", this.leftIndexPosition);
+        this._activeEffect.setVector3("_Right_Index_Pos_", this.rightIndexPosition);
+        this._activeEffect.setVector3("_Left_Index_Middle_Pos_", this.leftIndexMiddlePosition);
+        this._activeEffect.setVector3("_Right_Index_Middle_Pos_", this.rightIndexMiddlePosition);
 
         // "Decal Texture"
         //define DECAL_ENABLE false;
         this._activeEffect.setTexture("_Decal_", new Texture("", this.getScene()));
-        this._activeEffect.setVector2("_Decal_Scale_XY_", new Vector2(1.5, 1.5));
-        this._activeEffect.setFloat("_Decal_Front_Only_", true ? 1.0 : 0.0);
+        this._activeEffect.setVector2("_Decal_Scale_XY_", this.decalScaleXY);
+        this._activeEffect.setFloat("_Decal_Front_Only_", this.decalFrontOnly ? 1.0 : 0.0);
 
         // "Rim Light"
-        this._activeEffect.setFloat("_Rim_Intensity_", 0.287);
-        this._activeEffect.setTexture("_Rim_Texture_", new Texture("https://raw.githubusercontent.com/rgerd/TestAssets/master/PNG/BlueGradient.png", this.getScene()));
-        this._activeEffect.setFloat("_Rim_Hue_Shift_", 0);
-        this._activeEffect.setFloat("_Rim_Saturation_Shift_", 0.0);
-        this._activeEffect.setFloat("_Rim_Value_Shift_", -1);
+        this._activeEffect.setFloat("_Rim_Intensity_", this.rimIntensity);
+        this._activeEffect.setTexture("_Rim_Texture_", this._blueGradientTexture);
+        this._activeEffect.setFloat("_Rim_Hue_Shift_", this.rimHueShift);
+        this._activeEffect.setFloat("_Rim_Saturation_Shift_", this.rimSaturationShift);
+        this._activeEffect.setFloat("_Rim_Value_Shift_", this.rimValueShift);
 
         // "Iridescence"
         //define IRIDESCENCE_ENABLED true;
-        this._activeEffect.setFloat("_Iridescence_Intensity_", 0);
-        this._activeEffect.setTexture("_Iridescence_Texture_", new Texture("https://raw.githubusercontent.com/rgerd/TestAssets/master/PNG/BlueGradient.png", this.getScene()));
+        this._activeEffect.setFloat("_Iridescence_Intensity_", this.iridescenceIntensity);
+        this._activeEffect.setTexture("_Iridescence_Texture_", this._blueGradientTexture);
 
         // Global inputs
-        this._activeEffect.setFloat("Use_Global_Left_Index", 1.0);
-        this._activeEffect.setFloat("Use_Global_Right_Index", 1.0);
+        this._activeEffect.setFloat("Use_Global_Left_Index", this.useGlobalLeftIndex);
+        this._activeEffect.setFloat("Use_Global_Right_Index", this.useGlobalRightIndex);
 
-        this._activeEffect.setVector4("Global_Left_Index_Tip_Position", new Vector4(0.5, 0.0, -0.55, 1.0));
-        this._activeEffect.setVector4("Global_Right_Index_Tip_Position", new Vector4(0.0, 0.0, 0.0, 1.0));
+        this._activeEffect.setVector4("Global_Left_Index_Tip_Position", this.globalLeftIndexTipPosition);
+        this._activeEffect.setVector4("Global_Right_Index_Tip_Position", this.globaRightIndexTipPosition);
 
-        this._activeEffect.setVector4("Global_Left_Thumb_Tip_Position", new Vector4(0.5, 0.0, -0.55, 1.0));
-        this._activeEffect.setVector4("Global_Right_Thumb_Tip_Position", new Vector4(0.0, 0.0, 0.0, 1.0));
+        this._activeEffect.setVector4("Global_Left_Thumb_Tip_Position", this.globalLeftThumbTipPosition);
+        this._activeEffect.setVector4("Global_Right_Thumb_Tip_Position", this.globalRightThumbTipPosition);
 
-        this._activeEffect.setVector4("Global_Left_Index_Middle_Position", new Vector4(0.5, 0.0, -0.55, 1.0));
-        this._activeEffect.setVector4("Global_Right_Index_Middle_Position", new Vector4(0.0, 0.0, 0.0, 1.0));
+        this._activeEffect.setVector4("Global_Left_Index_Middle_Position", this.globalLeftIndexMiddlePosition);
+        this._activeEffect.setVector4("Global_Right_Index_Middle_Position", this.globalRightIndexMiddlePosition);
 
-        this._activeEffect.setFloat("Global_Left_Index_Tip_Proximity", 0.0);
-        this._activeEffect.setFloat("Global_Right_Index_Tip_Proximity", 0.0);
+        this._activeEffect.setFloat("Global_Left_Index_Tip_Proximity", this.globalLeftIndexTipProximity);
+        this._activeEffect.setFloat("Global_Right_Index_Tip_Proximity", this.globalRightIndexTipProximity);
 
         this._afterBind(mesh, this._activeEffect);
     }
