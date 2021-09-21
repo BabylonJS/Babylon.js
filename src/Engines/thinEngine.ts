@@ -41,6 +41,7 @@ import { StencilStateComposer } from "../States/stencilStateComposer";
 import { StorageBuffer } from "../Buffers/storageBuffer";
 import { IAudioEngineOptions } from '../Audio/Interfaces/IAudioEngineOptions';
 import { IStencilState } from "../States/IStencilState";
+import { ShaderLanguage } from "../Materials/shaderLanguage";
 
 declare type WebRequest = import("../Misc/webRequest").WebRequest;
 declare type LoadFileError = import("../Misc/fileTools").LoadFileError;
@@ -235,10 +236,12 @@ export class ThinEngine {
         Effect.ShadersRepository = value;
     }
 
-    // Public members
+    protected _shaderProcessor: Nullable<IShaderProcessor>;
 
     /** @hidden */
-    public _shaderProcessor: Nullable<IShaderProcessor>;
+    public _getShaderProcessor(shaderLanguage: ShaderLanguage): Nullable<IShaderProcessor> {
+        return this._shaderProcessor;
+    }
 
     /**
      * Gets or sets a boolean that indicates if textures must be forced to power of 2 size even if not required
@@ -452,7 +455,6 @@ export class ThinEngine {
     private _currentTextureChannel = -1;
     /** @hidden */
     protected _boundTexturesCache: { [key: string]: Nullable<InternalTexture> } = {};
-    /** @hidden */
     protected _currentEffect: Nullable<Effect>;
     /** @hidden */
     protected _currentProgram: Nullable<WebGLProgram>;
@@ -634,6 +636,13 @@ export class ThinEngine {
 
     public set snapshotRenderingMode(mode: number) {
         this._snapshotRenderingMode = mode;
+    }
+
+    /**
+     * Creates a new snapshot at the next frame using the current snapshotRenderingMode
+     */
+    public snapshotRenderingReset(): void {
+        this.snapshotRendering = false;
     }
 
     private _checkForMobile: () => void;
@@ -888,7 +897,7 @@ export class ThinEngine {
         }
 
         // Shader processor
-        this._shaderProcessor = this._getShaderProcessor();
+        this._shaderProcessor = this.webGLVersion > 1 ? new WebGL2ShaderProcessor() : new WebGLShaderProcessor();
 
         // Detect if we are running on a faulty buggy OS.
         this._badOS = /iPad/i.test(navigator.userAgent) || /iPhone/i.test(navigator.userAgent);
@@ -955,16 +964,8 @@ export class ThinEngine {
         this._renderingCanvas = canvas;
     }
 
-    /**
-     * Gets a shader processor implementation fitting with the current engine type.
-     * @returns The shader processor implementation.
-     */
-    protected _getShaderProcessor(): Nullable<IShaderProcessor> {
-        return (this.webGLVersion > 1 ? new WebGL2ShaderProcessor() : new WebGLShaderProcessor());
-    }
-
     /** @hidden */
-    public _getShaderProcessingContext(): Nullable<ShaderProcessingContext> {
+    public _getShaderProcessingContext(shaderLanguage: ShaderLanguage): Nullable<ShaderProcessingContext> {
         return null;
     }
 
@@ -1324,6 +1325,14 @@ export class ThinEngine {
         }
 
         this._currentTextureChannel = -1;
+    }
+
+    /**
+     * Gets an object containing information about the current engine context
+     * @returns an object containing the vendor, the renderer and the version of the current engine context
+     */
+    public getInfo() {
+        return this.getGlInfo();
     }
 
     /**
@@ -2546,11 +2555,12 @@ export class ThinEngine {
      * @param onCompiled defines a function to call when the effect creation is successful
      * @param onError defines a function to call when the effect creation has failed
      * @param indexParameters defines an object containing the index values to use to compile shaders (like the maximum number of simultaneous lights)
+     * @param shaderLanguage the language the shader is written in (default: GLSL)
      * @returns the new Effect
      */
     public createEffect(baseName: any, attributesNamesOrOptions: string[] | IEffectCreationOptions, uniformsNamesOrEngine: string[] | ThinEngine, samplers?: string[], defines?: string,
         fallbacks?: IEffectFallbacks,
-        onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any): Effect {
+        onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any, shaderLanguage = ShaderLanguage.GLSL): Effect {
         var vertex = baseName.vertexElement || baseName.vertex || baseName.vertexToken || baseName.vertexSource || baseName;
         var fragment = baseName.fragmentElement || baseName.fragment || baseName.fragmentToken || baseName.fragmentSource || baseName;
         const globalDefines = this._getGlobalDefines()!;
@@ -2570,7 +2580,7 @@ export class ThinEngine {
 
             return compiledEffect;
         }
-        var effect = new Effect(baseName, attributesNamesOrOptions, uniformsNamesOrEngine, samplers, this, defines, fallbacks, onCompiled, onError, indexParameters, name);
+        var effect = new Effect(baseName, attributesNamesOrOptions, uniformsNamesOrEngine, samplers, this, defines, fallbacks, onCompiled, onError, indexParameters, name, shaderLanguage);
         this._compiledEffects[name] = effect;
 
         return effect;

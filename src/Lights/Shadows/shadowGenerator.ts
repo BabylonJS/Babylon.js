@@ -884,6 +884,8 @@ export class ShadowGenerator implements IShadowGenerator {
 
         this._initializeGenerator();
         this._applyFilterValues();
+
+        this._nameForDrawWrapperCurrent = this._nameForDrawWrapper[0];
     }
 
     protected _initializeGenerator(): void {
