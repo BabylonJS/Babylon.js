@@ -58,11 +58,7 @@ export class Tools {
         return finalArray.sort((a: any, b: any) => {
             const lowerCaseA = (a._tag || "").toLowerCase();
             const lowerCaseB = (b._tag || "").toLowerCase();
-
-            if (lowerCaseA === lowerCaseB) {
-                return 0;
-            }
-
+            
             if (lowerCaseA > lowerCaseB) {
                 return 1;
             }
