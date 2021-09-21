@@ -84,6 +84,7 @@
 
 ### NME
 
+- Added support for custom blocks ([BlakeOne](https://github.com/BlakeOne), [Popov72](https://github.com/Popov72))
 - Frames are now resizable from the corners ([belfortk](https://github.com/belfortk))
 - Can now rename and re-order frame inputs and outputs ([belfortk](https://github.com/belfortk))
 - Can now edit Node port names ([belfortk](https://github.com/belfortk))

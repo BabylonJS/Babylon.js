@@ -8,6 +8,7 @@ import { Portal } from './portal';
 import { LogComponent, LogEntry } from './components/log/logComponent';
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
+import { CustomBlock } from 'babylonjs/Materials/Node/Blocks/customBlock';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 import { Nullable } from 'babylonjs/types';
 import { MessageDialogComponent } from './sharedComponents/messageDialog';
@@ -574,10 +575,23 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     emitNewBlock(event: React.DragEvent<HTMLDivElement>) {
         var data = event.dataTransfer.getData("babylonjs-material-node") as string;
         let newNode: GraphNode;
+        let blockData: any;
         
-        if(data.indexOf("Custom") > -1) {
+        if (data.indexOf("CustomBlock") > -1) {
             let storageData = localStorage.getItem(data);
-            if(storageData) {   
+            if(!storageData) {   
+                this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(`Error loading custom block`);                                
+                return;
+            }
+
+            blockData = JSON.parse(storageData);
+            if(!blockData) {   
+                this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(`Error parsing custom block`);                                
+                return;
+            }
+        } else if(data.indexOf("Custom") > -1) {
+            let storageData = localStorage.getItem(data);
+            if(storageData) {
                 let frameData = JSON.parse(storageData);
 
                 //edit position before loading.
@@ -603,7 +617,13 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             newNode = this.addValueNode(data);
         } 
         else {
-            let block = BlockTools.GetBlockFromString(data, this.props.globalState.nodeMaterial.getScene(), this.props.globalState.nodeMaterial)!;   
+            let block: NodeMaterialBlock;
+            if (blockData) {
+                block = new CustomBlock(blockData);
+            }
+            else {
+                block = BlockTools.GetBlockFromString(data, this.props.globalState.nodeMaterial.getScene(), this.props.globalState.nodeMaterial)!;
+            }
             
             if (block.isUnique) {
                 const className = block.getClassName();
