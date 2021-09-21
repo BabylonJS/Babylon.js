@@ -516,7 +516,7 @@ export class Grid extends Container {
         }
         this.children.forEach(child => {
             serializationObject.tags.push(child._tag);
-        })
+        });
     }
 
     /** @hidden */
@@ -525,7 +525,7 @@ export class Grid extends Container {
         let children: Control[] = [];
         this.children.forEach(child => {
             children.push(child);
-        })
+        });
         this.removeRowDefinition(0);
         this.removeColumnDefinition(0);
         for (let i = 0; i < serializedObject.columnCount; ++i) {
