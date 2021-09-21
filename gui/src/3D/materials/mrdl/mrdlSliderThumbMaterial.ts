@@ -45,7 +45,7 @@ export class MRDLSliderThumbMaterial extends PushMaterial {
     /**
      * URL pointing to the texture used to define the coloring for the Iridescent Map effect.
      */
-    public static BLUE_GRADIENT_TEXTURE_URL = "https://raw.githubusercontent.com/rgerd/TestAssets/master/PNG/BlueGradient.png";
+    public static BLUE_GRADIENT_TEXTURE_URL = "https://assets.babylonjs.com/meshes/MRTK/MRDL/mrtk-mrdl-blue-gradient.png";
     private _blueGradientTexture: Texture;
 
     /**

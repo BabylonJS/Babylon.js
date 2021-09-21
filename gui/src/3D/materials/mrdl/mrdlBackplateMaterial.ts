@@ -43,7 +43,7 @@ export class MRDLBackplateMaterial extends PushMaterial {
     /**
      * URL pointing to the texture used to define the coloring for the Iridescent Map effect.
      */
-    public static IRIDESCENT_MAP_TEXTURE_URL = "https://raw.githubusercontent.com/rgerd/TestAssets/master/PNG/BackplateIridescence.png";
+    public static IRIDESCENT_MAP_TEXTURE_URL = "https://assets.babylonjs.com/meshes/MRTK/MRDL/mrtk-mrdl-backplate-iridescence.png";
     private _iridescentMapTexture: Texture;
 
     /**
