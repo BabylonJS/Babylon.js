@@ -39,5 +39,5 @@ export class VRDeviceOrientationGamepadCamera extends VRDeviceOrientationFreeCam
         return "VRDeviceOrientationGamepadCamera";
     }
 
-    protected _setRigMode = setVRRigMode.bind(this);
+    protected _setRigMode = setVRRigMode.bind(null, this);
 }
