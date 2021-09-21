@@ -16,15 +16,7 @@ interface IParentingPropertyGridComponentProps {
 export class ParentingPropertyGridComponent extends React.Component<IParentingPropertyGridComponentProps> {
     constructor(props: IParentingPropertyGridComponentProps) {
         super(props);
-        const cellInfo = (this.props.control.parent as Grid).getChildCellInfo(this.props.control);
-        this._rowNumber = parseInt(cellInfo.substring(0, cellInfo.search(":")));
-        if (isNaN(this._rowNumber)) {
-            this._rowNumber = 0;
-        }
-        this._columnNumber = parseInt(cellInfo.substring(cellInfo.search(":") + 1));
-        if (isNaN(this._columnNumber)) {
-            this._columnNumber = 0;
-        }
+        this.getCellInfo();
     }
     private _columnNumber: number;
     private _rowNumber: number;
@@ -37,7 +29,20 @@ export class ParentingPropertyGridComponent extends React.Component<IParentingPr
         }
     }
 
+    getCellInfo() {
+        const cellInfo = (this.props.control.parent as Grid).getChildCellInfo(this.props.control);
+        this._rowNumber = parseInt(cellInfo.substring(0, cellInfo.search(":")));
+        if (isNaN(this._rowNumber)) {
+            this._rowNumber = 0;
+        }
+        this._columnNumber = parseInt(cellInfo.substring(cellInfo.search(":") + 1));
+        if (isNaN(this._columnNumber)) {
+            this._columnNumber = 0;
+        }
+    }
+
     render() {
+        this.getCellInfo();
         return (
             <div className="pane">
                 <hr className="ge" />
