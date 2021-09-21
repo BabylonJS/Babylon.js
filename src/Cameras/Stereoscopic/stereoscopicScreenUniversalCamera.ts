@@ -22,6 +22,9 @@ export class StereoscopicScreenUniversalCamera extends UniversalCamera {
         this._distanceBetweenEyes = newValue;
     }
 
+    /**
+     * distance between the eyes
+     */
     public get distanceBetweenEyes(): number {
         return this._distanceBetweenEyes;
     }
@@ -31,6 +34,9 @@ export class StereoscopicScreenUniversalCamera extends UniversalCamera {
         this._distanceToProjectionPlane = newValue;
     }
 
+    /**
+     * Distance to projection plane (should be the same units the like distance between the eyes)
+     */
     public get distanceToProjectionPlane(): number {
         return this._distanceToProjectionPlane;
     }
@@ -86,7 +92,7 @@ export class StereoscopicScreenUniversalCamera extends UniversalCamera {
 
     private _updateCamera(camera: TargetCamera, cameraIndex: number) {
         const b = cameraIndex === 0 ? this.distanceBetweenEyes : -this.distanceBetweenEyes;
-        const z = cameraIndex === 0 ? this.distanceBetweenEyes / this.distanceToProjectionPlane : -this.distanceBetweenEyes / this.distanceToProjectionPlane;
+        const z = b / this.distanceToProjectionPlane;
         camera.position.set(-b, 0, -this.distanceToProjectionPlane);
         camera.setTarget(new Vector3(-b, 0, 0));
         const transform = camera.parent as TransformNode;
