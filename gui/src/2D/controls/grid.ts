@@ -528,7 +528,7 @@ export class Grid extends Container {
         })
         this.removeRowDefinition(0);
         this.removeColumnDefinition(0);
-        for (let i = 0; i <  serializedObject.columnCount; ++i) {
+        for (let i = 0; i < serializedObject.columnCount; ++i) {
             const columnValue = serializedObject.columns[i].value;
             const unit = serializedObject.columns[i].unit;
             this.addColumnDefinition(columnValue, unit === 1 ? true : false);
@@ -549,7 +549,7 @@ export class Grid extends Container {
             if (isNaN(columnNumber)) {
                 columnNumber = 0;
             }
-            this.addControl(children[i],rowNumber,columnNumber);
+            this.addControl(children[i], rowNumber, columnNumber);
         }
     }
 }
