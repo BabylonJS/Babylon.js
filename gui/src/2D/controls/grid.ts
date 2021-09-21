@@ -7,7 +7,6 @@ import { Measure } from "../measure";
 import { Tools } from 'babylonjs/Misc/tools';
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
-import { serialize } from "babylonjs/Misc/decorators";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 
 /**
