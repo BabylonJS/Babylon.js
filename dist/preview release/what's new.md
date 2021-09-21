@@ -118,6 +118,7 @@
 
 ### NME
 
+- Added support for custom blocks ([BlakeOne](https://github.com/BlakeOne), [Popov72](https://github.com/Popov72))
 - Added a `ImageSource` block to factorize access to texture data ([Deltakosh](https://github.com/Deltakosh))
 - Increased float precision to 4 ([msDestiny14](https://github.com/msDestiny14))
 - Added ability to make input node's properties visible in the properties of a custom frame ([msDestiny14](https://github.com/msDestiny14))
