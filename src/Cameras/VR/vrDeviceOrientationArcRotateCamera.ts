@@ -46,5 +46,5 @@ export class VRDeviceOrientationArcRotateCamera extends ArcRotateCamera {
         return "VRDeviceOrientationArcRotateCamera";
     }
 
-    protected _setRigMode = setVRRigMode.bind(this);
+    protected _setRigMode = setVRRigMode.bind(null, this);
 }

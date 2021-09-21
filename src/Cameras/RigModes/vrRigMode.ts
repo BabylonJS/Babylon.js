@@ -6,7 +6,10 @@ import { VRCameraMetrics } from "../VR/vrCameraMetrics";
 import { Logger } from '../../Misc/logger';
 import { Viewport } from '../../Maths/math.viewport';
 
-export const setVRRigMode = function (camera: Camera, rigParams: any) {
+/**
+ * @hidden
+ */
+export function setVRRigMode(camera: Camera, rigParams: any) {
     var metrics = <VRCameraMetrics>rigParams.vrCameraMetrics || VRCameraMetrics.GetDefault();
 
     camera._rigCameras[0]._cameraRigParams.vrMetrics = metrics;
@@ -40,4 +43,4 @@ export const setVRRigMode = function (camera: Camera, rigParams: any) {
         camera._rigCameras[0]._rigPostProcess = new VRDistortionCorrectionPostProcess("VR_Distort_Compensation_Left", camera._rigCameras[0], false, metrics);
         camera._rigCameras[1]._rigPostProcess = new VRDistortionCorrectionPostProcess("VR_Distort_Compensation_Right", camera._rigCameras[1], true, metrics);
     }
-};
+}

@@ -329,7 +329,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
         });
     }
 
-    protected _setRigMode = setWebVRRigMode.bind(this);
+    protected _setRigMode = setWebVRRigMode.bind(null, this);
 
     /**
      * Gets the device distance from the ground in meters.

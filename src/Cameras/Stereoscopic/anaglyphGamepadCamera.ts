@@ -35,5 +35,5 @@ export class AnaglyphGamepadCamera extends GamepadCamera {
         return "AnaglyphGamepadCamera";
     }
 
-    protected _setRigMode = setStereoscopicAnaglyphRigMode.bind(this);
+    protected _setRigMode = setStereoscopicAnaglyphRigMode.bind(null, this);
 }
