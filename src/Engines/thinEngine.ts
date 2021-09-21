@@ -822,6 +822,12 @@ export class ThinEngine {
                 options.powerPreference = "high-performance";
             }
 
+            // Detect if we are running on a faulty buggy desktop OS.
+            this._badDesktopOS = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+            if (this._badDesktopOS) {
+                options.xrCompatible = false;
+            }
+
             // GL
             if (!options.disableWebGL2Support) {
                 try {
@@ -910,9 +916,6 @@ export class ThinEngine {
         //         this._badOS = false;
         //     }
         // }
-
-        // Detect if we are running on a faulty buggy desktop OS.
-        this._badDesktopOS = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
         this._creationOptions = options;
         console.log(`Babylon.js v${ThinEngine.Version} - ${this.description}`);
