@@ -38,14 +38,14 @@ export class StereoscopicScreenUniversalCamera extends UniversalCamera {
      * Creates a new StereoscopicScreenUniversalCamera
      * @param name defines camera name
      * @param position defines initial position
-     * @param distanceFromScreen defines distance between each color axis
-     * @param distanceBetweenEyes defines is stereoscopic is done side by side or over under
      * @param scene defines the hosting scene
+     * @param _distanceToProjectionPlane defines distance between each color axis
+     * @param distanceBetweenEyes defines is stereoscopic is done side by side or over under
      */
-    constructor(name: string, position: Vector3, scene: Scene, distanceFromScreen: number = 1, distanceBetweenEyes: number = 0.0325) {
+    constructor(name: string, position: Vector3, scene: Scene, _distanceToProjectionPlane: number = 1, distanceBetweenEyes: number = 0.0325) {
         super(name, position, scene);
         this._distanceBetweenEyes = distanceBetweenEyes;
-        this._distanceToProjectionPlane = distanceFromScreen;
+        this._distanceToProjectionPlane = _distanceToProjectionPlane;
         this.setCameraRigMode(Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL, {});
     }
 
