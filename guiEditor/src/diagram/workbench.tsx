@@ -402,9 +402,14 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         const draggedControl = this.props.globalState.draggedControl;
         const draggedControlParent = draggedControl?.parent;
 
+        if (draggedControlParent === dropLocationControl?.parent && draggedControlParent?.typeName === "Grid") {
+            this.globalState.draggedControl = null;
+            this.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
+            return;
+        }
+
         if (draggedControlParent && draggedControl) {
             if (this._isNotChildInsert(dropLocationControl, draggedControl)) { //checking to make sure the element is not being inserted into a child
-
                 draggedControlParent.removeControl(draggedControl);
                 if (dropLocationControl != null) { //the control you are dragging onto top
                     if (this.props.globalState.workbench.isContainer(dropLocationControl) && //dropping inside a contrainer control

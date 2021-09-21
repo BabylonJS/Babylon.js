@@ -101,8 +101,9 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
             return null;
         }
 
-
-        const children = entity.typename === "Grid" ? Tools.SortAndFilterForGrid(entity, entity.getChildren ? entity.getChildren()
+        const grid = entity.typeName === "Grid" ;
+        console.log(grid);
+        const children = grid ? Tools.SortAndFilterForGrid(entity, entity.getChildren ? entity.getChildren()
             : entity.children) : Tools.SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
         return (
             children.map((item, i) => {
