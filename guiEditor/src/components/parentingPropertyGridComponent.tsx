@@ -26,8 +26,8 @@ export class ParentingPropertyGridComponent extends React.Component<IParentingPr
             this._columnNumber = 0;
         }
     }
-    _columnNumber: number;
-    _rowNumber: number;
+    private _columnNumber: number;
+    private _rowNumber: number;
 
     updateGridPosition() {
         const grid = this.props.control.parent as Grid;
@@ -43,11 +43,11 @@ export class ParentingPropertyGridComponent extends React.Component<IParentingPr
                 <hr className="ge" />
                 <TextLineComponent tooltip="" label="GRID PARENTING" value=" " color="grey"></TextLineComponent>
                 <div className="divider">
-                    <FloatLineComponent label={"Row #"} target={this} propertyName={"_rowNumber"} isInteger={true} min={0}
+                    <FloatLineComponent label={"Row #"} target={this} propertyName={"_rowNumber"} isInteger={true} min={0} onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         onChange={(newValue) => {
                             this.updateGridPosition();
                         }} />
-                    <FloatLineComponent label={"Column #"} target={this} propertyName={"_columnNumber"} isInteger={true} min={0}
+                    <FloatLineComponent label={"Column #"} target={this} propertyName={"_columnNumber"} isInteger={true} min={0} onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         onChange={(newValue) => {
                             this.updateGridPosition();
                         }} />

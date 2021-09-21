@@ -43,4 +43,31 @@ export class Tools {
         }
         return finalArray.reverse();
     }
+
+    public static SortAndFilterForGrid(parent: any, items: any[]): any[] {
+        if (!items) {
+            return [];
+        }
+
+        const finalArray = Tools._RecursiveRemoveHiddenMeshesAndHoistChildren(items);
+
+        if (parent && parent.reservedDataStore && parent.reservedDataStore.detachedChildren) {
+            finalArray.push(...parent.reservedDataStore.detachedChildren);
+        }
+
+        return finalArray.sort((a: any, b: any) => {
+            const lowerCaseA = (a._tag || "").toLowerCase();
+            const lowerCaseB = (b._tag || "").toLowerCase();
+
+            if (lowerCaseA === lowerCaseB) {
+                return 0;
+            }
+
+            if (lowerCaseA > lowerCaseB) {
+                return 1;
+            }
+
+            return -1;
+        });
+    }
 }
