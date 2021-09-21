@@ -7,6 +7,8 @@ import { Measure } from "../measure";
 import { Tools } from 'babylonjs/Misc/tools';
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
+import { serialize } from "babylonjs/Misc/decorators";
+import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 
 /**
  * Class used to create a 2D grid container
@@ -489,6 +491,67 @@ export class Grid extends Container {
         }
 
         this._childControls = [];
+    }
+
+    /**
+ * Serializes the current control
+ * @param serializationObject defined the JSON serialized object
+ */
+    public serialize(serializationObject: any) {
+        super.serialize(serializationObject);
+        serializationObject.columnCount = this.columnCount;
+        serializationObject.rowCount = this.rowCount;
+        serializationObject.columns = [];
+        serializationObject.rows = [];
+        serializationObject.tags = [];
+        for (let i = 0; i < this.columnCount; ++i) {
+            let cd = this.getColumnDefinition(i);
+            let childSerializationObject = { value: cd?.getValue(this.host), unit: cd?.unit };
+            serializationObject.columns.push(childSerializationObject);
+
+        }
+        for (let i = 0; i < this.rowCount; ++i) {
+            let rd = this.getRowDefinition(i);
+            let childSerializationObject = { value: rd?.getValue(this.host), unit: rd?.unit };
+            serializationObject.rows.push(childSerializationObject);
+        }
+        this.children.forEach(child => {
+            serializationObject.tags.push(child._tag);
+        })
+    }
+
+    /** @hidden */
+    public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
+        super._parseFromContent(serializedObject, host);
+        let children: Control[] = [];
+        this.children.forEach(child => {
+            children.push(child);
+        })
+        this.removeRowDefinition(0);
+        this.removeColumnDefinition(0);
+        for (let i = 0; i <  serializedObject.columnCount; ++i) {
+            const columnValue = serializedObject.columns[i].value;
+            const unit = serializedObject.columns[i].unit;
+            this.addColumnDefinition(columnValue, unit === 1 ? true : false);
+        }
+        for (let i = 0; i < serializedObject.rowCount; ++i) {
+            const rowValue = serializedObject.rows[i].value;
+            const unit = serializedObject.rows[i].unit;
+            this.addRowDefinition(rowValue, unit === 1 ? true : false);
+        }
+
+        for (let i = 0; i < children.length; ++i) {
+            const cellInfo = serializedObject.tags[i];
+            let rowNumber = parseInt(cellInfo.substring(0, cellInfo.search(":")));
+            if (isNaN(rowNumber)) {
+                rowNumber = 0;
+            }
+            let columnNumber = parseInt(cellInfo.substring(cellInfo.search(":") + 1));
+            if (isNaN(columnNumber)) {
+                columnNumber = 0;
+            }
+            this.addControl(children[i],rowNumber,columnNumber);
+        }
     }
 }
 _TypeStore.RegisteredTypes["BABYLON.GUI.Grid"] = Grid;
