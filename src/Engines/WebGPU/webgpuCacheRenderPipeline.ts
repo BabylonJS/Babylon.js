@@ -316,7 +316,7 @@ export abstract class WebGPUCacheRenderPipeline {
         this.setDepthCullingState(false, 2, 1, 0, 0, true, true, Constants.ALWAYS);
     }
 
-    public setDepthCullingState(cullEnabled: boolean, frontFace: number, cullFace: number, zOffset: number, zOffsetUnit: number, depthTestEnabled: boolean, depthWriteEnabled: boolean, depthCompare: Nullable<number>): void {
+    public setDepthCullingState(cullEnabled: boolean, frontFace: number, cullFace: number, zOffset: number, zOffsetUnits: number, depthTestEnabled: boolean, depthWriteEnabled: boolean, depthCompare: Nullable<number>): void {
         this._depthWriteEnabled = depthWriteEnabled;
         this._depthTestEnabled = depthTestEnabled;
         this._depthCompare = (depthCompare ?? Constants.ALWAYS) - 0x0200;
@@ -324,7 +324,7 @@ export abstract class WebGPUCacheRenderPipeline {
         this._cullEnabled = cullEnabled;
         this._frontFace = frontFace;
         this.setDepthBiasSlopeScale(zOffset);
-        this.setDepthBias(zOffsetUnit);
+        this.setDepthBias(zOffsetUnits);
     }
 
     public setDepthBias(depthBias: number): void {
