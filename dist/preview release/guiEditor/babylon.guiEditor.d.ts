@@ -381,6 +381,7 @@ declare module GUIEDITOR {
     export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
         private _width;
         private _height;
+        private _responsive;
         constructor(props: ICommonControlPropertyGridComponentProps);
         private _updateAlignment;
         private _checkAndUpdateValues;
@@ -889,7 +890,6 @@ declare module GUIEDITOR {
         isHovered: boolean;
         dragOverLocation: DragOverLocation;
     }> {
-        private _wasSelected;
         dragOverHover: boolean;
         private _onSelectionChangedObservable;
         private _onDraggingEndObservable;
@@ -901,9 +901,7 @@ declare module GUIEDITOR {
             isSelected: boolean;
         }): boolean;
         scrollIntoView(): void;
-        componentDidMount(): void;
         componentWillUnmount(): void;
-        componentDidUpdate(): void;
         onSelect(): void;
         renderChildren(): (JSX.Element | null)[] | null;
         render(): JSX.Element | null;
