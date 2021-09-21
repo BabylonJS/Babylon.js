@@ -618,7 +618,7 @@
                 blockerDepth = texture2D(depthSampler, vec3(uvDepth.xy + (lightSizeUV * lightSizeUVCorrection * shadowMapSizeInverse * PoissonSamplers32[i].xy), layer)).r;
                 if (blockerDepth < depthMetric) {
                     sumBlockerDepth += blockerDepth;
-                    numBlocker++;
+                    numBlocker += 1.0;
                 }
             }
 
@@ -684,7 +684,7 @@
                     blockerDepth = texture2D(depthSampler, uvDepth.xy + (lightSizeUV * shadowMapSizeInverse * PoissonSamplers32[i].xy)).r;
                     if (blockerDepth < depthMetric) {
                         sumBlockerDepth += blockerDepth;
-                        numBlocker++;
+                        numBlocker += 1.0;
                     }
                 }
 

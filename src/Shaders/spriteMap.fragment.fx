@@ -54,7 +54,7 @@ void main(){
         if(animationData.y > 0.) {
 
             mt = mod(time*animationData.z, 1.0);
-            for(float f = 0.; f < MAX_ANIMATION_FRAMES; f++){
+            for(float f = 0.; f < MAX_ANIMATION_FRAMES; f += 1.0){
                 if(animationData.y > mt){
                     frameID = animationData.x;
                     break;

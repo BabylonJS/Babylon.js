@@ -495,7 +495,9 @@ function init(_engineName, useReverseDepthBuffer) {
 
         var twgslOptions = { 
             jsPath: "/dist/preview release/twgsl/twgsl.js",
-            wasmPath: "/dist/preview release/twgsl/twgsl.wasm"
+            wasmPath: "/dist/preview release/twgsl/twgsl.wasm",
+            jsPathNagasm: "/dist/preview release/nagasm/nagasm.js",
+            wasmPathNagasm: "/dist/preview release/nagasm/nagasm.wasm"
         };
 
         const options = {

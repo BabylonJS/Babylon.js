@@ -36,11 +36,11 @@ mat3 inverseMat3(mat3 inMatrix) {
       float b11 = -a22 * a10 + a12 * a20;
       float b21 = a21 * a10 - a11 * a20;
 
-      float det = a00 * b01 + a01 * b11 + a02 * b21;
+      float det = 1.0 / (a00 * b01 + a01 * b11 + a02 * b21);
 
       return mat3(b01, (-a22 * a01 + a02 * a21), (a12 * a01 - a02 * a11),
               b11, (a22 * a00 - a02 * a20), (-a12 * a00 + a02 * a10),
-              b21, (-a21 * a00 + a01 * a20), (a11 * a00 - a01 * a10)) / det;
+              b21, (-a21 * a00 + a01 * a20), (a11 * a00 - a01 * a10)) * det;
 }
 
 float toLinearSpace(float color)

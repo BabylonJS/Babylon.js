@@ -29,7 +29,7 @@ import { HardwareTextureWrapper } from '../../Materials/Textures/hardwareTexture
 import { BaseTexture } from '../../Materials/Textures/baseTexture';
 import { WebGPUHardwareTexture } from './webgpuHardwareTexture';
 import { EngineStore } from "../engineStore";
-import { WebGPUTintWASM } from "./webgpuTintWASM";
+import { WebGPUTranspiler } from "./webgpuTranspiler";
 
 // TODO WEBGPU improve mipmap generation by using compute shaders
 
@@ -145,7 +145,7 @@ export class WebGPUTextureHelper {
 
     private _device: GPUDevice;
     private _glslang: any;
-    private _tintWASM: Nullable<WebGPUTintWASM>;
+    private _transpiler: Nullable<WebGPUTranspiler>;
     private _bufferManager: WebGPUBufferManager;
     private _mipmapSampler: GPUSampler;
     private _pipelines: { [format: string]: Array<GPURenderPipeline> } = {};
@@ -161,10 +161,10 @@ export class WebGPUTextureHelper {
     //                         Initialization / Helpers
     //------------------------------------------------------------------------------
 
-    constructor(device: GPUDevice, glslang: any, tintWASM: Nullable<WebGPUTintWASM>, bufferManager: WebGPUBufferManager) {
+    constructor(device: GPUDevice, glslang: any, transpiler: Nullable<WebGPUTranspiler>, bufferManager: WebGPUBufferManager) {
         this._device = device;
         this._glslang = glslang;
-        this._tintWASM = tintWASM;
+        this._transpiler = transpiler;
         this._bufferManager = bufferManager;
 
         this._mipmapSampler = device.createSampler({ minFilter: WebGPUConstants.FilterMode.Linear });
@@ -196,12 +196,14 @@ export class WebGPUTextureHelper {
 
             let modules = this._compiledShaders[index];
             if (!modules) {
-                let vertexCode = this._glslang.compileGLSL(defines + shadersForPipelineType[type].vertex, 'vertex');
-                let fragmentCode = this._glslang.compileGLSL(defines + shadersForPipelineType[type].fragment, 'fragment');
+                const mustConvertInputToSpirV = this._transpiler?.mustConvertInputToSpirV ?? true;
 
-                if (this._tintWASM) {
-                    vertexCode = this._tintWASM.convertSpirV2WGSL(vertexCode);
-                    fragmentCode = this._tintWASM.convertSpirV2WGSL(fragmentCode);
+                let vertexCode = mustConvertInputToSpirV ? this._glslang.compileGLSL(defines + shadersForPipelineType[type].vertex, 'vertex') : defines + shadersForPipelineType[type].vertex;
+                let fragmentCode = mustConvertInputToSpirV ? this._glslang.compileGLSL(defines + shadersForPipelineType[type].fragment, 'fragment') : defines + shadersForPipelineType[type].fragment;
+
+                if (this._transpiler) {
+                    vertexCode = this._transpiler.transpile(vertexCode, "vertex");
+                    fragmentCode = this._transpiler.transpile(fragmentCode, "fragment");
                 }
 
                 const vertexModule = this._device.createShaderModule({

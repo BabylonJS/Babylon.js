@@ -46,7 +46,7 @@ import { ComputeEffect } from "../Compute/computeEffect";
 import { WebGPUOcclusionQuery } from "./WebGPU/webgpuOcclusionQuery";
 import { Observable } from "../Misc/observable";
 import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
-import { TwgslOptions, WebGPUTintWASM } from "./WebGPU/webgpuTintWASM";
+import { TranspilerModule, TranspilerOptions, WebGPUTranspiler } from "./WebGPU/webgpuTranspiler";
 import { ExternalTexture } from "../Materials/Textures/externalTexture";
 import { WebGPUShaderProcessor } from "./WebGPU/webgpuShaderProcessor";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
@@ -152,9 +152,9 @@ export interface WebGPUEngineOptions extends GPURequestAdapterOptions {
     glslangOptions?: GlslangOptions;
 
     /**
-     * Options to load the associated Twgsl library
+     * Options to load the associated transpiler library
      */
-    twgslOptions?: TwgslOptions;
+    transpilerOptions?: TranspilerOptions;
 
      /**
      * Defines if the engine should no exceed a specified device ratio
@@ -197,8 +197,8 @@ export class WebGPUEngine extends Engine {
         wasmPath: "https://preview.babylonjs.com/glslang/glslang.wasm"
     };
 
-    /** true to enable using TintWASM to convert Spir-V to WGSL */
-    public static UseTWGSL = true;
+    /** Module to use to transpile glsl */
+    public static TranspilerModule = TranspilerModule.TintWASM;
 
     // Page Life cycle and constants
     private readonly _uploadEncoderDescriptor = { label: "upload" };
@@ -217,7 +217,7 @@ export class WebGPUEngine extends Engine {
     /** @hidden */
     public _options: WebGPUEngineOptions;
     private _glslang: any = null;
-    private _tintWASM: Nullable<WebGPUTintWASM> = null;
+    private _transpiler: Nullable<WebGPUTranspiler> = null;
     private _adapter: GPUAdapter;
     private _adapterSupportedExtensions: GPUFeatureName[];
     /** @hidden */
@@ -505,7 +505,7 @@ export class WebGPUEngine extends Engine {
         const engine = new WebGPUEngine(canvas, options);
 
         return new Promise((resolve) => {
-            engine.initAsync(options.glslangOptions, options.twgslOptions).then(() => resolve(engine));
+            engine.initAsync(options.glslangOptions, options.transpilerOptions).then(() => resolve(engine));
         });
     }
 
@@ -586,20 +586,20 @@ export class WebGPUEngine extends Engine {
     /**
      * Initializes the WebGPU context and dependencies.
      * @param glslangOptions Defines the GLSLang compiler options if necessary
-     * @param twgslOptions Defines the Twgsl compiler options if necessary
+     * @param transpilerOptions Defines the transpiler compiler options if necessary
      * @returns a promise notifying the readiness of the engine.
      */
-    public initAsync(glslangOptions?: GlslangOptions, twgslOptions?: TwgslOptions): Promise<void> {
+    public initAsync(glslangOptions?: GlslangOptions, transpilerOptions?: TranspilerOptions): Promise<void> {
         return this._initGlslang(glslangOptions ?? this._options?.glslangOptions)
             .then((glslang: any) => {
                 this._glslang = glslang;
-                this._tintWASM = WebGPUEngine.UseTWGSL ? new WebGPUTintWASM() : null;
-                return this._tintWASM ?
-                    this._tintWASM.initTwgsl(twgslOptions ?? this._options?.twgslOptions)
+                this._transpiler = WebGPUEngine.TranspilerModule === TranspilerModule.NagaWASM || WebGPUEngine.TranspilerModule === TranspilerModule.TintWASM ? new WebGPUTranspiler(WebGPUEngine.TranspilerModule) : null;
+                return this._transpiler ?
+                    this._transpiler.init(transpilerOptions ?? this._options?.transpilerOptions)
                         .then(() => {
                             return navigator.gpu!.requestAdapter(this._options);
                         }, (msg: string) => {
-                            Logger.Error("Can not initialize twgsl!");
+                            Logger.Error("Can not initialize transpiler!");
                             Logger.Error(msg);
                             throw Error("WebGPU initializations stopped.");
                         })
@@ -663,7 +663,7 @@ export class WebGPUEngine extends Engine {
             })
             .then(() => {
                 this._bufferManager = new WebGPUBufferManager(this._device);
-                this._textureHelper = new WebGPUTextureHelper(this._device, this._glslang, this._tintWASM, this._bufferManager);
+                this._textureHelper = new WebGPUTextureHelper(this._device, this._glslang, this._transpiler, this._bufferManager);
                 this._cacheSampler = new WebGPUCacheSampler(this._device);
                 this._cacheBindGroups = new WebGPUCacheBindGroups(this._device, this._cacheSampler, this);
                 this._timestampQuery = new WebGPUTimestampQuery(this._device, this._bufferManager);
@@ -1492,11 +1492,11 @@ export class WebGPUEngine extends Engine {
         return effect;
     }
 
-    private _compileRawShaderToSpirV(source: string, type: string): Uint32Array {
-        return this._glslang.compileGLSL(source, type);
+    private _compileRawShaderToSpirV(source: string, type: string): Uint32Array | string {
+        return WebGPUEngine.TranspilerModule === TranspilerModule.TintWASM ? this._glslang.compileGLSL(source, type) : source;
     }
 
-    private _compileShaderToSpirV(source: string, type: string, defines: Nullable<string>, shaderVersion: string): Uint32Array {
+    private _compileShaderToSpirV(source: string, type: string, defines: Nullable<string>, shaderVersion: string): Uint32Array | string {
         return this._compileRawShaderToSpirV(shaderVersion + (defines ? defines + "\n" : "") + source, type);
     }
 
@@ -1510,9 +1510,9 @@ export class WebGPUEngine extends Engine {
     }
 
     private _createPipelineStageDescriptor(vertexShader: Uint32Array | string, fragmentShader: Uint32Array | string, shaderLanguage: ShaderLanguage): IWebGPURenderPipelineStageDescriptor {
-        if (this._tintWASM && shaderLanguage === ShaderLanguage.GLSL) {
-            vertexShader = this._tintWASM.convertSpirV2WGSL(vertexShader as Uint32Array) as any;
-            fragmentShader = this._tintWASM.convertSpirV2WGSL(fragmentShader as Uint32Array) as any;
+        if (this._transpiler && shaderLanguage === ShaderLanguage.GLSL) {
+            vertexShader = this._transpiler.transpile(vertexShader, "vertex");
+            fragmentShader = this._transpiler.transpile(fragmentShader, "fragment");
         }
 
         return {
