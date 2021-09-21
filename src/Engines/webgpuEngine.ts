@@ -3013,9 +3013,6 @@ export class WebGPUEngine extends Engine {
         return false;
     }
 
-    /** @hidden */
-    public _releaseFramebufferObjects(texture: InternalTexture): void { }
-
     /**
      * Gets a boolean indicating if all created effects are ready
      * @returns always true - No parallel shader compilation
