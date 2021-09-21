@@ -629,6 +629,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(`Please note: This editor is still a work in progress. You may submit feedback to msDestiny14 on GitHub.`);
         engine.runRenderLoop(() => { this._scene.render() });
         this.globalState.onNewSceneObservable.notifyObservers(this.globalState.guiTexture.getScene());
+        this.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
     };
 
     //Add map-like controls to an ArcRotate camera
