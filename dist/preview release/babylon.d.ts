@@ -2355,9 +2355,10 @@ declare module BABYLON {
          * @param onError callback called when the image fails to load
          * @param offlineProvider offline provider for caching
          * @param mimeType optional mime type
+         * @param imageBitmapOptions optional the options to use when creating an ImageBitmap
          * @returns the HTMLImageElement of the loaded image
          */
-        static LoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string): Nullable<HTMLImageElement>;
+        static LoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string, imageBitmapOptions?: ImageBitmapOptions): Nullable<HTMLImageElement>;
         /**
          * Reads a file from a File object
          * @param file defines the file to load
@@ -41192,10 +41193,11 @@ declare module BABYLON {
          * @param onError callback called when the image fails to load
          * @param offlineProvider offline provider for caching
          * @param mimeType optional mime type
+         * @param imageBitmapOptions optional the options to use when creating an ImageBitmap
          * @returns the HTMLImageElement of the loaded image
          * @hidden
          */
-        static _FileToolsLoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string): Nullable<HTMLImageElement>;
+        static _FileToolsLoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string, imageBitmapOptions?: ImageBitmapOptions): Nullable<HTMLImageElement>;
         /**
          * @hidden
          */
@@ -41533,6 +41535,18 @@ declare module BABYLON {
          */
         preScaleForRendering(): void;
         /**
+         * update the spherical harmonics coefficients from the given array
+         * @param data defines the 9x3 coefficients (l00, l1-1, l10, l11, l2-2, l2-1, l20, l21, l22)
+         * @returns the spherical harmonics (this)
+         */
+        updateFromArray(data: ArrayLike<ArrayLike<number>>): SphericalHarmonics;
+        /**
+         * update the spherical harmonics coefficients from the given floats array
+         * @param data defines the 9x3 coefficients (l00, l1-1, l10, l11, l2-2, l2-1, l20, l21, l22)
+         * @returns the spherical harmonics (this)
+         */
+        updateFromFloatsArray(data: ArrayLike<number>): SphericalHarmonics;
+        /**
          * Constructs a spherical harmonics from an array.
          * @param data defines the 9x3 coefficients (l00, l1-1, l10, l11, l2-2, l2-1, l20, l21, l22)
          * @returns the spherical harmonics
@@ -41600,6 +41614,12 @@ declare module BABYLON {
          * @param scale the amount to scale
          */
         scaleInPlace(scale: number): void;
+        /**
+         * Updates the spherical polynomial from harmonics
+         * @param harmonics the spherical harmonics
+         * @returns the spherical polynomial
+         */
+        updateFromHarmonics(harmonics: SphericalHarmonics): SphericalPolynomial;
         /**
          * Gets the spherical polynomial from harmonics
          * @param harmonics the spherical harmonics
@@ -43732,9 +43752,10 @@ declare module BABYLON {
          * @param onError callback called when the image fails to load
          * @param offlineProvider offline provider for caching
          * @param mimeType optional mime type
+         * @param imageBitmapOptions optional the options to use when creating an ImageBitmap
          * @returns the HTMLImageElement of the loaded image
          */
-        static LoadImage(input: string | ArrayBuffer | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string): Nullable<HTMLImageElement>;
+        static LoadImage(input: string | ArrayBuffer | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string, imageBitmapOptions?: ImageBitmapOptions): Nullable<HTMLImageElement>;
         /**
          * Loads a file from a url
          * @param url url string, ArrayBuffer, or Blob to load
@@ -51092,6 +51113,10 @@ declare module BABYLON {
          * The name of the movement feature
          */
         static readonly MOVEMENT: string;
+        /**
+         * The name of the light estimation feature
+         */
+        static readonly LIGHT_ESTIMATION: string;
         /**
          * The name of the eye tracking feature
          */
@@ -87814,6 +87839,164 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Options for Light Estimation feature
+     */
+    export interface IWebXRLightEstimationOptions {
+        /**
+         * Disable the cube map reflection feature. In this case only light direction and color will be updated
+         */
+        disableCubeMapReflection?: boolean;
+        /**
+         * Should the scene's env texture be set to the cube map reflection texture
+         * Note that this doesn't work is disableCubeMapReflection if set to false
+         */
+        setSceneEnvironmentTexture?: boolean;
+        /**
+         * How often should the cubemap update in ms.
+         * If not set the cubemap will be updated every time the underlying system updates the environment texture.
+         */
+        cubeMapPollInterval?: number;
+        /**
+         * How often should the light estimation properties update in ms.
+         * If not set the light estimation properties will be updated on every frame (depending on the underlying system)
+         */
+        lightEstimationPollInterval?: number;
+        /**
+         * Should a directional light source be created.
+         * If created, this light source will be updated whenever the light estimation values change
+         */
+        createDirectionalLightSource?: boolean;
+        /**
+         * Define the format to be used for the light estimation texture.
+         */
+        reflectionFormat?: XRReflectionFormat;
+        /**
+         * Should the light estimation's needed vectors be constructed on each frame.
+         * Use this when you use those vectors and don't want their values to change outside of the light estimation feature
+         */
+        disableVectorReuse?: boolean;
+        /**
+         * disable applying the spherical polynomial to the cube map texture
+         */
+        disableSphericalPolynomial?: boolean;
+    }
+    /**
+     * An interface describing the result of a light estimation
+     */
+    export interface IWebXRLightEstimation {
+        /**
+         * The intensity of the light source
+         */
+        lightIntensity: number;
+        /**
+         * Color of light source
+         */
+        lightColor: Color3;
+        /**
+         * The direction from the light source
+         */
+        lightDirection: Vector3;
+        /**
+         * Spherical harmonics coefficients of the light source
+         */
+        sphericalHarmonics: SphericalHarmonics;
+    }
+    /**
+     * Light Estimation Feature
+     *
+     * @since 5.0.0
+     */
+    export class WebXRLightEstimation extends WebXRAbstractFeature {
+        /**
+         * options to use when constructing this feature
+         */
+        readonly options: IWebXRLightEstimationOptions;
+        private _canvasContext;
+        private _reflectionCubeMap;
+        private _xrLightEstimate;
+        private _xrLightProbe;
+        private _xrWebGLBinding;
+        private _lightDirection;
+        private _lightColor;
+        private _intensity;
+        private _sphericalHarmonics;
+        private _cubeMapPollTime;
+        private _lightEstimationPollTime;
+        /**
+         * The module's name
+         */
+        static readonly Name: string;
+        /**
+         * The (Babylon) version of this module.
+         * This is an integer representing the implementation version.
+         * This number does not correspond to the WebXR specs version
+         */
+        static readonly Version: number;
+        /**
+         * ARCore's reflection cube map size is 16x16.
+         * Once other systems support this feature we will need to change this to be dynamic.
+         * see https://github.com/immersive-web/lighting-estimation/blob/main/lighting-estimation-explainer.md#cube-map-open-questions
+         */
+        private _ReflectionCubeMapTextureSize;
+        /**
+         * If createDirectionalLightSource is set to true this light source will be created automatically.
+         * Otherwise this can be set with an external directional light source.
+         * This light will be updated whenever the light estimation values change.
+         */
+        directionalLight: Nullable<DirectionalLight>;
+        /**
+         * This observable will notify when the reflection cube map is updated.
+         */
+        onReflectionCubeMapUpdatedObservable: Observable<BaseTexture>;
+        /**
+        * Creates a new instance of the light estimation feature
+        * @param _xrSessionManager an instance of WebXRSessionManager
+        * @param options options to use when constructing this feature
+        */
+        constructor(_xrSessionManager: WebXRSessionManager, 
+        /**
+         * options to use when constructing this feature
+         */
+        options: IWebXRLightEstimationOptions);
+        /**
+         * While the estimated cube map is expected to update over time to better reflect the user's environment as they move around those changes are unlikely to happen with every XRFrame.
+         * Since creating and processing the cube map is potentially expensive, especially if mip maps are needed, you can listen to the onReflectionCubeMapUpdatedObservable to determine
+         * when it has been updated.
+         */
+        get reflectionCubeMapTexture(): Nullable<BaseTexture>;
+        /**
+         * The most recent light estimate.  Available starting on the first frame where the device provides a light probe.
+         */
+        get xrLightingEstimate(): Nullable<IWebXRLightEstimation>;
+        private _getCanvasContext;
+        private _getXRGLBinding;
+        /**
+         * Event Listener for "reflectionchange" events.
+         */
+        private _updateReflectionCubeMap;
+        /**
+         * attach this feature
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        attach(): boolean;
+        /**
+         * detach this feature.
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        detach(): boolean;
+        /**
+         * Dispose this feature and all of the resources attached
+         */
+        dispose(): void;
+        protected _onXRFrame(_xrFrame: XRFrame): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Options for the walking locomotion feature.
      */
     export interface IWebXRWalkingLocomotionOptions {
@@ -89792,6 +89975,8 @@ type XREventType = "devicechange" | "visibilitychange" | "end" | "inputsourcesch
 
 type XRDOMOverlayType = "screen" | "floating" | "head-locked";
 
+type XRReflectionFormat = "srgba8" | "rgba16f";
+
 type XRFrameRequestCallback = (time: DOMHighResTimeStamp, frame: XRFrame) => void;
 
 type XRPlaneSet = Set<XRPlane>;
@@ -89806,6 +89991,10 @@ type XRDOMOverlayInit = {
      * The root attribute specifies the overlay element that will be displayed to the user as the content of the DOM overlay. This is a required attribute, there is no default.
      */
     root: Element;
+};
+
+type XRLightProbeInit = {
+     reflectionFormat: XRReflectionFormat;
 };
 
 interface XRSessionInit {
@@ -89841,6 +90030,12 @@ interface XRWebGLLayerInit {
     alpha?: boolean;
     multiview?: boolean;
     framebufferScaleFactor?: number;
+}
+
+// https://www.w3.org/TR/webxrlayers-1/#XRWebGLBindingtype
+declare class XRWebGLBinding {
+    constructor(xrSession: XRSession, context: WebGLRenderingContext | WebGL2RenderingContext);
+    getReflectionCubeMap: (lightProbe: XRLightProbe) => WebGLTexture;
 }
 
 declare class XRWebGLLayer {
@@ -89892,6 +90087,12 @@ interface XRInputSource {
     readonly hand?: XRHand;
 }
 
+interface XRLightEstimate {
+    readonly sphericalHarmonicsCoefficients: Float32Array;
+    readonly primaryLightDirection: DOMPointReadOnly;
+    readonly primaryLightIntensity: DOMPointReadOnly;
+}
+
 interface XRPose {
     readonly transform: XRRigidTransform;
     readonly emulatedPosition: boolean;
@@ -89923,6 +90124,7 @@ interface XRFrame {
     fillJointRadii?(jointSpaces: XRJointSpace[], radii: Float32Array): boolean;
     // Image tracking
     getImageTrackingResults?(): Array<XRImageTrackingResult>;
+    getLightEstimate(xrLightProbe: XRLightProbe): XRLightEstimate;
 }
 
 interface XRInputSourceEvent extends Event {
@@ -89942,6 +90144,11 @@ type XRDOMOverlayState = {
      */
     type: XRDOMOverlayType | null
 };
+
+interface XRLightProbe extends EventTarget {
+    readonly probeSpace: XRSpace ;
+    onreflectionchange: XREventHandler ;
+  }
 
 interface XRSession {
     addEventListener(type: XREventType, listener: XREventHandler, options?: boolean | AddEventListenerOptions): void;
@@ -89985,6 +90192,14 @@ interface XRSession {
     requestReferenceSpace(type: XRReferenceSpaceType): Promise<XRReferenceSpace>;
     requestReferenceSpace(type: XRBoundedReferenceSpaceType): Promise<XRBoundedReferenceSpace>;
 
+    /**
+     * The XRSession interface is extended with the ability to create new XRLightProbe instances.
+     * XRLightProbe instances have a session object, which is the XRSession that created this XRLightProbe.
+     *
+     * Can reject with with a "NotSupportedError" DOMException
+     */
+    requestLightProbe(options?: XRLightProbeInit): Promise<XRLightProbe>;
+
     updateRenderState(XRRenderStateInit: XRRenderState): Promise<void>;
 
     onend: XREventHandler;
@@ -90016,6 +90231,10 @@ interface XRSession {
      * Provided when the optional 'dom-overlay' feature is requested.
      */
     readonly domOverlayState?: XRDOMOverlayState;
+    /**
+     * Indicates the XRReflectionFormat most closely supported by the underlying XR device
+     */
+    readonly preferredReflectionFormat?: XRReflectionFormat;
 
     readonly frameRate?: number;
     readonly supportedFrameRates?: Float32Array;
