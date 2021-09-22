@@ -3,6 +3,7 @@ import { VRCameraMetrics } from "./vrCameraMetrics";
 import { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
 import { Node } from "../../node";
+import { setVRRigMode } from "../RigModes/vrRigMode";
 
 import "../../Gamepads/gamepadSceneComponent";
 
@@ -37,4 +38,6 @@ export class VRDeviceOrientationGamepadCamera extends VRDeviceOrientationFreeCam
     public getClassName(): string {
         return "VRDeviceOrientationGamepadCamera";
     }
+
+    protected _setRigMode = setVRRigMode.bind(null, this);
 }
