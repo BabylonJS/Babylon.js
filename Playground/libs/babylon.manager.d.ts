@@ -232,6 +232,7 @@ declare module BABYLON {
         static CloneAbstractMesh(container: BABYLON.AssetContainer, nodeName: string, cloneName: string): BABYLON.AbstractMesh;
         /** Creates an instance of the specified mesh asset into the scene. (Mesh Instance) */
         static CreateInstancedMesh(container: BABYLON.AssetContainer, meshName: string, instanceName: string): BABYLON.InstancedMesh;
+        /** Clones the specfied transform node from scene. */
         /** Registers a script componment with the scene manager. */
         static RegisterScriptComponent(instance: BABYLON.ScriptComponent, alias: string, validate?: boolean): void;
         /** Destroys a script component instance. */
@@ -1839,7 +1840,6 @@ declare class CVTOOLS_unity_metadata implements BABYLON.GLTF2.IGLTFLoaderExtensi
     setupLoader(): void;
     /** @hidden */
     startParsing(): void;
-    /** @hidden */
     /** @hidden */
     loadSceneAsync(context: string, scene: BABYLON.GLTF2.IScene): BABYLON.Nullable<Promise<void>>;
     private loadSceneExAsync;
