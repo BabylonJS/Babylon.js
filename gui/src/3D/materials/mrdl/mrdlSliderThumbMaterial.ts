@@ -398,7 +398,6 @@ export class MRDLSliderThumbMaterial extends PushMaterial {
     @serialize()
     public decalFrontOnly = true;
 
-
     /**
      * Gets or sets the Rim Light intensity.
      */
