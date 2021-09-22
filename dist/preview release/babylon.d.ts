@@ -34442,6 +34442,9 @@ declare module BABYLON {
      */
     export class Vector3 {
         private static _UpReadOnly;
+        private static _LeftHandedForwardReadOnly;
+        private static _RightHandedForwardReadOnly;
+        private static _RightReadOnly;
         private static _ZeroReadOnly;
         /** @hidden */
         _x: number;
@@ -34935,6 +34938,18 @@ declare module BABYLON {
          * Gets a up Vector3 that must not be updated
          */
         static get UpReadOnly(): DeepImmutable<Vector3>;
+        /**
+         * Gets a right Vector3 that must not be updated
+         */
+        static get RightReadOnly(): DeepImmutable<Vector3>;
+        /**
+         * Gets a forward Vector3 that must not be updated
+         */
+        static get LeftHandedForwardReadOnly(): DeepImmutable<Vector3>;
+        /**
+         * Gets a forward Vector3 that must not be updated
+         */
+        static get RightHandedForwardReadOnly(): DeepImmutable<Vector3>;
         /**
          * Gets a zero Vector3 that must not be updated
          */
@@ -49873,6 +49888,10 @@ declare module BABYLON {
          * The name of the movement feature
          */
         static readonly MOVEMENT: string;
+        /**
+         * The name of the eye tracking feature
+         */
+        static readonly EYE_TRACKING: string;
     }
     /**
      * Defining the constructor of a feature. Used to register the modules.
@@ -70373,6 +70392,7 @@ declare module BABYLON {
         private _raycastResult;
         private _physicsBodysToRemoveAfterStep;
         private _firstFrame;
+        private _tmpQuaternion;
         BJSCANNON: any;
         constructor(_useDeltaForWorldStep?: boolean, iterations?: number, cannonInjection?: any);
         setGravity(gravity: Vector3): void;
@@ -85932,6 +85952,61 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * The WebXR Eye Tracking feature grabs eye data from the device and provides it in an easy-access format.
+     * Currently only enabled for BabylonNative applications.
+     */
+    export class WebXREyeTracking extends WebXRAbstractFeature {
+        private _latestEyeSpace;
+        private _gazeRay;
+        /**
+         * The module's name
+         */
+        static readonly Name: string;
+        /**
+         * The (Babylon) version of this module.
+         * This is an integer representing the implementation version.
+         * This number does not correspond to the WebXR specs version
+         */
+        static readonly Version: number;
+        /**
+         * This observable will notify registered observers when eye tracking starts
+         */
+        readonly onEyeTrackingStartedObservable: Observable<Ray>;
+        /**
+         * This observable will notify registered observers when eye tracking ends
+         */
+        readonly onEyeTrackingEndedObservable: Observable<void>;
+        /**
+         * This observable will notify registered observers on each frame that has valid tracking
+         */
+        readonly onEyeTrackingFrameUpdateObservable: Observable<Ray>;
+        /**
+         * Creates a new instance of the XR eye tracking feature.
+         * @param _xrSessionManager An instance of WebXRSessionManager.
+         */
+        constructor(_xrSessionManager: WebXRSessionManager);
+        /**
+         * Dispose this feature and all of the resources attached.
+         */
+        dispose(): void;
+        /**
+         * Returns whether the gaze data is valid or not
+         * @returns true if the data is valid
+         */
+        get isEyeGazeValid(): boolean;
+        /**
+         * Get a reference to the gaze ray. This data is valid while eye tracking persists, and will be set to null when gaze data is no longer available
+         * @returns a reference to the gaze ray if it exists and is valid, returns null otherwise.
+         */
+        getEyeGaze(): Nullable<Ray>;
+        protected _onXRFrame(frame: XRFrame): void;
+        private _eyeTrackingStartListener;
+        private _eyeTrackingEndListener;
+        private _init;
+    }
+}
+declare module BABYLON {
+    /**
      * A generic hand controller class that supports select and a secondary grasp
      */
     export class WebXRGenericHandController extends WebXRAbstractMotionController {
@@ -86162,6 +86237,150 @@ declare module BABYLON {
          * Grows the array by the growth factor when necessary.
          */
         private _growArray;
+    }
+}
+declare module BABYLON {
+    /**
+     * Defines the general structure of what is necessary for a collection strategy.
+     */
+    export interface IPerfViewerCollectionStrategy {
+        /**
+         * The id of the strategy.
+         */
+        id: string;
+        /**
+         * Function which gets the data for the strategy.
+         */
+        getData: () => number;
+    }
+    /**
+     * Initializer callback for a strategy
+     */
+    export type PerfStrategyInitialization = (scene: Scene) => IPerfViewerCollectionStrategy;
+    /**
+     * Defines the predefined strategies used in the performance viewer.
+     */
+    export class PerfCollectionStrategy {
+        /**
+         * Gets the initializer for the strategy used for collection of fps metrics
+         * @returns the initializer for the fps strategy
+         */
+        static FpsStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of cpu utilization metrics.
+         * @returns the initializer for the cpu utilization strategy
+         */
+        static CpuStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of total meshes metrics.
+         * @returns the initializer for the total meshes strategy
+         */
+        static TotalMeshesStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of active meshes metrics.
+         * @returns the initializer for the active meshes strategy
+         */
+        static ActiveMeshesStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of active indices metrics.
+         * @returns the initializer for the active indices strategy
+         */
+        static ActiveIndiciesStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of active faces metrics.
+         * @returns the initializer for the active faces strategy
+         */
+        static ActiveFacesStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of active bones metrics.
+         * @returns the initializer for the active bones strategy
+         */
+        static ActiveBonesStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of active particles metrics.
+         * @returns the initializer for the active particles strategy
+         */
+        static ActiveParticlesStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of draw calls metrics.
+         * @returns the initializer for the draw calls strategy
+         */
+        static DrawCallsStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of total lights metrics.
+         * @returns the initializer for the total lights strategy
+         */
+        static TotalLightsStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of total vertices metrics.
+         * @returns the initializer for the total vertices strategy
+         */
+        static TotalVerticesStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of total materials metrics.
+         * @returns the initializer for the total materials strategy
+         */
+        static TotalMaterialsStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of total textures metrics.
+         * @returns the initializer for the total textures strategy
+         */
+        static TotalTexturesStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of absolute fps metrics.
+         * @returns the initializer for the absolute fps strategy
+         */
+        static AbsoluteFpsStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of meshes selection time metrics.
+         * @returns the initializer for the meshes selection time strategy
+         */
+        static MeshesSelectionStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of render targets time metrics.
+         * @returns the initializer for the render targets time strategy
+         */
+        static RenderTargetsStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of particles time metrics.
+         * @returns the initializer for the particles time strategy
+         */
+        static ParticlesStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of sprites time metrics.
+         * @returns the initializer for the sprites time strategy
+         */
+        static SpritesStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of animations time metrics.
+         * @returns the initializer for the animations time strategy
+         */
+        static AnimationsStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of physics time metrics.
+         * @returns the initializer for the physics time strategy
+         */
+        static PhysicsStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of render time metrics.
+         * @returns the initializer for the render time strategy
+         */
+        static RenderStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of total frame time metrics.
+         * @returns the initializer for the total frame time strategy
+         */
+        static FrameTotalStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of inter-frame time metrics.
+         * @returns the initializer for the inter-frame time strategy
+         */
+        static InterFrameStrategy(): PerfStrategyInitialization;
+        /**
+         * Gets the initializer for the strategy used for collection of gpu frame time metrics.
+         * @returns the initializer for the gpu frame time strategy
+         */
+        static GpuFrameTimeStrategy(): PerfStrategyInitialization;
     }
 }
 declare module BABYLON {
@@ -87827,7 +88046,7 @@ type XREye = "none" | "left" | "right";
 /**
  * Type of XR events available
  */
-type XREventType = "devicechange" | "visibilitychange" | "end" | "inputsourceschange" | "select" | "selectstart" | "selectend" | "squeeze" | "squeezestart" | "squeezeend" | "reset";
+type XREventType = "devicechange" | "visibilitychange" | "end" | "inputsourceschange" | "select" | "selectstart" | "selectend" | "squeeze" | "squeezestart" | "squeezeend" | "reset" | "eyetrackingstart" | "eyetrackingend";
 
 type XRDOMOverlayType = "screen" | "floating" | "head-locked";
 
@@ -87968,6 +88187,10 @@ interface XRInputSourceEvent extends Event {
     readonly inputSource: XRInputSource;
 }
 
+interface XREyeTrackingSourceEvent extends Event {
+    readonly gazeSpace: XRSpace;
+}
+
 type XRInputSourceArray = XRInputSource[];
 
 type XRDOMOverlayState = {
@@ -88021,6 +88244,8 @@ interface XRSession {
     updateRenderState(XRRenderStateInit: XRRenderState): Promise<void>;
 
     onend: XREventHandler;
+    oneyetrackingstart: XREventHandler;
+    oneyetrackingend: XREventHandler;
     oninputsourceschange: XREventHandler;
     onselect: XREventHandler;
     onselectstart: XREventHandler;

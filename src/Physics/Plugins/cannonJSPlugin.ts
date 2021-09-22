@@ -23,6 +23,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
     private _raycastResult: PhysicsRaycastResult;
     private _physicsBodysToRemoveAfterStep = new Array<any>();
     private _firstFrame = true;
+    private _tmpQuaternion: Quaternion = new Quaternion();
     //See https://github.com/schteppe/CANNON.js/blob/gh-pages/demos/collisionFilter.html
     public BJSCANNON: any;
 
@@ -158,19 +159,26 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
 
     private _processChildMeshes(mainImpostor: PhysicsImpostor) {
         var meshChildren = mainImpostor.object.getChildMeshes ? mainImpostor.object.getChildMeshes(true) : [];
-        let currentRotation: Nullable<Quaternion> = mainImpostor.object.rotationQuaternion;
+        let mainRotation: Nullable<Quaternion> = mainImpostor.object.rotationQuaternion;
+        if (mainRotation) {
+            mainRotation.conjugateToRef(this._tmpQuaternion);
+        } else {
+            this._tmpQuaternion.set(0, 0, 0, 1);
+        }
+
         if (meshChildren.length) {
             const processMesh = (mesh: AbstractMesh) => {
-                if (!currentRotation || !mesh.rotationQuaternion) {
+                if (!mesh.rotationQuaternion) {
                     return;
                 }
 
                 var childImpostor = mesh.getPhysicsImpostor();
                 if (childImpostor) {
                     var parent = childImpostor.parent;
-                    if (parent !== mainImpostor) {
-                        const pPosition = mesh.getAbsolutePosition().subtract((mesh.parent as TransformNode).getAbsolutePosition());
-                        const q = mesh.rotationQuaternion;
+                    if (parent !== mainImpostor && mesh.parent) {
+                         const pPosition = mesh.getAbsolutePosition().subtract((mesh.parent as TransformNode).getAbsolutePosition());
+                        var q = mesh.rotationQuaternion.multiply(this._tmpQuaternion);
+
                         if (childImpostor.physicsBody) {
                             this.removePhysicsBody(childImpostor);
                             childImpostor.physicsBody = null;
@@ -182,7 +190,6 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
                         mainImpostor.physicsBody.mass += childImpostor.getParam("mass");
                     }
                 }
-                currentRotation.multiplyInPlace(mesh.rotationQuaternion);
                 mesh.getChildMeshes(true)
                     .filter((m) => !!m.physicsImpostor)
                     .forEach(processMesh);
