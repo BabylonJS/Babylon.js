@@ -2435,6 +2435,7 @@ declare module "babylonjs-gui/2D/controls/grid" {
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { Measure } from "babylonjs-gui/2D/measure";
     import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
+    import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
     /**
      * Class used to create a 2D grid container
      */
@@ -2553,6 +2554,13 @@ declare module "babylonjs-gui/2D/controls/grid" {
         _renderHighlightSpecific(context: ICanvasRenderingContext): void;
         /** Releases associated resources */
         dispose(): void;
+        /**
+     * Serializes the current control
+     * @param serializationObject defined the JSON serialized object
+     */
+        serialize(serializationObject: any): void;
+        /** @hidden */
+        _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture): void;
     }
 }
 declare module "babylonjs-gui/2D/controls/colorpicker" {
@@ -8589,6 +8597,13 @@ declare module BABYLON.GUI {
         _renderHighlightSpecific(context: BABYLON.ICanvasRenderingContext): void;
         /** Releases associated resources */
         dispose(): void;
+        /**
+     * Serializes the current control
+     * @param serializationObject defined the JSON serialized object
+     */
+        serialize(serializationObject: any): void;
+        /** @hidden */
+        _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture): void;
     }
 }
 declare module BABYLON.GUI {

@@ -45970,9 +45970,14 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                     ratioX = cell.widthInPixels;
                     ratioY = cell.heightInPixels;
                 }
+                else if (guiControl.parent.typeName === "Rectangle" || guiControl.parent.typeName === "Button") {
+                    var thickness = guiControl.parent.thickness * 2;
+                    ratioX = guiControl.parent._currentMeasure.width - thickness;
+                    ratioY = guiControl.parent._currentMeasure.height - thickness;
+                }
                 else {
-                    ratioX = guiControl.parent.widthInPixels;
-                    ratioY = guiControl.parent.heightInPixels;
+                    ratioX = guiControl.parent._currentMeasure.width;
+                    ratioY = guiControl.parent._currentMeasure.height;
                 }
             }
             var left = (guiControl.leftInPixels * 100) / ratioX;
