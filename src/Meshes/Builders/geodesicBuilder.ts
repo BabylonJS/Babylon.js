@@ -7,10 +7,6 @@ import { Nullable } from '../../types';
 import { Logger } from "../../Misc/logger";
 import { _PrimaryIsoTriangle, GeodesicData } from "../geodesicMesh";
 
-Mesh.CreateGeodesic = (name: string, options: { m?: number, n: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number }, scene: Scene): Mesh => {
-    return GeodesicBuilder.CreateGeodesic(name, options, scene);
-};
-
 /**
  * Class containing static functions to help procedurally build a geodesic mesh
  */
