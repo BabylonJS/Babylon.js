@@ -23,6 +23,7 @@ import { KeyboardEventTypes, KeyboardInfo } from "babylonjs/Events/keyboardEvent
 import { Line } from "babylonjs-gui/2D/controls/line";
 import { DataStorage } from "babylonjs/Misc/dataStorage";
 import { Grid } from "babylonjs-gui/2D/controls/grid";
+import { Tools } from "../tools";
 require("./workbenchCanvas.scss");
 
 export interface IWorkbenchComponentProps {
@@ -402,7 +403,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         const draggedControl = this.props.globalState.draggedControl;
         const draggedControlParent = draggedControl?.parent;
 
-        if (draggedControlParent === dropLocationControl?.parent && draggedControlParent?.typeName === "Grid") {
+        if ((draggedControl && dropLocationControl) && draggedControlParent === dropLocationControl?.parent && draggedControlParent?.typeName === "Grid") {
+            this._reorderGrid(draggedControlParent as Grid, draggedControl, dropLocationControl);
             this.globalState.draggedControl = null;
             this.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
             return;
@@ -417,7 +419,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                         (dropLocationControl as Container).addControl(draggedControl);
                     }
                     else if (dropLocationControl.parent) { //dropping inside the controls parent container
-
                         if (dropLocationControl.parent.typeName != "Grid") {
                             let index = dropLocationControl.parent.children.indexOf(dropLocationControl);
                             index = this._adjustParentingIndex(index);  //adjusting index to be before or after based on where the control is over
@@ -441,6 +442,31 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }
         this.globalState.draggedControl = null;
         this.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
+    }
+
+    private _reorderGrid(draggedControlParent: Grid, draggedControl: Control, dropLocationControl: Control) {
+
+        let ct = Tools.getCellInfo(draggedControlParent, draggedControl);
+        draggedControlParent.removeControl(draggedControl);
+
+        let index = draggedControlParent.children.indexOf(dropLocationControl);
+        index = this._adjustParentingIndex(index);
+        
+        let tags: Vector2[] = [];
+        let controls: Control[] = [];
+        let length = draggedControlParent.children.length;
+        for (let i = index; i < length; ++i) {
+            const control = draggedControlParent.children[index];
+            controls.push(control);
+            tags.push(Tools.getCellInfo(draggedControlParent, control));
+            draggedControlParent.removeControl(control);
+        }
+        tags.reverse();
+        controls.reverse();
+        draggedControlParent.addControl(draggedControl, ct.x, ct.y);
+        for (let i = 0; i < controls.length; ++i) {
+            draggedControlParent.addControl(controls[i], tags[i].x, tags[i].y);
+        }
     }
 
     private _isNotChildInsert(control: Nullable<Control>, draggedControl: Nullable<Control>) {

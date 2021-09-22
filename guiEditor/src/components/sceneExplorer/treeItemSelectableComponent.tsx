@@ -101,10 +101,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
             return null;
         }
 
-        const grid = entity.typeName === "Grid" ;
-        console.log(grid);
-        const children = grid ? Tools.SortAndFilterForGrid(entity, entity.getChildren ? entity.getChildren()
-            : entity.children) : Tools.SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
+        const children = Tools.SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
         return (
             children.map((item, i) => {
                 if (item.name == "Art-Board-Background") {
