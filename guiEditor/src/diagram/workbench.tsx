@@ -403,38 +403,40 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         const draggedControl = this.props.globalState.draggedControl;
         const draggedControlParent = draggedControl?.parent;
 
-        if ((draggedControl && dropLocationControl) && draggedControlParent === dropLocationControl?.parent && draggedControlParent?.typeName === "Grid") {
-            this._reorderGrid(draggedControlParent as Grid, draggedControl, dropLocationControl);
-            this.globalState.draggedControl = null;
-            this.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
-            return;
-        }
-
         if (draggedControlParent && draggedControl) {
             if (this._isNotChildInsert(dropLocationControl, draggedControl)) { //checking to make sure the element is not being inserted into a child
-                draggedControlParent.removeControl(draggedControl);
+
                 if (dropLocationControl != null) { //the control you are dragging onto top
                     if (this.props.globalState.workbench.isContainer(dropLocationControl) && //dropping inside a contrainer control
                         this.props.globalState.draggedControlDirection === DragOverLocation.CENTER) {
+                        draggedControlParent.removeControl(draggedControl);
                         (dropLocationControl as Container).addControl(draggedControl);
                     }
                     else if (dropLocationControl.parent) { //dropping inside the controls parent container
                         if (dropLocationControl.parent.typeName != "Grid") {
+                            draggedControlParent.removeControl(draggedControl);
                             let index = dropLocationControl.parent.children.indexOf(dropLocationControl);
                             index = this._adjustParentingIndex(index);  //adjusting index to be before or after based on where the control is over
                             dropLocationControl.parent.children.splice(index, 0, draggedControl);
                             draggedControl.parent = dropLocationControl.parent;
                         }
-                        else { //special case for grid
+                        else if (dropLocationControl.parent === draggedControlParent) {  //special case for grid
+                            this._reorderGrid(dropLocationControl.parent as Grid, draggedControl, dropLocationControl);
+                        }
+                        else {
+                            draggedControlParent.removeControl(draggedControl);
                             (dropLocationControl.parent as Container).addControl(draggedControl);
+                            this._reorderGrid(dropLocationControl.parent as Grid, draggedControl, dropLocationControl);
                         }
                     }
                     else {
+                        draggedControlParent.removeControl(draggedControl);
                         this.props.globalState.guiTexture.addControl(draggedControl);
                     }
                 }
                 else {
                     //starting at index 1 because of object "Art-Board-Background" must be at index 0
+                    draggedControlParent.removeControl(draggedControl);
                     draggedControlParent.children.splice(1, 0, draggedControl);
                     draggedControl.parent = draggedControlParent;
                 }
@@ -451,7 +453,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         let index = grid.children.indexOf(dropLocationControl);
         index = this._adjustParentingIndex(index);
-        
+
         let tags: Vector2[] = [];
         let controls: Control[] = [];
         let length = grid.children.length;
@@ -461,9 +463,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             tags.push(Tools.getCellInfo(grid, control));
             grid.removeControl(control);
         }
-        
-        tags.reverse();
-        controls.reverse();
+
         grid.addControl(draggedControl, cellInfo.x, cellInfo.y);
         for (let i = 0; i < controls.length; ++i) {
             grid.addControl(controls[i], tags[i].x, tags[i].y);
