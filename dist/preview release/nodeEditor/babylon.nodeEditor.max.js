@@ -55200,6 +55200,13 @@ var BlockTools = /** @class */ (function () {
                 cameraPosition.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].CameraPosition);
                 return cameraPosition;
             }
+            case "CameraParametersBlock": {
+                var cameraParameters = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("Camera parameters");
+                cameraParameters.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].CameraParameters);
+                var splitter = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["VectorSplitterBlock"]("Vector splitter");
+                cameraParameters.connectTo(splitter);
+                return splitter;
+            }
             case "FogColorBlock": {
                 var FogColor = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("Fog color");
                 FogColor.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].FogColor);
@@ -55703,7 +55710,7 @@ var NodeListComponent = /** @class */ (function (_super) {
             Procedural__Texture: ["ScreenPositionBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
             Round: ["RoundBlock", "CeilingBlock", "FloorBlock"],
-            Scene: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock", "SceneDepthBlock"],
+            Scene: ["FogBlock", "CameraPositionBlock", "CameraParametersBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock", "SceneDepthBlock"],
         };
         switch (this.props.globalState.mode) {
             case babylonjs_Materials_Node_Enums_nodeMaterialModes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialModes"].Material:
@@ -55832,6 +55839,7 @@ var NodeListComponent = /** @class */ (function (_super) {
         "RoundBlock": "Outputs fractional values rounded to the nearest whole number",
         "ModBlock": "Outputs the value of one parameter modulo another",
         "CameraPositionBlock": "Outputs a Vector3 position of the active scene camera",
+        "CameraParametersBlock": "Outputs a Vector4 containing (-1 for webGL and 1 for webGPU, camera.minZ, camera.maxZ, 1 / camera.maxZ)",
         "FogBlock": "Applies fog to the scene with an increasing opacity based on distance from the camera",
         "FogColorBlock": "The system value for fog color pulled from the scene",
         "ImageProcessingBlock": "Provides access to all of the Babylon image processing properties",
@@ -57837,6 +57845,9 @@ var InputDisplayManager = /** @class */ (function () {
                     break;
                 case babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].DeltaTime:
                     value = "Delta time";
+                    break;
+                case babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].CameraParameters:
+                    value = "Camera parameters";
                     break;
             }
         }
@@ -62211,6 +62222,9 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
                 attributeOptions = [
                     { label: "matricesIndices", value: "matricesIndices" },
                     { label: "matricesWeights", value: "matricesWeights" }
+                ];
+                systemValuesOptions = [
+                    { label: "Camera parameters", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialSystemValues"].CameraParameters }
                 ];
                 break;
         }

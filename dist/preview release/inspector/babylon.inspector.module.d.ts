@@ -253,6 +253,13 @@ declare module "babylonjs-inspector/components/graph/graphSupportingTypes" {
         right: number;
     }
     /**
+     * Defines the structure representing necessary ticker information.
+     */
+    export interface IPerfTicker extends IPerfMinMax {
+        id: string;
+        text: string;
+    }
+    /**
      * Defines what settings our canvas graphing service accepts
      */
     export interface ICanvasGraphServiceSettings {
@@ -280,8 +287,10 @@ declare module "babylonjs-inspector/components/graph/canvasGraphService" {
         private _drawableArea;
         private _axisHeight;
         private _tooltipItems;
-        private _textCache;
-        private readonly _tooltipLineHeight;
+        private _tooltipTextCache;
+        private _tickerTextCache;
+        private _tickerItems;
+        private readonly _addonFontLineHeight;
         private readonly _defaultLineHeight;
         readonly datasets: IPerfDatasets;
         metadata: Map<string, IPerfMetadata>;
@@ -301,6 +310,7 @@ declare module "babylonjs-inspector/components/graph/canvasGraphService" {
          * This method draws the data and sets up the appropriate scales.
          */
         private _draw;
+        private _drawTickers;
         /**
          * Returns the index of the closest time for the datasets.
          * Uses a modified binary search to get value.
@@ -5006,6 +5016,13 @@ declare module INSPECTOR {
         right: number;
     }
     /**
+     * Defines the structure representing necessary ticker information.
+     */
+    export interface IPerfTicker extends IPerfMinMax {
+        id: string;
+        text: string;
+    }
+    /**
      * Defines what settings our canvas graphing service accepts
      */
     export interface ICanvasGraphServiceSettings {
@@ -5031,8 +5048,10 @@ declare module INSPECTOR {
         private _drawableArea;
         private _axisHeight;
         private _tooltipItems;
-        private _textCache;
-        private readonly _tooltipLineHeight;
+        private _tooltipTextCache;
+        private _tickerTextCache;
+        private _tickerItems;
+        private readonly _addonFontLineHeight;
         private readonly _defaultLineHeight;
         readonly datasets: BABYLON.IPerfDatasets;
         metadata: Map<string, BABYLON.IPerfMetadata>;
@@ -5052,6 +5071,7 @@ declare module INSPECTOR {
          * This method draws the data and sets up the appropriate scales.
          */
         private _draw;
+        private _drawTickers;
         /**
          * Returns the index of the closest time for the datasets.
          * Uses a modified binary search to get value.
