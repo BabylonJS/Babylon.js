@@ -25,7 +25,7 @@ export class ParentingPropertyGridComponent extends React.Component<IParentingPr
     updateGridPosition() {
         const grid = this.props.control.parent as Grid;
         if (grid) {
-            this._reorderGrid(grid, this.props.control, new Vector2(this._columnNumber, this._rowNumber));
+            this._changeCell(grid, this.props.control, new Vector2(this._columnNumber, this._rowNumber));
         }
     }
 
@@ -35,22 +35,10 @@ export class ParentingPropertyGridComponent extends React.Component<IParentingPr
         this._rowNumber = cellInfo.y;
     }
 
-    private _reorderGrid(grid: Grid, draggedControl: Control, newCell : Vector2) {
+    private _changeCell(grid: Grid, draggedControl: Control, newCell : Vector2) {
         let index = grid.children.indexOf(draggedControl);
         grid.removeControl(draggedControl);
-        let tags: Vector2[] = [];
-        let controls: Control[] = [];
-        let length = grid.children.length;
-        for (let i = index; i < length; ++i) {
-            const control = grid.children[index];
-            controls.push(control);
-            tags.push(Tools.getCellInfo(grid, control));
-            grid.removeControl(control);
-        }
-        grid.addControl(draggedControl, newCell.x, newCell.y);
-        for (let i = 0; i < controls.length; ++i) {
-            grid.addControl(controls[i], tags[i].x, tags[i].y);
-        }
+        Tools.reorderGrid(grid, index, draggedControl,newCell);
     }
 
     render() {
