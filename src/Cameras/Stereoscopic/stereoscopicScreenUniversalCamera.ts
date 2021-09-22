@@ -12,13 +12,10 @@ import { Viewport } from "../../Maths/math.viewport";
  * @see https://doc.babylonjs.com/features/cameras
  */
 export class StereoscopicScreenUniversalCamera extends UniversalCamera {
-
-    private _dirty = true;
     private _distanceToProjectionPlane: number;
     private _distanceBetweenEyes: number;
 
     public set distanceBetweenEyes(newValue: number) {
-        this._dirty = true;
         this._distanceBetweenEyes = newValue;
     }
 
@@ -30,7 +27,6 @@ export class StereoscopicScreenUniversalCamera extends UniversalCamera {
     }
 
     public set distanceToProjectionPlane(newValue: number) {
-        this._dirty = true;
         this._distanceToProjectionPlane = newValue;
     }
 
@@ -48,7 +44,7 @@ export class StereoscopicScreenUniversalCamera extends UniversalCamera {
      * @param _distanceToProjectionPlane defines distance between each color axis
      * @param distanceBetweenEyes defines is stereoscopic is done side by side or over under
      */
-    constructor(name: string, position: Vector3, scene: Scene, _distanceToProjectionPlane: number = 1, distanceBetweenEyes: number = 0.0325) {
+    constructor(name: string, position: Vector3, scene: Scene, _distanceToProjectionPlane: number = 1, distanceBetweenEyes: number = 0.065) {
         super(name, position, scene);
         this._distanceBetweenEyes = distanceBetweenEyes;
         this._distanceToProjectionPlane = _distanceToProjectionPlane;
@@ -68,7 +64,7 @@ export class StereoscopicScreenUniversalCamera extends UniversalCamera {
      */
     public createRigCamera(name: string, cameraIndex: number): Nullable<Camera> {
         const camera = new TargetCamera(name, Vector3.Zero(), this.getScene());
-        const transform = new TransformNode('tm' + name, this.getScene());
+        const transform = new TransformNode('tm_' + name, this.getScene());
         camera.parent = transform;
         transform.setPivotMatrix(Matrix.Identity(), false);
         transform.parent = this;
@@ -82,23 +78,21 @@ export class StereoscopicScreenUniversalCamera extends UniversalCamera {
      */
     public _updateRigCameras() {
         super._updateRigCameras();
-        if (this._dirty) {
-            for (let cameraIndex = 0; cameraIndex < this._rigCameras.length; cameraIndex++) {
-                this._updateCamera(this._rigCameras[cameraIndex] as TargetCamera, cameraIndex);
-            }
-            this._dirty = false;
+        for (let cameraIndex = 0; cameraIndex < this._rigCameras.length; cameraIndex++) {
+            this._updateCamera(this._rigCameras[cameraIndex] as TargetCamera, cameraIndex);
         }
     }
 
     private _updateCamera(camera: TargetCamera, cameraIndex: number) {
-        const b = cameraIndex === 0 ? this.distanceBetweenEyes : -this.distanceBetweenEyes;
+        const b = this.distanceBetweenEyes / 2;
         const z = b / this.distanceToProjectionPlane;
-        camera.position.set(-b, 0, -this.distanceToProjectionPlane);
-        camera.setTarget(new Vector3(-b, 0, 0));
+        camera.position.set((cameraIndex === 0 ? -b : b), 0, 0);
+        camera.target.copyFromFloats((cameraIndex === 0 ? b : -b), 0, 0);
         const transform = camera.parent as TransformNode;
         const m = transform.getPivotMatrix();
-        m.setTranslationFromFloats(b, 0, 0);
-        m.setRowFromFloats(2, z, 0, 1, 0);
+        m.setTranslationFromFloats((cameraIndex === 0 ? b : -b), 0, 0);
+        m.setRowFromFloats(2, (cameraIndex === 0 ? z : -z), 0, 1, 0);
+        transform.setPivotMatrix(m, false);
     }
 
     protected _setRigMode() {
