@@ -225,7 +225,7 @@ declare module INSPECTOR {
      * Defines what settings our canvas graphing service accepts
      */
     export interface ICanvasGraphServiceSettings {
-        datasets: BABYLON.IPerfDataset[];
+        datasets: BABYLON.IPerfDatasets;
     }
 }
 declare module INSPECTOR {
@@ -240,7 +240,7 @@ declare module INSPECTOR {
         private _sizeOfWindow;
         private _ticks;
         private _panPosition;
-        private _positions;
+        private _position;
         private _datasetBounds;
         private _globalTimeMinMax;
         private _hoverPosition;
@@ -250,7 +250,8 @@ declare module INSPECTOR {
         private _textCache;
         private readonly _tooltipLineHeight;
         private readonly _defaultLineHeight;
-        readonly datasets: BABYLON.IPerfDataset[];
+        readonly datasets: BABYLON.IPerfDatasets;
+        metadata: Map<string, BABYLON.IPerfMetadata>;
         /**
          * Creates an instance of CanvasGraphService.
          *
@@ -268,14 +269,18 @@ declare module INSPECTOR {
          */
         private _draw;
         /**
-         * Returns the index of the closest time for a dataset.
+         * Returns the index of the closest time for the datasets.
          * Uses a modified binary search to get value.
          *
-         * @param dataset the dataset we want to search in.
          * @param targetTime the time we want to get close to.
          * @returns index of the item with the closest time to the targetTime
          */
         private _getClosestPointToTimestamp;
+        /**
+         * This is a convenience method to get the number of collected slices.
+         * @returns the total number of collected slices.
+         */
+        private _getNumberOfSlices;
         /**
          * Draws the time axis, adjusts the drawable area for the graph.
          *
@@ -306,16 +311,6 @@ declare module INSPECTOR {
          * @returns the min and max of the array.
          */
         private _getMinMax;
-        /**
-         * Converts a data point to a point on the canvas (a pixel coordinate).
-         *
-         * @param point The datapoint
-         * @param timeMinMax The minimum and maximum in the time axis.
-         * @param valueMinMax The minimum and maximum in the value axis for the dataset.
-         * @param drawableArea The allowed drawable area.
-         * @returns
-         */
-        private _getPixelPointFromDataPoint;
         /**
          * Converts a single number to a pixel coordinate in a single axis by normalizing the data to a [0, 1] scale using the minimum and maximum values.
          *
@@ -421,7 +416,8 @@ declare module INSPECTOR {
 declare module INSPECTOR {
     interface ICanvasGraphComponentProps {
         id: string;
-        canvasServiceCallback: (canvasService: CanvasGraphService) => void;
+        scene: BABYLON.Scene;
+        collector: BABYLON.PerformanceViewerCollector;
         layoutObservable?: BABYLON.Observable<IPerfLayoutSize>;
     }
     export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps>;
@@ -453,6 +449,106 @@ declare module INSPECTOR {
         getWindow(): Window | null;
         render(): React.ReactPortal | null;
     }
+}
+declare module INSPECTOR {
+    export interface IColorComponentEntryProps {
+        value: number;
+        label: string;
+        max?: number;
+        min?: number;
+        onChange: (value: number) => void;
+    }
+    export class ColorComponentEntry extends React.Component<IColorComponentEntryProps> {
+        constructor(props: IColorComponentEntryProps);
+        updateValue(valueString: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    export interface IHexColorProps {
+        value: string;
+        expectedLength: number;
+        onChange: (value: string) => void;
+    }
+    export class HexColor extends React.Component<IHexColorProps, {
+        hex: string;
+    }> {
+        constructor(props: IHexColorProps);
+        shouldComponentUpdate(nextProps: IHexColorProps, nextState: {
+            hex: string;
+        }): boolean;
+        updateHexValue(valueString: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    /**
+     * Interface used to specify creation options for color picker
+     */
+    export interface IColorPickerProps {
+        color: BABYLON.Color3 | BABYLON.Color4;
+        linearhint?: boolean;
+        debugMode?: boolean;
+        onColorChanged?: (color: BABYLON.Color3 | BABYLON.Color4) => void;
+    }
+    /**
+     * Interface used to specify creation options for color picker
+     */
+    export interface IColorPickerState {
+        color: BABYLON.Color3;
+        alpha: number;
+    }
+    /**
+     * Class used to create a color picker
+     */
+    export class BABYLON.GUI.ColorPicker extends React.Component<IColorPickerProps, IColorPickerState> {
+        private _saturationRef;
+        private _hueRef;
+        private _isSaturationPointerDown;
+        private _isHuePointerDown;
+        constructor(props: IColorPickerProps);
+        onSaturationPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
+        onSaturationPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
+        onSaturationPointerMove(evt: React.PointerEvent<HTMLDivElement>): void;
+        onHuePointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
+        onHuePointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
+        onHuePointerMove(evt: React.PointerEvent<HTMLDivElement>): void;
+        private _evaluateSaturation;
+        private _evaluateHue;
+        componentDidUpdate(): void;
+        raiseOnColorChanged(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    export interface IColorPickerComponentProps {
+        value: BABYLON.Color4 | BABYLON.Color3;
+        linearHint?: boolean;
+        onColorChanged: (newOne: string) => void;
+        icon?: string;
+        shouldPopRight?: boolean;
+    }
+    interface IColorPickerComponentState {
+        pickerEnabled: boolean;
+        color: BABYLON.Color3 | BABYLON.Color4;
+        hex: string;
+    }
+    export class ColorPickerLineComponent extends React.Component<IColorPickerComponentProps, IColorPickerComponentState> {
+        private _floatRef;
+        private _floatHostRef;
+        constructor(props: IColorPickerComponentProps);
+        syncPositions(): void;
+        shouldComponentUpdate(nextProps: IColorPickerComponentProps, nextState: IColorPickerComponentState): boolean;
+        componentDidUpdate(): void;
+        componentDidMount(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IPerformanceViewerSidebarComponentProps {
+        collector: BABYLON.PerformanceViewerCollector;
+    }
+    export const PerformanceViewerSidebarComponent: (props: IPerformanceViewerSidebarComponentProps) => JSX.Element;
 }
 declare module INSPECTOR {
     interface IPerformanceViewerComponentProps {
@@ -664,100 +760,6 @@ declare module INSPECTOR {
         }): boolean;
         updateValue(evt: any): void;
         onBlur(): void;
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    export interface IColorComponentEntryProps {
-        value: number;
-        label: string;
-        max?: number;
-        min?: number;
-        onChange: (value: number) => void;
-    }
-    export class ColorComponentEntry extends React.Component<IColorComponentEntryProps> {
-        constructor(props: IColorComponentEntryProps);
-        updateValue(valueString: string): void;
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    export interface IHexColorProps {
-        value: string;
-        expectedLength: number;
-        onChange: (value: string) => void;
-    }
-    export class HexColor extends React.Component<IHexColorProps, {
-        hex: string;
-    }> {
-        constructor(props: IHexColorProps);
-        shouldComponentUpdate(nextProps: IHexColorProps, nextState: {
-            hex: string;
-        }): boolean;
-        updateHexValue(valueString: string): void;
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    /**
-     * Interface used to specify creation options for color picker
-     */
-    export interface IColorPickerProps {
-        color: BABYLON.Color3 | BABYLON.Color4;
-        linearhint?: boolean;
-        debugMode?: boolean;
-        onColorChanged?: (color: BABYLON.Color3 | BABYLON.Color4) => void;
-    }
-    /**
-     * Interface used to specify creation options for color picker
-     */
-    export interface IColorPickerState {
-        color: BABYLON.Color3;
-        alpha: number;
-    }
-    /**
-     * Class used to create a color picker
-     */
-    export class BABYLON.GUI.ColorPicker extends React.Component<IColorPickerProps, IColorPickerState> {
-        private _saturationRef;
-        private _hueRef;
-        private _isSaturationPointerDown;
-        private _isHuePointerDown;
-        constructor(props: IColorPickerProps);
-        onSaturationPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
-        onSaturationPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
-        onSaturationPointerMove(evt: React.PointerEvent<HTMLDivElement>): void;
-        onHuePointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
-        onHuePointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
-        onHuePointerMove(evt: React.PointerEvent<HTMLDivElement>): void;
-        private _evaluateSaturation;
-        private _evaluateHue;
-        componentDidUpdate(): void;
-        raiseOnColorChanged(): void;
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    export interface IColorPickerComponentProps {
-        value: BABYLON.Color4 | BABYLON.Color3;
-        linearHint?: boolean;
-        onColorChanged: (newOne: string) => void;
-        icon?: string;
-        shouldPopRight?: boolean;
-    }
-    interface IColorPickerComponentState {
-        pickerEnabled: boolean;
-        color: BABYLON.Color3 | BABYLON.Color4;
-        hex: string;
-    }
-    export class ColorPickerLineComponent extends React.Component<IColorPickerComponentProps, IColorPickerComponentState> {
-        private _floatRef;
-        private _floatHostRef;
-        constructor(props: IColorPickerComponentProps);
-        syncPositions(): void;
-        shouldComponentUpdate(nextProps: IColorPickerComponentProps, nextState: IColorPickerComponentState): boolean;
-        componentDidUpdate(): void;
-        componentDidMount(): void;
         render(): JSX.Element;
     }
 }
@@ -3919,14 +3921,6 @@ declare module INSPECTOR {
         private static _RemoveElementFromDOM;
         static Hide(): void;
     }
-}
-declare module INSPECTOR {
-    interface IPerformanceViewerSidebarComponentProps {
-        datasetObservable: BABYLON.Observable<BABYLON.IPerfDataset[]>;
-        onToggleVisibility: (id: string, value: boolean) => void;
-        onColorChanged: (id: string, value: string) => void;
-    }
-    export const PerformanceViewerSidebarComponent: (props: IPerformanceViewerSidebarComponentProps) => JSX.Element;
 }
 declare module INSPECTOR {
     interface IPushButtonComponentProps {

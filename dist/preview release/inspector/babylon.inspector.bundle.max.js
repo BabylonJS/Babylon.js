@@ -11149,6 +11149,24 @@ module.exports = exports;
 
 /***/ }),
 
+/***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/performanceViewer/scss/performanceViewer.scss":
+/*!***************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/performanceViewer/scss/performanceViewer.scss ***!
+  \***************************************************************************************************************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+// Imports
+var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
+exports = ___CSS_LOADER_API_IMPORT___(false);
+// Module
+exports.push([module.i, "#performance-viewer {\n  display: grid;\n  height: 100%;\n  width: 100%;\n  grid-template-columns: 25% 75%;\n  grid-template-areas: \"sidebar graph\"; }\n  #performance-viewer #performance-viewer-graph {\n    grid-area: \"graph\"; }\n  #performance-viewer #performance-viewer-sidebar {\n    grid-area: \"sidebar\";\n    display: flex;\n    flex-direction: column; }\n    #performance-viewer #performance-viewer-sidebar .sidebar-item {\n      display: inline-flex;\n      flex-direction: row;\n      width: 100%; }\n      #performance-viewer #performance-viewer-sidebar .sidebar-item .sidebar-item-label {\n        width: 100%; }\n      #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker {\n        height: calc(100% - 8px);\n        margin: 4px;\n        width: 100%; }\n        #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-rect {\n          height: calc(100% - 4px);\n          border: 2px white solid;\n          cursor: pointer;\n          min-height: 18px; }\n        #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-picker-cover {\n          position: fixed;\n          top: 0px;\n          right: 0px;\n          bottom: 0px;\n          left: 0px;\n          z-index: 100; }\n        #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-picker-float {\n          position: absolute; }\n          #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-picker-float .color-picker-container {\n            width: 200px; }\n", ""]);
+// Exports
+module.exports = exports;
+
+
+/***/ }),
+
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/bottomBar.scss":
 /*!**************************************************************************************************************************************************************************************************************************!*\
   !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/bottomBar.scss ***!
@@ -45892,22 +45910,34 @@ var GradientStepComponent = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PerformanceViewerComponent", function() { return PerformanceViewerComponent; });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
-/* harmony import */ var _graph_canvasGraphComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../graph/canvasGraphComponent */ "./components/graph/canvasGraphComponent.tsx");
-/* harmony import */ var _popupComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../popupComponent */ "./components/popupComponent.tsx");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
+/* harmony import */ var _graph_canvasGraphComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../graph/canvasGraphComponent */ "./components/graph/canvasGraphComponent.tsx");
+/* harmony import */ var _popupComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../popupComponent */ "./components/popupComponent.tsx");
+/* harmony import */ var _performanceViewerSidebarComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./performanceViewerSidebarComponent */ "./components/actionTabs/tabs/performanceViewer/performanceViewerSidebarComponent.tsx");
 
 
 
 
 
+
+
+
+
+__webpack_require__(/*! ./scss/performanceViewer.scss */ "./components/actionTabs/tabs/performanceViewer/scss/performanceViewer.scss");
 // aribitrary window size
 var initialWindowSize = { width: 1024, height: 512 };
 // Note this should be false when committed until the feature is fully working.
 var isEnabled = false;
 var PerformanceViewerComponent = function (props) {
-    var _a = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(false), isOpen = _a[0], setIsOpen = _a[1];
+    var scene = props.scene;
+    var _a = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(false), isOpen = _a[0], setIsOpen = _a[1];
+    var _b = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(), performanceCollector = _b[0], setPerformanceCollector = _b[1];
+    var layoutObservable = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]())[0];
+    var popupRef = Object(react__WEBPACK_IMPORTED_MODULE_1__["useRef"])(null);
     // do cleanup when the window is closed
     var onClosePerformanceViewer = function (window) {
         if (window) {
@@ -45919,21 +45949,121 @@ var PerformanceViewerComponent = function (props) {
         setIsOpen(true);
     };
     var onResize = function () {
-        // do nothing for now.
+        var _a, _b;
+        if (!popupRef.current) {
+            return;
+        }
+        var window = popupRef.current.getWindow();
+        var width = (_a = window === null || window === void 0 ? void 0 : window.innerWidth) !== null && _a !== void 0 ? _a : 0;
+        var height = (_b = window === null || window === void 0 ? void 0 : window.innerHeight) !== null && _b !== void 0 ? _b : 0;
+        layoutObservable.notifyObservers({ width: width, height: height });
     };
-    var canvasServiceCallback = function (canvasService) {
-        canvasService.update();
-    };
-    return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"](react__WEBPACK_IMPORTED_MODULE_0__["Fragment"], null,
+    Object(react__WEBPACK_IMPORTED_MODULE_1__["useEffect"])(function () {
+        var perfCollector = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PerformanceViewerCollector"](scene, [babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PerfCollectionStrategy"].GpuFrameTimeStrategy(), babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PerfCollectionStrategy"].FpsStrategy()]);
+        setPerformanceCollector(perfCollector);
+    }, []);
+    Object(react__WEBPACK_IMPORTED_MODULE_1__["useEffect"])(function () {
+        if (isOpen) {
+            performanceCollector === null || performanceCollector === void 0 ? void 0 : performanceCollector.start();
+        }
+        return function () {
+            performanceCollector === null || performanceCollector === void 0 ? void 0 : performanceCollector.stop();
+        };
+    }, [isOpen]);
+    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
         isEnabled &&
-            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_1__["ButtonLineComponent"], { label: "Open Perf Viewer", onClick: onPerformanceButtonClick }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Open Perf Viewer", onClick: onPerformanceButtonClick }),
         isOpen &&
-            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_popupComponent__WEBPACK_IMPORTED_MODULE_3__["PopupComponent"], { id: "perf-viewer", title: "Performance Viewer", size: initialWindowSize, onResize: onResize, onClose: onClosePerformanceViewer },
-                react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { id: "performance-viewer" },
-                    react__WEBPACK_IMPORTED_MODULE_0__["createElement"](react__WEBPACK_IMPORTED_MODULE_0__["Fragment"], null,
-                        react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_graph_canvasGraphComponent__WEBPACK_IMPORTED_MODULE_2__["CanvasGraphComponent"], { id: "myChart", canvasServiceCallback: canvasServiceCallback }))))));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_popupComponent__WEBPACK_IMPORTED_MODULE_4__["PopupComponent"], { id: "perf-viewer", title: "Performance Viewer", size: initialWindowSize, ref: popupRef, onResize: onResize, onClose: onClosePerformanceViewer },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "performance-viewer" }, performanceCollector && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_performanceViewerSidebarComponent__WEBPACK_IMPORTED_MODULE_5__["PerformanceViewerSidebarComponent"], { collector: performanceCollector }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_graph_canvasGraphComponent__WEBPACK_IMPORTED_MODULE_3__["CanvasGraphComponent"], { id: "performance-viewer-graph", layoutObservable: layoutObservable, scene: scene, collector: performanceCollector }))))));
 };
 
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/performanceViewer/performanceViewerSidebarComponent.tsx":
+/*!********************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/performanceViewer/performanceViewerSidebarComponent.tsx ***!
+  \********************************************************************************************/
+/*! exports provided: PerformanceViewerSidebarComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PerformanceViewerSidebarComponent", function() { return PerformanceViewerSidebarComponent; });
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _sharedUiComponents_lines_colorPickerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/colorPickerComponent */ "./sharedUiComponents/lines/colorPickerComponent.tsx");
+
+
+
+
+var PerformanceViewerSidebarComponent = function (props) {
+    var collector = props.collector;
+    var _a = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])([]), metadata = _a[0], setMetadata = _a[1];
+    Object(react__WEBPACK_IMPORTED_MODULE_1__["useEffect"])(function () {
+        var onUpdateMetadata = function (metadata) {
+            var entries = [];
+            // convert to iterable list of entries
+            metadata.forEach(function (value, key) {
+                entries.push([key, value]);
+            });
+            setMetadata(entries);
+        };
+        collector.metadataObservable.add(onUpdateMetadata);
+        return function () {
+            collector.metadataObservable.removeCallback(onUpdateMetadata);
+        };
+    }, []);
+    var onCheckChange = function (id) { return function (event) {
+        collector.updateMetadata(id, "hidden", !event.currentTarget.checked);
+    }; };
+    var onColorChange = function (id) { return function (color) {
+        collector.updateMetadata(id, "color", color);
+    }; };
+    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "performance-viewer-sidebar" }, metadata.map(function (_a) {
+        var _b;
+        var id = _a[0], metadata = _a[1];
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: "perf-sidebar-item-" + id, className: "sidebar-item" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkbox", checked: !metadata.hidden, onChange: onCheckChange(id) }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("span", { className: "sidebar-item-label" }, id),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_colorPickerComponent__WEBPACK_IMPORTED_MODULE_2__["ColorPickerLineComponent"], { value: babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromHexString((_b = metadata.color) !== null && _b !== void 0 ? _b : "#000"), onColorChanged: onColorChange(id), shouldPopRight: true })));
+    })));
+};
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/performanceViewer/scss/performanceViewer.scss":
+/*!**********************************************************************************!*\
+  !*** ./components/actionTabs/tabs/performanceViewer/scss/performanceViewer.scss ***!
+  \**********************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var api = __webpack_require__(/*! ../../../../../../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js */ "../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js");
+            var content = __webpack_require__(/*! !../../../../../../../node_modules/css-loader/dist/cjs.js!../../../../../../../node_modules/sass-loader/dist/cjs.js!./performanceViewer.scss */ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/performanceViewer/scss/performanceViewer.scss");
+
+            content = content.__esModule ? content.default : content;
+
+            if (typeof content === 'string') {
+              content = [[module.i, content, '']];
+            }
+
+var options = {};
+
+options.insert = "head";
+options.singleton = false;
+
+var update = api(content, options);
+
+
+
+module.exports = content.locals || {};
 
 /***/ }),
 
@@ -59013,17 +59143,15 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var CanvasGraphComponent = function (props) {
-    var id = props.id, canvasServiceCallback = props.canvasServiceCallback, layoutObservable = props.layoutObservable;
+    var id = props.id, collector = props.collector, scene = props.scene, layoutObservable = props.layoutObservable;
     var canvasRef = Object(react__WEBPACK_IMPORTED_MODULE_0__["useRef"])(null);
     Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
         if (!canvasRef.current) {
             return;
         }
         var cs;
-        // temporarily set empty array, will eventually be passed by props!
         try {
-            cs = new _canvasGraphService__WEBPACK_IMPORTED_MODULE_1__["CanvasGraphService"](canvasRef.current, { datasets: [] });
-            canvasServiceCallback(cs);
+            cs = new _canvasGraphService__WEBPACK_IMPORTED_MODULE_1__["CanvasGraphService"](canvasRef.current, { datasets: collector.datasets });
         }
         catch (error) {
             console.error(error);
@@ -59038,10 +59166,24 @@ var CanvasGraphComponent = function (props) {
             newSize.height = newSize.height - top;
             cs === null || cs === void 0 ? void 0 : cs.resize(newSize);
         };
+        var dataUpdated = function () {
+            cs === null || cs === void 0 ? void 0 : cs.update();
+        };
+        var metaUpdated = function (meta) {
+            if (!cs) {
+                return;
+            }
+            cs.metadata = meta;
+            cs.update();
+        };
+        scene.onAfterRenderObservable.add(dataUpdated);
+        collector.metadataObservable.add(metaUpdated);
         layoutObservable === null || layoutObservable === void 0 ? void 0 : layoutObservable.add(layoutUpdated);
         return function () {
             cs === null || cs === void 0 ? void 0 : cs.destroy();
             layoutObservable === null || layoutObservable === void 0 ? void 0 : layoutObservable.removeCallback(layoutUpdated);
+            scene.onAfterRenderObservable.removeCallback(dataUpdated);
+            collector.metadataObservable.removeCallback(metaUpdated);
         };
     }, [canvasRef]);
     return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("canvas", { id: id, ref: canvasRef }));
@@ -59060,9 +59202,8 @@ var CanvasGraphComponent = function (props) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CanvasGraphService", function() { return CanvasGraphService; });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.scalar */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math.scalar */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__);
 
 
 var defaultColor = "#000";
@@ -59168,16 +59309,13 @@ var CanvasGraphService = /** @class */ (function () {
             }
             var amount = (event.deltaY * -0.01 | 0) * 100;
             var minZoom = 60;
-            // The max zoom is the largest dataset's length.      
-            var maxZoom = _this.datasets.map(function (dataset) { return dataset.data.length; })
-                .reduce(function (maxLengthSoFar, currLength) {
-                return Math.max(currLength, maxLengthSoFar);
-            }, 0);
+            // The max zoom is the number of slices.      
+            var maxZoom = _this._getNumberOfSlices();
             if (_this._shouldBecomeRealtime()) {
-                _this._positions.clear();
+                _this._position = null;
             }
             // Bind the zoom between [minZoom, maxZoom]
-            _this._sizeOfWindow = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp(_this._sizeOfWindow - amount, minZoom, maxZoom);
+            _this._sizeOfWindow = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["Scalar"].Clamp(_this._sizeOfWindow - amount, minZoom, maxZoom);
         };
         /**
          * Initializes the panning object and attaches appropriate listener.
@@ -59203,22 +59341,16 @@ var CanvasGraphService = /** @class */ (function () {
          * @param event The mouse event that contains positional information.
          */
         this._handlePan = function (event) {
-            if (!_this._panPosition) {
+            var _a;
+            if (!_this._panPosition || _this._getNumberOfSlices() === 0) {
                 return;
             }
             var pixelDelta = _this._panPosition.delta + event.clientX - _this._panPosition.xPos;
             var pixelsPerItem = _this._width / _this._sizeOfWindow;
             var itemsDelta = pixelDelta / pixelsPerItem | 0;
-            _this.datasets.forEach(function (dataset) {
-                var _a;
-                if (dataset.data.length === 0 || !!dataset.hidden) {
-                    return;
-                }
-                var id = dataset.id;
-                var pos = (_a = _this._positions.get(id)) !== null && _a !== void 0 ? _a : (dataset.data.length - 1);
-                // update our position without allowing the user to pan more than they need to (approximation) 
-                _this._positions.set(id, babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp(pos - itemsDelta, Math.floor(_this._sizeOfWindow * scaleFactor), dataset.data.length - Math.floor(_this._sizeOfWindow * (1 - scaleFactor))));
-            });
+            var pos = (_a = _this._position) !== null && _a !== void 0 ? _a : (_this._getNumberOfSlices() - 1);
+            // update our position without allowing the user to pan more than they need to (approximation) 
+            _this._position = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["Scalar"].Clamp(pos - itemsDelta, Math.floor(_this._sizeOfWindow * scaleFactor), _this._getNumberOfSlices() - Math.floor(_this._sizeOfWindow * (1 - scaleFactor)));
             if (itemsDelta === 0) {
                 _this._panPosition.delta += pixelDelta;
             }
@@ -59239,7 +59371,7 @@ var CanvasGraphService = /** @class */ (function () {
             }
             // check if we should return to realtime.
             if (_this._shouldBecomeRealtime()) {
-                _this._positions.clear();
+                _this._position = null;
             }
             var canvas = ctx.canvas;
             canvas.removeEventListener("mousemove", _this._handlePan);
@@ -59251,8 +59383,8 @@ var CanvasGraphService = /** @class */ (function () {
         this._ticks = [];
         this._panPosition = null;
         this._hoverPosition = null;
-        this._positions = new Map();
-        this._datasetBounds = new Map();
+        this._position = null;
+        this._datasetBounds = { start: 0, end: 0 };
         this._globalTimeMinMax = { min: Infinity, max: 0 };
         this._drawableArea = { top: 0, left: 0, right: 0, bottom: 0 };
         this._textCache = { text: "", width: 0 };
@@ -59272,6 +59404,7 @@ var CanvasGraphService = /** @class */ (function () {
         this._tooltipLineHeight = fontMetrics.actualBoundingBoxAscent + fontMetrics.actualBoundingBoxDescent;
         this._ctx.restore();
         this.datasets = settings.datasets;
+        this.metadata = new Map();
         this._attachEventListeners(canvas);
     }
     CanvasGraphService.prototype.resize = function (size) {
@@ -59291,8 +59424,13 @@ var CanvasGraphService = /** @class */ (function () {
      */
     CanvasGraphService.prototype._draw = function () {
         var _this = this;
+        var _a;
         var ctx = this._ctx;
         if (!ctx) {
+            return;
+        }
+        var numSlices = this._getNumberOfSlices();
+        if (numSlices === 0) {
             return;
         }
         // First we clear the canvas so we can draw our data!
@@ -59300,115 +59438,94 @@ var CanvasGraphService = /** @class */ (function () {
         // Get global min max of time axis (across all datasets).
         this._globalTimeMinMax.min = Infinity;
         this._globalTimeMinMax.max = 0;
-        // First we must get the end positions of each dataset.
-        this.datasets.forEach(function (dataset) {
-            var _a;
-            // skip hidden and empty datasets!
-            if (dataset.data.length === 0 || !!dataset.hidden) {
-                return;
-            }
-            var pos = (_a = _this._positions.get(dataset.id)) !== null && _a !== void 0 ? _a : dataset.data.length - 1;
-            var start = pos - Math.ceil(_this._sizeOfWindow * scaleFactor);
-            var startOverflow = 0;
-            // account for overflow from start.
-            if (start < 0) {
-                startOverflow = 0 - start;
-                start = 0;
-            }
-            var end = Math.ceil(pos + _this._sizeOfWindow * (1 - scaleFactor) + startOverflow);
-            // account for overflow from end.
-            if (end > dataset.data.length) {
-                var endOverflow = end - dataset.data.length;
-                end = dataset.data.length;
-                start = Math.max(start - endOverflow, 0);
-            }
-            var bounds = _this._datasetBounds.get(dataset.id);
-            // update or set the bounds
-            if (bounds) {
-                bounds.start = start;
-                bounds.end = end;
-            }
-            else {
-                _this._datasetBounds.set(dataset.id, { start: start, end: end });
-            }
-        });
+        // First we must get the end positions of our view port.
+        var pos = (_a = this._position) !== null && _a !== void 0 ? _a : (numSlices - 1);
+        var start = pos - Math.ceil(this._sizeOfWindow * scaleFactor);
+        var startOverflow = 0;
+        // account for overflow from start.
+        if (start < 0) {
+            startOverflow = 0 - start;
+            start = 0;
+        }
+        var end = Math.ceil(pos + this._sizeOfWindow * (1 - scaleFactor) + startOverflow);
+        // account for overflow from end.
+        if (end > numSlices) {
+            var endOverflow = end - numSlices;
+            end = numSlices;
+            start = Math.max(start - endOverflow, 0);
+        }
+        // update the bounds
+        this._datasetBounds.start = start;
+        this._datasetBounds.end = end;
         // next we must find the min and max timestamp in bounds. (Timestamps are sorted)
-        this.datasets.forEach(function (dataset) {
-            var bounds = _this._datasetBounds.get(dataset.id);
-            // handles cases we skip!
-            if (!bounds || dataset.data.length === 0 || !!dataset.hidden) {
-                return;
-            }
-            _this._globalTimeMinMax.min = Math.min(dataset.data[bounds.start].timestamp, _this._globalTimeMinMax.min);
-            _this._globalTimeMinMax.max = Math.max(dataset.data[bounds.end - 1].timestamp, _this._globalTimeMinMax.max);
-        });
+        this._globalTimeMinMax.min = this.datasets.data.at(this.datasets.startingIndices.at(this._datasetBounds.start));
+        this._globalTimeMinMax.max = this.datasets.data.at(this.datasets.startingIndices.at(this._datasetBounds.end - 1));
         // set the buffer region maximum by rescaling the max timestamp in bounds.
         var bufferMaximum = Math.ceil((this._globalTimeMinMax.max - this._globalTimeMinMax.min) / scaleFactor + this._globalTimeMinMax.min);
         // we then need to update the end position based on the maximum for the buffer region
-        this.datasets.forEach(function (dataset) {
-            var bounds = _this._datasetBounds.get(dataset.id);
-            // handles cases we skip!
-            if (!bounds || dataset.data.length === 0 || !!dataset.hidden) {
-                return;
-            }
-            // binary search to get closest point to the buffer maximum.
-            bounds.end = _this._getClosestPointToTimestamp(dataset, bufferMaximum) + 1;
-            // keep track of largest timestamp value in view!
-            _this._globalTimeMinMax.max = Math.max(dataset.data[bounds.end - 1].timestamp, _this._globalTimeMinMax.max);
-        });
-        var updatedScaleFactor = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp((this._globalTimeMinMax.max - this._globalTimeMinMax.min) / (bufferMaximum - this._globalTimeMinMax.min), scaleFactor, 1);
+        // binary search to get closest point to the buffer maximum.
+        this._datasetBounds.end = this._getClosestPointToTimestamp(bufferMaximum) + 1;
+        // keep track of largest timestamp value in view!
+        this._globalTimeMinMax.max = Math.max(this.datasets.data.at(this.datasets.startingIndices.at(this._datasetBounds.end - 1)), this._globalTimeMinMax.max);
+        var updatedScaleFactor = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["Scalar"].Clamp((this._globalTimeMinMax.max - this._globalTimeMinMax.min) / (bufferMaximum - this._globalTimeMinMax.min), scaleFactor, 1);
         // we will now set the global maximum to the maximum of the buffer.
         this._globalTimeMinMax.max = bufferMaximum;
-        // TODO: Perhaps see if i can reduce the number of allocations.
-        // Keep only visible and non empty datasets and get a certain window of items.
-        var datasets = this.datasets.map(function (dataset) {
-            var bounds = _this._datasetBounds.get(dataset.id);
-            // handles cases we skip!
-            if (!bounds || dataset.data.length === 0 || !!dataset.hidden) {
-                return dataset;
-            }
-            return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, dataset), { data: dataset.data.slice(bounds.start, bounds.end) });
-        }).filter(function (dataset) { return !dataset.hidden && dataset.data.length > 0; });
         this._drawableArea.top = 0;
         this._drawableArea.left = 0;
         this._drawableArea.bottom = this._height;
         this._drawableArea.right = this._width;
         this._drawTimeAxis(this._globalTimeMinMax, this._drawableArea);
         this._drawPlayheadRegion(this._drawableArea, updatedScaleFactor);
+        var _b = this._drawableArea, left = _b.left, right = _b.right, bottom = _b.bottom, top = _b.top;
         // process, and then draw our points
-        datasets.forEach(function (dataset) {
-            var _a;
-            var valueMinMax = _this._getMinMax(dataset.data.map(function (point) { return point.value; }));
-            var drawablePoints = dataset.data.map(function (point) { return _this._getPixelPointFromDataPoint(point, _this._globalTimeMinMax, valueMinMax, _this._drawableArea); });
-            var prevPoint = drawablePoints[0];
+        this.datasets.ids.forEach(function (id, idOffset) {
+            var _a, _b, _c;
+            // we don't want to draw hidden datasets.
+            if (!!((_a = _this.metadata.get(id)) === null || _a === void 0 ? void 0 : _a.hidden)) {
+                return;
+            }
+            var valueMinMax = _this._getMinMax(_this._datasetBounds, idOffset);
             ctx.beginPath();
-            ctx.strokeStyle = (_a = dataset.color) !== null && _a !== void 0 ? _a : defaultColor;
-            drawablePoints.forEach(function (point) {
-                ctx.moveTo(prevPoint.timestamp, prevPoint.value);
-                ctx.lineTo(point.timestamp, point.value);
-                prevPoint = point;
-            });
+            ctx.strokeStyle = (_c = (_b = _this.metadata.get(id)) === null || _b === void 0 ? void 0 : _b.color) !== null && _c !== void 0 ? _c : defaultColor;
+            var prevPoint;
+            for (var pointIndex = _this._datasetBounds.start; pointIndex < _this._datasetBounds.end; pointIndex++) {
+                var numPoints = _this.datasets.data.at(_this.datasets.startingIndices.at(pointIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["PerformanceViewerCollector"].NumberOfPointsOffset);
+                if (idOffset >= numPoints) {
+                    continue;
+                }
+                var valueIndex = _this.datasets.startingIndices.at(pointIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["PerformanceViewerCollector"].SliceDataOffset + idOffset;
+                var timestamp = _this.datasets.data.at(_this.datasets.startingIndices.at(pointIndex));
+                var value = _this.datasets.data.at(valueIndex);
+                var drawableTime = _this._getPixelForNumber(timestamp, _this._globalTimeMinMax, left, right - left, false);
+                var drawableValue = _this._getPixelForNumber(value, valueMinMax, top, bottom - top, true);
+                if (prevPoint === undefined) {
+                    prevPoint = [drawableTime, drawableValue];
+                }
+                ctx.moveTo(prevPoint[0], prevPoint[1]);
+                ctx.lineTo(drawableTime, drawableValue);
+                prevPoint[0] = drawableTime;
+                prevPoint[1] = drawableValue;
+            }
             ctx.stroke();
         });
         // then draw the tooltip.
         this._drawTooltip(this._hoverPosition, this._drawableArea);
     };
     /**
-     * Returns the index of the closest time for a dataset.
+     * Returns the index of the closest time for the datasets.
      * Uses a modified binary search to get value.
      *
-     * @param dataset the dataset we want to search in.
      * @param targetTime the time we want to get close to.
      * @returns index of the item with the closest time to the targetTime
      */
-    CanvasGraphService.prototype._getClosestPointToTimestamp = function (dataset, targetTime) {
+    CanvasGraphService.prototype._getClosestPointToTimestamp = function (targetTime) {
         var low = 0;
-        var high = dataset.data.length - 1;
+        var high = this._getNumberOfSlices() - 1;
         var closestIndex = 0;
         while (low <= high) {
             var middle = Math.trunc((low + high) / 2);
-            var middleTimestamp = dataset.data[middle].timestamp;
-            if (Math.abs(middleTimestamp - targetTime) < Math.abs(dataset.data[closestIndex].timestamp - targetTime)) {
+            var middleTimestamp = this.datasets.data.at(this.datasets.startingIndices.at(middle));
+            if (Math.abs(middleTimestamp - targetTime) < Math.abs(this.datasets.data.at(this.datasets.startingIndices.at(closestIndex)) - targetTime)) {
                 closestIndex = middle;
             }
             if (middleTimestamp < targetTime) {
@@ -59422,6 +59539,13 @@ var CanvasGraphService = /** @class */ (function () {
             }
         }
         return closestIndex;
+    };
+    /**
+     * This is a convenience method to get the number of collected slices.
+     * @returns the total number of collected slices.
+     */
+    CanvasGraphService.prototype._getNumberOfSlices = function () {
+        return this.datasets.startingIndices.itemLength;
     };
     /**
      * Draws the time axis, adjusts the drawable area for the graph.
@@ -59527,10 +59651,15 @@ var CanvasGraphService = /** @class */ (function () {
      * @param items the array of numbers to get the min and max for.
      * @returns the min and max of the array.
      */
-    CanvasGraphService.prototype._getMinMax = function (items) {
+    CanvasGraphService.prototype._getMinMax = function (bounds, offset) {
         var min = Infinity, max = 0;
-        for (var _i = 0, items_1 = items; _i < items_1.length; _i++) {
-            var item = items_1[_i];
+        for (var i = bounds.start; i < bounds.end; i++) {
+            var numPoints = this.datasets.data.at(this.datasets.startingIndices.at(i) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["PerformanceViewerCollector"].NumberOfPointsOffset);
+            if (offset >= numPoints) {
+                continue;
+            }
+            var itemIndex = this.datasets.startingIndices.at(i) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["PerformanceViewerCollector"].SliceDataOffset + offset;
+            var item = this.datasets.data.at(itemIndex);
             if (item < min) {
                 min = item;
             }
@@ -59541,23 +59670,6 @@ var CanvasGraphService = /** @class */ (function () {
         return {
             min: min,
             max: max
-        };
-    };
-    /**
-     * Converts a data point to a point on the canvas (a pixel coordinate).
-     *
-     * @param point The datapoint
-     * @param timeMinMax The minimum and maximum in the time axis.
-     * @param valueMinMax The minimum and maximum in the value axis for the dataset.
-     * @param drawableArea The allowed drawable area.
-     * @returns
-     */
-    CanvasGraphService.prototype._getPixelPointFromDataPoint = function (point, timeMinMax, valueMinMax, drawableArea) {
-        var timestamp = point.timestamp, value = point.value;
-        var top = drawableArea.top, left = drawableArea.left, bottom = drawableArea.bottom, right = drawableArea.right;
-        return {
-            timestamp: this._getPixelForNumber(timestamp, timeMinMax, left, right - left, false),
-            value: this._getPixelForNumber(value, valueMinMax, top, bottom - top, true)
         };
     };
     /**
@@ -59614,7 +59726,7 @@ var CanvasGraphService = /** @class */ (function () {
     CanvasGraphService.prototype._drawTooltip = function (pixel, drawableArea) {
         var _this = this;
         var ctx = this._ctx;
-        if (pixel === null || !ctx || !ctx.canvas) {
+        if (pixel === null || !ctx || !ctx.canvas || this._getNumberOfSlices() === 0) {
             return;
         }
         // first convert the mouse position in pixels to a timestamp.
@@ -59623,18 +59735,23 @@ var CanvasGraphService = /** @class */ (function () {
         var longestText = "";
         var numberOfTooltipItems = 0;
         // get the closest timestamps to the target timestamp, and store the appropriate meta object.
-        this.datasets.forEach(function (dataset) {
-            var _a;
-            if (!!dataset.hidden || dataset.data.length === 0) {
+        var closestIndex = this._getClosestPointToTimestamp(inferredTimestamp);
+        this.datasets.ids.forEach(function (id, idOffset) {
+            var _a, _b, _c;
+            if (!!((_a = _this.metadata.get(id)) === null || _a === void 0 ? void 0 : _a.hidden)) {
                 return;
             }
-            var closestIndex = _this._getClosestPointToTimestamp(dataset, inferredTimestamp);
-            var text = dataset.id + ": " + dataset.data[closestIndex].value.toFixed(2);
+            var numPoints = _this.datasets.data.at(_this.datasets.startingIndices.at(closestIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["PerformanceViewerCollector"].NumberOfPointsOffset);
+            if (idOffset >= numPoints) {
+                return;
+            }
+            var valueIndex = _this.datasets.startingIndices.at(closestIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["PerformanceViewerCollector"].SliceDataOffset + idOffset;
+            var text = id + ": " + _this.datasets.data.at(valueIndex).toFixed(2);
             if (text.length > longestText.length) {
                 longestText = text;
             }
             _this._tooltipItems[numberOfTooltipItems].text = text;
-            _this._tooltipItems[numberOfTooltipItems].color = (_a = dataset.color) !== null && _a !== void 0 ? _a : defaultColor;
+            _this._tooltipItems[numberOfTooltipItems].color = (_c = (_b = _this.metadata.get(id)) === null || _b === void 0 ? void 0 : _b.color) !== null && _c !== void 0 ? _c : defaultColor;
             numberOfTooltipItems++;
         });
         var x = pixel - start;
@@ -59695,29 +59812,19 @@ var CanvasGraphService = /** @class */ (function () {
      * @returns if the data should become realtime or not.
      */
     CanvasGraphService.prototype._shouldBecomeRealtime = function () {
-        if (this.datasets.length === 0) {
+        if (this._getNumberOfSlices() === 0) {
             return false;
         }
-        // We first get the latest dataset, because this is where the real time data is!
-        var latestDataset = this.datasets[0];
-        this.datasets.forEach(function (dataset) {
-            // skip over empty and hidden data!
-            if (dataset.data.length === 0 || !!dataset.hidden) {
-                return;
-            }
-            if (latestDataset.data[latestDataset.data.length - 1].timestamp < dataset.data[dataset.data.length - 1].timestamp) {
-                latestDataset = dataset;
-            }
-        });
-        var pos = this._positions.get(latestDataset.id);
-        var latestElementPos = latestDataset.data.length - 1;
-        if (pos === undefined) {
+        // we need to compare our current slice to the latest slice to see if we should return to realtime mode.
+        var pos = this._position;
+        var latestSlicePos = this._getNumberOfSlices() - 1;
+        if (pos === null) {
             return false;
         }
         // account for overflow on the left side only as it will be the one determining if we have sufficiently caught up to the realtime data.
         var overflow = Math.max(0 - (pos - Math.ceil(this._sizeOfWindow * scaleFactor)), 0);
-        var rightmostPos = Math.min(overflow + pos + Math.ceil(this._sizeOfWindow * (1 - scaleFactor)), latestElementPos);
-        return latestDataset.data[rightmostPos].timestamp / latestDataset.data[latestElementPos].timestamp > returnToLiveThreshold;
+        var rightmostPos = Math.min(overflow + pos + Math.ceil(this._sizeOfWindow * (1 - scaleFactor)), latestSlicePos);
+        return this.datasets.data.at(this.datasets.startingIndices.at(rightmostPos)) / this.datasets.data.at(this.datasets.startingIndices.at(latestSlicePos)) > returnToLiveThreshold;
     };
     /**
      * Will generate a playhead with a futurebox that takes up (1-scalefactor)*100% of the canvas.

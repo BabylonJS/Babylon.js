@@ -523,13 +523,13 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * If false, both RGB and A channels will be used
      * @hidden
      */
-     public _useOnlyMetallicFromMetallicReflectanceTexture = false;
+    public _useOnlyMetallicFromMetallicReflectanceTexture = false;
 
-     /**
-     * Defines to store metallicReflectanceColor in RGB and metallicF0Factor in A
-     * This is multiply against the scalar values defined in the material.
-     * @hidden
-     */
+    /**
+    * Defines to store metallicReflectanceColor in RGB and metallicF0Factor in A
+    * This is multiply against the scalar values defined in the material.
+    * @hidden
+    */
     public _metallicReflectanceTexture: Nullable<BaseTexture> = null;
 
     /**
@@ -539,13 +539,13 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * is false, _metallicReflectanceTexture takes precedence and _reflectanceTexture is not used
      * @hidden
      */
-     public _reflectanceTexture: Nullable<BaseTexture> = null;
+    public _reflectanceTexture: Nullable<BaseTexture> = null;
 
-     /**
-     * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
-     * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
-     * @hidden
-     */
+    /**
+    * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
+    * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
+    * @hidden
+    */
     public _microSurfaceTexture: Nullable<BaseTexture> = null;
 
     /**

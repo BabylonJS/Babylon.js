@@ -545,7 +545,7 @@ export class DDSTools {
 
                             const destType =
                                 (bpp === 128 || bpp === 64 && !halfFloatAvailable) && floatAvailable ? Constants.TEXTURETYPE_FLOAT :
-                                (bpp === 64 || bpp === 128 && !floatAvailable) && halfFloatAvailable ? Constants.TEXTURETYPE_HALF_FLOAT : Constants.TEXTURETYPE_UNSIGNED_BYTE;
+                                    (bpp === 64 || bpp === 128 && !floatAvailable) && halfFloatAvailable ? Constants.TEXTURETYPE_HALF_FLOAT : Constants.TEXTURETYPE_UNSIGNED_BYTE;
 
                             let dataGetter: (width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, lod: number) => ArrayBufferView;
                             let dataGetterPolynomial: Nullable<(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, lod: number) => ArrayBufferView> = null;
@@ -699,7 +699,7 @@ declare module "../Engines/thinEngine" {
  * @param createPolynomials defines wheter or not to create polynomails harmonics for the texture
  * @returns the cube texture as an InternalTexture
  */
-ThinEngine.prototype.createPrefilteredCubeTexture = function(rootUrl: string, scene: Nullable<Scene>, lodScale: number, lodOffset: number,
+ThinEngine.prototype.createPrefilteredCubeTexture = function (rootUrl: string, scene: Nullable<Scene>, lodScale: number, lodOffset: number,
     onLoad: Nullable<(internalTexture: Nullable<InternalTexture>) => void> = null,
     onError: Nullable<(message?: string, exception?: any) => void> = null,
     format?: number, forcedExtension: any = null,

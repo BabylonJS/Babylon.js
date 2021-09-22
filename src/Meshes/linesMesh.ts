@@ -276,12 +276,12 @@ export class LinesMesh extends Mesh {
         serializationObject.alpha = this.alpha;
     }
 
-        /**
-     * Parses a serialized ground mesh
-     * @param parsedMesh the serialized mesh
-     * @param scene the scene to create the ground mesh in
-     * @returns the created ground mesh
-     */
+    /**
+ * Parses a serialized ground mesh
+ * @param parsedMesh the serialized mesh
+ * @param scene the scene to create the ground mesh in
+ * @returns the created ground mesh
+ */
     public static Parse(parsedMesh: any, scene: Scene): LinesMesh {
         var result = new LinesMesh(parsedMesh.name, scene);
 

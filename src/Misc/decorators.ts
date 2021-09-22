@@ -133,10 +133,10 @@ function generateExpandMember(setCallback: string, targetKey: Nullable<string> =
     return (target: any, propertyKey: string) => {
         var key = targetKey || ("_" + propertyKey);
         Object.defineProperty(target, propertyKey, {
-            get: function(this: any) {
+            get: function (this: any) {
                 return this[key];
             },
-            set: function(this: any, value) {
+            set: function (this: any, value) {
                 if (this[key] === value) {
                     return;
                 }
@@ -438,39 +438,43 @@ declare const _native: any;
  * Decorator used to redirect a function to a native implementation if available.
  * @hidden
  */
-export function nativeOverride(target: any, propertyKey: string, descriptor: PropertyDescriptor, predicate?: (...params: any) => boolean) {
+export function nativeOverride<T extends (...params: any) => boolean>(target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<(...params: Parameters<T>) => unknown>, predicate?: T) {
     // Cache the original JS function for later.
-    const jsFunc = descriptor.value;
+    const jsFunc = descriptor.value!;
 
     // Override the JS function to check for a native override on first invocation. Setting descriptor.value overrides the function at the early stage of code being loaded/imported.
-    descriptor.value = (...params: any) => {
+    descriptor.value = (...params: Parameters<T>): unknown => {
+        // Assume the resolved function will be the original JS function, then we will check for the Babylon Native context.
+        let func = jsFunc;
+
         // Check if we are executing in a Babylon Native context (e.g. check the presence of the _native global property) and if so also check if a function override is available.
         if (typeof _native !== 'undefined' && _native[propertyKey]) {
-            const nativeFunc = _native[propertyKey];
+            const nativeFunc = _native[propertyKey] as (...params: Parameters<T>) => unknown;
             // If a predicate was provided, then we'll need to invoke the predicate on each invocation of the underlying function to determine whether to call the native function or the JS function.
             if (predicate) {
-                // Override the JS function again, this time to execute the predicate and then either execute the native function or the JS function.
-                target[propertyKey] = (...params: any) => predicate(...params) ? nativeFunc(...params) : jsFunc(...params);
+                // The resolved function will execute the predicate and then either execute the native function or the JS function.
+                func = (...params: Parameters<T>) => predicate(...params) ? nativeFunc(...params) : jsFunc(...params);
             } else {
-                // Override the JS function again, this time to always execute the native function.
-                target[propertyKey] = nativeFunc;
+                // The resolved function will directly execute the native function.
+                func = nativeFunc;
             }
-        } else {
-            // Override the JS function again, this time simply restoring the original JS function.
-            target[propertyKey] = jsFunc;
         }
+
+        // Override the JS function again with the final resolved target function.
+        target[propertyKey] = func;
 
         // The JS function has now been overridden based on whether we're executing in the context of Babylon Native, but we still need to invoke that function.
         // Future invocations of the function will just directly invoke the final overridden function, not any of the decorator setup logic above.
-        target[propertyKey](...params);
+        return func(...params);
     };
 }
 
 /**
  * Decorator factory that applies the nativeOverride decorator, but determines whether to redirect to the native implementation based on a filter function that evaluates the function arguments.
- * @example @nativeOverride.filter((arg1) => arg1.length > 20)
+ * @example @nativeOverride.filter((...[arg1]: Parameters<typeof someClass.someMethod>) => arg1.length > 20)
+ *          public someMethod(arg1: string, arg2: number): string {
  * @hidden
  */
-nativeOverride.filter = function(predicate: (...params: any) => boolean) {
-    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => nativeOverride(target, propertyKey, descriptor, predicate);
+nativeOverride.filter = function<T extends (...params: any) => boolean>(predicate: T) {
+    return (target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<(...params: Parameters<T>) => unknown>) => nativeOverride(target, propertyKey, descriptor, predicate);
 };

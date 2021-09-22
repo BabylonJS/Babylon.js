@@ -1368,7 +1368,8 @@ var _GLTFAnimation = /** @class */ (function () {
                                     animationKeys.push(morphTargetAnimation.getKeys()[i]);
                                 }
                                 else {
-                                    animationKeys.push({ frame: animationGroup.from + (animationGroupFrameDiff / numAnimationKeys) * i,
+                                    animationKeys.push({
+                                        frame: animationGroup.from + (animationGroupFrameDiff / numAnimationKeys) * i,
                                         value: morphTarget.influence,
                                         inTangent: sampleAnimationKeys[0].inTangent ? 0 : undefined,
                                         outTangent: sampleAnimationKeys[0].outTangent ? 0 : undefined

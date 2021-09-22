@@ -146,7 +146,7 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
     /**
      * Initializes the hand constraint behavior
      */
-    public init() {}
+    public init() { }
 
     /**
      * Attaches the hand constraint to a `TransformNode`

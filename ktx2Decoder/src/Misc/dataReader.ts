@@ -19,7 +19,7 @@ export class DataReader {
      * @param byteLength The byte length of the buffer
      */
     constructor(buffer: ArrayBuffer | ArrayBufferView, byteOffset?: number, byteLength?: number) {
-        if ((buffer as  ArrayBufferView).buffer) {
+        if ((buffer as ArrayBufferView).buffer) {
             this._dataView = new DataView((buffer as ArrayBufferView).buffer, (buffer as ArrayBufferView).byteOffset + (byteOffset ?? 0), byteLength ?? (buffer as ArrayBufferView).byteLength);
         } else {
             this._dataView = new DataView(buffer as ArrayBuffer, byteOffset ?? 0, byteLength ?? (buffer as ArrayBuffer).byteLength);

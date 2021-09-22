@@ -23,7 +23,7 @@ declare module "../../Engines/thinEngine" {
     }
 }
 
-ThinEngine.prototype.updateDynamicIndexBuffer = function(this: ThinEngine, indexBuffer: DataBuffer, indices: IndicesArray, offset: number = 0): void {
+ThinEngine.prototype.updateDynamicIndexBuffer = function (this: ThinEngine, indexBuffer: DataBuffer, indices: IndicesArray, offset: number = 0): void {
     // Force cache update
     this._currentBoundBuffer[this._gl.ELEMENT_ARRAY_BUFFER] = null;
     this.bindIndexBuffer(indexBuffer);
@@ -40,7 +40,7 @@ ThinEngine.prototype.updateDynamicIndexBuffer = function(this: ThinEngine, index
     this._resetIndexBufferBinding();
 };
 
-ThinEngine.prototype.updateDynamicVertexBuffer = function(this: ThinEngine, vertexBuffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void {
+ThinEngine.prototype.updateDynamicVertexBuffer = function (this: ThinEngine, vertexBuffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void {
     this.bindArrayBuffer(vertexBuffer);
 
     if (byteOffset === undefined) {

@@ -3,7 +3,7 @@ import { RenderTargetCreationOptions } from "../../../Materials/Textures/renderT
 import { Constants } from "../../constants";
 import { WebGPUEngine } from "../../webgpuEngine";
 
-WebGPUEngine.prototype.createRenderTargetCubeTexture = function(size: number, options?: Partial<RenderTargetCreationOptions>): InternalTexture {
+WebGPUEngine.prototype.createRenderTargetCubeTexture = function (size: number, options?: Partial<RenderTargetCreationOptions>): InternalTexture {
     let fullOptions = {
         generateMipMaps: true,
         generateDepthBuffer: true,

@@ -106,7 +106,7 @@ export class SphereParticleEmitter implements IParticleEmitterType {
      * Creates the structure of the ubo for this particle emitter
      * @param ubo ubo to create the structure for
      */
-     public buildUniformLayout(ubo: UniformBuffer): void {
+    public buildUniformLayout(ubo: UniformBuffer): void {
         ubo.addUniform("radius", 1);
         ubo.addUniform("radiusRange", 1);
         ubo.addUniform("directionRandomizer", 1);

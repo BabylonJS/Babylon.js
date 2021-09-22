@@ -22,7 +22,7 @@ function getAllPropertyNames(obj: any): string[] {
     const props: string[] = [];
 
     do {
-        Object.getOwnPropertyNames(obj).forEach(function(prop) {
+        Object.getOwnPropertyNames(obj).forEach(function (prop) {
             if (props.indexOf(prop) === -1) {
                 props.push(prop);
             }

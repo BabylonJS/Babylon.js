@@ -19,7 +19,7 @@ declare module "../../Cameras/freeCameraInputsManager" {
 * Add virtual joystick input support to the input manager.
 * @returns the current input manager
 */
-FreeCameraInputsManager.prototype.addVirtualJoystick = function(): FreeCameraInputsManager {
+FreeCameraInputsManager.prototype.addVirtualJoystick = function (): FreeCameraInputsManager {
     this.add(new FreeCameraVirtualJoystickInput());
     return this;
 };

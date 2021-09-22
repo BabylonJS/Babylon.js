@@ -8826,16 +8826,35 @@ var InputText = /** @class */ (function (_super) {
                 return;
             case 222: // Dead
                 if (evt) {
-                    evt.preventDefault();
+                    //add support for single and double quotes
+                    if (evt.code == "Quote") {
+                        if (evt.shiftKey) {
+                            keyCode = 34;
+                            key = '"';
+                        }
+                        else {
+                            keyCode = 39;
+                            key = "'";
+                        }
+                    }
+                    else {
+                        evt.preventDefault();
+                        this._cursorIndex = -1;
+                        this.deadKey = true;
+                    }
                 }
-                this._cursorIndex = -1;
-                this.deadKey = true;
+                else {
+                    this._cursorIndex = -1;
+                    this.deadKey = true;
+                }
                 break;
         }
         // Printable characters
         if (key &&
             ((keyCode === -1) || // Direct access
                 (keyCode === 32) || // Space
+                (keyCode === 34) || // "    add support for single and double quotes
+                (keyCode === 39) || // '
                 (keyCode > 47 && keyCode < 64) || // Numbers
                 (keyCode > 64 && keyCode < 91) || // Letters
                 (keyCode > 159 && keyCode < 193) || // Special characters
@@ -9013,6 +9032,7 @@ var InputText = /** @class */ (function (_super) {
         var marginWidth = this._margin.getValueInPixel(this._host, this._tempParentMeasure.width) * 2;
         if (this._autoStretchWidth) {
             this.width = Math.min(this._maxWidth.getValueInPixel(this._host, this._tempParentMeasure.width), this._textWidth + marginWidth) + "px";
+            this._autoStretchWidth = true; // setting the width will have reset _autoStretchWidth to false!
         }
         var rootY = this._fontOffset.ascent + (this._currentMeasure.height - this._fontOffset.height) / 2;
         var availableWidth = this._width.getValueInPixel(this._host, this._tempParentMeasure.width) - marginWidth;
