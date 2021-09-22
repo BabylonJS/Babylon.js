@@ -666,7 +666,7 @@ export class ScrollViewer extends Rectangle {
         }
 
         this._onWheelObserver = this.onWheelObservable.add((pi) => {
-            if (!this._pointerIsOver) {
+            if (!this._pointerIsOver || this.isReadOnly) {
                 return;
             }
             if (this._verticalBar.isVisible == true) {

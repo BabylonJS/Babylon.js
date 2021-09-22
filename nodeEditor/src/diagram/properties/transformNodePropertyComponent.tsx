@@ -23,7 +23,7 @@ export class TransformPropertyTabComponent extends React.Component<IPropertyComp
                         } else {
                             transformBlock.complementW = 1;
                         }
-                        this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                        this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                     }} isSelected={() => (this.props.block as TransformBlock).complementW === 0} />
                 </LineContainerComponent>            
             </>

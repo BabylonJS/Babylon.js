@@ -88,8 +88,10 @@ export class FocusableButton extends Button implements IFocusableControl {
 
     /** @hidden */
     public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean {
-        // Clicking on button should focus
-        this.focus();
+        if (!this.isReadOnly) {
+            // Clicking on button should focus
+            this.focus();
+        }
 
         return super._onPointerDown(target, coordinates, pointerId, buttonIndex, pi);
     }

@@ -237,6 +237,10 @@ export class RenderTargetTexture extends Texture {
     public _generateMipMaps: boolean;
     /** @hidden */
     public _cleared = false;
+    /**
+     * Skip the initial clear of the rtt at the beginning of the frame render loop
+     */
+    public skipInitialClear = false;
     protected _renderingManager: RenderingManager;
     /** @hidden */
     public _waitingRenderList?: string[];
