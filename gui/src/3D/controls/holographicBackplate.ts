@@ -9,6 +9,7 @@ import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 
 /**
  * Class used to create a holographic backplate in 3D
+ * @since 5.0.0
  */
 export class HolographicBackplate extends Control3D {
     /**

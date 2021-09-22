@@ -194,20 +194,11 @@ export class TreeItemComponent extends React.Component<ITreeItemComponentProps, 
             )
         }
 
-        const sortedItems = Tools.SortAndFilter(null, items);
-
+        let sortedItems = Tools.SortAndFilter(null, items)[0].getChildren();         
         return (
             <div>
-                <div className="groupContainer" style={marginStyle}>
-                    <ContextMenuTrigger id={"contextmenu#" + TreeItemComponent._ContextMenuUniqueIdGenerator}>
-                        {
-                            this.renderContextMenu()
-                        }
-                        <TreeItemExpandableHeaderComponent isExpanded={this.state.isExpanded} label={this.props.label} onClick={() => this.switchExpandedState()} onExpandAll={expand => this.expandAll(expand)} />
-                    </ContextMenuTrigger>
-                </div>
                 {
-                    sortedItems.map(item => {
+                    sortedItems.map((item: { uniqueId: React.Key | null | undefined; name: React.Key | null | undefined; }) => {
                         return (
                             <TreeItemSelectableComponent mustExpand={this.state.mustExpand} extensibilityGroups={this.props.extensibilityGroups}
                                 key={item.uniqueId !== undefined && item.uniqueId !== null ? item.uniqueId : item.name}

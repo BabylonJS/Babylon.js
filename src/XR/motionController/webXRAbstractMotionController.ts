@@ -279,6 +279,7 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
      * @param gamepadObject The gamepad object correlating to this controller
      * @param handedness handedness (left/right/none) of this controller
      * @param _doNotLoadControllerMesh set this flag to ignore the mesh loading
+     * @param _controllerCache a cache holding controller models already loaded in this session
      */
     constructor(
         protected scene: Scene,
@@ -294,7 +295,12 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
         /**
          * @hidden
          */
-        public _doNotLoadControllerMesh: boolean = false
+        public _doNotLoadControllerMesh: boolean = false,
+        private _controllerCache?: Array<{
+            filename: string;
+            path: string;
+            meshes: AbstractMesh[]
+        }>
     ) {
         // initialize the components
         if (layout.components) {
@@ -309,7 +315,10 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
     public dispose(): void {
         this.getComponentIds().forEach((id) => this.getComponent(id).dispose());
         if (this.rootMesh) {
-            this.rootMesh.dispose(false, true);
+            this.rootMesh.getChildren(undefined, true).forEach((node) => {
+                node.setEnabled(false);
+            });
+            this.rootMesh.dispose(!!this._controllerCache, !this._controllerCache);
         }
     }
 
@@ -373,21 +382,42 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
             loadingParams = this._getFilenameAndPath();
         }
         return new Promise((resolve, reject) => {
+            const meshesLoaded = (meshes: AbstractMesh[]) => {
+                if (useGeneric) {
+                    this._getGenericParentMesh(meshes);
+                } else {
+                    this._setRootMesh(meshes);
+                }
+                this._processLoadedModel(meshes);
+                this._modelReady = true;
+                this.onModelLoadedObservable.notifyObservers(this);
+                resolve(true);
+            };
+            if (this._controllerCache) {
+                // look for it in the cache
+                const found = this._controllerCache.filter((c) => {
+                    return c.filename === loadingParams.filename && c.path === loadingParams.path;
+                });
+                if (found[0]) {
+                    found[0].meshes.forEach((mesh) => mesh.setEnabled(true));
+                    meshesLoaded(found[0].meshes);
+                    return;
+                    // found, don't continue to load
+                }
+            }
             SceneLoader.ImportMesh(
                 "",
                 loadingParams.path,
                 loadingParams.filename,
                 this.scene,
-                (meshes: AbstractMesh[]) => {
-                    if (useGeneric) {
-                        this._getGenericParentMesh(meshes);
-                    } else {
-                        this._setRootMesh(meshes);
+                (meshes) => {
+                    if (this._controllerCache) {
+                        this._controllerCache.push({
+                            ...loadingParams,
+                            meshes
+                        });
                     }
-                    this._processLoadedModel(meshes);
-                    this._modelReady = true;
-                    this.onModelLoadedObservable.notifyObservers(this);
-                    resolve(true);
+                    meshesLoaded(meshes);
                 },
                 null,
                 (_scene: Scene, message: string) => {

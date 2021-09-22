@@ -11160,7 +11160,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#performance-viewer {\n  display: grid;\n  height: 100%;\n  width: 100%;\n  grid-template-columns: 25% 75%;\n  grid-template-areas: \"sidebar graph\"; }\n  #performance-viewer #performance-viewer-graph {\n    grid-area: \"graph\"; }\n  #performance-viewer #performance-viewer-sidebar {\n    grid-area: \"sidebar\";\n    display: flex;\n    flex-direction: column; }\n    #performance-viewer #performance-viewer-sidebar .sidebar-item {\n      display: inline-flex;\n      flex-direction: row;\n      width: 100%; }\n      #performance-viewer #performance-viewer-sidebar .sidebar-item .sidebar-item-label {\n        width: 100%; }\n      #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker {\n        height: calc(100% - 8px);\n        margin: 4px;\n        width: 100%; }\n        #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-rect {\n          height: calc(100% - 4px);\n          border: 2px white solid;\n          cursor: pointer;\n          min-height: 18px; }\n        #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-picker-cover {\n          position: fixed;\n          top: 0px;\n          right: 0px;\n          bottom: 0px;\n          left: 0px;\n          z-index: 100; }\n        #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-picker-float {\n          position: absolute; }\n          #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-picker-float .color-picker-container {\n            width: 200px; }\n", ""]);
+exports.push([module.i, "#performance-viewer {\n  display: grid;\n  height: 100%;\n  width: 100%;\n  grid-template-columns: 25% 75%;\n  grid-template-rows: 30px;\n  grid-template-areas: \". liveButton\"\r \"sidebar graph\"; }\n  #performance-viewer .performancePlayheadButton {\n    grid-area: liveButton;\n    height: 30px;\n    width: 100px;\n    justify-self: right;\n    background-color: #dcdfe1;\n    color: #2e3f47;\n    outline: 2px #2e3f47;\n    margin: 5px; }\n  #performance-viewer #performance-viewer-graph {\n    grid-area: graph; }\n  #performance-viewer #performance-viewer-sidebar {\n    grid-area: sidebar;\n    display: flex;\n    flex-direction: column; }\n    #performance-viewer #performance-viewer-sidebar .sidebar-item {\n      display: inline-flex;\n      flex-direction: row;\n      width: 100%; }\n      #performance-viewer #performance-viewer-sidebar .sidebar-item .sidebar-item-label {\n        width: 100%; }\n      #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker {\n        height: calc(100% - 8px);\n        margin: 4px;\n        width: 100%; }\n        #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-rect {\n          height: calc(100% - 4px);\n          border: 2px white solid;\n          cursor: pointer;\n          min-height: 18px; }\n        #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-picker-cover {\n          position: fixed;\n          top: 0px;\n          right: 0px;\n          bottom: 0px;\n          left: 0px;\n          z-index: 100; }\n        #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-picker-float {\n          position: absolute; }\n          #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-picker-float .color-picker-container {\n            width: 200px; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -45900,6 +45900,30 @@ var GradientStepComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./components/actionTabs/tabs/performanceViewer/performancePlayheadButtonComponent.tsx":
+/*!*********************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/performanceViewer/performancePlayheadButtonComponent.tsx ***!
+  \*********************************************************************************************/
+/*! exports provided: PerformancePlayheadButtonComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PerformancePlayheadButtonComponent", function() { return PerformancePlayheadButtonComponent; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+
+var PerformancePlayheadButtonComponent = function (_a) {
+    var returnToPlayhead = _a.returnToPlayhead;
+    var onReturnToPlayheadClick = function () {
+        returnToPlayhead.notifyObservers();
+    };
+    return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("button", { className: "performancePlayheadButton", onClick: onReturnToPlayheadClick, title: "Return to Playhead" }, "Return"));
+};
+
+
+/***/ }),
+
 /***/ "./components/actionTabs/tabs/performanceViewer/performanceViewerComponent.tsx":
 /*!*************************************************************************************!*\
   !*** ./components/actionTabs/tabs/performanceViewer/performanceViewerComponent.tsx ***!
@@ -45915,9 +45939,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
-/* harmony import */ var _graph_canvasGraphComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../graph/canvasGraphComponent */ "./components/graph/canvasGraphComponent.tsx");
-/* harmony import */ var _popupComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../popupComponent */ "./components/popupComponent.tsx");
-/* harmony import */ var _performanceViewerSidebarComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./performanceViewerSidebarComponent */ "./components/actionTabs/tabs/performanceViewer/performanceViewerSidebarComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/fileButtonLineComponent */ "./sharedUiComponents/lines/fileButtonLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
+/* harmony import */ var _graph_canvasGraphComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../graph/canvasGraphComponent */ "./components/graph/canvasGraphComponent.tsx");
+/* harmony import */ var _popupComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../popupComponent */ "./components/popupComponent.tsx");
+/* harmony import */ var _performanceViewerSidebarComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./performanceViewerSidebarComponent */ "./components/actionTabs/tabs/performanceViewer/performanceViewerSidebarComponent.tsx");
+/* harmony import */ var _performancePlayheadButtonComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./performancePlayheadButtonComponent */ "./components/actionTabs/tabs/performanceViewer/performancePlayheadButtonComponent.tsx");
+
+
+
+
 
 
 
@@ -45932,11 +45963,26 @@ __webpack_require__(/*! ./scss/performanceViewer.scss */ "./components/actionTab
 var initialWindowSize = { width: 1024, height: 512 };
 // Note this should be false when committed until the feature is fully working.
 var isEnabled = false;
+// list of strategies to add to perf graph automatically.
+var defaultStrategies = [
+    babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PerfCollectionStrategy"].GpuFrameTimeStrategy(),
+    babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PerfCollectionStrategy"].FpsStrategy(),
+    babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PerfCollectionStrategy"].DrawCallsStrategy(),
+    babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PerfCollectionStrategy"].ActiveMeshesStrategy(),
+];
+var RecordingState;
+(function (RecordingState) {
+    RecordingState["NotRecording"] = "Begin Recording";
+    RecordingState["Recording"] = "Stop Recording";
+})(RecordingState || (RecordingState = {}));
 var PerformanceViewerComponent = function (props) {
     var scene = props.scene;
     var _a = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(false), isOpen = _a[0], setIsOpen = _a[1];
-    var _b = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(), performanceCollector = _b[0], setPerformanceCollector = _b[1];
+    var _b = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(false), isLoaded = _b[0], setIsLoaded = _b[1];
+    var _c = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(RecordingState.NotRecording), recordingState = _c[0], setRecordingState = _c[1];
+    var _d = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(), performanceCollector = _d[0], setPerformanceCollector = _d[1];
     var layoutObservable = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]())[0];
+    var returnToLiveObservable = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]())[0];
     var popupRef = Object(react__WEBPACK_IMPORTED_MODULE_1__["useRef"])(null);
     // do cleanup when the window is closed
     var onClosePerformanceViewer = function (window) {
@@ -45944,9 +45990,28 @@ var PerformanceViewerComponent = function (props) {
             window.close();
         }
         setIsOpen(false);
+        setIsLoaded(false);
     };
     var onPerformanceButtonClick = function () {
+        setIsLoaded(false);
         setIsOpen(true);
+    };
+    var onLoadClick = function (file) {
+        babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Tools"].ReadFile(file, function (data) {
+            // reopen window and load data!
+            setIsOpen(false);
+            setIsLoaded(true);
+            setIsOpen(true);
+            var isValid = performanceCollector === null || performanceCollector === void 0 ? void 0 : performanceCollector.loadFromFileData(data);
+            if (!isValid) {
+                // if our data isnt valid we close the window.
+                setIsOpen(false);
+                setIsLoaded(false);
+            }
+        });
+    };
+    var onExportClick = function () {
+        performanceCollector === null || performanceCollector === void 0 ? void 0 : performanceCollector.exportDataToCsv();
     };
     var onResize = function () {
         var _a, _b;
@@ -45958,26 +46023,55 @@ var PerformanceViewerComponent = function (props) {
         var height = (_b = window === null || window === void 0 ? void 0 : window.innerHeight) !== null && _b !== void 0 ? _b : 0;
         layoutObservable.notifyObservers({ width: width, height: height });
     };
+    var onToggleRecording = function () {
+        if (recordingState === RecordingState.Recording) {
+            setRecordingState(RecordingState.NotRecording);
+        }
+        else {
+            setRecordingState(RecordingState.Recording);
+        }
+    };
     Object(react__WEBPACK_IMPORTED_MODULE_1__["useEffect"])(function () {
-        var perfCollector = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PerformanceViewerCollector"](scene, [babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PerfCollectionStrategy"].GpuFrameTimeStrategy(), babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PerfCollectionStrategy"].FpsStrategy()]);
+        var perfCollector = scene._getPerfCollector();
+        perfCollector.addCollectionStrategies.apply(perfCollector, defaultStrategies);
         setPerformanceCollector(perfCollector);
     }, []);
     Object(react__WEBPACK_IMPORTED_MODULE_1__["useEffect"])(function () {
-        if (isOpen) {
+        if (isOpen && !isLoaded) {
+            setRecordingState(RecordingState.Recording);
+        }
+        else {
+            setRecordingState(RecordingState.NotRecording);
+        }
+    }, [isOpen]);
+    Object(react__WEBPACK_IMPORTED_MODULE_1__["useEffect"])(function () {
+        if (recordingState === RecordingState.Recording) {
+            if (performanceCollector === null || performanceCollector === void 0 ? void 0 : performanceCollector.hasLoadedData) {
+                performanceCollector === null || performanceCollector === void 0 ? void 0 : performanceCollector.clear(true);
+                performanceCollector === null || performanceCollector === void 0 ? void 0 : performanceCollector.addCollectionStrategies.apply(performanceCollector, defaultStrategies);
+            }
             performanceCollector === null || performanceCollector === void 0 ? void 0 : performanceCollector.start();
+        }
+        else {
+            performanceCollector === null || performanceCollector === void 0 ? void 0 : performanceCollector.stop();
         }
         return function () {
             performanceCollector === null || performanceCollector === void 0 ? void 0 : performanceCollector.stop();
         };
-    }, [isOpen]);
+    }, [recordingState]);
     return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
         isEnabled &&
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Open Perf Viewer", onClick: onPerformanceButtonClick }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "Performance Viewer" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Open Realtime Perf Viewer", onClick: onPerformanceButtonClick }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_3__["FileButtonLineComponent"], { accept: "csv", label: "Load Perf Viewer using CSV", onClick: onLoadClick }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Export Perf to CSV", onClick: onExportClick }),
+                !isOpen && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: recordingState, onClick: onToggleRecording })),
         isOpen &&
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_popupComponent__WEBPACK_IMPORTED_MODULE_4__["PopupComponent"], { id: "perf-viewer", title: "Performance Viewer", size: initialWindowSize, ref: popupRef, onResize: onResize, onClose: onClosePerformanceViewer },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_popupComponent__WEBPACK_IMPORTED_MODULE_6__["PopupComponent"], { id: "perf-viewer", title: "Performance Viewer", size: initialWindowSize, ref: popupRef, onResize: onResize, onClose: onClosePerformanceViewer },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "performance-viewer" }, performanceCollector && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_performanceViewerSidebarComponent__WEBPACK_IMPORTED_MODULE_5__["PerformanceViewerSidebarComponent"], { collector: performanceCollector }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_graph_canvasGraphComponent__WEBPACK_IMPORTED_MODULE_3__["CanvasGraphComponent"], { id: "performance-viewer-graph", layoutObservable: layoutObservable, scene: scene, collector: performanceCollector }))))));
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_performancePlayheadButtonComponent__WEBPACK_IMPORTED_MODULE_8__["PerformancePlayheadButtonComponent"], { returnToPlayhead: returnToLiveObservable }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_performanceViewerSidebarComponent__WEBPACK_IMPORTED_MODULE_7__["PerformanceViewerSidebarComponent"], { collector: performanceCollector }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_graph_canvasGraphComponent__WEBPACK_IMPORTED_MODULE_5__["CanvasGraphComponent"], { id: "performance-viewer-graph", returnToPlayheadObservable: returnToLiveObservable, layoutObservable: layoutObservable, scene: scene, collector: performanceCollector }))))));
 };
 
 
@@ -47606,13 +47700,16 @@ var Context = /** @class */ (function () {
     Context.prototype.play = function (forward) {
         this.isPlaying = true;
         this.scene.stopAnimation(this.target);
+        var animatable;
         if (forward) {
-            this.scene.beginAnimation(this.target, this.fromKey, this.toKey, true);
+            animatable = this.scene.beginAnimation(this.target, this.fromKey, this.toKey, true);
         }
         else {
-            this.scene.beginAnimation(this.target, this.toKey, this.fromKey, true);
+            animatable = this.scene.beginAnimation(this.target, this.toKey, this.fromKey, true);
         }
         this.forwardAnimation = forward;
+        // Move
+        animatable.goToFrame(this.activeFrame);
         this.onAnimationStateChanged.notifyObservers();
     };
     Context.prototype.stop = function () {
@@ -47626,8 +47723,7 @@ var Context = /** @class */ (function () {
         }
         this.activeFrame = frame;
         if (!this.isPlaying) {
-            this.scene.beginAnimation(this.target, frame, frame, false);
-            return;
+            this.scene.beginAnimation(this.target, this.fromKey, this.toKey, false);
         }
         for (var _i = 0, _a = this.animations; _i < _a.length; _i++) {
             var animationEntry = _a[_i];
@@ -59143,7 +59239,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var CanvasGraphComponent = function (props) {
-    var id = props.id, collector = props.collector, scene = props.scene, layoutObservable = props.layoutObservable;
+    var id = props.id, collector = props.collector, scene = props.scene, layoutObservable = props.layoutObservable, returnToPlayheadObservable = props.returnToPlayheadObservable;
     var canvasRef = Object(react__WEBPACK_IMPORTED_MODULE_0__["useRef"])(null);
     Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
         if (!canvasRef.current) {
@@ -59176,9 +59272,13 @@ var CanvasGraphComponent = function (props) {
             cs.metadata = meta;
             cs.update();
         };
+        var resetDataPosition = function () {
+            cs === null || cs === void 0 ? void 0 : cs.resetDataPosition();
+        };
         scene.onAfterRenderObservable.add(dataUpdated);
         collector.metadataObservable.add(metaUpdated);
         layoutObservable === null || layoutObservable === void 0 ? void 0 : layoutObservable.add(layoutUpdated);
+        returnToPlayheadObservable === null || returnToPlayheadObservable === void 0 ? void 0 : returnToPlayheadObservable.add(resetDataPosition);
         return function () {
             cs === null || cs === void 0 ? void 0 : cs.destroy();
             layoutObservable === null || layoutObservable === void 0 ? void 0 : layoutObservable.removeCallback(layoutUpdated);
@@ -59202,21 +59302,35 @@ var CanvasGraphComponent = function (props) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CanvasGraphService", function() { return CanvasGraphService; });
-/* harmony import */ var babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math.scalar */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./graphSupportingTypes */ "./components/graph/graphSupportingTypes.ts");
+/* harmony import */ var babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.scalar */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__);
+
 
 
 var defaultColor = "#000";
+var axisColor = "#c0c4c8";
 var futureBoxColor = "#dfe9ed";
 var dividerColor = "#0a3066";
 var playheadColor = "#b9dbef";
-var tooltipBackgroundColor = "#121212";
-var tooltipForegroundColor = "#fff";
+var positionIndicatorColor = "#4d5960";
+var tooltipBackgroundColor = "#566268";
+var tooltipForegroundColor = "#fbfbfb";
+var topOfGraphY = 0;
 var defaultAlpha = 1;
 var tooltipBackgroundAlpha = 0.8;
 var tooltipHorizontalPadding = 10;
 var spaceBetweenTextAndBox = 5;
+var tooltipPaddingFromBottom = 20;
+// height of indicator triangle
+var triangleHeight = 10;
+// width of indicator triangle
+var triangleWidth = 20;
+// padding to indicate how far below the axis line the triangle should be.
+var trianglePaddingFromAxisLine = 3;
 var tickerHorizontalPadding = 10;
+// pixels to pad the top and bottom of data so that it doesn't get cut off by the margins.
+var dataPadding = 2;
 var playheadSize = 8;
 var dividerSize = 2;
 var axisLineLength = 10;
@@ -59233,10 +59347,13 @@ var graphAddonFont = "12px Arial";
 var alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 // Arbitrary maximum used to make some GC optimizations.
 var maximumDatasetsAllowed = 64;
+var msInSecond = 1000;
+var msInMinute = msInSecond * 60;
+var msInHour = msInMinute * 60;
 // time in ms to wait between tooltip draws inside the mouse move.
 var tooltipDebounceTime = 32;
 // time in ms to wait between draws
-var drawDebounceTime = 15;
+var drawThrottleTime = 15;
 /**
  * This function will debounce calls to functions.
  *
@@ -59255,6 +59372,27 @@ function debounce(callback, time) {
     };
 }
 /**
+ * This function will throttle calls to functions.
+ *
+ * @param callback callback to call.
+ * @param time time to wait between calls in ms.
+ */
+function throttle(callback, time) {
+    var lastCalledTime = 0;
+    return function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        var now = Date.now();
+        if (now - lastCalledTime < time) {
+            return;
+        }
+        lastCalledTime = now;
+        callback.apply(void 0, args);
+    };
+}
+/*
  * This class acts as the main API for graphing given a Here is where you will find methods to let the service know new data needs to be drawn,
  * let it know something has been resized, etc!
  */
@@ -59271,7 +59409,7 @@ var CanvasGraphService = /** @class */ (function () {
         /**
          * This method lets the service know it should get ready to update what it is displaying.
          */
-        this.update = debounce(function () { return _this._draw(); }, drawDebounceTime);
+        this.update = throttle(function () { return _this._draw(); }, drawThrottleTime);
         /**
          * Handles what to do when we are hovering over the canvas and not panning.
          *
@@ -59316,7 +59454,7 @@ var CanvasGraphService = /** @class */ (function () {
                 _this._position = null;
             }
             // Bind the zoom between [minZoom, maxZoom]
-            _this._sizeOfWindow = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["Scalar"].Clamp(_this._sizeOfWindow - amount, minZoom, maxZoom);
+            _this._sizeOfWindow = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp(_this._sizeOfWindow - amount, minZoom, maxZoom);
         };
         /**
          * Initializes the panning object and attaches appropriate listener.
@@ -59351,7 +59489,7 @@ var CanvasGraphService = /** @class */ (function () {
             var itemsDelta = pixelDelta / pixelsPerItem | 0;
             var pos = (_a = _this._position) !== null && _a !== void 0 ? _a : (_this._getNumberOfSlices() - 1);
             // update our position without allowing the user to pan more than they need to (approximation) 
-            _this._position = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["Scalar"].Clamp(pos - itemsDelta, Math.floor(_this._sizeOfWindow * scaleFactor), _this._getNumberOfSlices() - Math.floor(_this._sizeOfWindow * (1 - scaleFactor)));
+            _this._position = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp(pos - itemsDelta, Math.floor(_this._sizeOfWindow * scaleFactor), _this._getNumberOfSlices() - Math.floor(_this._sizeOfWindow * (1 - scaleFactor)));
             if (itemsDelta === 0) {
                 _this._panPosition.delta += pixelDelta;
             }
@@ -59411,6 +59549,10 @@ var CanvasGraphService = /** @class */ (function () {
         this.metadata = new Map();
         this._attachEventListeners(canvas);
     }
+    /**
+     * Update the canvas graph service with the new height and width of the canvas.
+     * @param size The new size of the canvas.
+     */
     CanvasGraphService.prototype.resize = function (size) {
         var ctx = this._ctx;
         var width = size.width, height = size.height;
@@ -59422,6 +59564,12 @@ var CanvasGraphService = /** @class */ (function () {
         ctx.canvas.width = width;
         ctx.canvas.height = height;
         this.update();
+    };
+    /**
+     * Force resets the position in the data, effectively returning to the most current data.
+     */
+    CanvasGraphService.prototype.resetDataPosition = function () {
+        this._position = null;
     };
     /**
      * This method draws the data and sets up the appropriate scales.
@@ -59471,7 +59619,7 @@ var CanvasGraphService = /** @class */ (function () {
         this._datasetBounds.end = this._getClosestPointToTimestamp(bufferMaximum) + 1;
         // keep track of largest timestamp value in view!
         this._globalTimeMinMax.max = Math.max(this.datasets.data.at(this.datasets.startingIndices.at(this._datasetBounds.end - 1)), this._globalTimeMinMax.max);
-        var updatedScaleFactor = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["Scalar"].Clamp((this._globalTimeMinMax.max - this._globalTimeMinMax.min) / (bufferMaximum - this._globalTimeMinMax.min), scaleFactor, 1);
+        var updatedScaleFactor = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp((this._globalTimeMinMax.max - this._globalTimeMinMax.min) / (bufferMaximum - this._globalTimeMinMax.min), scaleFactor, 1);
         // we will now set the global maximum to the maximum of the buffer.
         this._globalTimeMinMax.max = bufferMaximum;
         this._drawableArea.top = 0;
@@ -59481,6 +59629,8 @@ var CanvasGraphService = /** @class */ (function () {
         var numberOfTickers = this._drawTickers(this._drawableArea, this._datasetBounds);
         this._drawTimeAxis(this._globalTimeMinMax, this._drawableArea);
         this._drawPlayheadRegion(this._drawableArea, updatedScaleFactor);
+        this._drawableArea.top += dataPadding;
+        this._drawableArea.bottom -= dataPadding;
         var _b = this._drawableArea, left = _b.left, right = _b.right, bottom = _b.bottom, top = _b.top;
         // process, and then draw our points
         this.datasets.ids.forEach(function (id, idOffset) {
@@ -59500,11 +59650,11 @@ var CanvasGraphService = /** @class */ (function () {
             ctx.strokeStyle = (_b = (_a = _this.metadata.get(id)) === null || _a === void 0 ? void 0 : _a.color) !== null && _b !== void 0 ? _b : defaultColor;
             var prevPoint;
             for (var pointIndex = _this._datasetBounds.start; pointIndex < _this._datasetBounds.end; pointIndex++) {
-                var numPoints = _this.datasets.data.at(_this.datasets.startingIndices.at(pointIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["PerformanceViewerCollector"].NumberOfPointsOffset);
+                var numPoints = _this.datasets.data.at(_this.datasets.startingIndices.at(pointIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].NumberOfPointsOffset);
                 if (idOffset >= numPoints) {
                     continue;
                 }
-                var valueIndex = _this.datasets.startingIndices.at(pointIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["PerformanceViewerCollector"].SliceDataOffset + idOffset;
+                var valueIndex = _this.datasets.startingIndices.at(pointIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].SliceDataOffset + idOffset;
                 var timestamp = _this.datasets.data.at(_this.datasets.startingIndices.at(pointIndex));
                 var value = _this.datasets.data.at(valueIndex);
                 var drawableTime = _this._getPixelForNumber(timestamp, _this._globalTimeMinMax, left, right - left, false);
@@ -59537,7 +59687,7 @@ var CanvasGraphService = /** @class */ (function () {
                 return;
             }
             var valueMinMax = _this._getMinMax(bounds, idOffset);
-            var latestValue = _this.datasets.data.at(_this.datasets.startingIndices.at(bounds.end - 1) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["PerformanceViewerCollector"].SliceDataOffset + idOffset);
+            var latestValue = _this.datasets.data.at(_this.datasets.startingIndices.at(bounds.end - 1) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].SliceDataOffset + idOffset);
             var text = id + ": " + latestValue.toFixed(2) + " (max: " + valueMinMax.max.toFixed(2) + ", min: " + valueMinMax.min.toFixed(2) + ")";
             if (text.length > longestText.length) {
                 longestText = text;
@@ -59563,7 +59713,7 @@ var CanvasGraphService = /** @class */ (function () {
             this._tickerTextCache.width = width;
         }
         drawableArea.right -= width;
-        var textHeight = this._addonFontLineHeight + Math.floor(tooltipHorizontalPadding / 2);
+        var textHeight = this._addonFontLineHeight + Math.floor(tickerHorizontalPadding / 2);
         var x = drawableArea.right + tickerHorizontalPadding;
         var y = drawableArea.top + textHeight;
         for (var i = 0; i < numberOfTickers; i++) {
@@ -59626,15 +59776,20 @@ var CanvasGraphService = /** @class */ (function () {
         this._generateTicks(timeMinMax, spaceAvailable);
         // remove the height of the axis from the available drawable area.
         drawableArea.bottom -= this._axisHeight;
-        // draw time axis line
+        // draw axis box.
         ctx.save();
+        ctx.fillStyle = axisColor;
+        ctx.fillRect(drawableArea.left, drawableArea.bottom, spaceAvailable, this._axisHeight);
+        // draw time axis line
         ctx.beginPath();
         ctx.strokeStyle = defaultColor;
         ctx.moveTo(drawableArea.left, drawableArea.bottom);
         ctx.lineTo(drawableArea.right, drawableArea.bottom);
         // draw ticks and text.
+        ctx.fillStyle = defaultColor;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
+        var timestampUnit = this._getTimestampUnit(this._ticks[this._ticks.length - 1]);
         this._ticks.forEach(function (tick) {
             var position = _this._getPixelForNumber(tick, timeMinMax, drawableArea.left, spaceAvailable, false);
             if (position > spaceAvailable) {
@@ -59642,10 +59797,59 @@ var CanvasGraphService = /** @class */ (function () {
             }
             ctx.moveTo(position, drawableArea.bottom);
             ctx.lineTo(position, drawableArea.bottom + 10);
-            ctx.fillText(tick.toString(), position, drawableArea.bottom + 20);
+            ctx.fillText(_this._parseTimestamp(tick, timestampUnit), position, drawableArea.bottom + 20);
         });
         ctx.stroke();
         ctx.restore();
+    };
+    /**
+     * Given a timestamp (should be the maximum timestamp in view), this function returns the maximum unit the timestamp contains.
+     * This information can be used for formatting purposes.
+     * @param timestamp the maximum timestamp to find the maximum timestamp unit for.
+     * @returns The maximum unit the timestamp has.
+     */
+    CanvasGraphService.prototype._getTimestampUnit = function (timestamp) {
+        if (timestamp / msInHour > 1) {
+            return _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__["TimestampUnit"].Hours;
+        }
+        else if (timestamp / msInMinute > 1) {
+            return _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__["TimestampUnit"].Minutes;
+        }
+        else if (timestamp / msInSecond > 1) {
+            return _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__["TimestampUnit"].Seconds;
+        }
+        else {
+            return _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__["TimestampUnit"].Milliseconds;
+        }
+    };
+    /**
+     * Given a timestamp and the interval unit, this function will parse the timestamp to the appropriate format.
+     * @param timestamp The timestamp to parse
+     * @param intervalUnit The maximum unit of the maximum timestamp in an interval.
+     * @returns a string representing the parsed timestamp.
+     */
+    CanvasGraphService.prototype._parseTimestamp = function (timestamp, intervalUnit) {
+        var parsedTimestamp = "";
+        if (intervalUnit >= _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__["TimestampUnit"].Hours) {
+            var numHours = Math.floor(timestamp / msInHour);
+            timestamp -= numHours * msInHour;
+            parsedTimestamp += numHours.toString().padStart(intervalUnit > _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__["TimestampUnit"].Hours ? 2 : 1, "0") + ":";
+        }
+        if (intervalUnit >= _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__["TimestampUnit"].Minutes) {
+            var numMinutes = Math.floor(timestamp / msInMinute);
+            timestamp -= numMinutes * msInMinute;
+            parsedTimestamp += numMinutes.toString().padStart(intervalUnit > _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__["TimestampUnit"].Minutes ? 2 : 1, "0") + ":";
+        }
+        var numSeconds = Math.floor(timestamp / msInSecond);
+        timestamp -= numSeconds * msInSecond;
+        parsedTimestamp += numSeconds.toString().padStart(intervalUnit > _graphSupportingTypes__WEBPACK_IMPORTED_MODULE_0__["TimestampUnit"].Seconds ? 2 : 1, "0");
+        if (timestamp > 0) {
+            if (parsedTimestamp.length > 0) {
+                parsedTimestamp += ".";
+            }
+            parsedTimestamp += Math.round(timestamp).toString().padStart(3, "0");
+        }
+        return parsedTimestamp;
     };
     /**
      * Generates a list of ticks given the min and max of the axis, and the space available in the axis.
@@ -59717,11 +59921,11 @@ var CanvasGraphService = /** @class */ (function () {
     CanvasGraphService.prototype._getMinMax = function (bounds, offset) {
         var min = Infinity, max = 0;
         for (var i = bounds.start; i < bounds.end; i++) {
-            var numPoints = this.datasets.data.at(this.datasets.startingIndices.at(i) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["PerformanceViewerCollector"].NumberOfPointsOffset);
+            var numPoints = this.datasets.data.at(this.datasets.startingIndices.at(i) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].NumberOfPointsOffset);
             if (offset >= numPoints) {
                 continue;
             }
-            var itemIndex = this.datasets.startingIndices.at(i) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["PerformanceViewerCollector"].SliceDataOffset + offset;
+            var itemIndex = this.datasets.startingIndices.at(i) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].SliceDataOffset + offset;
             var item = this.datasets.data.at(itemIndex);
             if (item < min) {
                 min = item;
@@ -59748,7 +59952,7 @@ var CanvasGraphService = /** @class */ (function () {
     CanvasGraphService.prototype._getPixelForNumber = function (num, minMax, startingPixel, spaceAvailable, shouldFlipValue) {
         var min = minMax.min, max = minMax.max;
         // Perform a min-max normalization to rescale the value onto a [0, 1] scale given the min and max of the dataset.
-        var normalizedValue = (num - min) / (max - min);
+        var normalizedValue = max !== min ? (num - min) / (max - min) : 1;
         // if we should make this a [1, 0] range instead (higher numbers = smaller pixel value)
         if (shouldFlipValue) {
             normalizedValue = 1 - normalizedValue;
@@ -59793,22 +59997,28 @@ var CanvasGraphService = /** @class */ (function () {
             return;
         }
         // first convert the mouse position in pixels to a timestamp.
-        var _a = ctx.canvas.getBoundingClientRect(), start = _a.left, end = _a.right;
-        var inferredTimestamp = this._getNumberFromPixel(pixel, this._globalTimeMinMax, start, end);
+        var start = ctx.canvas.getBoundingClientRect().left;
+        var adjustedPixel = pixel - start;
+        if (adjustedPixel > drawableArea.right) {
+            adjustedPixel = drawableArea.right;
+        }
+        var inferredTimestamp = this._getNumberFromPixel(adjustedPixel, this._globalTimeMinMax, drawableArea.left, drawableArea.right);
         var longestText = "";
         var numberOfTooltipItems = 0;
         // get the closest timestamps to the target timestamp, and store the appropriate meta object.
         var closestIndex = this._getClosestPointToTimestamp(inferredTimestamp);
+        var actualTimestamp = 0;
         this.datasets.ids.forEach(function (id, idOffset) {
             var _a, _b, _c;
             if (!!((_a = _this.metadata.get(id)) === null || _a === void 0 ? void 0 : _a.hidden)) {
                 return;
             }
-            var numPoints = _this.datasets.data.at(_this.datasets.startingIndices.at(closestIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["PerformanceViewerCollector"].NumberOfPointsOffset);
+            var numPoints = _this.datasets.data.at(_this.datasets.startingIndices.at(closestIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].NumberOfPointsOffset);
             if (idOffset >= numPoints) {
                 return;
             }
-            var valueIndex = _this.datasets.startingIndices.at(closestIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_0__["PerformanceViewerCollector"].SliceDataOffset + idOffset;
+            var valueIndex = _this.datasets.startingIndices.at(closestIndex) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].SliceDataOffset + idOffset;
+            actualTimestamp = _this.datasets.data.at(_this.datasets.startingIndices.at(closestIndex));
             var text = id + ": " + _this.datasets.data.at(valueIndex).toFixed(2);
             if (text.length > longestText.length) {
                 longestText = text;
@@ -59817,9 +60027,24 @@ var CanvasGraphService = /** @class */ (function () {
             _this._tooltipItems[numberOfTooltipItems].color = (_c = (_b = _this.metadata.get(id)) === null || _b === void 0 ? void 0 : _b.color) !== null && _c !== void 0 ? _c : defaultColor;
             numberOfTooltipItems++;
         });
-        var x = pixel - start;
-        var y = Math.floor((drawableArea.bottom - drawableArea.top) / 2);
+        var xForActualTimestamp = this._getPixelForNumber(actualTimestamp, this._globalTimeMinMax, drawableArea.left, drawableArea.right - drawableArea.left, false);
         ctx.save();
+        // draw pointer triangle
+        ctx.fillStyle = positionIndicatorColor;
+        var yTriangle = drawableArea.bottom + trianglePaddingFromAxisLine;
+        ctx.beginPath();
+        ctx.moveTo(xForActualTimestamp, yTriangle);
+        ctx.lineTo(xForActualTimestamp + triangleWidth / 2, yTriangle + triangleHeight);
+        ctx.lineTo(xForActualTimestamp - triangleWidth / 2, yTriangle + triangleHeight);
+        ctx.closePath();
+        ctx.fill();
+        // draw vertical line
+        ctx.strokeStyle = positionIndicatorColor;
+        ctx.beginPath();
+        ctx.moveTo(xForActualTimestamp, drawableArea.bottom);
+        ctx.lineTo(xForActualTimestamp, topOfGraphY);
+        ctx.stroke();
+        // draw the actual tooltip
         ctx.font = graphAddonFont;
         ctx.textBaseline = "middle";
         ctx.textAlign = "left";
@@ -59835,13 +60060,16 @@ var CanvasGraphService = /** @class */ (function () {
             this._tooltipTextCache.text = longestText;
             this._tooltipTextCache.width = width;
         }
+        var tooltipHeight = textHeight * (numberOfTooltipItems + 1);
+        var x = pixel - start;
+        var y = drawableArea.bottom - tooltipPaddingFromBottom - tooltipHeight;
         // We want the tool tip to always be inside the canvas so we adjust which way it is drawn.
         if (x + width > this._width) {
             x -= width;
         }
         ctx.globalAlpha = tooltipBackgroundAlpha;
         ctx.fillStyle = tooltipBackgroundColor;
-        ctx.fillRect(x, y, width, textHeight * (numberOfTooltipItems + 1));
+        ctx.fillRect(x, y, width, tooltipHeight);
         ctx.globalAlpha = defaultAlpha;
         x += tooltipHorizontalPadding;
         y += textHeight;
@@ -59942,6 +60170,30 @@ var CanvasGraphService = /** @class */ (function () {
     return CanvasGraphService;
 }());
 
+
+
+/***/ }),
+
+/***/ "./components/graph/graphSupportingTypes.ts":
+/*!**************************************************!*\
+  !*** ./components/graph/graphSupportingTypes.ts ***!
+  \**************************************************/
+/*! exports provided: TimestampUnit */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TimestampUnit", function() { return TimestampUnit; });
+/**
+ * Defines the supported timestamp units.
+ */
+var TimestampUnit;
+(function (TimestampUnit) {
+    TimestampUnit[TimestampUnit["Milliseconds"] = 0] = "Milliseconds";
+    TimestampUnit[TimestampUnit["Seconds"] = 1] = "Seconds";
+    TimestampUnit[TimestampUnit["Minutes"] = 2] = "Minutes";
+    TimestampUnit[TimestampUnit["Hours"] = 3] = "Hours";
+})(TimestampUnit || (TimestampUnit = {}));
 
 
 /***/ }),
@@ -63543,6 +63795,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_5__);
 /* harmony import */ var _colorPickerComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./colorPickerComponent */ "./sharedUiComponents/lines/colorPickerComponent.tsx");
+/* harmony import */ var _textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
+
 
 
 
@@ -63644,17 +63898,23 @@ var Color3LineComponent = /** @class */ (function (_super) {
         document.execCommand('copy');
         element.remove();
     };
+    Color3LineComponent.prototype.convert = function (colorString) {
+        this.onChange(this._colorString);
+    };
     Color3LineComponent.prototype.render = function () {
         var _this = this;
         var chevron = this.state.isExpanded ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faMinus"] }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faPlus"] });
+        this._colorString = this.state.color.toHexString();
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color3Line" },
-            this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine", title: this.props.label },
+                this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color3" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorPickerComponent__WEBPACK_IMPORTED_MODULE_6__["ColorPickerLineComponent"], { linearHint: this.props.isLinear, value: this.state.color, onColorChanged: function (color) {
                             _this.onChange(color);
                         } })),
+                (this.props.icon && this.props.lockObject) &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "", target: this, propertyName: "_colorString", onChange: function (newValue) { return _this.convert(newValue); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "copy hoverIcon", onClick: function () { return _this.copyToClipboard(); }, title: "Copy to clipboard" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: copyIcon, alt: "" })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" }, chevron)),
@@ -64949,7 +65209,7 @@ var TextInputLineComponent = /** @class */ (function (_super) {
             this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, color: "black", className: "icon" }),
             (!this.props.icon || (this.props.icon && this.props.label != "")) &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value" + (this.props.noUnderline === true ? " noUnderline" : "") },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { value: this.state.value, onBlur: function () { return _this.props.lockObject.lock = false; }, onFocus: function () { return _this.props.lockObject.lock = true; }, onChange: function (evt) { return _this.updateValue(evt.target.value); } }))));
     };
     return TextInputLineComponent;

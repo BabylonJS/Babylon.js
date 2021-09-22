@@ -178,6 +178,23 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface IFileButtonLineComponentProps {
+        label: string;
+        onClick: (file: File) => void;
+        accept: string;
+        icon?: string;
+        iconLabel?: string;
+    }
+    export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
+        private static _IDGenerator;
+        private _id;
+        private uploadInputRef;
+        constructor(props: IFileButtonLineComponentProps);
+        onChange(evt: any): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     /**
      * Defines a structure to hold max and min.
      */
@@ -239,12 +256,17 @@ declare module INSPECTOR {
     export interface ICanvasGraphServiceSettings {
         datasets: BABYLON.IPerfDatasets;
     }
+    /**
+     * Defines the supported timestamp units.
+     */
+    export enum TimestampUnit {
+        Milliseconds = 0,
+        Seconds = 1,
+        Minutes = 2,
+        Hours = 3
+    }
 }
 declare module INSPECTOR {
-    /**
-     * This class acts as the main API for graphing given a Here is where you will find methods to let the service know new data needs to be drawn,
-     * let it know something has been resized, etc!
-     */
     export class CanvasGraphService {
         private _ctx;
         private _width;
@@ -277,7 +299,15 @@ declare module INSPECTOR {
          * This method lets the service know it should get ready to update what it is displaying.
          */
         update: (...args: any[]) => void;
+        /**
+         * Update the canvas graph service with the new height and width of the canvas.
+         * @param size The new size of the canvas.
+         */
         resize(size: IPerfLayoutSize): void;
+        /**
+         * Force resets the position in the data, effectively returning to the most current data.
+         */
+        resetDataPosition(): void;
         /**
          * This method draws the data and sets up the appropriate scales.
          */
@@ -303,6 +333,20 @@ declare module INSPECTOR {
          * @param drawableArea the current allocated drawable area.
          */
         private _drawTimeAxis;
+        /**
+         * Given a timestamp (should be the maximum timestamp in view), this function returns the maximum unit the timestamp contains.
+         * This information can be used for formatting purposes.
+         * @param timestamp the maximum timestamp to find the maximum timestamp unit for.
+         * @returns The maximum unit the timestamp has.
+         */
+        private _getTimestampUnit;
+        /**
+         * Given a timestamp and the interval unit, this function will parse the timestamp to the appropriate format.
+         * @param timestamp The timestamp to parse
+         * @param intervalUnit The maximum unit of the maximum timestamp in an interval.
+         * @returns a string representing the parsed timestamp.
+         */
+        private _parseTimestamp;
         /**
          * Generates a list of ticks given the min and max of the axis, and the space available in the axis.
          *
@@ -434,6 +478,7 @@ declare module INSPECTOR {
         scene: BABYLON.Scene;
         collector: BABYLON.PerformanceViewerCollector;
         layoutObservable?: BABYLON.Observable<IPerfLayoutSize>;
+        returnToPlayheadObservable?: BABYLON.Observable<void>;
     }
     export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps>;
 }
@@ -565,6 +610,12 @@ declare module INSPECTOR {
         collector: BABYLON.PerformanceViewerCollector;
     }
     export const PerformanceViewerSidebarComponent: (props: IPerformanceViewerSidebarComponentProps) => JSX.Element;
+}
+declare module INSPECTOR {
+    interface IPerformancePlayheadButtonProps {
+        returnToPlayhead: BABYLON.Observable<void>;
+    }
+    export const PerformancePlayheadButtonComponent: React.FC<IPerformancePlayheadButtonProps>;
 }
 declare module INSPECTOR {
     interface IPerformanceViewerComponentProps {
@@ -785,6 +836,33 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface ITextInputLineComponentProps {
+        label: string;
+        lockObject: LockObject;
+        target?: any;
+        propertyName?: string;
+        value?: string;
+        onChange?: (value: string) => void;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        icon?: string;
+        iconLabel?: string;
+        noUnderline?: boolean;
+    }
+    export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
+        value: string;
+    }> {
+        private _localChange;
+        constructor(props: ITextInputLineComponentProps);
+        componentWillUnmount(): void;
+        shouldComponentUpdate(nextProps: ITextInputLineComponentProps, nextState: {
+            value: string;
+        }): boolean;
+        raiseOnPropertyChanged(newValue: string, previousValue: string): void;
+        updateValue(value: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     export interface IColor3LineComponentProps {
         label: string;
         target: any;
@@ -792,6 +870,7 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         isLinear?: boolean;
         icon?: string;
+        lockObject?: LockObject;
         iconLabel?: string;
     }
     export class Color3LineComponent extends React.Component<IColor3LineComponentProps, {
@@ -811,6 +890,8 @@ declare module INSPECTOR {
         updateStateG(value: number): void;
         updateStateB(value: number): void;
         copyToClipboard(): void;
+        convert(colorString: string): void;
+        private _colorString;
         render(): JSX.Element;
     }
 }
@@ -882,32 +963,6 @@ declare module INSPECTOR {
         updateStateEulerX(value: number): void;
         updateStateEulerY(value: number): void;
         updateStateEulerZ(value: number): void;
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    interface ITextInputLineComponentProps {
-        label: string;
-        lockObject: LockObject;
-        target?: any;
-        propertyName?: string;
-        value?: string;
-        onChange?: (value: string) => void;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-        icon?: string;
-        iconLabel?: string;
-    }
-    export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
-        value: string;
-    }> {
-        private _localChange;
-        constructor(props: ITextInputLineComponentProps);
-        componentWillUnmount(): void;
-        shouldComponentUpdate(nextProps: ITextInputLineComponentProps, nextState: {
-            value: string;
-        }): boolean;
-        raiseOnPropertyChanged(newValue: string, previousValue: string): void;
-        updateValue(value: string): void;
         render(): JSX.Element;
     }
 }
@@ -1657,23 +1712,6 @@ declare module INSPECTOR {
     }
     export class MaterialPropertyGridComponent extends React.Component<IMaterialPropertyGridComponentProps> {
         constructor(props: IMaterialPropertyGridComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    interface IFileButtonLineComponentProps {
-        label: string;
-        onClick: (file: File) => void;
-        accept: string;
-        icon?: string;
-        iconLabel?: string;
-    }
-    export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
-        private static _IDGenerator;
-        private _id;
-        private uploadInputRef;
-        constructor(props: IFileButtonLineComponentProps);
-        onChange(evt: any): void;
         render(): JSX.Element;
     }
 }

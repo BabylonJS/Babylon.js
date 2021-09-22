@@ -15,6 +15,7 @@ import { Node } from "../node";
 export class Animatable {
     private _localDelayOffset: Nullable<number> = null;
     private _pausedDelay: Nullable<number> = null;
+    private _manualJumpDelay: Nullable<number> = null;
     private _runtimeAnimations = new Array<RuntimeAnimation>();
     private _paused = false;
     private _scene: Scene;
@@ -270,10 +271,7 @@ export class Animatable {
             var fps = runtimeAnimations[0].animation.framePerSecond;
             var currentFrame = runtimeAnimations[0].currentFrame;
             var delay = this.speedRatio === 0 ? 0 : ((frame - currentFrame) / fps * 1000) / this.speedRatio;
-            if (this._localDelayOffset === null) {
-                this._localDelayOffset = 0;
-            }
-            this._localDelayOffset -= delay;
+            this._manualJumpDelay = -delay;
         }
 
         for (var index = 0; index < runtimeAnimations.length; index++) {
@@ -383,6 +381,11 @@ export class Animatable {
         } else if (this._pausedDelay !== null) {
             this._localDelayOffset += delay - this._pausedDelay;
             this._pausedDelay = null;
+        }
+
+        if (this._manualJumpDelay !== null) {
+            this._localDelayOffset += this._manualJumpDelay;
+            this._manualJumpDelay = null;
         }
 
         if (this._weight === 0) { // We consider that an animation with a weight === 0 is "actively" paused

@@ -46,6 +46,7 @@ import { ComputeEffect } from "../Compute/computeEffect";
 import { WebGPUOcclusionQuery } from "./WebGPU/webgpuOcclusionQuery";
 import { Observable } from "../Misc/observable";
 import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
+import { TwgslOptions, WebGPUTintWASM } from "./WebGPU/webgpuTintWASM";
 
 import "../Shaders/clearQuad.vertex";
 import "../Shaders/clearQuad.fragment";
@@ -150,6 +151,11 @@ export interface WebGPUEngineOptions extends GPURequestAdapterOptions {
     glslangOptions?: GlslangOptions;
 
     /**
+     * Options to load the associated Twgsl library
+     */
+    twgslOptions?: TwgslOptions;
+
+     /**
      * Defines if the engine should no exceed a specified device ratio
      * @see https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio
      */
@@ -181,6 +187,7 @@ export interface WebGPUEngineOptions extends GPURequestAdapterOptions {
 
 /**
  * The web GPU engine class provides support for WebGPU version of babylon.js.
+ * @since 5.0.0
  */
 export class WebGPUEngine extends Engine {
     // Default glslang options.
@@ -188,6 +195,9 @@ export class WebGPUEngine extends Engine {
         jsPath: "https://preview.babylonjs.com/glslang/glslang.js",
         wasmPath: "https://preview.babylonjs.com/glslang/glslang.wasm"
     };
+
+    /** true to enable using TintWASM to convert Spir-V to WGSL */
+    public static UseTWGSL = true;
 
     // Page Life cycle and constants
     private readonly _uploadEncoderDescriptor = { label: "upload" };
@@ -206,6 +216,7 @@ export class WebGPUEngine extends Engine {
     /** @hidden */
     public _options: WebGPUEngineOptions;
     private _glslang: any = null;
+    private _tintWASM: Nullable<WebGPUTintWASM> = null;
     private _adapter: GPUAdapter;
     private _adapterSupportedExtensions: GPUFeatureName[];
     /** @hidden */
@@ -397,11 +408,18 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * Gets a boolean indicating if the engine can be instantiated (ie. if a WebGPU context can be found)
-     * @returns true if the engine can be created
+     * Gets a Promise<boolean> indicating if the engine can be instantiated (ie. if a WebGPU context can be found)
+     */
+     public static get IsSupportedAsync(): Promise<boolean> {
+        return !navigator.gpu ? Promise.resolve(false) : navigator.gpu.requestAdapter().then((adapter: GPUAdapter | null) => adapter !== null);
+    }
+
+    /**
+     * Not supported by WebGPU, you should call IsSupportedAsync instead!
      */
     public static get IsSupported(): boolean {
-        return !!navigator.gpu;
+        Logger.Warn("You must call IsSupportedAsync for WebGPU!");
+        return false;
     }
 
     /**
@@ -467,7 +485,7 @@ export class WebGPUEngine extends Engine {
         const engine = new WebGPUEngine(canvas, options);
 
         return new Promise((resolve) => {
-            engine.initAsync(options.glslangOptions).then(() => resolve(engine));
+            engine.initAsync(options.glslangOptions, options.twgslOptions).then(() => resolve(engine));
         });
     }
 
@@ -547,13 +565,24 @@ export class WebGPUEngine extends Engine {
     /**
      * Initializes the WebGPU context and dependencies.
      * @param glslangOptions Defines the GLSLang compiler options if necessary
+     * @param twgslOptions Defines the Twgsl compiler options if necessary
      * @returns a promise notifying the readiness of the engine.
      */
-    public initAsync(glslangOptions?: GlslangOptions): Promise<void> {
+    public initAsync(glslangOptions?: GlslangOptions, twgslOptions?: TwgslOptions): Promise<void> {
         return this._initGlslang(glslangOptions ?? this._options?.glslangOptions)
             .then((glslang: any) => {
                 this._glslang = glslang;
-                return navigator.gpu!.requestAdapter(this._options);
+                this._tintWASM = WebGPUEngine.UseTWGSL ? new WebGPUTintWASM() : null;
+                return this._tintWASM ?
+                    this._tintWASM.initTwgsl(twgslOptions ?? this._options?.twgslOptions)
+                        .then(() => {
+                            return navigator.gpu!.requestAdapter(this._options);
+                        }, (msg: string) => {
+                            Logger.Error("Can not initialize twgsl!");
+                            Logger.Error(msg);
+                            throw Error("WebGPU initializations stopped.");
+                        })
+                    : navigator.gpu!.requestAdapter(this._options);
             }, (msg: string) => {
                 Logger.Error("Can not initialize glslang!");
                 Logger.Error(msg);
@@ -606,7 +635,7 @@ export class WebGPUEngine extends Engine {
             })
             .then(() => {
                 this._bufferManager = new WebGPUBufferManager(this._device);
-                this._textureHelper = new WebGPUTextureHelper(this._device, this._glslang, this._bufferManager);
+                this._textureHelper = new WebGPUTextureHelper(this._device, this._glslang, this._tintWASM, this._bufferManager);
                 this._cacheSampler = new WebGPUCacheSampler(this._device);
                 this._cacheBindGroups = new WebGPUCacheBindGroups(this._device, this._cacheSampler, this);
                 this._timestampQuery = new WebGPUTimestampQuery(this._device, this._bufferManager);
@@ -725,7 +754,7 @@ export class WebGPUEngine extends Engine {
             depthTextureExtension: true,
             vertexArrayObject: false,
             instancedArrays: true,
-            timerQuery: typeof (BigUint64Array) !== "undefined" && this.enabledExtensions.indexOf(WebGPUConstants.FeatureName.TimestampQuery) !== -1 ? true as any : undefined,
+            timerQuery: undefined /*typeof (BigUint64Array) !== "undefined" && this.enabledExtensions.indexOf(WebGPUConstants.FeatureName.TimestampQuery) !== -1 ? true as any : undefined*/,
             supportOcclusionQuery: typeof (BigUint64Array) !== "undefined",
             canUseTimestampForTimerQuery: true,
             multiview: false,
@@ -1435,6 +1464,11 @@ export class WebGPUEngine extends Engine {
     }
 
     private _createPipelineStageDescriptor(vertexShader: Uint32Array, fragmentShader: Uint32Array): IWebGPURenderPipelineStageDescriptor {
+        if (this._tintWASM) {
+            vertexShader = this._tintWASM.convertSpirV2WGSL(vertexShader) as any;
+            fragmentShader = this._tintWASM.convertSpirV2WGSL(fragmentShader) as any;
+        }
+
         return {
             vertexStage: {
                 module: this._device.createShaderModule({
@@ -1960,6 +1994,14 @@ export class WebGPUEngine extends Engine {
         this._setInternalTexture(name, texture);
     }
 
+    /**
+     * Generates the mipmaps for a texture
+     * @param texture texture to generate the mipmaps for
+     */
+    public generateMipmaps(texture: InternalTexture): void {
+        this._generateMipmaps(texture, this._renderTargetEncoder);
+    }
+
     /** @hidden */
     public _generateMipmaps(texture: InternalTexture, commandEncoder?: GPUCommandEncoder) {
         const gpuTexture = texture._hardwareTexture?.underlyingResource;
@@ -2191,15 +2233,15 @@ export class WebGPUEngine extends Engine {
      */
     public flushFramebuffer(reopenPass = true): void {
         // we need to end the current render pass (main or rtt) if any as we are not allowed to submit the command buffers when being in a pass
-        let currentPassType = 0; // 0 if no pass, 1 for rtt, 2 for main pass
-        if (this._currentRenderPass) {
-            if (this._currentRenderTarget) {
-                currentPassType = 1;
-                this._endRenderTargetRenderPass();
-            } else {
-                currentPassType = 2;
-                this._endMainRenderPass();
-            }
+        const currentRenderPassIsNULL = !this._currentRenderPass;
+        let currentPasses = 0; // 0 if no pass, 1 for rtt, 2 for main pass
+        if (this._currentRenderPass && this._currentRenderTarget) {
+            currentPasses |= 1;
+            this._endRenderTargetRenderPass();
+        }
+        if (this._mainRenderPassWrapper.renderPass) {
+            currentPasses |= 2;
+            this._endMainRenderPass();
         }
 
         this._commandBuffers[0] = this._uploadEncoder.finish();
@@ -2220,10 +2262,14 @@ export class WebGPUEngine extends Engine {
 
         // restart the render pass
         if (reopenPass) {
-            if (currentPassType === 1) {
-                this._startRenderTargetRenderPass(this._currentRenderTarget!, false, null, false, false);
-            } else if (currentPassType === 2) {
+            if (currentPasses & 2) {
                 this._startMainRenderPass(false);
+            }
+            if (currentPasses & 1) {
+                this._startRenderTargetRenderPass(this._currentRenderTarget!, false, null, false, false);
+            }
+            if (currentRenderPassIsNULL && this._currentRenderTarget) {
+                this._currentRenderPass = null;
             }
         }
     }

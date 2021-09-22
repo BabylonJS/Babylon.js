@@ -73,7 +73,11 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
     private _removeMarkedPhysicsBodiesFromWorld(): void {
         if (this._physicsBodysToRemoveAfterStep.length > 0) {
             this._physicsBodysToRemoveAfterStep.forEach((physicsBody) => {
-                this.world.remove(physicsBody);
+                if (typeof this.world.removeBody === "function") {
+                    this.world.removeBody(physicsBody);
+                } else {
+                    this.world.remove(physicsBody);
+                }
             });
             this._physicsBodysToRemoveAfterStep = [];
         }

@@ -709,20 +709,13 @@ export class RenderTargetTexture extends Texture {
 
         // Set custom projection.
         // Needs to be before binding to prevent changing the aspect ratio.
-        let camera: Nullable<Camera>;
-        if (this.activeCamera) {
-            camera = this.activeCamera;
-            engine.setViewport(this.activeCamera.viewport, this.getRenderWidth(), this.getRenderHeight());
+        let camera: Nullable<Camera> = this.activeCamera ?? scene.activeCamera;
 
-            if (this.activeCamera !== scene.activeCamera) {
-                scene.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(true));
+        if (camera) {
+            if (camera !== scene.activeCamera) {
+                scene.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix(true));
             }
-        }
-        else {
-            camera = scene.activeCamera;
-            if (camera) {
-                engine.setViewport(camera.viewport, this.getRenderWidth(), this.getRenderHeight());
-            }
+            engine.setViewport(camera.viewport, this.getRenderWidth(), this.getRenderHeight());
         }
 
         this._defaultRenderListPrepared = false;
@@ -792,7 +785,7 @@ export class RenderTargetTexture extends Texture {
                 }
 
                 if (!mesh._internalAbstractMeshDataInfo._currentLODIsUpToDate && scene.activeCamera) {
-                    mesh._internalAbstractMeshDataInfo._currentLOD = scene.customLODSelector ? scene.customLODSelector(mesh, scene.activeCamera) : mesh.getLOD(scene.activeCamera);
+                    mesh._internalAbstractMeshDataInfo._currentLOD = scene.customLODSelector ? scene.customLODSelector(mesh, this.activeCamera || scene.activeCamera) : mesh.getLOD(this.activeCamera || scene.activeCamera);
                     mesh._internalAbstractMeshDataInfo._currentLODIsUpToDate = true;
                 }
                 if (!mesh._internalAbstractMeshDataInfo._currentLOD) {

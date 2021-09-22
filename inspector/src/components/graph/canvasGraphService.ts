@@ -1,23 +1,38 @@
-import { ICanvasGraphServiceSettings, IPerfMinMax, IGraphDrawableArea, IPerfMousePanningPosition, IPerfIndexBounds, IPerfTooltip, IPerfTextMeasureCache, IPerfLayoutSize, IPerfTicker } from "./graphSupportingTypes";
+import { ICanvasGraphServiceSettings, IPerfMinMax, IGraphDrawableArea, IPerfMousePanningPosition, IPerfIndexBounds, IPerfTooltip, IPerfTextMeasureCache, IPerfLayoutSize, IPerfTicker, TimestampUnit } from "./graphSupportingTypes";
 import { IPerfDatasets, IPerfMetadata } from "babylonjs/Misc/interfaces/iPerfViewer";
 import { Scalar } from "babylonjs/Maths/math.scalar";
 import { PerformanceViewerCollector } from "babylonjs/Misc/PerformanceViewer/performanceViewerCollector";
 
 const defaultColor = "#000";
+const axisColor = "#c0c4c8";
 const futureBoxColor = "#dfe9ed";
 const dividerColor = "#0a3066";
 const playheadColor = "#b9dbef";
 
-const tooltipBackgroundColor = "#121212";
-const tooltipForegroundColor = "#fff";
+const positionIndicatorColor = "#4d5960";
+const tooltipBackgroundColor = "#566268";
+const tooltipForegroundColor = "#fbfbfb";
+
+const topOfGraphY = 0;
 
 const defaultAlpha = 1;
 const tooltipBackgroundAlpha = 0.8;
 
 const tooltipHorizontalPadding = 10;
 const spaceBetweenTextAndBox = 5;
+const tooltipPaddingFromBottom = 20;
+
+// height of indicator triangle
+const triangleHeight = 10;
+// width of indicator triangle
+const triangleWidth = 20;
+// padding to indicate how far below the axis line the triangle should be.
+const trianglePaddingFromAxisLine = 3;
 
 const tickerHorizontalPadding = 10;
+
+// pixels to pad the top and bottom of data so that it doesn't get cut off by the margins.
+const dataPadding = 2;
 
 const playheadSize = 8;
 const dividerSize = 2;
@@ -43,11 +58,15 @@ const alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 // Arbitrary maximum used to make some GC optimizations.
 const maximumDatasetsAllowed = 64;
 
+const msInSecond = 1000;
+const msInMinute = msInSecond * 60;
+const msInHour =  msInMinute * 60;
+
 // time in ms to wait between tooltip draws inside the mouse move.
 const tooltipDebounceTime = 32;
 
 // time in ms to wait between draws
-const drawDebounceTime = 15;
+const drawThrottleTime = 15;
 
 /**
  * This function will debounce calls to functions.
@@ -64,6 +83,24 @@ function debounce(callback: (...args: any[]) => void, time: number) {
 }
 
 /**
+ * This function will throttle calls to functions.
+ * 
+ * @param callback callback to call.
+ * @param time time to wait between calls in ms.
+ */
+ function throttle(callback: (...args: any[]) => void, time: number) {
+    let lastCalledTime: number = 0;
+    return function (...args: any[]) {
+        const now = Date.now();
+        if (now - lastCalledTime < time) {
+            return;
+        }
+        lastCalledTime = now;
+        callback(...args);
+    }
+}
+
+/*
  * This class acts as the main API for graphing given a Here is where you will find methods to let the service know new data needs to be drawn,
  * let it know something has been resized, etc! 
  */
@@ -141,11 +178,15 @@ export class CanvasGraphService {
     /**
      * This method lets the service know it should get ready to update what it is displaying.
      */
-    public update = debounce(
+    public update = throttle(
         () => this._draw(),
-        drawDebounceTime
+        drawThrottleTime
     );
 
+    /**
+     * Update the canvas graph service with the new height and width of the canvas.
+     * @param size The new size of the canvas.
+     */
     public resize(size: IPerfLayoutSize) {
         const { _ctx: ctx } = this;
         const { width, height } = size;
@@ -161,6 +202,13 @@ export class CanvasGraphService {
         ctx.canvas.height = height;
 
         this.update();
+    }
+
+    /**
+     * Force resets the position in the data, effectively returning to the most current data.
+     */
+    public resetDataPosition() {
+        this._position = null;
     }
 
     /**
@@ -239,7 +287,8 @@ export class CanvasGraphService {
         const numberOfTickers = this._drawTickers(this._drawableArea, this._datasetBounds);
         this._drawTimeAxis(this._globalTimeMinMax, this._drawableArea);
         this._drawPlayheadRegion(this._drawableArea, updatedScaleFactor);
-
+        this._drawableArea.top += dataPadding;
+        this._drawableArea.bottom -= dataPadding;
         const {left, right, bottom, top} = this._drawableArea;
         // process, and then draw our points
         this.datasets.ids.forEach((id, idOffset) => {
@@ -335,7 +384,7 @@ export class CanvasGraphService {
         
         drawableArea.right -= width;
 
-        const textHeight = this._addonFontLineHeight + Math.floor(tooltipHorizontalPadding/2);
+        const textHeight = this._addonFontLineHeight + Math.floor(tickerHorizontalPadding/2);
 
         const x = drawableArea.right + tickerHorizontalPadding;
         let y = drawableArea.top + textHeight;
@@ -409,16 +458,22 @@ export class CanvasGraphService {
         // remove the height of the axis from the available drawable area.
         drawableArea.bottom -= this._axisHeight;
 
-        // draw time axis line
+        // draw axis box.
         ctx.save();
+        ctx.fillStyle = axisColor;
+        ctx.fillRect(drawableArea.left, drawableArea.bottom, spaceAvailable, this._axisHeight);
+        // draw time axis line
         ctx.beginPath();
         ctx.strokeStyle = defaultColor;
         ctx.moveTo(drawableArea.left, drawableArea.bottom);
         ctx.lineTo(drawableArea.right, drawableArea.bottom);
 
         // draw ticks and text.
+        ctx.fillStyle = defaultColor;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
+
+        const timestampUnit: TimestampUnit = this._getTimestampUnit(this._ticks[this._ticks.length - 1]);
 
         this._ticks.forEach((tick: number) => {
             let position = this._getPixelForNumber(tick, timeMinMax, drawableArea.left, spaceAvailable, false);
@@ -427,10 +482,63 @@ export class CanvasGraphService {
             }
             ctx.moveTo(position, drawableArea.bottom);
             ctx.lineTo(position, drawableArea.bottom + 10);
-            ctx.fillText(tick.toString(), position, drawableArea.bottom + 20);
+            ctx.fillText(this._parseTimestamp(tick, timestampUnit), position, drawableArea.bottom + 20);
         });
         ctx.stroke();
         ctx.restore();
+    }
+
+    /**
+     * Given a timestamp (should be the maximum timestamp in view), this function returns the maximum unit the timestamp contains. 
+     * This information can be used for formatting purposes.
+     * @param timestamp the maximum timestamp to find the maximum timestamp unit for. 
+     * @returns The maximum unit the timestamp has.
+     */
+    private _getTimestampUnit(timestamp: number): TimestampUnit {
+        if (timestamp / msInHour > 1) {
+            return TimestampUnit.Hours;
+        } else if (timestamp / msInMinute > 1) {
+            return TimestampUnit.Minutes;
+        } else if (timestamp / msInSecond > 1) {
+            return TimestampUnit.Seconds;
+        } else {
+            return TimestampUnit.Milliseconds;
+        }
+    }
+
+    /**
+     * Given a timestamp and the interval unit, this function will parse the timestamp to the appropriate format.
+     * @param timestamp The timestamp to parse
+     * @param intervalUnit The maximum unit of the maximum timestamp in an interval.
+     * @returns a string representing the parsed timestamp.
+     */
+    private _parseTimestamp(timestamp: number, intervalUnit: TimestampUnit): string {
+        let parsedTimestamp = "";
+        
+        if (intervalUnit >= TimestampUnit.Hours) {
+            const numHours = Math.floor(timestamp / msInHour);
+            timestamp -= numHours * msInHour;
+            parsedTimestamp += `${numHours.toString().padStart(intervalUnit > TimestampUnit.Hours ? 2 : 1, "0")}:`;
+        }
+
+        if (intervalUnit >= TimestampUnit.Minutes) {
+            const numMinutes = Math.floor(timestamp / msInMinute);
+            timestamp -= numMinutes * msInMinute;
+            parsedTimestamp += `${numMinutes.toString().padStart(intervalUnit > TimestampUnit.Minutes ? 2 : 1, "0")}:`;
+        }
+
+        const numSeconds = Math.floor(timestamp / msInSecond);
+        timestamp -= numSeconds * msInSecond;
+        parsedTimestamp += numSeconds.toString().padStart(intervalUnit > TimestampUnit.Seconds ? 2 : 1, "0");
+
+        if (timestamp > 0) {
+            if (parsedTimestamp.length > 0) {
+                parsedTimestamp += ".";
+            }
+            parsedTimestamp += Math.round(timestamp).toString().padStart(3, "0");
+        }
+
+        return parsedTimestamp;
     }
 
     /**
@@ -540,7 +648,7 @@ export class CanvasGraphService {
     private _getPixelForNumber(num: number, minMax: IPerfMinMax, startingPixel: number, spaceAvailable: number, shouldFlipValue: boolean) {
         const { min, max } = minMax;
         // Perform a min-max normalization to rescale the value onto a [0, 1] scale given the min and max of the dataset.
-        let normalizedValue = (num - min) / (max - min);
+        let normalizedValue = max !== min ? (num - min) / (max - min) : 1;
 
         // if we should make this a [1, 0] range instead (higher numbers = smaller pixel value)
         if (shouldFlipValue) {
@@ -625,8 +733,12 @@ export class CanvasGraphService {
         }
 
         // first convert the mouse position in pixels to a timestamp.
-        const { left: start, right: end } = ctx.canvas.getBoundingClientRect();
-        const inferredTimestamp = this._getNumberFromPixel(pixel, this._globalTimeMinMax, start, end);
+        const { left: start } = ctx.canvas.getBoundingClientRect();
+        let adjustedPixel = pixel - start;
+        if (adjustedPixel > drawableArea.right) {
+            adjustedPixel = drawableArea.right;
+        }
+        const inferredTimestamp = this._getNumberFromPixel(adjustedPixel, this._globalTimeMinMax, drawableArea.left, drawableArea.right);
 
         let longestText: string = "";
         let numberOfTooltipItems = 0;
@@ -634,6 +746,7 @@ export class CanvasGraphService {
         // get the closest timestamps to the target timestamp, and store the appropriate meta object.
         const closestIndex = this._getClosestPointToTimestamp(inferredTimestamp);
 
+        let actualTimestamp: number = 0;
         this.datasets.ids.forEach((id, idOffset) => {
             if (!!this.metadata.get(id)?.hidden) {
                 return;
@@ -646,7 +759,7 @@ export class CanvasGraphService {
             }
 
             const valueIndex = this.datasets.startingIndices.at(closestIndex) + PerformanceViewerCollector.SliceDataOffset + idOffset;
-
+            actualTimestamp = this.datasets.data.at(this.datasets.startingIndices.at(closestIndex));
             const text = `${id}: ${this.datasets.data.at(valueIndex).toFixed(2)}`;
             
             if (text.length > longestText.length) {
@@ -658,11 +771,27 @@ export class CanvasGraphService {
             numberOfTooltipItems++;
         });
 
-        let x = pixel - start;
-        let y = Math.floor((drawableArea.bottom - drawableArea.top) / 2);
-
+        let xForActualTimestamp = this._getPixelForNumber(actualTimestamp, this._globalTimeMinMax, drawableArea.left, drawableArea.right - drawableArea.left, false);
         ctx.save();
 
+        // draw pointer triangle
+        ctx.fillStyle = positionIndicatorColor;
+        let yTriangle = drawableArea.bottom + trianglePaddingFromAxisLine;
+        ctx.beginPath();
+        ctx.moveTo(xForActualTimestamp, yTriangle);
+        ctx.lineTo(xForActualTimestamp + triangleWidth/2, yTriangle + triangleHeight);
+        ctx.lineTo(xForActualTimestamp - triangleWidth/2, yTriangle + triangleHeight);
+        ctx.closePath();
+        ctx.fill();
+
+        // draw vertical line
+        ctx.strokeStyle = positionIndicatorColor;
+        ctx.beginPath();
+        ctx.moveTo(xForActualTimestamp, drawableArea.bottom);
+        ctx.lineTo(xForActualTimestamp, topOfGraphY);
+        ctx.stroke();
+
+        // draw the actual tooltip
         ctx.font = graphAddonFont;
         ctx.textBaseline = "middle";
         ctx.textAlign = "left";
@@ -680,6 +809,10 @@ export class CanvasGraphService {
             this._tooltipTextCache.width = width;
         }
 
+        const tooltipHeight = textHeight * (numberOfTooltipItems + 1);
+        let x = pixel - start;
+        let y = drawableArea.bottom - tooltipPaddingFromBottom - tooltipHeight;
+
         // We want the tool tip to always be inside the canvas so we adjust which way it is drawn.
         if (x + width > this._width) {
             x -= width;
@@ -688,7 +821,7 @@ export class CanvasGraphService {
         ctx.globalAlpha = tooltipBackgroundAlpha;
         ctx.fillStyle = tooltipBackgroundColor;
 
-        ctx.fillRect(x, y, width, textHeight * (numberOfTooltipItems + 1));
+        ctx.fillRect(x, y, width, tooltipHeight);
 
         ctx.globalAlpha = defaultAlpha;
 

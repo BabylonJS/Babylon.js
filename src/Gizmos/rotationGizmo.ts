@@ -15,6 +15,7 @@ import { GizmoManager } from './gizmoManager';
 
 /**
  * Options for each individual plane rotation gizmo contained within RotationGizmo
+ * @since 5.0.0
  */
 export interface PlaneRotationGizmoOptions {
     /**

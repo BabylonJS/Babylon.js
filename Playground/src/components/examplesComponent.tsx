@@ -25,6 +25,7 @@ export class ExamplesComponent extends React.Component<IExamplesComponentProps, 
     private _documentationRoot = "https://doc.babylonjs.com";
     private _searchUrl = "https://babylonjs-newdocs.search.windows.net/indexes/playgrounds/docs?api-version=2020-06-30&$top=1000&api-key=820DCA4087091C0386B0F0A266710390&$filter=isMain%20eq%20true";
     private _rootRef: React.RefObject<HTMLDivElement>;
+    private _searchBoxRef: React.RefObject<HTMLInputElement>;
     private _scripts: IScript[];
 
     public constructor(props: IExamplesComponentProps) {
@@ -33,6 +34,7 @@ export class ExamplesComponent extends React.Component<IExamplesComponentProps, 
 
         this.state = { filter: "" };
         this._rootRef = React.createRef();
+        this._searchBoxRef = React.createRef();
 
         this.props.globalState.onExamplesDisplayChangedObservable.add(() => {
             if (this._state !== "visible") {
@@ -40,6 +42,9 @@ export class ExamplesComponent extends React.Component<IExamplesComponentProps, 
                 setTimeout(() => {
                     this._rootRef.current!.classList.add("visible");
                     this._state = "visible";
+                    setTimeout(() => {
+                        this._searchBoxRef.current!.focus();
+                    }, 250);
                 }, 16);
             } else {
                 this._rootRef.current!.classList.remove("visible");
@@ -118,6 +123,8 @@ export class ExamplesComponent extends React.Component<IExamplesComponentProps, 
         if (window.innerWidth < this.props.globalState.MobileSizeTrigger) {
             this.props.globalState.onExamplesDisplayChangedObservable.notifyObservers();
         }
+
+        this.props.globalState.onExamplesDisplayChangedObservable.notifyObservers();
     }
 
     public render() {
@@ -134,6 +141,8 @@ export class ExamplesComponent extends React.Component<IExamplesComponentProps, 
                         type="text"
                         placeholder="Filter examples"
                         value={this.state.filter}
+                        tabIndex={0}
+                        ref={this._searchBoxRef}
                         onChange={(evt) => {
                             this.setState({ filter: evt.target.value });
                         }}
