@@ -2055,6 +2055,7 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/booleanLineCompon
         label: string;
         value: boolean;
         icon?: string;
+        iconLabel?: string;
     }
     export class BooleanLineComponent extends React.Component<IBooleanLineComponentProps> {
         constructor(props: IBooleanLineComponentProps);
@@ -2067,6 +2068,7 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/buttonLineCompone
         label: string;
         onClick: () => void;
         icon?: string;
+        iconLabel?: string;
     }
     export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
         constructor(props: IButtonLineComponentProps);
@@ -2087,6 +2089,7 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/checkBoxLineCompo
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
         disabled?: boolean;
         icon?: string;
+        iconLabel?: string;
     }
     export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
         isSelected: boolean;
@@ -2113,6 +2116,7 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/numericInputCompo
         onChange: (value: number) => void;
         precision?: number;
         icon?: string;
+        iconLabel?: string;
     }
     export class NumericInputComponent extends React.Component<INumericInputComponentProps, {
         value: string;
@@ -2138,6 +2142,7 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/colorPickerCompon
         linearHint?: boolean;
         onColorChanged: (newOne: string) => void;
         icon?: string;
+        iconLabel?: string;
         shouldPopRight?: boolean;
     }
     interface IColorPickerComponentState {
@@ -2168,6 +2173,7 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/color3LineCompone
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
         isLinear?: boolean;
         icon?: string;
+        iconLabel?: string;
     }
     export class Color3LineComponent extends React.Component<IColor3LineComponentProps, {
         isExpanded: boolean;
@@ -2202,6 +2208,7 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/color4LineCompone
         onChange?: () => void;
         isLinear?: boolean;
         icon?: string;
+        iconLabel?: string;
     }
     export class Color4LineComponent extends React.Component<IColor4LineComponentProps, {
         isExpanded: boolean;
@@ -2242,6 +2249,7 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/fileButtonLineCom
         onClick: (file: File) => void;
         accept: string;
         icon?: string;
+        iconLabel?: string;
     }
     export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
         private static _IDGenerator;
@@ -2259,6 +2267,7 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/fileMultipleButto
         onClick: (event: any) => void;
         accept: string;
         icon?: string;
+        iconLabel?: string;
     }
     export class FileMultipleButtonLineComponent extends React.Component<IFileMultipleButtonLineComponentProps> {
         private static _IDGenerator;
@@ -2299,6 +2308,7 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/sliderLineCompone
         decimalCount?: number;
         margin?: boolean;
         icon?: string;
+        iconLabel?: string;
     }
     export class SliderLineComponent extends React.Component<ISliderLineComponentProps, {
         value: number;
@@ -2336,6 +2346,7 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/floatLineComponen
         smallUI?: boolean;
         onEnter?: (newValue: number) => void;
         icon?: string;
+        iconLabel?: string;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;
@@ -2374,6 +2385,7 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/hexLineComponent"
         useEuler?: boolean;
         min?: number;
         icon?: string;
+        iconLabel?: string;
     }
     export class HexLineComponent extends React.Component<IHexLineComponentProps, {
         value: string;
@@ -2497,6 +2509,7 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/optionsLineCompon
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
         allowNullValue?: boolean;
         icon?: string;
+        iconLabel?: string;
     }
     export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, {
         value: number;
@@ -2528,6 +2541,7 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/radioLineComponen
         isSelected: () => boolean;
         onSelect: () => void;
         icon?: string;
+        iconLabel?: string;
     }
     export class RadioButtonLineComponent extends React.Component<IRadioButtonLineComponentProps, {
         isSelected: boolean;
@@ -2554,6 +2568,7 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/textInputLineComp
         onChange?: (value: string) => void;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
         icon?: string;
+        iconLabel?: string;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
@@ -2581,6 +2596,8 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/textLineComponent
         ignoreValue?: boolean;
         additionalClass?: string;
         icon?: string;
+        iconLabel?: string;
+        tooltip?: string;
     }
     export class TextLineComponent extends React.Component<ITextLineComponentProps> {
         constructor(props: ITextLineComponentProps);
@@ -2598,6 +2615,7 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/valueLineComponen
         fractionDigits?: number;
         units?: string;
         icon?: string;
+        iconLabel?: string;
     }
     export class ValueLineComponent extends React.Component<IValueLineComponentProps> {
         constructor(props: IValueLineComponentProps);
@@ -2617,6 +2635,7 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/vector2LineCompon
         onChange?: (newvalue: Vector2) => void;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
         icon?: string;
+        iconLabel?: string;
     }
     export class Vector2LineComponent extends React.Component<IVector2LineComponentProps, {
         isExpanded: boolean;
@@ -2653,6 +2672,7 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/vector3LineCompon
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
         noSlider?: boolean;
         icon?: string;
+        iconLabel?: string;
     }
     export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, {
         isExpanded: boolean;
@@ -2691,6 +2711,7 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/vector4LineCompon
         useEuler?: boolean;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
         icon?: string;
+        iconLabel?: string;
     }
     export class Vector4LineComponent extends React.Component<IVector4LineComponentProps, {
         isExpanded: boolean;
@@ -4694,6 +4715,7 @@ declare module NODEEDITOR {
         label: string;
         value: boolean;
         icon?: string;
+        iconLabel?: string;
     }
     export class BooleanLineComponent extends React.Component<IBooleanLineComponentProps> {
         constructor(props: IBooleanLineComponentProps);
@@ -4705,6 +4727,7 @@ declare module NODEEDITOR {
         label: string;
         onClick: () => void;
         icon?: string;
+        iconLabel?: string;
     }
     export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
         constructor(props: IButtonLineComponentProps);
@@ -4722,6 +4745,7 @@ declare module NODEEDITOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         disabled?: boolean;
         icon?: string;
+        iconLabel?: string;
     }
     export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
         isSelected: boolean;
@@ -4747,6 +4771,7 @@ declare module NODEEDITOR {
         onChange: (value: number) => void;
         precision?: number;
         icon?: string;
+        iconLabel?: string;
     }
     export class NumericInputComponent extends React.Component<INumericInputComponentProps, {
         value: string;
@@ -4770,6 +4795,7 @@ declare module NODEEDITOR {
         linearHint?: boolean;
         onColorChanged: (newOne: string) => void;
         icon?: string;
+        iconLabel?: string;
         shouldPopRight?: boolean;
     }
     interface IColorPickerComponentState {
@@ -4796,6 +4822,7 @@ declare module NODEEDITOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         isLinear?: boolean;
         icon?: string;
+        iconLabel?: string;
     }
     export class Color3LineComponent extends React.Component<IColor3LineComponentProps, {
         isExpanded: boolean;
@@ -4826,6 +4853,7 @@ declare module NODEEDITOR {
         onChange?: () => void;
         isLinear?: boolean;
         icon?: string;
+        iconLabel?: string;
     }
     export class Color4LineComponent extends React.Component<IColor4LineComponentProps, {
         isExpanded: boolean;
@@ -4864,6 +4892,7 @@ declare module NODEEDITOR {
         onClick: (file: File) => void;
         accept: string;
         icon?: string;
+        iconLabel?: string;
     }
     export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
         private static _IDGenerator;
@@ -4880,6 +4909,7 @@ declare module NODEEDITOR {
         onClick: (event: any) => void;
         accept: string;
         icon?: string;
+        iconLabel?: string;
     }
     export class FileMultipleButtonLineComponent extends React.Component<IFileMultipleButtonLineComponentProps> {
         private static _IDGenerator;
@@ -4917,6 +4947,7 @@ declare module NODEEDITOR {
         decimalCount?: number;
         margin?: boolean;
         icon?: string;
+        iconLabel?: string;
     }
     export class SliderLineComponent extends React.Component<ISliderLineComponentProps, {
         value: number;
@@ -4950,6 +4981,7 @@ declare module NODEEDITOR {
         smallUI?: boolean;
         onEnter?: (newValue: number) => void;
         icon?: string;
+        iconLabel?: string;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;
@@ -4984,6 +5016,7 @@ declare module NODEEDITOR {
         useEuler?: boolean;
         min?: number;
         icon?: string;
+        iconLabel?: string;
     }
     export class HexLineComponent extends React.Component<IHexLineComponentProps, {
         value: string;
@@ -5098,6 +5131,7 @@ declare module NODEEDITOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         allowNullValue?: boolean;
         icon?: string;
+        iconLabel?: string;
     }
     export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, {
         value: number;
@@ -5127,6 +5161,7 @@ declare module NODEEDITOR {
         isSelected: () => boolean;
         onSelect: () => void;
         icon?: string;
+        iconLabel?: string;
     }
     export class RadioButtonLineComponent extends React.Component<IRadioButtonLineComponentProps, {
         isSelected: boolean;
@@ -5149,6 +5184,7 @@ declare module NODEEDITOR {
         onChange?: (value: string) => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         icon?: string;
+        iconLabel?: string;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
@@ -5175,6 +5211,8 @@ declare module NODEEDITOR {
         ignoreValue?: boolean;
         additionalClass?: string;
         icon?: string;
+        iconLabel?: string;
+        tooltip?: string;
     }
     export class TextLineComponent extends React.Component<ITextLineComponentProps> {
         constructor(props: ITextLineComponentProps);
@@ -5191,6 +5229,7 @@ declare module NODEEDITOR {
         fractionDigits?: number;
         units?: string;
         icon?: string;
+        iconLabel?: string;
     }
     export class ValueLineComponent extends React.Component<IValueLineComponentProps> {
         constructor(props: IValueLineComponentProps);
@@ -5206,6 +5245,7 @@ declare module NODEEDITOR {
         onChange?: (newvalue: BABYLON.Vector2) => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         icon?: string;
+        iconLabel?: string;
     }
     export class Vector2LineComponent extends React.Component<IVector2LineComponentProps, {
         isExpanded: boolean;
@@ -5238,6 +5278,7 @@ declare module NODEEDITOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         noSlider?: boolean;
         icon?: string;
+        iconLabel?: string;
     }
     export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, {
         isExpanded: boolean;
@@ -5272,6 +5313,7 @@ declare module NODEEDITOR {
         useEuler?: boolean;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         icon?: string;
+        iconLabel?: string;
     }
     export class Vector4LineComponent extends React.Component<IVector4LineComponentProps, {
         isExpanded: boolean;
