@@ -19678,9 +19678,9 @@ declare module BABYLON {
          */
         zOffset: number;
         /**
-         * Stores the z offset Unit value
+         * Stores the z offset Units value
          */
-        zOffsetUnit: number;
+        zOffsetUnits: number;
         get wireframe(): boolean;
         /**
          * Sets the state of wireframe mode
@@ -24009,6 +24009,12 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * @hidden
+     */
+    export function setWebVRRigMode(camera: Camera, rigParams: any): void;
+}
+declare module BABYLON {
+    /**
      * Interface used to define additional presentation attributes
      */
     export interface IVRPresentationAttributes {
@@ -24278,6 +24284,7 @@ declare module BABYLON {
          * @param webVROptions a set of customizable options for the webVRCamera
          */
         constructor(name: string, position: Vector3, scene: Scene, webVROptions?: WebVROptions);
+        protected _setRigMode: any;
         /**
          * Gets the device distance from the ground in meters.
          * @returns the distance in meters from the vrDevice to ground in device space. If standing matrix is not supported for the vrDevice 0 is returned.
@@ -38319,14 +38326,7 @@ declare module BABYLON {
          * @hidden
          */
         setCameraRigMode(mode: number, rigParams: any): void;
-        /** @hidden */
-        static _setStereoscopicRigMode(camera: Camera): void;
-        /** @hidden */
-        static _setStereoscopicAnaglyphRigMode(camera: Camera): void;
-        /** @hidden */
-        static _setVRRigMode(camera: Camera, rigParams: any): void;
-        /** @hidden */
-        static _setWebVRRigMode(camera: Camera, rigParams: any): void;
+        protected _setRigMode(rigParams: any): void;
         /** @hidden */
         _getVRProjectionMatrix(): Matrix;
         protected _updateCameraRotationMatrix(): void;
@@ -39591,7 +39591,7 @@ declare module BABYLON {
         protected _cull: Nullable<boolean>;
         protected _cullFace: Nullable<number>;
         protected _zOffset: number;
-        protected _zOffsetUnit: number;
+        protected _zOffsetUnits: number;
         protected _frontFace: Nullable<number>;
         /**
          * Initializes the state.
@@ -39600,8 +39600,8 @@ declare module BABYLON {
         get isDirty(): boolean;
         get zOffset(): number;
         set zOffset(value: number);
-        get zOffsetUnit(): number;
-        set zOffsetUnit(value: number);
+        get zOffsetUnits(): number;
+        set zOffsetUnits(value: number);
         get cullFace(): Nullable<number>;
         set cullFace(value: Nullable<number>);
         get cull(): Nullable<boolean>;
@@ -40646,9 +40646,9 @@ declare module BABYLON {
          * @param reverseSide defines if culling must be reversed (CCW if false, CW if true)
          * @param cullBackFaces true to cull back faces, false to cull front faces (if culling is enabled)
          * @param stencil stencil states to set
-         * @param zOffsetUnit defines the value to apply to zOffsetUnit (0 by default)
+         * @param zOffsetUnits defines the value to apply to zOffsetUnits (0 by default)
          */
-        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean, cullBackFaces?: boolean, stencil?: IStencilState, zOffsetUnit?: number): void;
+        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean, cullBackFaces?: boolean, stencil?: IStencilState, zOffsetUnits?: number): void;
         /**
          * Set the z offset Factor to apply to current rendering
          * @param value defines the offset to apply
@@ -40660,15 +40660,15 @@ declare module BABYLON {
          */
         getZOffset(): number;
         /**
-         * Set the z offset Unit to apply to current rendering
+         * Set the z offset Units to apply to current rendering
          * @param value defines the offset to apply
          */
-        setZOffsetUnit(value: number): void;
+        setZOffsetUnits(value: number): void;
         /**
-         * Gets the current value of the zOffset Unit
-         * @returns the current zOffset Unit state
+         * Gets the current value of the zOffset Units
+         * @returns the current zOffset Units state
          */
-        getZOffsetUnit(): number;
+        getZOffsetUnits(): number;
         /** @hidden */
         _bindUnboundFramebuffer(framebuffer: Nullable<WebGLFramebuffer>): void;
         /** @hidden */
@@ -55801,6 +55801,12 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * @hidden
+     */
+    export function setStereoscopicAnaglyphRigMode(camera: Camera): void;
+}
+declare module BABYLON {
+    /**
      * Camera used to simulate anaglyphic rendering (based on ArcRotateCamera)
      * @see https://doc.babylonjs.com/features/cameras#anaglyph-cameras
      */
@@ -55821,6 +55827,7 @@ declare module BABYLON {
          * @returns AnaglyphArcRotateCamera
          */
         getClassName(): string;
+        protected _setRigMode: any;
     }
 }
 declare module BABYLON {
@@ -55842,6 +55849,7 @@ declare module BABYLON {
          * @returns AnaglyphFreeCamera
          */
         getClassName(): string;
+        protected _setRigMode: any;
     }
 }
 declare module BABYLON {
@@ -55863,6 +55871,7 @@ declare module BABYLON {
          * @returns AnaglyphGamepadCamera
          */
         getClassName(): string;
+        protected _setRigMode: any;
     }
 }
 declare module BABYLON {
@@ -55884,6 +55893,7 @@ declare module BABYLON {
          * @returns AnaglyphUniversalCamera
          */
         getClassName(): string;
+        protected _setRigMode: any;
     }
 }
 declare module BABYLON {
@@ -55942,6 +55952,12 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * @hidden
+     */
+    export function setStereoscopicRigMode(camera: Camera): void;
+}
+declare module BABYLON {
+    /**
      * Camera used to simulate stereoscopic rendering (based on ArcRotateCamera)
      * @see https://doc.babylonjs.com/features/cameras
      */
@@ -55963,6 +55979,7 @@ declare module BABYLON {
          * @returns StereoscopicArcRotateCamera
          */
         getClassName(): string;
+        protected _setRigMode: any;
     }
 }
 declare module BABYLON {
@@ -55985,6 +56002,7 @@ declare module BABYLON {
          * @returns StereoscopicFreeCamera
          */
         getClassName(): string;
+        protected _setRigMode: any;
     }
 }
 declare module BABYLON {
@@ -56007,6 +56025,7 @@ declare module BABYLON {
          * @returns StereoscopicGamepadCamera
          */
         getClassName(): string;
+        protected _setRigMode: any;
     }
 }
 declare module BABYLON {
@@ -56029,6 +56048,52 @@ declare module BABYLON {
          * @returns StereoscopicUniversalCamera
          */
         getClassName(): string;
+        protected _setRigMode: any;
+    }
+}
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on UniversalCamera)
+     * @see https://doc.babylonjs.com/features/cameras
+     */
+    export class StereoscopicScreenUniversalCamera extends UniversalCamera {
+        private _dirty;
+        private _distanceToProjectionPlane;
+        private _distanceBetweenEyes;
+        set distanceBetweenEyes(newValue: number);
+        /**
+         * distance between the eyes
+         */
+        get distanceBetweenEyes(): number;
+        set distanceToProjectionPlane(newValue: number);
+        /**
+         * Distance to projection plane (should be the same units the like distance between the eyes)
+         */
+        get distanceToProjectionPlane(): number;
+        /**
+         * Creates a new StereoscopicScreenUniversalCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param scene defines the hosting scene
+         * @param _distanceToProjectionPlane defines distance between each color axis
+         * @param distanceBetweenEyes defines is stereoscopic is done side by side or over under
+         */
+        constructor(name: string, position: Vector3, scene: Scene, _distanceToProjectionPlane?: number, distanceBetweenEyes?: number);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicScreenUniversalCamera
+         */
+        getClassName(): string;
+        /**
+         * @hidden
+         */
+        createRigCamera(name: string, cameraIndex: number): Nullable<Camera>;
+        /**
+         * @hidden
+         */
+        _updateRigCameras(): void;
+        private _updateCamera;
+        protected _setRigMode(): void;
     }
 }
 declare module BABYLON {
@@ -56187,6 +56252,12 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * @hidden
+     */
+    export function setVRRigMode(camera: Camera, rigParams: any): void;
+}
+declare module BABYLON {
+    /**
      * Camera used to simulate VR rendering (based on ArcRotateCamera)
      * @see https://doc.babylonjs.com/babylon101/cameras#vr-device-orientation-cameras
      */
@@ -56208,6 +56279,7 @@ declare module BABYLON {
          * @returns VRDeviceOrientationArcRotateCamera
          */
         getClassName(): string;
+        protected _setRigMode: any;
     }
 }
 declare module BABYLON {
@@ -56230,6 +56302,7 @@ declare module BABYLON {
          * @returns VRDeviceOrientationFreeCamera
          */
         getClassName(): string;
+        protected _setRigMode: any;
     }
 }
 declare module BABYLON {
@@ -56252,6 +56325,7 @@ declare module BABYLON {
          * @returns VRDeviceOrientationGamepadCamera
          */
         getClassName(): string;
+        protected _setRigMode: any;
     }
 }
 declare module BABYLON {
@@ -60955,9 +61029,9 @@ declare module BABYLON {
          * @param reverseSide defines if culling must be reversed (CCW if false, CW if true)
          * @param cullBackFaces true to cull back faces, false to cull front faces (if culling is enabled)
          * @param stencil stencil states to set
-         * @param zOffsetUnit defines the value to apply to zOffsetUnit (0 by default)
+         * @param zOffsetUnits defines the value to apply to zOffsetUnits (0 by default)
          */
-        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean, cullBackFaces?: boolean, stencil?: IStencilState, zOffsetUnit?: number): void;
+        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean, cullBackFaces?: boolean, stencil?: IStencilState, zOffsetUnits?: number): void;
         /**
          * Set the value of an uniform to an array of int32
          * @param uniform defines the webGL uniform location where to store the value
@@ -62856,7 +62930,7 @@ declare module BABYLON {
         setCullFace(cullFace: number): void;
         setClampDepth(clampDepth: boolean): void;
         resetDepthCullingState(): void;
-        setDepthCullingState(cullEnabled: boolean, frontFace: number, cullFace: number, zOffset: number, zOffsetUnit: number, depthTestEnabled: boolean, depthWriteEnabled: boolean, depthCompare: Nullable<number>): void;
+        setDepthCullingState(cullEnabled: boolean, frontFace: number, cullFace: number, zOffset: number, zOffsetUnits: number, depthTestEnabled: boolean, depthWriteEnabled: boolean, depthCompare: Nullable<number>): void;
         setDepthBias(depthBias: number): void;
         setDepthBiasSlopeScale(depthBiasSlopeScale: number): void;
         setColorFormat(format: GPUTextureFormat): void;
@@ -62968,8 +63042,8 @@ declare module BABYLON {
         constructor(cache: WebGPUCacheRenderPipeline);
         get zOffset(): number;
         set zOffset(value: number);
-        get zOffsetUnit(): number;
-        set zOffsetUnit(value: number);
+        get zOffsetUnits(): number;
+        set zOffsetUnits(value: number);
         get cullFace(): Nullable<number>;
         set cullFace(value: Nullable<number>);
         get cull(): Nullable<boolean>;
@@ -63879,9 +63953,9 @@ declare module BABYLON {
          * @param reverseSide defines if culling must be reversed (CCW if false, CW if true)
          * @param cullBackFaces true to cull back faces, false to cull front faces (if culling is enabled)
          * @param stencil stencil states to set
-         * @param zOffsetUnit defines the value to apply to zOffsetUnit (0 by default)
+         * @param zOffsetUnits defines the value to apply to zOffsetUnits (0 by default)
          */
-        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean, cullBackFaces?: boolean, stencil?: IStencilState, zOffsetUnit?: number): void;
+        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean, cullBackFaces?: boolean, stencil?: IStencilState, zOffsetUnits?: number): void;
         private _draw;
         /**
          * Draw a list of indexed primitives
@@ -63929,8 +64003,6 @@ declare module BABYLON {
         bindSamplers(effect: Effect): void;
         /** @hidden */
         _bindTextureDirectly(target: number, texture: InternalTexture, forTextureDataUpdate?: boolean, force?: boolean): boolean;
-        /** @hidden */
-        _releaseFramebufferObjects(texture: InternalTexture): void;
         /**
          * Gets a boolean indicating if all created effects are ready
          * @returns always true - No parallel shader compilation
@@ -64504,7 +64576,7 @@ declare module BABYLON {
         getRenderWidth(useScreen?: boolean): number;
         getRenderHeight(useScreen?: boolean): number;
         setViewport(viewport: IViewportLike, requiredWidth?: number, requiredHeight?: number): void;
-        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean, cullBackFaces?: boolean, stencil?: IStencilState, zOffsetUnit?: number): void;
+        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean, cullBackFaces?: boolean, stencil?: IStencilState, zOffsetUnits?: number): void;
         /**
          * Gets the client rect of native canvas.  Needed for InputManager.
          * @returns a client rectangle
@@ -64521,15 +64593,15 @@ declare module BABYLON {
          */
         getZOffset(): number;
         /**
-         * Set the z offset Unit to apply to current rendering
+         * Set the z offset Units to apply to current rendering
          * @param value defines the offset to apply
          */
-        setZOffsetUnit(value: number): void;
+        setZOffsetUnits(value: number): void;
         /**
-         * Gets the current value of the zOffset Unit
-         * @returns the current zOffset Unit state
+         * Gets the current value of the zOffset Units
+         * @returns the current zOffset Units state
          */
-        getZOffsetUnit(): number;
+        getZOffsetUnits(): number;
         /**
          * Enable or disable depth buffering
          * @param enable defines the state to set
@@ -84127,7 +84199,7 @@ declare module BABYLON {
         /**
          * Defines a zOffset default Unit to prevent zFighting between the overlay and the mesh.
          */
-        zOffsetUnit: number;
+        zOffsetUnits: number;
         private _engine;
         private _savedDepthWrite;
         private _nameForDrawWrapper;
