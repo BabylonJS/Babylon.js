@@ -222,6 +222,9 @@ export class Slider3D extends Control3D {
                     if (!!this._sliderThumbMaterial) {
                         sliderThumbModel.material = this._sliderThumbMaterial;
                     }
+                    if (this._sliderThumb) {
+                        this._sliderThumb.dispose();
+                    }
                     this._sliderThumb = sliderThumbModel;
                 }
             });
