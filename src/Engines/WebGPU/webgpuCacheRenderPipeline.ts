@@ -27,7 +27,7 @@ enum StatePosition {
 }
 
 const textureFormatToIndex: { [name: string]: number } = {
-    "" : 0,
+    "": 0,
     "r8unorm": 1,
     "r8snorm": 2,
     "r8uint": 3,
@@ -703,7 +703,7 @@ export abstract class WebGPUCacheRenderPipeline {
 
     private _getAphaBlendState(): GPUBlendComponent {
         if (!this._alphaBlendEnabled) {
-            return { };
+            return {};
         }
 
         return {
@@ -715,7 +715,7 @@ export abstract class WebGPUCacheRenderPipeline {
 
     private _getColorBlendState(): GPUBlendComponent {
         if (!this._alphaBlendEnabled) {
-            return { };
+            return {};
         }
 
         return {
@@ -784,9 +784,9 @@ export abstract class WebGPUCacheRenderPipeline {
             this._stencilFrontCompare + (this._stencilFrontDepthFailOp << 3) + (this._stencilFrontPassOp << 6) + (this._stencilFrontFailOp << 9);
 
         const depthStencilState =
-                this._depthStencilFormat +
-                ((this._depthTestEnabled ? this._depthCompare : 7 /* ALWAYS */) << 6) +
-                (stencilState << 10); // stencil front - stencil back is the same
+            this._depthStencilFormat +
+            ((this._depthTestEnabled ? this._depthCompare : 7 /* ALWAYS */) << 6) +
+            (stencilState << 10); // stencil front - stencil back is the same
 
         if (this._depthStencilState !== depthStencilState) {
             this._depthStencilState = depthStencilState;

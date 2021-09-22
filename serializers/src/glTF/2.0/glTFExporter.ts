@@ -712,7 +712,7 @@ export class _Exporter {
             case VertexBuffer.ColorKind: {
                 const meshMaterial = (babylonTransformNode as Mesh).material;
                 const convertToLinear = meshMaterial ? (meshMaterial.getClassName() === "StandardMaterial") : true;
-                const vertexData : Color3 | Color4 = stride === 3 ? new Color3() : new Color4();
+                const vertexData: Color3 | Color4 = stride === 3 ? new Color3() : new Color4();
                 for (let k = 0, length = meshAttributeArray.length / stride; k < length; ++k) {
                     index = k * stride;
                     if (stride === 3) {
@@ -1904,7 +1904,7 @@ export class _Exporter {
             const inverseBindMatrices: Matrix[] = [];
             const skeletonMesh = babylonScene.meshes.find((mesh) => { mesh.skeleton === skeleton; });
             skin.skeleton = skeleton.overrideMesh === null ? (skeletonMesh ? nodeMap[skeletonMesh.uniqueId] : undefined) : nodeMap[skeleton.overrideMesh.uniqueId];
-            const boneIndexMap: {[index: number]: Bone} = {};
+            const boneIndexMap: { [index: number]: Bone } = {};
             let boneIndexMax: number = -1;
             let boneIndex: number = -1;
             for (let bone of skeleton.bones) {

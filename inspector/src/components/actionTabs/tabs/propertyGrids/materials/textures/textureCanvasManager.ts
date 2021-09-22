@@ -34,12 +34,12 @@ import { canvasShader } from './canvasShader';
 import { IWheelEvent } from 'babylonjs/Events/deviceInputEvents';
 
 export interface IPixelData {
-    x? : number;
-    y? : number;
-    r? : number;
-    g? : number;
-    b? : number;
-    a? : number;
+    x?: number;
+    y?: number;
+    r?: number;
+    g?: number;
+    b?: number;
+    a?: number;
 }
 
 export class TextureCanvasManager {
@@ -48,59 +48,59 @@ export class TextureCanvasManager {
     private _camera: FreeCamera;
     private _cameraPos: Vector2;
 
-    private _scale : number;
-    private _isPanning : boolean = false;
-    private _mouseX : number;
-    private _mouseY : number;
+    private _scale: number;
+    private _isPanning: boolean = false;
+    private _mouseX: number;
+    private _mouseY: number;
 
-    private _UICanvas : HTMLCanvasElement;
+    private _UICanvas: HTMLCanvasElement;
 
-    private _size : ISize;
+    private _size: ISize;
 
     /** The canvas we paint onto using the canvas API */
-    private _2DCanvas : HTMLCanvasElement;
+    private _2DCanvas: HTMLCanvasElement;
     /** The canvas we apply post processes to */
-    private _3DCanvas : HTMLCanvasElement;
+    private _3DCanvas: HTMLCanvasElement;
     /** The canvas which handles channel filtering */
-    private _channelsTexture : HtmlElementTexture;
+    private _channelsTexture: HtmlElementTexture;
 
-    private _3DEngine : Engine;
-    private _3DPlane : Mesh;
-    private _3DCanvasTexture : HtmlElementTexture;
-    private _3DScene : Scene;
+    private _3DEngine: Engine;
+    private _3DPlane: Mesh;
+    private _3DCanvasTexture: HtmlElementTexture;
+    private _3DScene: Scene;
 
-    private _channels : IChannel[] = [];
-    private _face : number = 0;
-    private _mipLevel : number = 0;
+    private _channels: IChannel[] = [];
+    private _face: number = 0;
+    private _mipLevel: number = 0;
 
     /** The texture from the original engine that we invoked the editor on */
     private _originalTexture: BaseTexture;
     /** This is a hidden texture which is only responsible for holding the actual texture memory in the original engine */
-    private _target : HtmlElementTexture | RawCubeTexture;
+    private _target: HtmlElementTexture | RawCubeTexture;
     /** The internal texture representation of the original texture */
-    private _originalInternalTexture : Nullable<InternalTexture> = null;
+    private _originalInternalTexture: Nullable<InternalTexture> = null;
     /** Keeps track of whether we have modified the texture */
-    private _didEdit : boolean = false;
+    private _didEdit: boolean = false;
 
-    private _plane : Mesh;
-    private _planeMaterial : ShaderMaterial;
+    private _plane: Mesh;
+    private _planeMaterial: ShaderMaterial;
 
     /** Tracks which keys are currently pressed */
-    private _keyMap : any = {};
+    private _keyMap: any = {};
     /** Tracks which mouse buttons are currently pressed */
     private _buttonsPressed = 0;
 
-    private readonly ZOOM_MOUSE_SPEED : number = 0.001;
-    private readonly ZOOM_KEYBOARD_SPEED : number = 0.4;
-    private readonly ZOOM_IN_KEY : string = '+';
-    private readonly ZOOM_OUT_KEY : string = '-';
+    private readonly ZOOM_MOUSE_SPEED: number = 0.001;
+    private readonly ZOOM_KEYBOARD_SPEED: number = 0.4;
+    private readonly ZOOM_IN_KEY: string = '+';
+    private readonly ZOOM_OUT_KEY: string = '-';
 
-    private readonly PAN_SPEED : number = 0.003;
+    private readonly PAN_SPEED: number = 0.003;
     private readonly PAN_KEY = 'Space';
 
-    private readonly MIN_SCALE : number = 0.01;
-    private readonly GRID_SCALE : number = 0.047;
-    private readonly MAX_SCALE : number = 10;
+    private readonly MIN_SCALE: number = 0.01;
+    private readonly GRID_SCALE: number = 0.047;
+    private readonly MAX_SCALE: number = 10;
 
     private readonly SELECT_ALL_KEY = 'KeyA';
     private readonly SAVE_KEY = 'KeyS';
@@ -110,23 +110,23 @@ export class TextureCanvasManager {
     /** The number of milliseconds between texture updates */
     private readonly PUSH_FREQUENCY = 32;
 
-    private _tool : Nullable<ITool>;
+    private _tool: Nullable<ITool>;
 
-    private _setPixelData : (pixelData : IPixelData) => void;
+    private _setPixelData: (pixelData: IPixelData) => void;
     private _setMipLevel: (mipLevel: number) => void;
 
-    private _window : Window;
+    private _window: Window;
 
-    private _metadata : IMetadata;
+    private _metadata: IMetadata;
 
-    private _editing3D : boolean = false;
+    private _editing3D: boolean = false;
 
-    private _onUpdate : () => void;
-    private _setMetadata : (metadata: any) => void;
+    private _onUpdate: () => void;
+    private _setMetadata: (metadata: any) => void;
 
-    private _imageData : Uint8Array | Uint8ClampedArray;
-    private _canPush : boolean = true;
-    private _shouldPush : boolean = false;
+    private _imageData: Uint8Array | Uint8ClampedArray;
+    private _canPush: boolean = true;
+    private _shouldPush: boolean = false;
     private _paintCanvas: HTMLCanvasElement;
 
     public constructor(
@@ -135,7 +135,7 @@ export class TextureCanvasManager {
         canvasUI: HTMLCanvasElement,
         canvas2D: HTMLCanvasElement,
         canvas3D: HTMLCanvasElement,
-        setPixelData: (pixelData : IPixelData) => void,
+        setPixelData: (pixelData: IPixelData) => void,
         metadata: IMetadata,
         onUpdate: () => void,
         setMetadata: (metadata: any) => void,
@@ -157,24 +157,24 @@ export class TextureCanvasManager {
         this._originalTexture = texture;
         this._originalInternalTexture = this._originalTexture._texture;
         this._engine = new Engine(this._UICanvas, true);
-        this._scene = new Scene(this._engine, {virtual: true});
+        this._scene = new Scene(this._engine, { virtual: true });
         this._scene.clearColor = new Color4(0.11, 0.11, 0.11, 1.0);
 
         this._camera = new FreeCamera('camera', new Vector3(0, 0, -1), this._scene);
         this._camera.mode = Camera.ORTHOGRAPHIC_CAMERA;
         this._cameraPos = new Vector2();
 
-        this._channelsTexture = new HtmlElementTexture('ct', this._2DCanvas, {engine: this._engine, scene: null, samplingMode: Texture.NEAREST_SAMPLINGMODE, generateMipMaps: true});
+        this._channelsTexture = new HtmlElementTexture('ct', this._2DCanvas, { engine: this._engine, scene: null, samplingMode: Texture.NEAREST_SAMPLINGMODE, generateMipMaps: true });
 
         this._3DEngine = new Engine(this._3DCanvas);
-        this._3DScene = new Scene(this._3DEngine, {virtual: true});
+        this._3DScene = new Scene(this._3DEngine, { virtual: true });
         this._3DScene.clearColor = new Color4(0, 0, 0, 0);
-        this._3DCanvasTexture = new HtmlElementTexture('canvas', this._2DCanvas, {engine: this._3DEngine, scene: this._3DScene});
+        this._3DCanvasTexture = new HtmlElementTexture('canvas', this._2DCanvas, { engine: this._3DEngine, scene: this._3DScene });
         this._3DCanvasTexture.hasAlpha = true;
         const cam = new FreeCamera('camera', new Vector3(0, 0, -1), this._3DScene);
         cam.mode = Camera.ORTHOGRAPHIC_CAMERA;
         [cam.orthoBottom, cam.orthoLeft, cam.orthoTop, cam.orthoRight] = [-0.5, -0.5, 0.5, 0.5];
-        this._3DPlane = PlaneBuilder.CreatePlane('texture', {width: 1, height: 1}, this._3DScene);
+        this._3DPlane = PlaneBuilder.CreatePlane('texture', { width: 1, height: 1 }, this._3DScene);
         this._3DPlane.hasVertexAlpha = true;
         const mat = new StandardMaterial('material', this._3DScene);
         mat.diffuseTexture = this._3DCanvasTexture;
@@ -250,7 +250,7 @@ export class TextureCanvasManager {
             this._planeMaterial.setInt('time', new Date().getTime());
         });
 
-        this._scale =  1.5 / Math.max(this._size.width, this._size.height);
+        this._scale = 1.5 / Math.max(this._size.width, this._size.height);
         this._isPanning = false;
 
         this._scene.onBeforeRenderObservable.add(() => {
@@ -261,10 +261,10 @@ export class TextureCanvasManager {
                 this._planeMaterial.setFloat('showGrid', 0.0);
             }
             const ratio = this._UICanvas?.width / this._UICanvas?.height;
-            const {x, y} = this._cameraPos;
+            const { x, y } = this._cameraPos;
             this._camera.orthoBottom = y - 1 / this._scale;
             this._camera.orthoTop = y + 1 / this._scale;
-            this._camera.orthoLeft =  x - ratio / this._scale;
+            this._camera.orthoLeft = x - ratio / this._scale;
             this._camera.orthoRight = x + ratio / this._scale;
         });
 
@@ -274,8 +274,8 @@ export class TextureCanvasManager {
             if (!this._isPanning) {
                 if ((leftButtonPressed && !(this._buttonsPressed & 1) && this._keyMap[this.PAN_KEY]) || middleButtonPressed) {
                     this._isPanning = true;
-                        this._mouseX = pointerInfo.event.x;
-                        this._mouseY = pointerInfo.event.y;
+                    this._mouseX = pointerInfo.event.x;
+                    this._mouseY = pointerInfo.event.y;
                 }
                 if (middleButtonPressed) {
                     this._isPanning = true;
@@ -299,7 +299,7 @@ export class TextureCanvasManager {
                     if (pointerInfo.pickInfo?.hit) {
                         const pos = this.getMouseCoordinates(pointerInfo);
                         const idx = (pos.x + pos.y * this._size.width) * 4;
-                        this._setPixelData({x: pos.x, y: pos.y, r: this._imageData[idx], g: this._imageData[idx + 1], b: this._imageData[idx + 2], a: this._imageData[idx + 3]});
+                        this._setPixelData({ x: pos.x, y: pos.y, r: this._imageData[idx], g: this._imageData[idx + 1], b: this._imageData[idx + 2], a: this._imageData[idx + 3] });
                     } else {
                         this._setPixelData({});
                     }
@@ -323,7 +323,7 @@ export class TextureCanvasManager {
                     break;
                 case KeyboardEventTypes.KEYUP:
                     this._keyMap[kbInfo.event.key] = false;
-                break;
+                    break;
             }
         });
     }
@@ -384,7 +384,7 @@ export class TextureCanvasManager {
         }
     }
 
-    public async startPainting() : Promise<CanvasRenderingContext2D> {
+    public async startPainting(): Promise<CanvasRenderingContext2D> {
         if (this._mipLevel != 0) { await this._setMipLevel(0); }
         let x = 0, y = 0, w = this._size.width, h = this._size.height;
         if (this._metadata.select.x1 != -1) {
@@ -413,7 +413,7 @@ export class TextureCanvasManager {
         this._channels.forEach((channel) => {
             if (!channel.editable) { editingAllChannels = false; }
         });
-        let oldData : Uint8ClampedArray;
+        let oldData: Uint8ClampedArray;
         if (!editingAllChannels) {
             oldData = this._2DCanvas.getContext('2d')!.getImageData(x, y, w, h).data;
         }
@@ -447,7 +447,7 @@ export class TextureCanvasManager {
         this.updateTexture();
     }
 
-    public stopPainting() : void {
+    public stopPainting(): void {
         this._paintCanvas.getContext('2d')!.clearRect(0, 0, this._paintCanvas.width, this._paintCanvas.height);
     }
 
@@ -478,7 +478,7 @@ export class TextureCanvasManager {
         }
     }
 
-    public paintPixelsOnCanvas(pixelData : Uint8Array, canvas: HTMLCanvasElement) {
+    public paintPixelsOnCanvas(pixelData: Uint8Array, canvas: HTMLCanvasElement) {
         const ctx = canvas.getContext('2d')!;
         const imgData = ctx.createImageData(canvas.width, canvas.height);
         imgData.data.set(pixelData);
@@ -493,7 +493,7 @@ export class TextureCanvasManager {
             this._size.width,
             this._size.height,
             this._face,
-            {R: true, G: true, B: true, A: true},
+            { R: true, G: true, B: true, A: true },
             undefined,
             this._mipLevel
         );
@@ -502,9 +502,9 @@ export class TextureCanvasManager {
         this._3DCanvasTexture.update();
         this.updateDisplay();
         return data;
-}
+    }
 
-    public getMouseCoordinates(pointerInfo : PointerInfo) {
+    public getMouseCoordinates(pointerInfo: PointerInfo) {
         if (pointerInfo.pickInfo?.hit) {
             const x = Math.floor(pointerInfo.pickInfo.getTextureCoordinates()!.x * this._size.width);
             const y = Math.floor((1 - pointerInfo.pickInfo.getTextureCoordinates()!.y) * this._size.height);
@@ -556,7 +556,7 @@ export class TextureCanvasManager {
         }
     }
 
-    public set mipLevel(mipLevel : number) {
+    public set mipLevel(mipLevel: number) {
         if (this._mipLevel === mipLevel) { return; }
         this._mipLevel = mipLevel;
         this.grabOriginalTexture();
@@ -569,7 +569,7 @@ export class TextureCanvasManager {
 
     public set metadata(metadata: IMetadata) {
         this._metadata = metadata;
-        const {x1, y1, x2, y2} = metadata.select;
+        const { x1, y1, x2, y2 } = metadata.select;
         this._planeMaterial.setInt('x1', x1);
         this._planeMaterial.setInt('y1', y1);
         this._planeMaterial.setInt('x2', x2);
@@ -578,7 +578,7 @@ export class TextureCanvasManager {
 
     private makePlane() {
         if (this._plane) { this._plane.dispose(); }
-        this._plane = PlaneBuilder.CreatePlane("plane", {width: this._size.width, height: this._size.height}, this._scene);
+        this._plane = PlaneBuilder.CreatePlane("plane", { width: this._size.width, height: this._size.height }, this._scene);
         this._plane.enableEdgesRendering();
         this._plane.edgesWidth = 4.0;
         this._plane.edgesColor = new Color4(1, 1, 1, 1);
@@ -586,7 +586,7 @@ export class TextureCanvasManager {
         this._plane.material = this._planeMaterial;
     }
 
-    public reset() : void {
+    public reset(): void {
         if (this._tool && this._tool.instance.onReset) {
             this._tool.instance.onReset();
         }
@@ -597,8 +597,8 @@ export class TextureCanvasManager {
         this._onUpdate();
     }
 
-    public async resize(newSize : ISize) {
-        const data = await TextureHelper.GetTextureDataAsync(this._originalTexture, newSize.width, newSize.height, this._face, {R: true, G: true, B: true, A: true});
+    public async resize(newSize: ISize) {
+        const data = await TextureHelper.GetTextureDataAsync(this._originalTexture, newSize.width, newSize.height, this._face, { R: true, G: true, B: true, A: true });
         this.setSize(newSize);
         this.paintPixelsOnCanvas(data, this._2DCanvas);
         this.updateTexture();
@@ -622,7 +622,7 @@ export class TextureCanvasManager {
         this.makePlane();
     }
 
-    public upload(file : File) {
+    public upload(file: File) {
         Tools.ReadFile(file, (data) => {
             var blob = new Blob([data], { type: "octet/stream" });
             let extension: string | undefined = undefined;
@@ -646,7 +646,7 @@ export class TextureCanvasManager {
                         false,
                         Texture.NEAREST_SAMPLINGMODE,
                         () => {
-                            TextureHelper.GetTextureDataAsync(texture, texture.getSize().width, texture.getSize().height, 0, {R: true, G: true, B: true, A: true})
+                            TextureHelper.GetTextureDataAsync(texture, texture.getSize().width, texture.getSize().height, 0, { R: true, G: true, B: true, A: true })
                                 .then(async (pixels) => {
                                     if (this._tool && this._tool.instance.onReset) {
                                         this._tool.instance.onReset();

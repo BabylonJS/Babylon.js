@@ -90,41 +90,41 @@ declare module "../../Engines/thinEngine" {
     }
 }
 
-ThinEngine.prototype.createComputeEffect = function(baseName: any, options: IComputeEffectCreationOptions): ComputeEffect {
+ThinEngine.prototype.createComputeEffect = function (baseName: any, options: IComputeEffectCreationOptions): ComputeEffect {
     throw new Error("createComputeEffect: This engine does not support compute shaders!");
 };
 
-ThinEngine.prototype.createComputePipelineContext = function(): IComputePipelineContext {
+ThinEngine.prototype.createComputePipelineContext = function (): IComputePipelineContext {
     throw new Error("createComputePipelineContext: This engine does not support compute shaders!");
 };
 
-ThinEngine.prototype.createComputeContext = function(): IComputeContext | undefined {
+ThinEngine.prototype.createComputeContext = function (): IComputeContext | undefined {
     return undefined;
 };
 
-ThinEngine.prototype.computeDispatch = function(effect: ComputeEffect, context: IComputeContext, bindings: ComputeBindingList, x: number, y?: number, z?: number, bindingsMapping?: ComputeBindingMapping): void {
+ThinEngine.prototype.computeDispatch = function (effect: ComputeEffect, context: IComputeContext, bindings: ComputeBindingList, x: number, y?: number, z?: number, bindingsMapping?: ComputeBindingMapping): void {
     throw new Error("computeDispatch: This engine does not support compute shaders!");
 };
 
-ThinEngine.prototype.areAllComputeEffectsReady = function(): boolean {
+ThinEngine.prototype.areAllComputeEffectsReady = function (): boolean {
     return true;
 };
 
-ThinEngine.prototype.releaseComputeEffects = function(): void {
+ThinEngine.prototype.releaseComputeEffects = function (): void {
 };
 
-ThinEngine.prototype._prepareComputePipelineContext = function(pipelineContext: IComputePipelineContext, computeSourceCode: string, rawComputeSourceCode: string, defines: Nullable<string>, entryPoint: string): void {
+ThinEngine.prototype._prepareComputePipelineContext = function (pipelineContext: IComputePipelineContext, computeSourceCode: string, rawComputeSourceCode: string, defines: Nullable<string>, entryPoint: string): void {
 };
 
-ThinEngine.prototype._rebuildComputeEffects = function(): void {
+ThinEngine.prototype._rebuildComputeEffects = function (): void {
 };
 
-ThinEngine.prototype._executeWhenComputeStateIsCompiled = function(pipelineContext: IComputePipelineContext, action: () => void): void {
+ThinEngine.prototype._executeWhenComputeStateIsCompiled = function (pipelineContext: IComputePipelineContext, action: () => void): void {
     action();
 };
 
-ThinEngine.prototype._releaseComputeEffect = function(effect: ComputeEffect): void {
+ThinEngine.prototype._releaseComputeEffect = function (effect: ComputeEffect): void {
 };
 
-ThinEngine.prototype._deleteComputePipelineContext = function(pipelineContext: IComputePipelineContext): void {
+ThinEngine.prototype._deleteComputePipelineContext = function (pipelineContext: IComputePipelineContext): void {
 };

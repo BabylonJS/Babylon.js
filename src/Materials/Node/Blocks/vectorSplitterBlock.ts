@@ -115,7 +115,7 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
             case "xy ":
                 return "xyIn";
             case "xyz ":
-                    return "xyzIn";
+                return "xyzIn";
             default:
                 return name;
         }
@@ -126,7 +126,7 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
             case "xy":
                 return "xyOut";
             case "xyz":
-                    return "xyzOut";
+                return "xyzOut";
             default:
                 return name;
         }

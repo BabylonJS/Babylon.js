@@ -100,7 +100,7 @@ declare module "../scene" {
 }
 
 Object.defineProperty(Scene.prototype, "mainSoundTrack", {
-    get: function(this: Scene) {
+    get: function (this: Scene) {
         let compo = this._getComponent(SceneComponentConstants.NAME_AUDIO) as AudioSceneComponent;
         if (!compo) {
             compo = new AudioSceneComponent(this);
@@ -117,7 +117,7 @@ Object.defineProperty(Scene.prototype, "mainSoundTrack", {
     configurable: true
 });
 
-Scene.prototype.getSoundByName = function(name: string): Nullable<Sound> {
+Scene.prototype.getSoundByName = function (name: string): Nullable<Sound> {
     var index: number;
     for (index = 0; index < this.mainSoundTrack.soundCollection.length; index++) {
         if (this.mainSoundTrack.soundCollection[index].name === name) {
@@ -139,7 +139,7 @@ Scene.prototype.getSoundByName = function(name: string): Nullable<Sound> {
 };
 
 Object.defineProperty(Scene.prototype, "audioEnabled", {
-    get: function(this: Scene) {
+    get: function (this: Scene) {
         let compo = this._getComponent(SceneComponentConstants.NAME_AUDIO) as AudioSceneComponent;
         if (!compo) {
             compo = new AudioSceneComponent(this);
@@ -148,7 +148,7 @@ Object.defineProperty(Scene.prototype, "audioEnabled", {
 
         return compo.audioEnabled;
     },
-    set: function(this: Scene, value: boolean) {
+    set: function (this: Scene, value: boolean) {
         let compo = this._getComponent(SceneComponentConstants.NAME_AUDIO) as AudioSceneComponent;
         if (!compo) {
             compo = new AudioSceneComponent(this);
@@ -167,7 +167,7 @@ Object.defineProperty(Scene.prototype, "audioEnabled", {
 });
 
 Object.defineProperty(Scene.prototype, "headphone", {
-    get: function(this: Scene) {
+    get: function (this: Scene) {
         let compo = this._getComponent(SceneComponentConstants.NAME_AUDIO) as AudioSceneComponent;
         if (!compo) {
             compo = new AudioSceneComponent(this);
@@ -176,7 +176,7 @@ Object.defineProperty(Scene.prototype, "headphone", {
 
         return compo.headphone;
     },
-    set: function(this: Scene, value: boolean) {
+    set: function (this: Scene, value: boolean) {
         let compo = this._getComponent(SceneComponentConstants.NAME_AUDIO) as AudioSceneComponent;
         if (!compo) {
             compo = new AudioSceneComponent(this);
@@ -195,7 +195,7 @@ Object.defineProperty(Scene.prototype, "headphone", {
 });
 
 Object.defineProperty(Scene.prototype, "audioListenerPositionProvider", {
-    get: function(this: Scene) {
+    get: function (this: Scene) {
         let compo = this._getComponent(SceneComponentConstants.NAME_AUDIO) as AudioSceneComponent;
         if (!compo) {
             compo = new AudioSceneComponent(this);
@@ -204,7 +204,7 @@ Object.defineProperty(Scene.prototype, "audioListenerPositionProvider", {
 
         return compo.audioListenerPositionProvider;
     },
-    set: function(this: Scene, value: () => Vector3) {
+    set: function (this: Scene, value: () => Vector3) {
         let compo = this._getComponent(SceneComponentConstants.NAME_AUDIO) as AudioSceneComponent;
         if (!compo) {
             compo = new AudioSceneComponent(this);
@@ -222,7 +222,7 @@ Object.defineProperty(Scene.prototype, "audioListenerPositionProvider", {
 });
 
 Object.defineProperty(Scene.prototype, "audioPositioningRefreshRate", {
-    get: function(this: Scene) {
+    get: function (this: Scene) {
         let compo = this._getComponent(SceneComponentConstants.NAME_AUDIO) as AudioSceneComponent;
         if (!compo) {
             compo = new AudioSceneComponent(this);
@@ -231,7 +231,7 @@ Object.defineProperty(Scene.prototype, "audioPositioningRefreshRate", {
 
         return compo.audioPositioningRefreshRate;
     },
-    set: function(this: Scene, value: number) {
+    set: function (this: Scene, value: number) {
         let compo = this._getComponent(SceneComponentConstants.NAME_AUDIO) as AudioSceneComponent;
         if (!compo) {
             compo = new AudioSceneComponent(this);

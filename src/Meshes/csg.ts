@@ -754,7 +754,7 @@ export class CSG {
 
                     if (uvs &&
                         !(uvs[vertex_idx * 2] === uv.x ||
-                        uvs[vertex_idx * 2 + 1] === uv.y)) {
+                            uvs[vertex_idx * 2 + 1] === uv.y)) {
                         areUvsDifferent = true;
                     }
 
@@ -762,9 +762,9 @@ export class CSG {
 
                     if (vertColors &&
                         !(vertColors[vertex_idx * 4] === vertColor.r ||
-                        vertColors[vertex_idx * 4 + 1] === vertColor.g ||
-                        vertColors[vertex_idx * 4 + 2] === vertColor.b ||
-                        vertColors[vertex_idx * 4 + 3] === vertColor.a)) {
+                            vertColors[vertex_idx * 4 + 1] === vertColor.g ||
+                            vertColors[vertex_idx * 4 + 2] === vertColor.b ||
+                            vertColors[vertex_idx * 4 + 3] === vertColor.a)) {
                         areColorsDifferent = true;
                     }
 
@@ -773,14 +773,14 @@ export class CSG {
                         normals[vertex_idx * 3] === localNormal.x &&
                         normals[vertex_idx * 3 + 1] === localNormal.y &&
                         normals[vertex_idx * 3 + 2] === localNormal.z) || areUvsDifferent || areColorsDifferent) {
-                            vertices.push(localVertex.x, localVertex.y, localVertex.z);
-                            if (uvs) {
-                                uvs.push(uv.x, uv.y);
-                            }
-                            normals.push(normal.x, normal.y, normal.z);
-                            if (vertColors) {
-                                vertColors.push(vertColor.r, vertColor.g, vertColor.b, vertColor.a);
-                            }
+                        vertices.push(localVertex.x, localVertex.y, localVertex.z);
+                        if (uvs) {
+                            uvs.push(uv.x, uv.y);
+                        }
+                        normals.push(normal.x, normal.y, normal.z);
+                        if (vertColors) {
+                            vertColors.push(vertColor.r, vertColor.g, vertColor.b, vertColor.a);
+                        }
                         vertex_idx = (<any>vertice_dict)[localVertex.x + ',' + localVertex.y + ',' + localVertex.z] = (vertices.length / 3) - 1;
                     }
 

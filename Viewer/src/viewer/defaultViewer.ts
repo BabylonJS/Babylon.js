@@ -34,7 +34,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
      */
     constructor(public containerElement: Element, initialConfiguration: ViewerConfiguration = { extends: 'default' }) {
         super(containerElement, initialConfiguration);
-        
+
         this.onModelLoadedObservable.add(this._onModelLoaded);
         this.onModelRemovedObservable.add(() => {
             this._configureTemplate();
@@ -47,9 +47,9 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
         });
 
         this.onInitDoneObservable.add(() => {
-            this.sceneManager.setDefaultMaterial = function(sceneConfig: ISceneConfiguration){
+            this.sceneManager.setDefaultMaterial = function (sceneConfig: ISceneConfiguration) {
                 let conf = sceneConfig.defaultMaterial;
-                if(!conf){
+                if (!conf) {
                     return;
                 }
                 if ((conf.materialType === 'standard' && this.scene.defaultMaterial.getClassName() !== 'StandardMaterial') ||
@@ -127,7 +127,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
                     }, () => {
                     }, () => {
                     }, () => {
-                    }, function() {
+                    }, function () {
                     }, (file: File) => {
                         this.loadModel(file);
                     }, () => {

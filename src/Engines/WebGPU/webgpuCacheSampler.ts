@@ -255,7 +255,7 @@ export class WebGPUCacheSampler {
 
         let sampler = bypassCache ? undefined : this._samplers[hash];
         if (!sampler) {
-            sampler =  this._device.createSampler(WebGPUCacheSampler._GetSamplerDescriptor(internalTexture));
+            sampler = this._device.createSampler(WebGPUCacheSampler._GetSamplerDescriptor(internalTexture));
             if (!bypassCache) {
                 this._samplers[hash] = sampler;
             }

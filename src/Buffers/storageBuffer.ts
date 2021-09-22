@@ -49,7 +49,7 @@ export class StorageBuffer {
      * @param byteOffset the byte offset of the data (optional)
      * @param byteLength the byte length of the data (optional)
      */
-     public update(data: DataArray, byteOffset?: number, byteLength?: number): void {
+    public update(data: DataArray, byteOffset?: number, byteLength?: number): void {
         if (!this._buffer) {
             return;
         }
@@ -71,7 +71,7 @@ export class StorageBuffer {
     /**
      * Disposes the storage buffer
      */
-     public dispose(): void {
+    public dispose(): void {
         const storageBuffers = this._engine._storageBuffers;
         let index = storageBuffers.indexOf(this);
 

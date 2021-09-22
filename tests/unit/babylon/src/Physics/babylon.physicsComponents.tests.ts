@@ -17,13 +17,13 @@ describe('Babylon physicsComponents', () => {
     /**
      * Loads the dependencies.
      */
-    before(function(done) {
+    before(function (done) {
         this.timeout(180000);
 
         (BABYLONDEVTOOLS).Loader
             .useDist()
             .testMode()
-            .load(function() {
+            .load(function () {
                 // Force apply promise polyfill for consistent behavior between chrome headless, IE11, and other browsers.
                 BABYLON.PromisePolyfill.Apply(true);
 
@@ -36,7 +36,7 @@ describe('Babylon physicsComponents', () => {
     /**
      * Create a new engine and scene before each test.
      */
-    beforeEach(function(done) {
+    beforeEach(function (done) {
         engine = new BABYLON.NullEngine({
             renderHeight: 256,
             renderWidth: 256,
@@ -127,16 +127,16 @@ describe('Babylon physicsComponents', () => {
     });
 
     // test 'Scene.onBeforePhysicsObservable' and 'Scene.onAfterPhysicsObservable' callbacks
-    describe('observables should fire before and after', function() {
+    describe('observables should fire before and after', function () {
 
         var obWasCalled = false;
 
         // only going to test onBefore for now
-        it('onBefore should trigger as soon as I animate', function(done) {
+        it('onBefore should trigger as soon as I animate', function (done) {
 
             scene.enablePhysics(gravityVector, physicsPlugin);
 
-            scene.onBeforePhysicsObservable.add(function(observer: any) {
+            scene.onBeforePhysicsObservable.add(function (observer: any) {
                 expect(obWasCalled).to.be.false;
                 obWasCalled = true;
                 done();
@@ -151,9 +151,9 @@ describe('Babylon physicsComponents', () => {
 
     // previous tests were on injected properties of Scene.
     // now test 'applyImpulse' which is an injected property of AbstractMesh
-    describe('applyImpulse should move a mesh', function() {
+    describe('applyImpulse should move a mesh', function () {
 
-        it('if an impulse is applied', function() {
+        it('if an impulse is applied', function () {
 
             scene.enablePhysics(noGravityVector, physicsPlugin);   // NO gravity
             let getGravity = scene.getPhysicsEngine().gravity;

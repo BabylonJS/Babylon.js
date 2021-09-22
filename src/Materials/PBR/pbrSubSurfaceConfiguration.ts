@@ -232,13 +232,13 @@ export class PBRSubSurfaceConfiguration {
     /**
      * Defines that the thickness should be used as a measure of the depth volume.
      */
-     @serialize()
-     public useThicknessAsDepth = false;
+    @serialize()
+    public useThicknessAsDepth = false;
 
-     /**
-     * Defines the volume tint of the material.
-     * This is used for both translucency and scattering.
-     */
+    /**
+    * Defines the volume tint of the material.
+    * This is used for both translucency and scattering.
+    */
     @serializeAsColor3()
     public tintColor = Color3.White();
 

@@ -4,7 +4,7 @@ import { Nullable } from 'babylonjs/types'
 import { Observer } from 'babylonjs/Misc/observable';
 import { Color3 } from 'babylonjs/Maths/math.color';
 
-export const Eyedropper : IToolData = {
+export const Eyedropper: IToolData = {
     name: 'Eyedropper',
     type: class {
         getParameters: () => IToolParameters;
@@ -15,18 +15,18 @@ export const Eyedropper : IToolData = {
             this.getParameters = getParameters;
         }
 
-        pick(pointerInfo : PointerInfo) {
-            const {canvas2D, setMetadata, getMouseCoordinates} = this.getParameters();
+        pick(pointerInfo: PointerInfo) {
+            const { canvas2D, setMetadata, getMouseCoordinates } = this.getParameters();
             const ctx = canvas2D.getContext('2d');
-            const {x, y} = getMouseCoordinates(pointerInfo);
+            const { x, y } = getMouseCoordinates(pointerInfo);
             const pixel = ctx!.getImageData(x, y, 1, 1).data;
             setMetadata({
                 color: Color3.FromInts(pixel[0], pixel[1], pixel[2]).toHexString(),
                 alpha: pixel[3] / 255
             });
         }
-        
-        setup () {
+
+        setup() {
             this.pointerObserver = this.getParameters().scene.onPointerObservable.add((pointerInfo) => {
                 if (pointerInfo.pickInfo?.hit) {
                     if (pointerInfo.type === PointerEventTypes.POINTERDOWN && (pointerInfo.event.buttons === 1) && this.getParameters().interactionEnabled()) {
@@ -44,7 +44,7 @@ export const Eyedropper : IToolData = {
             });
             this.isPicking = false;
         }
-        cleanup () {
+        cleanup() {
             if (this.pointerObserver) {
                 this.getParameters().scene.onPointerObservable.remove(this.pointerObserver);
             }
