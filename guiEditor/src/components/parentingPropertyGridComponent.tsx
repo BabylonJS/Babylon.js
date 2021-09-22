@@ -6,6 +6,8 @@ import { LockObject } from "../sharedUiComponents/tabs/propertyGrids/lockObject"
 import { PropertyChangedEvent } from "../sharedUiComponents/propertyChangedEvent";
 import { Observable } from "babylonjs/Misc/observable";
 import { Grid } from "babylonjs-gui/2D/controls/grid";
+import { Tools } from "../tools";
+import { Vector2 } from "babylonjs/Maths/math.vector";
 
 interface IParentingPropertyGridComponentProps {
     control: Control,
@@ -16,7 +18,6 @@ interface IParentingPropertyGridComponentProps {
 export class ParentingPropertyGridComponent extends React.Component<IParentingPropertyGridComponentProps> {
     constructor(props: IParentingPropertyGridComponentProps) {
         super(props);
-        this.getCellInfo();
     }
     private _columnNumber: number;
     private _rowNumber: number;
@@ -24,20 +25,31 @@ export class ParentingPropertyGridComponent extends React.Component<IParentingPr
     updateGridPosition() {
         const grid = this.props.control.parent as Grid;
         if (grid) {
-            grid.removeControl(this.props.control);
-            grid.addControl(this.props.control, this._rowNumber, this._columnNumber);
+            this._reorderGrid(grid, this.props.control, new Vector2(this._columnNumber, this._rowNumber));
         }
     }
 
     getCellInfo() {
-        const cellInfo = (this.props.control.parent as Grid).getChildCellInfo(this.props.control);
-        this._rowNumber = parseInt(cellInfo.substring(0, cellInfo.search(":")));
-        if (isNaN(this._rowNumber)) {
-            this._rowNumber = 0;
+        const cellInfo = Tools.getCellInfo(this.props.control.parent as Grid, this.props.control);
+        this._columnNumber = cellInfo.x;
+        this._rowNumber = cellInfo.y;
+    }
+
+    private _reorderGrid(grid: Grid, draggedControl: Control, newCell : Vector2) {
+        let index = grid.children.indexOf(draggedControl);
+        grid.removeControl(draggedControl);
+        let tags: Vector2[] = [];
+        let controls: Control[] = [];
+        let length = grid.children.length;
+        for (let i = index; i < length; ++i) {
+            const control = grid.children[index];
+            controls.push(control);
+            tags.push(Tools.getCellInfo(grid, control));
+            grid.removeControl(control);
         }
-        this._columnNumber = parseInt(cellInfo.substring(cellInfo.search(":") + 1));
-        if (isNaN(this._columnNumber)) {
-            this._columnNumber = 0;
+        grid.addControl(draggedControl, newCell.x, newCell.y);
+        for (let i = 0; i < controls.length; ++i) {
+            grid.addControl(controls[i], tags[i].x, tags[i].y);
         }
     }
 

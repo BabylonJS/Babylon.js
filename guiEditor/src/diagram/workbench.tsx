@@ -444,28 +444,29 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
     }
 
-    private _reorderGrid(draggedControlParent: Grid, draggedControl: Control, dropLocationControl: Control) {
+    private _reorderGrid(grid: Grid, draggedControl: Control, dropLocationControl: Control) {
 
-        let ct = Tools.getCellInfo(draggedControlParent, draggedControl);
-        draggedControlParent.removeControl(draggedControl);
+        let cellInfo = Tools.getCellInfo(grid, draggedControl);
+        grid.removeControl(draggedControl);
 
-        let index = draggedControlParent.children.indexOf(dropLocationControl);
+        let index = grid.children.indexOf(dropLocationControl);
         index = this._adjustParentingIndex(index);
         
         let tags: Vector2[] = [];
         let controls: Control[] = [];
-        let length = draggedControlParent.children.length;
+        let length = grid.children.length;
         for (let i = index; i < length; ++i) {
-            const control = draggedControlParent.children[index];
+            const control = grid.children[index];
             controls.push(control);
-            tags.push(Tools.getCellInfo(draggedControlParent, control));
-            draggedControlParent.removeControl(control);
+            tags.push(Tools.getCellInfo(grid, control));
+            grid.removeControl(control);
         }
+        
         tags.reverse();
         controls.reverse();
-        draggedControlParent.addControl(draggedControl, ct.x, ct.y);
+        grid.addControl(draggedControl, cellInfo.x, cellInfo.y);
         for (let i = 0; i < controls.length; ++i) {
-            draggedControlParent.addControl(controls[i], tags[i].x, tags[i].y);
+            grid.addControl(controls[i], tags[i].x, tags[i].y);
         }
     }
 
