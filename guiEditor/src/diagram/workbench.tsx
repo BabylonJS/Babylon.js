@@ -539,9 +539,14 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                     ratioX = cell.widthInPixels;
                     ratioY = cell.heightInPixels;
                 }
+                else if (guiControl.parent.typeName === "Rectangle" || guiControl.parent.typeName === "Button") {
+                    const thickness = (guiControl.parent as Rectangle).thickness * 2;
+                    ratioX = guiControl.parent._currentMeasure.width - thickness;
+                    ratioY = guiControl.parent._currentMeasure.height - thickness;
+                }
                 else {
-                    ratioX = guiControl.parent.widthInPixels;
-                    ratioY = guiControl.parent.heightInPixels;
+                    ratioX = guiControl.parent._currentMeasure.width;
+                    ratioY = guiControl.parent._currentMeasure.height;
                 }
             }
             const left = (guiControl.leftInPixels * 100) / ratioX;
