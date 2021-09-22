@@ -60,12 +60,18 @@ declare module "babylonjs-procedural-textures/cloud/cloudProceduralTexture" {
     export class CloudProceduralTexture extends ProceduralTexture {
         private _skyColor;
         private _cloudColor;
+        private _amplitude;
+        private _numOctaves;
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
         get skyColor(): Color4;
         set skyColor(value: Color4);
         get cloudColor(): Color4;
         set cloudColor(value: Color4);
+        get amplitude(): number;
+        set amplitude(value: number);
+        get numOctaves(): number;
+        set numOctaves(value: number);
         /**
          * Serializes this cloud procedural texture
          * @returns a serialized cloud procedural texture object
@@ -543,12 +549,18 @@ declare module BABYLON {
     export class CloudProceduralTexture extends BABYLON.ProceduralTexture {
         private _skyColor;
         private _cloudColor;
+        private _amplitude;
+        private _numOctaves;
         constructor(name: string, size: number, scene: BABYLON.Scene, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
         get skyColor(): BABYLON.Color4;
         set skyColor(value: BABYLON.Color4);
         get cloudColor(): BABYLON.Color4;
         set cloudColor(value: BABYLON.Color4);
+        get amplitude(): number;
+        set amplitude(value: number);
+        get numOctaves(): number;
+        set numOctaves(value: number);
         /**
          * Serializes this cloud procedural texture
          * @returns a serialized cloud procedural texture object

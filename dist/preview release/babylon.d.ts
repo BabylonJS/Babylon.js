@@ -5512,6 +5512,22 @@ declare module BABYLON {
         get isBlocking(): boolean;
         /** @hidden */
         _parentContainer: Nullable<AbstractScene>;
+        protected _loadingError: boolean;
+        protected _errorObject?: {
+            message?: string;
+            exception?: any;
+        };
+        /**
+         * Was there any loading error?
+         */
+        get loadingError(): boolean;
+        /**
+         * If a loading error occurred this object will be populated with information about the error.
+         */
+        get errorObject(): {
+            message?: string;
+            exception?: any;
+        } | undefined;
         /**
          * Instantiates a new BaseTexture.
          * Base class of all the textures in babylon.
@@ -5545,7 +5561,7 @@ declare module BABYLON {
         getReflectionTextureMatrix(): Matrix;
         /**
          * Get if the texture is ready to be consumed (either it is ready or it is not blocking)
-         * @returns true if ready or not blocking
+         * @returns true if ready, not blocking or if there was an error loading the texture
          */
         isReadyOrNotBlocking(): boolean;
         /**
@@ -21339,8 +21355,9 @@ declare module BABYLON {
          * Build the material and generates the inner effect
          * @param verbose defines if the build should log activity
          * @param updateBuildId defines if the internal build Id should be updated (default is true)
+         * @param autoConfigure defines if the autoConfigure method should be called when initializing blocks (default is true)
          */
-        build(verbose?: boolean, updateBuildId?: boolean): void;
+        build(verbose?: boolean, updateBuildId?: boolean, autoConfigure?: boolean): void;
         /**
          * Runs an otpimization phase to try to improve the shader code
          */
@@ -24404,6 +24421,10 @@ declare module BABYLON {
          * If no buffer exists, one will be created as base64 string from the internal webgl data.
          */
         static ForceSerializeBuffers: boolean;
+        /**
+         * This observable will notify when any texture had a loading error
+         */
+        static OnTextureLoadErrorObservable: Observable<BaseTexture>;
         /** @hidden */
         static _CubeTextureParser: (jsonTexture: any, scene: Scene, rootUrl: string) => CubeTexture;
         /** @hidden */
@@ -25784,10 +25805,10 @@ declare module BABYLON {
         /**
          * Synchronize and normalize current Animatable with a source Animatable
          * This is useful when using animation weights and when animations are not of the same length
-         * @param root defines the root Animatable to synchronize with
+         * @param root defines the root Animatable to synchronize with (null to stop synchronizing)
          * @returns the current Animatable
          */
-        syncWith(root: Animatable): Animatable;
+        syncWith(root: Nullable<Animatable>): Animatable;
         /**
          * Gets the list of runtime animations
          * @returns an array of RuntimeAnimation
@@ -31866,10 +31887,7 @@ declare module BABYLON {
          * @hidden Reference to the shape model BoundingInfo object (Internal use)
          */
         _modelBoundingInfo: BoundingInfo;
-        /**
-         * @hidden Particle BoundingInfo object (Internal use)
-         */
-        _boundingInfo: BoundingInfo;
+        private _boundingInfo;
         /**
          * @hidden Reference to the SPS what the particle belongs to (Internal use)
          */
@@ -31910,6 +31928,15 @@ declare module BABYLON {
          * @hidden Internal global position in the SPS.
          */
         _globalPosition: Vector3;
+        /**
+         * Particle BoundingInfo object
+         * @returns a BoundingInfo
+         */
+        getBoundingInfo(): BoundingInfo;
+        /**
+         * Returns true if there is already a bounding info
+         */
+        get hasBoundingInfo(): boolean;
         /**
          * Creates a Solid Particle object.
          * Don't create particles manually, use instead the Solid Particle System internal tools like _addParticle()
@@ -32487,8 +32514,8 @@ declare module BABYLON {
         _edgesRenderer: Nullable<IEdgesRenderer>;
         /** @hidden */
         _masterMesh: Nullable<AbstractMesh>;
-        /** @hidden */
-        _boundingInfo: Nullable<BoundingInfo>;
+        private _boundingInfo;
+        private _boundingInfoIsDirty;
         /** @hidden */
         _renderId: number;
         /**
@@ -32686,6 +32713,24 @@ declare module BABYLON {
          */
         getBoundingInfo(): BoundingInfo;
         /**
+         * Overwrite the current bounding info
+         * @param boundingInfo defines the new bounding info
+         * @returns the current mesh
+         */
+        setBoundingInfo(boundingInfo: BoundingInfo): AbstractMesh;
+        /**
+         * Returns true if there is already a bounding info
+         */
+        get hasBoundingInfo(): boolean;
+        /**
+         * Creates a new bounding info for the mesh
+         * @param minimum min vector of the bounding box/sphere
+         * @param maximum max vector of the bounding box/sphere
+         * @param worldMatrix defines the new world matrix
+         * @returns the new bounding info
+         */
+        buildBoundingInfo(minimum: DeepImmutable<Vector3>, maximum: DeepImmutable<Vector3>, worldMatrix?: DeepImmutable<Matrix>): BoundingInfo;
+        /**
          * Uniformly scales the mesh to fit inside of a unit cube (1 X 1 X 1 units)
          * @param includeDescendants Use the hierarchy's bounding box instead of the mesh's bounding box. Default is false
          * @param ignoreRotation ignore rotation when computing the scale (ie. object will be axis aligned). Default is false
@@ -32693,12 +32738,6 @@ declare module BABYLON {
          * @returns the current mesh
          */
         normalizeToUnitCube(includeDescendants?: boolean, ignoreRotation?: boolean, predicate?: Nullable<(node: AbstractMesh) => boolean>): AbstractMesh;
-        /**
-         * Overwrite the current bounding info
-         * @param boundingInfo defines the new bounding info
-         * @returns the current mesh
-         */
-        setBoundingInfo(boundingInfo: BoundingInfo): AbstractMesh;
         /** Gets a boolean indicating if this mesh has skinning data and an attached skeleton */
         get useBones(): boolean;
         /** @hidden */
@@ -37968,6 +38007,10 @@ declare module BABYLON {
         _generateMipMaps: boolean;
         /** @hidden */
         _cleared: boolean;
+        /**
+         * Skip the initial clear of the rtt at the beginning of the frame render loop
+         */
+        skipInitialClear: boolean;
         protected _renderingManager: RenderingManager;
         /** @hidden */
         _waitingRenderList?: string[];
@@ -44117,8 +44160,9 @@ declare module BABYLON {
          * Force the value of meshUnderPointer
          * @param mesh defines the mesh to use
          * @param pointerId optional pointer id when using more than one pointer. Defaults to 0
+         * @param pickResult optional pickingInfo data used to find mesh
          */
-        setPointerOverMesh(mesh: Nullable<AbstractMesh>, pointerId?: number): void;
+        setPointerOverMesh(mesh: Nullable<AbstractMesh>, pointerId?: number, pickResult?: Nullable<PickingInfo>): void;
         /**
          * Gets the mesh under the pointer
          * @returns a Mesh or null if no mesh is under the pointer
@@ -44371,11 +44415,11 @@ declare module BABYLON {
         setWeightForAllAnimatables(weight: number): AnimationGroup;
         /**
          * Synchronize and normalize all animatables with a source animatable
-         * @param root defines the root animatable to synchronize with
+         * @param root defines the root animatable to synchronize with (null to stop synchronizing)
          * @return the animationGroup
          * @see https://doc.babylonjs.com/babylon101/animations#animation-weights
          */
-        syncAllAnimationsWith(root: Animatable): AnimationGroup;
+        syncAllAnimationsWith(root: Nullable<Animatable>): AnimationGroup;
         /**
          * Goes to a specific frame in this animation group
          * @param frame the frame number to go to
@@ -46867,8 +46911,9 @@ declare module BABYLON {
          * Force the value of meshUnderPointer
          * @param mesh defines the mesh to use
          * @param pointerId optional pointer id when using more than one pointer
+         * @param pickResult optional pickingInfo data used to find mesh
          */
-        setPointerOverMesh(mesh: Nullable<AbstractMesh>, pointerId?: number): void;
+        setPointerOverMesh(mesh: Nullable<AbstractMesh>, pointerId?: number, pickResult?: Nullable<PickingInfo>): void;
         /**
          * Gets the mesh under the pointer
          * @returns a Mesh or null if no mesh is under the pointer
@@ -50331,6 +50376,34 @@ declare module BABYLON {
          * Returns true if Babylon.js is using the BabylonNative backend, otherwise false
          */
         get isNative(): boolean;
+        /**
+         * The current frame rate as reported by the device
+         */
+        get currentFrameRate(): number | undefined;
+        /**
+         * A list of supported frame rates (only available in-session!
+         */
+        get supportedFrameRates(): Float32Array | undefined;
+        /**
+         * Set the framerate of the session.
+         * @param rate the new framerate. This value needs to be in the supportedFrameRates array
+         * @returns a promise that resolves once the framerate has been set
+         */
+        updateTargetFrameRate(rate: number): Promise<void>;
+        /**
+         * Check if fixed foveation is supported on this device
+         */
+        get isFixedFoveationSupported(): boolean;
+        /**
+         * Get the fixed foveation currently set, as specified by the webxr specs
+         * If this returns null, then fixed foveation is not supported
+         */
+        get fixedFoveation(): Nullable<number>;
+        /**
+         * Set the fixed foveation to the specified value, as specified by the webxr specs
+         * This value will be normalized to be between 0 and 1, 1 being max foveation, 0 being no foveation
+         */
+        set fixedFoveation(value: Nullable<number>);
         private _createRenderTargetTexture;
         private _destroyRenderTargetTexture;
     }
@@ -60696,6 +60769,8 @@ declare module BABYLON {
         camera?: Camera;
         /** Indicates if the destination view canvas should be cleared before copying the parent canvas. Can help if the scene clear color has alpha < 1 */
         clearBeforeCopy?: boolean;
+        /** Indicates if the view is enabled (true by default) */
+        enabled: boolean;
     }
         interface Engine {
             /**
@@ -84325,6 +84400,29 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+        interface Observable<T> {
+            /**
+             * Internal list of iterators and promise resolvers associated with coroutines.
+             */
+            coroutineIterators: Nullable<Array<{
+                iterator: Iterator<void | Promise<void>, void, void>;
+                resolver: () => void;
+                rejecter: () => void;
+                paused: boolean;
+            }>>;
+            /**
+             * Runs a coroutine asynchronously on this observable
+             * @param coroutineIterator the iterator resulting from having started the coroutine
+             * @returns a promise which will be resolved when the coroutine finishes or rejected if the coroutine is cancelled
+             */
+            runCoroutineAsync(coroutineIterator: Iterator<void | Promise<void>, void, void>): Promise<void>;
+            /**
+             * Cancels all coroutines currently running on this observable
+             */
+            cancelAllCoroutines(): void;
+        }
+}
+declare module BABYLON {
     /**
      * Defines the root class used to create scene optimization to use with SceneOptimizer
      * @description More details at https://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
@@ -88589,6 +88687,7 @@ declare class XRWebGLLayer {
     readonly framebufferWidth: number;
     readonly framebufferHeight: number;
     readonly ignoreDepthValues: boolean;
+    fixedFoveation?: number | null;
     getViewport: (view: XRView) => XRViewport;
 }
 
@@ -88753,6 +88852,10 @@ interface XRSession {
      * Provided when the optional 'dom-overlay' feature is requested.
      */
     readonly domOverlayState?: XRDOMOverlayState;
+
+    readonly frameRate?: number;
+    readonly supportedFrameRates?: Float32Array;
+    updateTargetFrameRate(rate: number): Promise<void>;
 }
 
 interface XRViewerPose extends XRPose {

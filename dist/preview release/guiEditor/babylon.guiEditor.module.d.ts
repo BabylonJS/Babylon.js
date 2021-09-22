@@ -60,12 +60,19 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         private _canvas;
         private _responsive;
         private _isOverGUINode;
+        private _focused;
+        private _clipboard;
+        private _selectAll;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
         constructor(props: IWorkbenchComponentProps);
-        ctrlEvent: (evt: KeyboardEvent) => void;
-        ctrlFalseEvent: () => void;
+        keyEvent: (evt: KeyboardEvent) => void;
+        private copyToClipboard;
+        private pasteFromClipboard;
+        CopyGUIControl(original: Control): void;
+        private selectAllGUI;
+        blurEvent: () => void;
         componentWillUnmount(): void;
         loadFromJson(serializationObject: any): void;
         loadFromSnippet(snippedId: string): Promise<void>;
@@ -277,32 +284,6 @@ declare module "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockO
         lock: boolean;
     }
 }
-declare module "babylonjs-gui-editor/sharedUiComponents/lines/iSelectedLineContainer" {
-    export interface ISelectedLineContainer {
-        selectedLineContainerTitles: Array<string>;
-        selectedLineContainerTitlesNoFocus: Array<string>;
-    }
-}
-declare module "babylonjs-gui-editor/sharedUiComponents/lines/lineContainerComponent" {
-    import * as React from "react";
-    import { ISelectedLineContainer } from "babylonjs-gui-editor/sharedUiComponents/lines/iSelectedLineContainer";
-    interface ILineContainerComponentProps {
-        selection?: ISelectedLineContainer;
-        title: string;
-        children: any[] | any;
-        closed?: boolean;
-    }
-    export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
-        isExpanded: boolean;
-        isHighlighted: boolean;
-    }> {
-        constructor(props: ILineContainerComponentProps);
-        switchExpandedState(): void;
-        renderHeader(): JSX.Element;
-        componentDidMount(): void;
-        render(): JSX.Element;
-    }
-}
 declare module "babylonjs-gui-editor/sharedUiComponents/lines/floatLineComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
@@ -395,6 +376,7 @@ declare module "babylonjs-gui-editor/sharedUiComponents/lines/textInputLineCompo
         icon?: string;
         iconLabel?: string;
         noUnderline?: boolean;
+        numbersOnly?: boolean;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
@@ -437,8 +419,37 @@ declare module "babylonjs-gui-editor/components/propertyTab/propertyGrids/gui/co
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     }
     export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
+        private _width;
+        private _height;
         constructor(props: ICommonControlPropertyGridComponentProps);
-        renderGridInformation(): JSX.Element | null;
+        private _updateAlignment;
+        private _checkAndUpdateValues;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-gui-editor/sharedUiComponents/lines/iSelectedLineContainer" {
+    export interface ISelectedLineContainer {
+        selectedLineContainerTitles: Array<string>;
+        selectedLineContainerTitlesNoFocus: Array<string>;
+    }
+}
+declare module "babylonjs-gui-editor/sharedUiComponents/lines/lineContainerComponent" {
+    import * as React from "react";
+    import { ISelectedLineContainer } from "babylonjs-gui-editor/sharedUiComponents/lines/iSelectedLineContainer";
+    interface ILineContainerComponentProps {
+        selection?: ISelectedLineContainer;
+        title: string;
+        children: any[] | any;
+        closed?: boolean;
+    }
+    export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
+        isExpanded: boolean;
+        isHighlighted: boolean;
+    }> {
+        constructor(props: ILineContainerComponentProps);
+        switchExpandedState(): void;
+        renderHeader(): JSX.Element;
+        componentDidMount(): void;
         render(): JSX.Element;
     }
 }
@@ -649,6 +660,7 @@ declare module "babylonjs-gui-editor/sharedUiComponents/colorPicker/colorPicker"
         private _isSaturationPointerDown;
         private _isHuePointerDown;
         constructor(props: IColorPickerProps);
+        shouldComponentUpdate(nextProps: IColorPickerProps, nextState: IColorPickerState): boolean;
         onSaturationPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
         onSaturationPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
         onSaturationPointerMove(evt: React.PointerEvent<HTMLDivElement>): void;
@@ -962,7 +974,7 @@ declare module "babylonjs-gui-editor/guiNodeTools" {
     import { DisplayGrid } from "babylonjs-gui/2D/controls/displayGrid";
     import { StackPanel } from "babylonjs-gui/2D/controls/stackPanel";
     export class GUINodeTools {
-        static CreateControlFromString(data: string): Rectangle | Line | Grid | Image | Slider | TextBlock | InputText | ColorPicker | StackPanel | Ellipse | Checkbox | DisplayGrid;
+        static CreateControlFromString(data: string): Rectangle | Line | Grid | TextBlock | Image | Slider | InputText | ColorPicker | StackPanel | Ellipse | Checkbox | DisplayGrid;
     }
 }
 declare module "babylonjs-gui-editor/sharedComponents/messageDialog" {
@@ -1253,7 +1265,6 @@ declare module "babylonjs-gui-editor/components/commandBarComponent" {
 declare module "babylonjs-gui-editor/workbenchEditor" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-gui-editor/globalState";
-    import { Control } from "babylonjs-gui/2D/controls/control";
     interface IGraphEditorProps {
         globalState: GlobalState;
     }
@@ -1272,7 +1283,6 @@ declare module "babylonjs-gui-editor/workbenchEditor" {
         componentDidMount(): void;
         componentWillUnmount(): void;
         constructor(props: IGraphEditorProps);
-        pasteSelection(copiedNodes: Control[], currentX: number, currentY: number, selectNew?: boolean): Control[];
         showWaitScreen(): void;
         hideWaitScreen(): void;
         onPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
@@ -2178,12 +2188,19 @@ declare module GUIEDITOR {
         private _canvas;
         private _responsive;
         private _isOverGUINode;
+        private _focused;
+        private _clipboard;
+        private _selectAll;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
         constructor(props: IWorkbenchComponentProps);
-        ctrlEvent: (evt: KeyboardEvent) => void;
-        ctrlFalseEvent: () => void;
+        keyEvent: (evt: KeyboardEvent) => void;
+        private copyToClipboard;
+        private pasteFromClipboard;
+        CopyGUIControl(original: Control): void;
+        private selectAllGUI;
+        blurEvent: () => void;
         componentWillUnmount(): void;
         loadFromJson(serializationObject: any): void;
         loadFromSnippet(snippedId: string): Promise<void>;
@@ -2380,30 +2397,6 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
-    export interface ISelectedLineContainer {
-        selectedLineContainerTitles: Array<string>;
-        selectedLineContainerTitlesNoFocus: Array<string>;
-    }
-}
-declare module GUIEDITOR {
-    interface ILineContainerComponentProps {
-        selection?: ISelectedLineContainer;
-        title: string;
-        children: any[] | any;
-        closed?: boolean;
-    }
-    export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
-        isExpanded: boolean;
-        isHighlighted: boolean;
-    }> {
-        constructor(props: ILineContainerComponentProps);
-        switchExpandedState(): void;
-        renderHeader(): JSX.Element;
-        componentDidMount(): void;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
     interface IFloatLineComponentProps {
         label: string;
         target: any;
@@ -2484,6 +2477,7 @@ declare module GUIEDITOR {
         icon?: string;
         iconLabel?: string;
         noUnderline?: boolean;
+        numbersOnly?: boolean;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
@@ -2520,8 +2514,35 @@ declare module GUIEDITOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
+        private _width;
+        private _height;
         constructor(props: ICommonControlPropertyGridComponentProps);
-        renderGridInformation(): JSX.Element | null;
+        private _updateAlignment;
+        private _checkAndUpdateValues;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    export interface ISelectedLineContainer {
+        selectedLineContainerTitles: Array<string>;
+        selectedLineContainerTitlesNoFocus: Array<string>;
+    }
+}
+declare module GUIEDITOR {
+    interface ILineContainerComponentProps {
+        selection?: ISelectedLineContainer;
+        title: string;
+        children: any[] | any;
+        closed?: boolean;
+    }
+    export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
+        isExpanded: boolean;
+        isHighlighted: boolean;
+    }> {
+        constructor(props: ILineContainerComponentProps);
+        switchExpandedState(): void;
+        renderHeader(): JSX.Element;
+        componentDidMount(): void;
         render(): JSX.Element;
     }
 }
@@ -2699,6 +2720,7 @@ declare module GUIEDITOR {
         private _isSaturationPointerDown;
         private _isHuePointerDown;
         constructor(props: IColorPickerProps);
+        shouldComponentUpdate(nextProps: IColorPickerProps, nextState: IColorPickerState): boolean;
         onSaturationPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
         onSaturationPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
         onSaturationPointerMove(evt: React.PointerEvent<HTMLDivElement>): void;
@@ -2931,7 +2953,7 @@ declare module GUIEDITOR {
 }
 declare module GUIEDITOR {
     export class GUINodeTools {
-        static CreateControlFromString(data: string): Rectangle | Line | Grid | Image | Slider | TextBlock | InputText | ColorPicker | StackPanel | Ellipse | Checkbox | DisplayGrid;
+        static CreateControlFromString(data: string): Rectangle | Line | Grid | TextBlock | Image | Slider | InputText | ColorPicker | StackPanel | Ellipse | Checkbox | DisplayGrid;
     }
 }
 declare module GUIEDITOR {
@@ -3205,7 +3227,6 @@ declare module GUIEDITOR {
         componentDidMount(): void;
         componentWillUnmount(): void;
         constructor(props: IGraphEditorProps);
-        pasteSelection(copiedNodes: Control[], currentX: number, currentY: number, selectNew?: boolean): Control[];
         showWaitScreen(): void;
         hideWaitScreen(): void;
         onPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;

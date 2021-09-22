@@ -179,14 +179,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-alpha.38";
+        return "babylonjs@5.0.0-alpha.40";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-alpha.38";
+        return "5.0.0-alpha.40";
     }
 
     /**
@@ -742,7 +742,7 @@ export class ThinEngine {
                     let currentUA = navigator.userAgent;
                     this.hostInformation.isMobile = currentUA.indexOf("Mobile") !== -1 ||
                         // Needed for iOS 13+ detection on iPad (inspired by solution from https://stackoverflow.com/questions/9038625/detect-if-device-is-ios)
-                        (currentUA.indexOf("Mac") !== -1 && "ontouchend" in document);
+                        (currentUA.indexOf("Mac") !== -1 && document !== undefined && "ontouchend" in document);
                 };
 
                 // Set initial isMobile value

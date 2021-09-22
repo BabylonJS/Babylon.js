@@ -16,7 +16,7 @@ import { Quaternion, Vector3 } from "../Maths/math.vector";
  */
 export class WebXRExperienceHelper implements IDisposable {
     private _nonVRCamera: Nullable<Camera> = null;
-    private _spectatorCamera: UniversalCamera;
+    private _spectatorCamera: Nullable<UniversalCamera> = null;
     private _originalSceneAutoClear = true;
     private _supported = false;
     private _spectatorMode = false;
@@ -88,7 +88,7 @@ export class WebXRExperienceHelper implements IDisposable {
         this.onStateChangedObservable.clear();
         this.onInitialXRPoseSetObservable.clear();
         this.sessionManager.dispose();
-        this._spectatorCamera.dispose();
+        this._spectatorCamera?.dispose();
         if (this._nonVRCamera) {
             this.scene.activeCamera = this._nonVRCamera;
         }
@@ -198,8 +198,10 @@ export class WebXRExperienceHelper implements IDisposable {
     public enableSpectatorMode(): void {
         if (!this._spectatorMode) {
             const updateSpectatorCamera = () => {
-                this._spectatorCamera.position.copyFrom(this.camera.rigCameras[0].globalPosition);
-                this._spectatorCamera.rotationQuaternion.copyFrom(this.camera.rigCameras[0].absoluteRotation);
+                if (this._spectatorCamera) {
+                    this._spectatorCamera.position.copyFrom(this.camera.rigCameras[0].globalPosition);
+                    this._spectatorCamera.rotationQuaternion.copyFrom(this.camera.rigCameras[0].absoluteRotation);
+                }
             };
             const onStateChanged = () => {
                 if (this.state === WebXRState.IN_XR) {

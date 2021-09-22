@@ -1139,14 +1139,15 @@ var PBRCustomMaterial = /** @class */ (function (_super) {
     PBRCustomMaterial.prototype.Builder = function (shaderName, uniforms, uniformBuffers, samplers, defines, attributes, options) {
         var _this = this;
         if (options) {
+            var currentProcessing_1 = options.processFinalCode;
             options.processFinalCode = function (type, code) {
                 if (type === "vertex") {
-                    return code;
+                    return currentProcessing_1 ? currentProcessing_1(type, code) : code;
                 }
                 var sci = new babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["ShaderCodeInliner"](code);
                 sci.inlineToken = "#define pbr_inline";
                 sci.processCode();
-                return sci.code;
+                return currentProcessing_1 ? currentProcessing_1(type, sci.code) : sci.code;
             };
         }
         if (attributes && this._customAttributes && this._customAttributes.length > 0) {

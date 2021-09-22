@@ -1738,7 +1738,7 @@ var Button = /** @class */ (function (_super) {
         if (!_super.prototype._onPointerEnter.call(this, target, pi)) {
             return false;
         }
-        if (this.pointerEnterAnimation) {
+        if (!this.isReadOnly && this.pointerEnterAnimation) {
             this.pointerEnterAnimation();
         }
         return true;
@@ -1746,7 +1746,7 @@ var Button = /** @class */ (function (_super) {
     /** @hidden */
     Button.prototype._onPointerOut = function (target, pi, force) {
         if (force === void 0) { force = false; }
-        if (this.pointerOutAnimation) {
+        if (!this.isReadOnly && this.pointerOutAnimation) {
             this.pointerOutAnimation();
         }
         _super.prototype._onPointerOut.call(this, target, pi, force);
@@ -1756,14 +1756,14 @@ var Button = /** @class */ (function (_super) {
         if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
         }
-        if (this.pointerDownAnimation) {
+        if (!this.isReadOnly && this.pointerDownAnimation) {
             this.pointerDownAnimation();
         }
         return true;
     };
     /** @hidden */
     Button.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick, pi) {
-        if (this.pointerUpAnimation) {
+        if (!this.isReadOnly && this.pointerUpAnimation) {
             this.pointerUpAnimation();
         }
         _super.prototype._onPointerUp.call(this, target, coordinates, pointerId, buttonIndex, notifyClick, pi);
@@ -2007,7 +2007,9 @@ var Checkbox = /** @class */ (function (_super) {
         if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
         }
-        this.isChecked = !this.isChecked;
+        if (!this.isReadOnly) {
+            this.isChecked = !this.isChecked;
+        }
         return true;
     };
     /**
@@ -2398,6 +2400,9 @@ var ColorPicker = /** @class */ (function (_super) {
         if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
         }
+        if (this.isReadOnly) {
+            return true;
+        }
         this._pointerIsDown = true;
         this._pointerStartedOnSquare = false;
         this._pointerStartedOnWheel = false;
@@ -2421,12 +2426,14 @@ var ColorPicker = /** @class */ (function (_super) {
         if (pointerId != this._lastPointerDownId) {
             return;
         }
-        // Invert transform
-        this._invertTransformMatrix.transformCoordinates(coordinates.x, coordinates.y, this._transformedPosition);
-        var x = this._transformedPosition.x;
-        var y = this._transformedPosition.y;
-        if (this._pointerIsDown) {
-            this._updateValueFromPointer(x, y);
+        if (!this.isReadOnly) {
+            // Invert transform
+            this._invertTransformMatrix.transformCoordinates(coordinates.x, coordinates.y, this._transformedPosition);
+            var x = this._transformedPosition.x;
+            var y = this._transformedPosition.y;
+            if (this._pointerIsDown) {
+                this._updateValueFromPointer(x, y);
+            }
         }
         _super.prototype._onPointerMove.call(this, target, coordinates, pointerId, pi);
     };
@@ -3601,6 +3608,20 @@ var Container = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
+    Object.defineProperty(Container.prototype, "isReadOnly", {
+        get: function () {
+            return this._isReadOnly;
+        },
+        set: function (value) {
+            this._isReadOnly = value;
+            for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                var child = _a[_i];
+                child.isReadOnly = value;
+            }
+        },
+        enumerable: false,
+        configurable: true
+    });
     Container.prototype._getTypeName = function () {
         return "Container";
     };
@@ -4081,6 +4102,7 @@ var Control = /** @class */ (function () {
         this._isMatrixDirty = true;
         this._isVisible = true;
         this._isHighlighted = false;
+        this._highlightColor = "#4affff";
         this._highlightLineWidth = 2;
         this._fontSet = false;
         this._dummyVector2 = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector2"].Zero();
@@ -4091,6 +4113,7 @@ var Control = /** @class */ (function () {
         this._isEnabled = true;
         this._disabledColor = "#9a9a9a";
         this._disabledColorItem = "#6a6a6a";
+        this._isReadOnly = false;
         /** @hidden */
         this._rebuildLayout = false;
         /** @hidden */
@@ -4188,6 +4211,20 @@ var Control = /** @class */ (function () {
         this._fixedRatioMasterIsWidth = true;
         this._tmpMeasureA = new _measure__WEBPACK_IMPORTED_MODULE_3__["Measure"](0, 0, 0, 0);
     }
+    Object.defineProperty(Control.prototype, "isReadOnly", {
+        /**
+         * Gets or sets a boolean indicating if the control is readonly (default: false).
+         * A readonly control will still raise pointer events but will not react to them
+         */
+        get: function () {
+            return this._isReadOnly;
+        },
+        set: function (value) {
+            this._isReadOnly = value;
+        },
+        enumerable: false,
+        configurable: true
+    });
     Object.defineProperty(Control.prototype, "shadowOffsetX", {
         /** Gets or sets a value indicating the offset to apply on X axis to render the shadow */
         get: function () {
@@ -4331,6 +4368,23 @@ var Control = /** @class */ (function () {
                 return;
             }
             this._isHighlighted = value;
+            this._markAsDirty();
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Control.prototype, "highlightColor", {
+        /**
+         * Gets or sets a string defining the color to use for highlighting this control
+         */
+        get: function () {
+            return this._highlightColor;
+        },
+        set: function (value) {
+            if (this._highlightColor === value) {
+                return;
+            }
+            this._highlightColor = value;
             this._markAsDirty();
         },
         enumerable: false,
@@ -5372,7 +5426,7 @@ var Control = /** @class */ (function () {
             return;
         }
         context.save();
-        context.strokeStyle = "#4affff";
+        context.strokeStyle = this._highlightColor;
         context.lineWidth = this._highlightLineWidth;
         this._renderHighlightSpecific(context);
         context.restore();
@@ -6486,6 +6540,10 @@ var Ellipse = /** @class */ (function (_super) {
         _control__WEBPACK_IMPORTED_MODULE_2__["Control"].drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, this._currentMeasure.width / 2, this._currentMeasure.height / 2, context);
         context.clip();
     };
+    Ellipse.prototype._renderHighlightSpecific = function (context) {
+        _control__WEBPACK_IMPORTED_MODULE_2__["Control"].drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, this._currentMeasure.width / 2 - this._highlightLineWidth / 2, this._currentMeasure.height / 2 - this._highlightLineWidth / 2, context);
+        context.stroke();
+    };
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_3__["serialize"])()
     ], Ellipse.prototype, "thickness", null);
@@ -6586,8 +6644,10 @@ var FocusableButton = /** @class */ (function (_super) {
     };
     /** @hidden */
     FocusableButton.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex, pi) {
-        // Clicking on button should focus
-        this.focus();
+        if (!this.isReadOnly) {
+            // Clicking on button should focus
+            this.focus();
+        }
         return _super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi);
     };
     /** @hidden */
@@ -8612,6 +8672,9 @@ var InputText = /** @class */ (function (_super) {
     };
     /** @hidden */
     InputText.prototype.processKey = function (keyCode, key, evt) {
+        if (this.isReadOnly) {
+            return;
+        }
         //return if clipboard event keys (i.e -ctr/cmd + c,v,x)
         if (evt && (evt.ctrlKey || evt.metaKey) && (keyCode === 67 || keyCode === 86 || keyCode === 88)) {
             return;
@@ -9143,6 +9206,9 @@ var InputText = /** @class */ (function (_super) {
         if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
         }
+        if (this.isReadOnly) {
+            return true;
+        }
         this._clickedCoordinate = coordinates.x;
         this._isTextHighlightOn = false;
         this._highlightedText = "";
@@ -9162,7 +9228,7 @@ var InputText = /** @class */ (function (_super) {
         return true;
     };
     InputText.prototype._onPointerMove = function (target, coordinates, pointerId, pi) {
-        if (this._host.focusedControl === this && this._isPointerDown) {
+        if (this._host.focusedControl === this && this._isPointerDown && !this.isReadOnly) {
             this._clickedCoordinate = coordinates.x;
             this._markAsDirty();
             this._updateValueFromCursorIndex(this._cursorOffset);
@@ -9982,6 +10048,9 @@ var RadioButton = /** @class */ (function (_super) {
     RadioButton.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex, pi) {
         if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
+        }
+        if (this.isReadOnly) {
+            return true;
         }
         if (!this.isChecked) {
             this.isChecked = true;
@@ -10848,7 +10917,7 @@ var ScrollViewer = /** @class */ (function (_super) {
             return;
         }
         this._onWheelObserver = this.onWheelObservable.add(function (pi) {
-            if (!_this._pointerIsOver) {
+            if (!_this._pointerIsOver || _this.isReadOnly) {
                 return;
             }
             if (_this._verticalBar.isVisible == true) {
@@ -12129,6 +12198,9 @@ var BaseSlider = /** @class */ (function (_super) {
         if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
         }
+        if (this.isReadOnly) {
+            return true;
+        }
         this._pointerIsDown = true;
         this._updateValueFromPointer(coordinates.x, coordinates.y);
         this._host._capturingControl[pointerId] = this;
@@ -12140,7 +12212,7 @@ var BaseSlider = /** @class */ (function (_super) {
         if (pointerId != this._lastPointerDownId) {
             return;
         }
-        if (this._pointerIsDown) {
+        if (this._pointerIsDown && !this.isReadOnly) {
             this._updateValueFromPointer(coordinates.x, coordinates.y);
         }
         _super.prototype._onPointerMove.call(this, target, coordinates, pointerId, pi);
@@ -14269,6 +14341,9 @@ var ToggleButton = /** @class */ (function (_super) {
         if (!_super.prototype._onPointerEnter.call(this, target, pi)) {
             return false;
         }
+        if (this.isReadOnly) {
+            return true;
+        }
         if (this._isActive) {
             if (this.pointerEnterActiveAnimation) {
                 this.pointerEnterActiveAnimation();
@@ -14284,14 +14359,16 @@ var ToggleButton = /** @class */ (function (_super) {
     /** @hidden */
     ToggleButton.prototype._onPointerOut = function (target, pi, force) {
         if (force === void 0) { force = false; }
-        if (this._isActive) {
-            if (this.pointerOutActiveAnimation) {
-                this.pointerOutActiveAnimation();
+        if (!this.isReadOnly) {
+            if (this._isActive) {
+                if (this.pointerOutActiveAnimation) {
+                    this.pointerOutActiveAnimation();
+                }
             }
-        }
-        else {
-            if (this.pointerOutInactiveAnimation) {
-                this.pointerOutInactiveAnimation();
+            else {
+                if (this.pointerOutInactiveAnimation) {
+                    this.pointerOutInactiveAnimation();
+                }
             }
         }
         _super.prototype._onPointerOut.call(this, target, pi, force);
@@ -14300,6 +14377,9 @@ var ToggleButton = /** @class */ (function (_super) {
     ToggleButton.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex, pi) {
         if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
+        }
+        if (this.isReadOnly) {
+            return true;
         }
         if (this._isActive) {
             if (this.pointerDownActiveAnimation) {
@@ -14315,14 +14395,16 @@ var ToggleButton = /** @class */ (function (_super) {
     };
     /** @hidden */
     ToggleButton.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick, pi) {
-        if (this._isActive) {
-            if (this.pointerUpActiveAnimation) {
-                this.pointerUpActiveAnimation();
+        if (!this.isReadOnly) {
+            if (this._isActive) {
+                if (this.pointerUpActiveAnimation) {
+                    this.pointerUpActiveAnimation();
+                }
             }
-        }
-        else {
-            if (this.pointerUpInactiveAnimation) {
-                this.pointerUpInactiveAnimation();
+            else {
+                if (this.pointerUpInactiveAnimation) {
+                    this.pointerUpInactiveAnimation();
+                }
             }
         }
         _super.prototype._onPointerUp.call(this, target, coordinates, pointerId, buttonIndex, notifyClick, pi);
@@ -16531,7 +16613,7 @@ var Control3D = /** @class */ (function () {
         this._behaviors = new Array();
     }
     Object.defineProperty(Control3D.prototype, "position", {
-        /** Gets or sets the control position  in world space */
+        /** Gets or sets the control position in world space */
         get: function () {
             if (!this._node) {
                 return babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Zero();
@@ -16548,7 +16630,7 @@ var Control3D = /** @class */ (function () {
         configurable: true
     });
     Object.defineProperty(Control3D.prototype, "scaling", {
-        /** Gets or sets the control scaling  in world space */
+        /** Gets or sets the control scaling in world space */
         get: function () {
             if (!this._node) {
                 return new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Vector3"](1, 1, 1);
@@ -18905,6 +18987,7 @@ var TouchButton3D = /** @class */ (function (_super) {
      */
     function TouchButton3D(name, collisionMesh) {
         var _this = _super.call(this, name) || this;
+        _this._isNearPressed = false;
         _this.collidableFrontDirection = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Zero();
         if (collisionMesh) {
             _this.collisionMesh = collisionMesh;
@@ -18920,7 +19003,7 @@ var TouchButton3D = /** @class */ (function (_super) {
                 // Update the front direction to reflect any rotations of the collision mesh
                 var transformedDirection = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["TmpVectors"].Vector3[0];
                 babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].TransformNormalToRef(this._collidableFrontDirection, this._collisionMesh.getWorldMatrix(), transformedDirection);
-                return transformedDirection;
+                return transformedDirection.normalize();
             }
             return this._collidableFrontDirection;
         },
@@ -18935,6 +19018,7 @@ var TouchButton3D = /** @class */ (function (_super) {
                 invert.copyFrom(this._collisionMesh.getWorldMatrix());
                 invert.invert();
                 babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].TransformNormalToRef(this._collidableFrontDirection, invert, this._collidableFrontDirection);
+                this._collidableFrontDirection.normalize();
             }
         },
         enumerable: false,
@@ -18963,14 +19047,18 @@ var TouchButton3D = /** @class */ (function (_super) {
     });
     // Returns true if the collidable is in front of the button, or if the button has no front direction
     TouchButton3D.prototype._isInteractionInFrontOfButton = function (collidablePos) {
+        return this._getInteractionHeight(collidablePos, this._collisionMesh.getAbsolutePosition()) > 0;
+    };
+    // Returns true if the collidable is in front of the button, or if the button has no front direction
+    TouchButton3D.prototype._getInteractionHeight = function (interactionPos, basePos) {
         var frontDir = this.collidableFrontDirection;
         if (frontDir.length() === 0) {
-            // The button has no front, just return the distance to the center
-            return true;
+            // The button has no front, just return the distance to the base
+            return babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Distance(interactionPos, basePos);
         }
-        var d = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Dot(this._collisionMesh.getAbsolutePosition(), frontDir);
-        var abc = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Dot(collidablePos, frontDir);
-        return abc > d;
+        var d = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Dot(basePos, frontDir);
+        var abc = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Dot(interactionPos, frontDir);
+        return abc - d;
     };
     /** @hidden */
     TouchButton3D.prototype._generatePointerEventType = function (providedType, nearMeshPosition, activeInteractionCount) {
@@ -18979,11 +19067,17 @@ var TouchButton3D = /** @class */ (function (_super) {
                 // Near interaction mesh is behind the button, don't send a pointer down
                 return babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERMOVE;
             }
+            else {
+                this._isNearPressed = true;
+            }
         }
         if (providedType === babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERUP) {
             if (activeInteractionCount == 0) {
                 // We get the release for the down we swallowed earlier, swallow as well
                 return babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERMOVE;
+            }
+            else {
+                this._isNearPressed = false;
             }
         }
         return providedType;
@@ -19046,6 +19140,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 /**
  * Class used to create a holographic button in 3D
  * @since 5.0.0
@@ -19060,6 +19155,8 @@ var TouchHolographicButton = /** @class */ (function (_super) {
         if (shareMaterials === void 0) { shareMaterials = true; }
         var _this = _super.call(this, name) || this;
         _this._shareMaterials = true;
+        _this._frontPlateDepth = 0.5;
+        _this._backPlateDepth = 0.04;
         _this._shareMaterials = shareMaterials;
         _this.pointerEnterAnimation = function () {
             _this._frontMaterial.leftBlobEnable = true;
@@ -19069,6 +19166,32 @@ var TouchHolographicButton = /** @class */ (function (_super) {
             _this._frontMaterial.leftBlobEnable = false;
             _this._frontMaterial.rightBlobEnable = false;
         };
+        _this.pointerDownAnimation = function () {
+            if (_this._frontPlate && !_this._isNearPressed) {
+                _this._frontPlate.scaling.z = _this._frontPlateDepth * 0.2;
+                _this._frontPlate.position.z = (_this._frontPlateDepth - (0.2 * _this._frontPlateDepth)) / 2;
+                _this._textPlate.position.z = -(_this._backPlateDepth + (0.2 * _this._frontPlateDepth)) / 2;
+            }
+        };
+        _this.pointerUpAnimation = function () {
+            if (_this._frontPlate) {
+                _this._frontPlate.scaling.z = _this._frontPlateDepth;
+                _this._frontPlate.position.z = (_this._frontPlateDepth - _this._frontPlateDepth) / 2;
+                _this._textPlate.position.z = -(_this._backPlateDepth + _this._frontPlateDepth) / 2;
+            }
+        };
+        _this.onPointerMoveObservable.add(function (position) {
+            if (_this._frontPlate && _this._isNearPressed) {
+                var scale = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Zero();
+                if (_this._backPlate.getWorldMatrix().decompose(scale, undefined, undefined)) {
+                    var interactionHeight = _this._getInteractionHeight(position, _this._backPlate.position) / scale.z;
+                    interactionHeight = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp(interactionHeight - (_this._backPlateDepth / 2), 0.2 * _this._frontPlateDepth, _this._frontPlateDepth);
+                    _this._frontPlate.scaling.z = interactionHeight;
+                    _this._frontPlate.position.z = (_this._frontPlateDepth - interactionHeight) / 2;
+                    _this._textPlate.position.z = -(_this._backPlateDepth + interactionHeight) / 2;
+                }
+            }
+        });
         _this._pointerHoverObserver = _this.onPointerMoveObservable.add(function (hoverPosition) {
             _this._frontMaterial.globalLeftIndexTipPosition = hoverPosition;
         });
@@ -19272,42 +19395,44 @@ var TouchHolographicButton = /** @class */ (function (_super) {
     TouchHolographicButton.prototype._createNode = function (scene) {
         var _this = this;
         var _a;
-        var collisionMesh = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["BoxBuilder"].CreateBox(((_a = this.name) !== null && _a !== void 0 ? _a : "TouchHolographicButton") + "_CollisionMesh", {
+        this.name = (_a = this.name) !== null && _a !== void 0 ? _a : "TouchHolographicButton";
+        var collisionMesh = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["BoxBuilder"].CreateBox(this.name + "_collisionMesh", {
             width: 1.0,
             height: 1.0,
-            depth: 1.0,
+            depth: this._frontPlateDepth,
         }, scene);
         collisionMesh.isPickable = true;
         collisionMesh.isNearPickable = true;
         collisionMesh.visibility = 0;
-        collisionMesh.scaling = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"](1, 1, 0.5);
+        collisionMesh.position.z = -this._frontPlateDepth / 2;
         babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["SceneLoader"].ImportMeshAsync(undefined, TouchHolographicButton.MODEL_BASE_URL, TouchHolographicButton.MODEL_FILENAME, scene)
             .then(function (result) {
             var importedFrontPlate = result.meshes[1];
             importedFrontPlate.name = _this.name + "_frontPlate";
             importedFrontPlate.isPickable = false;
+            importedFrontPlate.scaling.z = _this._frontPlateDepth;
             importedFrontPlate.parent = collisionMesh;
             if (!!_this._frontMaterial) {
                 importedFrontPlate.material = _this._frontMaterial;
             }
             _this._frontPlate = importedFrontPlate;
         });
-        var backPlateDepth = 0.04;
-        this._backPlate = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["BoxBuilder"].CreateBox(this.name + "BackMesh", {
+        this._backPlate = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["BoxBuilder"].CreateBox(this.name + "_backPlate", {
             width: 1.0,
             height: 1.0,
-            depth: backPlateDepth,
+            depth: this._backPlateDepth,
         }, scene);
-        this._backPlate.parent = collisionMesh;
-        this._backPlate.position.z = 0.5 - backPlateDepth / 2;
+        this._backPlate.position.z = this._backPlateDepth / 2;
         this._backPlate.isPickable = false;
         this._textPlate = _super.prototype._createNode.call(this, scene);
-        this._textPlate.parent = collisionMesh;
-        this._textPlate.position.z = 0;
+        this._textPlate.name = this.name + "_textPlate";
         this._textPlate.isPickable = false;
+        this._textPlate.position.z = -this._frontPlateDepth / 2;
+        this._backPlate.addChild(collisionMesh);
+        this._backPlate.addChild(this._textPlate);
         this.collisionMesh = collisionMesh;
         this.collidableFrontDirection = this._backPlate.forward.negate(); // Mesh is facing the wrong way
-        return collisionMesh;
+        return this._backPlate;
     };
     TouchHolographicButton.prototype._applyFacade = function (facadeTexture) {
         this._plateMaterial.emissiveTexture = facadeTexture;
@@ -19421,12 +19546,28 @@ var TouchHolographicMenu = /** @class */ (function (_super) {
      */
     function TouchHolographicMenu(name) {
         var _this = _super.call(this, name) || this;
-        /**
-         * Margin size of the backplate in button size units (setting this to 1, will make the backPlate margin the size of 1 button)
-         */
-        _this.backPlateMargin = 1.25;
+        _this._backPlateMargin = 1.25;
         return _this;
     }
+    Object.defineProperty(TouchHolographicMenu.prototype, "backPlateMargin", {
+        /**
+         * Gets or sets the margin size of the backplate in button size units.
+         * Setting this to 1, will make the backPlate margin the size of 1 button
+         */
+        get: function () {
+            return this._backPlateMargin;
+        },
+        set: function (value) {
+            var _this = this;
+            this._backPlateMargin = value;
+            this.children.forEach(function (control) {
+                _this._updateCurrentMinMax(control.position);
+            });
+            this._updateMargins();
+        },
+        enumerable: false,
+        configurable: true
+    });
     TouchHolographicMenu.prototype._createNode = function (scene) {
         var node = new babylonjs_Meshes_mesh__WEBPACK_IMPORTED_MODULE_2__["Mesh"]("menu_" + this.name, scene);
         this._backPlate = babylonjs_Meshes_mesh__WEBPACK_IMPORTED_MODULE_2__["BoxBuilder"].CreateBox("backPlate" + this.name, { size: 1 }, scene);
@@ -19457,6 +19598,12 @@ var TouchHolographicMenu = /** @class */ (function (_super) {
             return;
         }
         control.position = nodePosition.clone();
+        this._updateCurrentMinMax(nodePosition);
+    };
+    TouchHolographicMenu.prototype._finalProcessing = function () {
+        this._updateMargins();
+    };
+    TouchHolographicMenu.prototype._updateCurrentMinMax = function (nodePosition) {
         if (!this._currentMin) {
             this._currentMin = nodePosition.clone();
             this._currentMax = nodePosition.clone();
@@ -19464,7 +19611,7 @@ var TouchHolographicMenu = /** @class */ (function (_super) {
         this._currentMin.minimizeInPlace(nodePosition);
         this._currentMax.maximizeInPlace(nodePosition);
     };
-    TouchHolographicMenu.prototype._finalProcessing = function () {
+    TouchHolographicMenu.prototype._updateMargins = function () {
         this._currentMin.addInPlaceFromFloats(-this._cellWidth / 2, -this._cellHeight / 2, 0);
         this._currentMax.addInPlaceFromFloats(this._cellWidth / 2, this._cellHeight / 2, 0);
         var extendSize = this._currentMax.subtract(this._currentMin);
@@ -20149,6 +20296,7 @@ var SlateGizmo = /** @class */ (function (_super) {
     function SlateGizmo(utilityLayer) {
         var _this = _super.call(this, utilityLayer) || this;
         _this._boundingDimensions = new babylonjs_Gizmos_gizmo__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0, 0, 0);
+        _this._renderObserver = null;
         _this._tmpQuaternion = new babylonjs_Gizmos_gizmo__WEBPACK_IMPORTED_MODULE_1__["Quaternion"]();
         _this._tmpVector = new babylonjs_Gizmos_gizmo__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0, 0, 0);
         // Ordered bl, br, tr, tl
@@ -20164,6 +20312,7 @@ var SlateGizmo = /** @class */ (function (_super) {
          */
         _this._margin = 0.35;
         _this._attachedSlate = null;
+        _this._existingSlateScale = new babylonjs_Gizmos_gizmo__WEBPACK_IMPORTED_MODULE_1__["Vector3"]();
         /**
          * If set, the handles will increase in size based on the distance away from the camera to have a consistent screen size (Default: true)
          */
@@ -20178,6 +20327,12 @@ var SlateGizmo = /** @class */ (function (_super) {
         _this.handleSize = 0.01;
         _this._createNode();
         _this.updateScale = false;
+        _this._renderObserver = _this.gizmoLayer.originalScene.onBeforeRenderObservable.add(function () {
+            // Only update the bounding box if scaling has changed
+            if (_this.attachedMesh && !_this._existingSlateScale.equals(_this.attachedMesh.scaling)) {
+                _this.updateBoundingBox();
+            }
+        });
         return _this;
     }
     Object.defineProperty(SlateGizmo.prototype, "attachedSlate", {
@@ -20270,17 +20425,16 @@ var SlateGizmo = /** @class */ (function (_super) {
         impact.copyFrom(vector).multiplyInPlace(mask);
         var clampedDimensions = babylonjs_Gizmos_gizmo__WEBPACK_IMPORTED_MODULE_1__["TmpVectors"].Vector3[1];
         clampedDimensions.copyFromFloats(Math.max(this._attachedSlate.minDimensions.x, impact.x + dimensions.x), Math.max(this._attachedSlate.minDimensions.y, impact.y + dimensions.y), 0);
+        if (keepAspectRatio) {
+            // Extra logic to ensure the ratio is maintained when the vector has been clamped
+            var ratio = dimensions.x / dimensions.y;
+            clampedDimensions.x = Math.max(clampedDimensions.x, clampedDimensions.y * ratio);
+            clampedDimensions.y = Math.max(clampedDimensions.y, clampedDimensions.x / ratio);
+        }
         // Calculating the real impact of vector on clamped dimensions
         impact.copyFrom(clampedDimensions).subtractInPlace(dimensions);
-        var factor = babylonjs_Gizmos_gizmo__WEBPACK_IMPORTED_MODULE_1__["TmpVectors"].Vector3[2];
-        factor.copyFrom(impact);
-        if (keepAspectRatio) {
-            // We want to keep aspect ratio of vector while clamping so we move by the minimum of the 2 dimensions
-            factor.x = Math.min(Math.abs(clampedDimensions.x - dimensions.x), Math.abs(clampedDimensions.y - dimensions.y));
-            factor.y = factor.x;
-        }
-        vector.x = Math.sign(vector.x) * Math.abs(factor.x);
-        vector.y = Math.sign(vector.y) * Math.abs(factor.y);
+        vector.x = Math.sign(vector.x) * Math.abs(impact.x);
+        vector.y = Math.sign(vector.y) * Math.abs(impact.y);
     };
     SlateGizmo.prototype._moveHandle = function (originStart, dimensionsStart, offset, masks, isCorner) {
         if (!this._attachedSlate) {
@@ -20438,6 +20592,7 @@ var SlateGizmo = /** @class */ (function (_super) {
             // Restore original parent
             this.attachedMesh.setParent(originalParent);
             this.attachedMesh.computeWorldMatrix(true);
+            this._existingSlateScale.copyFrom(this.attachedMesh.scaling);
         }
     };
     SlateGizmo.prototype._updateHandlesPosition = function () {
@@ -20475,6 +20630,7 @@ var SlateGizmo = /** @class */ (function (_super) {
         }
     };
     SlateGizmo.prototype.dispose = function () {
+        this.gizmoLayer.originalScene.onBeforeRenderObservable.remove(this._renderObserver);
         // Will dispose rootMesh and all descendants
         _super.prototype.dispose.call(this);
         for (var _i = 0, _a = this._corners; _i < _a.length; _i++) {

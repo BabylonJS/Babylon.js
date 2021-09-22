@@ -8,7 +8,6 @@ import { Mesh } from "../Meshes/mesh";
 import { EngineStore } from "../Engines/engineStore";
 import { Scene, IDisposable } from "../scene";
 import { CloudPoint, PointsGroup } from "./cloudPoint";
-import { BoundingInfo } from "../Culling/boundingInfo";
 import { Ray } from "../Culling/ray";
 import { PickingInfo } from "../Collisions/pickingInfo";
 import { StandardMaterial } from "../Materials/standardMaterial";
@@ -754,7 +753,7 @@ export class PointsCloudSystem implements IDisposable {
         end = (end >= this.nbParticles) ? this.nbParticles - 1 : end;
         if (this._computeBoundingBox) {
             if (start != 0 || end != this.nbParticles - 1) { // only some particles are updated, then use the current existing BBox basis. Note : it can only increase.
-                const boundingInfo = this.mesh._boundingInfo;
+                const boundingInfo = this.mesh.getBoundingInfo();
                 if (boundingInfo) {
                     minimum.copyFrom(boundingInfo.minimum);
                     maximum.copyFrom(boundingInfo.maximum);
@@ -893,11 +892,11 @@ export class PointsCloudSystem implements IDisposable {
         }
 
         if (this._computeBoundingBox) {
-            if (mesh._boundingInfo) {
-                mesh._boundingInfo.reConstruct(minimum, maximum, mesh._worldMatrix);
+            if (mesh.hasBoundingInfo) {
+                mesh.getBoundingInfo().reConstruct(minimum, maximum, mesh._worldMatrix);
             }
             else {
-                mesh._boundingInfo = new BoundingInfo(minimum, maximum, mesh._worldMatrix);
+                mesh.buildBoundingInfo(minimum, maximum, mesh._worldMatrix);
             }
         }
         this.afterUpdateParticles(start, end, update);
@@ -942,7 +941,7 @@ export class PointsCloudSystem implements IDisposable {
      */
     public setVisibilityBox(size: number): void {
         var vis = size / 2;
-        this.mesh._boundingInfo = new BoundingInfo(new Vector3(-vis, -vis, -vis), new Vector3(vis, vis, vis));
+        this.mesh.buildBoundingInfo(new Vector3(-vis, -vis, -vis), new Vector3(vis, vis, vis));
     }
 
     /**

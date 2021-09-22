@@ -20,6 +20,8 @@ declare module BABYLON {
         static PhysicsCapsuleShape: number;
         /** Set the support srgb buffers flag */
         static SupportSRGBBuffers: boolean;
+        /** Set the virtual joystick enabled flag */
+        static VirtualJoystickEnabled: boolean;
         /** Is content running in a frame window */
         static IsFrameWindow(): boolean;
         /** Gets the running status of the default audio context */
@@ -306,6 +308,8 @@ declare module BABYLON {
         static CreatePhysicsBoxShape(halfextents: BABYLON.Vector3): any;
         /** Creates a ammo.js physics sphere collision shape */
         static CreatePhysicsSphereShape(radius: number): any;
+        /** Creates a ammo.js physics ellipsoid collision shape */
+        static CreatePhysicsEllipsoidShape(halfextents: BABYLON.Vector3): any;
         /** Creates a ammo.js physics sphere collision shape */
         static CreatePhysicsCylinderShape(radius: number, halfheight: number): any;
         /** Creates a ammo.js physics capsule collision shape */
@@ -358,9 +362,9 @@ declare module BABYLON {
             pointerLock?: boolean;
             preventDefault?: boolean;
             useCapture?: boolean;
-            enableVirtualJoystick?: boolean;
-            disableRightStick?: boolean;
         }): void;
+        static SetLeftJoystickBuffer(leftStickX: number, leftStickY: number, invertY?: boolean): void;
+        static SetRightJoystickBuffer(rightStickX: number, rightStickY: number, invertY?: boolean): void;
         /** Disables user input state in the scene. */
         static DisableUserInput(scene: BABYLON.Scene, useCapture?: boolean): void;
         /** Toggle full screen scene mode. */
@@ -393,14 +397,6 @@ declare module BABYLON {
         static OnPointerPress(button: number, callback: () => void): void;
         /** Get the specified pointer input by button. */
         static GetPointerInput(button: number): boolean;
-        /** Get left virtual joystick. */
-        static GetLeftJoystick(): BABYLON.VirtualJoystick;
-        /** Get right virtual joystick. */
-        static GetRightJoystick(): BABYLON.VirtualJoystick;
-        /** Get joystick button pressed. */
-        static GetJoystickPress(button: number): boolean;
-        /** Dispose virtual joystick setup. */
-        static DisposeVirtualJoysticks(): void;
         /** Set on gamepad button up event handler. */
         static OnGamepadButtonUp(callback: (button: number) => void, player?: BABYLON.PlayerNumber): void;
         /** Set on gamepad button down event handler. */
@@ -482,9 +478,6 @@ declare module BABYLON {
         private static keyButtonPress;
         private static keyButtonDown;
         private static keyButtonUp;
-        private static leftJoystick;
-        private static rightJoystick;
-        private static virtualJoystick;
         private static previousPosition;
         private static preventDefault;
         private static rightHanded;
@@ -539,7 +532,6 @@ declare module BABYLON {
         private static inputPointerDownHandler;
         private static inputPointerUpHandler;
         private static inputPointerMoveHandler;
-        private static inputVirtualJoysticks;
         private static inputOneButtonDownHandler;
         private static inputOneButtonUpHandler;
         private static inputOneXboxDPadDownHandler;
@@ -826,6 +818,13 @@ declare module BABYLON {
         private _attachAfterBind;
     }
     /**
+    * Babylon universal shader material pro class
+    * @class UniversalShaderMaterial
+    */
+    class UniversalShaderMaterial extends BABYLON.ShaderMaterial {
+        constructor(name: string, scene?: BABYLON.Scene, options?: Partial<BABYLON.IShaderMaterialOptions>);
+    }
+    /**
      * Babylon universal node material pro class
      * @class UniversalNodeMaterial
      */
@@ -921,10 +920,6 @@ declare module BABYLON {
         Xbox360 = 1,
         DualShock = 2,
         PoseController = 3
-    }
-    enum JoystickButton {
-        Left = 0,
-        Right = 1
     }
     enum Xbox360Trigger {
         Left = 0,
@@ -1106,10 +1101,6 @@ declare module BABYLON {
         static GamepadRStickYInverted: boolean;
         static GamepadLStickSensibility: number;
         static GamepadRStickSensibility: number;
-        static JoystickRightHandleColor: string;
-        static JoystickLeftSensibility: number;
-        static JoystickRightSensibility: number;
-        static JoystickDeadStickValue: number;
         static PointerAngularSensibility: number;
         static PointerWheelDeadZone: number;
         static PointerMouseDeadZone: number;
@@ -1269,6 +1260,28 @@ declare module BABYLON {
         PrePopulatePool(count: number): void;
         private AvailableInstances;
         private CreateNewInstance;
+    }
+    /**
+     * Touch Joystick Classes (https://www.cssscript.com/touch-joystick-controller/)
+     * @class TouchJoystickHandler - All rights reserved (c) 2020 Mackey Kinard
+     */
+    class TouchJoystickHandler {
+        private active;
+        private touchId;
+        private dragStart;
+        private maxDistance;
+        private deadZone;
+        private xvalue;
+        private yvalue;
+        private stick;
+        getValueX(): number;
+        getValueY(): number;
+        getStickElement(): HTMLElement;
+        constructor(stickid: string, maxdistance: number, deadzone: number);
+        dispose(): void;
+        protected handleDown(event: any): void;
+        protected handleMove(event: any): void;
+        protected handleUp(event: any): void;
     }
     /**
      * Physics Raycast Classes
