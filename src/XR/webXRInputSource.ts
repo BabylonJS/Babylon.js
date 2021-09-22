@@ -213,7 +213,6 @@ export class WebXRInputSource {
                     this.grip.rotationQuaternion!.z *= -1;
                     this.grip.rotationQuaternion!.w *= -1;
                 }
-                console.log("xrinputsource grip position: "+this.grip.position);
             }
             this.grip.parent = xrCamera.parent;
         }

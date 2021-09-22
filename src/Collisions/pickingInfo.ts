@@ -3,7 +3,6 @@ import { Vector3, Vector2, TmpVectors } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Sprite } from "../Sprites/sprite";
-//import { TransformNode } from "../Meshes/transformNode";
 
 declare type Ray = import("../Culling/ray").Ray;
 
@@ -51,7 +50,7 @@ export class PickingInfo {
      */
     public originMesh: Nullable<AbstractMesh> = null;
     /**
-     * The transform of the mesh used for picking (eg. 6dof controller), if one exists.
+     * The mesh used for picking (eg. 6dof controller), if one exists.
      */
     public originTransform: Nullable<AbstractMesh> = null;
     /**

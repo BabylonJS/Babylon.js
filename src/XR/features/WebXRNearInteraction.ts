@@ -339,11 +339,8 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                             controllerData.grabRay.length = nearGrabRayLength;
                         }
                     }
-                }/*
-                if (controllerData.xrController.inputSource.gripSpace) {
-                    let controllerGripPose = _xrFrame.getPose(controllerData.xrController.inputSource.gripSpace, this._xrSessionManager.referenceSpace);
-                    controllerData.xrControllerTransform = controllerGripPose?.transform || null;
-                }*/
+                }
+                
                 controllerData.xrControllerTransform = controllerData.xrController.grip || null;
             } else {
                 return;

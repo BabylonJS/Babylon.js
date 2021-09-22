@@ -195,7 +195,6 @@ export class Gizmo implements IDisposable {
             if (this.updateGizmoPositionToMatchAttachedMesh) {
                 const row = effectiveNode.getWorldMatrix().getRow(3);
                 const position = row ? row.toVector3() : new Vector3(0, 0, 0);
-                console.log("gizmo: "+position);
                 this._rootMesh.position.copyFrom(position);
             }
 

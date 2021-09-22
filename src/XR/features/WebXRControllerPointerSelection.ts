@@ -1,7 +1,6 @@
 import { WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
 import { WebXRSessionManager } from "../webXRSessionManager";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { TransformNode } from "../../Meshes/transformNode";
 import { Observer } from "../../Misc/observable";
 import { WebXRInput } from "../webXRInput";
 import { WebXRInputSource } from "../webXRInputSource";
@@ -352,20 +351,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             if (controllerData.xrController) {
                 controllerGlobalPosition = controllerData.xrController.pointer.position;
                 controllerData.xrController.getWorldPointerRayToRef(controllerData.tmpRay);
-                console.log("controller actual position: "+controllerData.tmpRay.origin);
-                console.log("controller actual grip: "+controllerData.xrController.grip?.position);
                 controllerData.xrControllerTransform = controllerData.xrController.grip || null;
-/*
-                if (controllerData.xrController.inputSource.gripSpace) {
-                    let controllerGripPose = _xrFrame.getPose(controllerData.xrController.inputSource.gripSpace, this._xrSessionManager.referenceSpace);
-                   // let controllerGripPose = controllerData.xrController.grip?.transform;
-                   // controllerData.xrControllerTransform
-                    let ct = controllerGripPose?.transform.inverse || null;
-                    const cp = new Vector3(ct!.position.x, ct!.position.y, ct!.position.z);
-                    const cp2 = new Vector3(controllerGripPose?.transform.position.x, controllerGripPose?.transform.position.y, controllerGripPose?.transform.position.z);
-                    console.log("controller position 1: "+cp);
-                    console.log("controller position 2: "+cp2);
-                }*/
             } else if (controllerData.webXRCamera) {
                 controllerGlobalPosition = controllerData.webXRCamera.position;
                 controllerData.webXRCamera.getForwardRayToRef(controllerData.tmpRay);
