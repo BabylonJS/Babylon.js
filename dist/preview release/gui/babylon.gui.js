@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!*****************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \*****************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \************************************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -602,6 +602,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         if (height === void 0) { height = 0; }
         if (generateMipMaps === void 0) { generateMipMaps = false; }
         if (samplingMode === void 0) { samplingMode = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_SAMPLINGMODE; }
+        if (invertY === void 0) { invertY = true; }
         var _this = _super.call(this, name, { width: width, height: height }, scene, generateMipMaps, samplingMode, babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Constants"].TEXTUREFORMAT_RGBA, invertY) || this;
         _this._isDirty = false;
         /** @hidden */
@@ -694,6 +695,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         if (!scene || !_this._texture) {
             return _this;
         }
+        _this.applyYInversionOnUpdate = invertY;
         _this._rootElement = scene.getEngine().getInputElement();
         _this._renderObserver = scene.onBeforeCameraRenderObservable.add(function (camera) { return _this._checkUpdate(camera); });
         _this._preKeyboardObserver = scene.onPreKeyboardObservable.add(function (info) {
