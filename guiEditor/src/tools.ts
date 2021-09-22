@@ -61,4 +61,21 @@ export class Tools {
         }
         return new Vector2(rowNumber,columnNumber);
     }
+
+    public static reorderGrid(grid: Grid, index: number, control : Control, cell : Vector2)
+    {
+        let tags: Vector2[] = [];
+        let controls: Control[] = [];
+        const length = grid.children.length;
+        for (let i = index; i < length; ++i) {
+            const control = grid.children[index];
+            controls.push(control);
+            tags.push(Tools.getCellInfo(grid, control));
+            grid.removeControl(control);
+        }
+        grid.addControl(control, cell.x, cell.y);
+        for (let i = 0; i < controls.length; ++i) {
+            grid.addControl(controls[i], tags[i].x, tags[i].y);
+        }
+    }
 }

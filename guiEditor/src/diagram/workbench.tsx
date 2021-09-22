@@ -447,27 +447,13 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     private _reorderGrid(grid: Grid, draggedControl: Control, dropLocationControl: Control) {
-
-        let cellInfo = Tools.getCellInfo(grid, draggedControl);
+        const cellInfo = Tools.getCellInfo(grid, draggedControl);
         grid.removeControl(draggedControl);
 
         let index = grid.children.indexOf(dropLocationControl);
         index = this._adjustParentingIndex(index);
 
-        let tags: Vector2[] = [];
-        let controls: Control[] = [];
-        let length = grid.children.length;
-        for (let i = index; i < length; ++i) {
-            const control = grid.children[index];
-            controls.push(control);
-            tags.push(Tools.getCellInfo(grid, control));
-            grid.removeControl(control);
-        }
-
-        grid.addControl(draggedControl, cellInfo.x, cellInfo.y);
-        for (let i = 0; i < controls.length; ++i) {
-            grid.addControl(controls[i], tags[i].x, tags[i].y);
-        }
+        Tools.reorderGrid(grid, index, draggedControl, cellInfo);
     }
 
     private _isNotChildInsert(control: Nullable<Control>, draggedControl: Nullable<Control>) {
