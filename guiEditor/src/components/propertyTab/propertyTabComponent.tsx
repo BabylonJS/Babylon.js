@@ -43,8 +43,10 @@ import { ControlPropertyGridComponent } from "./propertyGrids/gui/controlPropert
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
 import { Vector2 } from "babylonjs/Maths/math.vector";
 import { OptionsLineComponent } from "../../sharedUiComponents/lines/optionsLineComponent";
-import { TextInputLineComponent } from "../../sharedUiComponents/lines/textInputLineComponent";
 import { FloatLineComponent } from "../../sharedUiComponents/lines/floatLineComponent";
+import { Color3LineComponent } from "../../sharedUiComponents/lines/color3LineComponent";
+import { TextInputLineComponent } from "../../sharedUiComponents/lines/textInputLineComponent";
+import { ParentingPropertyGridComponent } from "../parentingPropertyGridComponent";
 
 require("./propertyTab.scss");
 const adtIcon: string = require("../../../public/imgs/adtIcon.svg");
@@ -81,15 +83,14 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             this.loadFromSnippet();
         });
 
+        this.props.globalState.onPropertyGridUpdateRequiredObservable.add(() => {
+            this.forceUpdate();
+        });
+
     }
 
-    timerRefresh() {
-        if (!this._lockObject.lock) {
-            this.forceUpdate();
-        }
-    }
     componentDidMount() {
-        this._timerIntervalId = window.setInterval(() => this.timerRefresh(), 500);
+
         this.props.globalState.onSelectionChangedObservable.add((selection) => {
             if (selection instanceof Control) {
                 this.setState({ currentNode: selection });
@@ -279,17 +280,24 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     }
 
     render() {
+
         if (this.state.currentNode) {
             return (
                 <div id="ge-propertyTab">
                     <div id="header">
                         <img id="logo" src={adtIcon} />
-                        <div id="title">{`${this.state.currentNode.name} [${this.state.currentNode.getClassName()}] (ID: ${this.state.currentNode.uniqueId.toString()})`}</div>
+                        <div id="title"> 
+                            <TextInputLineComponent noUnderline={true} lockObject={this._lockObject} label="" target={this.state.currentNode} propertyName="name" onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
+                        </div>
                     </div>
                     {this.renderProperties()}
-                    <hr />
+                    <hr className="ge" />
+                    {
+                        this.state.currentNode?.parent?.typeName === "Grid" && 
+                        <ParentingPropertyGridComponent control={this.state.currentNode} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} lockObject={this._lockObject}></ParentingPropertyGridComponent>
+                    }
                     <ButtonLineComponent
-                        label="REMOVE ELEMENT"
+                        label="DELETE ELEMENT"
                         onClick={() => {
                             this.state.currentNode?.dispose();
                             this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
@@ -337,18 +345,18 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             <div id="ge-propertyTab">
                 <div id="header">
                     <img id="logo" src={adtIcon} />
-                    <div id="title">AdvanceDyanamicTexture</div>
+                    <div id="title">AdvancedDynamicTexture</div>
                 </div>
                 <div>
                     <TextLineComponent tooltip="" label="ART BOARD" value=" " color="grey"></TextLineComponent>
                     {
                         this.props.globalState.workbench.artBoardBackground !== undefined &&
-                        <TextInputLineComponent icon={artboardColorIcon} lockObject={this._lockObject} label="" target={this.props.globalState.workbench.artBoardBackground} propertyName="background" onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
+                        <Color3LineComponent iconLabel={"Background Color"} lockObject={this._lockObject} icon={artboardColorIcon} label="" target={this.props.globalState.workbench._scene} propertyName="clearColor" onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
                     }
-                    <hr />
+                    <hr className="ge" />
                     <TextLineComponent tooltip="" label="CANVAS" value=" " color="grey"></TextLineComponent>
                     <CheckBoxLineComponent
-                        label=""
+                        label="RESPONSIVE"
                         iconLabel="Responsive"
                         icon={responsiveIcon}
                         isSelected={() => DataStorage.ReadBoolean("Responsive", true)}
@@ -397,7 +405,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             ></FloatLineComponent>
                         </div>
                     }
-                    <hr />
+                    <hr className="ge" />
                     <TextLineComponent tooltip="" label="FILE" value=" " color="grey"></TextLineComponent>
                     <FileButtonLineComponent label="Load" onClick={(file) => this.load(file)} accept=".json" />
                     <ButtonLineComponent
@@ -406,7 +414,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             this.props.globalState.onSaveObservable.notifyObservers();
                         }}
                     />
-                    <hr />
+                    <hr className="ge" />
                     <TextLineComponent tooltip="" label="SNIPPET" value=" " color="grey"></TextLineComponent>
                     <ButtonLineComponent label="Load from snippet server" onClick={() => this.loadFromSnippet()} />
                     <ButtonLineComponent

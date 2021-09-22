@@ -3,6 +3,7 @@ import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
 import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/textureBlock';
 import { RefractionBlock } from 'babylonjs/Materials/Node/Blocks/PBR/refractionBlock';
 import { ReflectionTextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/reflectionTextureBlock';
+import { ReflectionBlock } from 'babylonjs/Materials/Node/Blocks/PBR/reflectionBlock';
 import { TextureLineComponent } from '../../sharedComponents/textureLineComponent';
 import { CurrentScreenBlock } from 'babylonjs/Materials/Node/Blocks/Dual/currentScreenBlock';
 import { ParticleTextureBlock } from 'babylonjs/Materials/Node/Blocks/Particle/particleTextureBlock';
@@ -34,6 +35,9 @@ export class TextureDisplayManager implements IDisplayManager {
             contentArea.classList.add("texture-block");
             if (block instanceof TextureBlock || block instanceof CurrentScreenBlock || block instanceof ParticleTextureBlock) {
                 contentArea.classList.add("regular-texture-block");
+            }
+            if (block instanceof ReflectionBlock) {
+                contentArea.classList.add("reflection-block");
             }
 
             this._previewCanvas = contentArea.ownerDocument!.createElement("canvas");

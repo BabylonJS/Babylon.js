@@ -11,8 +11,22 @@ declare module "./baseTexture" {
          * @see https://learnopengl.com/PBR/IBL/Diffuse-irradiance
          */
         sphericalPolynomial: Nullable<SphericalPolynomial>;
+
+        /**
+         * Force recomputation of spherical polynomials.
+         * Can be useful if you generate a cubemap multiple times (from a probe for eg) and you need the proper polynomials each time
+         */
+        forceSphericalPolynomialsRecompute(): void;
     }
 }
+
+BaseTexture.prototype.forceSphericalPolynomialsRecompute = function(): void {
+    if (this._texture) {
+        this._texture._sphericalPolynomial = null;
+        this._texture._sphericalPolynomialPromise = null;
+        this._texture._sphericalPolynomialComputed = false;
+    }
+};
 
 Object.defineProperty(BaseTexture.prototype, "sphericalPolynomial", {
     get: function (this: BaseTexture) {

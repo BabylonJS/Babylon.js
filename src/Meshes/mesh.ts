@@ -3552,6 +3552,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 instancesCount: this._thinInstanceDataStorage.instancesCount,
                 matrixData: Tools.SliceToArray(this._thinInstanceDataStorage.matrixData),
                 matrixBufferSize: this._thinInstanceDataStorage.matrixBufferSize,
+                enablePicking: this.thinInstanceEnablePicking,
             };
 
             if (this._userThinInstanceBuffersStorage) {
@@ -3993,6 +3994,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Thin instances
         if (parsedMesh.thinInstances) {
             const thinInstances = parsedMesh.thinInstances;
+
+            mesh.thinInstanceEnablePicking = !!thinInstances.enablePicking;
 
             if (thinInstances.matrixData) {
                 mesh.thinInstanceSetBuffer("matrix", new Float32Array(thinInstances.matrixData), 16, false);

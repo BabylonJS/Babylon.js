@@ -13,6 +13,7 @@ import { Scene } from "../scene";
 /**
  * Class used to render a debug view of the frustum for a directional light
  * @see https://playground.babylonjs.com/#7EFGSG#3
+ * @since 5.0.0
  */
 export class DirectionalLightFrustumViewer {
     private _scene: Scene;

@@ -10,6 +10,7 @@ import { Behavior } from "../behavior";
 
 /**
  * A behavior that allows a transform node to stick to a surface position/orientation
+ * @since 5.0.0
  */
 export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
     private _scene: Scene;

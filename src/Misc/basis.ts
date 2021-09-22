@@ -126,7 +126,7 @@ export class BasisTools {
     private static _actionId = 0;
     private static _CreateWorkerAsync() {
         if (!this._WorkerPromise) {
-            this._WorkerPromise = new Promise((res) => {
+            this._WorkerPromise = new Promise((res, reject) => {
                 if (this._Worker) {
                     res(this._Worker);
                 } else {
@@ -138,11 +138,13 @@ export class BasisTools {
                             if (msg.data.action === "init") {
                                 this._Worker!.removeEventListener("message", initHandler);
                                 res(this._Worker!);
+                            } else if (msg.data.action === "error") {
+                                reject(msg.data.error || "error initializing worker");
                             }
                         };
                         this._Worker.addEventListener("message", initHandler);
                         this._Worker.postMessage({ action: "init", url: BasisTools.JSModuleURL, wasmBinary: wasmBinary });
-                    });
+                    }).catch(reject);
                 }
             });
         }
@@ -176,6 +178,8 @@ export class BasisTools {
                 const dataViewCopy = new Uint8Array(dataView.byteLength);
                 dataViewCopy.set(new Uint8Array(dataView.buffer, dataView.byteOffset, dataView.byteLength));
                 this._Worker!.postMessage({ action: "transcode", id: actionId, imageData: dataViewCopy, config: config, ignoreSupportedFormats: this._IgnoreSupportedFormats }, [dataViewCopy.buffer]);
+            }, (error) => {
+                rej(error);
             });
         });
     }
@@ -264,7 +268,12 @@ function workerFunc(): void {
             if (!transcoderModulePromise) {
                 // Override wasm binary
                 Module = { wasmBinary: (event.data.wasmBinary) };
-                importScripts(event.data.url);
+                // make sure we loaded the script correctly
+                try {
+                    importScripts(event.data.url);
+                } catch (e) {
+                    postMessage({ action: "error", error: e });
+                }
                 transcoderModulePromise = new Promise<void>((res) => {
                     Module.onRuntimeInitialized = () => {
                         Module.initializeBasis();

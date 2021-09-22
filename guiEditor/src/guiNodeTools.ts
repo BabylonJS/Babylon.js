@@ -45,6 +45,7 @@ export class GUINodeTools {
             case "Rectangle":
                 element = new Rectangle("Rectangle");
                 element.color = "#cccccc";
+                element.background = "Transparent"
                 element.isPointerBlocker = true;
                 element.thickness = 1;
                 return element;
@@ -84,6 +85,7 @@ export class GUINodeTools {
                 element.width = "512px";
                 element.height = "512px";
                 element.autoScale = true;
+                element.color = "Transparent";
                 element.isPointerBlocker = true;
                 return element;
             case "InputText":
@@ -109,6 +111,8 @@ export class GUINodeTools {
             case "Grid":
                 element = new Grid("Grid");
                 element.isHighlighted = true;
+                element.addColumnDefinition(0.5);
+                element.addRowDefinition(0.5);
                 element.isPointerBlocker = true;
                 return element;
             case "DisplayGrid":
@@ -117,6 +121,8 @@ export class GUINodeTools {
             case "StackPanel":
                 element = new StackPanel("StackPanel");
                 element.isHighlighted = true;
+                element.width = "160%";
+                element.height = "100%";
                 return element;
             default:
                 element = Button.CreateSimpleButton("Button", "Click Me");

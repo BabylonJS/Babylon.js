@@ -1,75 +1,57 @@
 import * as React from "react";
-import { OptionsLineComponent } from "../sharedUiComponents/lines/optionsLineComponent";
-import { LineContainerComponent } from "../sharedUiComponents/lines/lineContainerComponent";
-import { GlobalState } from "../globalState";
 import { Control } from "babylonjs-gui/2D/controls/control";
-import { Container } from "babylonjs-gui/2D/controls/container";
+import { TextLineComponent } from "../sharedUiComponents/lines/textLineComponent";
+import { FloatLineComponent } from "../sharedUiComponents/lines/floatLineComponent";
+import { LockObject } from "../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { PropertyChangedEvent } from "../sharedUiComponents/propertyChangedEvent";
+import { Observable } from "babylonjs/Misc/observable";
+import { Grid } from "babylonjs-gui/2D/controls/grid";
 
 interface IParentingPropertyGridComponentProps {
-    guiNode: Control;
-    guiNodes: Control[];
-    globalState: GlobalState;
+    control: Control,
+    lockObject: LockObject,
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
 
 export class ParentingPropertyGridComponent extends React.Component<IParentingPropertyGridComponentProps> {
     constructor(props: IParentingPropertyGridComponentProps) {
         super(props);
+        const cellInfo = (this.props.control.parent as Grid).getChildCellInfo(this.props.control);
+        this._rowNumber = parseInt(cellInfo.substring(0, cellInfo.search(":")));
+        if (isNaN(this._rowNumber)) {
+            this._rowNumber = 0;
+        }
+        this._columnNumber = parseInt(cellInfo.substring(cellInfo.search(":") + 1));
+        if (isNaN(this._columnNumber)) {
+            this._columnNumber = 0;
+        }
     }
-    public parentIndex: number = 0;
+    _columnNumber: number;
+    _rowNumber: number;
 
-    public addChildGui(childNode: Control, parentNode: Control) {
-        this.props.globalState.guiTexture.removeControl(childNode);
-        (parentNode as Container).addControl(childNode);
-    }
-
-    public removeChildGui(childNode: Control, parentNode: Control) {
-        (parentNode as Container).removeControl(childNode);
-        this.props.globalState.guiTexture.addControl(childNode);
+    updateGridPosition() {
+        const grid = this.props.control.parent as Grid;
+        if (grid) {
+            grid.removeControl(this.props.control);
+            grid.addControl(this.props.control, this._rowNumber, this._columnNumber);
+        }
     }
 
     render() {
-        var parentOptions = [{ label: "None", value: 0 }];
-        var containerNodes: Control[] = [];
-
-        this.props.guiNodes.forEach((node) => {
-            if (this.props.globalState.workbench.isContainer(node) && node != this.props.guiNode) {
-                var name = node.name ? node.name : "";
-                parentOptions.push({ label: name, value: parentOptions.length });
-                containerNodes.push(node);
-            }
-        });
-
-        var parent = this.props.guiNode.parent;
-        if (parent) {
-            for (let i = 0; i < containerNodes.length; ++i) {
-                if (parent == containerNodes[i]) {
-                    this.parentIndex = i + 1;
-                }
-            }
-        }
-
         return (
             <div className="pane">
-                <LineContainerComponent title="PARENTING">
-                    <OptionsLineComponent
-                        label="Parent Container"
-                        options={parentOptions}
-                        target={this}
-                        propertyName={"parentIndex"}
-                        noDirectUpdate={true}
-                        onSelect={(value: any) => {
-                            this.parentIndex = value;
-                            if (this.props.guiNode.parent) {
-                                this.removeChildGui(this.props.guiNode, this.props.guiNode.parent);
-                            }
-                            if (value != 0) {
-                                var parent = containerNodes[value - 1];
-                                this.addChildGui(this.props.guiNode, parent);
-                            }
-                            this.forceUpdate();
-                        }}
-                    />
-                </LineContainerComponent>
+                <hr className="ge" />
+                <TextLineComponent tooltip="" label="GRID PARENTING" value=" " color="grey"></TextLineComponent>
+                <div className="divider">
+                    <FloatLineComponent label={"Row #"} target={this} propertyName={"_rowNumber"} isInteger={true} min={0}
+                        onChange={(newValue) => {
+                            this.updateGridPosition();
+                        }} />
+                    <FloatLineComponent label={"Column #"} target={this} propertyName={"_columnNumber"} isInteger={true} min={0}
+                        onChange={(newValue) => {
+                            this.updateGridPosition();
+                        }} />
+                </div>
             </div>
         );
     }

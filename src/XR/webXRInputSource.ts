@@ -6,6 +6,7 @@ import { Scene } from "../scene";
 import { WebXRAbstractMotionController } from "./motionController/webXRAbstractMotionController";
 import { WebXRMotionControllerManager } from "./motionController/webXRMotionControllerManager";
 import { Tools } from "../Misc/tools";
+import { WebXRCamera } from "./webXRCamera";
 
 let idCount = 0;
 
@@ -149,12 +150,12 @@ export class WebXRInputSource {
      */
     public dispose() {
         if (this.grip) {
-            this.grip.dispose(false, true);
+            this.grip.dispose(true);
         }
         if (this.motionController) {
             this.motionController.dispose();
         }
-        this.pointer.dispose();
+        this.pointer.dispose(true);
         this.onMotionControllerInitObservable.clear();
         this.onMeshLoadedObservable.clear();
         this.onDisposeObservable.notifyObservers(this);
@@ -179,8 +180,9 @@ export class WebXRInputSource {
      * Updates the controller pose based on the given XRFrame
      * @param xrFrame xr frame to update the pose with
      * @param referenceSpace reference space to use
+     * @param xrCamera the xr camera, used for parenting
      */
-    public updateFromXRFrame(xrFrame: XRFrame, referenceSpace: XRReferenceSpace) {
+    public updateFromXRFrame(xrFrame: XRFrame, referenceSpace: XRReferenceSpace, xrCamera: WebXRCamera) {
         const pose = xrFrame.getPose(this.inputSource.targetRaySpace, referenceSpace);
         this._lastXRPose = pose;
 
@@ -195,6 +197,7 @@ export class WebXRInputSource {
                 this.pointer.rotationQuaternion!.z *= -1;
                 this.pointer.rotationQuaternion!.w *= -1;
             }
+            this.pointer.parent = xrCamera.parent;
         }
 
         // Update the grip mesh if it exists
@@ -211,6 +214,7 @@ export class WebXRInputSource {
                     this.grip.rotationQuaternion!.w *= -1;
                 }
             }
+            this.grip.parent = xrCamera.parent;
         }
         if (this.motionController) {
             // either update buttons only or also position, if in gamepad mode

@@ -1,7 +1,8 @@
 import { Scene } from "../../scene";
-import { IPerfDatasets, IPerfMetadata } from "../interfaces/iPerfViewer";
+import { IPerfCustomEvent, IPerfDatasets, IPerfMetadata } from "../interfaces/iPerfViewer";
 import { EventState, Observable } from "../observable";
 import { PrecisionDate } from "../precisionDate";
+import { Tools } from "../tools";
 import { DynamicFloat32Array } from "./dynamicFloat32Array";
 import { IPerfViewerCollectionStrategy, PerfStrategyInitialization } from "./performanceViewerCollectionStrategies";
 
@@ -14,6 +15,15 @@ const numberOfBitsInHexcode = 24;
 // Allows single numeral hex numbers to be appended by a 0.
 const hexPadding = "0";
 
+// header for the timestamp column
+const timestampColHeader = "timestamp";
+
+// header for the numPoints column
+const numPointsColHeader = "numPoints";
+
+// regex to capture all carriage returns in the string.
+const carriageReturnRegex = /\r/g;
+
 /**
  * The collector class handles the collection and storage of data into the appropriate array.
  * The collector also handles notifying any observers of any updates.
@@ -22,6 +32,9 @@ export class PerformanceViewerCollector {
     private _datasetMeta: Map<string, IPerfMetadata>;
     private _strategies: Map<string, IPerfViewerCollectionStrategy>;
     private _startingTimestamp: number;
+    private _hasLoadedData: boolean;
+    private readonly _customEventObservable: Observable<IPerfCustomEvent>;
+    private readonly _eventRestoreSet: Set<string>;
 
     /**
      * Datastructure containing the collected datasets. Warning: you should not modify the values in here, data will be of the form [timestamp, numberOfPoints, value1, value2..., timestamp, etc...]
@@ -64,10 +77,89 @@ export class PerformanceViewerCollector {
         };
         this._strategies = new Map<string, IPerfViewerCollectionStrategy>();
         this._datasetMeta = new Map<string, IPerfMetadata>();
+        this._eventRestoreSet = new Set();
+        this._customEventObservable = new Observable();
         this.datasetObservable = new Observable();
         this.metadataObservable = new Observable((observer) => observer.callback(this._datasetMeta, new EventState(0)));
         if (_enabledStrategyCallbacks) {
             this.addCollectionStrategies(..._enabledStrategyCallbacks);
+        }
+    }
+
+    /**
+     * Registers a custom string event which will be callable via sendEvent. This method returns an event object which will contain the id of the event.
+     * The user can set a value optionally, which will be used in the sendEvent method. If the value is set, we will record this value at the end of each frame,
+     * if not we will increment our counter and record the value of the counter at the end of each frame. The value recorded is 0 if no sendEvent method is called, within a frame.
+     * @param name The name of the event to register
+     * @param forceUpdate if the code should force add an event, and replace the last one.
+     * @returns The event registered, used in sendEvent
+     */
+    public registerEvent(name: string, forceUpdate?: boolean): IPerfCustomEvent | undefined {
+        if (this._strategies.has(name) && !forceUpdate) {
+            return;
+        }
+
+        if (this._strategies.has(name) && forceUpdate) {
+            this._strategies.get(name)?.dispose();
+            this._strategies.delete(name);
+        }
+
+        const strategy: PerfStrategyInitialization = (scene) => {
+            let counter: number = 0;
+            let value: number = 0;
+
+            const afterRenderObserver = scene.onAfterRenderObservable.add(() => {
+                value = counter;
+                counter = 0;
+            });
+
+            const stringObserver = this._customEventObservable.add((eventVal) => {
+                if (name !== eventVal.name) {
+                    return;
+                }
+
+                if (eventVal.value !== undefined) {
+                    counter = eventVal.value;
+                } else {
+                    counter++;
+                }
+            });
+
+            return {
+                id: name,
+                getData: () => value,
+                dispose: () => {
+                    scene.onAfterRenderObservable.remove(afterRenderObserver);
+                    this._customEventObservable.remove(stringObserver);
+                }
+            };
+        };
+        const event: IPerfCustomEvent = {
+            name
+        };
+
+        this._eventRestoreSet.add(name);
+        this.addCollectionStrategies(strategy);
+
+        return event;
+    }
+
+    /**
+     * Lets the perf collector handle an event, occurences or event value depending on if the event.value params is set.
+     * @param event the event to handle an occurence for
+     */
+    public sendEvent(event: IPerfCustomEvent) {
+        this._customEventObservable.notifyObservers(event);
+    }
+
+    /**
+     * This event restores all custom string events if necessary.
+     */
+    private _restoreStringEvents() {
+        if (this._eventRestoreSet.size !== this._customEventObservable.observers.length) {
+            this._eventRestoreSet.forEach((event) => {
+                this.registerEvent(event, true);
+            });
         }
     }
 
@@ -78,7 +170,6 @@ export class PerformanceViewerCollector {
     public addCollectionStrategies(...strategyCallbacks: PerfStrategyInitialization[]) {
         for (const strategyCallback of strategyCallbacks) {
             const strategy = strategyCallback(this._scene);
-
             if (this._strategies.has(strategy.id)) {
                 strategy.dispose();
                 continue;
@@ -212,6 +303,153 @@ export class PerformanceViewerCollector {
     }
 
     /**
+     * Completely clear, data, ids, and strategies saved to this performance collector.
+     * @param preserveStringEventsRestore if it should preserve the string events, by default will clear string events registered when called.
+     */
+    public clear(preserveStringEventsRestore?: boolean) {
+        this.datasets.data = new DynamicFloat32Array(initialArraySize);
+        this.datasets.ids.length = 0;
+        this.datasets.startingIndices = new DynamicFloat32Array(initialArraySize);
+        this._datasetMeta.clear();
+        this._strategies.forEach((strategy) => strategy.dispose());
+        this._strategies.clear();
+
+        if (!preserveStringEventsRestore) {
+            this._eventRestoreSet.clear();
+        }
+        this._hasLoadedData = false;
+    }
+
+    /**
+     * Accessor which lets the caller know if the performance collector has data loaded from a file or not!
+     * Call clear() to reset this value.
+     * @returns true if the data is loaded from a file, false otherwise.
+     */
+    public get hasLoadedData(): boolean {
+        return this._hasLoadedData;
+    }
+
+    /**
+     * Given a string containing file data, this function parses the file data into the datasets object.
+     * It returns a boolean to indicate if this object was successfully loaded with the data.
+     * @param data string content representing the file data.
+     * @returns true if the data was successfully loaded, false otherwise.
+     */
+    public loadFromFileData(data: string): boolean {
+        const lines =
+            data.replace(carriageReturnRegex, '').split('\n')
+                .map((line) => (
+                    line.split(',')
+                        .filter((s) =>  s.length > 0)
+                ))
+                .filter((line) => line.length > 0);
+        const timestampIndex = 0;
+        const numPointsIndex = PerformanceViewerCollector.NumberOfPointsOffset;
+        if (lines.length < 2) {
+            return false;
+        }
+
+        const parsedDatasets: IPerfDatasets = {
+            ids: [],
+            data: new DynamicFloat32Array(initialArraySize),
+            startingIndices: new DynamicFloat32Array(initialArraySize)
+        };
+
+        // parse first line seperately to populate ids!
+        const [firstLine, ...dataLines] = lines;
+        // make sure we have the correct beginning headers
+        if (firstLine.length < 2 || firstLine[timestampIndex] !== timestampColHeader || firstLine[numPointsIndex] !== numPointsColHeader) {
+            return false;
+        }
+
+        // populate the ids.
+        for (let i = PerformanceViewerCollector.SliceDataOffset; i < firstLine.length; i++) {
+            parsedDatasets.ids.push(firstLine[i]);
+        }
+
+        let startingIndex = 0;
+        for (const line of dataLines) {
+            if (line.length < 2) {
+                return false;
+            }
+
+            const timestamp = parseFloat(line[timestampIndex]);
+            const numPoints = parseInt(line[numPointsIndex]);
+
+            if (isNaN(numPoints) || isNaN(timestamp)) {
+                return false;
+            }
+
+            parsedDatasets.data.push(timestamp);
+            parsedDatasets.data.push(numPoints);
+
+            if (numPoints + PerformanceViewerCollector.SliceDataOffset !== line.length) {
+                return false;
+            }
+
+            for (let i = PerformanceViewerCollector.SliceDataOffset; i < line.length; i++) {
+                const val = parseFloat(line[i]);
+                if (isNaN(val)) {
+                    return false;
+                }
+                parsedDatasets.data.push(val);
+            }
+
+            parsedDatasets.startingIndices.push(startingIndex);
+            startingIndex += line.length;
+        }
+
+        this.datasets.ids = parsedDatasets.ids;
+        this.datasets.data = parsedDatasets.data;
+        this.datasets.startingIndices = parsedDatasets.startingIndices;
+        this._datasetMeta.clear();
+        this._strategies.forEach((strategy) => strategy.dispose());
+        this._strategies.clear();
+
+        // populate metadata.
+        for (const id of this.datasets.ids) {
+            this._datasetMeta.set(id, {color: this._getHexColorFromId(id)});
+        }
+        this.metadataObservable.notifyObservers(this._datasetMeta);
+        this._hasLoadedData = true;
+        return true;
+    }
+
+    /**
+     * Exports the datasets inside of the collector to a csv.
+     */
+    public exportDataToCsv() {
+        let csvContent = "";
+        // create the header line.
+        csvContent += `${timestampColHeader},${numPointsColHeader}`;
+        for (let i = 0; i < this.datasets.ids.length; i++) {
+            csvContent += `,${this.datasets.ids[i]}`;
+        }
+        csvContent += "\n";
+        // create the data lines
+        for (let i = 0; i < this.datasets.startingIndices.itemLength; i++) {
+            const startingIndex = this.datasets.startingIndices.at(i);
+            const timestamp = this.datasets.data.at(startingIndex);
+            const numPoints = this.datasets.data.at(startingIndex + PerformanceViewerCollector.NumberOfPointsOffset);
+
+            csvContent += `${timestamp},${numPoints}`;
+
+            for (let offset = 0; offset < numPoints; offset++) {
+                csvContent += `,${this.datasets.data.at(startingIndex + PerformanceViewerCollector.SliceDataOffset + offset)}`;
+            }
+
+            // add extra commas.
+            for (let diff = 0; diff < this.datasets.ids.length - numPoints; diff++) {
+                csvContent += ",";
+            }
+
+            csvContent += "\n";
+        }
+
+        const fileName = `${new Date().toISOString()}-perfdata.csv`;
+        Tools.Download(new Blob([csvContent], {type: "text/csv"}), fileName);
+    }
+    /**
      * Starts the realtime collection of data.
      * @param shouldPreserve optional boolean param, if set will preserve the dataset between calls of start.
      */
@@ -222,6 +460,7 @@ export class PerformanceViewerCollector {
         }
         this._startingTimestamp = PrecisionDate.Now;
         this._scene.onBeforeRenderObservable.add(this._collectDataAtFrame);
+        this._restoreStringEvents();
     }
 
     /**
