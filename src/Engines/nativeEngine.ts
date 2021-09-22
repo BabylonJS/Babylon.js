@@ -1109,12 +1109,12 @@ export class NativeEngine extends Engine {
         this._shaderProcessor = new WebGL2ShaderProcessor();
 
         this.onNewSceneAddedObservable.add((scene) => {
-            scene.onBeforeRenderObservable.add(() => {
+            const originalRender = scene.render;
+            scene.render = (...args: Parameters<typeof originalRender>) => {
                 this._commandBufferEncoder.beginCommandScope();
-            });
-            scene.onAfterRenderObservable.add(() => {
+                originalRender.apply(scene, args);
                 this._commandBufferEncoder.endCommandScope();
-            })
+            };
         });
     }
 
