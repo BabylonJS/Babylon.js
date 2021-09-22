@@ -1,3 +1,7 @@
+import { Control } from "babylonjs-gui/2D/controls/control";
+import { Grid } from "babylonjs-gui/2D/controls/grid";
+import { Vector2 } from "babylonjs/Maths/math";
+
 export class Tools {
     public static LookForItem(item: any, selectedEntity: any): boolean {
         if (item === selectedEntity) {
@@ -44,26 +48,17 @@ export class Tools {
         return finalArray.reverse();
     }
 
-    public static SortAndFilterForGrid(parent: any, items: any[]): any[] {
-        if (!items) {
-            return [];
+    public static getCellInfo(grid: Grid, control: Control)
+    {
+        const cellInfo = grid.getChildCellInfo(control);
+        let rowNumber = parseInt(cellInfo.substring(0, cellInfo.search(":")));
+        if (isNaN(rowNumber)) {
+            rowNumber = 0;
         }
-
-        const finalArray = Tools._RecursiveRemoveHiddenMeshesAndHoistChildren(items);
-
-        if (parent && parent.reservedDataStore && parent.reservedDataStore.detachedChildren) {
-            finalArray.push(...parent.reservedDataStore.detachedChildren);
+        let columnNumber = parseInt(cellInfo.substring(cellInfo.search(":") + 1));
+        if (isNaN(columnNumber)) {
+            columnNumber = 0;
         }
-
-        return finalArray.sort((a: any, b: any) => {
-            const lowerCaseA = (a._tag || "").toLowerCase();
-            const lowerCaseB = (b._tag || "").toLowerCase();
-            
-            if (lowerCaseA > lowerCaseB) {
-                return 1;
-            }
-
-            return -1;
-        });
+        return new Vector2(rowNumber,columnNumber);
     }
 }
