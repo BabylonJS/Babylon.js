@@ -3183,6 +3183,13 @@ declare module BABYLON {
          * @return The converted angle.
          */
         static NormalizeRadians(angle: number): number;
+        /**
+         * Returns the highest common factor of two integers.
+         * @param a first parameter
+         * @param b second parameter
+         * @return HCF of a and b
+         */
+        static HCF(a: number, b: number): number;
     }
 }
 declare module BABYLON {
@@ -3196,6 +3203,11 @@ declare module BABYLON {
      * @ignorenaming
      */
     export const ToLinearSpace = 2.2;
+    /**
+     * Constant Golden Ratio value in Babylon.js
+     * @ignorenaming
+     */
+    export const PHI: number;
     /**
      * Constant used to define the minimal number value in Babylon.js
      * @ignorenaming
@@ -29544,6 +29556,12 @@ declare module BABYLON {
             sideOrientation?: number;
         }, scene: Scene): Mesh;
         /**
+         * Extends a mesh to a Goldberg mesh
+         * @param mesh the mesh to convert
+         * Warning  the mesh to convert MUST be an import of a peviously exported Goldberg mesh
+         */
+        static ExtendToGoldberg(mesh: Mesh): void;
+        /**
          * Creates a sphere based upon an icosahedron with 20 triangular faces which can be subdivided
          * * The parameter `radius` sets the radius size (float) of the icosphere (default 1)
          * * You can set some different icosphere dimensions, for instance to build an ellipsoid, by using the parameters `radiusX`, `radiusY` and `radiusZ` (all by default have the same value than `radius`)
@@ -29677,6 +29695,193 @@ declare module BABYLON {
          * @returns Capsule Mesh
          */
         static CreateCapsule(name: string, options?: ICreateCapsuleOptions, scene?: Nullable<Scene>): Mesh;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class representing an isovector a vector containing 2 INTEGER coordinates
+     * x axis is horizontal
+     * y axis is 60 deg counter clockwise from positive y axis
+     * @hidden
+     */
+    export class _IsoVector {
+        /** defines the first coordinate */
+        x: number;
+        /** defines the second coordinate */
+        y: number;
+        /**
+         * Creates a new isovector from the given x and y coordinates
+         * @param x defines the first coordinate, must be an integer
+         * @param y defines the second coordinate, must be an integer
+         */
+        constructor(
+        /** defines the first coordinate */
+        x?: number, 
+        /** defines the second coordinate */
+        y?: number);
+        /**
+         * Gets a new IsoVector copied from the IsoVector
+         * @returns a new IsoVector
+         */
+        clone(): _IsoVector;
+        /**
+         * Rotates one IsoVector 60 degrees counter clockwise about another
+         * Please note that this is an in place operation
+         * @param other an IsoVector a center of rotation
+         * @returns the rotated IsoVector
+         */
+        rotate60About(other: _IsoVector): this;
+        /**
+         * Rotates one IsoVector 60 degrees clockwise about another
+         * Please note that this is an in place operation
+         * @param other an IsoVector as center of rotation
+         * @returns the rotated IsoVector
+         */
+        rotateNeg60About(other: _IsoVector): this;
+        /**
+         * For an equilateral triangle OAB with O at isovector (0, 0) and A at isovector (m, n)
+         * Rotates one IsoVector 120 degrees counter clockwise about the center of the triangle
+         * Please note that this is an in place operation
+         * @param m integer a measure a Primary triangle of order (m, n) m > n
+         * @param n >= 0 integer a measure for a Primary triangle of order (m, n)
+         * @returns the rotated IsoVector
+         */
+        rotate120(m: number, n: number): this;
+        /**
+         * For an equilateral triangle OAB with O at isovector (0, 0) and A at isovector (m, n)
+         * Rotates one IsoVector 120 degrees clockwise about the center of the triangle
+         * Please note that this is an in place operation
+         * @param m integer a measure a Primary triangle of order (m, n) m > n
+         * @param n >= 0 integer a measure for a Primary triangle of order (m, n)
+         * @returns the rotated IsoVector
+         */
+        rotateNeg120(m: number, n: number): this;
+        /**
+         * Transforms an IsoVector to one in Cartesian 3D space based on an isovector
+         * @param origin an IsoVector
+         * @returns Point as a Vector3
+         */
+        toCartesianOrigin(origin: _IsoVector, isoGridSize: number): Vector3;
+        /**
+         * Gets a new IsoVector(0, 0)
+         * @returns a new IsoVector
+         */
+        static Zero(): _IsoVector;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class representing data for one face OAB of an equilateral icosahedron
+     * When O is the isovector (0, 0), A is isovector (m, n)
+     * @hidden
+     */
+    export class _PrimaryIsoTriangle {
+        m: number;
+        n: number;
+        cartesian: Vector3[];
+        vertices: _IsoVector[];
+        max: number[];
+        min: number[];
+        vecToIdx: {
+            [key: string]: number;
+        };
+        vertByDist: {
+            [key: string]: number[];
+        };
+        closestTo: number[][];
+        innerFacets: string[][];
+        isoVecsABOB: _IsoVector[][];
+        isoVecsOBOA: _IsoVector[][];
+        isoVecsBAOA: _IsoVector[][];
+        vertexTypes: number[][];
+        coau: number;
+        cobu: number;
+        coav: number;
+        cobv: number;
+        IDATA: PolyhedronData;
+        /**
+        * Creates the PrimaryIsoTriangle Triangle OAB
+        * @param m an integer
+        * @param n an integer
+        */
+        setIndices(): void;
+        calcCoeffs(): void;
+        createInnerFacets(): void;
+        edgeVecsABOB(): void;
+        mapABOBtoOBOA(): void;
+        mapABOBtoBAOA(): void;
+        MapToFace(faceNb: number, geodesicData: PolyhedronData): void;
+        /**Creates a primary triangle
+         * @param m
+         * @param n
+         * @hidden
+         */
+        build(m: number, n: number): this;
+    }
+    /** Builds Polyhedron Data
+    * @hidden
+    */
+    export class PolyhedronData {
+        name: string;
+        category: string;
+        vertex: number[][];
+        face: number[][];
+        edgematch: (number | string)[][];
+        constructor(name: string, category: string, vertex: number[][], face: number[][]);
+    }
+    /**
+     * This class Extends the PolyhedronData Class to provide measures for a Geodesic Polyhedron
+     */
+    export class GeodesicData extends PolyhedronData {
+        /**
+         * @hidden
+         */
+        edgematch: (number | string)[][];
+        /**
+         * @hidden
+         */
+        adjacentFaces: number[][];
+        /**
+         * @hidden
+         */
+        sharedNodes: number;
+        /**
+         * @hidden
+         */
+        poleNodes: number;
+        /**
+         * @hidden
+         */
+        innerToData(face: number, primTri: _PrimaryIsoTriangle): void;
+        /**
+         * @hidden
+         */
+        mapABOBtoDATA(faceNb: number, primTri: _PrimaryIsoTriangle): void;
+        /**
+         * @hidden
+         */
+        mapOBOAtoDATA(faceNb: number, primTri: _PrimaryIsoTriangle): void;
+        /**
+         * @hidden
+         */
+        mapBAOAtoDATA(faceNb: number, primTri: _PrimaryIsoTriangle): void;
+        /**
+         * @hidden
+         */
+        orderData(primTri: _PrimaryIsoTriangle): void;
+        /**
+         * @hidden
+         */
+        setOrder(m: number, faces: number[]): number[];
+        /**
+         * @hidden
+         */
+        toGoldbergData(): PolyhedronData;
+        /**Builds the data for a Geodesic Polyhedron from a primary triangle
+         * @param primTri the primary triangle
+         * @hidden
+         */
+        static BuildGeodesicData(primTri: _PrimaryIsoTriangle): GeodesicData;
     }
 }
 declare module BABYLON {
@@ -30287,6 +30492,67 @@ declare module BABYLON {
             frontUVs?: Vector4;
             backUVs?: Vector4;
         }): VertexData;
+        /**
+         * Creates the VertexData for a Geodesic Polyhedron
+         * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty
+         * * m number of horizontal steps along an isogrid
+         * * n number of angled steps along an isogrid
+         * * size the size of the Geodesic, optional default 1
+         * * sizeX allows stretching in the x direction, optional, default size
+         * * sizeY allows stretching in the y direction, optional, default size
+         * * sizeZ allows stretching in the z direction, optional, default size
+         * * faceUV an array of Vector4 elements used to set different images to the top, rings and bottom respectively
+         * * faceColors an array of Color3 elements used to set different colors to the top, rings and bottom respectively
+         * * flat when true creates a flat shaded mesh, optional, default true
+         * * subdivisions increasing the subdivisions increases the number of faces, optional, default 4
+         * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+         * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+         * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+         * @returns the VertexData of the Polyhedron
+         */
+        static CreateGeodesic(options: {
+            m?: number;
+            n?: number;
+            size?: number;
+            sizeX?: number;
+            sizeY?: number;
+            sizeZ?: number;
+            faceUV?: Vector4[];
+            faceColors?: Color4[];
+            flat?: boolean;
+            sideOrientation?: number;
+            frontUVs?: Vector4;
+            backUVs?: Vector4;
+        }): VertexData;
+        /**
+         * Creates the Mesh for a Goldberg Polyhedron
+         * @param name defines the name of the mesh
+         * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty
+         * * m number of horizontal steps along an isogrid
+         * * n number of angled steps along an isogrid
+         * * size the size of the Goldberg, optional default 1
+         * * sizeX allows stretching in the x direction, optional, default size
+         * * sizeY allows stretching in the y direction, optional, default size
+         * * sizeZ allows stretching in the z direction, optional, default size
+         * * faceUV an array of Vector4 elements used to set different images to the top, rings and bottom respectively
+         * * faceColors an array of Color3 elements used to set different colors to the top, rings and bottom respectively
+         * * subdivisions increasing the subdivisions increases the number of faces, optional, default 4
+         * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+         * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+         * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+         * @param goldBergData polyhedronData defining the Goldberg polyhedron
+         * @returns GoldbergSphere mesh
+         */
+        static CreateGoldberg(options: {
+            m?: number;
+            n?: number;
+            size?: number;
+            sizeX?: number;
+            sizeY?: number;
+            sizeZ?: number;
+            updatable?: boolean;
+            sideOrientation?: number;
+        }, goldBergData: PolyhedronData): VertexData;
         /**
          * Creates the VertexData for a Capsule, inspired from https://github.com/maximeq/three-js-capsule-geometry/blob/master/src/CapsuleBufferGeometry.js
          * @param options an object used to set the following optional parameters for the capsule, required but can be empty
@@ -56057,7 +56323,6 @@ declare module BABYLON {
      * @see https://doc.babylonjs.com/features/cameras
      */
     export class StereoscopicScreenUniversalCamera extends UniversalCamera {
-        private _dirty;
         private _distanceToProjectionPlane;
         private _distanceBetweenEyes;
         set distanceBetweenEyes(newValue: number);
@@ -77402,6 +77667,82 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Class containing static functions to help procedurally build a geodesic mesh
+     */
+    export class GeodesicBuilder {
+        /**
+         * Creates the Mesh for a Geodesic Polyhedron
+         * @see https://en.wikipedia.org/wiki/Geodesic_polyhedron
+         * @param name defines the name of the mesh
+         * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty
+         * * m number of horizontal steps along an isogrid
+         * * n number of angled steps along an isogrid
+         * * size the size of the Geodesic, optional default 1
+         * * sizeX allows stretching in the x direction, optional, default size
+         * * sizeY allows stretching in the y direction, optional, default size
+         * * sizeZ allows stretching in the z direction, optional, default size
+         * * faceUV an array of Vector4 elements used to set different images to the top, rings and bottom respectively
+         * * faceColors an array of Color3 elements used to set different colors to the top, rings and bottom respectively
+         * * flat when true creates a flat shaded mesh, optional, default true
+         * * subdivisions increasing the subdivisions increases the number of faces, optional, default 4
+         * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+         * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+         * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+         * @param scene defines the hosting scene
+         * @returns Geodesic mesh
+         */
+        static CreateGeodesic(name: string, options: {
+            m?: number;
+            n?: number;
+            size?: number;
+            sizeX?: number;
+            sizeY?: number;
+            sizeZ?: number;
+            faceUV?: Vector4[];
+            faceColors?: Color4[];
+            flat?: boolean;
+            updatable?: boolean;
+            sideOrientation?: number;
+            frontUVs?: Vector4;
+            backUVs?: Vector4;
+        }, scene?: Nullable<Scene>): Mesh;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class containing static functions to help procedurally build a Goldberg mesh
+     */
+    export class GoldbergBuilder {
+        /**
+         * Creates the Mesh for a Goldberg Polyhedron which is made from 12 pentagonal and the rest hexagonal faces
+         * @see https://en.wikipedia.org/wiki/Goldberg_polyhedron
+         * @param name defines the name of the mesh
+         * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty
+         * * m number of horizontal steps along an isogrid
+         * * n number of angled steps along an isogrid
+         * * size the size of the Goldberg, optional default 1
+         * * sizeX allows stretching in the x direction, optional, default size
+         * * sizeY allows stretching in the y direction, optional, default size
+         * * sizeZ allows stretching in the z direction, optional, default size
+         * * updatable defines if the mesh must be flagged as updatable
+         * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+         * @param scene defines the hosting scene
+         * @returns Goldberg mesh
+         */
+        static CreateGoldberg(name: string, options: {
+            m?: number;
+            n?: number;
+            size?: number;
+            sizeX?: number;
+            sizeY?: number;
+            sizeZ?: number;
+            updatable?: boolean;
+            sideOrientation?: number;
+        }, scene?: Nullable<Scene>): Mesh;
+    }
+}
+declare module BABYLON {
+    /**
      * Class containing static functions to help procedurally build meshes
      */
     export class DecalBuilder {
@@ -78127,6 +78468,70 @@ declare module BABYLON {
             sideOrientation?: number;
             frontUVs?: Vector4;
             backUVs?: Vector4;
+        }, scene?: Nullable<Scene>): Mesh;
+        /**
+         * Creates the Mesh for a Geodesic Polyhedron
+         * @param name defines the name of the mesh
+         * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty
+         * * m number of horizontal steps along an isogrid
+         * * n number of angled steps along an isogrid
+         * * size the size of the Geodesic, optional default 1
+         * * sizeX allows stretching in the x direction, optional, default size
+         * * sizeY allows stretching in the y direction, optional, default size
+         * * sizeZ allows stretching in the z direction, optional, default size
+         * * faceUV an array of Vector4 elements used to set different images to the top, rings and bottom respectively
+         * * faceColors an array of Color3 elements used to set different colors to the top, rings and bottom respectively
+         * * flat when true creates a flat shaded mesh, optional, default true
+         * * subdivisions increasing the subdivisions increases the number of faces, optional, default 4
+         * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+         * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+         * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+         * @param scene defines the hosting scene
+         * @returns Mesh
+         */
+        static CreateGeodesic(name: string, options: {
+            m?: number;
+            n?: number;
+            size?: number;
+            sizeX?: number;
+            sizeY?: number;
+            sizeZ?: number;
+            faceUV?: Vector4[];
+            faceColors?: Color4[];
+            flat?: boolean;
+            updatable?: boolean;
+            sideOrientation?: number;
+            frontUVs?: Vector4;
+            backUVs?: Vector4;
+        }, scene?: Nullable<Scene>): Mesh;
+        /**
+         * Creates the Mesh for a Goldberg Polyhedron
+         * @param name defines the name of the mesh
+         * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty
+         * * m number of horizontal steps along an isogrid
+         * * n number of angled steps along an isogrid
+         * * size the size of the Goldberg, optional default 1
+         * * sizeX allows stretching in the x direction, optional, default size
+         * * sizeY allows stretching in the y direction, optional, default size
+         * * sizeZ allows stretching in the z direction, optional, default size
+         * * faceUV an array of Vector4 elements used to set different images to the top, rings and bottom respectively
+         * * faceColors an array of Color3 elements used to set different colors to the top, rings and bottom respectively
+         * * subdivisions increasing the subdivisions increases the number of faces, optional, default 4
+         * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+         * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+         * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+         * @param scene defines the hosting scene
+         * @returns Mesh
+         */
+        static CreateGoldberg(name: string, options: {
+            m?: number;
+            n?: number;
+            size?: number;
+            sizeX?: number;
+            sizeY?: number;
+            sizeZ?: number;
+            updatable?: boolean;
+            sideOrientation?: number;
         }, scene?: Nullable<Scene>): Mesh;
         /**
          * Creates a decal mesh.
