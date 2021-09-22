@@ -4510,6 +4510,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
+     * Extends a mesh to a Goldberg mesh
+     * @param mesh the mesh to convert
+     * Warning  the mesh to convert MUST be an import of a peviously exported Goldberg mesh
+     */
+    public static ExtendToGoldberg(mesh: Mesh) {
+    }
+
+    /**
      * Creates a sphere based upon an icosahedron with 20 triangular faces which can be subdivided
      * * The parameter `radius` sets the radius size (float) of the icosphere (default 1)
      * * You can set some different icosphere dimensions, for instance to build an ellipsoid, by using the parameters `radiusX`, `radiusY` and `radiusZ` (all by default have the same value than `radius`)
