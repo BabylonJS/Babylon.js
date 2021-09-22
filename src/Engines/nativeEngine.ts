@@ -2279,6 +2279,7 @@ export class NativeEngine extends Engine {
         texture.generateMipMaps = !noMipmap;
         texture.samplingMode = samplingMode;
         texture.invertY = invertY;
+        texture._useSRGBBuffer = useSRGBBuffer && this._caps.supportSRGBBuffers;
 
         if (!this.doNotHandleContextLost) {
             // Keep a link to the buffer only if we plan to handle context lost
@@ -2333,7 +2334,6 @@ export class NativeEngine extends Engine {
                 const underlyingResource = texture._hardwareTexture.underlyingResource;
 
                 this._native.loadTexture(underlyingResource, data, !noMipmap, invertY, useSRGBBuffer, () => {
-                    texture._useSRGBBuffer = useSRGBBuffer && this._caps.supportSRGBBuffers;
                     texture.baseWidth = this._native.getTextureWidth(underlyingResource);
                     texture.baseHeight = this._native.getTextureHeight(underlyingResource);
                     texture.width = texture.baseWidth;
