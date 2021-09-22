@@ -296,6 +296,11 @@ export class ThinEngine {
     public readonly isNDCHalfZRange = false;
 
     /**
+     * Indicates that the origin of the texture/framebuffer space is the bottom left corner. If false, the origin is top left
+     */
+     public readonly hasOriginBottomLeft = true;
+
+    /**
      * Gets or sets a boolean indicating that uniform buffers must be disabled even if they are supported
      */
     public disableUniformBuffers = false;
