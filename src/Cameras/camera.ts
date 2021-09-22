@@ -1122,46 +1122,14 @@ export class Camera extends Node {
             }
         }
 
-        switch (this.cameraRigMode) {
-            case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
-                Camera._setStereoscopicAnaglyphRigMode(this);
-                break;
-            case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
-            case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
-            case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
-            case Camera.RIG_MODE_STEREOSCOPIC_INTERLACED:
-                Camera._setStereoscopicRigMode(this);
-                break;
-            case Camera.RIG_MODE_VR:
-                Camera._setVRRigMode(this, rigParams);
-                break;
-            case Camera.RIG_MODE_WEBVR:
-                Camera._setWebVRRigMode(this, rigParams);
-                break;
-        }
+        this._setRigMode(rigParams);
 
         this._cascadePostProcessesToRigCams();
         this.update();
     }
 
-    /** @hidden */
-    public static _setStereoscopicRigMode(camera: Camera) {
-        throw "Import Cameras/RigModes/stereoscopicRigMode before using stereoscopic rig mode";
-    }
-
-    /** @hidden */
-    public static _setStereoscopicAnaglyphRigMode(camera: Camera) {
-        throw "Import Cameras/RigModes/stereoscopicAnaglyphRigMode before using stereoscopic anaglyph rig mode";
-    }
-
-    /** @hidden */
-    public static _setVRRigMode(camera: Camera, rigParams: any) {
-        throw "Import Cameras/RigModes/vrRigMode before using VR rig mode";
-    }
-
-    /** @hidden */
-    public static _setWebVRRigMode(camera: Camera, rigParams: any) {
-        throw "Import Cameras/RigModes/WebVRRigMode before using Web VR rig mode";
+    protected _setRigMode(rigParams: any) {
+        // no-op
     }
 
     /** @hidden */
