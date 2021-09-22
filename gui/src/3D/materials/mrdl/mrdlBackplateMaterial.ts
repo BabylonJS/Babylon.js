@@ -207,7 +207,7 @@ export class MRDLBackplateMaterial extends PushMaterial {
      * Gets or sets the edge width of the backplate.
      */
     @serialize()
-    public edgeLineGradientBlend =0.5;
+    public edgeLineGradientBlend = 0.5;
 
     constructor(name: string, scene: Scene) {
         super(name, scene);

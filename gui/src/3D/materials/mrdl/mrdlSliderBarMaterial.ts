@@ -287,14 +287,13 @@ export class MRDLSliderBarMaterial extends PushMaterial {
      * Gets or sets the intensity of the hover glow effect.
      */
     @serialize()
-    public blobIntensity = 0.5; 
+    public blobIntensity = 0.5;
 
     /**
      * Gets or sets the near size of the hover glow effect.
      */
     @serialize()
     public blobNearSize = 0.01;
-     
      /**
      * Gets or sets the far size of the hover glow effect.
      */
@@ -389,7 +388,7 @@ export class MRDLSliderBarMaterial extends PushMaterial {
      * Gets or sets the Decal Scle for XY.
      */
     @serialize()
-    public decalScaleXY = new Vector2(1.5,1.5);
+    public decalScaleXY = new Vector2(1.5, 1.5);
 
     /**
      * Gets or sets decalFrontOnly
@@ -397,7 +396,6 @@ export class MRDLSliderBarMaterial extends PushMaterial {
      */
     @serialize()
     public decalFrontOnly = true;
-
 
     /**
      * Gets or sets the Rim Light intensity.
