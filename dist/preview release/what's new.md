@@ -11,6 +11,8 @@
 
 ## Updates
 
+- Add Geodesic and Goldberg Polyhedra ([JohnK](https://github.com/BabylonJSGuide/))
+
 ### General
 
 - Added `zoomToMouseLocation` on `ArcRotateCamera` ([lovettchris](https://github.com/lovettchris))
