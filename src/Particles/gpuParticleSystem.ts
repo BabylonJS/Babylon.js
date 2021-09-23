@@ -30,9 +30,6 @@ declare type Scene = import("../scene").Scene;
 declare type Engine = import("../Engines/engine").Engine;
 declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 
-import "../Shaders/gpuUpdateParticles.fragment";
-import "../Shaders/gpuUpdateParticles.vertex";
-import "../Shaders/gpuUpdateParticles.compute";
 import "../Shaders/gpuRenderParticles.fragment";
 import "../Shaders/gpuRenderParticles.vertex";
 
@@ -818,6 +815,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             d.push(Math.random());
         }
         this._randomTexture = new RawTexture(new Float32Array(d), maxTextureSize, 1, Constants.TEXTUREFORMAT_RGBA, sceneOrEngine, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
+        this._randomTexture.name = "GPUParticleSystem_random1";
         this._randomTexture.wrapU = Constants.TEXTURE_WRAP_ADDRESSMODE;
         this._randomTexture.wrapV = Constants.TEXTURE_WRAP_ADDRESSMODE;
 
@@ -829,6 +827,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             d.push(Math.random());
         }
         this._randomTexture2 = new RawTexture(new Float32Array(d), maxTextureSize, 1, Constants.TEXTUREFORMAT_RGBA, sceneOrEngine, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
+        this._randomTexture2.name = "GPUParticleSystem_random2";
         this._randomTexture2.wrapU = Constants.TEXTURE_WRAP_ADDRESSMODE;
         this._randomTexture2.wrapV = Constants.TEXTURE_WRAP_ADDRESSMODE;
 
@@ -1551,6 +1550,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._updateBuffer.setFloat("currentCount", this._currentActiveCount);
         this._updateBuffer.setFloat("timeDelta", this._timeDelta);
         this._updateBuffer.setFloat("stopFactor", this._stopped ? 0 : 1);
+        this._updateBuffer.setInt("randomTextureSize", this._randomTextureSize);
         this._updateBuffer.setFloat2("lifeTime", this.minLifeTime, this.maxLifeTime);
         this._updateBuffer.setFloat2("emitPower", this.minEmitPower, this.maxEmitPower);
         if (!this._colorGradientsTexture) {
@@ -1568,7 +1568,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             this.particleEmitterType.applyToShader(this._updateBuffer);
         }
         if (this._isAnimationSheetEnabled) {
-            this._updateBuffer.setFloat3("cellInfos", this.startSpriteCellID, this.endSpriteCellID, this.spriteCellChangeSpeed);
+            this._updateBuffer.setFloat4("cellInfos", this.startSpriteCellID, this.endSpriteCellID, this.spriteCellChangeSpeed, this.spriteCellLoop ? 1 : 0);
         }
         if (this.noiseTexture) {
             this._updateBuffer.setVector3("noiseStrength", this.noiseStrength);

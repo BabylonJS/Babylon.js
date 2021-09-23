@@ -41,6 +41,7 @@ import { StencilStateComposer } from "../States/stencilStateComposer";
 import { StorageBuffer } from "../Buffers/storageBuffer";
 import { IAudioEngineOptions } from '../Audio/Interfaces/IAudioEngineOptions';
 import { IStencilState } from "../States/IStencilState";
+import { ShaderLanguage } from "../Materials/shaderLanguage";
 
 declare type WebRequest = import("../Misc/webRequest").WebRequest;
 declare type LoadFileError = import("../Misc/fileTools").LoadFileError;
@@ -181,14 +182,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-alpha.44";
+        return "babylonjs@5.0.0-alpha.47";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-alpha.44";
+        return "5.0.0-alpha.47";
     }
 
     /**
@@ -235,10 +236,12 @@ export class ThinEngine {
         Effect.ShadersRepository = value;
     }
 
-    // Public members
+    protected _shaderProcessor: Nullable<IShaderProcessor>;
 
     /** @hidden */
-    public _shaderProcessor: Nullable<IShaderProcessor>;
+    public _getShaderProcessor(shaderLanguage: ShaderLanguage): Nullable<IShaderProcessor> {
+        return this._shaderProcessor;
+    }
 
     /**
      * Gets or sets a boolean that indicates if textures must be forced to power of 2 size even if not required
@@ -452,7 +455,6 @@ export class ThinEngine {
     private _currentTextureChannel = -1;
     /** @hidden */
     protected _boundTexturesCache: { [key: string]: Nullable<InternalTexture> } = {};
-    /** @hidden */
     protected _currentEffect: Nullable<Effect>;
     /** @hidden */
     protected _currentProgram: Nullable<WebGLProgram>;
@@ -636,6 +638,13 @@ export class ThinEngine {
         this._snapshotRenderingMode = mode;
     }
 
+    /**
+     * Creates a new snapshot at the next frame using the current snapshotRenderingMode
+     */
+    public snapshotRenderingReset(): void {
+        this.snapshotRendering = false;
+    }
+
     private _checkForMobile: () => void;
 
     private static _createCanvas(width: number, height: number): ICanvas {
@@ -813,6 +822,12 @@ export class ThinEngine {
                 options.powerPreference = "high-performance";
             }
 
+            // Detect if we are running on a faulty buggy desktop OS.
+            this._badDesktopOS = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+            if (this._badDesktopOS) {
+                options.xrCompatible = false;
+            }
+
             // GL
             if (!options.disableWebGL2Support) {
                 try {
@@ -888,7 +903,7 @@ export class ThinEngine {
         }
 
         // Shader processor
-        this._shaderProcessor = this._getShaderProcessor();
+        this._shaderProcessor = this.webGLVersion > 1 ? new WebGL2ShaderProcessor() : new WebGLShaderProcessor();
 
         // Detect if we are running on a faulty buggy OS.
         this._badOS = /iPad/i.test(navigator.userAgent) || /iPhone/i.test(navigator.userAgent);
@@ -901,9 +916,6 @@ export class ThinEngine {
         //         this._badOS = false;
         //     }
         // }
-
-        // Detect if we are running on a faulty buggy desktop OS.
-        this._badDesktopOS = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
         this._creationOptions = options;
         console.log(`Babylon.js v${ThinEngine.Version} - ${this.description}`);
@@ -955,16 +967,8 @@ export class ThinEngine {
         this._renderingCanvas = canvas;
     }
 
-    /**
-     * Gets a shader processor implementation fitting with the current engine type.
-     * @returns The shader processor implementation.
-     */
-    protected _getShaderProcessor(): Nullable<IShaderProcessor> {
-        return (this.webGLVersion > 1 ? new WebGL2ShaderProcessor() : new WebGLShaderProcessor());
-    }
-
     /** @hidden */
-    public _getShaderProcessingContext(): Nullable<ShaderProcessingContext> {
+    public _getShaderProcessingContext(shaderLanguage: ShaderLanguage): Nullable<ShaderProcessingContext> {
         return null;
     }
 
@@ -1324,6 +1328,14 @@ export class ThinEngine {
         }
 
         this._currentTextureChannel = -1;
+    }
+
+    /**
+     * Gets an object containing information about the current engine context
+     * @returns an object containing the vendor, the renderer and the version of the current engine context
+     */
+    public getInfo() {
+        return this.getGlInfo();
     }
 
     /**
@@ -1717,8 +1729,9 @@ export class ThinEngine {
      * @param reverseSide defines if culling must be reversed (CCW if false, CW if true)
      * @param cullBackFaces true to cull back faces, false to cull front faces (if culling is enabled)
      * @param stencil stencil states to set
+     * @param zOffsetUnits defines the value to apply to zOffsetUnits (0 by default)
      */
-    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false, cullBackFaces?: boolean, stencil?: IStencilState): void {
+    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false, cullBackFaces?: boolean, stencil?: IStencilState, zOffsetUnits: number = 0): void {
         // Culling
         if (this._depthCullingState.cull !== culling || force) {
             this._depthCullingState.cull = culling;
@@ -1732,6 +1745,7 @@ export class ThinEngine {
 
         // Z offset
         this.setZOffset(zOffset);
+        this.setZOffsetUnits(zOffsetUnits);
 
         // Front face
         var frontFace = reverseSide ? this._gl.CW : this._gl.CCW;
@@ -1743,7 +1757,7 @@ export class ThinEngine {
     }
 
     /**
-     * Set the z offset to apply to current rendering
+     * Set the z offset Factor to apply to current rendering
      * @param value defines the offset to apply
      */
     public setZOffset(value: number): void {
@@ -1751,11 +1765,29 @@ export class ThinEngine {
     }
 
     /**
-     * Gets the current value of the zOffset
-     * @returns the current zOffset state
+     * Gets the current value of the zOffset Factor
+     * @returns the current zOffset Factor state
      */
     public getZOffset(): number {
-        return this._depthCullingState.zOffset;
+        const zOffset = this._depthCullingState.zOffset;
+        return this.useReverseDepthBuffer ? -zOffset : zOffset;
+    }
+
+    /**
+     * Set the z offset Units to apply to current rendering
+     * @param value defines the offset to apply
+     */
+    public setZOffsetUnits(value: number): void {
+        this._depthCullingState.zOffsetUnits = this.useReverseDepthBuffer ? -value : value;
+    }
+
+    /**
+     * Gets the current value of the zOffset Units
+     * @returns the current zOffset Units state
+     */
+    public getZOffsetUnits(): number {
+        const zOffsetUnits = this._depthCullingState.zOffsetUnits;
+        return this.useReverseDepthBuffer ? -zOffsetUnits : zOffsetUnits;
     }
 
     /** @hidden */
@@ -2530,11 +2562,12 @@ export class ThinEngine {
      * @param onCompiled defines a function to call when the effect creation is successful
      * @param onError defines a function to call when the effect creation has failed
      * @param indexParameters defines an object containing the index values to use to compile shaders (like the maximum number of simultaneous lights)
+     * @param shaderLanguage the language the shader is written in (default: GLSL)
      * @returns the new Effect
      */
     public createEffect(baseName: any, attributesNamesOrOptions: string[] | IEffectCreationOptions, uniformsNamesOrEngine: string[] | ThinEngine, samplers?: string[], defines?: string,
         fallbacks?: IEffectFallbacks,
-        onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any): Effect {
+        onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any, shaderLanguage = ShaderLanguage.GLSL): Effect {
         var vertex = baseName.vertexElement || baseName.vertex || baseName.vertexToken || baseName.vertexSource || baseName;
         var fragment = baseName.fragmentElement || baseName.fragment || baseName.fragmentToken || baseName.fragmentSource || baseName;
         const globalDefines = this._getGlobalDefines()!;
@@ -2554,7 +2587,7 @@ export class ThinEngine {
 
             return compiledEffect;
         }
-        var effect = new Effect(baseName, attributesNamesOrOptions, uniformsNamesOrEngine, samplers, this, defines, fallbacks, onCompiled, onError, indexParameters, name);
+        var effect = new Effect(baseName, attributesNamesOrOptions, uniformsNamesOrEngine, samplers, this, defines, fallbacks, onCompiled, onError, indexParameters, name, shaderLanguage);
         this._compiledEffects[name] = effect;
 
         return effect;
@@ -3410,6 +3443,12 @@ export class ThinEngine {
         return new WebGLHardwareTexture(this._createTexture(), this._gl);
     }
 
+    /** @hidden */
+    public _getUseSRGBBuffer(useSRGBBuffer: boolean, noMipmap: boolean): boolean {
+        // Generating mipmaps for sRGB textures is not supported in WebGL1 so we must disable the support if mipmaps is enabled
+        return useSRGBBuffer && this._caps.supportSRGBBuffers && (this.webGLVersion > 1 || this.isWebGPU || noMipmap);
+    }
+
     protected _createTextureBase(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
         prepareTexture: (texture: InternalTexture, extension: string, scene: Nullable<ISceneLike>, img: HTMLImageElement | ImageBitmap | { width: number, height: number }, invertY: boolean, noMipmap: boolean, isCompressed: boolean,
@@ -3459,7 +3498,7 @@ export class ThinEngine {
         texture.generateMipMaps = !noMipmap;
         texture.samplingMode = samplingMode;
         texture.invertY = invertY;
-        texture._useSRGBBuffer = !!useSRGBBuffer && this._caps.supportSRGBBuffers && (this.webGLVersion > 1 || this.isWebGPU || noMipmap); // it seems generating mipmaps for sRGB textures is not supported in WebGL1 so we must disable the support if mipmaps is enabled
+        texture._useSRGBBuffer = this._getUseSRGBBuffer(!!useSRGBBuffer, noMipmap);
 
         if (!this._doNotHandleContextLost) {
             // Keep a link to the buffer only if we plan to handle context lost
@@ -3540,16 +3579,18 @@ export class ThinEngine {
 
                 prepareTexture(texture, extension, scene, img, texture.invertY, noMipmap, false, prepareTextureProcessFunction, samplingMode);
             };
+            // According to the WebGL spec section 6.10, ImageBitmaps must be inverted on creation.
+            // So, we pass imageOrientation to _FileToolsLoadImage() as it may create an ImageBitmap.
 
             if (!fromData || isBase64) {
                 if (buffer && (typeof (<HTMLImageElement>buffer).decoding === "string" || (<ImageBitmap>buffer).close)) {
                     onload(<HTMLImageElement>buffer);
                 } else {
-                    ThinEngine._FileToolsLoadImage(url, onload, onInternalError, scene ? scene.offlineProvider : null, mimeType);
+                    ThinEngine._FileToolsLoadImage(url, onload, onInternalError, scene ? scene.offlineProvider : null, mimeType, texture.invertY ? { imageOrientation: "flipY" } : undefined);
                 }
             }
             else if (typeof buffer === "string" || buffer instanceof ArrayBuffer || ArrayBuffer.isView(buffer) || buffer instanceof Blob) {
-                ThinEngine._FileToolsLoadImage(buffer, onload, onInternalError, scene ? scene.offlineProvider : null, mimeType);
+                ThinEngine._FileToolsLoadImage(buffer, onload, onInternalError, scene ? scene.offlineProvider : null, mimeType, texture.invertY ? { imageOrientation: "flipY" } : undefined);
             }
             else if (buffer) {
                 onload(buffer);
@@ -3653,10 +3694,11 @@ export class ThinEngine {
      * @param onError callback called when the image fails to load
      * @param offlineProvider offline provider for caching
      * @param mimeType optional mime type
+     * @param imageBitmapOptions optional the options to use when creating an ImageBitmap
      * @returns the HTMLImageElement of the loaded image
      * @hidden
      */
-    public static _FileToolsLoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string): Nullable<HTMLImageElement> {
+    public static _FileToolsLoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string, imageBitmapOptions?: ImageBitmapOptions): Nullable<HTMLImageElement> {
         throw _DevTools.WarnImport("FileTools");
     }
 

@@ -51,6 +51,7 @@ import { ProceduralTexture } from '../Textures/Procedurals/proceduralTexture';
 import { AnimatedInputBlockTypes } from './Blocks/Input/animatedInputBlockTypes';
 import { TrigonometryBlock, TrigonometryBlockOperations } from './Blocks/trigonometryBlock';
 import { NodeMaterialSystemValues } from './Enums/nodeMaterialSystemValues';
+import { ImageSourceBlock } from './Blocks/Dual/imageSourceBlock';
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -837,7 +838,7 @@ export class NodeMaterial extends PushMaterial {
 
                 tempName = this.name + this._buildId;
 
-                defines.markAsUnprocessed();
+                defines.markAllAsDirty();
 
                 buildId = this._buildId;
             }
@@ -904,7 +905,7 @@ export class NodeMaterial extends PushMaterial {
 
                 tempName = this.name + this._buildId;
 
-                defines.markAsUnprocessed();
+                defines.markAllAsDirty();
 
                 buildId = this._buildId;
             }
@@ -976,7 +977,7 @@ export class NodeMaterial extends PushMaterial {
 
                 tempName = this.name + this._buildId + "_" + blendMode;
 
-                defines!.markAsUnprocessed();
+                defines!.markAllAsDirty();
 
                 buildId = this._buildId;
             }
@@ -988,7 +989,7 @@ export class NodeMaterial extends PushMaterial {
             const particleSystemDefinesJoinedCurrent = particleSystemDefines.join("\n");
 
             if (particleSystemDefinesJoinedCurrent !== particleSystemDefinesJoined) {
-                defines!.markAsUnprocessed();
+                defines!.markAllAsDirty();
                 particleSystemDefinesJoined = particleSystemDefinesJoinedCurrent;
             }
 
@@ -1323,7 +1324,7 @@ export class NodeMaterial extends PushMaterial {
      * Gets the list of texture blocks
      * @returns an array of texture blocks
      */
-    public getTextureBlocks(): (TextureBlock | ReflectionTextureBaseBlock | RefractionBlock | CurrentScreenBlock | ParticleTextureBlock)[] {
+    public getTextureBlocks(): (TextureBlock | ReflectionTextureBaseBlock | RefractionBlock | CurrentScreenBlock | ParticleTextureBlock | ImageSourceBlock)[] {
         if (!this._sharedData) {
             return [];
         }

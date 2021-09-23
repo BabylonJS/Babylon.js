@@ -443,12 +443,22 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                     }
 
                     if (!document.pointerLockElement) {
-                        this._elementToAttachTo.setPointerCapture(this._mouseId);
+                        try {
+                            this._elementToAttachTo.setPointerCapture(this._mouseId);
+                        }
+                        catch (e) {
+                            // DO NOTHING
+                        }
                     }
                 }
                 else { // Touch; Since touches are dynamically assigned, only set capture if we have an id
                     if (evt.pointerId && !document.pointerLockElement) {
-                        this._elementToAttachTo.setPointerCapture(evt.pointerId);
+                        try {
+                            this._elementToAttachTo.setPointerCapture(evt.pointerId);
+                        }
+                        catch (e) {
+                            // DO NOTHING
+                        }
                     }
                 }
 

@@ -30,8 +30,8 @@ export class EllipsePropertyGridComponent extends React.Component<IEllipseProper
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={ellipse} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <hr/>
                 <TextLineComponent label="ELLIPSE" value=" " color="grey"></TextLineComponent>
-                <CheckBoxLineComponent icon={clipContentsIcon} label="" target={ellipse} propertyName="clipChildren" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <FloatLineComponent icon={strokeWeightIcon} lockObject={this.props.lockObject} label="" target={ellipse} propertyName="thickness" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CheckBoxLineComponent iconLabel="Clip Content" icon={clipContentsIcon} label="" target={ellipse} propertyName="clipChildren" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <FloatLineComponent iconLabel="Stroke Weight" icon={strokeWeightIcon} lockObject={this.props.lockObject} label="" target={ellipse} propertyName="thickness" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
             </div>
         );
     }

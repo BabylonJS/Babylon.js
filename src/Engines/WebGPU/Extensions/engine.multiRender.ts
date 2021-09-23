@@ -40,6 +40,7 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: RenderTarget
     let generateDepthBuffer = true;
     let generateStencilBuffer = false;
     let generateDepthTexture = false;
+    let depthTextureFormat = Constants.TEXTUREFORMAT_DEPTH16;
     let textureCount = 1;
 
     let defaultType = Constants.TEXTURETYPE_UNSIGNED_INT;
@@ -56,6 +57,7 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: RenderTarget
         generateStencilBuffer = options.generateStencilBuffer === undefined ? false : options.generateStencilBuffer;
         generateDepthTexture = options.generateDepthTexture === undefined ? false : options.generateDepthTexture;
         textureCount = options.textureCount || 1;
+        depthTextureFormat = options.depthTextureFormat ?? Constants.TEXTUREFORMAT_DEPTH16;
 
         if (options.types) {
             types = options.types;
@@ -71,7 +73,7 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: RenderTarget
 
     let depthStencilTexture = null;
     if (generateDepthBuffer || generateStencilBuffer || generateDepthTexture) {
-        depthStencilTexture = rtWrapper.createDepthStencilTexture(0, false, generateStencilBuffer, 1);
+        depthStencilTexture = rtWrapper.createDepthStencilTexture(0, false, generateStencilBuffer, 1, depthTextureFormat);
     }
 
     const textures: InternalTexture[] = [];
@@ -122,6 +124,7 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: RenderTarget
     }
 
     if (depthStencilTexture) {
+        depthStencilTexture.incrementReferences();
         textures.push(depthStencilTexture);
         this._internalTexturesCache.push(depthStencilTexture);
     }

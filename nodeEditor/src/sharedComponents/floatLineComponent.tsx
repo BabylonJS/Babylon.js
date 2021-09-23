@@ -18,13 +18,14 @@ interface IFloatLineComponentProps {
     min?: number
     max?: number
     smallUI?: boolean;
-    onEnter?: (newValue:number) => void;
+    onEnter?: (newValue: number) => void;
 }
 
 export class FloatLineComponent extends React.Component<IFloatLineComponentProps, { value: string }> {
     private _localChange = false;
     private _store: number;
     private _regExp: RegExp;
+    private _onFocus = false;
 
     constructor(props: IFloatLineComponentProps) {
         super(props);
@@ -56,6 +57,14 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
             return true;
         }
         return false;
+    }
+
+    componentWillUnmount() {
+        if (this._onFocus) {
+            if (this.props.onEnter) {
+                this.props.onEnter(this._store);
+            }
+        }
     }
 
     raiseOnPropertyChanged(newValue: number, previousValue: number) {
@@ -90,15 +99,15 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         }
 
         this._localChange = true;
-        this.setState({ value: valueString});
+        this.setState({ value: valueString });
 
         if (isNaN(valueAsNumber)) {
             return;
         }
-        if(this.props.max != undefined && (valueAsNumber > this.props.max)) {
+        if (this.props.max != undefined && (valueAsNumber > this.props.max)) {
             valueAsNumber = this.props.max;
         }
-        if(this.props.min != undefined && (valueAsNumber < this.props.min)) {
+        if (this.props.min != undefined && (valueAsNumber < this.props.min)) {
             valueAsNumber = this.props.min;
         }
 
@@ -109,7 +118,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
     }
 
     render() {
-        let className = this.props.smallUI ? "short": "value";
+        let className = this.props.smallUI ? "short" : "value";
 
         return (
             <>
@@ -120,22 +129,26 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                         </div>
                         <div className={className}>
                             <input type="number" step={this.props.step || "0.01"} className="numeric-input"
-                            onBlur={(evt) => {
-                                this.props.globalState.blockKeyboardEvents = false;
-                                if(this.props.onEnter) {
-                                    this.props.onEnter(this._store);
-                                }
-                            }}
-                            onKeyDown={evt => {
-                                if (evt.keyCode !== 13) {
-                                    return;
-                                }
-                                if(this.props.onEnter) {
-                                    this.props.onEnter(this._store);
-                                }
-                            }}
-                            onFocus={() => this.props.globalState.blockKeyboardEvents = true}
-                            value={this.state.value} onChange={(evt) => this.updateValue(evt.target.value)} />
+                                onBlur={(evt) => {
+                                    this._onFocus = false;
+                                    this.props.globalState.blockKeyboardEvents = false;
+                                    if (this.props.onEnter) {
+                                        this.props.onEnter(this._store);
+                                    }
+                                }}
+                                onKeyDown={evt => {
+                                    if (evt.keyCode !== 13) {
+                                        return;
+                                    }
+                                    if (this.props.onEnter) {
+                                        this.props.onEnter(this._store);
+                                    }
+                                }}
+                                onFocus={() => {
+                                    this.props.globalState.blockKeyboardEvents = true;
+                                    this._onFocus = true;
+                                }}
+                                value={this.state.value} onChange={(evt) => this.updateValue(evt.target.value)} />
                         </div>
                     </div>
                 }

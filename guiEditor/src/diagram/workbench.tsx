@@ -281,6 +281,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.globalState.onSelectionChangedObservable.notifyObservers(null);
         await this.globalState.guiTexture.parseFromSnippetAsync(snippedId);
         this.loadToEditor();
+        if (this.props.globalState.customLoad) {
+            this.props.globalState.customLoad.action(this.globalState.guiTexture.snippetId).catch((err) => {
+                alert("Unable to load your GUI");
+            });
+        }
     }
 
     loadToEditor() {
@@ -430,6 +435,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             }
         }
         this.globalState.draggedControl = null;
+        this.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
     }
 
     private _isNotChildInsert(control: Nullable<Control>, draggedControl: Nullable<Control>) {
@@ -502,9 +508,14 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                     ratioX = cell.widthInPixels;
                     ratioY = cell.heightInPixels;
                 }
+                else if (guiControl.parent.typeName === "Rectangle" || guiControl.parent.typeName === "Button") {
+                    const thickness = (guiControl.parent as Rectangle).thickness * 2;
+                    ratioX = guiControl.parent._currentMeasure.width - thickness;
+                    ratioY = guiControl.parent._currentMeasure.height - thickness;
+                }
                 else {
-                    ratioX = guiControl.parent.widthInPixels;
-                    ratioY = guiControl.parent.heightInPixels;
+                    ratioX = guiControl.parent._currentMeasure.width;
+                    ratioY = guiControl.parent._currentMeasure.height;
                 }
             }
             const left = (guiControl.leftInPixels * 100) / ratioX;
@@ -559,8 +570,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     onDown(evt: React.PointerEvent<HTMLElement>) {
         this._rootContainer.current?.setPointerCapture(evt.pointerId);
-
-        if (!this._isOverGUINode) {
+        if (!this._isOverGUINode && !evt.button) {
             this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         }
 

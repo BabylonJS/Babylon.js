@@ -149,6 +149,7 @@ interface INativeEngine {
     readonly COMMAND_SETSTATE: number;
     readonly COMMAND_DELETEPROGRAM: number;
     readonly COMMAND_SETZOFFSET: number;
+    readonly COMMAND_SETZOFFSETUNITS: number;
     readonly COMMAND_SETDEPTHTEST: number;
     readonly COMMAND_SETDEPTHWRITE: number;
     readonly COMMAND_SETCOLORWRITE: number;
@@ -1006,6 +1007,7 @@ export class NativeEngine extends Engine {
     private _stencilOpDepthFail: number = Constants.KEEP;
     private _stencilOpStencilDepthPass: number = Constants.REPLACE;
     private _zOffset: number = 0;
+    private _zOffsetUnits: number = 0;
     private _depthWrite: boolean = true;
 
     public getHardwareScalingLevel(): number {
@@ -1508,12 +1510,14 @@ export class NativeEngine extends Engine {
         this._native.setViewPort(viewport.x, viewport.y, viewport.width, viewport.height);
     }
 
-    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false, cullBackFaces?: boolean, stencil?: IStencilState): void {
+    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false, cullBackFaces?: boolean, stencil?: IStencilState, zOffsetUnits: number = 0): void {
         this._zOffset = zOffset;
+        this._zOffsetUnits = zOffsetUnits;
 
         this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_SETSTATE);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(culling);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(zOffset);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(zOffsetUnits);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(this.cullBackFaces ?? cullBackFaces ?? true);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(reverseSide);
         this._commandBufferEncoder.finishEncodingCommand();
@@ -1539,7 +1543,7 @@ export class NativeEngine extends Engine {
     }
 
     /**
-     * Set the z offset to apply to current rendering
+     * Set the z offset Factor to apply to current rendering
      * @param value defines the offset to apply
      */
     public setZOffset(value: number): void {
@@ -1552,11 +1556,32 @@ export class NativeEngine extends Engine {
     }
 
     /**
-     * Gets the current value of the zOffset
-     * @returns the current zOffset state
+     * Gets the current value of the zOffset Factor
+     * @returns the current zOffset Factor state
      */
     public getZOffset(): number {
         return this._zOffset;
+    }
+
+    /**
+     * Set the z offset Units to apply to current rendering
+     * @param value defines the offset to apply
+     */
+    public setZOffsetUnits(value: number): void {
+        if (value !== this._zOffsetUnits) {
+            this._zOffsetUnits = value;
+            this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_SETZOFFSETUNITS);
+            this._commandBufferEncoder.encodeCommandArgAsFloat32(this.useReverseDepthBuffer ? -value : value);
+            this._commandBufferEncoder.finishEncodingCommand();
+        }
+    }
+
+    /**
+     * Gets the current value of the zOffset Units
+     * @returns the current zOffset Units state
+     */
+    public getZOffsetUnits(): number {
+        return this._zOffsetUnits;
     }
 
     /**
@@ -2309,7 +2334,7 @@ export class NativeEngine extends Engine {
         texture.generateMipMaps = !noMipmap;
         texture.samplingMode = samplingMode;
         texture.invertY = invertY;
-        texture._useSRGBBuffer = useSRGBBuffer && this._caps.supportSRGBBuffers;
+        texture._useSRGBBuffer = this._getUseSRGBBuffer(useSRGBBuffer, noMipmap);
 
         if (!this.doNotHandleContextLost) {
             // Keep a link to the buffer only if we plan to handle context lost
@@ -2429,6 +2454,7 @@ export class NativeEngine extends Engine {
         return texture;
     }
 
+    /** @hidden */
     public _releaseFramebufferObjects(framebuffer: Nullable<WebGLFramebuffer>): void {
         if (framebuffer) {
             this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_DELETEFRAMEBUFFER);
@@ -2526,10 +2552,6 @@ export class NativeEngine extends Engine {
                 texture.height = info.width;
 
                 EnvironmentTextureTools.UploadEnvSpherical(texture, info);
-
-                if (info.version !== 1) {
-                    throw new Error(`Unsupported babylon environment map version "${info.version}"`);
-                }
 
                 let specularInfo = info.specular as EnvironmentTextureSpecularInfoV1;
                 if (!specularInfo) {
