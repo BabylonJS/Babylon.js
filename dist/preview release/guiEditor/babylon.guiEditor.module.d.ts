@@ -19,6 +19,18 @@ declare module "babylonjs-gui-editor/components/log/logComponent" {
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-gui-editor/tools" {
+    import { Control } from "babylonjs-gui/2D/controls/control";
+    import { Grid } from "babylonjs-gui/2D/controls/grid";
+    import { Vector2 } from "babylonjs/Maths/math";
+    export class Tools {
+        static LookForItem(item: any, selectedEntity: any): boolean;
+        private static _RecursiveRemoveHiddenMeshesAndHoistChildren;
+        static SortAndFilter(parent: any, items: any[]): any[];
+        static getCellInfo(grid: Grid, control: Control): Vector2;
+        static reorderGrid(grid: Grid, index: number, control: Control, cell: Vector2): void;
+    }
+}
 declare module "babylonjs-gui-editor/diagram/workbench" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-gui-editor/globalState";
@@ -85,6 +97,7 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         createNewGuiNode(guiControl: Control): Control;
         enableEditorProperties(guiControl: Control): void;
         private parent;
+        private _reorderGrid;
         private _isNotChildInsert;
         private _adjustParentingIndex;
         isSelected(value: boolean, guiNode: Control): void;
@@ -891,9 +904,11 @@ declare module "babylonjs-gui-editor/components/parentingPropertyGridComponent" 
     }
     export class ParentingPropertyGridComponent extends React.Component<IParentingPropertyGridComponentProps> {
         constructor(props: IParentingPropertyGridComponentProps);
-        _columnNumber: number;
-        _rowNumber: number;
+        private _columnNumber;
+        private _rowNumber;
         updateGridPosition(): void;
+        getCellInfo(): void;
+        private _changeCell;
         render(): JSX.Element;
     }
 }
@@ -972,7 +987,7 @@ declare module "babylonjs-gui-editor/guiNodeTools" {
     import { RadioButton } from "babylonjs-gui/2D/controls/radioButton";
     import { ImageBasedSlider } from "babylonjs-gui/2D/controls/sliders/imageBasedSlider";
     export class GUINodeTools {
-        static CreateControlFromString(data: string): Rectangle | Line | Grid | TextBlock | Image | Slider | RadioButton | InputText | ColorPicker | ImageBasedSlider | StackPanel | Ellipse | Checkbox | DisplayGrid;
+        static CreateControlFromString(data: string): Grid | Rectangle | Line | TextBlock | Image | Slider | RadioButton | InputText | ColorPicker | ImageBasedSlider | StackPanel | Ellipse | Checkbox | DisplayGrid;
     }
 }
 declare module "babylonjs-gui-editor/sharedComponents/messageDialog" {
@@ -987,13 +1002,6 @@ declare module "babylonjs-gui-editor/sharedComponents/messageDialog" {
     }> {
         constructor(props: IMessageDialogComponentProps);
         render(): JSX.Element | null;
-    }
-}
-declare module "babylonjs-gui-editor/tools" {
-    export class Tools {
-        static LookForItem(item: any, selectedEntity: any): boolean;
-        private static _RecursiveRemoveHiddenMeshesAndHoistChildren;
-        static SortAndFilter(parent: any, items: any[]): any[];
     }
 }
 declare module "babylonjs-gui-editor/components/sceneExplorer/treeItemLabelComponent" {
@@ -2147,6 +2155,15 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
+    export class Tools {
+        static LookForItem(item: any, selectedEntity: any): boolean;
+        private static _RecursiveRemoveHiddenMeshesAndHoistChildren;
+        static SortAndFilter(parent: any, items: any[]): any[];
+        static getCellInfo(grid: Grid, control: Control): BABYLON.Vector2;
+        static reorderGrid(grid: Grid, index: number, control: Control, cell: BABYLON.Vector2): void;
+    }
+}
+declare module GUIEDITOR {
     export interface IWorkbenchComponentProps {
         globalState: GlobalState;
     }
@@ -2201,6 +2218,7 @@ declare module GUIEDITOR {
         createNewGuiNode(guiControl: Control): Control;
         enableEditorProperties(guiControl: Control): void;
         private parent;
+        private _reorderGrid;
         private _isNotChildInsert;
         private _adjustParentingIndex;
         isSelected(value: boolean, guiNode: Control): void;
@@ -2878,9 +2896,11 @@ declare module GUIEDITOR {
     }
     export class ParentingPropertyGridComponent extends React.Component<IParentingPropertyGridComponentProps> {
         constructor(props: IParentingPropertyGridComponentProps);
-        _columnNumber: number;
-        _rowNumber: number;
+        private _columnNumber;
+        private _rowNumber;
         updateGridPosition(): void;
+        getCellInfo(): void;
+        private _changeCell;
         render(): JSX.Element;
     }
 }
@@ -2932,7 +2952,7 @@ declare module GUIEDITOR {
 }
 declare module GUIEDITOR {
     export class GUINodeTools {
-        static CreateControlFromString(data: string): Rectangle | Line | Grid | TextBlock | Image | Slider | RadioButton | InputText | ColorPicker | ImageBasedSlider | StackPanel | Ellipse | Checkbox | DisplayGrid;
+        static CreateControlFromString(data: string): Grid | Rectangle | Line | TextBlock | Image | Slider | RadioButton | InputText | ColorPicker | ImageBasedSlider | StackPanel | Ellipse | Checkbox | DisplayGrid;
     }
 }
 declare module GUIEDITOR {
@@ -2945,13 +2965,6 @@ declare module GUIEDITOR {
     }> {
         constructor(props: IMessageDialogComponentProps);
         render(): JSX.Element | null;
-    }
-}
-declare module GUIEDITOR {
-    export class Tools {
-        static LookForItem(item: any, selectedEntity: any): boolean;
-        private static _RecursiveRemoveHiddenMeshesAndHoistChildren;
-        static SortAndFilter(parent: any, items: any[]): any[];
     }
 }
 declare module GUIEDITOR {
