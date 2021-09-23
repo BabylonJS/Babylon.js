@@ -3803,6 +3803,7 @@ declare module "babylonjs-gui/2D/controls/sliders/imageBasedSlider" {
     import { Image } from "babylonjs-gui/2D/controls/image";
     import { Nullable } from 'babylonjs/types';
     import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
+    import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
     /**
      * Class used to create slider controls based on images
      */
@@ -3836,6 +3837,13 @@ declare module "babylonjs-gui/2D/controls/sliders/imageBasedSlider" {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void;
+        /**
+        * Serializes the current control
+        * @param serializationObject defined the JSON serialized object
+        */
+        serialize(serializationObject: any): void;
+        /** @hidden */
+        _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture): void;
     }
 }
 declare module "babylonjs-gui/2D/controls/statics" {
@@ -9784,6 +9792,13 @@ declare module BABYLON.GUI {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         _draw(context: BABYLON.ICanvasRenderingContext, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
+        /**
+        * Serializes the current control
+        * @param serializationObject defined the JSON serialized object
+        */
+        serialize(serializationObject: any): void;
+        /** @hidden */
+        _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture): void;
     }
 }
 declare module BABYLON.GUI {

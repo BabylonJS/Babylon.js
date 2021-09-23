@@ -5,6 +5,7 @@ import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { Nullable } from 'babylonjs/types';
 import { serialize } from "babylonjs/Misc/decorators";
 import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
+import { AdvancedDynamicTexture } from "../../advancedDynamicTexture";
 
 /**
  * Class used to create slider controls based on images
@@ -164,6 +165,31 @@ export class ImageBasedSlider extends BaseSlider {
         }
 
         context.restore();
+    }
+
+    /**
+    * Serializes the current control
+    * @param serializationObject defined the JSON serialized object
+    */
+    public serialize(serializationObject: any) {
+        super.serialize(serializationObject);
+        let backgroundImage = {};
+        let thumbImage = {};
+        let valueBarImage = {};
+        this.backgroundImage.serialize(backgroundImage);
+        this.thumbImage.serialize(thumbImage);
+        this.valueBarImage.serialize(valueBarImage);
+        serializationObject.backgroundImage = backgroundImage;
+        serializationObject.thumbImage = thumbImage;
+        serializationObject.valueBarImage = valueBarImage;
+    }
+
+    /** @hidden */
+    public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
+        super._parseFromContent(serializedObject, host);
+        this.backgroundImage = Image.Parse(serializedObject.backgroundImage, host) as Image;
+        this.thumbImage = Image.Parse(serializedObject.thumbImage, host) as Image;
+        this.valueBarImage = Image.Parse(serializedObject.valueBarImage, host) as Image;
     }
 }
 _TypeStore.RegisteredTypes["BABYLON.GUI.ImageBasedSlider"] = ImageBasedSlider;
