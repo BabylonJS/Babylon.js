@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \***********************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \*****************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -293,10 +293,14 @@ function __spreadArrays() {
     return r;
 }
 
-function __spreadArray(to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+function __spreadArray(to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 }
 
 function __await(v) {
@@ -352,19 +356,17 @@ function __importDefault(mod) {
     return (mod && mod.__esModule) ? mod : { default: mod };
 }
 
-function __classPrivateFieldGet(receiver, privateMap) {
-    if (!privateMap.has(receiver)) {
-        throw new TypeError("attempted to get private field on non-instance");
-    }
-    return privateMap.get(receiver);
+function __classPrivateFieldGet(receiver, state, kind, f) {
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 }
 
-function __classPrivateFieldSet(receiver, privateMap, value) {
-    if (!privateMap.has(receiver)) {
-        throw new TypeError("attempted to set private field on non-instance");
-    }
-    privateMap.set(receiver, value);
-    return value;
+function __classPrivateFieldSet(receiver, state, value, kind, f) {
+    if (kind === "m") throw new TypeError("Private method is not writable");
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
 }
 
 
@@ -1266,6 +1268,9 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         var textureSize = this.getSize();
         if (this._isFullscreen) {
             var camera = scene.cameraToUseForPointers || scene.activeCamera;
+            if (!camera) {
+                return;
+            }
             var viewport = camera.viewport;
             x = x * (textureSize.width / (engine.getRenderWidth() * viewport.width));
             y = y * (textureSize.height / (engine.getRenderHeight() * viewport.height));
@@ -1324,9 +1329,6 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
                 && pi.type !== babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERUP
                 && pi.type !== babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERDOWN
                 && pi.type !== babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERWHEEL) {
-                return;
-            }
-            if (!scene) {
                 return;
             }
             if (pi.type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERMOVE && pi.event.pointerId) {
@@ -3884,6 +3886,7 @@ var Container = /** @class */ (function (_super) {
             }
         }
         this._localDraw(contextToDrawTo);
+        context.save();
         if (this.clipChildren) {
             this._clipForChildren(contextToDrawTo);
         }
@@ -3904,6 +3907,7 @@ var Container = /** @class */ (function (_super) {
             context.drawImage(contextToDrawTo.canvas, this._currentMeasure.left, this._currentMeasure.top);
             context.restore();
         }
+        context.restore();
     };
     Container.prototype.getDescendantsToRef = function (results, directDescendantsOnly, predicate) {
         if (directDescendantsOnly === void 0) { directDescendantsOnly = false; }
@@ -5292,8 +5296,15 @@ var Control = /** @class */ (function () {
     };
     /** @hidden */
     Control.prototype._moveToProjectedPosition = function (projectedPosition) {
+        var _a;
         var oldLeft = this._left.getValue(this._host);
         var oldTop = this._top.getValue(this._host);
+        if (this._currentMeasure.width === 0 && this._currentMeasure.height === 0) {
+            var parentMeasure = (_a = this.parent) === null || _a === void 0 ? void 0 : _a._currentMeasure;
+            if (parentMeasure) {
+                this._processMeasures(parentMeasure, this._host.getContext());
+            }
+        }
         var newLeft = ((projectedPosition.x + this._linkOffsetX.getValue(this._host)) - this._currentMeasure.width / 2);
         var newTop = ((projectedPosition.y + this._linkOffsetY.getValue(this._host)) - this._currentMeasure.height / 2);
         if (this._left.ignoreAdaptiveScaling && this._top.ignoreAdaptiveScaling) {
@@ -6373,14 +6384,14 @@ var DisplayGrid = /** @class */ (function (_super) {
             if (this._displayMinorLines) {
                 context.strokeStyle = this._minorLineColor;
                 context.lineWidth = this._minorLineTickness;
-                for (var x = -cellCountX / 2; x < cellCountX / 2; x++) {
+                for (var x = -cellCountX / 2 + 1; x < cellCountX / 2; x++) {
                     var cellX = left + x * this.cellWidth;
                     context.beginPath();
                     context.moveTo(cellX, this._currentMeasure.top);
                     context.lineTo(cellX, this._currentMeasure.top + this._currentMeasure.height);
                     context.stroke();
                 }
-                for (var y = -cellCountY / 2; y < cellCountY / 2; y++) {
+                for (var y = -cellCountY / 2 + 1; y < cellCountY / 2; y++) {
                     var cellY = top_1 + y * this.cellHeight;
                     context.beginPath();
                     context.moveTo(this._currentMeasure.left, cellY);
@@ -7705,11 +7716,12 @@ var Image = /** @class */ (function (_super) {
                 var elem_matrix_d = 1;
                 var elem_matrix_e = 0;
                 var elem_matrix_f = 0;
+                var mainMatrix = elem.transform.baseVal.consolidate().matrix;
                 if (elem.transform && elem.transform.baseVal.consolidate()) {
-                    elem_matrix_a = elem.transform.baseVal.consolidate().matrix.a;
-                    elem_matrix_d = elem.transform.baseVal.consolidate().matrix.d;
-                    elem_matrix_e = elem.transform.baseVal.consolidate().matrix.e;
-                    elem_matrix_f = elem.transform.baseVal.consolidate().matrix.f;
+                    elem_matrix_a = mainMatrix.a;
+                    elem_matrix_d = mainMatrix.d;
+                    elem_matrix_e = mainMatrix.e;
+                    elem_matrix_f = mainMatrix.f;
                 }
                 // compute source coordinates and dimensions
                 this.sourceLeft = ((elem_matrix_a * elem_bbox.x + elem_matrix_e) * docwidth) / vb_width;
@@ -13878,11 +13890,14 @@ var TextBlock = /** @class */ (function (_super) {
     };
     TextBlock.prototype._parseLine = function (line, context) {
         if (line === void 0) { line = ""; }
-        return { text: line, width: context.measureText(line).width };
+        var textMetrics = context.measureText(line);
+        var lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
+        return { text: line, width: lineWidth };
     };
     TextBlock.prototype._parseLineEllipsis = function (line, width, context) {
         if (line === void 0) { line = ""; }
-        var lineWidth = context.measureText(line).width;
+        var textMetrics = context.measureText(line);
+        var lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
         if (lineWidth > width) {
             line += "…";
         }
@@ -13893,14 +13908,16 @@ var TextBlock = /** @class */ (function (_super) {
             // no array.from, use the old method
             while (line.length > 2 && lineWidth > width) {
                 line = line.slice(0, -2) + "…";
-                lineWidth = context.measureText(line).width;
+                textMetrics = context.measureText(line);
+                lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
             }
         }
         else {
             while (characters.length && lineWidth > width) {
                 characters.pop();
                 line = characters.join("") + "...";
-                lineWidth = context.measureText(line).width;
+                textMetrics = context.measureText(line);
+                lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
             }
         }
         return { text: line, width: lineWidth };
@@ -13909,15 +13926,17 @@ var TextBlock = /** @class */ (function (_super) {
         if (line === void 0) { line = ""; }
         var lines = [];
         var words = this.wordSplittingFunction ? this.wordSplittingFunction(line) : line.split(" ");
-        var lineWidth = 0;
+        var textMetrics = context.measureText(line);
+        var lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
         for (var n = 0; n < words.length; n++) {
             var testLine = n > 0 ? line + " " + words[n] : words[0];
             var metrics = context.measureText(testLine);
-            var testWidth = metrics.width;
+            var testWidth = Math.abs(metrics.actualBoundingBoxLeft) + Math.abs(metrics.actualBoundingBoxRight);
             if (testWidth > width && n > 0) {
                 lines.push({ text: line, width: lineWidth });
                 line = words[n];
-                lineWidth = context.measureText(line).width;
+                textMetrics = context.measureText(line);
+                lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
             }
             else {
                 lineWidth = testWidth;
@@ -14068,7 +14087,7 @@ var TextWrapper = /** @class */ (function () {
         this._text = this._text.slice(0, idxStart) + (insertTxt ? insertTxt : "") + this._text.slice(idxEnd);
         if (this._characters) {
             var newCharacters = insertTxt ? Array.from(insertTxt) : [];
-            (_a = this._characters).splice.apply(_a, Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArray"])([idxStart, idxEnd - idxStart], newCharacters));
+            (_a = this._characters).splice.apply(_a, Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArray"])([idxStart, idxEnd - idxStart], newCharacters, false));
         }
     };
     TextWrapper.prototype.charAt = function (idx) {
@@ -17091,6 +17110,7 @@ var HandMenu = /** @class */ (function (_super) {
         _this._handConstraintBehavior = new babylonjs_Behaviors_Meshes_handConstraintBehavior__WEBPACK_IMPORTED_MODULE_2__["HandConstraintBehavior"]();
         _this._handConstraintBehavior.linkToXRExperience(xr);
         _this.backPlateMargin = 0.15;
+        _this.rows = 3;
         return _this;
     }
     Object.defineProperty(HandMenu.prototype, "handConstraintBehavior", {
@@ -18217,6 +18237,7 @@ var NearMenu = /** @class */ (function (_super) {
         _this._dragObserver = _this._defaultBehavior.sixDofDragBehavior.onDragObservable.add(function () {
             _this.isPinned = true;
         });
+        _this.backPlateMargin = 1;
         return _this;
     }
     Object.defineProperty(NearMenu.prototype, "defaultBehavior", {
@@ -18259,7 +18280,7 @@ var NearMenu = /** @class */ (function (_super) {
         control.onPointerClickObservable.add(function () { return (_this.isPinned = !_this.isPinned); });
         if (this._host.utilityLayer) {
             control._prepareNode(this._host.utilityLayer.utilityLayerScene);
-            control.scaling.scaleInPlace(NearMenu.NEAR_BUTTON_SCALE);
+            control.scaling.scaleInPlace(_touchHolographicMenu__WEBPACK_IMPORTED_MODULE_3__["TouchHolographicMenu"].MENU_BUTTON_SCALE);
             this._pinMaterial = control.backMaterial;
             this._pinMaterial.diffuseColor.copyFromFloats(0, 0, 0);
             if (control.node) {
@@ -18267,27 +18288,6 @@ var NearMenu = /** @class */ (function (_super) {
             }
         }
         return control;
-    };
-    /**
-     * Adds a button to the menu.
-     * Please note that the back material of the button will be set to transparent as it is attached to the menu.
-     *
-     * @param button Button to add
-     * @returns This menu
-     */
-    NearMenu.prototype.addButton = function (button) {
-        // Block updating the layout until the button is resized (which has to happen after node creation)
-        var wasLayoutBlocked = this.blockLayout;
-        if (!wasLayoutBlocked) {
-            this.blockLayout = true;
-        }
-        _super.prototype.addButton.call(this, button);
-        button.scaling.scaleInPlace(NearMenu.NEAR_BUTTON_SCALE);
-        // Unblocking the layout triggers the pending layout update that uses the size of the buttons to determine the size of the backing mesh
-        if (!wasLayoutBlocked) {
-            this.blockLayout = false;
-        }
-        return this;
     };
     NearMenu.prototype._createNode = function (scene) {
         var node = _super.prototype._createNode.call(this, scene);
@@ -18305,7 +18305,7 @@ var NearMenu = /** @class */ (function (_super) {
     };
     NearMenu.prototype._finalProcessing = function () {
         _super.prototype._finalProcessing.call(this);
-        this._pinButton.position.copyFromFloats(this._backPlate.scaling.x / 2 + 0.2, this._backPlate.scaling.y / 2, -0.1);
+        this._pinButton.position.copyFromFloats(this._backPlate.scaling.x / 2 + 0.2, this._backPlate.scaling.y / 2, 0);
     };
     /**
      * Disposes the near menu
@@ -18323,10 +18323,6 @@ var NearMenu = /** @class */ (function (_super) {
      * File name for the close icon.
      */
     NearMenu.PIN_ICON_FILENAME = "IconPin.png";
-    /**
-     * Scale for the buttons added to the near menu
-     */
-    NearMenu.NEAR_BUTTON_SCALE = 0.32;
     return NearMenu;
 }(_touchHolographicMenu__WEBPACK_IMPORTED_MODULE_3__["TouchHolographicMenu"]));
 
@@ -19155,6 +19151,7 @@ var TouchHolographicButton = /** @class */ (function (_super) {
         if (shareMaterials === void 0) { shareMaterials = true; }
         var _this = _super.call(this, name) || this;
         _this._shareMaterials = true;
+        _this._isBackplateVisible = true;
         _this._frontPlateDepth = 0.5;
         _this._backPlateDepth = 0.04;
         _this._shareMaterials = shareMaterials;
@@ -19363,6 +19360,24 @@ var TouchHolographicButton = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
+    Object.defineProperty(TouchHolographicButton.prototype, "isBackplateVisible", {
+        /**
+         * Sets whether the backplate is visible or hidden. Hiding the backplate is not recommended without some sort of replacement
+         */
+        set: function (isVisible) {
+            if (this.mesh && !!this._backMaterial) {
+                if (isVisible && !this._isBackplateVisible) {
+                    this._backPlate.visibility = 1;
+                }
+                else if (!isVisible && this._isBackplateVisible) {
+                    this._backPlate.visibility = 0;
+                }
+            }
+            this._isBackplateVisible = isVisible;
+        },
+        enumerable: false,
+        configurable: true
+    });
     TouchHolographicButton.prototype._getTypeName = function () {
         return "TouchHolographicButton";
     };
@@ -19451,8 +19466,8 @@ var TouchHolographicButton = /** @class */ (function (_super) {
         this._plateMaterial.specularColor = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Color3"].Black();
     };
     TouchHolographicButton.prototype._affectMaterial = function (mesh) {
-        // Back
         if (this._shareMaterials) {
+            // Back
             if (!this._host._touchSharedMaterials["backFluentMaterial"]) {
                 this._createBackMaterial(mesh);
                 this._host._touchSharedMaterials["backFluentMaterial"] = this._backMaterial;
@@ -19476,6 +19491,9 @@ var TouchHolographicButton = /** @class */ (function (_super) {
         this._createPlateMaterial(mesh);
         this._backPlate.material = this._backMaterial;
         this._textPlate.material = this._plateMaterial;
+        if (!this._isBackplateVisible) {
+            this._backPlate.visibility = 0;
+        }
         if (!!this._frontPlate) {
             this._frontPlate.material = this._frontMaterial;
         }
@@ -19560,10 +19578,12 @@ var TouchHolographicMenu = /** @class */ (function (_super) {
         set: function (value) {
             var _this = this;
             this._backPlateMargin = value;
-            this.children.forEach(function (control) {
-                _this._updateCurrentMinMax(control.position);
-            });
-            this._updateMargins();
+            if (this._children.length >= 1) {
+                this.children.forEach(function (control) {
+                    _this._updateCurrentMinMax(control.position);
+                });
+                this._updateMargins();
+            }
         },
         enumerable: false,
         configurable: true
@@ -19634,9 +19654,17 @@ var TouchHolographicMenu = /** @class */ (function (_super) {
      * @returns This menu
      */
     TouchHolographicMenu.prototype.addButton = function (button) {
+        // Block updating the layout until the button is resized (which has to happen after node creation)
+        var wasLayoutBlocked = this.blockLayout;
+        if (!wasLayoutBlocked) {
+            this.blockLayout = true;
+        }
         _super.prototype.addControl.call(this, button);
-        if (button.backMaterial) {
-            button.backMaterial.alpha = 0;
+        button.isBackplateVisible = false;
+        button.scaling.scaleInPlace(TouchHolographicMenu.MENU_BUTTON_SCALE);
+        // Unblocking the layout triggers the pending layout update that uses the size of the buttons to determine the size of the backing mesh
+        if (!wasLayoutBlocked) {
+            this.blockLayout = false;
         }
         return this;
     };
@@ -19657,6 +19685,10 @@ var TouchHolographicMenu = /** @class */ (function (_super) {
         _super.prototype.dispose.call(this);
         this._host.onPickedPointChangedObservable.remove(this._pickedPointObserver);
     };
+    /**
+     * Scale for the buttons added to the menu
+     */
+    TouchHolographicMenu.MENU_BUTTON_SCALE = 0.32;
     return TouchHolographicMenu;
 }(_volumeBasedPanel__WEBPACK_IMPORTED_MODULE_1__["VolumeBasedPanel"]));
 

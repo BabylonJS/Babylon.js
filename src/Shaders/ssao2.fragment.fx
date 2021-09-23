@@ -26,15 +26,15 @@ float scales[16] = float[16](
 
 varying vec2 vUV;
 
-float perspectiveDepthToViewZ( const in float invClipZ, const in float near, const in float far ) {
+float perspectiveDepthToViewZ(in float invClipZ, in float near, in float far ) {
 	return ( near * far ) / ( ( far - near ) * invClipZ - far );
 }
 
-float viewZToPerspectiveDepth( const in float viewZ, const in float near, const in float far ) {
+float viewZToPerspectiveDepth( in float viewZ, in float near, in float far ) {
 	return ( near * far / viewZ + far) / ( far - near );
 }
 
-float viewZToOrthographicDepth( const in float viewZ, const in float near, const in float far ) {
+float viewZToOrthographicDepth( in float viewZ, in float near, in float far ) {
 	return ( viewZ + near ) / ( near - far );
 }
 

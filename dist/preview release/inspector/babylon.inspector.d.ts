@@ -811,16 +811,11 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     export const Null_Value: number;
-    export class ListLineOption {
-        label: string;
-        value: number;
-        selected?: boolean;
-    }
     export interface IOptionsLineComponentProps {
         label: string;
         target: any;
         propertyName: string;
-        options: ListLineOption[];
+        options: BABYLON.IInspectableOptions[];
         noDirectUpdate?: boolean;
         onSelect?: (value: number) => void;
         extractValue?: () => number;
@@ -1105,6 +1100,10 @@ declare module INSPECTOR {
         private _storedLengthOut;
         private _inVec;
         private _outVec;
+        private _lockX;
+        private _lockY;
+        private _accumulatedX;
+        private _accumulatedY;
         constructor(props: IKeyPointComponentProps);
         componentWillUnmount(): void;
         shouldComponentUpdate(newProps: IKeyPointComponentProps, newState: IKeyPointComponentState): boolean;
@@ -1127,8 +1126,11 @@ declare module INSPECTOR {
         animations: BABYLON.Nullable<BABYLON.Animation[] | BABYLON.TargetedAnimation[]>;
         scene: BABYLON.Scene;
         target: BABYLON.Nullable<BABYLON.IAnimatable>;
-        activeAnimation: BABYLON.Nullable<BABYLON.Animation>;
-        activeColor: BABYLON.Nullable<string>;
+        rootAnimationGroup: BABYLON.Nullable<BABYLON.AnimationGroup>;
+        activeAnimations: BABYLON.Animation[];
+        activeChannels: {
+            [key: number]: string;
+        };
         activeKeyPoints: BABYLON.Nullable<KeyPointComponent[]>;
         mainKeyPoint: BABYLON.Nullable<KeyPointComponent>;
         snippetId: string;
@@ -1167,10 +1169,22 @@ declare module INSPECTOR {
         onAnimationsLoaded: BABYLON.Observable<void>;
         onEditAnimationRequired: BABYLON.Observable<BABYLON.Animation>;
         onEditAnimationUIClosed: BABYLON.Observable<void>;
+        onSelectToActivated: BABYLON.Observable<{
+            from: number;
+            to: number;
+        }>;
         prepare(): void;
         play(forward: boolean): void;
         stop(): void;
         moveToFrame(frame: number): void;
+        refreshTarget(): void;
+        clearSelection(): void;
+        enableChannel(animation: BABYLON.Animation, color: string): void;
+        disableChannel(animation: BABYLON.Animation): void;
+        isChannelEnabled(animation: BABYLON.Animation, color: string): boolean;
+        getActiveChannel(animation: BABYLON.Animation): string;
+        resetAllActiveChannels(): void;
+        getAnimationSortIndex(animation: BABYLON.Animation): number;
     }
 }
 declare module INSPECTOR {
@@ -1334,7 +1348,6 @@ declare module INSPECTOR {
         private _viewWidth;
         private _viewScale;
         private _offsetX;
-        private _currentAnimation;
         private _onActiveAnimationChangedObserver;
         constructor(props: IFrameBarComponentProps);
         componentWillUnmount(): void;
@@ -1395,7 +1408,6 @@ declare module INSPECTOR {
         private _sourcePointerY;
         private _selectionStartX;
         private _selectionStartY;
-        private _currentAnimation;
         private _onActiveAnimationChangedObserver;
         constructor(props: IGraphComponentProps);
         componentWillUnmount(): void;
@@ -1408,6 +1420,7 @@ declare module INSPECTOR {
         private _invertX;
         private _convertY;
         private _invertY;
+        private _buildFrameIntervalAxis;
         private _buildYAxis;
         private _frame;
         private _dropKeyFrames;
@@ -1457,7 +1470,6 @@ declare module INSPECTOR {
         private _viewWidth;
         private _offsetX;
         private _isMounted;
-        private _currentAnimation;
         private _onActiveAnimationChangedObserver;
         constructor(props: IRangeFrameBarComponentProps);
         componentDidMount(): void;
@@ -1513,6 +1525,7 @@ declare module INSPECTOR {
     export class AnimationEntryComponent extends React.Component<IAnimationEntryComponentProps, IAnimationEntryComponentState> {
         private _onActiveAnimationChangedObserver;
         private _onActiveKeyPointChangedObserver;
+        private _onSelectToActivatedObserver;
         private _unmount;
         constructor(props: IAnimationEntryComponentProps);
         private _onGear;
@@ -1589,15 +1602,18 @@ declare module INSPECTOR {
         context: Context;
     }
     interface IAddAnimationComponentState {
+        customPropertyMode: boolean;
     }
     export class AddAnimationComponent extends React.Component<IAddAnimationComponentProps, IAddAnimationComponentState> {
         private _root;
         private _displayName;
         private _property;
         private _typeElement;
+        private _propertylement;
         private _loopModeElement;
         constructor(props: IAddAnimationComponentProps);
         createNew(): void;
+        getInferredType(activeProperty?: string): any;
         render(): JSX.Element;
     }
 }

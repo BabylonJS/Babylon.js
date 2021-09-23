@@ -158,7 +158,7 @@ declare module "babylonjs-gui-editor/globalState" {
         onZoomObservable: Observable<void>;
         onPanObservable: Observable<void>;
         onSelectionButtonObservable: Observable<void>;
-        onLoadObservable: Observable<void>;
+        onLoadObservable: Observable<File>;
         onSaveObservable: Observable<void>;
         onSnippetLoadObservable: Observable<void>;
         onSnippetSaveObservable: Observable<void>;
@@ -167,6 +167,7 @@ declare module "babylonjs-gui-editor/globalState" {
         onParentingChangeObservable: Observable<Nullable<Control>>;
         onPropertyGridUpdateRequiredObservable: Observable<void>;
         onDraggingEndObservable: Observable<void>;
+        onDraggingStartObservable: Observable<void>;
         draggedControl: Nullable<Control>;
         draggedControlDirection: DragOverLocation;
         storeEditorData: (serializationObject: any) => void;
@@ -506,17 +507,13 @@ declare module "babylonjs-gui-editor/sharedUiComponents/lines/optionsLineCompone
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
+    import { IInspectableOptions } from "babylonjs/Misc/iInspectable";
     export const Null_Value: number;
-    export class ListLineOption {
-        label: string;
-        value: number;
-        selected?: boolean;
-    }
     export interface IOptionsLineComponentProps {
         label: string;
         target: any;
         propertyName: string;
-        options: ListLineOption[];
+        options: IInspectableOptions[];
         noDirectUpdate?: boolean;
         onSelect?: (value: number) => void;
         extractValue?: () => number;
@@ -973,8 +970,10 @@ declare module "babylonjs-gui-editor/guiNodeTools" {
     import { Grid } from "babylonjs-gui/2D/controls/grid";
     import { DisplayGrid } from "babylonjs-gui/2D/controls/displayGrid";
     import { StackPanel } from "babylonjs-gui/2D/controls/stackPanel";
+    import { RadioButton } from "babylonjs-gui/2D/controls/radioButton";
+    import { ImageBasedSlider } from "babylonjs-gui/2D/controls/sliders/imageBasedSlider";
     export class GUINodeTools {
-        static CreateControlFromString(data: string): Rectangle | Line | Grid | TextBlock | Image | Slider | InputText | ColorPicker | StackPanel | Ellipse | Checkbox | DisplayGrid;
+        static CreateControlFromString(data: string): Rectangle | Line | Grid | TextBlock | Image | Slider | RadioButton | InputText | ColorPicker | ImageBasedSlider | StackPanel | Ellipse | Checkbox | DisplayGrid;
     }
 }
 declare module "babylonjs-gui-editor/sharedComponents/messageDialog" {
@@ -989,6 +988,13 @@ declare module "babylonjs-gui-editor/sharedComponents/messageDialog" {
     }> {
         constructor(props: IMessageDialogComponentProps);
         render(): JSX.Element | null;
+    }
+}
+declare module "babylonjs-gui-editor/tools" {
+    export class Tools {
+        static LookForItem(item: any, selectedEntity: any): boolean;
+        private static _RecursiveRemoveHiddenMeshesAndHoistChildren;
+        static SortAndFilter(parent: any, items: any[]): any[];
     }
 }
 declare module "babylonjs-gui-editor/components/sceneExplorer/treeItemLabelComponent" {
@@ -1033,76 +1039,25 @@ declare module "babylonjs-gui-editor/components/sceneExplorer/entities/gui/contr
         extensibilityGroups?: IExplorerExtensibilityGroup[];
         onClick: () => void;
         globalState: GlobalState;
+        isHovered: boolean;
+        dragOverHover: boolean;
+        dragOverLocation: DragOverLocation;
     }
     export class ControlTreeItemComponent extends React.Component<IControlTreeItemComponentProps, {
         isActive: boolean;
         isVisible: boolean;
-        isHovered: boolean;
-        isSelected: boolean;
     }> {
-        dragOverHover: boolean;
-        dragOverLocation: DragOverLocation;
-        private _onSelectionChangedObservable;
-        private _onDraggingEndObservable;
         constructor(props: IControlTreeItemComponentProps);
-        componentWillUnmount(): void;
         highlight(): void;
         switchVisibility(): void;
-        dragOver(event: React.DragEvent<HTMLDivElement>): void;
-        drop(): void;
         render(): JSX.Element;
-    }
-}
-declare module "babylonjs-gui-editor/components/sceneExplorer/entities/gui/advancedDynamicTextureTreeItemComponent" {
-    import { Observable } from "babylonjs/Misc/observable";
-    import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
-    import { AdvancedDynamicTexture } from 'babylonjs-gui/2D/advancedDynamicTexture';
-    import * as React from 'react';
-    interface IAdvancedDynamicTextureTreeItemComponentProps {
-        texture: AdvancedDynamicTexture;
-        extensibilityGroups?: IExplorerExtensibilityGroup[];
-        onSelectionChangedObservable?: Observable<any>;
-        onClick: () => void;
-    }
-    export class AdvancedDynamicTextureTreeItemComponent extends React.Component<IAdvancedDynamicTextureTreeItemComponentProps, {
-        isInPickingMode: boolean;
-    }> {
-        private _onControlPickedObserver;
-        constructor(props: IAdvancedDynamicTextureTreeItemComponentProps);
-        componentWillUnmount(): void;
-        onPickingMode(): void;
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-gui-editor/components/sceneExplorer/treeItemSpecializedComponent" {
-    import * as React from "react";
-    import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
-    import { GlobalState } from "babylonjs-gui-editor/globalState";
-    interface ITreeItemSpecializedComponentProps {
-        label: string;
-        entity?: any;
-        extensibilityGroups?: IExplorerExtensibilityGroup[];
-        globalState: GlobalState;
-        onClick?: () => void;
-    }
-    export class TreeItemSpecializedComponent extends React.Component<ITreeItemSpecializedComponentProps> {
-        constructor(props: ITreeItemSpecializedComponentProps);
-        onClick(): void;
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-gui-editor/tools" {
-    export class Tools {
-        static LookForItem(item: any, selectedEntity: any): boolean;
-        private static _RecursiveRemoveHiddenMeshesAndHoistChildren;
-        static SortAndFilter(parent: any, items: any[]): any[];
     }
 }
 declare module "babylonjs-gui-editor/components/sceneExplorer/treeItemSelectableComponent" {
     import { Nullable } from "babylonjs/types";
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
     import * as React from "react";
-    import { GlobalState } from "babylonjs-gui-editor/globalState";
+    import { DragOverLocation, GlobalState } from "babylonjs-gui-editor/globalState";
     export interface ITreeItemSelectableComponentProps {
         entity: any;
         selectedEntity?: any;
@@ -1115,9 +1070,14 @@ declare module "babylonjs-gui-editor/components/sceneExplorer/treeItemSelectable
     export class TreeItemSelectableComponent extends React.Component<ITreeItemSelectableComponentProps, {
         isExpanded: boolean;
         isSelected: boolean;
+        isHovered: boolean;
+        dragOverLocation: DragOverLocation;
     }> {
         private _wasSelected;
         dragOverHover: boolean;
+        private _onSelectionChangedObservable;
+        private _onDraggingEndObservable;
+        private _onDraggingStartObservable;
         constructor(props: ITreeItemSelectableComponentProps);
         switchExpandedState(): void;
         shouldComponentUpdate(nextProps: ITreeItemSelectableComponentProps, nextState: {
@@ -1126,10 +1086,13 @@ declare module "babylonjs-gui-editor/components/sceneExplorer/treeItemSelectable
         }): boolean;
         scrollIntoView(): void;
         componentDidMount(): void;
+        componentWillUnmount(): void;
         componentDidUpdate(): void;
         onSelect(): void;
         renderChildren(): (JSX.Element | null)[] | null;
         render(): JSX.Element | null;
+        dragOver(event: React.DragEvent<HTMLDivElement>): void;
+        drop(): void;
     }
 }
 declare module "babylonjs-gui-editor/components/sceneExplorer/treeItemComponent" {
@@ -1202,7 +1165,6 @@ declare module "babylonjs-gui-editor/components/sceneExplorer/sceneExplorerCompo
         private _onNewSceneObserver;
         private _onPropertyChangedObservable;
         constructor(props: ISceneExplorerComponentProps);
-        processMutation(): void;
         componentDidMount(): void;
         componentWillUnmount(): void;
         filterContent(filter: string): void;
@@ -2276,7 +2238,7 @@ declare module GUIEDITOR {
         onZoomObservable: BABYLON.Observable<void>;
         onPanObservable: BABYLON.Observable<void>;
         onSelectionButtonObservable: BABYLON.Observable<void>;
-        onLoadObservable: BABYLON.Observable<void>;
+        onLoadObservable: BABYLON.Observable<File>;
         onSaveObservable: BABYLON.Observable<void>;
         onSnippetLoadObservable: BABYLON.Observable<void>;
         onSnippetSaveObservable: BABYLON.Observable<void>;
@@ -2285,6 +2247,7 @@ declare module GUIEDITOR {
         onParentingChangeObservable: BABYLON.Observable<BABYLON.Nullable<Control>>;
         onPropertyGridUpdateRequiredObservable: BABYLON.Observable<void>;
         onDraggingEndObservable: BABYLON.Observable<void>;
+        onDraggingStartObservable: BABYLON.Observable<void>;
         draggedControl: BABYLON.Nullable<Control>;
         draggedControlDirection: DragOverLocation;
         storeEditorData: (serializationObject: any) => void;
@@ -2582,16 +2545,11 @@ declare module GUIEDITOR {
 }
 declare module GUIEDITOR {
     export const Null_Value: number;
-    export class ListLineOption {
-        label: string;
-        value: number;
-        selected?: boolean;
-    }
     export interface IOptionsLineComponentProps {
         label: string;
         target: any;
         propertyName: string;
-        options: ListLineOption[];
+        options: BABYLON.IInspectableOptions[];
         noDirectUpdate?: boolean;
         onSelect?: (value: number) => void;
         extractValue?: () => number;
@@ -2953,7 +2911,7 @@ declare module GUIEDITOR {
 }
 declare module GUIEDITOR {
     export class GUINodeTools {
-        static CreateControlFromString(data: string): Rectangle | Line | Grid | TextBlock | Image | Slider | InputText | ColorPicker | StackPanel | Ellipse | Checkbox | DisplayGrid;
+        static CreateControlFromString(data: string): Rectangle | Line | Grid | TextBlock | Image | Slider | RadioButton | InputText | ColorPicker | ImageBasedSlider | StackPanel | Ellipse | Checkbox | DisplayGrid;
     }
 }
 declare module GUIEDITOR {
@@ -2966,6 +2924,13 @@ declare module GUIEDITOR {
     }> {
         constructor(props: IMessageDialogComponentProps);
         render(): JSX.Element | null;
+    }
+}
+declare module GUIEDITOR {
+    export class Tools {
+        static LookForItem(item: any, selectedEntity: any): boolean;
+        private static _RecursiveRemoveHiddenMeshesAndHoistChildren;
+        static SortAndFilter(parent: any, items: any[]): any[];
     }
 }
 declare module GUIEDITOR {
@@ -3003,62 +2968,18 @@ declare module GUIEDITOR {
         extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
         onClick: () => void;
         globalState: GlobalState;
+        isHovered: boolean;
+        dragOverHover: boolean;
+        dragOverLocation: DragOverLocation;
     }
     export class ControlTreeItemComponent extends React.Component<IControlTreeItemComponentProps, {
         isActive: boolean;
         isVisible: boolean;
-        isHovered: boolean;
-        isSelected: boolean;
     }> {
-        dragOverHover: boolean;
-        dragOverLocation: DragOverLocation;
-        private _onSelectionChangedObservable;
-        private _onDraggingEndObservable;
         constructor(props: IControlTreeItemComponentProps);
-        componentWillUnmount(): void;
         highlight(): void;
         switchVisibility(): void;
-        dragOver(event: React.DragEvent<HTMLDivElement>): void;
-        drop(): void;
         render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    interface IAdvancedDynamicTextureTreeItemComponentProps {
-        texture: AdvancedDynamicTexture;
-        extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
-        onSelectionChangedObservable?: BABYLON.Observable<any>;
-        onClick: () => void;
-    }
-    export class AdvancedDynamicTextureTreeItemComponent extends React.Component<IAdvancedDynamicTextureTreeItemComponentProps, {
-        isInPickingMode: boolean;
-    }> {
-        private _onControlPickedObserver;
-        constructor(props: IAdvancedDynamicTextureTreeItemComponentProps);
-        componentWillUnmount(): void;
-        onPickingMode(): void;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    interface ITreeItemSpecializedComponentProps {
-        label: string;
-        entity?: any;
-        extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
-        globalState: GlobalState;
-        onClick?: () => void;
-    }
-    export class TreeItemSpecializedComponent extends React.Component<ITreeItemSpecializedComponentProps> {
-        constructor(props: ITreeItemSpecializedComponentProps);
-        onClick(): void;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    export class Tools {
-        static LookForItem(item: any, selectedEntity: any): boolean;
-        private static _RecursiveRemoveHiddenMeshesAndHoistChildren;
-        static SortAndFilter(parent: any, items: any[]): any[];
     }
 }
 declare module GUIEDITOR {
@@ -3074,9 +2995,14 @@ declare module GUIEDITOR {
     export class TreeItemSelectableComponent extends React.Component<ITreeItemSelectableComponentProps, {
         isExpanded: boolean;
         isSelected: boolean;
+        isHovered: boolean;
+        dragOverLocation: DragOverLocation;
     }> {
         private _wasSelected;
         dragOverHover: boolean;
+        private _onSelectionChangedObservable;
+        private _onDraggingEndObservable;
+        private _onDraggingStartObservable;
         constructor(props: ITreeItemSelectableComponentProps);
         switchExpandedState(): void;
         shouldComponentUpdate(nextProps: ITreeItemSelectableComponentProps, nextState: {
@@ -3085,10 +3011,13 @@ declare module GUIEDITOR {
         }): boolean;
         scrollIntoView(): void;
         componentDidMount(): void;
+        componentWillUnmount(): void;
         componentDidUpdate(): void;
         onSelect(): void;
         renderChildren(): (JSX.Element | null)[] | null;
         render(): JSX.Element | null;
+        dragOver(event: React.DragEvent<HTMLDivElement>): void;
+        drop(): void;
     }
 }
 declare module GUIEDITOR {
@@ -3152,7 +3081,6 @@ declare module GUIEDITOR {
         private _onNewSceneObserver;
         private _onPropertyChangedObservable;
         constructor(props: ISceneExplorerComponentProps);
-        processMutation(): void;
         componentDidMount(): void;
         componentWillUnmount(): void;
         filterContent(filter: string): void;

@@ -4962,6 +4962,7 @@ declare module "babylonjs-gui/3D/controls/touchHolographicButton" {
         private _text;
         private _imageUrl;
         private _shareMaterials;
+        private _isBackplateVisible;
         private _frontMaterial;
         private _backMaterial;
         private _plateMaterial;
@@ -5012,6 +5013,10 @@ declare module "babylonjs-gui/3D/controls/touchHolographicButton" {
          * Gets a boolean indicating if this button shares its material with other HolographicButtons
          */
         get shareMaterials(): boolean;
+        /**
+         * Sets whether the backplate is visible or hidden. Hiding the backplate is not recommended without some sort of replacement
+         */
+        set isBackplateVisible(isVisible: boolean);
         /**
          * Creates a new button
          * @param name defines the control name
@@ -5673,6 +5678,10 @@ declare module "babylonjs-gui/3D/controls/touchHolographicMenu" {
         private _currentMax;
         private _backPlateMargin;
         /**
+         * Scale for the buttons added to the menu
+         */
+        protected static MENU_BUTTON_SCALE: number;
+        /**
          * Gets or sets the margin size of the backplate in button size units.
          * Setting this to 1, will make the backPlate margin the size of 1 button
          */
@@ -5767,7 +5776,6 @@ declare module "babylonjs-gui/3D/controls/nearMenu" {
     import { Scene } from "babylonjs/scene";
     import { TransformNode } from "babylonjs/Meshes/transformNode";
     import { Nullable } from "babylonjs/types";
-    import { TouchHolographicButton } from "babylonjs-gui/3D/controls/touchHolographicButton";
     import { DefaultBehavior } from "babylonjs-gui/3D/behaviors/defaultBehavior";
     import { TouchHolographicMenu } from "babylonjs-gui/3D/controls/touchHolographicMenu";
     /**
@@ -5783,10 +5791,6 @@ declare module "babylonjs-gui/3D/controls/nearMenu" {
          * File name for the close icon.
          */
         private static PIN_ICON_FILENAME;
-        /**
-         * Scale for the buttons added to the near menu
-         */
-        private static NEAR_BUTTON_SCALE;
         private _pinButton;
         private _pinMaterial;
         private _dragObserver;
@@ -5802,14 +5806,6 @@ declare module "babylonjs-gui/3D/controls/nearMenu" {
         get isPinned(): boolean;
         set isPinned(value: boolean);
         private _createPinButton;
-        /**
-         * Adds a button to the menu.
-         * Please note that the back material of the button will be set to transparent as it is attached to the menu.
-         *
-         * @param button Button to add
-         * @returns This menu
-         */
-        addButton(button: TouchHolographicButton): TouchHolographicMenu;
         protected _createNode(scene: Scene): Nullable<TransformNode>;
         protected _finalProcessing(): void;
         /**
@@ -10771,6 +10767,7 @@ declare module BABYLON.GUI {
         private _text;
         private _imageUrl;
         private _shareMaterials;
+        private _isBackplateVisible;
         private _frontMaterial;
         private _backMaterial;
         private _plateMaterial;
@@ -10821,6 +10818,10 @@ declare module BABYLON.GUI {
          * Gets a boolean indicating if this button shares its material with other HolographicButtons
          */
         get shareMaterials(): boolean;
+        /**
+         * Sets whether the backplate is visible or hidden. Hiding the backplate is not recommended without some sort of replacement
+         */
+        set isBackplateVisible(isVisible: boolean);
         /**
          * Creates a new button
          * @param name defines the control name
@@ -11426,6 +11427,10 @@ declare module BABYLON.GUI {
         private _currentMax;
         private _backPlateMargin;
         /**
+         * Scale for the buttons added to the menu
+         */
+        protected static MENU_BUTTON_SCALE: number;
+        /**
          * Gets or sets the margin size of the backplate in button size units.
          * Setting this to 1, will make the backPlate margin the size of 1 button
          */
@@ -11519,10 +11524,6 @@ declare module BABYLON.GUI {
          * File name for the close icon.
          */
         private static PIN_ICON_FILENAME;
-        /**
-         * Scale for the buttons added to the near menu
-         */
-        private static NEAR_BUTTON_SCALE;
         private _pinButton;
         private _pinMaterial;
         private _dragObserver;
@@ -11538,14 +11539,6 @@ declare module BABYLON.GUI {
         get isPinned(): boolean;
         set isPinned(value: boolean);
         private _createPinButton;
-        /**
-         * Adds a button to the menu.
-         * Please note that the back material of the button will be set to transparent as it is attached to the menu.
-         *
-         * @param button Button to add
-         * @returns This menu
-         */
-        addButton(button: TouchHolographicButton): TouchHolographicMenu;
         protected _createNode(scene: BABYLON.Scene): BABYLON.Nullable<BABYLON.TransformNode>;
         protected _finalProcessing(): void;
         /**

@@ -624,7 +624,7 @@ export abstract class EffectLayer {
         // Handle size changes.
         var size = this._mainTexture.getSize();
         this._setMainTextureSize();
-        if (size.width !== this._mainTextureDesiredSize.width || size.height !== this._mainTextureDesiredSize.height) {
+        if ((size.width !== this._mainTextureDesiredSize.width || size.height !== this._mainTextureDesiredSize.height) && this._mainTextureDesiredSize.width !== 0 && this._mainTextureDesiredSize.height !== 0) {
             // Recreate RTT and post processes on size change.
             this.onSizeChangedObservable.notifyObservers(this);
             this._disposeTextureAndPostProcesses();
@@ -743,7 +743,8 @@ export abstract class EffectLayer {
 
             engine.enableEffect(this._effectLayerMapGenerationDrawWrapper);
             if (!hardwareInstancedRendering) {
-                renderingMesh._bind(subMesh, effect, Material.TriangleFillMode);
+                const fillMode = scene.forcePointsCloud ? Material.PointFillMode : scene.forceWireframe ? Material.WireFrameFillMode : material.fillMode;
+                renderingMesh._bind(subMesh, effect, fillMode);
             }
 
             effect.setMatrix("viewProjection", scene.getTransformMatrix());

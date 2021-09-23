@@ -425,11 +425,14 @@ export class TextBlock extends Control {
     }
 
     protected _parseLine(line: string = "", context: ICanvasRenderingContext): object {
-        return { text: line, width: context.measureText(line).width };
+        var textMetrics = context.measureText(line);
+        var lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
+        return { text: line, width: lineWidth };
     }
 
     protected _parseLineEllipsis(line: string = "", width: number, context: ICanvasRenderingContext): object {
-        var lineWidth = context.measureText(line).width;
+        var textMetrics = context.measureText(line);
+        var lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
 
         if (lineWidth > width) {
             line += "…";
@@ -441,13 +444,15 @@ export class TextBlock extends Control {
             // no array.from, use the old method
             while (line.length > 2 && lineWidth > width) {
                 line = line.slice(0, -2) + "…";
-                lineWidth = context.measureText(line).width;
+                textMetrics = context.measureText(line);
+                lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
             }
         } else {
             while (characters.length && lineWidth > width) {
                 characters.pop();
                 line = `${characters.join("")}...`;
-                lineWidth = context.measureText(line).width;
+                textMetrics = context.measureText(line);
+                lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
             }
         }
 
@@ -457,16 +462,18 @@ export class TextBlock extends Control {
     protected _parseLineWordWrap(line: string = "", width: number, context: ICanvasRenderingContext): object[] {
         var lines = [];
         var words = this.wordSplittingFunction ? this.wordSplittingFunction(line) : line.split(" ");
-        var lineWidth = 0;
+        var textMetrics = context.measureText(line);
+        var lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
 
         for (var n = 0; n < words.length; n++) {
             var testLine = n > 0 ? line + " " + words[n] : words[0];
             var metrics = context.measureText(testLine);
-            var testWidth = metrics.width;
+            var testWidth = Math.abs(metrics.actualBoundingBoxLeft) + Math.abs(metrics.actualBoundingBoxRight);
             if (testWidth > width && n > 0) {
                 lines.push({ text: line, width: lineWidth });
                 line = words[n];
-                lineWidth = context.measureText(line).width;
+                textMetrics = context.measureText(line);
+                lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
             } else {
                 lineWidth = testWidth;
                 line = testLine;
