@@ -1,3 +1,7 @@
+import { Control } from "babylonjs-gui/2D/controls/control";
+import { Grid } from "babylonjs-gui/2D/controls/grid";
+import { Vector2 } from "babylonjs/Maths/math";
+
 export class Tools {
     public static LookForItem(item: any, selectedEntity: any): boolean {
         if (item === selectedEntity) {
@@ -42,5 +46,36 @@ export class Tools {
             finalArray.push(...parent.reservedDataStore.detachedChildren);
         }
         return finalArray.reverse();
+    }
+
+    public static getCellInfo(grid: Grid, control: Control)
+    {
+        const cellInfo = grid.getChildCellInfo(control);
+        let rowNumber = parseInt(cellInfo.substring(0, cellInfo.search(":")));
+        if (isNaN(rowNumber)) {
+            rowNumber = 0;
+        }
+        let columnNumber = parseInt(cellInfo.substring(cellInfo.search(":") + 1));
+        if (isNaN(columnNumber)) {
+            columnNumber = 0;
+        }
+        return new Vector2(rowNumber,columnNumber);
+    }
+
+    public static reorderGrid(grid: Grid, index: number, control : Control, cell : Vector2)
+    {
+        let tags: Vector2[] = [];
+        let controls: Control[] = [];
+        const length = grid.children.length;
+        for (let i = index; i < length; ++i) {
+            const control = grid.children[index];
+            controls.push(control);
+            tags.push(Tools.getCellInfo(grid, control));
+            grid.removeControl(control);
+        }
+        grid.addControl(control, cell.x, cell.y);
+        for (let i = 0; i < controls.length; ++i) {
+            grid.addControl(controls[i], tags[i].x, tags[i].y);
+        }
     }
 }
