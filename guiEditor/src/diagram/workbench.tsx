@@ -360,7 +360,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         });
 
         guiControl.onPointerDownObservable.add((evt) => {
-            if (!this.isUp) return;
+            if (!this.isUp || evt.buttonIndex > 0) return;
+            
             this.isSelected(true, guiControl);
             this.isUp = false;
         });
