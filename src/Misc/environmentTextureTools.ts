@@ -20,14 +20,22 @@ import "../Materials/Textures/baseTexture.polynomial";
 import "../Shaders/rgbdEncode.fragment";
 import "../Shaders/rgbdDecode.fragment";
 
+const defaultEnvironmentTextureImageType = 'image/png';
+const currentVersion = 2;
+
 /**
  * Raw texture data and descriptor sufficient for WebGL texture upload
  */
-export interface EnvironmentTextureInfo {
+export type EnvironmentTextureInfo = EnvironmentTextureInfoV1 | EnvironmentTextureInfoV2;
+
+/**
+ * v1 of EnvironmentTextureInfo
+ */
+interface EnvironmentTextureInfoV1 {
     /**
      * Version of the environment map
      */
-    version: number;
+    version: 1;
 
     /**
      * Width of image
@@ -43,6 +51,36 @@ export interface EnvironmentTextureInfo {
      * Specular information stored in the file.
      */
     specular: any;
+}
+
+/**
+ * v2 of EnvironmentTextureInfo
+ */
+interface EnvironmentTextureInfoV2 {
+    /**
+     * Version of the environment map
+     */
+    version: 2;
+
+    /**
+     * Width of image
+     */
+    width: number;
+
+    /**
+     * Irradiance information stored in the file.
+     */
+    irradiance: any;
+
+    /**
+     * Specular information stored in the file.
+     */
+    specular: any;
+
+    /**
+     * The mime type used to encode the image data.
+     */
+    imageType: string;
 }
 
 /**
@@ -97,6 +135,21 @@ interface EnvironmentTextureIrradianceInfoV1 {
 }
 
 /**
+ * Options for creating environment textures
+ */
+export interface CreateEnvTextureOptions {
+    /**
+     * The mime type of encoded images.
+     */
+    imageType?: string;
+
+    /**
+     * the image quality of encoded WebP images.
+     */
+    imageQuality?: number;
+}
+
+/**
  * Sets of helpers addressing the serialization and deserialization of environment texture
  * stored in a BabylonJS env file.
  * Those files are usually stored as .env files.
@@ -111,9 +164,9 @@ export class EnvironmentTextureTools {
     /**
      * Gets the environment info from an env file.
      * @param data The array buffer containing the .env bytes.
-     * @returns the environment file info (the json header) if successfully parsed.
+     * @returns the environment file info (the json header) if successfully parsed, normalized to the latest supported version.
      */
-    public static GetEnvInfo(data: ArrayBufferView): Nullable<EnvironmentTextureInfo> {
+    public static GetEnvInfo(data: ArrayBufferView): Nullable<EnvironmentTextureInfoV2> {
         let dataView = new DataView(data.buffer, data.byteOffset, data.byteLength);
         let pos = 0;
 
@@ -132,6 +185,7 @@ export class EnvironmentTextureTools {
         }
 
         let manifest: EnvironmentTextureInfo = JSON.parse(manifestString);
+        manifest = EnvironmentTextureTools.normalizeEnvInfo(manifest);
         if (manifest.specular) {
             // Extend the header with the position of the payload.
             manifest.specular.specularDataPosition = pos;
@@ -143,15 +197,41 @@ export class EnvironmentTextureTools {
     }
 
     /**
+     * Normalizes any supported version of the environment file info to the latest version
+     * @param info environment file info on any supported version
+     * @returns environment file info in the latest supported version
+     * @private
+     */
+    private static normalizeEnvInfo(info: EnvironmentTextureInfo): EnvironmentTextureInfoV2 {
+        if (info.version > currentVersion) {
+            throw new Error(`Unsupported babylon environment map version "${info.version}". Latest supported version is "${currentVersion}".`);
+        }
+
+        if (info.version === 2) {
+            return info;
+        }
+
+        // Migrate a v1 info to v2
+        info = {...info, version: 2, imageType: defaultEnvironmentTextureImageType};
+
+        return info;
+    }
+
+    /**
      * Creates an environment texture from a loaded cube texture.
      * @param texture defines the cube texture to convert in env file
+     * @param options options for the conversion process
+     * @param options.imageType the mime type for the encoded images, with support for "image/png" (default) and "image/webp"
+     * @param options.imageQuality the image quality of encoded WebP images.
      * @return a promise containing the environment data if successful.
      */
-    public static async CreateEnvTextureAsync(texture: BaseTexture): Promise<ArrayBuffer> {
+    public static async CreateEnvTextureAsync(texture: BaseTexture, options: CreateEnvTextureOptions = {}): Promise<ArrayBuffer> {
         let internalTexture = texture.getInternalTexture();
         if (!internalTexture) {
             return Promise.reject("The cube texture is invalid.");
         }
+
+        const imageType = options.imageType ?? defaultEnvironmentTextureImageType;
 
         let engine = internalTexture.getEngine() as Engine;
 
@@ -203,9 +283,9 @@ export class EnvironmentTextureTools {
 
                 const rgbdEncodedData = await engine._readTexturePixels(tempTexture, faceWidth, faceWidth);
 
-                const pngEncodedata = await Tools.DumpDataAsync(faceWidth, faceWidth, rgbdEncodedData, "image/png", undefined, false, true);
+                const imageEncodedData = await Tools.DumpDataAsync(faceWidth, faceWidth, rgbdEncodedData, imageType, undefined, false, true, options.imageQuality);
 
-                specularTextures[i * 6 + face] = pngEncodedata as ArrayBuffer;
+                specularTextures[i * 6 + face] = imageEncodedData as ArrayBuffer;
 
                 tempTexture.dispose();
             }
@@ -216,8 +296,9 @@ export class EnvironmentTextureTools {
 
         // Creates the json header for the env texture
         let info: EnvironmentTextureInfo = {
-            version: 1,
+            version: currentVersion,
             width: cubeWidth,
+            imageType,
             irradiance: this._CreateEnvTextureIrradiance(texture),
             specular: {
                 mipmaps: [],
@@ -310,9 +391,7 @@ export class EnvironmentTextureTools {
      * @return the views described by info providing access to the underlying buffer
      */
     public static CreateImageDataArrayBufferViews(data: ArrayBufferView, info: EnvironmentTextureInfo): Array<Array<ArrayBufferView>> {
-        if (info.version !== 1) {
-            throw new Error(`Unsupported babylon environment map version "${info.version}"`);
-        }
+        info = EnvironmentTextureTools.normalizeEnvInfo(info);
 
         const specularInfo = info.specular as EnvironmentTextureSpecularInfoV1;
 
@@ -343,9 +422,7 @@ export class EnvironmentTextureTools {
      * @returns a promise
      */
     public static UploadEnvLevelsAsync(texture: InternalTexture, data: ArrayBufferView, info: EnvironmentTextureInfo): Promise<void> {
-        if (info.version !== 1) {
-            throw new Error(`Unsupported babylon environment map version "${info.version}"`);
-        }
+        info = EnvironmentTextureTools.normalizeEnvInfo(info);
 
         const specularInfo = info.specular as EnvironmentTextureSpecularInfoV1;
         if (!specularInfo) {
@@ -357,7 +434,7 @@ export class EnvironmentTextureTools {
 
         const imageData = EnvironmentTextureTools.CreateImageDataArrayBufferViews(data, info);
 
-        return EnvironmentTextureTools.UploadLevelsAsync(texture, imageData);
+        return EnvironmentTextureTools.UploadLevelsAsync(texture, imageData, info.imageType);
     }
 
     private static _OnImageReadyAsync(image: HTMLImageElement | ImageBitmap, engine: Engine, expandTexture: boolean,
@@ -412,9 +489,10 @@ export class EnvironmentTextureTools {
      * Uploads the levels of image data to the GPU.
      * @param texture defines the internal texture to upload to
      * @param imageData defines the array buffer views of image data [mipmap][face]
+     * @param imageType the mime type of the image data
      * @returns a promise
      */
-    public static UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBufferView[][]): Promise<void> {
+    public static UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBufferView[][], imageType: string = defaultEnvironmentTextureImageType): Promise<void> {
         if (!Tools.IsExponentOfTwo(texture.width)) {
             throw new Error("Texture size must be a power of two");
         }
@@ -528,7 +606,7 @@ export class EnvironmentTextureTools {
             for (let face = 0; face < 6; face++) {
                 // Constructs an image element from image data
                 let bytes = imageData[i][face];
-                let blob = new Blob([bytes], { type: 'image/png' });
+                let blob = new Blob([bytes], { type: imageType });
                 let url = URL.createObjectURL(blob);
                 let promise: Promise<void>;
 
@@ -616,9 +694,7 @@ export class EnvironmentTextureTools {
      * @param info defines the environment texture info retrieved through the GetEnvInfo method
      */
     public static UploadEnvSpherical(texture: InternalTexture, info: EnvironmentTextureInfo): void {
-        if (info.version !== 1) {
-            Logger.Warn('Unsupported babylon environment map version "' + info.version + '"');
-        }
+        info = EnvironmentTextureTools.normalizeEnvInfo(info);
 
         let irradianceInfo = info.irradiance as EnvironmentTextureIrradianceInfoV1;
         if (!irradianceInfo) {

@@ -303,6 +303,27 @@ export class NodeMaterialConnectionPoint {
         return this._endpoints && this._endpoints.length > 0;
     }
 
+    /** Gets a boolean indicating that this connection has a path to the vertex output*/
+    public get isDirectlyConnectedToVertexOutput(): boolean {
+        if (!this.hasEndpoints) {
+            return false;
+        }
+
+        for (var endpoint of this._endpoints) {
+            if (endpoint.ownerBlock.target === NodeMaterialBlockTargets.Vertex) {
+                return true;
+            }
+
+            if (endpoint.ownerBlock.target === NodeMaterialBlockTargets.Neutral || endpoint.ownerBlock.target === NodeMaterialBlockTargets.VertexAndFragment) {
+                if (endpoint.ownerBlock.outputs.some((o) => o.isDirectlyConnectedToVertexOutput)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     /** Gets a boolean indicating that this connection will be used in the vertex shader */
     public get isConnectedInVertexShader(): boolean {
         if (this.target === NodeMaterialBlockTargets.Vertex) {

@@ -11,6 +11,8 @@
 
 ## Updates
 
+- Add Geodesic and Goldberg Polyhedra ([JohnK](https://github.com/BabylonJSGuide/))
+
 ### General
 
 - Added `zoomToMouseLocation` on `ArcRotateCamera` ([lovettchris](https://github.com/lovettchris))
@@ -45,6 +47,8 @@
 - Modified behavior for FreeCamera and ArcRotateCamera so that default mouse dragging movements now account for what button was used to initiate it ([PolygonalSun](https://github.com/PolygonalSun))
 - Added coroutine capabilities to `Observable`s ([syntheticmagus](https://github.com/syntheticmagus))
 - Added a global OnTextureLoadErrorObservable to handle texture loading errors during model load ([RaananW](https://github.com/RaananW))
+- Add support to encode and decode .env environment textures using WebP instead of PNG ([simonihmig](https://github.com/simonihmig))
+- Added a new stereoscopic screen rig camera ([RaananW](https://github.com/RaananW))
 
 ### Engine
 
@@ -54,6 +58,7 @@
 - Added support for sRGB buffers, native in WebGL2 / WebGPU and through the `EXT_sRGB` extension in WebGL1. There's a new parameter to the `Texture` constructor that enables this feature ([Popov72](https://github.com/Popov72))
 - Added `IAudioEngineOptions` interface to provide the audio engine with a pre-defined Audio Context and audio destination node. ([Vandy](https://github.com/svanderbeck11))
 - Added support for cannon-es method `world.removeBody()`. Falls back to cannon method `remove()`. ([Faber](https://https://github.com/Faber-smythe))
+- Added support for ZOffset Unit as we currently only supported factor. ([Sebavan](https://github.com/sebavan/)
 
 ### Loaders
 
@@ -72,6 +77,7 @@
 - Added `DO_NOT_ALTER_FILE_COORDINATES` flag to STL loader ([AlbertoPa](https://github.com/AlbertoPa))
 - Added support for pure geometry files to OBJ loader ([Deltakosh](https://github.com/deltakosh))
 - Added an observable for when loader state changed. ([bghgary](https://github.com/bghgary))
+- Fixed an issue where errors for loading certain assets (e.g. <20-byte GLBs) are not catchable. ([bghgary](https://github.com/bghgary))
 
 ### Navigation
 
@@ -114,6 +120,7 @@
 
 ### NME
 
+- Added a `ImageSource` block to factorize access to texture data ([Deltakosh](https://github.com/Deltakosh))
 - Increased float precision to 4 ([msDestiny14](https://github.com/msDestiny14))
 - Added ability to make input node's properties visible in the properties of a custom frame ([msDestiny14](https://github.com/msDestiny14))
 - NME `TextureBlock`: add an output for the texture level and a switch to disable the internal multiplication (level * texture) ([#10192](https://github.com/BabylonJS/Babylon.js/pull/10192)) ([rassie](https://github.com/rassie))
@@ -166,6 +173,7 @@
 - Added support for `xr-dom-overlay` ([#8996](https://github.com/BabylonJS/Babylon.js/issues/8996)) ([brianzinn](https://github.com/brianzinn))
 - Added near interaction events (hover, grab, and near-pick) ([satyapoojasama](https://github.com/satyapoojasama))
 - Added XR Movement Controller feature for ([#7442](https://github.com/BabylonJS/Babylon.js/issues/7442)) ([brianzinn](https://github.com/brianzinn))
+- Added initial support for `light-estimation` ([#8904](https://github.com/BabylonJS/Babylon.js/issues/8904)) ([brianzinn](https://github.com/brianzinn)) ([RaananW](https://github.com/RaananW))
 - Fixed an issue with superfluous reloading of the hand tracking models ([#10453](https://github.com/BabylonJS/Babylon.js/issues/10453)) ([rgerd](https://github.com/rgerd))
 - Added support for XRFrame.fillPoses and XRFrame.fillJointRadii ([#10454](https://github.com/BabylonJS/Babylon.js/issues/10454)) ([rgerd](https://github.com/rgerd))
 - Improved functionality of `WebXRNearInteraction` and updated coverage to be enabled on Behaviors and Gizmos ([rickfromwork](https://github.com/rickfromwork))
@@ -299,6 +307,8 @@
 - Fix issue with deadzones for gamepads being negatively affected by sensibility values ([PolygonalSun](https://github.com/PolygonalSun))
 - Fix parsing of particle systems sub emitters ([#10882](https://github.com/BabylonJS/Babylon.js/issues/10882)) ([Popov72](https://github.com/Popov72))
 - Fix bug in NME where a link could not be recreated after being deleted ([Popov72](https://github.com/Popov72))
+- Fix small typo in transformNode getDirectionToRef method definition. ([PirateJC](https://github.com/piratejc))
+- Fix textures not properly inverting along the vertical axis when using ImageBitmaps ([nmrugg](https://github.com/nmrugg))
 
 ## Breaking changes
 

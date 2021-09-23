@@ -22,6 +22,7 @@ export class Animatable {
     private _speedRatio = 1;
     private _weight = -1.0;
     private _syncRoot: Nullable<Animatable> = null;
+    private _frameToSyncFromJump: Nullable<number> = 0;
 
     /**
      * Gets or sets a boolean indicating if the animatable must be disposed and removed at the end of the animation.
@@ -269,8 +270,8 @@ export class Animatable {
 
         if (runtimeAnimations[0]) {
             var fps = runtimeAnimations[0].animation.framePerSecond;
-            var currentFrame = runtimeAnimations[0].currentFrame;
-            var delay = this.speedRatio === 0 ? 0 : ((frame - currentFrame) / fps * 1000) / this.speedRatio;
+            this._frameToSyncFromJump = this._frameToSyncFromJump ?? runtimeAnimations[0].currentFrame;
+            var delay = this.speedRatio === 0 ? 0 : ((frame - this._frameToSyncFromJump) / fps * 1000) / this.speedRatio;
             this._manualJumpDelay = -delay;
         }
 
@@ -386,6 +387,7 @@ export class Animatable {
         if (this._manualJumpDelay !== null) {
             this._localDelayOffset += this._manualJumpDelay;
             this._manualJumpDelay = null;
+            this._frameToSyncFromJump = null;
         }
 
         if (this._weight === 0) { // We consider that an animation with a weight === 0 is "actively" paused

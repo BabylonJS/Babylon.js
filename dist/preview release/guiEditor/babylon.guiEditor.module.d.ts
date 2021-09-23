@@ -170,10 +170,15 @@ declare module "babylonjs-gui-editor/globalState" {
         onDraggingStartObservable: Observable<void>;
         draggedControl: Nullable<Control>;
         draggedControlDirection: DragOverLocation;
+        isSaving: boolean;
         storeEditorData: (serializationObject: any) => void;
         customSave?: {
             label: string;
-            action: (data: string) => Promise<void>;
+            action: (data: string) => Promise<string>;
+        };
+        customLoad?: {
+            label: string;
+            action: (data: string) => Promise<string>;
         };
         constructor();
     }
@@ -422,35 +427,10 @@ declare module "babylonjs-gui-editor/components/propertyTab/propertyGrids/gui/co
     export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
         private _width;
         private _height;
+        private _responsive;
         constructor(props: ICommonControlPropertyGridComponentProps);
         private _updateAlignment;
         private _checkAndUpdateValues;
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-gui-editor/sharedUiComponents/lines/iSelectedLineContainer" {
-    export interface ISelectedLineContainer {
-        selectedLineContainerTitles: Array<string>;
-        selectedLineContainerTitlesNoFocus: Array<string>;
-    }
-}
-declare module "babylonjs-gui-editor/sharedUiComponents/lines/lineContainerComponent" {
-    import * as React from "react";
-    import { ISelectedLineContainer } from "babylonjs-gui-editor/sharedUiComponents/lines/iSelectedLineContainer";
-    interface ILineContainerComponentProps {
-        selection?: ISelectedLineContainer;
-        title: string;
-        children: any[] | any;
-        closed?: boolean;
-    }
-    export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
-        isExpanded: boolean;
-        isHighlighted: boolean;
-    }> {
-        constructor(props: ILineContainerComponentProps);
-        switchExpandedState(): void;
-        renderHeader(): JSX.Element;
-        componentDidMount(): void;
         render(): JSX.Element;
     }
 }
@@ -917,11 +897,28 @@ declare module "babylonjs-gui-editor/components/parentingPropertyGridComponent" 
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-gui-editor/components/propertyTab/propertyGrids/gui/displayGridPropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
+    import { LockObject } from "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject";
+    import { DisplayGrid } from "babylonjs-gui/2D/controls/displayGrid";
+    interface IDisplayGridPropertyGridComponentProps {
+        displayGrid: DisplayGrid;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class DisplayGridPropertyGridComponent extends React.Component<IDisplayGridPropertyGridComponentProps> {
+        constructor(props: IDisplayGridPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-gui-editor/components/propertyTab/propertyTabComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-gui-editor/globalState";
     import { Nullable } from "babylonjs/types";
     import { Control } from "babylonjs-gui/2D/controls/control";
+    import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
     import { Vector2 } from "babylonjs/Maths/math.vector";
     interface IPropertyTabComponentProps {
         globalState: GlobalState;
@@ -941,9 +938,11 @@ declare module "babylonjs-gui-editor/components/propertyTab/propertyTabComponent
         load(file: File): void;
         save(saveCallback: () => void): void;
         saveLocally: () => void;
-        saveToSnippetServer: () => void;
+        saveToSnippetServerHelper: (content: string, adt: AdvancedDynamicTexture) => Promise<string>;
+        saveToSnippetServer: () => Promise<void>;
         loadFromSnippet(): void;
         renderProperties(): JSX.Element | null;
+        renderControlIcon(): string;
         render(): JSX.Element;
     }
 }
@@ -1073,7 +1072,6 @@ declare module "babylonjs-gui-editor/components/sceneExplorer/treeItemSelectable
         isHovered: boolean;
         dragOverLocation: DragOverLocation;
     }> {
-        private _wasSelected;
         dragOverHover: boolean;
         private _onSelectionChangedObservable;
         private _onDraggingEndObservable;
@@ -1085,9 +1083,7 @@ declare module "babylonjs-gui-editor/components/sceneExplorer/treeItemSelectable
             isSelected: boolean;
         }): boolean;
         scrollIntoView(): void;
-        componentDidMount(): void;
         componentWillUnmount(): void;
-        componentDidUpdate(): void;
         onSelect(): void;
         renderChildren(): (JSX.Element | null)[] | null;
         render(): JSX.Element | null;
@@ -1285,10 +1281,14 @@ declare module "babylonjs-gui-editor/guiEditor" {
      * Interface used to specify creation options for the gui editor
      */
     export interface IGUIEditorOptions {
+        customLoad: {
+            label: string;
+            action: (data: string) => Promise<string>;
+        } | undefined;
         hostElement?: HTMLElement;
         customSave?: {
             label: string;
-            action: (data: string) => Promise<void>;
+            action: (data: string) => Promise<string>;
         };
         currentSnippetToken?: string;
         customLoadObservable?: Observable<any>;
@@ -1334,6 +1334,32 @@ declare module "babylonjs-gui-editor/nodeLocationInfo" {
         map?: {
             [key: number]: number;
         };
+    }
+}
+declare module "babylonjs-gui-editor/sharedUiComponents/lines/iSelectedLineContainer" {
+    export interface ISelectedLineContainer {
+        selectedLineContainerTitles: Array<string>;
+        selectedLineContainerTitlesNoFocus: Array<string>;
+    }
+}
+declare module "babylonjs-gui-editor/sharedUiComponents/lines/lineContainerComponent" {
+    import * as React from "react";
+    import { ISelectedLineContainer } from "babylonjs-gui-editor/sharedUiComponents/lines/iSelectedLineContainer";
+    interface ILineContainerComponentProps {
+        selection?: ISelectedLineContainer;
+        title: string;
+        children: any[] | any;
+        closed?: boolean;
+    }
+    export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
+        isExpanded: boolean;
+        isHighlighted: boolean;
+    }> {
+        constructor(props: ILineContainerComponentProps);
+        switchExpandedState(): void;
+        renderHeader(): JSX.Element;
+        componentDidMount(): void;
+        render(): JSX.Element;
     }
 }
 declare module "babylonjs-gui-editor/sharedUiComponents/lines/draggableLineComponent" {
@@ -2250,10 +2276,15 @@ declare module GUIEDITOR {
         onDraggingStartObservable: BABYLON.Observable<void>;
         draggedControl: BABYLON.Nullable<Control>;
         draggedControlDirection: DragOverLocation;
+        isSaving: boolean;
         storeEditorData: (serializationObject: any) => void;
         customSave?: {
             label: string;
-            action: (data: string) => Promise<void>;
+            action: (data: string) => Promise<string>;
+        };
+        customLoad?: {
+            label: string;
+            action: (data: string) => Promise<string>;
         };
         constructor();
     }
@@ -2479,33 +2510,10 @@ declare module GUIEDITOR {
     export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
         private _width;
         private _height;
+        private _responsive;
         constructor(props: ICommonControlPropertyGridComponentProps);
         private _updateAlignment;
         private _checkAndUpdateValues;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    export interface ISelectedLineContainer {
-        selectedLineContainerTitles: Array<string>;
-        selectedLineContainerTitlesNoFocus: Array<string>;
-    }
-}
-declare module GUIEDITOR {
-    interface ILineContainerComponentProps {
-        selection?: ISelectedLineContainer;
-        title: string;
-        children: any[] | any;
-        closed?: boolean;
-    }
-    export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
-        isExpanded: boolean;
-        isHighlighted: boolean;
-    }> {
-        constructor(props: ILineContainerComponentProps);
-        switchExpandedState(): void;
-        renderHeader(): JSX.Element;
-        componentDidMount(): void;
         render(): JSX.Element;
     }
 }
@@ -2877,6 +2885,17 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
+    interface IDisplayGridPropertyGridComponentProps {
+        displayGrid: DisplayGrid;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class DisplayGridPropertyGridComponent extends React.Component<IDisplayGridPropertyGridComponentProps> {
+        constructor(props: IDisplayGridPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
     interface IPropertyTabComponentProps {
         globalState: GlobalState;
     }
@@ -2895,9 +2914,11 @@ declare module GUIEDITOR {
         load(file: File): void;
         save(saveCallback: () => void): void;
         saveLocally: () => void;
-        saveToSnippetServer: () => void;
+        saveToSnippetServerHelper: (content: string, adt: AdvancedDynamicTexture) => Promise<string>;
+        saveToSnippetServer: () => Promise<void>;
         loadFromSnippet(): void;
         renderProperties(): JSX.Element | null;
+        renderControlIcon(): string;
         render(): JSX.Element;
     }
 }
@@ -2998,7 +3019,6 @@ declare module GUIEDITOR {
         isHovered: boolean;
         dragOverLocation: DragOverLocation;
     }> {
-        private _wasSelected;
         dragOverHover: boolean;
         private _onSelectionChangedObservable;
         private _onDraggingEndObservable;
@@ -3010,9 +3030,7 @@ declare module GUIEDITOR {
             isSelected: boolean;
         }): boolean;
         scrollIntoView(): void;
-        componentDidMount(): void;
         componentWillUnmount(): void;
-        componentDidUpdate(): void;
         onSelect(): void;
         renderChildren(): (JSX.Element | null)[] | null;
         render(): JSX.Element | null;
@@ -3194,10 +3212,14 @@ declare module GUIEDITOR {
      * Interface used to specify creation options for the gui editor
      */
     export interface IGUIEditorOptions {
+        customLoad: {
+            label: string;
+            action: (data: string) => Promise<string>;
+        } | undefined;
         hostElement?: HTMLElement;
         customSave?: {
             label: string;
-            action: (data: string) => Promise<void>;
+            action: (data: string) => Promise<string>;
         };
         currentSnippetToken?: string;
         customLoadObservable?: BABYLON.Observable<any>;
@@ -3240,6 +3262,30 @@ declare module GUIEDITOR {
         map?: {
             [key: number]: number;
         };
+    }
+}
+declare module GUIEDITOR {
+    export interface ISelectedLineContainer {
+        selectedLineContainerTitles: Array<string>;
+        selectedLineContainerTitlesNoFocus: Array<string>;
+    }
+}
+declare module GUIEDITOR {
+    interface ILineContainerComponentProps {
+        selection?: ISelectedLineContainer;
+        title: string;
+        children: any[] | any;
+        closed?: boolean;
+    }
+    export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
+        isExpanded: boolean;
+        isHighlighted: boolean;
+    }> {
+        constructor(props: ILineContainerComponentProps);
+        switchExpandedState(): void;
+        renderHeader(): JSX.Element;
+        componentDidMount(): void;
+        render(): JSX.Element;
     }
 }
 declare module GUIEDITOR {

@@ -2456,6 +2456,13 @@ declare module BABYLON.GUI {
         _renderHighlightSpecific(context: BABYLON.ICanvasRenderingContext): void;
         /** Releases associated resources */
         dispose(): void;
+        /**
+     * Serializes the current control
+     * @param serializationObject defined the JSON serialized object
+     */
+        serialize(serializationObject: any): void;
+        /** @hidden */
+        _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture): void;
     }
 }
 declare module BABYLON.GUI {
