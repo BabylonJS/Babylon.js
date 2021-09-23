@@ -64,15 +64,14 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
 
     updateValue(value: string) {
         if (this.props.numbersOnly) {
-            let checkValue = value;
-            if (value[0] === "-") {
-                checkValue = value.substr(1);
-            }
-            if (/[^0-9\.\p\x\%]/g.test(checkValue)) {
+            if (/[^0-9\.\p\x\%\-]/g.test(value)) {
                 return;
             }
             if (!value) {
                 value = "0";
+            }
+            if(value.charAt(0) === '0' && value.length > 1 && (/[^0-9\-]/g.test(value.substr(1)) == false)) {
+                value = value.substr(1);
             }
         }
 
