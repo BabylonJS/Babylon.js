@@ -23,6 +23,7 @@ import { KeyboardEventTypes, KeyboardInfo } from "babylonjs/Events/keyboardEvent
 import { Line } from "babylonjs-gui/2D/controls/line";
 import { DataStorage } from "babylonjs/Misc/dataStorage";
 import { Grid } from "babylonjs-gui/2D/controls/grid";
+import { Tools } from "../tools";
 require("./workbenchCanvas.scss");
 
 export interface IWorkbenchComponentProps {
@@ -405,30 +406,37 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         if (draggedControlParent && draggedControl) {
             if (this._isNotChildInsert(dropLocationControl, draggedControl)) { //checking to make sure the element is not being inserted into a child
 
-                draggedControlParent.removeControl(draggedControl);
                 if (dropLocationControl != null) { //the control you are dragging onto top
                     if (this.props.globalState.workbench.isContainer(dropLocationControl) && //dropping inside a contrainer control
                         this.props.globalState.draggedControlDirection === DragOverLocation.CENTER) {
+                        draggedControlParent.removeControl(draggedControl);
                         (dropLocationControl as Container).addControl(draggedControl);
                     }
                     else if (dropLocationControl.parent) { //dropping inside the controls parent container
-
                         if (dropLocationControl.parent.typeName != "Grid") {
+                            draggedControlParent.removeControl(draggedControl);
                             let index = dropLocationControl.parent.children.indexOf(dropLocationControl);
                             index = this._adjustParentingIndex(index);  //adjusting index to be before or after based on where the control is over
                             dropLocationControl.parent.children.splice(index, 0, draggedControl);
                             draggedControl.parent = dropLocationControl.parent;
                         }
-                        else { //special case for grid
+                        else if (dropLocationControl.parent === draggedControlParent) {  //special case for grid
+                            this._reorderGrid(dropLocationControl.parent as Grid, draggedControl, dropLocationControl);
+                        }
+                        else {
+                            draggedControlParent.removeControl(draggedControl);
                             (dropLocationControl.parent as Container).addControl(draggedControl);
+                            this._reorderGrid(dropLocationControl.parent as Grid, draggedControl, dropLocationControl);
                         }
                     }
                     else {
+                        draggedControlParent.removeControl(draggedControl);
                         this.props.globalState.guiTexture.addControl(draggedControl);
                     }
                 }
                 else {
                     //starting at index 1 because of object "Art-Board-Background" must be at index 0
+                    draggedControlParent.removeControl(draggedControl);
                     draggedControlParent.children.splice(1, 0, draggedControl);
                     draggedControl.parent = draggedControlParent;
                 }
@@ -436,6 +444,16 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }
         this.globalState.draggedControl = null;
         this.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
+    }
+
+    private _reorderGrid(grid: Grid, draggedControl: Control, dropLocationControl: Control) {
+        const cellInfo = Tools.getCellInfo(grid, draggedControl);
+        grid.removeControl(draggedControl);
+
+        let index = grid.children.indexOf(dropLocationControl);
+        index = this._adjustParentingIndex(index);
+
+        Tools.reorderGrid(grid, index, draggedControl, cellInfo);
     }
 
     private _isNotChildInsert(control: Nullable<Control>, draggedControl: Nullable<Control>) {
@@ -629,6 +647,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(`Please note: This editor is still a work in progress. You may submit feedback to msDestiny14 on GitHub.`);
         engine.runRenderLoop(() => { this._scene.render() });
         this.globalState.onNewSceneObservable.notifyObservers(this.globalState.guiTexture.getScene());
+        this.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
     };
 
     //Add map-like controls to an ArcRotate camera

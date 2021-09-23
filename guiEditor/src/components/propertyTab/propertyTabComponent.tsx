@@ -172,7 +172,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         }
     }
 
-    saveToSnippetServerHelper = (content: string, adt: AdvancedDynamicTexture) : Promise<string> => {
+    saveToSnippetServerHelper = (content: string, adt: AdvancedDynamicTexture): Promise<string> => {
         return new Promise((resolve, reject) => {
             const xmlHttp = new XMLHttpRequest();
             xmlHttp.onreadystatechange = () => {
@@ -211,7 +211,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             xmlHttp.send(JSON.stringify(dataToSend));
         });
     }
-    
+
 
     saveToSnippetServer = async () => {
         const adt = this.props.globalState.guiTexture;
@@ -297,7 +297,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             case "Line": {
                 const line = this.state.currentNode as Line;
                 return <LinePropertyGridComponent line={line} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
-            } 
+            }
             case "Line": {
                 const displayGrid = this.state.currentNode as DisplayGrid;
                 return <DisplayGridPropertyGridComponent displayGrid={displayGrid} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
@@ -387,11 +387,11 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         </div>
                     </div>
                     {this.renderProperties()}
-                    <hr className="ge" />
                     {
                         this.state.currentNode?.parent?.typeName === "Grid" &&
                         <ParentingPropertyGridComponent control={this.state.currentNode} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} lockObject={this._lockObject}></ParentingPropertyGridComponent>
                     }
+                    <hr className="ge" />
                     <ButtonLineComponent
                         label="DELETE ELEMENT"
                         onClick={() => {
@@ -415,7 +415,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             { label: "Web (1920)", value: 0 },
             { label: "Phone (720)", value: 1 },
             { label: "Square (1200)", value: 2 },
-            ];
+        ];
         const sizeValues = [
             new Vector2(1920, 1080),
             new Vector2(750, 1334),
@@ -430,7 +430,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 <div>
                     <TextLineComponent tooltip="" label="ART BOARD" value=" " color="grey"></TextLineComponent>
                     {
-                        this.props.globalState.workbench.artBoardBackground !== undefined &&
+                        this.props.globalState.workbench._scene !== undefined &&
                         <Color3LineComponent iconLabel={"Background Color"} lockObject={this._lockObject} icon={artboardColorIcon} label="" target={this.props.globalState.workbench._scene} propertyName="clearColor" onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
                     }
                     <hr className="ge" />
@@ -452,23 +452,23 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         }}
                     />
                     {DataStorage.ReadBoolean("Responsive", true) &&
-                    <OptionsLineComponent
-                        label=""
-                        iconLabel="Size"
-                        options={sizeOptions}
-                        icon={canvasSizeIcon}
-                        target={this}
-                        propertyName={"_sizeOption"}
-                        noDirectUpdate={true}
-                        onSelect={(value: any) => {
-                            this._sizeOption = value;
-                            if (this._sizeOption !== (sizeOptions.length)) {
-                                const newSize = sizeValues[this._sizeOption];
-                                this.props.globalState.workbench.resizeGuiTexture(newSize);
-                            }
-                            this.forceUpdate();
-                        }}
-                    />}
+                        <OptionsLineComponent
+                            label=""
+                            iconLabel="Size"
+                            options={sizeOptions}
+                            icon={canvasSizeIcon}
+                            target={this}
+                            propertyName={"_sizeOption"}
+                            noDirectUpdate={true}
+                            onSelect={(value: any) => {
+                                this._sizeOption = value;
+                                if (this._sizeOption !== (sizeOptions.length)) {
+                                    const newSize = sizeValues[this._sizeOption];
+                                    this.props.globalState.workbench.resizeGuiTexture(newSize);
+                                }
+                                this.forceUpdate();
+                            }}
+                        />}
                     {this._sizeOption == (sizeOptions.length) &&
                         <div className="divider">
                             <FloatLineComponent
