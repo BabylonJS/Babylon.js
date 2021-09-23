@@ -4,7 +4,7 @@ import { Observable } from "babylonjs/Misc/observable";
 import { KeyPointComponent } from "./graph/keyPoint";
 import { Scene } from "babylonjs/scene";
 import { IAnimatable } from "babylonjs/Animations/animatable.interface";
-import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
+import { AnimationGroup, TargetedAnimation } from "babylonjs/Animations/animationGroup";
 import { Animatable } from "babylonjs/Animations/animatable";
 
 export class Context {
@@ -12,8 +12,9 @@ export class Context {
     animations: Nullable<Animation[] | TargetedAnimation[]>;
     scene: Scene;
     target: Nullable<IAnimatable>;
-    activeAnimation: Nullable<Animation>;
-    activeColor: Nullable<string> = null;
+    rootAnimationGroup: Nullable<AnimationGroup>;
+    activeAnimations: Animation[] = [];
+    activeChannels: {[key: number]: string} = {};
     activeKeyPoints: Nullable<KeyPointComponent[]>;
     mainKeyPoint: Nullable<KeyPointComponent>;
     snippetId: string;
@@ -70,6 +71,8 @@ export class Context {
     onEditAnimationRequired = new Observable<Animation>();
     onEditAnimationUIClosed = new Observable<void>();
 
+    onSelectToActivated = new Observable<{from:number, to:number}>();
+
     public prepare() {
         this.isPlaying = false;
         if (!this.animations || !this.animations.length) {
@@ -96,21 +99,37 @@ export class Context {
         this.scene.stopAnimation(this.target);
         let animatable: Animatable;
         if (forward) {
-            animatable = this.scene.beginAnimation(this.target, this.fromKey, this.toKey, true);
+            if (this.rootAnimationGroup) {
+                this.rootAnimationGroup.start(true, 1.0, this.fromKey, this.toKey);
+            } else {    
+                animatable = this.scene.beginAnimation(this.target, this.fromKey, this.toKey, true);
+            }
         } else {
-            animatable = this.scene.beginAnimation(this.target, this.toKey, this.fromKey, true);
+            if (this.rootAnimationGroup) {
+                this.rootAnimationGroup.start(true, 1.0, this.toKey, this.fromKey);
+            } else {    
+                animatable = this.scene.beginAnimation(this.target, this.toKey, this.fromKey, true);
+            }
         }
         this.forwardAnimation = forward;
 
         // Move
-        animatable.goToFrame(this.activeFrame);
+        if (this.rootAnimationGroup) {
+            this.rootAnimationGroup.goToFrame(this.activeFrame);
+        } else { 
+            animatable!.goToFrame(this.activeFrame);
+        }
 
         this.onAnimationStateChanged.notifyObservers();
     }
 
     public stop() {
         this.isPlaying = false;
-        this.scene.stopAnimation(this.target);
+        if (this.rootAnimationGroup) {
+            this.rootAnimationGroup.stop();
+        } else {
+            this.scene.stopAnimation(this.target);
+        }
 
         this.onAnimationStateChanged.notifyObservers();
     }
@@ -123,7 +142,11 @@ export class Context {
         this.activeFrame = frame;
 
         if (!this.isPlaying) {
-            this.scene.beginAnimation(this.target, this.fromKey, this.toKey, false);
+            if (this.rootAnimationGroup) {
+                this.rootAnimationGroup.start(false, 1.0, this.fromKey, this.toKey);
+            } else { 
+                this.scene.beginAnimation(this.target, this.fromKey, this.toKey, false);
+            }
         }
 
         for (var animationEntry of this.animations) {
@@ -139,5 +162,56 @@ export class Context {
         }
 
         this.stop();
+    }
+
+    public refreshTarget() {        
+        if (!this.animations || !this.animations.length) {
+            return;
+        }
+
+        if (this.isPlaying) {
+            return;
+        }
+
+        this.moveToFrame(this.activeFrame);
+    }
+
+    public clearSelection() {
+        this.activeKeyPoints = [];
+        this.onActiveKeyPointChanged.notifyObservers();
+    }
+
+    public enableChannel(animation: Animation, color: string) {
+        this.activeChannels[animation.uniqueId] = color;
+    }
+
+    public disableChannel(animation: Animation) {
+        delete this.activeChannels[animation.uniqueId];
+    }
+
+    public isChannelEnabled(animation: Animation, color: string) {
+        return this.activeChannels[animation.uniqueId] === undefined || this.activeChannels[animation.uniqueId] === color;
+    }
+
+    public getActiveChannel(animation: Animation) {
+        return this.activeChannels[animation.uniqueId];
+    }
+
+    public resetAllActiveChannels() {
+        this.activeChannels = {};
+    }
+
+    public getAnimationSortIndex(animation: Animation) {
+        if (!this.animations) {
+            return -1;
+        }
+
+        for (var index = 0; index < this.animations?.length; index++) {
+            if (animation === (this.useTargetAnimations ? (this.animations[0] as TargetedAnimation).animation : (this.animations[index] as Animation))) {
+                return index;
+            }
+        }
+
+        return -1;
     }
 }

@@ -30,6 +30,9 @@ const inputFieldIcon: string = require("../public/imgs/inputFieldIcon.svg");
 const lineIcon: string = require("../public/imgs/lineIcon.svg");
 const displaygridIcon: string = require("../public/imgs/displaygridIcon.svg");
 const colorPickerIcon: string = require("../public/imgs/colorPickerIcon.svg");
+const scrollbarIcon: string = require("../public/imgs/scrollbarIcon.svg");
+const imageSliderIcon: string = require("../public/imgs/imageSliderIcon.svg");
+const radioButtonIcon: string = require("../public/imgs/radioButtonIcon.svg");
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -87,7 +90,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                     return;
                 }
 
-                if(evt.key === "a") //all
+                if (evt.key === "a") //all
                 {
                     evt.preventDefault();
                 }
@@ -384,6 +387,21 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                 label: "InputPassword",
                 icon: passwordFieldIcon,
                 onClick: () => { this.onCreate("InputPassword") }
+            },
+            {
+                label: "ScrollViewer",
+                icon: scrollbarIcon,
+                onClick: () => { this.onCreate("ScrollViewer") }
+            },
+            {
+                label: "ImageBasedSlider",
+                icon: imageSliderIcon,
+                onClick: () => { this.onCreate("ImageBasedSlider") }
+            },
+            {
+                label: "RadioButton",
+                icon: radioButtonIcon,
+                onClick: () => { this.onCreate("RadioButton") }
             }
 
         ]

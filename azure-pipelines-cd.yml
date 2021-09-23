@@ -5,7 +5,7 @@ jobs:
 - job: NetlifyStaticDeploy
   displayName: 'Deploy'
   pool:
-    vmImage: 'Ubuntu-16.04'
+    vmImage: 'Ubuntu-latest'
     demands: npm
   steps:
   - script: 'npm install netlify-cli'

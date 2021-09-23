@@ -149,7 +149,7 @@ export class WebGPUTextureHelper {
     private _mipmapSampler: GPUSampler;
     private _pipelines: { [format: string]: Array<GPURenderPipeline> } = {};
     private _compiledShaders: GPUShaderModule[][] = [];
-    private _deferredReleaseTextures: Array<[Nullable<HardwareTextureWrapper | GPUTexture>, Nullable<BaseTexture>, Nullable<InternalTexture>]> = [];
+    private _deferredReleaseTextures: Array<[Nullable<HardwareTextureWrapper | GPUTexture>, Nullable<BaseTexture>]> = [];
     private _commandEncoderForCreation: GPUCommandEncoder;
 
     public static ComputeNumMipmapLevels(width: number, height: number) {
@@ -709,7 +709,7 @@ export class WebGPUTextureHelper {
         }
         );
 
-        this._deferredReleaseTextures.push([outputTexture, null, null]);
+        this._deferredReleaseTextures.push([outputTexture, null]);
 
         commandEncoder!.popDebugGroup?.();
 
@@ -946,7 +946,7 @@ export class WebGPUTextureHelper {
 
         gpuTextureWrapper.textureUsages =
             texture._source === InternalTextureSource.RenderTarget || texture.source === InternalTextureSource.MultiRenderTarget ? WebGPUConstants.TextureUsage.Sampled | WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.RenderAttachment :
-                texture._source === InternalTextureSource.Depth ? WebGPUConstants.TextureUsage.Sampled | WebGPUConstants.TextureUsage.RenderAttachment : -1;
+                texture._source === InternalTextureSource.DepthStencil ? WebGPUConstants.TextureUsage.Sampled | WebGPUConstants.TextureUsage.RenderAttachment : -1;
 
         gpuTextureWrapper.textureAdditionalUsages = (creationFlags ?? 0) & Constants.TEXTURE_CREATIONFLAG_STORAGE ? WebGPUConstants.TextureUsage.Storage : 0;
 
@@ -1102,11 +1102,11 @@ export class WebGPUTextureHelper {
 
             if (invertY || premultiplyAlpha) {
                 const engine = EngineStore.LastCreatedEngine;
-                engine && engine.createImageBitmap(imageBitmap, { imageOrientation: invertY ? "flipY" : "none", premultiplyAlpha: premultiplyAlpha ? "premultiply" : "none" }).then((imageBitmap) => {
+                engine && engine.createImageBitmap(imageBitmap as ImageBitmapSource, { imageOrientation: invertY ? "flipY" : "none", premultiplyAlpha: premultiplyAlpha ? "premultiply" : "none" }).then((imageBitmap) => {
                     this._device.queue.copyImageBitmapToTexture({ imageBitmap }, textureCopyView, textureExtent);
                 });
             } else {
-                this._device.queue.copyImageBitmapToTexture({ imageBitmap }, textureCopyView, textureExtent);
+                this._device.queue.copyImageBitmapToTexture({ imageBitmap } as GPUImageBitmapCopyView, textureCopyView, textureExtent);
             }
 
             /*imageBitmap = imageBitmap as (ImageBitmap | HTMLCanvasElement | OffscreenCanvas);
@@ -1137,7 +1137,7 @@ export class WebGPUTextureHelper {
                     // create a temp texture and copy the image to it
                     const srcTexture = this.createTexture({ width, height, layers: 1 }, false, false, false, false, false, format, 1, commandEncoder, WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.Sampled);
 
-                    this._deferredReleaseTextures.push([srcTexture, null, null]);
+                    this._deferredReleaseTextures.push([srcTexture, null]);
 
                     textureExtent.depthOrArrayLayers = 1;
                     this._device.queue.copyExternalImageToTexture({ source: imageBitmap }, { texture: srcTexture }, textureExtent);
@@ -1205,18 +1205,17 @@ export class WebGPUTextureHelper {
         if (WebGPUTextureHelper._IsInternalTexture(texture)) {
             const hardwareTexture = texture._hardwareTexture;
             const irradianceTexture = texture._irradianceTexture;
-            const depthStencilTexture = texture._depthStencilTexture;
 
             // We can't destroy the objects just now because they could be used in the current frame - we delay the destroying after the end of the frame
-            this._deferredReleaseTextures.push([hardwareTexture, irradianceTexture, depthStencilTexture]);
+            this._deferredReleaseTextures.push([hardwareTexture, irradianceTexture]);
         } else {
-            this._deferredReleaseTextures.push([texture, null, null]);
+            this._deferredReleaseTextures.push([texture, null]);
         }
     }
 
     public destroyDeferredTextures(): void {
         for (let i = 0; i < this._deferredReleaseTextures.length; ++i) {
-            const [hardwareTexture, irradianceTexture, depthStencilTexture] = this._deferredReleaseTextures[i];
+            const [hardwareTexture, irradianceTexture] = this._deferredReleaseTextures[i];
 
             if (hardwareTexture) {
                 if (WebGPUTextureHelper._IsHardwareTexture(hardwareTexture)) {
@@ -1226,7 +1225,6 @@ export class WebGPUTextureHelper {
                 }
             }
             irradianceTexture?.dispose();
-            depthStencilTexture?.dispose();
         }
 
         this._deferredReleaseTextures.length = 0;

@@ -166,14 +166,6 @@ declare module BABYLON {
         static ShowPageErrorMessage(message: string, title?: string, timeout?: number): void;
         /** Quit the Windows Runtime host application. */
         static QuitWindowsApplication(): void;
-        /** Loads a file as text (IFileRequest) */
-        static LoadTextFile(url: string, onSuccess: (data: string) => void, onProgress?: (data: any) => void, onError?: (request?: WebRequest, exception?: any) => void): BABYLON.IFileRequest;
-        /** Load a text based file */
-        static LoadTextFileAsync(url: string): Promise<string>;
-        /** Post data to server (XmlHttpRequest) */
-        static PostDataToServer(url: string, data: string | Document | Blob | ArrayBufferView | ArrayBuffer | FormData | URLSearchParams | ReadableStream<Uint8Array>, contentType?: string, onSuccess?: (status: int) => void, onFailure?: (reason: any) => void): XMLHttpRequest;
-        /** Post data to server asynchronously */
-        static PostDataToServerAsync(url: string, data: string | Document | Blob | ArrayBufferView | ArrayBuffer | FormData | URLSearchParams | ReadableStream<Uint8Array>, contentType?: string): Promise<number>;
         /** Shows the default page scene loader. */
         static ShowSceneLoader(): void;
         /** Hides the default page scene loader. */
@@ -786,15 +778,20 @@ declare module BABYLON {
         private _textures;
         private _vectors4;
         private _floats;
+        private _enableTime;
+        private _timeInitialized;
         private _createdShaderName;
         protected enableShaderChunks: boolean;
         protected materialShaderChunks: BABYLON.UniversalAlbedoChunks;
         protected updateShaderChunks(): void;
-        constructor(name: string, scene: Scene);
+        constructor(name: string, scene: Scene, enableTime?: boolean);
         getShaderName(): string;
         getShaderChunk(): string;
         getShaderDefines(): BABYLON.PBRMaterialDefines;
         getCustomAttributes(): string[];
+        get enableTime(): boolean;
+        set enableTime(state: boolean);
+        private updateGlobalTime;
         getTexture(name: string): BABYLON.Texture;
         getVector4(name: string): BABYLON.Vector4;
         getFloat(name: string): number;
@@ -822,7 +819,11 @@ declare module BABYLON {
     * @class UniversalShaderMaterial
     */
     class UniversalShaderMaterial extends BABYLON.ShaderMaterial {
+        private _enableTime;
         constructor(name: string, scene?: BABYLON.Scene, options?: Partial<BABYLON.IShaderMaterialOptions>);
+        get enableTime(): boolean;
+        set enableTime(state: boolean);
+        private updateGlobalTime;
     }
     /**
      * Babylon universal node material pro class
@@ -832,8 +833,13 @@ declare module BABYLON {
         private _textures;
         private _vectors4;
         private _floats;
+        private _enableTime;
+        private _timeInitialized;
         protected compile(): void;
         constructor(name: string, scene?: BABYLON.Scene, options?: Partial<BABYLON.INodeMaterialOptions>);
+        get enableTime(): boolean;
+        set enableTime(state: boolean);
+        private updateGlobalTime;
         getTexture(name: string): BABYLON.Texture;
         getVector4(name: string): BABYLON.Vector4;
         getFloat(name: string): number;
@@ -1225,6 +1231,14 @@ declare module BABYLON {
         addPreloaderTasks(assetsManager: BABYLON.AssetsManager): void;
     }
     /**
+     * Http Request Header
+     * @class RequestHeader - All rights reserved (c) 2020 Mackey Kinard
+     */
+    class RequestHeader {
+        name: string;
+        value: string;
+    }
+    /**
      * Trigger Volume State
      * @class TriggerVolume - All rights reserved (c) 2020 Mackey Kinard
      */
@@ -1335,9 +1349,12 @@ declare module BABYLON {
         private static AuxVector;
         private static ZeroVector;
         private static TempMatrix;
+        private static TempMatrix2;
         private static TempVector2;
         private static TempVector3;
         private static TempQuaternion;
+        private static TempQuaternion2;
+        private static TempQuaternion3;
         private static PrintElement;
         private static LoadingState;
         static OnPreloaderProgress: (remainingCount: number, totalCount: number, lastFinishedTask: BABYLON.AbstractAssetTask) => void;
@@ -1459,8 +1476,6 @@ declare module BABYLON {
         static HasOwnProperty(object: any, property: string): boolean;
         static GetFilenameFromUrl(url: string): string;
         static GetUrlParameter(key: string): string;
-        static CreateFontFace(scene: BABYLON.Scene, family: string, asset: BABYLON.IUnityFontAsset, descriptors?: FontFaceDescriptors, oncomplete?: (fontFace: FontFace) => void): FontFace;
-        static CreateFontFaceElement(scene: BABYLON.Scene, family: string, asset: BABYLON.IUnityFontAsset, options?: string): HTMLStyleElement;
         /** TODO */
         static PrintToScreen(text: string, color?: string): void;
         private static TmpHullMatrix;
@@ -1525,10 +1540,18 @@ declare module BABYLON {
         static ParseTransformByName(source: BABYLON.IUnityTransform, scene: BABYLON.Scene, defaultValue?: BABYLON.TransformNode): BABYLON.TransformNode;
         /** TODO */
         static ParseChildTransform(parent: BABYLON.TransformNode, source: BABYLON.IUnityTransform, defaultValue?: BABYLON.TransformNode): BABYLON.TransformNode;
+        /** Sets the transform node abosulte position */
+        static SetAbsolutePosition(transform: BABYLON.TransformNode, position: BABYLON.Vector3): void;
         /** Gets the transform node abosulte position */
         static GetAbsolutePosition(transform: BABYLON.TransformNode | BABYLON.Camera, offsetPosition?: BABYLON.Vector3, computeMatrix?: boolean): BABYLON.Vector3;
         /** Gets the transform node abosulte position */
         static GetAbsolutePositionToRef(transform: BABYLON.TransformNode | BABYLON.Camera, result: BABYLON.Vector3, offsetPosition?: BABYLON.Vector3, computeMatrix?: boolean): void;
+        /** Sets the transform node abosulte Rotation */
+        static SetAbsoluteRotation(transform: BABYLON.TransformNode, rotation: BABYLON.Quaternion): void;
+        /** Gets the transform node abosulte rotation */
+        static GetAbsoluteRotation(transform: BABYLON.TransformNode): BABYLON.Quaternion;
+        /** Gets the transform node abosulte rotation */
+        static GetAbsoluteRotationToRef(transform: BABYLON.TransformNode, result: BABYLON.Quaternion): void;
         /** Transforms position from local space to world space. (Using TransformCoordinates) */
         static TransformPoint(owner: BABYLON.TransformNode | BABYLON.Camera, position: BABYLON.Vector3, computeMatrix?: boolean): BABYLON.Vector3;
         /** Inverse transforms position from world space to local space. (Using TransformCoordinates) */
@@ -1574,15 +1597,15 @@ declare module BABYLON {
         /** Set animation target property */
         static SetAnimationTargetProperty(animation: BABYLON.Animation, property: string): void;
         /** Gets the float "result" as the sampled key frame value for the specfied animation track. */
-        static SampleAnimationFloat(animation: BABYLON.Animation, time: number): number;
+        static SampleAnimationFloat(animation: BABYLON.Animation, time: number, loopMode?: number): number;
         /** Set the passed vector2 "result" as the sampled key frame value for the specfied animation track. */
-        static SampleAnimationVector2(animation: BABYLON.Animation, time: number): BABYLON.Vector2;
+        static SampleAnimationVector2(animation: BABYLON.Animation, time: number, loopMode?: number): BABYLON.Vector2;
         /** Set the passed vector3 "result" as the sampled key frame value for the specfied animation track. */
-        static SampleAnimationVector3(animation: BABYLON.Animation, time: number): BABYLON.Vector3;
+        static SampleAnimationVector3(animation: BABYLON.Animation, time: number, loopMode?: number): BABYLON.Vector3;
         /** Set the passed quaternion "result" as the sampled key frame value for the specfied animation track. */
-        static SampleAnimationQuaternion(animation: BABYLON.Animation, time: number): BABYLON.Quaternion;
+        static SampleAnimationQuaternion(animation: BABYLON.Animation, time: number, loopMode?: number): BABYLON.Quaternion;
         /** Set the passed matrix "result" as the sampled key frame value for the specfied animation track. */
-        static SampleAnimationMatrix(animation: BABYLON.Animation, time: number): BABYLON.Matrix;
+        static SampleAnimationMatrix(animation: BABYLON.Animation, time: number, loopMode?: number): BABYLON.Matrix;
         /** Creates a targeted float animation for tweening.  */
         static CreateTweenAnimation(name: string, targetProperty: string, startValue: number, endValue: number, frameRate?: number, loopMode?: number): BABYLON.Animation;
         /** Gets the last key frame index value. */
@@ -1597,6 +1620,18 @@ declare module BABYLON {
         static WorldToScreenPoint(scene: BABYLON.Scene, position: BABYLON.Vector3, camera?: BABYLON.Camera): BABYLON.Vector3;
         /** Transforms a point from screen space into world space. */
         static ScreenToWorldPoint(scene: BABYLON.Scene, position: BABYLON.Vector3): BABYLON.Vector3;
+        /** Loads a file as text (IFileRequest) */
+        static LoadTextFile(url: string, onSuccess: (data: string | ArrayBuffer) => void, onProgress?: (data: any) => void, onError?: (request?: WebRequest, exception?: any) => void): BABYLON.IFileRequest;
+        /** Load a text based file */
+        static LoadTextFileAsync(url: string): Promise<string>;
+        /** Get data from server (XmlHttpRequest) */
+        static GetHttpRequest(url: string, headers?: BABYLON.RequestHeader[], onSuccess?: (xhr: XMLHttpRequest) => void, onFailure?: (reason: any) => void, onProgress?: (evt: ProgressEvent) => void, useArrayBuffer?: boolean, overrideMimeType?: string): XMLHttpRequest;
+        /** Get data from server asynchronously */
+        static GetHttpRequestAsync(url: string, headers?: BABYLON.RequestHeader[], onProgress?: (evt: ProgressEvent) => void, useArrayBuffer?: boolean, overrideMimeType?: string): Promise<XMLHttpRequest>;
+        /** Post data to server (XmlHttpRequest) */
+        static PostHttpRequest(url: string, data: any, headers?: BABYLON.RequestHeader[], contentType?: string, onSuccess?: (xhr: XMLHttpRequest) => void, onFailure?: (reason: any) => void, onProgress?: (evt: ProgressEvent) => void, useArrayBuffer?: boolean, overrideMimeType?: string): XMLHttpRequest;
+        /** Post data to server asynchronously */
+        static PostHttpRequestAsync(url: string, data: any, headers?: BABYLON.RequestHeader[], contentType?: string, onProgress?: (evt: ProgressEvent) => void, useArrayBuffer?: boolean, overrideMimeType?: string): Promise<XMLHttpRequest>;
         /** TODO */
         static ConvertAmmoVector3(btVector: any): BABYLON.Vector3;
         /** TODO */

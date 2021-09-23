@@ -67,14 +67,6 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         });
     }
 
-    processMutation() {
-        if (this.props.globalState.blockMutationUpdates) {
-            return;
-        }
-
-        setTimeout(() => this.forceUpdate());
-    }
-
     componentDidMount() {
         this._onSelectionChangeObserver = this.props.globalState.onSelectionChangedObservable.add((entity) => {
             if (this.state.selectedEntity !== entity) {

@@ -1,6 +1,7 @@
 import { Vector3 } from "../Maths/math.vector";
 import { Nullable } from "../types";
 import { Color3 } from '../Maths/math.color';
+import { TmpVectors } from "./math";
 
 // https://dickyjim.wordpress.com/2013/09/04/spherical-harmonics-for-beginners/
 // http://silviojemma.com/public/papers/lighting/spherical-harmonic-lighting.pdf
@@ -152,20 +153,31 @@ export class SphericalHarmonics {
      * @param deltaSolidAngle the delta solid angle of the light
      */
     public addLight(direction: Vector3, color: Color3, deltaSolidAngle: number): void {
-        var colorVector = new Vector3(color.r, color.g, color.b);
-        var c = colorVector.scale(deltaSolidAngle);
+        TmpVectors.Vector3[0].set(color.r, color.g, color.b);
+        const colorVector = TmpVectors.Vector3[0];
+        const c = TmpVectors.Vector3[1];
+        colorVector.scaleToRef(deltaSolidAngle, c);
 
-        this.l00 = this.l00.add(c.scale(applySH3(0, direction)));
+        c.scaleToRef(applySH3(0, direction), TmpVectors.Vector3[2]);
+        this.l00.addInPlace(TmpVectors.Vector3[2]);
 
-        this.l1_1 = this.l1_1.add(c.scale(applySH3(1, direction)));
-        this.l10 = this.l10.add(c.scale(applySH3(2, direction)));
-        this.l11 = this.l11.add(c.scale(applySH3(3, direction)));
+        c.scaleToRef(applySH3(1, direction), TmpVectors.Vector3[2]);
+        this.l1_1.addInPlace(TmpVectors.Vector3[2]);
+        c.scaleToRef(applySH3(2, direction), TmpVectors.Vector3[2]);
+        this.l10.addInPlace(TmpVectors.Vector3[2]);
+        c.scaleToRef(applySH3(3, direction), TmpVectors.Vector3[2]);
+        this.l11.addInPlace(TmpVectors.Vector3[2]);
 
-        this.l2_2 = this.l2_2.add(c.scale(applySH3(4, direction)));
-        this.l2_1 = this.l2_1.add(c.scale(applySH3(5, direction)));
-        this.l20 = this.l20.add(c.scale(applySH3(6, direction)));
-        this.l21 = this.l21.add(c.scale(applySH3(7, direction)));
-        this.l22 = this.l22.add(c.scale(applySH3(8, direction)));
+        c.scaleToRef(applySH3(4, direction), TmpVectors.Vector3[2]);
+        this.l2_2.addInPlace(TmpVectors.Vector3[2]);
+        c.scaleToRef(applySH3(5, direction), TmpVectors.Vector3[2]);
+        this.l2_1.addInPlace(TmpVectors.Vector3[2]);
+        c.scaleToRef(applySH3(6, direction), TmpVectors.Vector3[2]);
+        this.l20.addInPlace(TmpVectors.Vector3[2]);
+        c.scaleToRef(applySH3(7, direction), TmpVectors.Vector3[2]);
+        this.l21.addInPlace(TmpVectors.Vector3[2]);
+        c.scaleToRef(applySH3(8, direction), TmpVectors.Vector3[2]);
+        this.l22.addInPlace(TmpVectors.Vector3[2]);
     }
 
     /**
@@ -369,10 +381,11 @@ export class SphericalPolynomial {
      * @param color the color to add
      */
     public addAmbient(color: Color3): void {
-        var colorVector = new Vector3(color.r, color.g, color.b);
-        this.xx = this.xx.add(colorVector);
-        this.yy = this.yy.add(colorVector);
-        this.zz = this.zz.add(colorVector);
+        TmpVectors.Vector3[0].copyFromFloats(color.r, color.g, color.b);
+        const colorVector = TmpVectors.Vector3[0];
+        this.xx.addInPlace(colorVector);
+        this.yy.addInPlace(colorVector);
+        this.zz.addInPlace(colorVector);
     }
 
     /**

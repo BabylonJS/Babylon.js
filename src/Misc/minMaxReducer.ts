@@ -156,7 +156,7 @@ export class MinMaxReducer {
                     let buffer = new Float32Array(4 * w * h),
                         minmax = { min: 0, max: 0 };
                     return () => {
-                        scene.getEngine()._readTexturePixels(reduction.inputTexture, w, h, -1, 0, buffer, false);
+                        scene.getEngine()._readTexturePixels(reduction.inputTexture.texture!, w, h, -1, 0, buffer, false);
                         minmax.min = buffer[0];
                         minmax.max = buffer[1];
                         this.onAfterReductionPerformed.notifyObservers(minmax);
