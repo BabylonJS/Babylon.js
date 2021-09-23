@@ -125,7 +125,7 @@ export class TextBlock extends Control {
         if (this._text === value) {
             return;
         }
-        this._text = value;
+        this._text = value + ""; // Making sure it is a text
         this._markAsDirty();
 
         this.onTextChangedObservable.notifyObservers(this);
