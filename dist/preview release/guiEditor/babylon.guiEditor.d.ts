@@ -18,6 +18,15 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
+    export class Tools {
+        static LookForItem(item: any, selectedEntity: any): boolean;
+        private static _RecursiveRemoveHiddenMeshesAndHoistChildren;
+        static SortAndFilter(parent: any, items: any[]): any[];
+        static getCellInfo(grid: Grid, control: Control): BABYLON.Vector2;
+        static reorderGrid(grid: Grid, index: number, control: Control, cell: BABYLON.Vector2): void;
+    }
+}
+declare module GUIEDITOR {
     export interface IWorkbenchComponentProps {
         globalState: GlobalState;
     }
@@ -72,6 +81,7 @@ declare module GUIEDITOR {
         createNewGuiNode(guiControl: Control): Control;
         enableEditorProperties(guiControl: Control): void;
         private parent;
+        private _reorderGrid;
         private _isNotChildInsert;
         private _adjustParentingIndex;
         isSelected(value: boolean, guiNode: Control): void;
@@ -749,9 +759,11 @@ declare module GUIEDITOR {
     }
     export class ParentingPropertyGridComponent extends React.Component<IParentingPropertyGridComponentProps> {
         constructor(props: IParentingPropertyGridComponentProps);
-        _columnNumber: number;
-        _rowNumber: number;
+        private _columnNumber;
+        private _rowNumber;
         updateGridPosition(): void;
+        getCellInfo(): void;
+        private _changeCell;
         render(): JSX.Element;
     }
 }
@@ -803,7 +815,7 @@ declare module GUIEDITOR {
 }
 declare module GUIEDITOR {
     export class GUINodeTools {
-        static CreateControlFromString(data: string): Rectangle | Line | Grid | TextBlock | Image | Slider | RadioButton | InputText | ColorPicker | ImageBasedSlider | StackPanel | Ellipse | Checkbox | DisplayGrid;
+        static CreateControlFromString(data: string): Grid | Rectangle | Line | TextBlock | Image | Slider | RadioButton | InputText | ColorPicker | ImageBasedSlider | StackPanel | Ellipse | Checkbox | DisplayGrid;
     }
 }
 declare module GUIEDITOR {
@@ -816,13 +828,6 @@ declare module GUIEDITOR {
     }> {
         constructor(props: IMessageDialogComponentProps);
         render(): JSX.Element | null;
-    }
-}
-declare module GUIEDITOR {
-    export class Tools {
-        static LookForItem(item: any, selectedEntity: any): boolean;
-        private static _RecursiveRemoveHiddenMeshesAndHoistChildren;
-        static SortAndFilter(parent: any, items: any[]): any[];
     }
 }
 declare module GUIEDITOR {
