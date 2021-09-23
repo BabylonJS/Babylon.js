@@ -80,11 +80,11 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
         const store = this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!];
         this.setState({ value: value });
 
-        this.raiseOnPropertyChanged(value, store);
-
         if (this.props.propertyName) {
             this.props.target[this.props.propertyName] = value;
         }
+
+        this.raiseOnPropertyChanged(value, store);
     }
 
     render() {
