@@ -41418,6 +41418,8 @@ declare module BABYLON {
         protected _createTexture(): WebGLTexture;
         /** @hidden */
         _createHardwareTexture(): HardwareTextureWrapper;
+        /** @hidden */
+        _getUseSRGBBuffer(useSRGBBuffer: boolean, noMipmap: boolean): boolean;
         protected _createTextureBase(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number | undefined, onLoad: Nullable<() => void> | undefined, onError: Nullable<(message: string, exception: any) => void> | undefined, prepareTexture: (texture: InternalTexture, extension: string, scene: Nullable<ISceneLike>, img: HTMLImageElement | ImageBitmap | {
             width: number;
             height: number;
