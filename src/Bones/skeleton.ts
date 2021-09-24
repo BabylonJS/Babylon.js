@@ -509,7 +509,6 @@ export class Skeleton implements IAnimatable {
                     // Computing the world matrix also computes the local matrix.
                     bone._linkedTransformNode.computeWorldMatrix();
                     bone._matrix = bone._linkedTransformNode._localMatrix;
-                    bone.markAsDirty();
                 }
             }
         }
