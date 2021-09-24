@@ -75,11 +75,11 @@ export class AnimationCurveEditorComponent extends React.Component<
                 }
                 break;
             case "a":
-                if (evt.ctrlKey) {
-                    this.props.context.onSelectAllKeys.notifyObservers();                    
-                    this.props.context.onActiveKeyPointChanged.notifyObservers();
-                    evt.preventDefault();
-                }
+                // if (evt.ctrlKey) {
+                //     this.props.context.onSelectAllKeys.notifyObservers();                    
+                //     this.props.context.onActiveKeyPointChanged.notifyObservers();
+                //     evt.preventDefault();
+                // }
                 break;
         }
     }
