@@ -63,6 +63,7 @@ IKeyPointComponentState
     private _onLinearTangentRequiredObserver: Nullable<Observer<void>>;
     private _onBreakTangentRequiredObserver: Nullable<Observer<void>>;
     private _onUnifyTangentRequiredObserver: Nullable<Observer<void>>;
+    private _onSelectAllKeysObserver: Nullable<Observer<void>>;
 
     private _pointerIsDown: boolean;
     private _sourcePointerX: number;
@@ -95,6 +96,16 @@ IKeyPointComponentState
         
         this._svgHost = React.createRef();
         this._keyPointSVG = React.createRef();
+
+        this._onSelectAllKeysObserver = this.props.context.onSelectAllKeys.add(() => {
+            const isSelected = this.props.context.activeKeyPoints?.indexOf(this) !== -1;
+
+            if (isSelected) {
+                return;
+            }
+
+            this.props.context.activeKeyPoints?.push(this);
+        });
 
         this._onUnifyTangentRequiredObserver = this.props.context.onUnifyTangentRequired.add(() => {
             const isSelected = this.props.context.activeKeyPoints?.indexOf(this) !== -1;
@@ -264,6 +275,11 @@ IKeyPointComponentState
     }
 
     componentWillUnmount() {
+        
+        if (this._onSelectAllKeysObserver) {
+            this.props.context.onSelectAllKeys.remove(this._onSelectAllKeysObserver);
+        }
+
         if (this._onUnifyTangentRequiredObserver) {
             this.props.context.onUnifyTangentRequired.remove(this._onUnifyTangentRequiredObserver);
         }
