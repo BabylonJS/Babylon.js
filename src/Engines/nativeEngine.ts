@@ -826,7 +826,7 @@ class Buffer {
     private readonly _setBufferSize: (size: number) => void;
     private _buffer: ArrayBuffer;
     /**
-     * Index for 8-bit values. Given that we have to align on 32-bit boundaries for the 32-bit typed arrays, 
+     * Index for 8-bit values. Given that we have to align on 32-bit boundaries for the 32-bit typed arrays,
      * we can fill the extra 3 bytes with more byte-length values. For example:
      * Before:
      * |COMMAND1|--------|--------|--------|CMD1ARG1BYTE1|CMD1ARG1BYTE2|CMD1ARG1BYTE3|CMD1ARG1BYTE4|COMMAND2|...
