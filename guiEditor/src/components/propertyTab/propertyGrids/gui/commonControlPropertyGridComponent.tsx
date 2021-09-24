@@ -46,7 +46,7 @@ interface ICommonControlPropertyGridComponentProps {
 export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
     private _width = this.props.control.width;
     private _height = this.props.control.height;
-    private _responsive : boolean = false; 
+    private _responsive: boolean = false;
     constructor(props: ICommonControlPropertyGridComponentProps) {
         super(props);
         this._responsive = DataStorage.ReadBoolean("Responsive", true);
@@ -69,7 +69,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         if (value.charAt(value.length - 1) === '%') {
             percentage = true;
         }
-        else if(value.charAt(value.length - 1) === 'x' && value.charAt(value.length - 2) === 'p') {
+        else if (value.charAt(value.length - 1) === 'x' && value.charAt(value.length - 2) === 'p') {
             percentage = false;
         }
         let newValue = value.split('').filter(function (item) {
@@ -77,6 +77,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         }).join('');
 
         newValue += percentage ? '%' : 'px';
+
         (this.props.control as any)[propertyName] = newValue;
         this.forceUpdate();
     }
@@ -115,19 +116,32 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 <div className="divider">
                     <TextInputLineComponent numbersOnly={true} iconLabel={"Scale"} icon={sizeIcon} lockObject={this.props.lockObject} label="W" target={this} propertyName="_width" onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         onChange={(newValue) => {
-                            this._width = newValue;
+
                             if (control.typeName === "Image") {
                                 (control as Image).autoScale = false;
-                            };
+                            }
+                            else if (this.props.control.typeName === "ColorPicker") {
+                                console.log(newValue);
+                                if (newValue === '0' || newValue === '-') {
+                                    newValue = "1";
+                                }
+                            }
+                            this._width = newValue;
                             this._checkAndUpdateValues("width", this._width.toString());
                         }
                         } />
                     <TextInputLineComponent numbersOnly={true} lockObject={this.props.lockObject} label="H" target={this} propertyName="_height" onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         onChange={(newValue) => {
-                            this._height = newValue;
                             if (control.typeName === "Image") {
                                 (control as Image).autoScale = false;
-                            };
+                            }
+                            else if (this.props.control.typeName === "ColorPicker") {
+                                console.log(newValue);
+                                if (newValue === "0" || newValue === "-") {
+                                    newValue = "1";
+                                }
+                            }
+                            this._height = newValue;
                             this._checkAndUpdateValues("height", this._height.toString());
                         }
                         } />

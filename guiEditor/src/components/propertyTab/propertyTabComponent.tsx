@@ -298,7 +298,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 const line = this.state.currentNode as Line;
                 return <LinePropertyGridComponent line={line} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
             }
-            case "Line": {
+            case "DisplayGrid": {
                 const displayGrid = this.state.currentNode as DisplayGrid;
                 return <DisplayGridPropertyGridComponent displayGrid={displayGrid} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
             }
