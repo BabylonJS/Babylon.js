@@ -211,12 +211,9 @@ interface INativeEngine {
     setViewPort(x: number, y: number, width: number, height: number): void;
     setStencil(mask: number, stencilOpFail: number, depthOpFail: number, depthOpPass: number, func: number, ref: number): void;
 
-    setCommandBuffer(buffer: Uint8Array): void;
-    setCommandUint32Buffer(buffer: Uint32Array): void;
-    setCommandInt32Buffer(buffer: Int32Array): void;
-    setCommandFloat32Buffer(buffer: Float32Array): void;
-    setCommandValidationBuffer(buffer: Uint8Array): void;
-    submitCommandBuffer(commandCount: number): void;
+    setCommandBuffer(buffer: ArrayBuffer): void;
+    setCommandValidationBuffer(buffer: ArrayBuffer): void;
+    submitCommandBuffer(commandCount: number, bufferByteCount: number): void;
 }
 
 class NativePipelineContext implements IPipelineContext {
@@ -825,67 +822,122 @@ export interface NativeEngineOptions {
 }
 
 /** @hidden */
-class Buffer<T extends ArrayLike<number> & {[n: number]: number, set(array: ArrayLike<number>, offset?: number): void}> {
+class Buffer {
     private readonly _setBufferSize: (size: number) => void;
-    private _buffer: T;
-    private _index = 0;
+    private _buffer: ArrayBuffer;
+    /**
+     * Index for 8-bit values. Given that we have to align on 32-bit boundaries for the 32-bit typed arrays, 
+     * we can fill the extra 3 bytes with more byte-length values. For example:
+     * Before:
+     * |COMMAND1|--------|--------|--------|CMD1ARG1BYTE1|CMD1ARG1BYTE2|CMD1ARG1BYTE3|CMD1ARG1BYTE4|COMMAND2|...
+     * After:
+     * |COMMAND1|COMMAND2|COMMAND3|COMMAND4|CMD1ARG1BYTE1|CMD1ARG1BYTE2|CMD1ARG1BYTE3|CMD1ARG1BYTE4|--------|...
+     * This leads to about a 12% decrease in size.
+     */
+    private _index8 = 0;
+    /**
+     * Index for 32-bit values.
+     */
+    private _index32 = 1;
 
-    public constructor(typedArray: new (size: number) => T, onBufferChanged: (buffer: T) => void) {
+    private _uint8Array: Uint8Array;
+    private _uint32Array: Uint32Array;
+    private _int32Array: Int32Array;
+    private _float32Array: Float32Array;
+
+    public constructor(initialSize: number, onBufferChanged: (buffer: ArrayBuffer) => void) {
         this._setBufferSize = (size: number) => {
-            this._buffer = new typedArray(size);
+            this._buffer = new ArrayBuffer(size);
+            this._uint8Array = new Uint8Array(this._buffer);
+            this._uint32Array = new Uint32Array(this._buffer);
+            this._int32Array = new Int32Array(this._buffer);
+            this._float32Array = new Float32Array(this._buffer);
+
             onBufferChanged(this._buffer);
         };
 
-        this._setBufferSize(1024);
+        this._setBufferSize(initialSize);
     }
 
+    /**
+     * Returns the length of the buffer in bytes.
+     */
     public get length() {
-        return this._index;
+        return Math.max(this._index8, this._index32 * 4);
     }
 
-    public pushValue(value: number) {
+    public pushUint8(value: number) {
+        this._uint8Array[this._index8++] = value;
+        if (this._index8 % 4 == 0) {
+            this._ensureCapacity(1);
+            this._index8 = (this._index32++) * 4;
+        }
+    }
+
+    public pushUint32(value: number) {
         this._ensureCapacity(1);
-        this._buffer[this._index++] = value;
+        this._uint32Array[this._index32++] = value;
     }
 
-    public pushValues(values: ArrayLike<number>) {
+    public pushUint32s(values: ArrayLike<number>) {
         this._ensureCapacity(values.length);
-        this._buffer.set(values, this._index);
-        this._index += values.length;
+        this._uint32Array.set(values, this._index32);
+        this._index32 += values.length;
+    }
+
+    public pushInt32(value: number) {
+        this._ensureCapacity(1);
+        this._int32Array[this._index32++] = value;
+    }
+
+    public pushInt32s(values: ArrayLike<number>) {
+        this._ensureCapacity(values.length);
+        this._int32Array.set(values, this._index32);
+        this._index32 += values.length;
+    }
+
+    public pushFloat32(value: number) {
+        this._ensureCapacity(1);
+        this._float32Array[this._index32++] = value;
+    }
+
+    public pushFloat32s(values: ArrayLike<number>) {
+        this._ensureCapacity(values.length);
+        this._float32Array.set(values, this._index32);
+        this._index32 += values.length;
     }
 
     public reset() {
-        this._index = 0;
+        this._index8 = 0;
+        this._index32 = 1;
     }
 
     private _ensureCapacity(additionalElements: number) {
-        if (this._index + additionalElements > this._buffer.length) {
-            additionalElements = Math.max(this._index + additionalElements - this._buffer.length, this._buffer.length / 2);
-            const oldBuffer = this._buffer;
-            console.log("Growing buffer from " + this._buffer.length + " to " + (this._buffer.length + additionalElements));
-            this._setBufferSize(this._buffer.length + additionalElements);
-            this._buffer.set(oldBuffer);
+        const requestedTotalElements = this._index32 + additionalElements;
+        const currentElementCapacity = this._buffer.byteLength / 4;
+        if (requestedTotalElements >= currentElementCapacity) {
+            additionalElements = Math.max(requestedTotalElements - currentElementCapacity, currentElementCapacity >> 1);
+            const newByteLength = (currentElementCapacity + additionalElements) * 4;
+            const oldArray = this._uint8Array;
+            console.log(`Growing buffer from ${currentElementCapacity * 4} bytes to ${newByteLength} bytes.`);
+            this._setBufferSize(newByteLength);
+            this._uint8Array.set(oldArray);
         }
     }
 }
 
 /** @hidden */
 class CommandBufferEncoder {
-    private readonly _commandBuffer: Buffer<Uint8Array>;
-    private readonly _uint32Buffer: Buffer<Uint32Array>;
-    private readonly _int32Buffer: Buffer<Int32Array>;
-    private readonly _float32Buffer: Buffer<Float32Array>;
-    private readonly _validationBuffer?: Buffer<Uint8Array>;
+    private readonly _commandBuffer: Buffer;
+    private readonly _validationBuffer?: Buffer;
     private _isCommandBufferScopeActive = false;
+    private _commandCount = 0;
 
     public constructor(private readonly _nativeEngine: INativeEngine, enableValidation = false) {
-        this._commandBuffer = new Buffer(Uint8Array, (buffer) => this._nativeEngine.setCommandBuffer(buffer));
-        this._uint32Buffer = new Buffer(Uint32Array, (buffer) => this._nativeEngine.setCommandUint32Buffer(buffer));
-        this._int32Buffer = new Buffer(Int32Array, (buffer) => this._nativeEngine.setCommandInt32Buffer(buffer));
-        this._float32Buffer = new Buffer(Float32Array, (buffer) => this._nativeEngine.setCommandFloat32Buffer(buffer));
+        this._commandBuffer = new Buffer(1024, (buffer) => this._nativeEngine.setCommandBuffer(buffer));
 
         if (enableValidation) {
-            this._validationBuffer = new Buffer(Uint8Array, (buffer) => this._nativeEngine.setCommandValidationBuffer(buffer));
+            this._validationBuffer = new Buffer(1024, (buffer) => this._nativeEngine.setCommandValidationBuffer(buffer));
         }
     }
 
@@ -910,63 +962,64 @@ class CommandBufferEncoder {
 
     public startEncodingCommand(command: number) {
         // console.log(`COMMAND BUFFER: Encode command: ${command}`);
-        this._commandBuffer.pushValue(command);
+        this._commandCount++;
+        this._commandBuffer.pushUint8(command);
         if (this._validationBuffer) {
-            this._validationBuffer.pushValue(this._nativeEngine.COMMAND_VALIDATION_COMMAND);
+            this._validationBuffer.pushUint8(this._nativeEngine.COMMAND_VALIDATION_COMMAND);
         }
     }
 
     public encodeCommandArgAsUInt32(commandArg: unknown) {
         // console.log(`COMMAND BUFFER:   Encode uint32: ${commandArg}`);
-        this._uint32Buffer.pushValue(commandArg as number);
+        this._commandBuffer.pushUint32(commandArg as number);
         if (this._validationBuffer) {
-            this._validationBuffer.pushValue(this._nativeEngine.COMMAND_VALIDATION_UINT32);
-            this._validationBuffer.pushValue(1);
+            this._validationBuffer.pushUint8(this._nativeEngine.COMMAND_VALIDATION_UINT32);
+            this._validationBuffer.pushUint8(1);
         }
     }
 
     public encodeCommandArgAsUInt32s(commandArg: Uint32Array) {
         // console.log(`COMMAND BUFFER:   Encode uint32s: ${commandArg}`);
-        this._uint32Buffer.pushValues(commandArg);
+        this._commandBuffer.pushUint32s(commandArg);
         if (this._validationBuffer) {
-            this._validationBuffer.pushValue(this._nativeEngine.COMMAND_VALIDATION_UINT32);
-            this._validationBuffer.pushValue(commandArg.length);
+            this._validationBuffer.pushUint8(this._nativeEngine.COMMAND_VALIDATION_UINT32);
+            this._validationBuffer.pushUint8(commandArg.length);
         }
     }
 
     public encodeCommandArgAsInt32(commandArg: unknown) {
         // console.log(`COMMAND BUFFER:   Encode uint32: ${commandArg}`);
-        this._int32Buffer.pushValue(commandArg as number);
+        this._commandBuffer.pushInt32(commandArg as number);
         if (this._validationBuffer) {
-            this._validationBuffer.pushValue(this._nativeEngine.COMMAND_VALIDATION_INT32);
-            this._validationBuffer.pushValue(1);
+            this._validationBuffer.pushUint8(this._nativeEngine.COMMAND_VALIDATION_INT32);
+            this._validationBuffer.pushUint8(1);
         }
     }
 
     public encodeCommandArgAsInt32s(commandArg: Int32Array) {
         // console.log(`COMMAND BUFFER:   Encode uint32s: ${commandArg}`);
-        this._int32Buffer.pushValues(commandArg);
+        this._commandBuffer.pushInt32s(commandArg);
         if (this._validationBuffer) {
-            this._validationBuffer.pushValue(this._nativeEngine.COMMAND_VALIDATION_INT32);
-            this._validationBuffer.pushValue(commandArg.length);
+            this._validationBuffer.pushUint8(this._nativeEngine.COMMAND_VALIDATION_INT32);
+            this._validationBuffer.pushUint8(commandArg.length);
         }
     }
 
     public encodeCommandArgAsFloat32(commandArg: unknown) {
         // console.log(`COMMAND BUFFER:   Encode float32: ${commandArg}`);
-        this._float32Buffer.pushValue(commandArg as number);
+        this._commandBuffer.pushFloat32(commandArg as number);
         if (this._validationBuffer) {
-            this._validationBuffer.pushValue(this._nativeEngine.COMMAND_VALIDATION_FLOAT);
-            this._validationBuffer.pushValue(1);
+            this._validationBuffer.pushUint8(this._nativeEngine.COMMAND_VALIDATION_FLOAT);
+            this._validationBuffer.pushUint8(1);
         }
     }
 
     public encodeCommandArgAsFloat32s(commandArg: Float32Array) {
         // console.log(`COMMAND BUFFER:   Encode float32s: ${commandArg}`);
-        this._float32Buffer.pushValues(commandArg);
+        this._commandBuffer.pushFloat32s(commandArg);
         if (this._validationBuffer) {
-            this._validationBuffer.pushValue(this._nativeEngine.COMMAND_VALIDATION_FLOAT);
-            this._validationBuffer.pushValue(commandArg.length);
+            this._validationBuffer.pushUint8(this._nativeEngine.COMMAND_VALIDATION_FLOAT);
+            this._validationBuffer.pushUint8(commandArg.length);
         }
     }
 
@@ -978,10 +1031,9 @@ class CommandBufferEncoder {
 
     private _submitCommandBuffer() {
         if (this._commandBuffer.length > 0) {
-            this._nativeEngine.submitCommandBuffer(this._commandBuffer.length);
+            this._nativeEngine.submitCommandBuffer(this._commandCount, this._commandBuffer.length);
+            this._commandCount = 0;
             this._commandBuffer.reset();
-            this._uint32Buffer.reset();
-            this._float32Buffer.reset();
             this._validationBuffer?.reset();
         }
     }
