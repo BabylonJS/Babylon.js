@@ -69,7 +69,6 @@ export class PrePassConfiguration {
                     // First update of the prepass configuration for this rendering pass
                     this.previousViewProjection.copyFrom(this.currentViewProjection);
                     this.currentViewProjection.copyFrom(scene.getTransformMatrix());
-                    this.currentViewProjection.updateFlag = scene.getTransformMatrix().updateFlag;
                 }
 
                 effect.setMatrix("previousWorld", this.previousWorldMatrices[mesh.uniqueId]);
