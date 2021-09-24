@@ -70,6 +70,8 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
             if (!value) {
                 value = "0";
             }
+
+            //Removing starting zero if there is a number of a minus after it. 
             if(value.charAt(0) === '0' && value.length > 1 && (/[^0-9\-]/g.test(value.substr(1)) == false)) {
                 value = value.substr(1);
             }
