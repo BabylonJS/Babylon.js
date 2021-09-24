@@ -40,7 +40,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                             }} />
                         <CheckBoxLineComponent label="" target={newrd} propertyName={"unit"} onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             onValueChanged={() => {
-                                grid.setRowDefinition(i, newrd.getValue(grid.host), newrd.unit == 1 ? true : false); 
+                                grid.setRowDefinition(i, newrd.getValue(grid.host), newrd.unit == 1 ? true : false);
                             }} />
                     </div>
                 )
@@ -68,7 +68,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                             }} />
                         <CheckBoxLineComponent label="" target={newcd} propertyName={"unit"} onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             onValueChanged={() => {
-                                grid.setColumnDefinition(i, newcd.getValue(grid.host), newcd.unit == 1 ? true : false );
+                                grid.setColumnDefinition(i, newcd.getValue(grid.host), newcd.unit == 1 ? true : false);
                                 this.forceUpdate();
                             }} />
                     </div>
@@ -77,12 +77,53 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
         );
     }
 
+    resizeColumn() {
+        const grid = this.props.grid;
+        let total = 0;
+        for (let i = 0; i < grid.columnCount; ++i) {
+            let cd = grid.getColumnDefinition(i);
+            if (cd?.isPercentage) {
+                total += cd?.getValue(grid.host);
+            }
+        }
+        if (total != 1.0) {
+            let difference = total - 1.0;
+            let diff = Math.abs(difference);
+            for (let i = 0; i < grid.columnCount; ++i) {
+                let cd = grid.getColumnDefinition(i);
+                if (cd?.isPercentage) {
+                    let value = cd?.getValue(grid.host);
+                    let weighted = diff * (value / total);
+                    grid.setColumnDefinition(i, difference > 0 ? value - weighted : value + weighted);
+                }
+            }
+        }
+
+        total = 0;
+        for (let i = 0; i < grid.rowCount; ++i) {
+            let rd = grid.getRowDefinition(i);
+            if (rd?.isPercentage) {
+                total += rd?.getValue(grid.host);
+            }
+        }
+        if (total != 1.0) {
+            let difference = total - 1.0;
+            let diff = Math.abs(difference);
+            for (let i = 0; i < grid.rowCount; ++i) {
+                let rd = grid.getRowDefinition(i);
+                if (rd?.isPercentage) {
+                    let value = rd?.getValue(grid.host);
+                    let weighted = diff * (value / total);
+                    grid.setRowDefinition(i, difference > 0 ? value - weighted : value + weighted);
+                }
+            }
+        }
+        this.forceUpdate();
+    }
+
     render() {
         const grid = this.props.grid;
-
         const cols = [];
-
-
 
         for (var index = 0; index < grid.rowCount; index++) {
             cols.push(grid.getColumnDefinition(index));
@@ -129,6 +170,13 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                     this.renderColumns()
 
                 }
+                <hr className="ge" />
+                <ButtonLineComponent
+                    label="RESIZE COLUMNS/ROWS"
+                    onClick={() => {
+                        this.resizeColumn();
+                    }}
+                />
             </div>
         );
     }
