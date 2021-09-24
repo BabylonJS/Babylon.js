@@ -34,7 +34,7 @@ export class PrePassConfiguration {
      * @param uniforms defines the current uniform list.
      */
     public static AddUniforms(uniforms: string[]): void {
-        uniforms.push("previousWorld", "previousViewProjection");
+        uniforms.push("previousWorld", "previousViewProjection", "mPreviousBones");
     }
 
     /**
