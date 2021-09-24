@@ -67,6 +67,13 @@ export class AnimationCurveEditorComponent extends React.Component<
                     this.props.context.onDeleteKeyActiveKeyPoints.notifyObservers();
                 }
                 break;
+            case " ":
+                if (this.props.context.isPlaying) {
+                    this.props.context.stop();
+                } else {
+                    this.props.context.play(true);
+                }
+                break;
         }
     }
     
