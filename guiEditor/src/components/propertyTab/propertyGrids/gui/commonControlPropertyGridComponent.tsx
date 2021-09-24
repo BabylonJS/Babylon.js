@@ -66,6 +66,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
     private _checkAndUpdateValues(propertyName: string, value: string) {
         //check if it contains either a px or a % sign
         let percentage = this._responsive;
+        let negative = value.charAt(0) === '-';
         if (value.charAt(value.length - 1) === '%') {
             percentage = true;
         }
@@ -73,9 +74,13 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
             percentage = false;
         }
         let newValue = value.split('').filter(function (item) {
-            return (!isNaN(parseInt(item)));
+            if (item != 'p' && item != 'x' && item != '-' && item != '%') {
+                return item;
+            }
+            return null;
         }).join('');
 
+        newValue = (negative ? '-' : '') + newValue;
         newValue += percentage ? '%' : 'px';
 
         (this.props.control as any)[propertyName] = newValue;
@@ -84,6 +89,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
 
     render() {
         const control = this.props.control;
+        console.log(control);
         var horizontalAlignment = this.props.control.horizontalAlignment;
         var verticalAlignment = this.props.control.verticalAlignment;
         if (control.typeName === "TextBlock" && (this.props.control as TextBlock).resizeToFit === false) {
@@ -164,7 +170,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     <FloatLineComponent iconLabel={"Scale"} icon={scaleIcon} lockObject={this.props.lockObject} label="X" target={control} propertyName="scaleX" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Y" target={control} propertyName="scaleY" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </div>
-                <SliderLineComponent icon={rotationIcon} label="R" target={control} propertyName="rotation" minimum={0} maximum={2 * Math.PI} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <SliderLineComponent icon={rotationIcon} label="R" target={control} decimalCount={2} propertyName="rotation" minimum={0} maximum={2 * Math.PI} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <hr className="ge" />
                 <TextLineComponent tooltip="" label="APPEARANCE" value=" " color="grey"></TextLineComponent>
                 {

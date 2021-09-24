@@ -611,9 +611,6 @@ export class Control {
 
     /** Gets or set font family */
     public get fontFamily(): string {
-        if (!this._fontSet) {
-            return "";
-        }
         return this._fontFamily;
     }
 
@@ -2072,7 +2069,7 @@ export class Control {
         serializationObject.className = this.getClassName();
 
         if (this._font) {
-            serializationObject.fontFamily = this.fontFamily;
+            serializationObject.fontFamily = this._fontFamily;
             serializationObject.fontSize = this.fontSize;
             serializationObject.fontWeight = this.fontWeight;
             serializationObject.fontStyle = this.fontStyle;

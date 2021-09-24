@@ -248,6 +248,8 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
     }
 
     render() {
+        console.log("rerender1");
+        
         return (
             <div id="ge-sceneExplorer" tabIndex={0} onKeyDown={(keyEvent) => this.processKeys(keyEvent)}>
                 {this.renderContent()}

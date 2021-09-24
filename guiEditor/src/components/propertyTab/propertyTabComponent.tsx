@@ -224,10 +224,11 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 navigator.clipboard.writeText(adt.snippetId);
             }
             alert("GUI saved with ID: " + adt.snippetId + " (please note that the id was also saved to your clipboard)");
+            this.props.globalState.onBuiltObservable.notifyObservers();
         }).catch((err: any) => {
             alert(err);
         })
-
+        
         this.forceUpdate();
     }
 
