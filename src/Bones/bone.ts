@@ -1,6 +1,6 @@
 import { Skeleton } from "./skeleton";
 
-import { Vector3, Quaternion, Matrix } from "../Maths/math.vector";
+import { Vector3, Quaternion, Matrix, TmpVectors } from "../Maths/math.vector";
 import { ArrayTools } from "../Misc/arrayTools";
 import { Nullable } from "../types";
 import { TransformNode } from "../Meshes/transformNode";
@@ -43,7 +43,6 @@ export class Bone extends Node {
     private _skeleton: Skeleton;
     private _localMatrix: Matrix;
     private _restPose: Matrix;
-    private _bindPose: Matrix;
     private _baseMatrix: Matrix;
     private _absoluteTransform = new Matrix();
     private _invertedAbsoluteTransform = new Matrix();
@@ -71,8 +70,9 @@ export class Bone extends Node {
 
     /** @hidden */
     set _matrix(value: Matrix) {
+        this._needToCompose = false; // in case there was a pending compose
         this._localMatrix.copyFrom(value);
-        this._needToDecompose = true;
+        this._markAsDirtyAndDecompose();
     }
 
     /**
@@ -95,7 +95,6 @@ export class Bone extends Node {
         this._skeleton = skeleton;
         this._localMatrix = localMatrix ? localMatrix.clone() : Matrix.Identity();
         this._restPose = restPose ? restPose : this._localMatrix.clone();
-        this._bindPose = this._localMatrix.clone();
         this._baseMatrix = baseMatrix ? baseMatrix : this._localMatrix.clone();
         this._index = index;
 
@@ -191,7 +190,7 @@ export class Bone extends Node {
 
     /**
      * Gets the base matrix (initial matrix which remains unchanged)
-     * @returns a matrix
+     * @returns the base matrix (as known as bind pose matrix)
      */
     public getBaseMatrix(): Matrix {
         return this._baseMatrix;
@@ -216,17 +215,19 @@ export class Bone extends Node {
     /**
      * Gets the bind pose matrix
      * @returns the bind pose matrix
+     * @deprecated Please use getBaseMatrix instead
      */
-    public getBindPose(): Matrix {
-        return this._bindPose;
+     public getBindPose(): Matrix {
+        return this._baseMatrix;
     }
 
     /**
      * Sets the bind pose matrix
      * @param matrix the local-space bind pose to set for this bone
+     * @deprecated Please use updateMatrix instead
      */
     public setBindPose(matrix: Matrix): void {
-        this._bindPose.copyFrom(matrix);
+        this.updateMatrix(matrix);
     }
 
     /**
@@ -240,10 +241,19 @@ export class Bone extends Node {
      * Sets the local matrix to rest pose matrix
      */
     public returnToRest(): void {
-        if (this._skeleton._numBonesWithLinkedTransformNode > 0) {
-            this.updateMatrix(this._restPose, false, false);
+        if (this._linkedTransformNode) {
+            const localScaling = TmpVectors.Vector3[0];
+            const localRotation = TmpVectors.Quaternion[0];
+            const localPosition = TmpVectors.Vector3[1];
+
+            this.getRestPose().decompose(localScaling, localRotation, localPosition);
+
+            this._linkedTransformNode.position.copyFrom(localPosition);
+            this._linkedTransformNode.rotationQuaternion = this._linkedTransformNode.rotationQuaternion ?? Quaternion.Identity();
+            this._linkedTransformNode.rotationQuaternion.copyFrom(localRotation);
+            this._linkedTransformNode.scaling.copyFrom(localScaling);
         } else {
-            this.updateMatrix(this._restPose, false, true);
+            this._matrix = this._restPose;
         }
     }
 
@@ -383,9 +393,7 @@ export class Bone extends Node {
         }
 
         if (updateLocalMatrix) {
-            this._needToCompose = false; // in case there was a pending compose
-            this._localMatrix.copyFrom(matrix);
-            this._markAsDirtyAndDecompose();
+            this._matrix = matrix;
         }
         else {
             this.markAsDirty();
