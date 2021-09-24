@@ -78,6 +78,7 @@ export class Bone extends Node {
         }
 
         this._localMatrix.copyFrom(value);
+        this._localMatrix.updateFlag = value.updateFlag;
         this._markAsDirtyAndDecompose();
     }
 
