@@ -82,8 +82,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     constructor(props: IWorkbenchComponentProps) {
         super(props);
         this._responsive = DataStorage.ReadBoolean("Responsive", true);
-
+        this._selectedGuiNodes = [];
         props.globalState.onSelectionChangedObservable.add((selection) => {
+            console.log("workbench selection: " + selection)
             if (!selection) {
                 this.changeSelectionHighlight(false);
                 this._selectedGuiNodes = [];
@@ -172,6 +173,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         );
 
         this.props.globalState.workbench = this;
+        
     }
 
     keyEvent = (evt: KeyboardEvent) => {
@@ -287,6 +289,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 alert("Unable to load your GUI");
             });
         }
+        this.globalState.onSelectionChangedObservable.notifyObservers(null);
     }
 
     loadToEditor() {
@@ -308,7 +311,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     changeSelectionHighlight(value: boolean) {
-        this.selectedGuiNodes.forEach(node => {
+        this._selectedGuiNodes.forEach(node => {
             if (this._outlines) {
                 node.isHighlighted = true;
                 node.highlightLineWidth = value ? 10 : 5;
@@ -468,6 +471,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     private _adjustParentingIndex(index: number) {
+        
         switch (this.props.globalState.draggedControlDirection) {
             case DragOverLocation.ABOVE:
                 return index + 1;
