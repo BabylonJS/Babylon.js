@@ -2211,6 +2211,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             MaterialHelper.BindClipPlane(this._activeEffect, scene);
 
             this.bindEyePosition(effect);
+        } else if (scene.getEngine().isWebGPU) {
+            ubo.bindToEffect(effect, "Material");
         }
 
         if (mustRebind || !this.isFrozen) {

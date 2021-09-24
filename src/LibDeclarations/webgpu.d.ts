@@ -711,8 +711,8 @@ interface GPUImageCopyTexture {
 }
 
 interface GPUImageCopyTextureTagged extends GPUImageCopyTexture {
-    colorSpace: GPUPredefinedColorSpace; /* default="srgb" */
-    premultipliedAlpha: boolean; /* default=false */
+    colorSpace?: GPUPredefinedColorSpace; /* default="srgb" */
+    premultipliedAlpha?: boolean; /* default=false */
 }
 
 interface GPUImageCopyExternalImage {
