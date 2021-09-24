@@ -71,6 +71,12 @@ export class Bone extends Node {
     /** @hidden */
     set _matrix(value: Matrix) {
         this._needToCompose = false; // in case there was a pending compose
+
+        // skip if the matrices are the same
+        if (value.updateFlag === this._localMatrix.updateFlag) {
+            return;
+        }
+
         this._localMatrix.copyFrom(value);
         this._markAsDirtyAndDecompose();
     }
