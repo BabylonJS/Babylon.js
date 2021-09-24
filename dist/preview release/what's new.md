@@ -113,6 +113,7 @@
 - Added a debug option to show the frustum of a directional light ([Popov72](https://github.com/Popov72))
 - Added support for the material stencil properties ([Popov72](https://github.com/Popov72))
 - Added space + LMB panning to texture inspector to improve accessibility ([darraghjburke](https://github.com/darraghjburke))
+- Add support to export .env environment textures using WebP ([simonihmig](https://github.com/simonihmig))
 
 ### Playground
 
