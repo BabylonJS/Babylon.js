@@ -783,7 +783,7 @@ class NativeRenderTargetWrapper extends RenderTargetWrapper {
 
     public dispose(disposeOnlyFramebuffers = false): void {
         if (this._framebuffer) {
-            this._engine._releaseFramebufferObjects(this._framebuffer)
+            this._engine._releaseFramebufferObjects(this._framebuffer);
             this._framebuffer = null;
         }
         if (this._framebufferDepthStencil) {
@@ -834,7 +834,7 @@ class Buffer<T extends ArrayLike<number> & {[n: number]: number, set(array: Arra
         this._setBufferSize = (size: number) => {
             this._buffer = new typedArray(size);
             onBufferChanged(this._buffer);
-        }
+        };
 
         this._setBufferSize(1024);
     }
@@ -1445,7 +1445,7 @@ export class NativeEngine extends Engine {
         const nativePipelineContext = pipelineContext as NativePipelineContext;
         if (nativePipelineContext && nativePipelineContext.nativeProgram) {
             this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_DELETEPROGRAM);
-            this._commandBufferEncoder.encodeCommandArgAsUInt32(nativePipelineContext.nativeProgram)
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(nativePipelineContext.nativeProgram);
             this._commandBufferEncoder.finishEncodingCommand();
         }
     }
