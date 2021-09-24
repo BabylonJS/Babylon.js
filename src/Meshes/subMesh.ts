@@ -97,16 +97,13 @@ export class SubMesh implements ICullable {
      * @param effect defines the effect to associate with
      * @param defines defines the set of defines used to compile this effect
      * @param materialContext material context associated to the effect
-     * @param resetMaterialContext true to reset the material context (if defined)
+     * @param resetContext true to reset the draw context
      */
-    public setEffect(effect: Nullable<Effect>, defines: Nullable<string | MaterialDefines> = null, materialContext?: IMaterialContext, resetMaterialContext = true) {
+    public setEffect(effect: Nullable<Effect>, defines: Nullable<string | MaterialDefines> = null, materialContext?: IMaterialContext, resetContext = true) {
         const drawWrapper = this._mainDrawWrapperOverride ?? this._mainDrawWrapper;
-        drawWrapper.setEffect(effect, defines);
+        drawWrapper.setEffect(effect, defines, resetContext);
         if (materialContext !== undefined) {
             drawWrapper.materialContext = materialContext;
-            if (resetMaterialContext) {
-                materialContext.reset();
-            }
         }
         if (effect !== this._materialEffect) {
             (this._materialEffect as any) = effect;

@@ -1134,6 +1134,8 @@ export class BackgroundMaterial extends PushMaterial {
             MaterialHelper.BindClipPlane(this._activeEffect, scene);
 
             scene.bindEyePosition(effect);
+        } else if (scene.getEngine().isWebGPU) {
+            this._uniformBuffer.bindToEffect(effect, "Material");
         }
 
         if (mustRebind || !this.isFrozen) {

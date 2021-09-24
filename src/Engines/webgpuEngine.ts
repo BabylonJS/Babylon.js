@@ -307,10 +307,12 @@ export class WebGPUEngine extends Engine {
     // DrawCall Life Cycle
     // Effect is on the parent class
     // protected _currentEffect: Nullable<Effect> = null;
+    private _defaultDrawContext: WebGPUDrawContext;
     private _defaultMaterialContext: WebGPUMaterialContext;
     /** @hidden */
+    public _currentDrawContext: WebGPUDrawContext;
+    /** @hidden */
     public _currentMaterialContext: WebGPUMaterialContext;
-    private _currentDrawContext: WebGPUDrawContext | undefined;
     private _currentOverrideVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }> = null;
     private _currentIndexBuffer: Nullable<DataBuffer> = null;
     private __colorWrite = true;
@@ -698,6 +700,8 @@ export class WebGPUEngine extends Engine {
                 this._textureHelper.setCommandEncoder(this._uploadEncoder);
 
                 this._clearQuad = new WebGPUClearQuad(this._device, this, this._emptyVertexBuffer);
+                this._defaultDrawContext = this.createDrawContext()!;
+                this._currentDrawContext = this._defaultDrawContext;
                 this._defaultMaterialContext = this.createMaterialContext()!;
                 this._currentMaterialContext = this._defaultMaterialContext;
 
@@ -1668,7 +1672,7 @@ export class WebGPUEngine extends Engine {
             isNewEffect = effect !== this._currentEffect;
             this._currentEffect = effect;
             this._currentMaterialContext = this._defaultMaterialContext;
-            this._currentDrawContext = undefined;
+            this._currentDrawContext = this._defaultDrawContext;
             this._counters.numEnableEffects++;
             if (this.dbgLogIfNotDrawWrapper) {
                 Logger.Warn(`enableEffect has been called with an Effect and not a Wrapper! effect.uniqueId=${effect.uniqueId}, effect.name=${effect.name}, effect.name.vertex=${effect.name.vertex}, effect.name.fragment=${effect.name.fragment}`, 10);
@@ -2806,7 +2810,11 @@ export class WebGPUEngine extends Engine {
             return;
         }
 
-        const useFastPath = !this.compatibilityMode && this._currentDrawContext?.fastBundle;
+        if (!this.compatibilityMode && (this._currentDrawContext.isDirty || this._currentMaterialContext.isDirty || this._currentMaterialContext.forceBindGroupCreation)) {
+            this._currentDrawContext.fastBundle = undefined;
+        }
+
+        const useFastPath = !this.compatibilityMode && this._currentDrawContext.fastBundle;
         let renderPass2: GPURenderPassEncoder | GPURenderBundleEncoder = renderPass;
 
         if (useFastPath || this._snapshotRenderingRecordBundles) {
@@ -2824,7 +2832,7 @@ export class WebGPUEngine extends Engine {
             }
 
             if (!this._snapshotRenderingRecordBundles) {
-                this._bundleList.addBundle(this._currentDrawContext!.fastBundle);
+                this._bundleList.addBundle(this._currentDrawContext.fastBundle);
                 this._reportDrawCall();
                 return;
             }
@@ -2851,7 +2859,7 @@ export class WebGPUEngine extends Engine {
         }
 
         const pipeline = this._cacheRenderPipeline.getRenderPipeline(fillMode, this._currentEffect!, this.currentSampleCount, textureState);
-        const bindGroups = this._cacheBindGroups.getBindGroups(webgpuPipelineContext, this._currentMaterialContext);
+        const bindGroups = this._cacheBindGroups.getBindGroups(webgpuPipelineContext, this._currentDrawContext, this._currentMaterialContext);
 
         if (!this._snapshotRenderingRecordBundles) {
             if (mustUpdateViewport) {
@@ -2905,7 +2913,7 @@ export class WebGPUEngine extends Engine {
             renderPass2.draw(count, instancesCount || 1, start, 0);
         }
 
-        if (!this.compatibilityMode && this._currentDrawContext && !this._snapshotRenderingRecordBundles) {
+        if (!this.compatibilityMode && !this._snapshotRenderingRecordBundles) {
             this._currentDrawContext.fastBundle = (renderPass2 as GPURenderBundleEncoder).finish();
             this._bundleList.addBundle(this._currentDrawContext.fastBundle);
         }

@@ -6,6 +6,7 @@ import { WebGPUEngine } from "../webgpuEngine";
 import { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { ExternalTexture } from "../../Materials/Textures/externalTexture";
+import { WebGPUDrawContext } from "./webgpuDrawContext";
 
 class WebGPUBindGroupCacheNode {
     public values: { [id: number]: WebGPUBindGroupCacheNode };
@@ -61,23 +62,23 @@ export class WebGPUCacheBindGroups {
     }
 
     /**
-     * Cache is currently based on the uniform buffers, samplers and textures used by the binding groups.
+     * Cache is currently based on the uniform/storage buffers, samplers and textures used by the binding groups.
      * Note that all uniform buffers have an offset of 0 in Babylon and we don't have a use case where we would have the same buffer used with different capacity values:
      * that means we don't need to factor in the offset/size of the buffer in the cache, only the id
      */
-    public getBindGroups(webgpuPipelineContext: WebGPUPipelineContext, materialContext: WebGPUMaterialContext): GPUBindGroup[] {
+    public getBindGroups(webgpuPipelineContext: WebGPUPipelineContext, drawContext: WebGPUDrawContext, materialContext: WebGPUMaterialContext): GPUBindGroup[] {
         let bindGroups: GPUBindGroup[] | undefined = undefined;
         let node = WebGPUCacheBindGroups._Cache;
 
         const cacheIsDisabled = this.disabled || materialContext.forceBindGroupCreation;
         if (!cacheIsDisabled) {
-            if (!materialContext.isDirty) {
+            if (!drawContext.isDirty && !materialContext.isDirty) {
                 WebGPUCacheBindGroups._NumBindGroupsNoLookupCurrentFrame++;
-                return materialContext.bindGroups;
+                return drawContext.bindGroups!;
             }
 
             for (const bufferName of webgpuPipelineContext.shaderProcessingContext.bufferNames) {
-                const uboId = materialContext.buffers[bufferName]?.uniqueId ?? 0;
+                const uboId = drawContext.buffers[bufferName]?.uniqueId ?? 0;
                 let nextNode = node.values[uboId];
                 if (!nextNode) {
                     nextNode = new WebGPUBindGroupCacheNode();
@@ -109,16 +110,17 @@ export class WebGPUCacheBindGroups {
             bindGroups = node.bindGroups;
         }
 
+        drawContext.isDirty = false;
         materialContext.isDirty = false;
 
         if (bindGroups) {
-            materialContext.bindGroups = bindGroups;
+            drawContext.bindGroups = bindGroups;
             WebGPUCacheBindGroups._NumBindGroupsLookupCurrentFrame++;
             return bindGroups;
         }
 
         bindGroups = [];
-        materialContext.bindGroups = bindGroups;
+        drawContext.bindGroups = bindGroups;
 
         if (!cacheIsDisabled) {
             node.bindGroups = bindGroups;
@@ -188,13 +190,13 @@ export class WebGPUCacheBindGroups {
                         Logger.Error(`Texture "${name}" could not be bound. entry=${JSON.stringify(entry)}, materialContext=${JSON.stringify(materialContext, (key: string, value: any) => key === 'texture' || key === 'sampler' ? '<no dump>' : value)}`, 50);
                     }
                 } else if (entry.buffer) {
-                    const dataBuffer = materialContext.buffers[name];
+                    const dataBuffer = drawContext.buffers[name];
                     if (dataBuffer) {
                         const webgpuBuffer = dataBuffer.underlyingResource as GPUBuffer;
                         (entries[j].resource as GPUBufferBinding).buffer = webgpuBuffer;
                         (entries[j].resource as GPUBufferBinding).size = dataBuffer.capacity;
                     } else {
-                        Logger.Error(`Can't find buffer "${name}". entry=${JSON.stringify(entry)}, buffers=${JSON.stringify(materialContext.buffers)}`, 50);
+                        Logger.Error(`Can't find buffer "${name}". entry=${JSON.stringify(entry)}, buffers=${JSON.stringify(drawContext.buffers)}`, 50);
                     }
                 }
             }

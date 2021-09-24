@@ -97,5 +97,5 @@ WebGPUEngine.prototype.readFromStorageBuffer = function (storageBuffer: DataBuff
 };
 
 WebGPUEngine.prototype.setStorageBuffer = function (name: string, buffer: Nullable<StorageBuffer>): void {
-    this._currentMaterialContext?.setBuffer(name, buffer?.getBuffer() as WebGPUDataBuffer ?? null);
+    this._currentDrawContext?.setBuffer(name, buffer?.getBuffer() as WebGPUDataBuffer ?? null);
 };

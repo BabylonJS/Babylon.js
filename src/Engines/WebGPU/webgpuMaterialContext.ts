@@ -1,7 +1,6 @@
 import { ExternalTexture } from "../../Materials/Textures/externalTexture";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { TextureSampler } from "../../Materials/Textures/textureSampler";
-import { WebGPUDataBuffer } from "../../Meshes/WebGPU/webgpuDataBuffer";
 import { Nullable } from "../../types";
 import { Constants } from "../constants";
 import { IMaterialContext } from "../IMaterialContext";
@@ -28,9 +27,6 @@ export class WebGPUMaterialContext implements IMaterialContext {
     public isDirty: boolean;
     public samplers: { [name: string]: Nullable<IWebGPUMaterialContextSamplerCache> };
     public textures: { [name: string]: Nullable<IWebGPUMaterialContextTextureCache> };
-    public buffers: { [name: string]: Nullable<WebGPUDataBuffer> };
-
-    public bindGroups: GPUBindGroup[]; // cache of the bind groups. Will be reused for the next draw if isDirty=false
 
     public get forceBindGroupCreation() {
         // If there is at least one external texture to bind, we must recreate the bind groups each time
@@ -53,7 +49,6 @@ export class WebGPUMaterialContext implements IMaterialContext {
     public reset(): void {
         this.samplers = {};
         this.textures = {};
-        this.buffers = {};
         this.isDirty = true;
         this._numFloatTextures = 0;
         this._numExternalTextures = 0;
@@ -107,11 +102,5 @@ export class WebGPUMaterialContext implements IMaterialContext {
         textureCache.texture = texture;
 
         this.isDirty ||= currentTextureId !== (texture?.uniqueId ?? -1);
-    }
-
-    public setBuffer(name: string, buffer: Nullable<WebGPUDataBuffer>): void {
-        this.isDirty ||= buffer?.uniqueId !== this.buffers[name]?.uniqueId;
-
-        this.buffers[name] = buffer;
     }
 }

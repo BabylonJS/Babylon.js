@@ -48,7 +48,7 @@ WebGPUEngine.prototype.updateUniformBuffer = function (uniformBuffer: DataBuffer
 };
 
 WebGPUEngine.prototype.bindUniformBufferBase = function (buffer: DataBuffer, location: number, name: string): void {
-    this._currentMaterialContext.setBuffer(name, buffer as WebGPUDataBuffer);
+    this._currentDrawContext.setBuffer(name, buffer as WebGPUDataBuffer);
 };
 
 WebGPUEngine.prototype.bindUniformBlock = function (pipelineContext: IPipelineContext, blockName: string, index: number): void {
