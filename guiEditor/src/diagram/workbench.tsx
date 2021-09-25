@@ -82,9 +82,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     constructor(props: IWorkbenchComponentProps) {
         super(props);
         this._responsive = DataStorage.ReadBoolean("Responsive", true);
-        this._selectedGuiNodes = [];
+
         props.globalState.onSelectionChangedObservable.add((selection) => {
-            console.log("workbench selection: " + selection)
             if (!selection) {
                 this.changeSelectionHighlight(false);
                 this._selectedGuiNodes = [];
@@ -471,7 +470,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     private _adjustParentingIndex(index: number) {
-        
         switch (this.props.globalState.draggedControlDirection) {
             case DragOverLocation.ABOVE:
                 return index + 1;

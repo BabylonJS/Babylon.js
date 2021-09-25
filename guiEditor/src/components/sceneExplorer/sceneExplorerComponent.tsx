@@ -50,7 +50,6 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
 
     constructor(props: ISceneExplorerComponentProps) {
         super(props);
-
         this.state = { filter: null, selectedEntity: null, scene: this.props.scene ? this.props.scene : null };
         this._onNewSceneObserver = this.props.globalState.onNewSceneObservable.add((scene: Nullable<Scene>) => {
             this.setState({
@@ -248,8 +247,6 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
     }
 
     render() {
-        console.log("rerender1");
-        
         return (
             <div id="ge-sceneExplorer" tabIndex={0} onKeyDown={(keyEvent) => this.processKeys(keyEvent)}>
                 {this.renderContent()}

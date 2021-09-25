@@ -228,7 +228,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         }).catch((err: any) => {
             alert(err);
         })
-        
         this.forceUpdate();
     }
 
