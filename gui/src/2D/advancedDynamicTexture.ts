@@ -967,7 +967,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     * @param url defines the url to load
     * @returns a promise that will resolve on success
     */
-    public parseFromURL(url: string): Promise<void> {
+    public parseFromURLAsync(url: string): Promise<void> {
         if (url === "") {
             return Promise.resolve();
         }
