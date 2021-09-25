@@ -54,7 +54,7 @@ export class ToolsTabComponent extends PaneComponent {
     private _reflectorHostname: string = "localhost";
     private _reflectorPort: number = 1234;
     private _reflector: Reflector;
-    private _envOptions = { imageType: 0, imageQuality: 0.8 };
+    private _envOptions = { imageTypeIndex: 0, imageQuality: 0.8 };
 
     constructor(props: IPaneComponentProps) {
         super(props);
@@ -260,7 +260,7 @@ export class ToolsTabComponent extends PaneComponent {
         EnvironmentTextureTools.CreateEnvTextureAsync(
             scene.environmentTexture as CubeTexture,
             {
-                imageType: envExportImageTypes[this._envOptions.imageType].imageType,
+                imageType: envExportImageTypes[this._envOptions.imageTypeIndex].imageType,
                 imageQuality: this._envOptions.imageQuality
             })
             .then((buffer: ArrayBuffer) => {
@@ -395,11 +395,11 @@ export class ToolsTabComponent extends PaneComponent {
                                 !scene.getEngine().premultipliedAlpha && scene.environmentTexture && scene.environmentTexture._prefiltered && scene.activeCamera &&
                                 <>
                                     <ButtonLineComponent label="Generate .env texture" onClick={() => this.createEnvTexture()} />
-                                    <OptionsLineComponent label="Image type" options={envExportImageTypes} target={this._envOptions} propertyName="imageType" onSelect={() => {
+                                    <OptionsLineComponent label="Image type" options={envExportImageTypes} target={this._envOptions} propertyName="imageTypeIndex" onSelect={() => {
                                         this.forceUpdate();
                                     }} />
                                     {
-                                        this._envOptions.imageType > 0 &&
+                                        this._envOptions.imageTypeIndex > 0 &&
                                         <FloatLineComponent label="Quality" isInteger={false} min={0} max={1} target={this._envOptions} propertyName="imageQuality" />
                                     }
                                 </>
