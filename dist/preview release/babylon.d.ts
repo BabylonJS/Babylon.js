@@ -25946,7 +25946,6 @@ declare module BABYLON {
         private _skeleton;
         private _localMatrix;
         private _restPose;
-        private _bindPose;
         private _baseMatrix;
         private _absoluteTransform;
         private _invertedAbsoluteTransform;
@@ -26019,7 +26018,7 @@ declare module BABYLON {
         getLocalMatrix(): Matrix;
         /**
          * Gets the base matrix (initial matrix which remains unchanged)
-         * @returns a matrix
+         * @returns the base matrix (as known as bind pose matrix)
          */
         getBaseMatrix(): Matrix;
         /**
@@ -26035,11 +26034,13 @@ declare module BABYLON {
         /**
          * Gets the bind pose matrix
          * @returns the bind pose matrix
+         * @deprecated Please use getBaseMatrix instead
          */
         getBindPose(): Matrix;
         /**
          * Sets the bind pose matrix
          * @param matrix the local-space bind pose to set for this bone
+         * @deprecated Please use updateMatrix instead
          */
         setBindPose(matrix: Matrix): void;
         /**
@@ -37216,7 +37217,6 @@ declare module BABYLON {
         get m(): DeepImmutable<Float32Array | Array<number>>;
         /** @hidden */
         _markAsUpdated(): void;
-        /** @hidden */
         private _updateIdentityStatus;
         /**
          * Creates an empty matrix (filled with zeros)
@@ -49728,6 +49728,11 @@ declare module BABYLON {
          */
         get target(): Vector3;
         set target(value: Vector3);
+        /**
+         * Return the current target position of the camera. This value is expressed in local space.
+         * @returns the target position
+         */
+        getTarget(): Vector3;
         /**
          * Define the current local position of the camera in the scene
          */
