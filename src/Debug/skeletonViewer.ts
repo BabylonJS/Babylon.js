@@ -579,7 +579,7 @@ export class SkeletonViewer {
         }
 
         this._getAbsoluteBindPoseToRef(bone.getParent(), matrix);
-        bone.getBindPose().multiplyToRef(matrix, matrix);
+        bone.getBaseMatrix().multiplyToRef(matrix, matrix);
         return;
     }
 
@@ -633,7 +633,7 @@ export class SkeletonViewer {
 
                 bone.children.forEach((bc, i) => {
                     let childAbsoluteBindPoseTransform: Matrix = new Matrix();
-                    bc.getBindPose().multiplyToRef(boneAbsoluteBindPoseTransform, childAbsoluteBindPoseTransform);
+                    bc.getBaseMatrix().multiplyToRef(boneAbsoluteBindPoseTransform, childAbsoluteBindPoseTransform);
                     let childPoint = new Vector3();
                     childAbsoluteBindPoseTransform.decompose(undefined, undefined, childPoint);
                     let distanceFromParent = Vector3.Distance(anchorPoint, childPoint);
@@ -805,7 +805,7 @@ export class SkeletonViewer {
             this._getAbsoluteBindPoseToRef(bone, boneAbsoluteBindPoseTransform);
             boneAbsoluteBindPoseTransform.decompose(undefined, undefined, boneOrigin);
 
-            let m = bone.getBindPose().getRotationMatrix();
+            let m = bone.getBaseMatrix().getRotationMatrix();
 
             let boneAxisX = Vector3.TransformCoordinates(new Vector3(0 + size, 0, 0), m);
             let boneAxisY = Vector3.TransformCoordinates(new Vector3(0, 0 + size, 0), m);

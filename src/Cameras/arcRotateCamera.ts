@@ -67,6 +67,14 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     /**
+     * Return the current target position of the camera. This value is expressed in local space.
+     * @returns the target position
+     */
+    public getTarget(): Vector3 {
+        return this.target;
+    }
+
+    /**
      * Define the current local position of the camera in the scene
      */
     public get position(): Vector3 {
