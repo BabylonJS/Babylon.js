@@ -309,6 +309,7 @@
 - Fix bug in NME where a link could not be recreated after being deleted ([Popov72](https://github.com/Popov72))
 - Fix small typo in transformNode getDirectionToRef method definition. ([PirateJC](https://github.com/piratejc))
 - Fix textures not properly inverting along the vertical axis when using ImageBitmaps ([nmrugg](https://github.com/nmrugg))
+- Fix for SkyMaterial sun position not working with non-default azimuth  ([AdversInc](https://github.com/adversinc))
 
 ## Breaking changes
 
