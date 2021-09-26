@@ -1616,6 +1616,7 @@ export class StandardMaterial extends PushMaterial {
             this.bindEyePosition(effect);
         } else if (scene.getEngine().isWebGPU) {
             ubo.bindToEffect(effect, "Material");
+            this._needToBindSceneUbo = true;
         }
 
         if (mustRebind || !this.isFrozen) {
