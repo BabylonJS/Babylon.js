@@ -1136,6 +1136,7 @@ export class BackgroundMaterial extends PushMaterial {
             scene.bindEyePosition(effect);
         } else if (scene.getEngine().isWebGPU) {
             this._uniformBuffer.bindToEffect(effect, "Material");
+            this._needToBindSceneUbo = true;
         }
 
         if (mustRebind || !this.isFrozen) {

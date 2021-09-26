@@ -674,7 +674,7 @@ export class Material implements IAnimatable {
      * Stores a reference to the scene
      */
     private _scene: Scene;
-    private _needToBindSceneUbo: boolean;
+    protected _needToBindSceneUbo: boolean;
 
     /**
      * Stores the fill mode state
