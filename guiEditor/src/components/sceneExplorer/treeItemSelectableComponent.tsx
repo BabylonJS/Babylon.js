@@ -101,7 +101,10 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
             return null;
         }
 
-        const children = Tools.SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
+        let children = Tools.SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
+        if(entity.typeName === "StackPanel") {
+            children.reverse();
+        }
         return (
             children.map((item, i) => {
                 if (item.name == "Art-Board-Background") {
