@@ -111,9 +111,9 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     }
 
     private _setNamesForDrawWrapper(): void {
-        this._nameForDrawWrapper.length = this._numCascades;
+        this._passIdForDrawWrapper.length = this._numCascades;
         for (let i = 0; i < this._numCascades; ++i) {
-            this._nameForDrawWrapper[i] = this._nameForDrawWrapperOrig + "_" + i;
+            this._passIdForDrawWrapper[i] = this._scene.getEngine()._createRenderPassId();
         }
     }
 
@@ -721,8 +721,6 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         throw _DevTools.WarnImport("ShadowGeneratorSceneComponent");
     }
 
-    private _nameForDrawWrapperOrig: string;
-
     /**
      * Creates a Cascaded Shadow Generator object.
      * A ShadowGenerator is the required tool to use the shadows.
@@ -741,7 +739,6 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         super(mapSize, light, usefulFloatFirst);
 
         this.usePercentageCloserFiltering = true;
-        this._nameForDrawWrapperOrig = this._nameForDrawWrapper[0];
     }
 
     protected _initializeGenerator(): void {
@@ -824,7 +821,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         this._shadowMap.onBeforeRenderObservable.clear();
 
         this._shadowMap.onBeforeRenderObservable.add((layer: number) => {
-            this._nameForDrawWrapperCurrent = this._nameForDrawWrapper[layer];
+            this._passIdForDrawWrapperCurrent = this._passIdForDrawWrapper[layer];
             this._currentLayer = layer;
             if (this._filter === ShadowGenerator.FILTER_PCF) {
                 engine.setColorWrite(false);
@@ -836,7 +833,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         });
 
         this._shadowMap.onBeforeBindObservable.add(() => {
-            engine._debugPushGroup?.(`cascaded shadow map generation for ${this._nameForDrawWrapper}`, 1);
+            engine._debugPushGroup?.(`cascaded shadow map generation for pass id ${this._passIdForDrawWrapper}`, 1);
             if (this._breaksAreDirty) {
                 this._splitFrustum();
             }

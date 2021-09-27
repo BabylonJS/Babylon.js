@@ -295,7 +295,7 @@ export class PBRClearCoatConfiguration {
      * @param subMesh the submesh to bind data for
      */
     public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, disableBumpMap: boolean, isFrozen: boolean, invertNormalMapX: boolean, invertNormalMapY: boolean, subMesh?: SubMesh): void {
-        const defines = subMesh!._materialDefines as unknown as IMaterialClearCoatDefines;
+        const defines = subMesh!.materialDefines as unknown as IMaterialClearCoatDefines;
 
         const identicalTextures = defines.CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL;
 

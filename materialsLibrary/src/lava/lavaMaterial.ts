@@ -160,11 +160,11 @@ export class LavaMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh._materialDefines) {
+        if (!subMesh.materialDefines) {
             subMesh.materialDefines = new LavaMaterialDefines();
         }
 
-        var defines = <LavaMaterialDefines>subMesh._materialDefines;
+        var defines = <LavaMaterialDefines>subMesh.materialDefines;
         var scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
@@ -295,7 +295,7 @@ export class LavaMaterial extends PushMaterial {
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         var scene = this.getScene();
 
-        var defines = <LavaMaterialDefines>subMesh._materialDefines;
+        var defines = <LavaMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }

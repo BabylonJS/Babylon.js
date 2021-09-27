@@ -165,11 +165,11 @@ export class FurMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh._materialDefines) {
+        if (!subMesh.materialDefines) {
             subMesh.materialDefines = new FurMaterialDefines();
         }
 
-        var defines = <FurMaterialDefines>subMesh._materialDefines;
+        var defines = <FurMaterialDefines>subMesh.materialDefines;
         var scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
@@ -310,7 +310,7 @@ export class FurMaterial extends PushMaterial {
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         var scene = this.getScene();
 
-        var defines = <FurMaterialDefines>subMesh._materialDefines;
+        var defines = <FurMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }

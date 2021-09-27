@@ -254,6 +254,7 @@ export class RenderTargetTexture extends Texture {
     protected _renderTargetOptions: RenderTargetCreationOptions;
     private _canRescale = true;
     protected _renderTarget: Nullable<RenderTargetWrapper> = null;
+    protected _renderPassId: number;
     /**
      * Gets render target creation options that were used.
      */
@@ -345,6 +346,7 @@ export class RenderTargetTexture extends Texture {
         this.name = name;
         this.isRenderTarget = true;
         this._initialSizeParameter = size;
+        this._renderPassId = engine._createRenderPassId();
 
         this._processSizeParameter(size);
 
@@ -662,6 +664,8 @@ export class RenderTargetTexture extends Texture {
 
         var engine = scene.getEngine();
 
+        engine._currentRenderPassId = this._renderPassId;
+
         if (this.useCameraPostProcesses !== undefined) {
             useCameraPostProcess = this.useCameraPostProcesses;
         }
@@ -736,6 +740,8 @@ export class RenderTargetTexture extends Texture {
         }
 
         this.onAfterUnbindObservable.notifyObservers(this);
+
+        engine._currentRenderPassId = Constants.RENDERPASS_MAIN;
 
         if (scene.activeCamera) {
             // Do not avoid setting uniforms when multiple scenes are active as another camera may have overwrite these

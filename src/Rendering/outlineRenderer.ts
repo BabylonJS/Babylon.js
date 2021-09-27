@@ -90,8 +90,6 @@ Object.defineProperty(Mesh.prototype, "renderOverlay", {
  * It should not be used directly but through the available method on mesh.
  */
 export class OutlineRenderer implements ISceneComponent {
-    private static _Counter = 0;
-
     /**
      * Stencil value used to avoid outline being seen within the mesh when the mesh is transparent
      */
@@ -118,7 +116,7 @@ export class OutlineRenderer implements ISceneComponent {
 
     private _engine: Engine;
     private _savedDepthWrite: boolean;
-    private _nameForDrawWrapper: string;
+    private _passIdForDrawWrapper: number;
 
     /**
      * Instantiates a new outline renderer. (There could be only one per scene).
@@ -128,7 +126,7 @@ export class OutlineRenderer implements ISceneComponent {
         this.scene = scene;
         this._engine = scene.getEngine();
         this.scene._addComponent(this);
-        this._nameForDrawWrapper = Constants.SUBMESH_DRAWWRAPPER_OUTLINERENDERER_PREFIX + OutlineRenderer._Counter++;
+        this._passIdForDrawWrapper = this._engine._createRenderPassId();
     }
 
     /**
@@ -180,7 +178,7 @@ export class OutlineRenderer implements ISceneComponent {
             return;
         }
 
-        const drawWrapper = subMesh._getDrawWrapper(this._nameForDrawWrapper)!;
+        const drawWrapper = subMesh._getDrawWrapper(this._passIdForDrawWrapper)!;
         const effect = DrawWrapper.GetEffect(drawWrapper)!;
 
         engine.enableEffect(drawWrapper);
@@ -241,7 +239,7 @@ export class OutlineRenderer implements ISceneComponent {
         var defines = [];
         var attribs = [VertexBuffer.PositionKind, VertexBuffer.NormalKind];
 
-        const subMeshEffect = subMesh._getDrawWrapper(this._nameForDrawWrapper, true)!;
+        const subMeshEffect = subMesh._getDrawWrapper(this._passIdForDrawWrapper, true)!;
 
         let effect = subMeshEffect.effect!;
         let cachedDefines = subMeshEffect.defines;

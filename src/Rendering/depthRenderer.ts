@@ -21,11 +21,9 @@ import { _DevTools } from '../Misc/devTools';
  * A depth renderer will render to it's depth map every frame which can be displayed or used in post processing
  */
 export class DepthRenderer {
-    private static _Counter = 0;
-
     private _scene: Scene;
     private _depthMap: RenderTargetTexture;
-    private _nameForDrawWrapper: string;
+    private _passIdForDrawWrapper: number;
     private readonly _storeNonLinearDepth: boolean;
     private readonly _clearColor: Color4;
 
@@ -73,9 +71,10 @@ export class DepthRenderer {
 
         DepthRenderer._SceneComponentInitialization(this._scene);
 
-        this._nameForDrawWrapper = Constants.SUBMESH_DRAWWRAPPER_DEPTHRENDERER_PREFIX + DepthRenderer._Counter++;
-        this._camera = camera;
         var engine = scene.getEngine();
+
+        this._passIdForDrawWrapper = engine._createRenderPassId();
+        this._camera = camera;
 
         if (samplingMode !== Texture.NEAREST_SAMPLINGMODE) {
             if (type === Constants.TEXTURETYPE_FLOAT && !engine._caps.textureFloatLinearFiltering) {
@@ -152,7 +151,7 @@ export class DepthRenderer {
             if (this.isReady(subMesh, hardwareInstancedRendering) && camera) {
                 subMesh._renderId = scene.getRenderId();
 
-                const drawWrapper = subMesh._getDrawWrapper(this._nameForDrawWrapper)!;
+                const drawWrapper = subMesh._getDrawWrapper(this._passIdForDrawWrapper)!;
                 const effect = DrawWrapper.GetEffect(drawWrapper)!;
                 const cameraIsOrtho = camera.mode === Camera.ORTHOGRAPHIC_CAMERA;
 
@@ -259,7 +258,7 @@ export class DepthRenderer {
 
         var defines = [];
 
-        const subMeshEffect = subMesh._getDrawWrapper(this._nameForDrawWrapper, true)!;
+        const subMeshEffect = subMesh._getDrawWrapper(this._passIdForDrawWrapper, true)!;
         const engine = this._scene.getEngine();
 
         let effect = subMeshEffect.effect!;

@@ -88,11 +88,11 @@ export class ShadowOnlyMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh._materialDefines) {
+        if (!subMesh.materialDefines) {
             subMesh.materialDefines = new ShadowOnlyMaterialDefines();
         }
 
-        var defines = <ShadowOnlyMaterialDefines>subMesh._materialDefines;
+        var defines = <ShadowOnlyMaterialDefines>subMesh.materialDefines;
         var scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
@@ -214,7 +214,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         var scene = this.getScene();
 
-        var defines = <ShadowOnlyMaterialDefines>subMesh._materialDefines;
+        var defines = <ShadowOnlyMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }

@@ -469,6 +469,16 @@ export class ThinEngine {
     protected _cachedIndexBuffer: Nullable<DataBuffer>;
     /** @hidden */
     protected _cachedEffectForVertexBuffers: Nullable<Effect>;
+
+    protected static _RenderPassIdCounter = 0;
+    /** @hidden */
+    public _currentRenderPassId = Constants.RENDERPASS_MAIN;
+
+    public _createRenderPassId() {
+        // note: render pass id == 0 is always for the main render pass
+        return ++ThinEngine._RenderPassIdCounter;
+    }
+
     /** @hidden */
     public _currentRenderTarget: Nullable<RenderTargetWrapper>;
     private _uintIndicesCurrentlySet = false;
@@ -1275,6 +1285,7 @@ export class ThinEngine {
             needsInvertingBitmap: true,
             useUBOBindingCache: true,
             needShaderCodeInlining: false,
+            createDrawWrapperPerRenderPass: false,
             _collectUbosUpdatedInFrame: false,
         };
     }
@@ -1336,6 +1347,22 @@ export class ThinEngine {
      */
     public getInfo() {
         return this.getGlInfo();
+    }
+
+    /**
+     * (WebGPU only) True (default) to be in compatibility mode, meaning rendering all existing scenes without artifacts (same rendering than WebGL).
+     * Setting the property to false will improve performances but may not work in some scenes if some precautions are not taken.
+     * See @TODO WEBGPU DOC PAGE for more details
+     */
+    protected _compatibilityMode = true;
+
+    public get compatibilityMode() {
+        return this._compatibilityMode;
+    }
+
+    public set compatibilityMode(mode: boolean) {
+        // not supported in WebGL
+        this._compatibilityMode = true;
     }
 
     /**

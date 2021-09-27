@@ -485,12 +485,17 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * True to be in compatibility mode, meaning rendering in the same way than OpenGL.
-     * Setting the property to false will improve performances, but can lead to rendering artifacts.
-     * See @TODO WEBGPU DOC PAGE
-     * @hidden
+     * (WebGPU only) True (default) to be in compatibility mode, meaning rendering all existing scenes without artifacts (same rendering than WebGL).
+     * Setting the property to false will improve performances but may not work in some scenes if some precautions are not taken.
+     * See @TODO WEBGPU DOC PAGE for more details
      */
-    public compatibilityMode = true;
+    public get compatibilityMode() {
+        return this._compatibilityMode;
+    }
+ 
+    public set compatibilityMode(mode: boolean) {
+        this._compatibilityMode = mode;
+    }
 
     /** @hidden */
     public get currentSampleCount(): number {
@@ -823,6 +828,7 @@ export class WebGPUEngine extends Engine {
             needsInvertingBitmap: false,
             useUBOBindingCache: false,
             needShaderCodeInlining: true,
+            createDrawWrapperPerRenderPass: true,
             _collectUbosUpdatedInFrame: false,
         };
     }

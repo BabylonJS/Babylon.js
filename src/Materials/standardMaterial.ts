@@ -864,12 +864,12 @@ export class StandardMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh._materialDefines) {
+        if (!subMesh.materialDefines) {
             subMesh.materialDefines = new StandardMaterialDefines();
         }
 
         var scene = this.getScene();
-        var defines = <StandardMaterialDefines>subMesh._materialDefines;
+        var defines = <StandardMaterialDefines>subMesh.materialDefines;
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }
@@ -1401,7 +1401,7 @@ export class StandardMaterial extends PushMaterial {
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         var scene = this.getScene();
 
-        var defines = <StandardMaterialDefines>subMesh._materialDefines;
+        var defines = <StandardMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }

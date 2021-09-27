@@ -135,11 +135,11 @@ export class TriPlanarMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh._materialDefines) {
+        if (!subMesh.materialDefines) {
             subMesh.materialDefines = new TriPlanarMaterialDefines();
         }
 
-        var defines = <TriPlanarMaterialDefines>subMesh._materialDefines;
+        var defines = <TriPlanarMaterialDefines>subMesh.materialDefines;
         var scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
@@ -276,7 +276,7 @@ export class TriPlanarMaterial extends PushMaterial {
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         var scene = this.getScene();
 
-        var defines = <TriPlanarMaterialDefines>subMesh._materialDefines;
+        var defines = <TriPlanarMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }

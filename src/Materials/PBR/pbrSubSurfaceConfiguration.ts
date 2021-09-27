@@ -457,7 +457,7 @@ export class PBRSubSurfaceConfiguration {
      * @param subMesh the submesh to bind data for
     */
     public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, isFrozen: boolean, lodBasedMicrosurface: boolean, realTimeFiltering: boolean, subMesh: SubMesh): void {
-        const defines = subMesh!._materialDefines as unknown as IMaterialSubSurfaceDefines;
+        const defines = subMesh!.materialDefines as unknown as IMaterialSubSurfaceDefines;
 
         var refractionTexture = this._getRefractionTexture(scene);
 

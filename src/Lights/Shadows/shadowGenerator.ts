@@ -141,8 +141,6 @@ export interface IShadowGenerator {
  */
 export class ShadowGenerator implements IShadowGenerator {
 
-    private static _Counter = 0;
-
     /**
      * Name of the shadow generator class
      */
@@ -809,8 +807,8 @@ export class ShadowGenerator implements IShadowGenerator {
     protected _defaultTextureMatrix = Matrix.Identity();
     protected _storedUniqueId: Nullable<number>;
     protected _useUBO: boolean;
-    protected _nameForDrawWrapper: string[];
-    protected _nameForDrawWrapperCurrent: string;
+    protected _passIdForDrawWrapper: number[];
+    protected _passIdForDrawWrapperCurrent: number;
 
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
@@ -847,11 +845,10 @@ export class ShadowGenerator implements IShadowGenerator {
         this.id = light.id;
         this._useUBO = this._scene.getEngine().supportsUniformBuffers;
 
-        this._nameForDrawWrapper = [Constants.SUBMESH_DRAWWRAPPER_SHADOWGENERATOR_PREFIX + ShadowGenerator._Counter++];
+        this._passIdForDrawWrapper = [this._scene.getEngine()._createRenderPassId()];
         if (light.needCube()) {
-            const baseName = this._nameForDrawWrapper[0];
-            for (let i = 0; i < 6; ++i) {
-                this._nameForDrawWrapper[i] = baseName + "_" + i;
+            for (let i = 1; i < 6; ++i) {
+                this._passIdForDrawWrapper[i] = this._scene.getEngine()._createRenderPassId();
             }
         }
 
@@ -885,7 +882,7 @@ export class ShadowGenerator implements IShadowGenerator {
         this._initializeGenerator();
         this._applyFilterValues();
 
-        this._nameForDrawWrapperCurrent = this._nameForDrawWrapper[0];
+        this._passIdForDrawWrapperCurrent = this._passIdForDrawWrapper[0];
     }
 
     protected _initializeGenerator(): void {
@@ -934,12 +931,12 @@ export class ShadowGenerator implements IShadowGenerator {
         let engine = this._scene.getEngine();
 
         this._shadowMap.onBeforeBindObservable.add(() => {
-            engine._debugPushGroup?.(`shadow map generation for ${this._nameForDrawWrapper}`, 1);
+            engine._debugPushGroup?.(`shadow map generation for pass id ${this._passIdForDrawWrapper}`, 1);
         });
 
         // Record Face Index before render.
         this._shadowMap.onBeforeRenderObservable.add((faceIndex: number) => {
-            this._nameForDrawWrapperCurrent = this._nameForDrawWrapper[faceIndex];
+            this._passIdForDrawWrapperCurrent = this._passIdForDrawWrapper[faceIndex];
             this._currentFaceIndex = faceIndex;
             if (this._filter === ShadowGenerator.FILTER_PCF) {
                 engine.setColorWrite(false);
@@ -1117,7 +1114,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
             const shadowDepthWrapper = material.shadowDepthWrapper;
 
-            const drawWrapper = shadowDepthWrapper?.getEffect(subMesh, this, this._nameForDrawWrapperCurrent) ?? subMesh._getDrawWrapper(this._nameForDrawWrapperCurrent)!;
+            const drawWrapper = shadowDepthWrapper?.getEffect(subMesh, this, this._passIdForDrawWrapperCurrent) ?? subMesh._getDrawWrapper(this._passIdForDrawWrapperCurrent)!;
             const effect = DrawWrapper.GetEffect(drawWrapper)!;
 
             engine.enableEffect(drawWrapper);
@@ -1363,11 +1360,11 @@ export class ShadowGenerator implements IShadowGenerator {
         this._prepareShadowDefines(subMesh, useInstances, defines, isTransparent);
 
         if (shadowDepthWrapper) {
-            if (!shadowDepthWrapper.isReadyForSubMesh(subMesh, defines, this, useInstances, this._nameForDrawWrapperCurrent)) {
+            if (!shadowDepthWrapper.isReadyForSubMesh(subMesh, defines, this, useInstances, this._passIdForDrawWrapperCurrent)) {
                 return false;
             }
         } else {
-            const subMeshEffect = subMesh._getDrawWrapper(this._nameForDrawWrapperCurrent, true)!;
+            const subMeshEffect = subMesh._getDrawWrapper(this._passIdForDrawWrapperCurrent, true)!;
 
             let effect = subMeshEffect.effect!;
             let cachedDefines = subMeshEffect.defines;

@@ -585,14 +585,8 @@ export class Constants {
    */
 
   /** @hidden */
-  public static readonly SUBMESH_DRAWWRAPPER_MAINPASS = "bjs_mainpass";
-  /** @hidden */
-  public static readonly SUBMESH_DRAWWRAPPER_SHADOWGENERATOR_PREFIX = "bjs_shadowgenerator_";
-  /** @hidden */
-  public static readonly SUBMESH_DRAWWRAPPER_DEPTHRENDERER_PREFIX = "bjs_depthrenderer_";
-  /** @hidden */
-  public static readonly SUBMESH_DRAWWRAPPER_OUTLINERENDERER_PREFIX = "bjs_outlinerenderer_";
-
+  public static readonly RENDERPASS_MAIN = 0;
+  
   /**
    * Constant used as key code for Alt key
    */
