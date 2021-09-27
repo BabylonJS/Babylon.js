@@ -220,7 +220,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         effect.setFloat3(this._vReflectionMicrosurfaceInfosName, width, reflectionTexture.lodGenerationScale, reflectionTexture.lodGenerationOffset);
         effect.setFloat2(this._vReflectionFilteringInfoName, width, Scalar.Log2(width));
 
-        const defines = subMesh._materialDefines as NodeMaterialDefines;
+        const defines = subMesh.materialDefines as NodeMaterialDefines;
 
         const polynomials = reflectionTexture.sphericalPolynomial;
         if (defines.USESPHERICALFROMREFLECTIONMAP && polynomials) {

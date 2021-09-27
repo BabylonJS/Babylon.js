@@ -205,7 +205,7 @@ export class PBRSheenConfiguration {
      * @param subMesh the submesh to bind data for
      */
     public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, isFrozen: boolean, subMesh?: SubMesh): void {
-        const defines = subMesh!._materialDefines as unknown as IMaterialSheenDefines;
+        const defines = subMesh!.materialDefines as unknown as IMaterialSheenDefines;
 
         const identicalTextures = defines.SHEEN_TEXTURE_ROUGHNESS_IDENTICAL;
 

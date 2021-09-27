@@ -121,11 +121,11 @@ export class GridMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh._materialDefines) {
+        if (!subMesh.materialDefines) {
             subMesh.materialDefines = new GridMaterialDefines();
         }
 
-        var defines = <GridMaterialDefines>subMesh._materialDefines;
+        var defines = <GridMaterialDefines>subMesh.materialDefines;
         var scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
@@ -208,7 +208,7 @@ export class GridMaterial extends PushMaterial {
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         var scene = this.getScene();
 
-        var defines = <GridMaterialDefines>subMesh._materialDefines;
+        var defines = <GridMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }
