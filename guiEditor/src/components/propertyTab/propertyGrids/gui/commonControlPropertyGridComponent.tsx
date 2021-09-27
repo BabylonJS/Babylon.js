@@ -73,12 +73,14 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         else if (value.charAt(value.length - 1) === 'x' && value.charAt(value.length - 2) === 'p') {
             percentage = false;
         }
-        let newValue = value.split('').filter(function (item) {
-            if (item != 'p' && item != 'x' && item != '-' && item != '%') {
+        /*let newValue = value.split('').filter(function (item) {
+            if (/[^0-9]/g.test(item)) {
                 return item;
             }
             return null;
-        }).join('');
+        }).join('');*/
+
+        let newValue = value.replace(/\p\x\%\-/g, "");
 
         newValue = (negative ? '-' : '') + newValue;
         newValue += percentage ? '%' : 'px';
@@ -89,7 +91,6 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
 
     render() {
         const control = this.props.control;
-        console.log(control);
         var horizontalAlignment = this.props.control.horizontalAlignment;
         var verticalAlignment = this.props.control.verticalAlignment;
         if (control.typeName === "TextBlock" && (this.props.control as TextBlock).resizeToFit === false) {
@@ -127,7 +128,6 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                 (control as Image).autoScale = false;
                             }
                             else if (this.props.control.typeName === "ColorPicker") {
-                                console.log(newValue);
                                 if (newValue === '0' || newValue === '-') {
                                     newValue = "1";
                                 }
@@ -142,7 +142,6 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                 (control as Image).autoScale = false;
                             }
                             else if (this.props.control.typeName === "ColorPicker") {
-                                console.log(newValue);
                                 if (newValue === "0" || newValue === "-") {
                                     newValue = "1";
                                 }
