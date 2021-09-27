@@ -8,7 +8,7 @@ import { TransformNode } from "../../Meshes/transformNode";
 import { Viewport } from "../../Maths/math.viewport";
 
 /**
- * Camera used to simulate stereoscopic rendering (based on UniversalCamera)
+ * Camera used to simulate stereoscopic rendering on real screens (based on UniversalCamera)
  * @see https://doc.babylonjs.com/features/cameras
  */
 export class StereoscopicScreenUniversalCamera extends UniversalCamera {
@@ -41,14 +41,18 @@ export class StereoscopicScreenUniversalCamera extends UniversalCamera {
      * @param name defines camera name
      * @param position defines initial position
      * @param scene defines the hosting scene
-     * @param _distanceToProjectionPlane defines distance between each color axis
+     * @param distanceToProjectionPlane defines distance between each color axis. The rig cameras will receive this as their negative z position!
      * @param distanceBetweenEyes defines is stereoscopic is done side by side or over under
      */
-    constructor(name: string, position: Vector3, scene: Scene, _distanceToProjectionPlane: number = 1, distanceBetweenEyes: number = 0.065) {
+    constructor(name: string, position: Vector3, scene: Scene, distanceToProjectionPlane: number = 1, distanceBetweenEyes: number = 0.065) {
         super(name, position, scene);
         this._distanceBetweenEyes = distanceBetweenEyes;
-        this._distanceToProjectionPlane = _distanceToProjectionPlane;
-        this.setCameraRigMode(Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL, {});
+        this._distanceToProjectionPlane = distanceToProjectionPlane;
+        this.setCameraRigMode(Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL, {
+            stereoHalfAngle: 0
+        });
+        this._cameraRigParams.stereoHalfAngle = 0;
+        this._cameraRigParams.interaxialDistance = distanceBetweenEyes;
     }
 
     /**
@@ -67,7 +71,6 @@ export class StereoscopicScreenUniversalCamera extends UniversalCamera {
         const transform = new TransformNode('tm_' + name, this.getScene());
         camera.parent = transform;
         transform.setPivotMatrix(Matrix.Identity(), false);
-        transform.parent = this;
         camera.isRigCamera = true;
         camera.rigParent = this;
         return camera;
@@ -77,8 +80,17 @@ export class StereoscopicScreenUniversalCamera extends UniversalCamera {
      * @hidden
      */
     public _updateRigCameras() {
-        super._updateRigCameras();
         for (let cameraIndex = 0; cameraIndex < this._rigCameras.length; cameraIndex++) {
+            const cam = this._rigCameras[cameraIndex] as TargetCamera;
+            cam.minZ = this.minZ;
+            cam.maxZ = this.maxZ;
+            cam.fov = this.fov;
+            cam.upVector.copyFrom(this.upVector);
+            if (cam.rotationQuaternion) {
+                cam.rotationQuaternion.copyFrom(this.rotationQuaternion);
+            } else {
+                cam.rotation.copyFrom(this.rotation);
+            }
             this._updateCamera(this._rigCameras[cameraIndex] as TargetCamera, cameraIndex);
         }
     }
@@ -86,8 +98,8 @@ export class StereoscopicScreenUniversalCamera extends UniversalCamera {
     private _updateCamera(camera: TargetCamera, cameraIndex: number) {
         const b = this.distanceBetweenEyes / 2;
         const z = b / this.distanceToProjectionPlane;
-        camera.position.set((cameraIndex === 0 ? -b : b), 0, 0);
-        camera.target.copyFromFloats((cameraIndex === 0 ? b : -b), 0, 0);
+        camera.position.copyFrom(this.position);
+        camera.position.addInPlaceFromFloats((cameraIndex === 0 ? -b : b), 0, -this._distanceToProjectionPlane);
         const transform = camera.parent as TransformNode;
         const m = transform.getPivotMatrix();
         m.setTranslationFromFloats((cameraIndex === 0 ? b : -b), 0, 0);
