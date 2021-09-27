@@ -34,7 +34,7 @@ export class PrePassConfiguration {
      * @param uniforms defines the current uniform list.
      */
     public static AddUniforms(uniforms: string[]): void {
-        uniforms.push("previousWorld", "previousViewProjection");
+        uniforms.push("previousWorld", "previousViewProjection", "mPreviousBones");
     }
 
     /**
@@ -69,7 +69,6 @@ export class PrePassConfiguration {
                     // First update of the prepass configuration for this rendering pass
                     this.previousViewProjection.copyFrom(this.currentViewProjection);
                     this.currentViewProjection.copyFrom(scene.getTransformMatrix());
-                    this.currentViewProjection.updateFlag = scene.getTransformMatrix().updateFlag;
                 }
 
                 effect.setMatrix("previousWorld", this.previousWorldMatrices[mesh.uniqueId]);

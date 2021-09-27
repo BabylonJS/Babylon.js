@@ -113,6 +113,7 @@
 - Added a debug option to show the frustum of a directional light ([Popov72](https://github.com/Popov72))
 - Added support for the material stencil properties ([Popov72](https://github.com/Popov72))
 - Added space + LMB panning to texture inspector to improve accessibility ([darraghjburke](https://github.com/darraghjburke))
+- Add support to export .env environment textures using WebP ([simonihmig](https://github.com/simonihmig))
 
 ### Playground
 
@@ -309,6 +310,7 @@
 - Fix bug in NME where a link could not be recreated after being deleted ([Popov72](https://github.com/Popov72))
 - Fix small typo in transformNode getDirectionToRef method definition. ([PirateJC](https://github.com/piratejc))
 - Fix textures not properly inverting along the vertical axis when using ImageBitmaps ([nmrugg](https://github.com/nmrugg))
+- Fix for SkyMaterial sun position not working with non-default azimuth  ([AdversInc](https://github.com/adversinc))
 
 ## Breaking changes
 
