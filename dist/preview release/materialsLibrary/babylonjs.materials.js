@@ -5688,8 +5688,8 @@ var SkyMaterial = /** @class */ (function (_super) {
         if (!this.useSunPosition) {
             var theta = Math.PI * (this.inclination - 0.5);
             var phi = 2 * Math.PI * (this.azimuth - 0.5);
-            this.sunPosition.x = this.distance * Math.cos(phi);
-            this.sunPosition.y = this.distance * Math.sin(phi) * Math.sin(theta);
+            this.sunPosition.x = this.distance * Math.cos(phi) * Math.cos(theta);
+            this.sunPosition.y = this.distance * Math.sin(-theta);
             this.sunPosition.z = this.distance * Math.sin(phi) * Math.cos(theta);
             babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Quaternion"].FromUnitVectorsToRef(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector3"].UpReadOnly, this.up, this._skyOrientation);
             this.sunPosition.rotateByQuaternionToRef(this._skyOrientation, this.sunPosition);
