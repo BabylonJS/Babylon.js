@@ -66,6 +66,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
     private _checkAndUpdateValues(propertyName: string, value: string) {
         //check if it contains either a px or a % sign
         let percentage = this._responsive;
+        let negative = value.charAt(0) === '-';
         if (value.charAt(value.length - 1) === '%') {
             percentage = true;
         }
@@ -76,6 +77,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
             return (!isNaN(parseInt(item)));
         }).join('');
 
+        newValue = (negative ? '-' : '') + newValue;
         newValue += percentage ? '%' : 'px';
         (this.props.control as any)[propertyName] = newValue;
         this.forceUpdate();

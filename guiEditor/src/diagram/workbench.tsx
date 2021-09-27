@@ -361,7 +361,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         guiControl.onPointerDownObservable.add((evt) => {
             if (!this.isUp || evt.buttonIndex > 0) return;
-            
+
             this.isSelected(true, guiControl);
             this.isUp = false;
         });
@@ -417,7 +417,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                         if (dropLocationControl.parent.typeName != "Grid") {
                             draggedControlParent.removeControl(draggedControl);
                             let index = dropLocationControl.parent.children.indexOf(dropLocationControl);
-                            index = this._adjustParentingIndex(index);  //adjusting index to be before or after based on where the control is over
+                            const reversed = dropLocationControl.parent.typeName == "StackPanel";
+                            
+                            index = this._adjustParentingIndex(index, reversed);  //adjusting index to be before or after based on where the control is over
+
                             dropLocationControl.parent.children.splice(index, 0, draggedControl);
                             draggedControl.parent = dropLocationControl.parent;
                         }
@@ -467,13 +470,13 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         return true;
     }
 
-    private _adjustParentingIndex(index: number) {
+    private _adjustParentingIndex(index: number, reversed : boolean = false) {
         switch (this.props.globalState.draggedControlDirection) {
             case DragOverLocation.ABOVE:
-                return index + 1;
+                return reversed? index: index + 1;
             case DragOverLocation.BELOW:
             case DragOverLocation.CENTER:
-                return index;
+                return reversed? index + 1: index;
         }
         return index;
     }
