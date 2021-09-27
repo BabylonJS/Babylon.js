@@ -73,15 +73,8 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         else if (value.charAt(value.length - 1) === 'x' && value.charAt(value.length - 2) === 'p') {
             percentage = false;
         }
-        /*let newValue = value.split('').filter(function (item) {
-            if (/[^0-9]/g.test(item)) {
-                return item;
-            }
-            return null;
-        }).join('');*/
 
-        let newValue = value.replace(/\p\x\%\-/g, "");
-
+        let newValue = value.replace(/[\p\x\%\-]/g, "");
         newValue = (negative ? '-' : '') + newValue;
         newValue += percentage ? '%' : 'px';
 
