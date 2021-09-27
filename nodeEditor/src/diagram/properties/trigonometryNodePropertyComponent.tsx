@@ -24,6 +24,7 @@ export class TrigonometryPropertyTabComponent extends React.Component<IPropertyC
             {label: "Round", value: TrigonometryBlockOperations.Round},
             {label: "Ceiling", value: TrigonometryBlockOperations.Ceiling},
             {label: "Floor", value: TrigonometryBlockOperations.Floor},
+            {label: "Sqrt", value: TrigonometryBlockOperations.Sqrt},
             {label: "ArcCos", value: TrigonometryBlockOperations.ArcCos},
             {label: "ArcSin", value: TrigonometryBlockOperations.ArcSin},
             {label: "ArcTan", value: TrigonometryBlockOperations.ArcTan},
