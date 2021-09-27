@@ -74,7 +74,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
             percentage = false;
         }
 
-        let newValue = value.replace(/[\p\x\%\-]/g, "");
+        let newValue = value.match(/([\d\.\,]+)/g)?.toString();
         newValue = (negative ? '-' : '') + newValue;
         newValue += percentage ? '%' : 'px';
 
