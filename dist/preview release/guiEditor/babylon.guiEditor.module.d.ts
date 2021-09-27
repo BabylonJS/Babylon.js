@@ -824,6 +824,7 @@ declare module "babylonjs-gui-editor/components/propertyTab/propertyGrids/gui/gr
         constructor(props: IGridPropertyGridComponentProps);
         renderRows(): JSX.Element[];
         renderColumns(): JSX.Element[];
+        resizeColumn(): void;
         render(): JSX.Element;
     }
 }
@@ -947,6 +948,8 @@ declare module "babylonjs-gui-editor/components/propertyTab/propertyTabComponent
         private _timerIntervalId;
         private _lockObject;
         private _sizeOption;
+        private _sizeOptions;
+        private _sizeValues;
         constructor(props: IPropertyTabComponentProps);
         componentDidMount(): void;
         componentWillUnmount(): void;
@@ -2841,6 +2844,7 @@ declare module GUIEDITOR {
         constructor(props: IGridPropertyGridComponentProps);
         renderRows(): JSX.Element[];
         renderColumns(): JSX.Element[];
+        resizeColumn(): void;
         render(): JSX.Element;
     }
 }
@@ -2928,6 +2932,8 @@ declare module GUIEDITOR {
         private _timerIntervalId;
         private _lockObject;
         private _sizeOption;
+        private _sizeOptions;
+        private _sizeValues;
         constructor(props: IPropertyTabComponentProps);
         componentDidMount(): void;
         componentWillUnmount(): void;
