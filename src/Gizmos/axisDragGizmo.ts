@@ -130,7 +130,8 @@ export class AxisDragGizmo extends Gizmo {
                 let matrixChanged: boolean = false;
                 // Snapping logic
                 if (this.snapDistance == 0) {
-                    this.attachedNode.getWorldMatrix().getTranslation().addToRef(event.delta, tmpVector2);
+                    this.attachedNode.getWorldMatrix().getTranslationToRef(tmpVector2);
+                    tmpVector2.addInPlace(event.delta);
                     if (this.dragBehavior.validateDrag(tmpVector2)) {
                         if ((this.attachedNode as any).position) { // Required for nodes like lights
                             (this.attachedNode as any).position.addInPlaceFromFloats(event.delta.x, event.delta.y, event.delta.z);
@@ -149,7 +150,8 @@ export class AxisDragGizmo extends Gizmo {
                         event.delta.normalizeToRef(tmpVector);
                         tmpVector.scaleInPlace(this.snapDistance * dragSteps);
 
-                        this.attachedNode.getWorldMatrix().getTranslation().addToRef(tmpVector, tmpVector2);
+                        this.attachedNode.getWorldMatrix().getTranslationToRef(tmpVector2);
+                        tmpVector2.addInPlace(tmpVector);
                         if (this.dragBehavior.validateDrag(tmpVector2)) {
                             this.attachedNode.getWorldMatrix().addTranslationFromFloats(tmpVector.x, tmpVector.y, tmpVector.z);
                             this.attachedNode.updateCache();
