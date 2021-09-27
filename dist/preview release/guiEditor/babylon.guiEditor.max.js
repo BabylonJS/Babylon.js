@@ -43156,7 +43156,7 @@ var ParentingPropertyGridComponent = /** @class */ (function (_super) {
     ParentingPropertyGridComponent.prototype.updateGridPosition = function () {
         var grid = this.props.control.parent;
         if (grid) {
-            this._changeCell(grid, this.props.control, new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_5__["Vector2"](this._columnNumber, this._rowNumber));
+            this._changeCell(grid, this.props.control, new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_5__["Vector2"](this._rowNumber, this._columnNumber));
         }
     };
     ParentingPropertyGridComponent.prototype.getCellInfo = function () {
@@ -43351,6 +43351,7 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
     CommonControlPropertyGridComponent.prototype._checkAndUpdateValues = function (propertyName, value) {
         //check if it contains either a px or a % sign
         var percentage = this._responsive;
+        var negative = value.charAt(0) === '-';
         if (value.charAt(value.length - 1) === '%') {
             percentage = true;
         }
@@ -43360,6 +43361,7 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
         var newValue = value.split('').filter(function (item) {
             return (!isNaN(parseInt(item)));
         }).join('');
+        newValue = (negative ? '-' : '') + newValue;
         newValue += percentage ? '%' : 'px';
         this.props.control[propertyName] = newValue;
         this.forceUpdate();
@@ -43643,6 +43645,48 @@ var GridPropertyGridComponent = /** @class */ (function (_super) {
                     } })));
         }));
     };
+    GridPropertyGridComponent.prototype.resizeColumn = function () {
+        var grid = this.props.grid;
+        var total = 0;
+        for (var i = 0; i < grid.columnCount; ++i) {
+            var cd = grid.getColumnDefinition(i);
+            if (cd === null || cd === void 0 ? void 0 : cd.isPercentage) {
+                total += cd === null || cd === void 0 ? void 0 : cd.getValue(grid.host);
+            }
+        }
+        if (total != 1.0) {
+            var difference = total - 1.0;
+            var diff = Math.abs(difference);
+            for (var i = 0; i < grid.columnCount; ++i) {
+                var cd = grid.getColumnDefinition(i);
+                if (cd === null || cd === void 0 ? void 0 : cd.isPercentage) {
+                    var value = cd === null || cd === void 0 ? void 0 : cd.getValue(grid.host);
+                    var weighted = diff * (value / total);
+                    grid.setColumnDefinition(i, difference > 0 ? value - weighted : value + weighted);
+                }
+            }
+        }
+        total = 0;
+        for (var i = 0; i < grid.rowCount; ++i) {
+            var rd = grid.getRowDefinition(i);
+            if (rd === null || rd === void 0 ? void 0 : rd.isPercentage) {
+                total += rd === null || rd === void 0 ? void 0 : rd.getValue(grid.host);
+            }
+        }
+        if (total != 1.0) {
+            var difference = total - 1.0;
+            var diff = Math.abs(difference);
+            for (var i = 0; i < grid.rowCount; ++i) {
+                var rd = grid.getRowDefinition(i);
+                if (rd === null || rd === void 0 ? void 0 : rd.isPercentage) {
+                    var value = rd === null || rd === void 0 ? void 0 : rd.getValue(grid.host);
+                    var weighted = diff * (value / total);
+                    grid.setRowDefinition(i, difference > 0 ? value - weighted : value + weighted);
+                }
+            }
+        }
+        this.forceUpdate();
+    };
     GridPropertyGridComponent.prototype.render = function () {
         var _this = this;
         var grid = this.props.grid;
@@ -43673,7 +43717,11 @@ var GridPropertyGridComponent = /** @class */ (function (_super) {
                     grid.removeColumnDefinition(grid.columnCount - 1);
                     _this.forceUpdate();
                 } }),
-            this.renderColumns()));
+            this.renderColumns(),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "RESIZE COLUMNS/ROWS", onClick: function () {
+                    _this.resizeColumn();
+                } })));
     };
     return GridPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -44374,6 +44422,16 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         var _this = _super.call(this, props) || this;
         _this._lockObject = new _sharedUiComponents_tabs_propertyGrids_lockObject__WEBPACK_IMPORTED_MODULE_8__["LockObject"]();
         _this._sizeOption = 2;
+        _this._sizeOptions = [
+            { label: "Web (1920)", value: 0 },
+            { label: "Phone (720)", value: 1 },
+            { label: "Square (1200)", value: 2 },
+        ];
+        _this._sizeValues = [
+            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1920, 1080),
+            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](750, 1334),
+            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1200, 1200)
+        ];
         _this.saveLocally = function () {
             try {
                 var json = JSON.stringify(_this.props.globalState.guiTexture.serializeContent());
@@ -44456,6 +44514,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
             _this.forceUpdate();
         });
         _this.props.globalState.onLoadObservable.add(function (file) { return _this.load(file); });
+        _this._sizeOption = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].ReadBoolean("Responsive", true) ? 2 : _this._sizeOptions.length;
         return _this;
     }
     PropertyTabComponent.prototype.componentDidMount = function () {
@@ -44664,16 +44723,6 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                         }
                     } })));
         }
-        var sizeOptions = [
-            { label: "Web (1920)", value: 0 },
-            { label: "Phone (720)", value: 1 },
-            { label: "Square (1200)", value: 2 },
-        ];
-        var sizeValues = [
-            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1920, 1080),
-            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](750, 1334),
-            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1200, 1200)
-        ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "ge-propertyTab" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "header" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { id: "logo", src: adtIcon }),
@@ -44687,23 +44736,23 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "RESPONSIVE", iconLabel: "A responsive layout for the AdvancedDynamicTexture will resize the UI layout and reflow controls to accommodate different device screen sizes", icon: responsiveIcon, isSelected: function () { return babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].ReadBoolean("Responsive", true); }, onSelect: function (value) {
                         _this.props.globalState.onResponsiveChangeObservable.notifyObservers(value);
                         babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].WriteBoolean("Responsive", value);
-                        _this._sizeOption = sizeOptions.length;
+                        _this._sizeOption = _this._sizeOptions.length;
                         if (value) {
                             _this._sizeOption = 0;
-                            _this.props.globalState.workbench.resizeGuiTexture(sizeValues[_this._sizeOption]);
+                            _this.props.globalState.workbench.resizeGuiTexture(_this._sizeValues[_this._sizeOption]);
                         }
                         _this.forceUpdate();
                     } }),
                 babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].ReadBoolean("Responsive", true) &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_25__["OptionsLineComponent"], { label: "", iconLabel: "Size", options: sizeOptions, icon: canvasSizeIcon, target: this, propertyName: "_sizeOption", noDirectUpdate: true, onSelect: function (value) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_25__["OptionsLineComponent"], { label: "", iconLabel: "Size", options: this._sizeOptions, icon: canvasSizeIcon, target: this, propertyName: "_sizeOption", noDirectUpdate: true, onSelect: function (value) {
                             _this._sizeOption = value;
-                            if (_this._sizeOption !== (sizeOptions.length)) {
-                                var newSize = sizeValues[_this._sizeOption];
+                            if (_this._sizeOption !== (_this._sizeOptions.length)) {
+                                var newSize = _this._sizeValues[_this._sizeOption];
                                 _this.props.globalState.workbench.resizeGuiTexture(newSize);
                             }
                             _this.forceUpdate();
                         } }),
-                this._sizeOption == (sizeOptions.length) &&
+                this._sizeOption == (this._sizeOptions.length) &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "divider" },
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_26__["FloatLineComponent"], { icon: canvasSizeIcon, iconLabel: "Canvas Size", label: "W", target: this.state.textureSize, propertyName: "x", isInteger: true, min: 1, max: MAX_TEXTURE_SIZE, onChange: function (newvalue) {
                                 if (!isNaN(newvalue)) {
@@ -45389,6 +45438,9 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
             return null;
         }
         var children = _tools__WEBPACK_IMPORTED_MODULE_1__["Tools"].SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
+        if (entity.typeName === "StackPanel") {
+            children.reverse();
+        }
         return (children.map(function (item, i) {
             if (item.name == "Art-Board-Background") {
                 return (null);
@@ -45898,7 +45950,8 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                         if (dropLocationControl.parent.typeName != "Grid") {
                             draggedControlParent.removeControl(draggedControl);
                             var index = dropLocationControl.parent.children.indexOf(dropLocationControl);
-                            index = this._adjustParentingIndex(index); //adjusting index to be before or after based on where the control is over
+                            var reversed = dropLocationControl.parent.typeName == "StackPanel";
+                            index = this._adjustParentingIndex(index, reversed); //adjusting index to be before or after based on where the control is over
                             dropLocationControl.parent.children.splice(index, 0, draggedControl);
                             draggedControl.parent = dropLocationControl.parent;
                         }
@@ -45943,13 +45996,14 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         }
         return true;
     };
-    WorkbenchComponent.prototype._adjustParentingIndex = function (index) {
+    WorkbenchComponent.prototype._adjustParentingIndex = function (index, reversed) {
+        if (reversed === void 0) { reversed = false; }
         switch (this.props.globalState.draggedControlDirection) {
             case _globalState__WEBPACK_IMPORTED_MODULE_2__["DragOverLocation"].ABOVE:
-                return index + 1;
+                return reversed ? index : index + 1;
             case _globalState__WEBPACK_IMPORTED_MODULE_2__["DragOverLocation"].BELOW:
             case _globalState__WEBPACK_IMPORTED_MODULE_2__["DragOverLocation"].CENTER:
-                return index;
+                return reversed ? index + 1 : index;
         }
         return index;
     };
@@ -48429,15 +48483,15 @@ var TextInputLineComponent = /** @class */ (function (_super) {
     };
     TextInputLineComponent.prototype.updateValue = function (value) {
         if (this.props.numbersOnly) {
-            var checkValue = value;
-            if (value[0] === "-") {
-                checkValue = value.substr(1);
-            }
-            if (/[^0-9\.\p\x\%]/g.test(checkValue)) {
+            if (/[^0-9\.\p\x\%\-]/g.test(value)) {
                 return;
             }
             if (!value) {
                 value = "0";
+            }
+            //Removing starting zero if there is a number of a minus after it. 
+            if (value.search(/0+[0-9\-]/g) === 0) {
+                value = value.substr(1);
             }
         }
         this._localChange = true;
