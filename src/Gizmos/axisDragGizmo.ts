@@ -113,6 +113,7 @@ export class AxisDragGizmo extends Gizmo {
 
         var currentSnapDragDistance = 0;
         var tmpVector = new Vector3();
+        var tmpVector2 = new Vector3();
         var tmpSnapEvent = { snapDistance: 0 };
         // Add drag behavior to handle events when the gizmo is dragged
         this.dragBehavior = new PointerDragBehavior({ dragAxis: dragAxis });
@@ -126,15 +127,20 @@ export class AxisDragGizmo extends Gizmo {
                 // if the node has parent, the local transform properties (position, rotation, scale)
                 // will be recomputed in _matrixChanged function
 
+                let matrixChanged: boolean = false;
                 // Snapping logic
                 if (this.snapDistance == 0) {
-                    if ((this.attachedNode as any).position) { // Required for nodes like lights
-                        (this.attachedNode as any).position.addInPlaceFromFloats(event.delta.x, event.delta.y, event.delta.z);
-                    }
+                    this.attachedNode.getWorldMatrix().getTranslation().addToRef(event.delta, tmpVector2);
+                    if (this.dragBehavior.validateDrag(tmpVector2)) {
+                        if ((this.attachedNode as any).position) { // Required for nodes like lights
+                            (this.attachedNode as any).position.addInPlaceFromFloats(event.delta.x, event.delta.y, event.delta.z);
+                        }
 
-                    // use _worldMatrix to not force a matrix update when calling GetWorldMatrix especially with Cameras
-                    this.attachedNode.getWorldMatrix().addTranslationFromFloats(event.delta.x, event.delta.y, event.delta.z);
-                    this.attachedNode.updateCache();
+                        // use _worldMatrix to not force a matrix update when calling GetWorldMatrix especially with Cameras
+                        this.attachedNode.getWorldMatrix().addTranslationFromFloats(event.delta.x, event.delta.y, event.delta.z);
+                        this.attachedNode.updateCache();
+                        matrixChanged = true;
+                    }
                 } else {
                     currentSnapDragDistance += event.dragDistance;
                     if (Math.abs(currentSnapDragDistance) > this.snapDistance) {
@@ -142,13 +148,20 @@ export class AxisDragGizmo extends Gizmo {
                         currentSnapDragDistance = currentSnapDragDistance % this.snapDistance;
                         event.delta.normalizeToRef(tmpVector);
                         tmpVector.scaleInPlace(this.snapDistance * dragSteps);
-                        this.attachedNode.getWorldMatrix().addTranslationFromFloats(tmpVector.x, tmpVector.y, tmpVector.z);
-                        this.attachedNode.updateCache();
-                        tmpSnapEvent.snapDistance = this.snapDistance * dragSteps;
-                        this.onSnapObservable.notifyObservers(tmpSnapEvent);
+
+                        this.attachedNode.getWorldMatrix().getTranslation().addToRef(tmpVector, tmpVector2);
+                        if (this.dragBehavior.validateDrag(tmpVector2)) {
+                            this.attachedNode.getWorldMatrix().addTranslationFromFloats(tmpVector.x, tmpVector.y, tmpVector.z);
+                            this.attachedNode.updateCache();
+                            tmpSnapEvent.snapDistance = this.snapDistance * dragSteps;
+                            this.onSnapObservable.notifyObservers(tmpSnapEvent);
+                            matrixChanged = true;
+                        }
                     }
                 }
-                this._matrixChanged();
+                if (matrixChanged) {
+                    this._matrixChanged();
+                }
             }
         });
         this.dragBehavior.onDragStartObservable.add(() => { this._dragging = true; });
