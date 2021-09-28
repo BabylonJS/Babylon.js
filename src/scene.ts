@@ -34,7 +34,7 @@ import { Color4, Color3 } from './Maths/math.color';
 import { Plane } from './Maths/math.plane';
 import { Frustum } from './Maths/math.frustum';
 import { UniqueIdGenerator } from './Misc/uniqueIdGenerator';
-import { LoadFileError, RequestFileError, ReadFileError, ReadFile, RequestFile } from './Misc/fileTools';
+import { LoadFileError, RequestFileError, ReadFileError, ReadFile, RequestFile, LoadFile } from './Misc/fileTools';
 import { IClipPlanesHolder } from './Misc/interfaces/iClipPlanesHolder';
 import { IPointerEvent } from "./Events/deviceInputEvents";
 import { LightConstants } from "./Lights/lightConstants";
@@ -5145,7 +5145,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /** @hidden */
     public _loadFile(fileOrUrl: File | string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void, onOpened?: (request: WebRequest) => void): IFileRequest {
-        const request = FileTools.LoadFile(fileOrUrl, onSuccess, onProgress, useOfflineSupport ? this.offlineProvider : undefined, useArrayBuffer, onError, onOpened);
+        const request = LoadFile(fileOrUrl, onSuccess, onProgress, useOfflineSupport ? this.offlineProvider : undefined, useArrayBuffer, onError, onOpened);
         this._activeRequests.push(request);
         request.onCompleteObservable.add((request) => {
             this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
