@@ -2,7 +2,7 @@ import { Logger } from "../Misc/logger";
 import { Nullable } from "../types";
 import { Observable } from "../Misc/observable";
 import { IComputePipelineContext } from "./IComputePipelineContext";
-import { DomManagement } from "../Misc/domManagement";
+import { GetDOMTextContent, IsWindowObjectExist } from "../Misc/domManagement";
 import { ShaderProcessor } from "../Engines/Processors/shaderProcessor";
 import { ProcessingOptions } from "../Engines/Processors/shaderProcessingOptions";
 import { ShaderStore } from '../Engines/shaderStore';
@@ -128,7 +128,7 @@ export class ComputeEffect {
 
         let computeSource: any;
 
-        const hostDocument = DomManagement.IsWindowObjectExist() ? this._engine.getHostDocument() : null;
+        const hostDocument = IsWindowObjectExist() ? this._engine.getHostDocument() : null;
 
         if (baseName.computeSource) {
             computeSource = "source:" + baseName.computeSource;
@@ -276,7 +276,7 @@ export class ComputeEffect {
         if (typeof (HTMLElement) !== "undefined") {
             // DOM element ?
             if (shader instanceof HTMLElement) {
-                var shaderCode = DomManagement.GetDOMTextContent(shader);
+                var shaderCode = GetDOMTextContent(shader);
                 callback(shaderCode);
                 return;
             }

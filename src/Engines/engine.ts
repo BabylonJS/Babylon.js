@@ -4,7 +4,7 @@ import { Scene } from "../scene";
 import { InternalTexture } from "../Materials/Textures/internalTexture";
 import { IOfflineProvider } from "../Offline/IOfflineProvider";
 import { ILoadingScreen } from "../Loading/loadingScreen";
-import { DomManagement } from "../Misc/domManagement";
+import { IsDocumentAvailable, IsWindowObjectExist } from "../Misc/domManagement";
 import { EngineStore } from "./engineStore";
 import { _WarnImport } from '../Misc/devTools';
 import { WebGLPipelineContext } from './WebGL/webGLPipelineContext';
@@ -541,7 +541,7 @@ export class Engine extends ThinEngine {
 
             this._sharedInit(canvas, !!options.doNotHandleTouchAction, options.audioEngine!);
 
-            if (DomManagement.IsWindowObjectExist()) {
+            if (IsWindowObjectExist()) {
                 const anyDoc = document as any;
 
                 // Fullscreen
@@ -642,7 +642,7 @@ export class Engine extends ThinEngine {
             this.onCanvasPointerOutObservable.notifyObservers(ev);
         };
 
-        if (DomManagement.IsWindowObjectExist()) {
+        if (IsWindowObjectExist()) {
             const hostWindow = this.getHostWindow();
             if (hostWindow) {
                 hostWindow.addEventListener("blur", this._onBlur);
@@ -1745,7 +1745,7 @@ export class Engine extends ThinEngine {
         }
 
         // Events
-        if (DomManagement.IsWindowObjectExist()) {
+        if (IsWindowObjectExist()) {
             window.removeEventListener("blur", this._onBlur);
             window.removeEventListener("focus", this._onFocus);
 
@@ -1755,7 +1755,7 @@ export class Engine extends ThinEngine {
                 this._renderingCanvas.removeEventListener("pointerout", this._onCanvasPointerOut);
             }
 
-            if (DomManagement.IsDocumentAvailable()) {
+            if (IsDocumentAvailable()) {
                 document.removeEventListener("fullscreenchange", this._onFullscreenChange);
                 document.removeEventListener("mozfullscreenchange", this._onFullscreenChange);
                 document.removeEventListener("webkitfullscreenchange", this._onFullscreenChange);
@@ -1802,7 +1802,7 @@ export class Engine extends ThinEngine {
      * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
      */
     public displayLoadingUI(): void {
-        if (!DomManagement.IsWindowObjectExist()) {
+        if (!IsWindowObjectExist()) {
             return;
         }
         const loadingScreen = this.loadingScreen;
@@ -1816,7 +1816,7 @@ export class Engine extends ThinEngine {
      * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
      */
     public hideLoadingUI(): void {
-        if (!DomManagement.IsWindowObjectExist()) {
+        if (!IsWindowObjectExist()) {
             return;
         }
         const loadingScreen = this._loadingScreen;

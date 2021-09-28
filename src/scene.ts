@@ -22,7 +22,7 @@ import { RenderingGroupInfo, RenderingManager, IRenderingManagerAutoClearSetup }
 import { ISceneComponent, ISceneSerializableComponent, Stage, SimpleStageAction, RenderTargetsStageAction, RenderTargetStageAction, MeshStageAction, EvaluateSubMeshStageAction, PreActiveMeshStageAction, CameraStageAction, RenderingGroupStageAction, RenderingMeshStageAction, PointerMoveStageAction, PointerUpDownStageAction, CameraStageFrameBufferAction } from "./sceneComponent";
 import { Engine } from "./Engines/engine";
 import { Constants } from "./Engines/constants";
-import { DomManagement } from "./Misc/domManagement";
+import { IsWindowObjectExist } from "./Misc/domManagement";
 import { EngineStore } from "./Engines/engineStore";
 import { AbstractActionManager } from './Actions/abstractActionManager';
 import { _WarnImport } from './Misc/devTools';
@@ -1481,7 +1481,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             this.postProcessManager = new PostProcessManager(this);
         }
 
-        if (DomManagement.IsWindowObjectExist()) {
+        if (IsWindowObjectExist()) {
             this.attachControl();
         }
 

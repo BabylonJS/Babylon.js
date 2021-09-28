@@ -17,7 +17,7 @@ import { IViewportLike, IColor4Like } from '../Maths/math.like';
 import { DataBuffer } from '../Buffers/dataBuffer';
 import { IFileRequest } from '../Misc/fileRequest';
 import { Logger } from '../Misc/logger';
-import { DomManagement } from '../Misc/domManagement';
+import { IsWindowObjectExist } from '../Misc/domManagement';
 import { WebGLShaderProcessor } from './WebGL/webGLShaderProcessors';
 import { WebGL2ShaderProcessor } from './WebGL/webGL2ShaderProcessors';
 import { WebGLDataBuffer } from '../Meshes/WebGL/webGLDataBuffer';
@@ -762,7 +762,7 @@ export class ThinEngine {
                 this._checkForMobile();
 
                 // Set up event listener to check when window is resized (used to get emulator activation to work properly)
-                if (DomManagement.IsWindowObjectExist()) {
+                if (IsWindowObjectExist()) {
                     window.addEventListener("resize", this._checkForMobile);
                 }
 
@@ -887,7 +887,7 @@ export class ThinEngine {
         }
 
         // Viewport
-        const devicePixelRatio = DomManagement.IsWindowObjectExist() ? (window.devicePixelRatio || 1.0) : 1.0;
+        const devicePixelRatio = IsWindowObjectExist() ? (window.devicePixelRatio || 1.0) : 1.0;
 
         var limitDeviceRatio = options.limitDeviceRatio || devicePixelRatio;
         this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, devicePixelRatio) : 1.0;
@@ -1463,7 +1463,7 @@ export class ThinEngine {
      * @returns the host window object
      */
     public getHostWindow(): Nullable<Window> {
-        if (!DomManagement.IsWindowObjectExist()) {
+        if (!IsWindowObjectExist()) {
             return null;
         }
 
@@ -1622,7 +1622,7 @@ export class ThinEngine {
         let width: number;
         let height: number;
 
-        if (DomManagement.IsWindowObjectExist()) {
+        if (IsWindowObjectExist()) {
             width = this._renderingCanvas ? (this._renderingCanvas.clientWidth || this._renderingCanvas.width) : window.innerWidth;
             height = this._renderingCanvas ? (this._renderingCanvas.clientHeight || this._renderingCanvas.height) : window.innerHeight;
         } else {
@@ -4528,7 +4528,7 @@ export class ThinEngine {
         this._boundUniforms = [];
 
         // Events
-        if (DomManagement.IsWindowObjectExist()) {
+        if (IsWindowObjectExist()) {
             if (this._renderingCanvas) {
                 if (!this._doNotHandleContextLost) {
                     this._renderingCanvas.removeEventListener("webglcontextlost", this._onContextLost);
@@ -5118,7 +5118,7 @@ export class ThinEngine {
      * @returns frame number
      */
     public static QueueNewFrame(func: () => void, requester?: any): number {
-        if (!DomManagement.IsWindowObjectExist()) {
+        if (!IsWindowObjectExist()) {
             if (typeof requestAnimationFrame !== "undefined") {
                 return requestAnimationFrame(func);
             }

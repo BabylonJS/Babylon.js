@@ -1,6 +1,6 @@
 import { Nullable, float } from "../types";
 import { Observable } from "./observable";
-import { DomManagement } from "./domManagement";
+import { GetDOMTextContent, IsNavigatorAvailable, IsWindowObjectExist } from "./domManagement";
 import { Logger } from "./logger";
 import { _TypeStore } from "./typeStore";
 import { DeepCopier } from "./deepCopier";
@@ -252,9 +252,9 @@ export class Tools {
 
     /**
      * Extracts text content from a DOM element hierarchy
-     * Back Compat only, please use DomManagement.GetDOMTextContent instead.
+     * Back Compat only, please use GetDOMTextContent instead.
      */
-    public static GetDOMTextContent = DomManagement.GetDOMTextContent;
+    public static GetDOMTextContent = GetDOMTextContent;
 
     /**
      * Convert an angle in radians to degrees
@@ -297,7 +297,7 @@ export class Tools {
         var eventPrefix = "pointer";
 
         // Check if pointer events are supported
-        if (DomManagement.IsWindowObjectExist() && !window.PointerEvent && DomManagement.IsNavigatorAvailable() && !navigator.pointerEnabled) {
+        if (IsWindowObjectExist() && !window.PointerEvent && IsNavigatorAvailable() && !navigator.pointerEnabled) {
             eventPrefix = "mouse";
         }
 
@@ -410,7 +410,7 @@ export class Tools {
      * @param scriptId defines the id of the script element
      */
     public static LoadScript(scriptUrl: string, onSuccess: () => void, onError?: (message?: string, exception?: any) => void, scriptId?: string) {
-        if (!DomManagement.IsWindowObjectExist()) {
+        if (!IsWindowObjectExist()) {
             return;
         }
         var head = document.getElementsByTagName("head")[0];
@@ -1027,9 +1027,9 @@ export class Tools {
 
     /**
      * Checks if the window object exists
-     * Back Compat only, please use DomManagement.IsWindowObjectExist instead.
+     * Back Compat only, please use IsWindowObjectExist instead.
      */
-    public static IsWindowObjectExist = DomManagement.IsWindowObjectExist;
+    public static IsWindowObjectExist = IsWindowObjectExist;
 
     // Performances
 
@@ -1074,7 +1074,7 @@ export class Tools {
 
     private static _StartUserMark(counterName: string, condition = true): void {
         if (!Tools._performance) {
-            if (!DomManagement.IsWindowObjectExist()) {
+            if (!IsWindowObjectExist()) {
                 return;
             }
             Tools._performance = window.performance;
@@ -1223,7 +1223,7 @@ export class Tools {
      * @returns whether or not the current user agent is safari
      */
     public static IsSafari(): boolean {
-        if (!DomManagement.IsNavigatorAvailable()) {
+        if (!IsNavigatorAvailable()) {
             return false;
         }
 
