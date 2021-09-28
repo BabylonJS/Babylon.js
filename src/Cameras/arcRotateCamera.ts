@@ -1,4 +1,4 @@
-import { serialize, serializeAsVector3 } from "../Misc/decorators";
+import { serialize, serializeAsVector3, serializeAsMeshReference } from "../Misc/decorators";
 import { Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
@@ -52,6 +52,7 @@ export class ArcRotateCamera extends TargetCamera {
 
     @serializeAsVector3("target")
     protected _target: Vector3;
+    @serializeAsMeshReference("targetHost")
     protected _targetHost: Nullable<AbstractMesh>;
 
     /**
@@ -63,6 +64,17 @@ export class ArcRotateCamera extends TargetCamera {
         return this._target;
     }
     public set target(value: Vector3) {
+        this.setTarget(value);
+    }
+
+    /**
+     * Defines the target mesh of the camera.
+     * The camera looks towards it form the radius distance.
+     */
+    public get targetHost(): AbstractMesh {
+        return this._targetHost as AbstractMesh;
+    }
+    public set targetHost(value: AbstractMesh) {
         this.setTarget(value);
     }
 
