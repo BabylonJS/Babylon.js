@@ -1,5 +1,5 @@
 import { WebRequest } from './webRequest';
-import { DomManagement } from './domManagement';
+import { IsWindowObjectExist } from './domManagement';
 import { Nullable } from '../types';
 import { IOfflineProvider } from '../Offline/IOfflineProvider';
 import { IFileRequest } from './fileRequest';
@@ -463,7 +463,7 @@ export const RequestFile = (url: string, onSuccess: (data: string | ArrayBuffer,
                     // Some browsers have issues where onreadystatechange can be called multiple times with the same value.
                     request.removeEventListener("readystatechange", onReadyStateChange);
 
-                    if ((request.status >= 200 && request.status < 300) || (request.status === 0 && (!DomManagement.IsWindowObjectExist() || IsFileURL()))) {
+                    if ((request.status >= 200 && request.status < 300) || (request.status === 0 && (!IsWindowObjectExist() || IsFileURL()))) {
                         try {
                             onSuccess(useArrayBuffer ? request.response : request.responseText, request);
                         } catch (e) {
