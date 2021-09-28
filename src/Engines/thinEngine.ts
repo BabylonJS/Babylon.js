@@ -1,7 +1,7 @@
 import { EngineStore } from './engineStore';
 import { IInternalTextureLoader } from '../Materials/Textures/internalTextureLoader';
 import { Effect, IEffectCreationOptions } from '../Materials/effect';
-import { _DevTools } from '../Misc/devTools';
+import { _WarnImport } from '../Misc/devTools';
 import { IShaderProcessor } from './Processors/iShaderProcessor';
 import { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import { UniformBuffer } from '../Materials/uniformBuffer';
@@ -3695,7 +3695,7 @@ export class ThinEngine {
      * @hidden
      */
     public static _FileToolsLoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string, imageBitmapOptions?: ImageBitmapOptions): Nullable<HTMLImageElement> {
-        throw _DevTools.WarnImport("FileTools");
+        throw _WarnImport("FileTools");
     }
 
     /**
@@ -3718,7 +3718,7 @@ export class ThinEngine {
      * @returns the raw texture inside an InternalTexture
      */
     public createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
-        throw _DevTools.WarnImport("Engine.RawTexture");
+        throw _WarnImport("Engine.RawTexture");
     }
 
     /**
@@ -3736,7 +3736,7 @@ export class ThinEngine {
     public createRawCubeTexture(data: Nullable<ArrayBufferView[]>, size: number, format: number, type: number,
         generateMipMaps: boolean, invertY: boolean, samplingMode: number,
         compression: Nullable<string> = null): InternalTexture {
-        throw _DevTools.WarnImport("Engine.RawTexture");
+        throw _WarnImport("Engine.RawTexture");
     }
 
     /**
@@ -3754,7 +3754,7 @@ export class ThinEngine {
      * @returns a new raw 3D texture (stored in an InternalTexture)
      */
     public createRawTexture3D(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, textureType = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
-        throw _DevTools.WarnImport("Engine.RawTexture");
+        throw _WarnImport("Engine.RawTexture");
     }
 
     /**
@@ -3772,7 +3772,7 @@ export class ThinEngine {
      * @returns a new raw 2D array texture (stored in an InternalTexture)
      */
     public createRawTexture2DArray(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, textureType = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
-        throw _DevTools.WarnImport("Engine.RawTexture");
+        throw _WarnImport("Engine.RawTexture");
     }
 
     private _unpackFlipYCached: Nullable<boolean> = null;
@@ -4959,7 +4959,7 @@ export class ThinEngine {
      * @hidden
      */
     public static _FileToolsLoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void): IFileRequest {
-        throw _DevTools.WarnImport("FileTools");
+        throw _WarnImport("FileTools");
     }
 
     /**

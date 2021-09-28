@@ -12,7 +12,7 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { ICullable } from "../Culling/boundingInfo";
 import { Logger } from "../Misc/logger";
 import { _TypeStore } from '../Misc/typeStore';
-import { _DevTools } from '../Misc/devTools';
+import { _WarnImport } from '../Misc/devTools';
 import { Viewport } from '../Maths/math.viewport';
 import { Frustum } from '../Maths/math.frustum';
 import { Plane } from '../Maths/math.plane';
@@ -31,7 +31,7 @@ declare type Ray = import("../Culling/ray").Ray;
 export class Camera extends Node {
     /** @hidden */
     public static _createDefaultParsedCamera = (name: string, scene: Scene): Camera => {
-        throw _DevTools.WarnImport("UniversalCamera");
+        throw _WarnImport("UniversalCamera");
     }
 
     /**
@@ -940,7 +940,7 @@ export class Camera extends Node {
      * @returns the forward ray
      */
     public getForwardRay(length = 100, transform?: Matrix, origin?: Vector3): Ray {
-        throw _DevTools.WarnImport("Ray");
+        throw _WarnImport("Ray");
     }
 
     /**
@@ -952,7 +952,7 @@ export class Camera extends Node {
      * @returns the forward ray
      */
     public getForwardRayToRef(refRay: Ray, length = 100, transform?: Matrix, origin?: Vector3): Ray {
-        throw _DevTools.WarnImport("Ray");
+        throw _WarnImport("Ray");
     }
 
     /**

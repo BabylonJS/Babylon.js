@@ -6,7 +6,7 @@ import { IOfflineProvider } from "../Offline/IOfflineProvider";
 import { ILoadingScreen } from "../Loading/loadingScreen";
 import { DomManagement } from "../Misc/domManagement";
 import { EngineStore } from "./engineStore";
-import { _DevTools } from '../Misc/devTools';
+import { _WarnImport } from '../Misc/devTools';
 import { WebGLPipelineContext } from './WebGL/webGLPipelineContext';
 import { IPipelineContext } from './IPipelineContext';
 import { ICustomAnimationFrameRequester } from '../Misc/customAnimationFrameRequester';
@@ -347,7 +347,7 @@ export class Engine extends ThinEngine {
      * @returns The loading screen
      */
     public static DefaultLoadingScreenFactory(canvas: HTMLCanvasElement): ILoadingScreen {
-        throw _DevTools.WarnImport("LoadingScreen");
+        throw _WarnImport("LoadingScreen");
     }
 
     /**
@@ -1074,7 +1074,7 @@ export class Engine extends ThinEngine {
      * @returns The onVRDisplayChangedObservable
      */
     public initWebVR(): Observable<IDisplayChangedEventArgs> {
-        throw _DevTools.WarnImport("WebVRCamera");
+        throw _WarnImport("WebVRCamera");
     }
 
     /** @hidden */

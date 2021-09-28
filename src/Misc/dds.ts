@@ -15,9 +15,9 @@ import "../Engines/Extensions/engine.cubeTexture";
 // Based on demo done by Brandon Jones - http://media.tojicode.com/webgl-samples/dds.html
 // All values and structures referenced from:
 // http://msdn.microsoft.com/en-us/library/bb943991.aspx/
-var DDS_MAGIC = 0x20534444;
+const DDS_MAGIC = 0x20534444;
 
-var
+const
     //DDSD_CAPS = 0x1,
     //DDSD_HEIGHT = 0x2,
     //DDSD_WIDTH = 0x4,
@@ -31,7 +31,7 @@ var
 //     DDSCAPS_MIPMAP = 0x400000,
 //     DDSCAPS_TEXTURE = 0x1000;
 
-var DDSCAPS2_CUBEMAP = 0x200;
+const DDSCAPS2_CUBEMAP = 0x200;
 // DDSCAPS2_CUBEMAP_POSITIVEX = 0x400,
 // DDSCAPS2_CUBEMAP_NEGATIVEX = 0x800,
 // DDSCAPS2_CUBEMAP_POSITIVEY = 0x1000,
@@ -40,7 +40,7 @@ var DDSCAPS2_CUBEMAP = 0x200;
 // DDSCAPS2_CUBEMAP_NEGATIVEZ = 0x8000,
 // DDSCAPS2_VOLUME = 0x200000;
 
-var
+const
     //DDPF_ALPHAPIXELS = 0x1,
     //DDPF_ALPHA = 0x2,
     DDPF_FOURCC = 0x4,

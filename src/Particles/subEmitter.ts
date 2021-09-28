@@ -1,5 +1,5 @@
 import { Vector3 } from "../Maths/math.vector";
-import { _DevTools } from '../Misc/devTools';
+import { _WarnImport } from '../Misc/devTools';
 import { ThinEngine } from '../Engines/thinEngine';
 import { _TypeStore } from '../Misc/typeStore';
 
@@ -100,7 +100,7 @@ export class SubEmitter {
 
     /** @hidden */
     public static _ParseParticleSystem(system: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart = false): ParticleSystem {
-        throw _DevTools.WarnImport("ParseParticle");
+        throw _WarnImport("ParseParticle");
     }
 
     /**

@@ -24,7 +24,7 @@ import { Constants } from "../Engines/constants";
 
 import "../Shaders/glowMapGeneration.fragment";
 import "../Shaders/glowMapGeneration.vertex";
-import { _DevTools } from '../Misc/devTools';
+import { _WarnImport } from '../Misc/devTools';
 import { DataBuffer } from '../Buffers/dataBuffer';
 import { EffectFallbacks } from '../Materials/effectFallbacks';
 import { DrawWrapper } from "../Materials/drawWrapper";
@@ -168,7 +168,7 @@ export abstract class EffectLayer {
 
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
-        throw _DevTools.WarnImport("EffectLayerSceneComponent");
+        throw _WarnImport("EffectLayerSceneComponent");
     }
 
     /**

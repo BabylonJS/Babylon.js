@@ -1,7 +1,7 @@
 import { Observable } from "../../Misc/observable";
 import { Nullable, int } from "../../types";
 import { ICanvas, ICanvasRenderingContext } from "../../Engines/ICanvas";
-import { _DevTools } from '../../Misc/devTools';
+import { _WarnImport } from '../../Misc/devTools';
 import { HardwareTextureWrapper } from "./hardwareTextureWrapper";
 import { TextureSampler } from "./textureSampler";
 
@@ -83,7 +83,7 @@ export class InternalTexture extends TextureSampler {
 
     /** @hidden */
     public static _UpdateRGBDAsync = (internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial>, lodScale: number, lodOffset: number): Promise<void> => {
-        throw _DevTools.WarnImport("environmentTextureTools");
+        throw _WarnImport("environmentTextureTools");
     }
 
     /**

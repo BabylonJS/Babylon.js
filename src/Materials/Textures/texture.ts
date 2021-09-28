@@ -5,7 +5,7 @@ import { Matrix, TmpVectors, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Constants } from "../../Engines/constants";
 import { _TypeStore } from '../../Misc/typeStore';
-import { _DevTools } from '../../Misc/devTools';
+import { _WarnImport } from '../../Misc/devTools';
 import { IInspectable } from '../../Misc/iInspectable';
 import { ThinEngine } from '../../Engines/thinEngine';
 import { TimingTools } from '../../Misc/timingTools';
@@ -83,15 +83,15 @@ export class Texture extends BaseTexture {
 
     /** @hidden */
     public static _CubeTextureParser = (jsonTexture: any, scene: Scene, rootUrl: string): CubeTexture => {
-        throw _DevTools.WarnImport("CubeTexture");
+        throw _WarnImport("CubeTexture");
     }
     /** @hidden */
     public static _CreateMirror = (name: string, renderTargetSize: number, scene: Scene, generateMipMaps: boolean): MirrorTexture => {
-        throw _DevTools.WarnImport("MirrorTexture");
+        throw _WarnImport("MirrorTexture");
     }
     /** @hidden */
     public static _CreateRenderTargetTexture = (name: string, renderTargetSize: number, scene: Scene, generateMipMaps: boolean, creationFlags?: number): RenderTargetTexture => {
-        throw _DevTools.WarnImport("RenderTargetTexture");
+        throw _WarnImport("RenderTargetTexture");
     }
 
     /** nearest is mag = nearest and min = nearest and mip = linear */
