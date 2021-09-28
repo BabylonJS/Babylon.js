@@ -172,6 +172,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         );
 
         this.props.globalState.workbench = this;
+        
     }
 
     keyEvent = (evt: KeyboardEvent) => {
@@ -287,6 +288,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 alert("Unable to load your GUI");
             });
         }
+        this.globalState.onSelectionChangedObservable.notifyObservers(null);
     }
 
     loadToEditor() {
@@ -308,7 +310,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     changeSelectionHighlight(value: boolean) {
-        this.selectedGuiNodes.forEach(node => {
+        this._selectedGuiNodes.forEach(node => {
             if (this._outlines) {
                 node.isHighlighted = true;
                 node.highlightLineWidth = value ? 10 : 5;
