@@ -1,4 +1,4 @@
-import * as proceduralTexture from "../normalMap";
+import * as proceduralTexture from "../normalMap/index";
 
 /**
  * This is the entry point for the UMD module.
@@ -11,4 +11,4 @@ if (typeof globalObject !== "undefined") {
     }
 }
 
-export * from "../normalMap";
+export * from "../normalMap/index";

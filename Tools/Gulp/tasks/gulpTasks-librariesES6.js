@@ -9,6 +9,7 @@ var symlinkDir = require('symlink-dir');
 // Gulp Helpers
 var rmDir = require("../../NodeHelpers/rmDir");
 var processImports = require("../helpers/gulp-processImportsToEs6");
+var convertImportsToJs = require("../helpers/gulp-importFromJsFiles");
 var processConstants = require("../helpers/gulp-processConstants");
 var processLooseDeclarations = require("../helpers/gulp-processLooseDeclarationsEs6");
 var uncommentShaders = require('../helpers/gulp-removeShaderComments');
@@ -133,6 +134,11 @@ var modifySourcesConstants = function(settings) {
             .pipe(processConstants());
     }
     return Promise.resolve();
+}
+
+var modifyJsImports = function(settings) {
+    return gulp.src([settings.computed.distES6Directory + "/**/*.js"])
+        .pipe(convertImportsToJs());
 }
 
 /**
@@ -316,7 +322,8 @@ function buildES6Library(settings, module) {
     }
     else {
         buildSteps = [
-            function buildes6(cb) { return build(settings, cb) }, 
+            function buildes6(cb) { return build(settings, cb) },
+            function modifyJsImportsInSource() { return modifyJsImports(settings) },
             function concatLoseDTS() { return concatLoseDTSFiles(settings) },
             function appendLoseDTS() { return appendLoseDTSFiles(settings) }
         ];
