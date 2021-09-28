@@ -1,5 +1,5 @@
 import { SerializationHelper } from "../../Misc/decorators";
-import { EnvironmentTextureTools } from "../../Misc/environmentTextureTools";
+import { UploadLevelsAsync } from "../../Misc/environmentTextureTools";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
 import { SphericalPolynomial } from "../../Maths/sphericalPolynomial";
@@ -87,7 +87,7 @@ export class RawCubeTexture extends CubeTexture {
         internalTexture._lodGenerationOffset = lodOffset;
         internalTexture._sphericalPolynomial = sphericalPolynomial;
 
-        return EnvironmentTextureTools.UploadLevelsAsync(internalTexture, data).then(() => {
+        return UploadLevelsAsync(internalTexture, data).then(() => {
             internalTexture.isReady = true;
         });
     }
