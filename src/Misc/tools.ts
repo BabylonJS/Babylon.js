@@ -9,7 +9,7 @@ import { _DevTools } from "./devTools";
 import { WebRequest } from "./webRequest";
 import { IFileRequest } from "./fileRequest";
 import { EngineStore } from "../Engines/engineStore";
-import { DecodeBase64UrlToBinary, IsBase64DataUrl, LoadFile as FileToolsLoadFile, LoadImage as FileToolLoadImage, ReadFile as FileToolsReadFile, ReadFileError, SetCorsBehavior } from "./fileTools";
+import { FileToolsOptions, DecodeBase64UrlToBinary, IsBase64DataUrl, LoadFile as FileToolsLoadFile, LoadImage as FileToolLoadImage, ReadFile as FileToolsReadFile, ReadFileError, SetCorsBehavior } from "./fileTools";
 import { IOfflineProvider } from "../Offline/IOfflineProvider";
 import { PromisePolyfill } from "./promise";
 import { TimingTools } from "./timingTools";
@@ -17,7 +17,6 @@ import { InstantiationTools } from "./instantiationTools";
 import { GUID } from "./guid";
 import { IScreenshotSize } from "./interfaces/screenshotSize";
 import { SliceTools } from "./sliceTools";
-import { FileToolsOptions } from ".";
 
 declare type Camera = import("../Cameras/camera").Camera;
 declare type Engine = import("../Engines/engine").Engine;
