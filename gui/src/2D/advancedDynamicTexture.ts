@@ -903,6 +903,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             Object.entries(this._lastControlDown).forEach(([key, value]) => {
                 value._onCanvasBlur();
             });
+            this.focusedControl = null;
             this._lastControlDown = {};
         });
     }
