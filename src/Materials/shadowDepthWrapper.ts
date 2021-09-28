@@ -8,7 +8,7 @@ import { Effect, IEffectCreationOptions } from './effect';
 import { AbstractMesh } from '../Meshes/abstractMesh';
 import { Node } from '../node';
 import { ShadowGenerator } from '../Lights/Shadows/shadowGenerator';
-import { GUID } from '../Misc/guid';
+import { RandomGUID } from '../Misc/guid';
 import { DrawWrapper } from "./drawWrapper";
 
 /**
@@ -188,7 +188,7 @@ export class ShadowDepthWrapper {
                 drawWrapper: {},
                 mainDrawWrapper,
                 depthDefines: "",
-                token: GUID.RandomId()
+                token: RandomGUID()
             };
             params.drawWrapper[nameForDrawWrapper] = mainDrawWrapper;
             this._subMeshToDepthWrapper.set(subMesh, shadowGenerator, params);

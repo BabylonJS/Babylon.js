@@ -5,7 +5,7 @@ import { Nullable } from '../../types';
 import { Scene } from '../../scene';
 import { IInternalTextureLoader } from '../../Materials/Textures/internalTextureLoader';
 import { LoadImage } from '../../Misc/fileTools';
-import { GUID } from '../../Misc/guid';
+import { RandomGUID } from '../../Misc/guid';
 import { DepthTextureCreationOptions } from '../depthTextureCreationOptions';
 import { IWebRequest } from '../../Misc/interfaces/iWebRequest';
 import { Constants } from '../constants';
@@ -189,7 +189,7 @@ ThinEngine.prototype._cascadeLoadImgs = function (scene: Nullable<Scene>, textur
 ThinEngine.prototype._partialLoadImg = function (url: string, index: number, loadedImages: HTMLImageElement[] | ImageBitmap[], scene: Nullable<Scene>, texture: InternalTexture,
     onfinish: Nullable<(texture: InternalTexture, images: HTMLImageElement[] | ImageBitmap[]) => void>, onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null, mimeType?: string) {
 
-    var tokenPendingData = GUID.RandomId();
+    var tokenPendingData = RandomGUID();
 
     var onload = (img: HTMLImageElement | ImageBitmap) => {
         loadedImages[index] = img;
