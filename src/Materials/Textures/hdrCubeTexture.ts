@@ -11,7 +11,7 @@ import { Tools } from '../../Misc/tools';
 import { ToGammaSpace } from '../../Maths/math.constants';
 import { ThinEngine } from '../../Engines/thinEngine';
 import { HDRFiltering } from "../../Materials/Textures/Filtering/hdrFiltering";
-import { TextureTools } from "../../Misc/textureTools";
+import { ToHalfFloat } from "../../Misc/textureTools";
 import "../../Engines/Extensions/engine.rawTexture";
 import "../../Materials/Textures/baseTexture.polynomial";
 
@@ -219,9 +219,9 @@ export class HDRCubeTexture extends BaseTexture {
 
                         // Convert to half float texture for fallback.
                         if (shortArray) {
-                            shortArray[(i * 3) + 0] = TextureTools.ToHalfFloat(dataFace[(i * 3) + 0]);
-                            shortArray[(i * 3) + 1] = TextureTools.ToHalfFloat(dataFace[(i * 3) + 1]);
-                            shortArray[(i * 3) + 2] = TextureTools.ToHalfFloat(dataFace[(i * 3) + 2]);
+                            shortArray[(i * 3) + 0] = ToHalfFloat(dataFace[(i * 3) + 0]);
+                            shortArray[(i * 3) + 1] = ToHalfFloat(dataFace[(i * 3) + 1]);
+                            shortArray[(i * 3) + 2] = ToHalfFloat(dataFace[(i * 3) + 2]);
                         }
 
                         // Convert to int texture for fallback.
