@@ -18,7 +18,7 @@ import { FileTools, LoadFileError } from '../Misc/fileTools';
 import { TransformNode } from '../Meshes/transformNode';
 import { Geometry } from '../Meshes/geometry';
 import { Light } from '../Lights/light';
-import { StringTools } from '../Misc/stringTools';
+import { StartsWith } from '../Misc/stringTools';
 
 /**
  * Type used for the success callback of ImportMesh
@@ -584,7 +584,7 @@ export class SceneLoader {
             name = sceneFile.name;
             file = sceneFile;
         }
-        else if (typeof sceneFilename === "string" && StringTools.StartsWith(sceneFilename, "data:")) {
+        else if (typeof sceneFilename === "string" && StartsWith(sceneFilename, "data:")) {
             url = sceneFilename;
             name = "";
         }
