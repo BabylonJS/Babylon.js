@@ -43,6 +43,7 @@ export class GlobalState {
     onPropertyChangedObservable = new Observable<PropertyChangedEvent>();
 
     onZoomObservable = new Observable<void>();
+    onFitToWindowObservable = new Observable<void>();
     onPanObservable = new Observable<void>();
     onSelectionButtonObservable = new Observable<void>();
     onLoadObservable = new Observable<File>();
