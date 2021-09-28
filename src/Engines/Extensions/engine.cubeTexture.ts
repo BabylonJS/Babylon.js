@@ -4,7 +4,7 @@ import { Logger } from '../../Misc/logger';
 import { Nullable } from '../../types';
 import { Scene } from '../../scene';
 import { IInternalTextureLoader } from '../../Materials/Textures/internalTextureLoader';
-import { FileTools } from '../../Misc/fileTools';
+import { LoadImage } from '../../Misc/fileTools';
 import { GUID } from '../../Misc/guid';
 import { DepthTextureCreationOptions } from '../depthTextureCreationOptions';
 import { IWebRequest } from '../../Misc/interfaces/iWebRequest';
@@ -214,7 +214,7 @@ ThinEngine.prototype._partialLoadImg = function (url: string, index: number, loa
         }
     };
 
-    FileTools.LoadImage(url, onload, onerror, scene ? scene.offlineProvider : null, mimeType);
+    LoadImage(url, onload, onerror, scene ? scene.offlineProvider : null, mimeType);
     if (scene) {
         scene._addPendingData(tokenPendingData);
     }
