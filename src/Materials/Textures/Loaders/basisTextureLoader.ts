@@ -2,7 +2,7 @@ import { Nullable } from "../../../types";
 import { Engine } from "../../../Engines/engine";
 import { InternalTexture } from "../../../Materials/Textures/internalTexture";
 import { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
-import { BasisTools } from "../../../Misc/basis";
+import { LoadTextureFromTranscodeResult, TranscodeAsync } from "../../../Misc/basis";
 import { Tools } from '../../../Misc/tools';
 import { EndsWith } from '../../../Misc/stringTools';
 
@@ -45,9 +45,9 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
                 etc2: caps.etc2 ? true : false
             }
         };
-        BasisTools.TranscodeAsync(data, transcodeConfig).then((result) => {
+        TranscodeAsync(data, transcodeConfig).then((result) => {
             var hasMipmap = result.fileInfo.images[0].levels.length > 1 && texture.generateMipMaps;
-            BasisTools.LoadTextureFromTranscodeResult(texture, result);
+            LoadTextureFromTranscodeResult(texture, result);
             (texture.getEngine() as Engine)._setCubeMapTextureParams(texture, hasMipmap);
             texture.isReady = true;
             texture.onLoadedObservable.notifyObservers(texture);
@@ -82,11 +82,11 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
                 etc2: caps.etc2 ? true : false
             }
         };
-        BasisTools.TranscodeAsync(data, transcodeConfig).then((result) => {
+        TranscodeAsync(data, transcodeConfig).then((result) => {
             var rootImage = result.fileInfo.images[0].levels[0];
             var hasMipmap = result.fileInfo.images[0].levels.length > 1 && texture.generateMipMaps;
             callback(rootImage.width, rootImage.height, hasMipmap, result.format !== -1, () => {
-                BasisTools.LoadTextureFromTranscodeResult(texture, result);
+                LoadTextureFromTranscodeResult(texture, result);
             });
         }).catch((err) => {
             Tools.Warn("Failed to transcode Basis file, transcoding may not be supported on this device");
