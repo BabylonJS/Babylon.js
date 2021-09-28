@@ -117,6 +117,7 @@ const _CleanUrl = (url: string): string => {
  * Sets the cors behavior on a dom element. This will add the required Tools.CorsBehavior to the element.
  * @param url define the url we are trying
  * @param element define the dom element where to configure the cors policy
+ * @hidden
  */
 export const SetCorsBehavior = (url: string | string[], element: { crossOrigin: string | null }): void => {
     if (url && url.indexOf("data:") === 0) {
@@ -144,6 +145,7 @@ export const SetCorsBehavior = (url: string | string[], element: { crossOrigin: 
  * @param offlineProvider offline provider for caching
  * @param mimeType optional mime type
  * @returns the HTMLImageElement of the loaded image
+ * @hidden
  */
 export const LoadImage = (input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void,
     onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType: string = "", imageBitmapOptions?: ImageBitmapOptions): Nullable<HTMLImageElement> => {
@@ -273,6 +275,7 @@ export const LoadImage = (input: string | ArrayBuffer | ArrayBufferView | Blob, 
  * @param useArrayBuffer defines a boolean indicating that data must be returned as an ArrayBuffer
  * @param onError defines the callback to call when an error occurs
  * @returns a file request object
+ * @hidden
  */
 export const ReadFile = (file: File, onSuccess: (data: any) => void, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean, onError?: (error: ReadFileError) => void): IFileRequest => {
     const reader = new FileReader();
@@ -314,6 +317,7 @@ export const ReadFile = (file: File, onSuccess: (data: any) => void, onProgress?
  * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
  * @param onError callback called when the file fails to load
  * @returns a file request object
+ * @hidden
  */
 export const LoadFile = (fileOrUrl: File | string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,
     onProgress?: (ev: ProgressEvent) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean,
@@ -379,6 +383,7 @@ export const LoadFile = (fileOrUrl: File | string, onSuccess: (data: string | Ar
  * @param onError callback called when the file fails to load
  * @param onOpened callback called when the web request is opened
  * @returns a file request object
+ * @hidden
  */
 export const RequestFile = (url: string, onSuccess: (data: string | ArrayBuffer, request?: WebRequest) => void,
     onProgress?: (event: ProgressEvent) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean,
@@ -536,6 +541,7 @@ export const RequestFile = (url: string, onSuccess: (data: string | ArrayBuffer,
 /**
  * Checks if the loaded document was accessed via `file:`-Protocol.
  * @returns boolean
+ * @hidden
  */
 export const IsFileURL = (): boolean => {
     return typeof location !== "undefined" && location.protocol === "file:";
@@ -545,6 +551,7 @@ export const IsFileURL = (): boolean => {
  * Test if the given uri is a valid base64 data url
  * @param uri The uri to test
  * @return True if the uri is a base64 data url or false otherwise
+ * @hidden
  */
 export const IsBase64DataUrl = (uri: string): boolean => {
     return base64DataUrlRegEx.test(uri);
@@ -554,6 +561,7 @@ export const IsBase64DataUrl = (uri: string): boolean => {
  * Decode the given base64 uri.
  * @param uri The uri to decode
  * @return The decoded base64 data.
+ * @hidden
  */
 export const DecodeBase64UrlToBinary = (uri: string): ArrayBuffer => {
     return DecodeBase64ToBinary(uri.split(",")[1]);
@@ -563,6 +571,7 @@ export const DecodeBase64UrlToBinary = (uri: string): ArrayBuffer => {
  * Decode the given base64 uri into a UTF-8 encoded string.
  * @param uri The uri to decode
  * @return The decoded base64 data.
+ * @hidden
  */
 export const DecodeBase64UrlToString = (uri: string): string => {
     return DecodeBase64ToString(uri.split(",")[1]);
@@ -571,6 +580,7 @@ export const DecodeBase64UrlToString = (uri: string): string => {
 /**
  * This will be executed automatically for UMD and es5.
  * If esm dev wants the side effects to execute they will have to run it manually
+ * @hidden
  */
 export const initSideEffects = () => {
     ThinEngine._FileToolsLoadImage = LoadImage;
@@ -578,7 +588,10 @@ export const initSideEffects = () => {
     ShaderProcessor._FileToolsLoadFile = LoadFile;
 };
 
-// back compatibility
+/**
+ * Backwards compatibility.
+ * @hidden
+ */
 export const FileTools = {
     DecodeBase64UrlToBinary,
     DecodeBase64UrlToString,
