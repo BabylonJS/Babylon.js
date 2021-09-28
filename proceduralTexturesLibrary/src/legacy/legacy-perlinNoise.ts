@@ -1,4 +1,4 @@
-import * as proceduralTexture from "../perlinNoise";
+import * as proceduralTexture from "../perlinNoise/index";
 
 /**
  * This is the entry point for the UMD module.
@@ -11,4 +11,4 @@ if (typeof globalObject !== "undefined") {
     }
 }
 
-export * from "../perlinNoise";
+export * from "../perlinNoise/index";

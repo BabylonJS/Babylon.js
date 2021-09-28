@@ -99,6 +99,10 @@ export class DetailMapConfiguration {
      * @returns - boolean indicating that the submesh is ready or not.
      */
     public isReadyForSubMesh(defines: IMaterialDetailMapDefines, scene: Scene): boolean {
+        if (!this._isEnabled) {
+            return true;
+        }
+
         const engine = scene.getEngine();
 
         if (defines._areTexturesDirty && scene.texturesEnabled) {
