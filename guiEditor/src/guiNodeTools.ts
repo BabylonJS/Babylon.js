@@ -124,7 +124,7 @@ export class GUINodeTools {
             case "StackPanel":
                 element = new StackPanel("StackPanel");
                 element.isHighlighted = true;
-                element.width = "160%";
+                element.width = "100%";
                 element.height = "100%";
                 return element;
             case "ScrollViewer":
