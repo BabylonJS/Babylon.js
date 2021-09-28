@@ -2795,15 +2795,45 @@ export class WebGPUEngine extends Engine {
         this._stencilStateComposer.stencilMaterial = stencil;
     }
 
+    private _applyRenderPassChanges(renderPass: GPURenderPassEncoder, updateBundleList = false): void {
+        const mustUpdateViewport = this._mustUpdateViewport(renderPass);
+        const mustUpdateScissor = this._mustUpdateScissor(renderPass);
+        const mustUpdateStencilRef = !this._stencilStateComposer.enabled ? false : this._mustUpdateStencilRef(renderPass);
+        const mustUpdateBlendColor = !this._alphaState.alphaBlend ? false : this._mustUpdateBlendColor(renderPass);
+
+        if (updateBundleList) {
+            if (mustUpdateViewport) {
+                this._bundleList.addItem(new WebGPURenderItemViewport(Math.floor(this._viewportCached.x), Math.floor(this._viewportCached.y), Math.floor(this._viewportCached.z), Math.floor(this._viewportCached.w)));
+            }
+            if (mustUpdateScissor) {
+                this._bundleList.addItem(new WebGPURenderItemScissor(this._scissorCached.x, this._scissorCached.y, this._scissorCached.z, this._scissorCached.w));
+            }
+            if (mustUpdateStencilRef) {
+                this._bundleList.addItem(new WebGPURenderItemStencilRef(this._stencilStateComposer.funcRef ?? 0));
+            }
+            if (mustUpdateBlendColor) {
+                this._bundleList.addItem(new WebGPURenderItemBlendColor(this._alphaState._blendConstants.slice()));
+            }
+        } else {
+            if (mustUpdateViewport) {
+                this._applyViewport(renderPass as GPURenderPassEncoder);
+            }
+            if (mustUpdateScissor) {
+                this._applyScissor(renderPass as GPURenderPassEncoder);
+            }
+            if (mustUpdateStencilRef) {
+                this._applyStencilRef(renderPass as GPURenderPassEncoder);
+            }
+            if (mustUpdateBlendColor) {
+                this._applyBlendColor(renderPass as GPURenderPassEncoder);
+            }
+        }
+    }
+
     private _draw(drawType: number, fillMode: number, start: number, count: number, instancesCount: number): void {
         const renderPass = this._getCurrentRenderPass();
 
         this.applyStates();
-
-        const mustUpdateViewport = this._mustUpdateViewport(renderPass as GPURenderPassEncoder);
-        const mustUpdateScissor = this._mustUpdateScissor(renderPass as GPURenderPassEncoder);
-        const mustUpdateStencilRef = !this._stencilStateComposer.enabled ? false : this._mustUpdateStencilRef(renderPass as GPURenderPassEncoder);
-        const mustUpdateBlendColor = !this._alphaState.alphaBlend ? false : this._mustUpdateBlendColor(renderPass as GPURenderPassEncoder);
 
         const webgpuPipelineContext = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
 
@@ -2824,19 +2854,7 @@ export class WebGPUEngine extends Engine {
         let renderPass2: GPURenderPassEncoder | GPURenderBundleEncoder = renderPass;
 
         if (useFastPath || this._snapshotRenderingRecordBundles) {
-            if (mustUpdateViewport) {
-                this._bundleList.addItem(new WebGPURenderItemViewport(this._viewportCached.x, this._viewportCached.y, this._viewportCached.z, this._viewportCached.w));
-            }
-            if (mustUpdateScissor) {
-                this._bundleList.addItem(new WebGPURenderItemScissor(this._scissorCached.x, this._scissorCached.y, this._scissorCached.z, this._scissorCached.w));
-            }
-            if (mustUpdateStencilRef) {
-                this._bundleList.addItem(new WebGPURenderItemStencilRef(this._stencilStateComposer.funcRef ?? 0));
-            }
-            if (mustUpdateBlendColor) {
-                this._bundleList.addItem(new WebGPURenderItemBlendColor(this._alphaState._blendConstants.slice()));
-            }
-
+            this._applyRenderPassChanges(renderPass, true);
             if (!this._snapshotRenderingRecordBundles) {
                 this._bundleList.addBundle(this._currentDrawContext.fastBundle);
                 this._reportDrawCall();
@@ -2868,18 +2886,7 @@ export class WebGPUEngine extends Engine {
         const bindGroups = this._cacheBindGroups.getBindGroups(webgpuPipelineContext, this._currentDrawContext, this._currentMaterialContext);
 
         if (!this._snapshotRenderingRecordBundles) {
-            if (mustUpdateViewport) {
-                this._applyViewport(renderPass as GPURenderPassEncoder);
-            }
-            if (mustUpdateScissor) {
-                this._applyScissor(renderPass as GPURenderPassEncoder);
-            }
-            if (mustUpdateStencilRef) {
-                this._applyStencilRef(renderPass as GPURenderPassEncoder);
-            }
-            if (mustUpdateBlendColor) {
-                this._applyBlendColor(renderPass as GPURenderPassEncoder);
-            }
+            this._applyRenderPassChanges(renderPass, !this.compatibilityMode);
             if (!this.compatibilityMode) {
                 renderPass2 = this._device.createRenderBundleEncoder({
                     colorFormats: this._cacheRenderPipeline.colorFormats,
