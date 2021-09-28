@@ -107,6 +107,7 @@ export class SubMesh implements ICullable {
             drawWrapper.materialContext = materialContext;
         }
         if (!effect) {
+            drawWrapper.defines = null;
             drawWrapper.materialContext = undefined;
         }
     }
