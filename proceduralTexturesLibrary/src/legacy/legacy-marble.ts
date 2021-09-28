@@ -1,4 +1,4 @@
-import * as proceduralTexture from "../marble";
+import * as proceduralTexture from "../marble/index";
 
 /**
  * This is the entry point for the UMD module.
@@ -11,4 +11,4 @@ if (typeof globalObject !== "undefined") {
     }
 }
 
-export * from "../marble";
+export * from "../marble/index";

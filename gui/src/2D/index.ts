@@ -1,4 +1,4 @@
-export * from "./controls";
+export * from "./controls/index";
 
 export * from "./advancedDynamicTexture";
 export * from "./adtInstrumentation";
