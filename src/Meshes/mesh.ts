@@ -692,6 +692,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         };
 
         this.onMeshReadyObservable = new Observable(this._internalMeshDataInfo._onMeshReadyObserverAdded);
+
+        if (source) {
+            source.onClonedObservable.notifyObservers(this);
+        }
     }
 
     // Methods
@@ -2229,17 +2233,18 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this._bind(subMesh, effect, fillMode);
         }
 
+        const effectiveMaterial = this._internalMeshDataInfo._effectiveMaterial;
         var world = effectiveMesh.getWorldMatrix();
-        if (this._internalMeshDataInfo._effectiveMaterial._storeEffectOnSubMeshes) {
-            this._internalMeshDataInfo._effectiveMaterial.bindForSubMesh(world, this, subMesh);
+        if (effectiveMaterial._storeEffectOnSubMeshes) {
+            effectiveMaterial.bindForSubMesh(world, this, subMesh);
         } else {
-            this._internalMeshDataInfo._effectiveMaterial.bind(world, this);
+            effectiveMaterial.bind(world, this);
         }
 
-        if (!this._internalMeshDataInfo._effectiveMaterial.backFaceCulling && this._internalMeshDataInfo._effectiveMaterial.separateCullingPass) {
-            engine.setState(true, this._internalMeshDataInfo._effectiveMaterial.zOffset, false, !reverse, this._internalMeshDataInfo._effectiveMaterial.cullBackFaces, this._internalMeshDataInfo._effectiveMaterial.stencil);
+        if (!effectiveMaterial.backFaceCulling && effectiveMaterial.separateCullingPass) {
+            engine.setState(true, effectiveMaterial.zOffset, false, !reverse, effectiveMaterial.cullBackFaces, effectiveMaterial.stencil, effectiveMaterial.zOffsetUnits);
             this._processRendering(this, subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, this._internalMeshDataInfo._effectiveMaterial);
-            engine.setState(true, this._internalMeshDataInfo._effectiveMaterial.zOffset, false, reverse, this._internalMeshDataInfo._effectiveMaterial.cullBackFaces, this._internalMeshDataInfo._effectiveMaterial.stencil);
+            engine.setState(true, effectiveMaterial.zOffset, false, reverse, effectiveMaterial.cullBackFaces, effectiveMaterial.stencil, effectiveMaterial.zOffsetUnits);
 
             if (this._internalMeshDataInfo._onBetweenPassObservable) {
                 this._internalMeshDataInfo._onBetweenPassObservable.notifyObservers(subMesh);
@@ -4502,6 +4507,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         scene: Scene
     ): Mesh {
         throw _DevTools.WarnImport("MeshBuilder");
+    }
+
+    /**
+     * Extends a mesh to a Goldberg mesh
+     * @param mesh the mesh to convert
+     * Warning  the mesh to convert MUST be an import of a peviously exported Goldberg mesh
+     */
+    public static ExtendToGoldberg(mesh: Mesh) {
     }
 
     /**

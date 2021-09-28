@@ -44,8 +44,10 @@ ISideBarComponentState
         this.state = { mode: Mode.Edit };
 
         this.props.context.onDeleteAnimation.add(animationToDelete => {
-            if (this.props.context.activeAnimation === animationToDelete) {
-                this.props.context.activeAnimation = null;
+            const indexInActiveList = this.props.context.activeAnimations.indexOf(animationToDelete);
+
+            if (indexInActiveList !== -1) {
+                this.props.context.activeAnimations.splice(indexInActiveList, 1);
                 this.props.context.onActiveAnimationChanged.notifyObservers();
             }
 
@@ -65,7 +67,6 @@ ISideBarComponentState
 
             if (index > -1) {
                 this.props.context.animations!.splice(index, 1);
-                this.props.context.play(this.props.context.forwardAnimation);
                 this.forceUpdate();
             }
         });

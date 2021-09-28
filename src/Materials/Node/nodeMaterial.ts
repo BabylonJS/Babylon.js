@@ -50,6 +50,8 @@ import { TimingTools } from '../../Misc/timingTools';
 import { ProceduralTexture } from '../Textures/Procedurals/proceduralTexture';
 import { AnimatedInputBlockTypes } from './Blocks/Input/animatedInputBlockTypes';
 import { TrigonometryBlock, TrigonometryBlockOperations } from './Blocks/trigonometryBlock';
+import { NodeMaterialSystemValues } from './Enums/nodeMaterialSystemValues';
+import { ImageSourceBlock } from './Blocks/Dual/imageSourceBlock';
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -836,7 +838,7 @@ export class NodeMaterial extends PushMaterial {
 
                 tempName = this.name + this._buildId;
 
-                defines.markAsUnprocessed();
+                defines.markAllAsDirty();
 
                 buildId = this._buildId;
             }
@@ -903,7 +905,7 @@ export class NodeMaterial extends PushMaterial {
 
                 tempName = this.name + this._buildId;
 
-                defines.markAsUnprocessed();
+                defines.markAllAsDirty();
 
                 buildId = this._buildId;
             }
@@ -975,7 +977,7 @@ export class NodeMaterial extends PushMaterial {
 
                 tempName = this.name + this._buildId + "_" + blendMode;
 
-                defines!.markAsUnprocessed();
+                defines!.markAllAsDirty();
 
                 buildId = this._buildId;
             }
@@ -987,7 +989,7 @@ export class NodeMaterial extends PushMaterial {
             const particleSystemDefinesJoinedCurrent = particleSystemDefines.join("\n");
 
             if (particleSystemDefinesJoinedCurrent !== particleSystemDefinesJoined) {
-                defines!.markAsUnprocessed();
+                defines!.markAllAsDirty();
                 particleSystemDefinesJoined = particleSystemDefinesJoinedCurrent;
             }
 
@@ -1322,7 +1324,7 @@ export class NodeMaterial extends PushMaterial {
      * Gets the list of texture blocks
      * @returns an array of texture blocks
      */
-    public getTextureBlocks(): (TextureBlock | ReflectionTextureBaseBlock | RefractionBlock | CurrentScreenBlock | ParticleTextureBlock)[] {
+    public getTextureBlocks(): (TextureBlock | ReflectionTextureBaseBlock | RefractionBlock | CurrentScreenBlock | ParticleTextureBlock | ImageSourceBlock)[] {
         if (!this._sharedData) {
             return [];
         }
@@ -1396,6 +1398,7 @@ export class NodeMaterial extends PushMaterial {
 
                 // Load editor and add it to the DOM
                 Tools.LoadScript(editorUrl, () => {
+                    this.BJSNODEMATERIALEDITOR = this.BJSNODEMATERIALEDITOR || this._getGlobalNodeMaterialEditor();
                     this._createNodeEditor();
                     resolve();
                 });
@@ -1428,14 +1431,14 @@ export class NodeMaterial extends PushMaterial {
         positionInput.setAsAttribute("position");
 
         var worldInput = new InputBlock("World");
-        worldInput.setAsSystemValue(BABYLON.NodeMaterialSystemValues.World);
+        worldInput.setAsSystemValue(NodeMaterialSystemValues.World);
 
         var worldPos = new TransformBlock("WorldPos");
         positionInput.connectTo(worldPos);
         worldInput.connectTo(worldPos);
 
         var viewProjectionInput = new InputBlock("ViewProjection");
-        viewProjectionInput.setAsSystemValue(BABYLON.NodeMaterialSystemValues.ViewProjection);
+        viewProjectionInput.setAsSystemValue(NodeMaterialSystemValues.ViewProjection);
 
         var worldPosdMultipliedByViewProjection = new TransformBlock("WorldPos * ViewProjectionTransform");
         worldPos.connectTo(worldPosdMultipliedByViewProjection);

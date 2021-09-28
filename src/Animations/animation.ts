@@ -34,6 +34,8 @@ export class _IAnimationState {
  * Class used to store any kind of animation
  */
 export class Animation {
+    private static _UniqueIdGenerator = 0;
+
     /**
      * Use matrix interpolation instead of using direct key value when animating matrices
      */
@@ -43,6 +45,11 @@ export class Animation {
      * When matrix interpolation is enabled, this boolean forces the system to use Matrix.DecomposeLerp instead of Matrix.Lerp. Interpolation is more precise but slower
      */
     public static AllowMatrixDecomposeForInterpolation = true;
+
+    /**
+     * Gets or sets the unique id of the animation (the uniqueness is solely among other animations)
+     */
+    public uniqueId: number;
 
     /** Define the Url to load snippets */
     public static SnippetUrl = "https://snippet.babylonjs.com";
@@ -147,7 +154,7 @@ export class Animation {
     /**
      * Create and start an animation on a node
      * @param name defines the name of the global animation that will be run on all nodes
-     * @param node defines the root node where the animation will take place
+     * @param target defines the target where the animation will take place
      * @param targetProperty defines property to animate
      * @param framePerSecond defines the number of frame per second yo use
      * @param totalFrame defines the number of frames in total
@@ -156,11 +163,12 @@ export class Animation {
      * @param loopMode defines which loop mode you want to use (off by default)
      * @param easingFunction defines the easing function to use (linear by default)
      * @param onAnimationEnd defines the callback to call when animation end
+     * @param scene defines the hosting scene
      * @returns the animatable created for this animation
      */
-    public static CreateAndStartAnimation(name: string, node: Node, targetProperty: string,
+    public static CreateAndStartAnimation(name: string, target: any, targetProperty: string,
         framePerSecond: number, totalFrame: number,
-        from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Nullable<Animatable> {
+        from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void, scene?: Scene): Nullable<Animatable> {
 
         var animation = Animation._PrepareAnimation(name, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
 
@@ -168,7 +176,15 @@ export class Animation {
             return null;
         }
 
-        return node.getScene().beginDirectAnimation(node, [animation], 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
+        if (target.getScene) {
+            scene = target.getScene();
+        }
+
+        if (!scene) {
+            return null;
+        }
+
+        return scene.beginDirectAnimation(target, [animation], 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
     }
 
     /**
@@ -519,6 +535,7 @@ export class Animation {
         this.targetPropertyPath = targetProperty.split(".");
         this.dataType = dataType;
         this.loopMode = loopMode === undefined ? Animation.ANIMATIONLOOPMODE_CYCLE : loopMode;
+        this.uniqueId = Animation._UniqueIdGenerator++;
     }
 
     // Methods

@@ -59,7 +59,7 @@ export class TextureTools {
                 effect.setTexture("textureSampler", texture);
             };
 
-            let internalTexture = rtt.getInternalTexture();
+            let internalTexture = rtt.renderTarget;
 
             if (internalTexture) {
                 scene.postProcessManager.directRender([passPostProcess], internalTexture);
@@ -68,7 +68,7 @@ export class TextureTools {
                 rtt.disposeFramebufferObjects();
                 passPostProcess.dispose();
 
-                internalTexture.isReady = true;
+                rtt.getInternalTexture()!.isReady = true;
             }
         });
 
@@ -125,7 +125,6 @@ export class TextureTools {
                 // Cleanup
                 engine.restoreDefaultFramebuffer();
                 engine._releaseTexture(internalTexture);
-                engine._releaseFramebufferObjects(encodedTexture);
                 if (postProcess) {
                     postProcess.dispose();
                 }

@@ -2456,6 +2456,13 @@ declare module BABYLON.GUI {
         _renderHighlightSpecific(context: BABYLON.ICanvasRenderingContext): void;
         /** Releases associated resources */
         dispose(): void;
+        /**
+     * Serializes the current control
+     * @param serializationObject defined the JSON serialized object
+     */
+        serialize(serializationObject: any): void;
+        /** @hidden */
+        _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture): void;
     }
 }
 declare module BABYLON.GUI {
@@ -3636,6 +3643,13 @@ declare module BABYLON.GUI {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         _draw(context: BABYLON.ICanvasRenderingContext, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
+        /**
+        * Serializes the current control
+        * @param serializationObject defined the JSON serialized object
+        */
+        serialize(serializationObject: any): void;
+        /** @hidden */
+        _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture): void;
     }
 }
 declare module BABYLON.GUI {
@@ -4634,6 +4648,7 @@ declare module BABYLON.GUI {
         private _text;
         private _imageUrl;
         private _shareMaterials;
+        private _isBackplateVisible;
         private _frontMaterial;
         private _backMaterial;
         private _plateMaterial;
@@ -4684,6 +4699,10 @@ declare module BABYLON.GUI {
          * Gets a boolean indicating if this button shares its material with other HolographicButtons
          */
         get shareMaterials(): boolean;
+        /**
+         * Sets whether the backplate is visible or hidden. Hiding the backplate is not recommended without some sort of replacement
+         */
+        set isBackplateVisible(isVisible: boolean);
         /**
          * Creates a new button
          * @param name defines the control name
@@ -5289,6 +5308,10 @@ declare module BABYLON.GUI {
         private _currentMax;
         private _backPlateMargin;
         /**
+         * Scale for the buttons added to the menu
+         */
+        protected static MENU_BUTTON_SCALE: number;
+        /**
          * Gets or sets the margin size of the backplate in button size units.
          * Setting this to 1, will make the backPlate margin the size of 1 button
          */
@@ -5382,10 +5405,6 @@ declare module BABYLON.GUI {
          * File name for the close icon.
          */
         private static PIN_ICON_FILENAME;
-        /**
-         * Scale for the buttons added to the near menu
-         */
-        private static NEAR_BUTTON_SCALE;
         private _pinButton;
         private _pinMaterial;
         private _dragObserver;
@@ -5401,14 +5420,6 @@ declare module BABYLON.GUI {
         get isPinned(): boolean;
         set isPinned(value: boolean);
         private _createPinButton;
-        /**
-         * Adds a button to the menu.
-         * Please note that the back material of the button will be set to transparent as it is attached to the menu.
-         *
-         * @param button Button to add
-         * @returns This menu
-         */
-        addButton(button: TouchHolographicButton): TouchHolographicMenu;
         protected _createNode(scene: BABYLON.Scene): BABYLON.Nullable<BABYLON.TransformNode>;
         protected _finalProcessing(): void;
         /**

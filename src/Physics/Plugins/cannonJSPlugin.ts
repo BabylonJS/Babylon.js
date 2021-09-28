@@ -528,6 +528,8 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
             const p = Matrix.Translation(boundingInfo.boundingBox.extendSizeWorld.x, 0, -boundingInfo.boundingBox.extendSizeWorld.z);
             mesh.setPreTransformMatrix(p);
             mesh.computeWorldMatrix(true);
+            // force bounding box recomputation
+            boundingInfo = mesh.getBoundingInfo();
 
             //calculate the translation
             var translation = boundingInfo.boundingBox.centerWorld.subtract(center).subtract(mesh.position).negate();

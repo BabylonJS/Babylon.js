@@ -3,12 +3,15 @@
 ## Major updates
 
 - Infinite Morph Targets: When supported (WebGL2+) you are no more limited to 4 morph targets per mesh ([Deltakosh](https://github.com/deltakosh))
+- Added Animation Curve Editor to allow easy animation creation and update ([Deltakosh](https://github.com/deltakosh))
 - Added support for ConditionalBlock for NodeMaterial ([Deltakosh](https://github.com/deltakosh))
 - Improved performance when using the shadow / cascacaded shadow generator ([Popov72](https://github.com/Popov72))
 - Add support for up to 6 uv sets in the standard, PBR and node materials ([Popov72](https://github.com/Popov72))
-- Added GUI Editor ([msDestiny14](https://github.com/msDestiny14))
+- Added GUI Editor to easily build GUI controls ([msDestiny14](https://github.com/msDestiny14))
 
 ## Updates
+
+- Add Geodesic and Goldberg Polyhedra ([JohnK](https://github.com/BabylonJSGuide/))
 
 ### General
 
@@ -20,6 +23,7 @@
 - Added ability to enable/disable `ArcRotateCamera` zoom on multiTouch event ([NicolasBuecher](https://github.com/NicolasBuecher))
 - Moving button to shared uI folder.([msDestiny14](https://github.com/msDestiny14))
 - Added `collisionRetryCount` to improved collision detection ([CedricGuillemet](https://github.com/CedricGuillemet))
+- Added sleepBody support for ammojs ([CedricGuillemet](https://github.com/CedricGuillemet)
 - Moved sharedUI component to shared UI folder. ([msDestiny14](https://github.com/msDestiny14))
 - Added `encapsulate` and `encapsulateBoundingInfo` methods to `BoundingInfo`. ([Tolo789](https://github.com/Tolo789))
 - Added `onLoadObservable` to the `TextureDome` class(es) ([RaananW](https://github.com/RaananW))
@@ -43,6 +47,8 @@
 - Modified behavior for FreeCamera and ArcRotateCamera so that default mouse dragging movements now account for what button was used to initiate it ([PolygonalSun](https://github.com/PolygonalSun))
 - Added coroutine capabilities to `Observable`s ([syntheticmagus](https://github.com/syntheticmagus))
 - Added a global OnTextureLoadErrorObservable to handle texture loading errors during model load ([RaananW](https://github.com/RaananW))
+- Add support to encode and decode .env environment textures using WebP instead of PNG ([simonihmig](https://github.com/simonihmig))
+- Added a new stereoscopic screen rig camera ([RaananW](https://github.com/RaananW))
 
 ### Engine
 
@@ -52,6 +58,7 @@
 - Added support for sRGB buffers, native in WebGL2 / WebGPU and through the `EXT_sRGB` extension in WebGL1. There's a new parameter to the `Texture` constructor that enables this feature ([Popov72](https://github.com/Popov72))
 - Added `IAudioEngineOptions` interface to provide the audio engine with a pre-defined Audio Context and audio destination node. ([Vandy](https://github.com/svanderbeck11))
 - Added support for cannon-es method `world.removeBody()`. Falls back to cannon method `remove()`. ([Faber](https://https://github.com/Faber-smythe))
+- Added support for ZOffset Unit as we currently only supported factor. ([Sebavan](https://github.com/sebavan/)
 
 ### Loaders
 
@@ -70,6 +77,7 @@
 - Added `DO_NOT_ALTER_FILE_COORDINATES` flag to STL loader ([AlbertoPa](https://github.com/AlbertoPa))
 - Added support for pure geometry files to OBJ loader ([Deltakosh](https://github.com/deltakosh))
 - Added an observable for when loader state changed. ([bghgary](https://github.com/bghgary))
+- Fixed an issue where errors for loading certain assets (e.g. <20-byte GLBs) are not catchable. ([bghgary](https://github.com/bghgary))
 
 ### Navigation
 
@@ -105,6 +113,7 @@
 - Added a debug option to show the frustum of a directional light ([Popov72](https://github.com/Popov72))
 - Added support for the material stencil properties ([Popov72](https://github.com/Popov72))
 - Added space + LMB panning to texture inspector to improve accessibility ([darraghjburke](https://github.com/darraghjburke))
+- Add support to export .env environment textures using WebP ([simonihmig](https://github.com/simonihmig))
 
 ### Playground
 
@@ -112,6 +121,7 @@
 
 ### NME
 
+- Added a `ImageSource` block to factorize access to texture data ([Deltakosh](https://github.com/Deltakosh))
 - Increased float precision to 4 ([msDestiny14](https://github.com/msDestiny14))
 - Added ability to make input node's properties visible in the properties of a custom frame ([msDestiny14](https://github.com/msDestiny14))
 - NME `TextureBlock`: add an output for the texture level and a switch to disable the internal multiplication (level * texture) ([#10192](https://github.com/BabylonJS/Babylon.js/pull/10192)) ([rassie](https://github.com/rassie))
@@ -164,6 +174,7 @@
 - Added support for `xr-dom-overlay` ([#8996](https://github.com/BabylonJS/Babylon.js/issues/8996)) ([brianzinn](https://github.com/brianzinn))
 - Added near interaction events (hover, grab, and near-pick) ([satyapoojasama](https://github.com/satyapoojasama))
 - Added XR Movement Controller feature for ([#7442](https://github.com/BabylonJS/Babylon.js/issues/7442)) ([brianzinn](https://github.com/brianzinn))
+- Added initial support for `light-estimation` ([#8904](https://github.com/BabylonJS/Babylon.js/issues/8904)) ([brianzinn](https://github.com/brianzinn)) ([RaananW](https://github.com/RaananW))
 - Fixed an issue with superfluous reloading of the hand tracking models ([#10453](https://github.com/BabylonJS/Babylon.js/issues/10453)) ([rgerd](https://github.com/rgerd))
 - Added support for XRFrame.fillPoses and XRFrame.fillJointRadii ([#10454](https://github.com/BabylonJS/Babylon.js/issues/10454)) ([rgerd](https://github.com/rgerd))
 - Improved functionality of `WebXRNearInteraction` and updated coverage to be enabled on Behaviors and Gizmos ([rickfromwork](https://github.com/rickfromwork))
@@ -174,6 +185,8 @@
 - Fix error on XR dispose due to undefined sepectator camera ([Alex-MSFT](https://github.com/Alex-MSFT))
 - Support for WebXR Foveated rendering ([#8920](https://github.com/BabylonJS/Babylon.js/issues/8920)) ([RaananW](https://github.com/RaananW))
 - Support WebXR framerate update ([#10912](https://github.com/BabylonJS/Babylon.js/issues/10912)) ([RaananW](https://github.com/RaananW))
+- Detach the non-vr camera from the canvas when entering XR and re-attach when leaving ([RaananW](https://github.com/RaananW))
+- New experimental walking locomotion feature for VR sessions ([syntheticmagus](https://github.com/syntheticmagus))
 
 ### Gizmos
 
@@ -182,6 +195,10 @@
 - Exposed `scaleRatio` for `GizmoManager` ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Added constructor parameters to customize colors for rotation gizmos on `RotationGizmo` ([jekelija](https://github.com/jekelija))
 - Added constructor parameters to allow turning off `updateScale` on RotationGizmo ([jekelija](https://github.com/jekelija))
+- Dispose `_dragPlane` when detaching in `PointerDragBehavior` ([CedricGuillemet](https://github.com/CedricGuillemet))
+- Log warning when trying to attach a node to a `LightGizmo` ([CedricGuillemet](https://github.com/CedricGuillemet))
+- Fixed wrong matrix with nodes having pivot point ([CedricGuillemet](https://github.com/CedricGuillemet))
+- `validateDrag` support added to `AxisDragGizmo` ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Gizmos that have draggable components now support near interactions via `WebXRNearInteraction` ([rickfromwork](https://github.com/rickfromwork)) 
 
 ### Viewer
@@ -200,7 +217,7 @@
 - Fixed bug where characters that didn't fit into a single UTF-16 code point were not correctly encoded in .glb exports ([darraghjburke](https://github.com/darraghjburke))
 
 ## Bugs
-
+- Fix incorrect GUI.TextBlock width when resizeToFit is true & fontStyle is italic ([Kalkut](https://github.com/Kalkut))
 - Fix CubeTexture extension detection when rootUrl has a query string ([civa86](https://github.com/civa86))
 - Fix issue with the Promise polyfill where a return value was expected from resolve() ([Deltakosh](https://github.com/deltakosh))
 - Fix ArcRotateCamera panning with axis decomposition ([CedricGuillemet](https://github.com/CedricGuillemet))
@@ -292,6 +309,9 @@
 - Fix issue with deadzones for gamepads being negatively affected by sensibility values ([PolygonalSun](https://github.com/PolygonalSun))
 - Fix parsing of particle systems sub emitters ([#10882](https://github.com/BabylonJS/Babylon.js/issues/10882)) ([Popov72](https://github.com/Popov72))
 - Fix bug in NME where a link could not be recreated after being deleted ([Popov72](https://github.com/Popov72))
+- Fix small typo in transformNode getDirectionToRef method definition. ([PirateJC](https://github.com/piratejc))
+- Fix textures not properly inverting along the vertical axis when using ImageBitmaps ([nmrugg](https://github.com/nmrugg))
+- Fix for SkyMaterial sun position not working with non-default azimuth  ([AdversInc](https://github.com/adversinc))
 
 ## Breaking changes
 
@@ -302,6 +322,7 @@
 - Depth renderer: don't render mesh if `infiniteDistance = true` or if `material.disableDepthWrite = true` ([Popov72](https://github.com/Popov72))
 - `Mesh.createInstance` no longer make a unique `Geometry` for the Mesh so updating one `Geometry` can affect more meshes than before. Use `Mesh.makeUniqueGeometry` for old behaviour. ([breakin](https://github.com/breakin))
 - Ammo.js needs to be initialized before creating the plugin with `await Ammo();` since Ammo introduced an async init in their library. ([sebavan](https://github.com/sebavan))
+- Recast.js needs to be initialized before creating the plugin with `await Recast();` since Recast introduced an async init in their library. ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Fixed spelling of `EventState.initialize` ([seritools](https://github.com/seritools))
 - `SkeletonViewer` is now enabled by default ([Deltakosh](https://github.com/deltakosh))
 - `BindEyePosition` has been moved from `Material` to `Scene` to avoid a circular dependency problem and is now a non-static method (`bindEyePosition`) ([Popov72](https://github.com/Popov72))
@@ -313,3 +334,4 @@
 - Properties in `IWebXRHandTrackingOptions` related to hand and joint meshes have been moved into `jointMeshes` and `handMeshes` members, respectively ([rgerd](https://github.com/rgerd))
 - `IWebXRHandTrackingOptions.jointMeshes.onHandJointMeshGenerated()` provides a `hand` instead of a `controllerId` in the parameters, since the tracked joint meshes are pre-generated ([rgerd](https://github.com/rgerd))
 - You should now access joint meshes from `WebXRHand` through the `getJointMesh()` function ([rgerd](https://github.com/rgerd))
+- Rework of the inner working of render targets. Those are mostly internal changes. From the end user standpoint, the most visible change is that the `PostProcess` class is now dealing with `RenderTargetWrapper` instead of `InternalTexture` objects. So, if you are directly updating the `inputTexture` property with a render target texture that you previously rendered, you will need to pass a `RenderTargetWrapper` instead of an `InternalTexture`: you will get it by doing `rtt.renderTarget`, where `rtt` is the instance of your `RenderTargetTexture`. ([Popov72](https://github.com/Popov72))

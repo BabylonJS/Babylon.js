@@ -2,23 +2,19 @@ import * as React from "react";
 
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "./propertyChangedEvent";
-
-class ListLineOption {
-    public label: string;
-    public value: number | string;
-}
+import { IInspectableOptions } from "babylonjs/Misc/iInspectable";
 
 interface IOptionsLineComponentProps {
-    label: string,
-    target: any,
-    className?: string,
-    propertyName?: string,
-    options: ListLineOption[],
-    noDirectUpdate?: boolean,
-    onSelect?: (value: number | string) => void,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>,
-    valuesAreStrings?: boolean
-    defaultIfNull?: number,
+    label: string;
+    target: any;
+    className?: string;
+    propertyName?: string;
+    options: IInspectableOptions[];
+    noDirectUpdate?: boolean;
+    onSelect?: (value: number | string) => void;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    valuesAreStrings?: boolean;
+    defaultIfNull?: number;
     getSelection?: (target: any) => number;
 }
 

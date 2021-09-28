@@ -18,6 +18,15 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
+    export class Tools {
+        static LookForItem(item: any, selectedEntity: any): boolean;
+        private static _RecursiveRemoveHiddenMeshesAndHoistChildren;
+        static SortAndFilter(parent: any, items: any[]): any[];
+        static getCellInfo(grid: Grid, control: Control): BABYLON.Vector2;
+        static reorderGrid(grid: Grid, index: number, control: Control, cell: BABYLON.Vector2): void;
+    }
+}
+declare module GUIEDITOR {
     export interface IWorkbenchComponentProps {
         globalState: GlobalState;
     }
@@ -72,6 +81,7 @@ declare module GUIEDITOR {
         createNewGuiNode(guiControl: Control): Control;
         enableEditorProperties(guiControl: Control): void;
         private parent;
+        private _reorderGrid;
         private _isNotChildInsert;
         private _adjustParentingIndex;
         isSelected(value: boolean, guiNode: Control): void;
@@ -135,7 +145,7 @@ declare module GUIEDITOR {
         onZoomObservable: BABYLON.Observable<void>;
         onPanObservable: BABYLON.Observable<void>;
         onSelectionButtonObservable: BABYLON.Observable<void>;
-        onLoadObservable: BABYLON.Observable<void>;
+        onLoadObservable: BABYLON.Observable<File>;
         onSaveObservable: BABYLON.Observable<void>;
         onSnippetLoadObservable: BABYLON.Observable<void>;
         onSnippetSaveObservable: BABYLON.Observable<void>;
@@ -144,12 +154,18 @@ declare module GUIEDITOR {
         onParentingChangeObservable: BABYLON.Observable<BABYLON.Nullable<Control>>;
         onPropertyGridUpdateRequiredObservable: BABYLON.Observable<void>;
         onDraggingEndObservable: BABYLON.Observable<void>;
+        onDraggingStartObservable: BABYLON.Observable<void>;
         draggedControl: BABYLON.Nullable<Control>;
         draggedControlDirection: DragOverLocation;
+        isSaving: boolean;
         storeEditorData: (serializationObject: any) => void;
         customSave?: {
             label: string;
-            action: (data: string) => Promise<void>;
+            action: (data: string) => Promise<string>;
+        };
+        customLoad?: {
+            label: string;
+            action: (data: string) => Promise<string>;
         };
         constructor();
     }
@@ -375,33 +391,10 @@ declare module GUIEDITOR {
     export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
         private _width;
         private _height;
+        private _responsive;
         constructor(props: ICommonControlPropertyGridComponentProps);
         private _updateAlignment;
         private _checkAndUpdateValues;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    export interface ISelectedLineContainer {
-        selectedLineContainerTitles: Array<string>;
-        selectedLineContainerTitlesNoFocus: Array<string>;
-    }
-}
-declare module GUIEDITOR {
-    interface ILineContainerComponentProps {
-        selection?: ISelectedLineContainer;
-        title: string;
-        children: any[] | any;
-        closed?: boolean;
-    }
-    export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
-        isExpanded: boolean;
-        isHighlighted: boolean;
-    }> {
-        constructor(props: ILineContainerComponentProps);
-        switchExpandedState(): void;
-        renderHeader(): JSX.Element;
-        componentDidMount(): void;
         render(): JSX.Element;
     }
 }
@@ -441,16 +434,11 @@ declare module GUIEDITOR {
 }
 declare module GUIEDITOR {
     export const Null_Value: number;
-    export class ListLineOption {
-        label: string;
-        value: number;
-        selected?: boolean;
-    }
     export interface IOptionsLineComponentProps {
         label: string;
         target: any;
         propertyName: string;
-        options: ListLineOption[];
+        options: BABYLON.IInspectableOptions[];
         noDirectUpdate?: boolean;
         onSelect?: (value: number) => void;
         extractValue?: () => number;
@@ -716,6 +704,7 @@ declare module GUIEDITOR {
         constructor(props: IGridPropertyGridComponentProps);
         renderRows(): JSX.Element[];
         renderColumns(): JSX.Element[];
+        resizeColumn(): void;
         render(): JSX.Element;
     }
 }
@@ -771,9 +760,22 @@ declare module GUIEDITOR {
     }
     export class ParentingPropertyGridComponent extends React.Component<IParentingPropertyGridComponentProps> {
         constructor(props: IParentingPropertyGridComponentProps);
-        _columnNumber: number;
-        _rowNumber: number;
+        private _columnNumber;
+        private _rowNumber;
         updateGridPosition(): void;
+        getCellInfo(): void;
+        private _changeCell;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface IDisplayGridPropertyGridComponentProps {
+        displayGrid: DisplayGrid;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class DisplayGridPropertyGridComponent extends React.Component<IDisplayGridPropertyGridComponentProps> {
+        constructor(props: IDisplayGridPropertyGridComponentProps);
         render(): JSX.Element;
     }
 }
@@ -790,15 +792,19 @@ declare module GUIEDITOR {
         private _timerIntervalId;
         private _lockObject;
         private _sizeOption;
+        private _sizeOptions;
+        private _sizeValues;
         constructor(props: IPropertyTabComponentProps);
         componentDidMount(): void;
         componentWillUnmount(): void;
         load(file: File): void;
         save(saveCallback: () => void): void;
         saveLocally: () => void;
-        saveToSnippetServer: () => void;
+        saveToSnippetServerHelper: (content: string, adt: AdvancedDynamicTexture) => Promise<string>;
+        saveToSnippetServer: () => Promise<void>;
         loadFromSnippet(): void;
         renderProperties(): JSX.Element | null;
+        renderControlIcon(): string;
         render(): JSX.Element;
     }
 }
@@ -812,7 +818,7 @@ declare module GUIEDITOR {
 }
 declare module GUIEDITOR {
     export class GUINodeTools {
-        static CreateControlFromString(data: string): Rectangle | Line | Grid | TextBlock | Image | Slider | InputText | ColorPicker | StackPanel | Ellipse | Checkbox | DisplayGrid;
+        static CreateControlFromString(data: string): Grid | Rectangle | Line | TextBlock | Image | Slider | RadioButton | InputText | ColorPicker | ImageBasedSlider | StackPanel | Ellipse | Checkbox | DisplayGrid;
     }
 }
 declare module GUIEDITOR {
@@ -862,62 +868,18 @@ declare module GUIEDITOR {
         extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
         onClick: () => void;
         globalState: GlobalState;
+        isHovered: boolean;
+        dragOverHover: boolean;
+        dragOverLocation: DragOverLocation;
     }
     export class ControlTreeItemComponent extends React.Component<IControlTreeItemComponentProps, {
         isActive: boolean;
         isVisible: boolean;
-        isHovered: boolean;
-        isSelected: boolean;
     }> {
-        dragOverHover: boolean;
-        dragOverLocation: DragOverLocation;
-        private _onSelectionChangedObservable;
-        private _onDraggingEndObservable;
         constructor(props: IControlTreeItemComponentProps);
-        componentWillUnmount(): void;
         highlight(): void;
         switchVisibility(): void;
-        dragOver(event: React.DragEvent<HTMLDivElement>): void;
-        drop(): void;
         render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    interface IAdvancedDynamicTextureTreeItemComponentProps {
-        texture: AdvancedDynamicTexture;
-        extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
-        onSelectionChangedObservable?: BABYLON.Observable<any>;
-        onClick: () => void;
-    }
-    export class AdvancedDynamicTextureTreeItemComponent extends React.Component<IAdvancedDynamicTextureTreeItemComponentProps, {
-        isInPickingMode: boolean;
-    }> {
-        private _onControlPickedObserver;
-        constructor(props: IAdvancedDynamicTextureTreeItemComponentProps);
-        componentWillUnmount(): void;
-        onPickingMode(): void;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    interface ITreeItemSpecializedComponentProps {
-        label: string;
-        entity?: any;
-        extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
-        globalState: GlobalState;
-        onClick?: () => void;
-    }
-    export class TreeItemSpecializedComponent extends React.Component<ITreeItemSpecializedComponentProps> {
-        constructor(props: ITreeItemSpecializedComponentProps);
-        onClick(): void;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    export class Tools {
-        static LookForItem(item: any, selectedEntity: any): boolean;
-        private static _RecursiveRemoveHiddenMeshesAndHoistChildren;
-        static SortAndFilter(parent: any, items: any[]): any[];
     }
 }
 declare module GUIEDITOR {
@@ -933,9 +895,13 @@ declare module GUIEDITOR {
     export class TreeItemSelectableComponent extends React.Component<ITreeItemSelectableComponentProps, {
         isExpanded: boolean;
         isSelected: boolean;
+        isHovered: boolean;
+        dragOverLocation: DragOverLocation;
     }> {
-        private _wasSelected;
         dragOverHover: boolean;
+        private _onSelectionChangedObservable;
+        private _onDraggingEndObservable;
+        private _onDraggingStartObservable;
         constructor(props: ITreeItemSelectableComponentProps);
         switchExpandedState(): void;
         shouldComponentUpdate(nextProps: ITreeItemSelectableComponentProps, nextState: {
@@ -943,11 +909,12 @@ declare module GUIEDITOR {
             isSelected: boolean;
         }): boolean;
         scrollIntoView(): void;
-        componentDidMount(): void;
-        componentDidUpdate(): void;
+        componentWillUnmount(): void;
         onSelect(): void;
         renderChildren(): (JSX.Element | null)[] | null;
         render(): JSX.Element | null;
+        dragOver(event: React.DragEvent<HTMLDivElement>): void;
+        drop(): void;
     }
 }
 declare module GUIEDITOR {
@@ -1011,7 +978,6 @@ declare module GUIEDITOR {
         private _onNewSceneObserver;
         private _onPropertyChangedObservable;
         constructor(props: ISceneExplorerComponentProps);
-        processMutation(): void;
         componentDidMount(): void;
         componentWillUnmount(): void;
         filterContent(filter: string): void;
@@ -1125,10 +1091,14 @@ declare module GUIEDITOR {
      * Interface used to specify creation options for the gui editor
      */
     export interface IGUIEditorOptions {
+        customLoad: {
+            label: string;
+            action: (data: string) => Promise<string>;
+        } | undefined;
         hostElement?: HTMLElement;
         customSave?: {
             label: string;
-            action: (data: string) => Promise<void>;
+            action: (data: string) => Promise<string>;
         };
         currentSnippetToken?: string;
         customLoadObservable?: BABYLON.Observable<any>;
@@ -1171,6 +1141,30 @@ declare module GUIEDITOR {
         map?: {
             [key: number]: number;
         };
+    }
+}
+declare module GUIEDITOR {
+    export interface ISelectedLineContainer {
+        selectedLineContainerTitles: Array<string>;
+        selectedLineContainerTitlesNoFocus: Array<string>;
+    }
+}
+declare module GUIEDITOR {
+    interface ILineContainerComponentProps {
+        selection?: ISelectedLineContainer;
+        title: string;
+        children: any[] | any;
+        closed?: boolean;
+    }
+    export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
+        isExpanded: boolean;
+        isHighlighted: boolean;
+    }> {
+        constructor(props: ILineContainerComponentProps);
+        switchExpandedState(): void;
+        renderHeader(): JSX.Element;
+        componentDidMount(): void;
+        render(): JSX.Element;
     }
 }
 declare module GUIEDITOR {

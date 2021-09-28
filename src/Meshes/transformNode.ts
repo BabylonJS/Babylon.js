@@ -201,6 +201,14 @@ export class TransformNode extends Node {
     }
 
     /**
+     * return true if a pivot has been set
+     * @returns true if a pivot matrix is used
+     */
+     public isUsingPivotMatrix(): boolean {
+         return this._usePivotMatrix;
+     }
+
+    /**
       * Gets or sets the rotation property : a Vector3 defining the rotation value in radians around each local axis X, Y, Z  (default is (0.0, 0.0, 0.0)).
       * If rotation quaternion is set, this Vector3 will be ignored and copy from the quaternion
       */
@@ -355,7 +363,7 @@ export class TransformNode extends Node {
      * Returns a Vector3.
      */
     public get absolutePosition(): Vector3 {
-        return this._absolutePosition;
+        return this.getAbsolutePosition();
     }
 
     /**
@@ -633,7 +641,7 @@ export class TransformNode extends Node {
     /**
      * Sets the Vector3 "result" as the rotated Vector3 "localAxis" in the same rotation than the mesh.
      * localAxis is expressed in the mesh local space.
-     * result is computed in the Wordl space from the mesh World matrix.
+     * result is computed in the World space from the mesh World matrix.
      * @param localAxis axis to rotate
      * @param result the resulting transformnode
      * @returns this TransformNode.

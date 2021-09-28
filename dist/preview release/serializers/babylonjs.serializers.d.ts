@@ -503,7 +503,6 @@ declare module BABYLON.GLTF2.Exporter {
          */
         static _GetRightHandedQuaternionArrayFromRef(quaternion: number[]): void;
         static _NormalizeTangentFromRef(tangent: Vector4): void;
-        static _GetRightHandedMatrixFromRef(matrix: Matrix): void;
         static _GetDataAccessorElementCount(accessorType: AccessorType): 1 | 3 | 2 | 4 | 9 | 16;
     }
 }

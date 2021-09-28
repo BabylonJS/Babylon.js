@@ -44,7 +44,7 @@ export class GlobalState {
     onZoomObservable = new Observable<void>();
     onPanObservable = new Observable<void>();
     onSelectionButtonObservable = new Observable<void>();
-    onLoadObservable = new Observable<void>();
+    onLoadObservable = new Observable<File>();
     onSaveObservable = new Observable<void>();
     onSnippetLoadObservable = new Observable<void>();
     onSnippetSaveObservable = new Observable<void>();
@@ -53,11 +53,14 @@ export class GlobalState {
     onParentingChangeObservable = new Observable<Nullable<Control>>();
     onPropertyGridUpdateRequiredObservable = new Observable<void>();
     onDraggingEndObservable = new Observable<void>();
-    draggedControl: Nullable<Control>;
+    onDraggingStartObservable = new Observable<void>();
+    draggedControl: Nullable<Control> = null;
     draggedControlDirection: DragOverLocation;
+    isSaving = false;
     storeEditorData: (serializationObject: any) => void;
 
-    customSave?: { label: string; action: (data: string) => Promise<void> };
+    customSave?: { label: string; action: (data: string) => Promise<string> };
+    customLoad?: { label: string; action: (data: string) => Promise<string> };
     public constructor() {
         this.controlCamera = DataStorage.ReadBoolean("ControlCamera", true);
 

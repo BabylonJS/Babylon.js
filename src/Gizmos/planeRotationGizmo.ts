@@ -198,6 +198,7 @@ export class PlaneRotationGizmo extends Gizmo {
                 var nodeScale = new Vector3(1, 1, 1);
                 var nodeQuaternion = new Quaternion(0, 0, 0, 1);
                 var nodeTranslation = new Vector3(0, 0, 0);
+                this._handlePivot();
                 this.attachedNode.getWorldMatrix().decompose(nodeScale, nodeQuaternion, nodeTranslation);
 
                 var newVector = event.dragPlanePoint.subtract(nodeTranslation).normalize();

@@ -1,6 +1,5 @@
 import { Scene } from "../../scene";
 import { Engine } from "../../Engines/engine";
-import { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { Texture } from "../../Materials/Textures/texture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import { Constants } from "../../Engines/constants";
@@ -36,6 +35,10 @@ export interface IMultiRenderTargetOptions {
      */
     generateDepthTexture?: boolean;
     /**
+     * Define depth texture format to use
+     */
+    depthTextureFormat?: number;
+    /**
      * Define the number of desired draw buffers
      */
     textureCount?: number;
@@ -61,7 +64,6 @@ export interface IMultiRenderTargetOptions {
  */
 export class MultiRenderTarget extends RenderTargetTexture {
 
-    private _internalTextures: InternalTexture[];
     private _textures: Texture[];
     private _multiRenderTargetOptions: IMultiRenderTargetOptions;
     private _count: number;
@@ -135,6 +137,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
     constructor(name: string, size: any, count: number, scene: Scene, options?: IMultiRenderTargetOptions, textureNames?: string[]) {
         var generateMipMaps = options && options.generateMipMaps ? options.generateMipMaps : false;
         var generateDepthTexture = options && options.generateDepthTexture ? options.generateDepthTexture : false;
+        var depthTextureFormat = options && options.depthTextureFormat ? options.depthTextureFormat : Constants.TEXTUREFORMAT_DEPTH16;
         var doNotChangeAspectRatio = !options || options.doNotChangeAspectRatio === undefined ? true : options.doNotChangeAspectRatio;
         var drawOnlyOnFirstAttachmentByDefault = options && options.drawOnlyOnFirstAttachmentByDefault ? options.drawOnlyOnFirstAttachmentByDefault : false;
         super(name, size, scene, generateMipMaps, doNotChangeAspectRatio,
@@ -166,6 +169,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
             generateDepthBuffer: generateDepthBuffer,
             generateStencilBuffer: generateStencilBuffer,
             generateDepthTexture: generateDepthTexture,
+            depthTextureFormat: depthTextureFormat,
             types: types,
             textureCount: count
         };
@@ -209,21 +213,20 @@ export class MultiRenderTarget extends RenderTargetTexture {
             this._createTextures(textureNames);
         }
 
-        for (var i = 0; i < this._internalTextures.length; i++) {
+        const internalTextures = this._renderTarget!.textures!;
+        for (var i = 0; i < internalTextures.length; i++) {
             var texture = this._textures[i];
-            texture._texture = this._internalTextures[i];
+            texture._texture = internalTextures[i];
         }
 
         if (this.samples !== 1) {
-            this._getEngine()!.updateMultipleRenderTargetTextureSampleCount(this._internalTextures, this.samples, !this._drawOnlyOnFirstAttachmentByDefault);
+            this._renderTarget!.setSamples(this.samples, !this._drawOnlyOnFirstAttachmentByDefault, true);
         }
     }
 
     private _createInternalTextures(): void {
-        this._internalTextures = this._getEngine()!.createMultipleRenderTarget(this._size, this._multiRenderTargetOptions, !this._drawOnlyOnFirstAttachmentByDefault);
-
-        // Keeps references to frame buffer and stencil/depth buffer
-        this._texture = this._internalTextures[0];
+        this._renderTarget = this._getEngine()!.createMultipleRenderTarget(this._size, this._multiRenderTargetOptions, !this._drawOnlyOnFirstAttachmentByDefault);
+        this._texture = this._renderTarget.texture;
     }
 
     private _releaseTextures(): void {
@@ -236,13 +239,14 @@ export class MultiRenderTarget extends RenderTargetTexture {
     }
 
     private _createTextures(textureNames?: string[]): void {
+        const internalTextures = this._renderTarget!.textures!;
         this._textures = [];
-        for (var i = 0; i < this._internalTextures.length; i++) {
+        for (var i = 0; i < internalTextures.length; i++) {
             var texture = new Texture(null, this.getScene());
             if (textureNames?.[i]) {
                 texture.name = textureNames[i];
             }
-            texture._texture = this._internalTextures[i];
+            texture._texture = internalTextures[i];
             this._textures.push(texture);
         }
     }
@@ -253,11 +257,12 @@ export class MultiRenderTarget extends RenderTargetTexture {
      * @param index The index of the texture to replace
      */
     public replaceTexture(texture: Texture, index: number) {
-        if (texture._texture) {
+        if (texture._texture && this._renderTarget) {
+            const internalTextures = this._renderTarget.textures!;
             this._textures[index] = texture;
-            this._internalTextures[index] = texture._texture;
+            internalTextures[index] = texture._texture;
             if (index === 0) {
-                this._texture = this._internalTextures[index];
+                this._texture = internalTextures[index];
             }
         }
     }
@@ -270,12 +275,8 @@ export class MultiRenderTarget extends RenderTargetTexture {
     }
 
     public set samples(value: number) {
-        if (this._samples === value) {
-            return;
-        }
-
-        if (this._internalTextures) {
-            this._samples = this._getEngine()!.updateMultipleRenderTargetTextureSampleCount(this._internalTextures, value);
+        if (this._renderTarget) {
+            this._samples = this._renderTarget.setSamples(value);
         } else {
             // In case samples are set with 0 textures created, we must save the desired samples value
             this._samples = value;
@@ -313,9 +314,11 @@ export class MultiRenderTarget extends RenderTargetTexture {
     }
 
     protected unbindFrameBuffer(engine: Engine, faceIndex: number): void {
-        engine.unBindMultiColorAttachmentFramebuffer(this._internalTextures, this.isCube, () => {
-            this.onAfterRenderObservable.notifyObservers(faceIndex);
-        });
+        if (this._renderTarget) {
+            engine.unBindMultiColorAttachmentFramebuffer(this._renderTarget, this.isCube, () => {
+                this.onAfterRenderObservable.notifyObservers(faceIndex);
+            });
+        }
     }
 
     /**
@@ -331,16 +334,17 @@ export class MultiRenderTarget extends RenderTargetTexture {
      * Release all the underlying texture used as draw buffers.
      */
     public releaseInternalTextures(): void {
-        if (!this._internalTextures) {
+        const internalTextures = this._renderTarget?.textures;
+
+        if (!internalTextures) {
             return;
         }
 
-        for (var i = this._internalTextures.length - 1; i >= 0; i--) {
-            if (this._internalTextures[i] !== undefined) {
-                this._internalTextures[i].dispose();
-                this._internalTextures.splice(i, 1);
-            }
+        for (var i = internalTextures.length - 1; i >= 0; i--) {
             this._textures[i]._texture = null;
         }
+
+        this._renderTarget?.dispose();
+        this._renderTarget = null;
     }
 }

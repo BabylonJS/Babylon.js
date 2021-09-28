@@ -242,7 +242,7 @@ export class Slider3D extends Control3D {
         pointerDragBehavior.moveAttached = false;
 
         pointerDragBehavior.onDragObservable.add((event) => {
-            const newPosition = this._sliderThumb.position.x + event.dragDistance;
+            const newPosition = this._sliderThumb.position.x + event.dragDistance / this.scaling.x;
             this._sliderThumb.position.x = Math.max(Math.min(newPosition, this.end), this.start);
             this.value = this._convertToValue(this._sliderThumb.position.x);
         });

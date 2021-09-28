@@ -48,7 +48,7 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
                     {
                         (!this.props.block.isInput || !(this.props.block as InputBlock).isAttribute) &&
                         <TextInputLineComponent globalState={this.props.globalState} label="Name" propertyName="name" target={this.props.block}
-                            onChange={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers()}
+                            onChange={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block)}
                             validator={ newName => 
                             {if(!this.props.block.validateBlockName(newName)){ 
                                 this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(`"${newName}" is a reserved name, please choose another`);
@@ -59,20 +59,20 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
                     }
                     {
                         (this.props.block._originalTargetIsNeutral) &&
-                        <OptionsLineComponent label="Target" options={targetOptions} target={this.props.block} propertyName="target" onSelect={(value: any) => {
+                        <OptionsLineComponent label="Target" options={targetOptions} target={this.props.block} propertyName="target" onSelect={() => {
                             this.forceUpdate();
 
-                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
                             this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                         }} />
                     }
                     {
                         (!this.props.block._originalTargetIsNeutral) &&
-                        <TextLineComponent label="Type" value={NodeMaterialBlockTargets[this.props.block.target]} />
+                        <TextLineComponent label="Target" value={NodeMaterialBlockTargets[this.props.block.target]} />
                     }
                     <TextLineComponent label="Type" value={this.props.block.getClassName()} />
                     <TextInputLineComponent globalState={this.props.globalState} label="Comments" propertyName="comments" target={this.props.block}
-                            onChange={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers()} />
+                            onChange={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block)} />
                 </LineContainerComponent>
             </>
         );
@@ -86,7 +86,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
 
     forceRebuild(notifiers?: { "rebuild"?: boolean, "update"?: boolean, "activatePreviewCommand"?: boolean, "callback"?: (scene: Scene) => void }) {
         if (!notifiers || notifiers.update) {
-            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+            this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
         }
 
         if (!notifiers || notifiers.rebuild) {

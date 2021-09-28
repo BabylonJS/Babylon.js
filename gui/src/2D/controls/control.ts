@@ -611,9 +611,6 @@ export class Control {
 
     /** Gets or set font family */
     public get fontFamily(): string {
-        if (!this._fontSet) {
-            return "";
-        }
         return this._fontFamily;
     }
 
@@ -1317,6 +1314,13 @@ export class Control {
     public _moveToProjectedPosition(projectedPosition: Vector3): void {
         let oldLeft = this._left.getValue(this._host);
         let oldTop = this._top.getValue(this._host);
+
+        if (this._currentMeasure.width === 0 && this._currentMeasure.height === 0) {
+            let parentMeasure = this.parent?._currentMeasure;
+            if (parentMeasure) {
+                this._processMeasures(parentMeasure, this._host.getContext());
+            }
+        }
 
         var newLeft = ((projectedPosition.x + this._linkOffsetX.getValue(this._host)) - this._currentMeasure.width / 2);
         var newTop = ((projectedPosition.y + this._linkOffsetY.getValue(this._host)) - this._currentMeasure.height / 2);
@@ -2065,7 +2069,7 @@ export class Control {
         serializationObject.className = this.getClassName();
 
         if (this._font) {
-            serializationObject.fontFamily = this.fontFamily;
+            serializationObject.fontFamily = this._fontFamily;
             serializationObject.fontSize = this.fontSize;
             serializationObject.fontWeight = this.fontWeight;
             serializationObject.fontStyle = this.fontStyle;

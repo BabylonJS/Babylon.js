@@ -48,7 +48,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     private _activeTouchIds: Array<number> = [];
     private _rollingTouchId: number = 0; // Rolling ID number to assign; emulates Chrome assignment
 
-    private _pointerWheelClearObserver: Nullable<Observer<Engine>> = null;
+    private _pointerInputClearObserver: Nullable<Observer<Engine>> = null;
 
     private _gamepadConnectedEvent = (evt: any) => { };
     private _gamepadDisconnectedEvent = (evt: any) => { };
@@ -443,12 +443,22 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                     }
 
                     if (!document.pointerLockElement) {
-                        this._elementToAttachTo.setPointerCapture(this._mouseId);
+                        try {
+                            this._elementToAttachTo.setPointerCapture(this._mouseId);
+                        }
+                        catch (e) {
+                            // DO NOTHING
+                        }
                     }
                 }
                 else { // Touch; Since touches are dynamically assigned, only set capture if we have an id
                     if (evt.pointerId && !document.pointerLockElement) {
-                        this._elementToAttachTo.setPointerCapture(evt.pointerId);
+                        try {
+                            this._elementToAttachTo.setPointerCapture(evt.pointerId);
+                        }
+                        catch (e) {
+                            // DO NOTHING
+                        }
                     }
                 }
 
@@ -678,13 +688,15 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         this._elementToAttachTo.addEventListener("blur", this._pointerBlurEvent);
         this._elementToAttachTo.addEventListener(this._wheelEventName, this._pointerWheelEvent, passiveSupported ? { passive: false } : false);
 
-        // Since there's no up or down event for mouse wheel, clear mouse wheel value at end of frame
-        this._pointerWheelClearObserver = this._engine.onEndFrameObservable.add(() => {
+        // Since there's no up or down event for mouse wheel or delta x/y, clear mouse values at end of frame
+        this._pointerInputClearObserver = this._engine.onEndFrameObservable.add(() => {
             if (this.isDeviceAvailable(DeviceType.Mouse)) {
                 const pointer = this._inputs[DeviceType.Mouse][0];
                 pointer[PointerInput.MouseWheelX] = 0;
                 pointer[PointerInput.MouseWheelY] = 0;
                 pointer[PointerInput.MouseWheelZ] = 0;
+                pointer[PointerInput.DeltaHorizontal] = 0;
+                pointer[PointerInput.DeltaVertical] = 0;
             }
         });
     }
@@ -788,8 +800,8 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             this._elementToAttachTo.removeEventListener(this._eventPrefix + "up", this._pointerUpEvent);
             this._elementToAttachTo.removeEventListener(this._wheelEventName, this._pointerWheelEvent);
 
-            if (this._pointerWheelClearObserver) {
-                this._engine.onEndFrameObservable.remove(this._pointerWheelClearObserver);
+            if (this._pointerInputClearObserver) {
+                this._engine.onEndFrameObservable.remove(this._pointerInputClearObserver);
             }
         }
     }
