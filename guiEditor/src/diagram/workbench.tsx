@@ -57,7 +57,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _constraintDirection = ConstraintDirection.NONE;
     private _forcePanning = false;
     private _forceZooming = false;
-    private _forceSelecting = false;
+    private _forceSelecting = true;
     private _outlines = false;
     private _panning: boolean;
     private _canvas: HTMLCanvasElement;
@@ -65,7 +65,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _isOverGUINode = false;
     private _clipboard: Control[] = [];
     private _selectAll: boolean = false;
-
+    private _camera: ArcRotateCamera;
+    private _cameraRadias = 1500;
     public get globalState() {
         return this.props.globalState;
     }
@@ -140,6 +141,15 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             }
         });
 
+        props.globalState.onFitToWindowObservable.add(() => {
+            for (let i = 0; i < 2; ++i) {
+                this._camera.alpha = -Math.PI / 2;
+                this._camera.beta = 0;
+                this._camera.radius = this._cameraRadias;
+                this._camera.target = Vector3.Zero();
+            }
+        });
+
         props.globalState.onOutlinesObservable.add(() => {
             this._outlines = !this._outlines;
         });
@@ -185,7 +195,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }
 
         if (evt.key === "Delete") {
-            if(!this.props.globalState.lockObject.lock) {
+            if (!this.props.globalState.lockObject.lock) {
                 this._selectedGuiNodes.forEach(guiNode => {
                     guiNode.dispose();
                 });
@@ -241,9 +251,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         if (newControl) { //insert the new control into the adt or parent container
             this.props.globalState.workbench.appendBlock(newControl);
             this.props.globalState.guiTexture.removeControl(newControl);
-            if(original.parent?.typeName === "Grid") {
-                const cell = Tools.getCellInfo(original.parent as Grid ,original);
-                (original.parent as Grid).addControl(newControl,cell.x,cell.y);
+            if (original.parent?.typeName === "Grid") {
+                const cell = Tools.getCellInfo(original.parent as Grid, original);
+                (original.parent as Grid).addControl(newControl, cell.x, cell.y);
             }
             else {
                 original.parent?.addControl(newControl);
@@ -613,7 +623,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._scene = new Scene(engine);
         const clearColor = 204 / 255.0;
         this._scene.clearColor = new Color4(clearColor, clearColor, clearColor, 1.0);
-        let camera = new ArcRotateCamera("Camera", -Math.PI / 2, 0, 1024, Vector3.Zero(), this._scene);
+        this._camera = new ArcRotateCamera("Camera", -Math.PI / 2, 0, this._cameraRadias, Vector3.Zero(), this._scene);
         const light = new HemisphericLight("light1", Axis.Y, this._scene);
         light.intensity = 0.9;
 
@@ -631,7 +641,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.artBoardBackground.thickness = 0;
 
         this.globalState.guiTexture.addControl(this.artBoardBackground);
-        this.addControls(this._scene, camera);
+        this.addControls(this._scene, this._camera);
 
         this._scene.getEngine().onCanvasPointerOutObservable.clear();
 
@@ -722,14 +732,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 case "Q":
                     if (!this._forceSelecting)
                         this.globalState.onSelectionButtonObservable.notifyObservers();
-                        camera.alpha = -Math.PI / 2;
-                        camera.beta = 0;
-                        camera.radius = 1024;
-                        camera.target = Vector3.Zero();
-                        camera.alpha = -Math.PI / 2;
-                        camera.beta = 0;
-                        camera.radius = 1024;
-                        camera.target = Vector3.Zero();
                     break;
                 case "w": //pan
                 case "W":
@@ -744,6 +746,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 case "r": //outlines
                 case "R":
                     this.globalState.onOutlinesObservable.notifyObservers();
+                    break;
+                case "0": //fit to window
+                    if (this._altKeyIsPressed) {
+                        this.globalState.onFitToWindowObservable.notifyObservers();
+                    }
                     break;
                 default:
                     break;
