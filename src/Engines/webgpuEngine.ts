@@ -249,9 +249,13 @@ export class WebGPUEngine extends Engine {
     public _counters: {
         numEnableEffects: number;
         numEnableDrawWrapper: number;
+        numBundleCreationNonCompatMode: number;
+        numBundleReuseNonCompatMode: number;
     } = {
             numEnableEffects: 0,
             numEnableDrawWrapper: 0,
+            numBundleCreationNonCompatMode: 0,
+            numBundleReuseNonCompatMode: 0,
         };
     /**
      * Counters from last frame
@@ -259,9 +263,13 @@ export class WebGPUEngine extends Engine {
     public readonly countersLastFrame: {
         numEnableEffects: number;
         numEnableDrawWrapper: number;
+        numBundleCreationNonCompatMode: number;
+        numBundleReuseNonCompatMode: number;
     } = {
             numEnableEffects: 0,
             numEnableDrawWrapper: 0,
+            numBundleCreationNonCompatMode: 0,
+            numBundleReuseNonCompatMode: 0,
         };
     /**
      * Max number of uncaptured error messages to log
@@ -2254,8 +2262,12 @@ export class WebGPUEngine extends Engine {
 
         this.countersLastFrame.numEnableEffects = this._counters.numEnableEffects;
         this.countersLastFrame.numEnableDrawWrapper = this._counters.numEnableDrawWrapper;
+        this.countersLastFrame.numBundleCreationNonCompatMode = this._counters.numBundleCreationNonCompatMode;
+        this.countersLastFrame.numBundleReuseNonCompatMode = this._counters.numBundleReuseNonCompatMode;
         this._counters.numEnableEffects = 0;
         this._counters.numEnableDrawWrapper = 0;
+        this._counters.numBundleCreationNonCompatMode = 0;
+        this._counters.numBundleReuseNonCompatMode = 0;
 
         this._cacheRenderPipeline.endFrame();
         this._cacheBindGroups.endFrame();
@@ -2856,6 +2868,7 @@ export class WebGPUEngine extends Engine {
         if (useFastPath || this._snapshotRenderingRecordBundles) {
             this._applyRenderPassChanges(renderPass, true);
             if (!this._snapshotRenderingRecordBundles) {
+                this._counters.numBundleReuseNonCompatMode++;
                 this._bundleList.addBundle(this._currentDrawContext.fastBundle);
                 this._reportDrawCall();
                 return;
@@ -2888,6 +2901,7 @@ export class WebGPUEngine extends Engine {
         if (!this._snapshotRenderingRecordBundles) {
             this._applyRenderPassChanges(renderPass, !this.compatibilityMode);
             if (!this.compatibilityMode) {
+                this._counters.numBundleCreationNonCompatMode++;
                 renderPass2 = this._device.createRenderBundleEncoder({
                     colorFormats: this._cacheRenderPipeline.colorFormats,
                     depthStencilFormat: this._depthTextureFormat,
