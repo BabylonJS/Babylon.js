@@ -7,7 +7,7 @@ import { Observable } from './observable';
 import { FilesInputStore } from './filesInputStore';
 import { RetryStrategy } from './retryStrategy';
 import { BaseError } from './baseError';
-import { StringTools } from './stringTools';
+import { DecodeBase64ToBinary, DecodeBase64ToString, EncodeArrayBufferToBase64 } from './stringTools';
 import { ShaderProcessor } from '../Engines/Processors/shaderProcessor';
 import { ThinEngine } from '../Engines/thinEngine';
 import { EngineStore } from '../Engines/engineStore';
@@ -149,7 +149,7 @@ export class FileTools {
                 url = URL.createObjectURL(new Blob([input], { type: mimeType }));
                 usingObjectURL = true;
             } else {
-                url = `data:${mimeType};base64,` + StringTools.EncodeArrayBufferToBase64(input);
+                url = `data:${mimeType};base64,` + EncodeArrayBufferToBase64(input);
             }
         }
         else if (input instanceof Blob) {
@@ -546,7 +546,7 @@ export class FileTools {
      * @return The decoded base64 data.
      */
     public static DecodeBase64UrlToBinary(uri: string): ArrayBuffer {
-        return StringTools.DecodeBase64ToBinary(uri.split(",")[1]);
+        return DecodeBase64ToBinary(uri.split(",")[1]);
     }
 
     /**
@@ -555,7 +555,7 @@ export class FileTools {
      * @return The decoded base64 data.
      */
     public static DecodeBase64UrlToString(uri: string): string {
-        return StringTools.DecodeBase64ToString(uri.split(",")[1]);
+        return DecodeBase64ToString(uri.split(",")[1]);
     }
 }
 

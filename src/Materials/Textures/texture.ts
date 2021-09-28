@@ -11,7 +11,7 @@ import { ThinEngine } from '../../Engines/thinEngine';
 import { TimingTools } from '../../Misc/timingTools';
 import { InstantiationTools } from '../../Misc/instantiationTools';
 import { Plane } from '../../Maths/math.plane';
-import { StringTools } from '../../Misc/stringTools';
+import { EncodeArrayBufferToBase64, StartsWith } from '../../Misc/stringTools';
 import { CopyTools } from '../../Misc/copyTools';
 
 declare type CubeTexture = import("../../Materials/Textures/cubeTexture").CubeTexture;
@@ -474,7 +474,7 @@ export class Texture extends BaseTexture {
             this.getScene()!.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
         }
 
-        if (!this.name || StringTools.StartsWith(this.name, "data:")) {
+        if (!this.name || StartsWith(this.name, "data:")) {
             this.name = url;
         }
         this.url = url;
@@ -745,12 +745,12 @@ export class Texture extends BaseTexture {
         let savedName = this.name;
 
         if (!Texture.SerializeBuffers) {
-            if (StringTools.StartsWith(this.name, "data:")) {
+            if (StartsWith(this.name, "data:")) {
                 this.name = "";
             }
         }
 
-        if (StringTools.StartsWith(this.name, "data:") && this.url === this.name) {
+        if (StartsWith(this.name, "data:") && this.url === this.name) {
             this.url = "";
         }
 
@@ -764,8 +764,8 @@ export class Texture extends BaseTexture {
             if (typeof this._buffer === "string" && (this._buffer as string).substr(0, 5) === "data:") {
                 serializationObject.base64String = this._buffer;
                 serializationObject.name = serializationObject.name.replace("data:", "");
-            } else if (this.url && StringTools.StartsWith(this.url, "data:") && this._buffer instanceof Uint8Array) {
-                serializationObject.base64String = "data:image/png;base64," + StringTools.EncodeArrayBufferToBase64(this._buffer);
+            } else if (this.url && StartsWith(this.url, "data:") && this._buffer instanceof Uint8Array) {
+                serializationObject.base64String = "data:image/png;base64," + EncodeArrayBufferToBase64(this._buffer);
             } else if (Texture.ForceSerializeBuffers) {
                 serializationObject.base64String = !this._engine || this._engine._features.supportSyncTextureRead ? CopyTools.GenerateBase64StringFromTexture(this) : CopyTools.GenerateBase64StringFromTextureAsync(this);
             }
@@ -898,7 +898,7 @@ export class Texture extends BaseTexture {
                         url = rootUrl + parsedTexture.name;
                     }
 
-                    if (StringTools.StartsWith(parsedTexture.url, "data:") || (Texture.UseSerializedUrlIfAny && parsedTexture.url)) {
+                    if (StartsWith(parsedTexture.url, "data:") || (Texture.UseSerializedUrlIfAny && parsedTexture.url)) {
                         url = parsedTexture.url;
                     }
                     texture = new Texture(url, scene, !generateMipMaps, parsedTexture.invertY, parsedTexture.samplingMode, onLoaded);

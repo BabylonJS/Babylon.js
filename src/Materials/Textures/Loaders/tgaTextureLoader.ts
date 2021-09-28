@@ -3,7 +3,7 @@ import { Nullable } from "../../../types";
 import { Engine } from "../../../Engines/engine";
 import { InternalTexture } from "../../../Materials/Textures/internalTexture";
 import { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
-import { StringTools } from '../../../Misc/stringTools';
+import { EndsWith } from '../../../Misc/stringTools';
 
 /**
  * Implementation of the TGA Texture Loader.
@@ -21,7 +21,7 @@ export class _TGATextureLoader implements IInternalTextureLoader {
      * @returns true if the loader can load the specified file
      */
     public canLoad(extension: string): boolean {
-        return StringTools.EndsWith(extension, ".tga");
+        return EndsWith(extension, ".tga");
     }
 
     /**

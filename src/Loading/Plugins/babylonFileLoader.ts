@@ -28,8 +28,8 @@ import { AmmoJSPlugin } from "../../Physics/Plugins/ammoJSPlugin";
 import { ReflectionProbe } from "../../Probes/reflectionProbe";
 import { _TypeStore } from '../../Misc/typeStore';
 import { Tools } from '../../Misc/tools';
-import { StringTools } from '../../Misc/stringTools';
 import { PostProcess } from '../../PostProcesses/postProcess';
+import { EndsWith } from "../../Misc/stringTools";
 
 /** @hidden */
 export var _BabylonLoaderRegistered = true;
@@ -138,7 +138,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
                 }
                 scene.environmentTexture = hdrTexture;
             } else {
-                if (StringTools.EndsWith(parsedData.environmentTexture, ".env")) {
+                if (EndsWith(parsedData.environmentTexture, ".env")) {
                     var compressedTexture = new CubeTexture((parsedData.environmentTexture.match(/https?:\/\//g) ? "" : rootUrl) + parsedData.environmentTexture, scene);
                     if (parsedData.environmentTextureRotationY) {
                         compressedTexture.rotationY = parsedData.environmentTextureRotationY;
