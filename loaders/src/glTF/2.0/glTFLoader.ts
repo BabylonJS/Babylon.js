@@ -979,13 +979,13 @@ export class GLTFLoader implements IGLTFLoader {
 
         babylonMesh.morphTargetManager = new MorphTargetManager(babylonMesh.getScene());
         babylonMesh.morphTargetManager.areUpdatesFrozen = true;
+
         for (let index = 0; index < primitive.targets.length; index++) {
             const weight = node.weights ? node.weights[index] : mesh.weights ? mesh.weights[index] : 0;
             const name = targetNames ? targetNames[index] : `morphTarget${index}`;
             babylonMesh.morphTargetManager.addTarget(new MorphTarget(name, weight, babylonMesh.getScene()));
             // TODO: tell the target whether it has positions, normals, tangents
         }
-        babylonMesh.morphTargetManager.areUpdatesFrozen = false;
     }
 
     private _loadMorphTargetsAsync(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh, babylonGeometry: Geometry): Promise<void> {
@@ -1001,7 +1001,9 @@ export class GLTFLoader implements IGLTFLoader {
             promises.push(this._loadMorphTargetVertexDataAsync(`${context}/targets/${index}`, babylonGeometry, primitive.targets[index], babylonMorphTarget));
         }
 
-        return Promise.all(promises).then(() => { });
+        return Promise.all(promises).then(() => {
+            morphTargetManager.areUpdatesFrozen = false;
+        });
     }
 
     private _loadMorphTargetVertexDataAsync(context: string, babylonGeometry: Geometry, attributes: { [name: string]: number }, babylonMorphTarget: MorphTarget): Promise<void> {
@@ -1178,8 +1180,6 @@ export class GLTFLoader implements IGLTFLoader {
             if (babylonParentBone) {
                 baseMatrix.multiplyToRef(babylonParentBone.getInvertedAbsoluteTransform(), baseMatrix);
             }
-
-            babylonBone.setBindPose(baseMatrix);
 
             babylonBone.updateMatrix(baseMatrix, false, false);
             babylonBone._updateDifferenceMatrix(undefined, false);
@@ -1695,21 +1695,14 @@ export class GLTFLoader implements IGLTFLoader {
         }
 
         if (accessor.sparse) {
-            accessor._babylonVertexBuffer[kind] = this._loadFloatAccessorAsync(`/accessors/${accessor.index}`, accessor).then((data) => {
-                return new VertexBuffer(this._babylonScene.getEngine(), data, kind, false);
-            });
-        }
-        // HACK: If byte offset is not a multiple of component type byte length then load as a float array instead of using Babylon buffers.
-        else if (accessor.byteOffset && accessor.byteOffset % VertexBuffer.GetTypeByteLength(accessor.componentType) !== 0) {
-            Logger.Warn("Accessor byte offset is not a multiple of component type byte length");
-            accessor._babylonVertexBuffer[kind] = this._loadFloatAccessorAsync(`/accessors/${accessor.index}`, accessor).then((data) => {
+            accessor._babylonVertexBuffer[kind] = this._loadFloatAccessorAsync(context, accessor).then((data) => {
                 return new VertexBuffer(this._babylonScene.getEngine(), data, kind, false);
             });
         }
         // Load joint indices as a float array since the shaders expect float data but glTF uses unsigned byte/short.
         // This prevents certain platforms (e.g. D3D) from having to convert the data to float on the fly.
         else if (kind === VertexBuffer.MatricesIndicesKind || kind === VertexBuffer.MatricesIndicesExtraKind) {
-            accessor._babylonVertexBuffer[kind] = this._loadFloatAccessorAsync(`/accessors/${accessor.index}`, accessor).then((data) => {
+            accessor._babylonVertexBuffer[kind] = this._loadFloatAccessorAsync(context, accessor).then((data) => {
                 return new VertexBuffer(this._babylonScene.getEngine(), data, kind, false);
             });
         }
@@ -2228,12 +2221,14 @@ export class GLTFLoader implements IGLTFLoader {
 
         const constructor = GLTFLoader._GetTypedArrayConstructor(`${context}/componentType`, componentType);
 
-        try {
-            return new constructor(buffer, byteOffset, length);
+        const componentTypeLength = VertexBuffer.GetTypeByteLength(componentType);
+        if (byteOffset % componentTypeLength !== 0) {
+            // HACK: Copy the buffer if byte offset is not a multiple of component type byte length.
+            Logger.Warn(`${context}: Copying buffer as byte offset (${byteOffset}) is not a multiple of component type byte length (${componentTypeLength})`);
+            return new constructor(buffer.slice(byteOffset, byteOffset + length * componentTypeLength), 0);
         }
-        catch (e) {
-            throw new Error(`${context}: ${e}`);
-        }
+
+        return new constructor(buffer, byteOffset, length);
     }
 
     private static _GetNumComponents(context: string, type: string): number {

@@ -327,13 +327,14 @@ export class AdvancedDynamicTexture extends DynamicTexture {
    * @param samplingMode defines the texture sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
    * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
    */
-    constructor(name: string, width = 0, height = 0, scene: Nullable<Scene>, generateMipMaps = false, samplingMode = Texture.NEAREST_SAMPLINGMODE, invertY?: boolean) {
+    constructor(name: string, width = 0, height = 0, scene: Nullable<Scene>, generateMipMaps = false, samplingMode = Texture.NEAREST_SAMPLINGMODE, invertY = true) {
         super(name, { width: width, height: height }, scene, generateMipMaps, samplingMode, Constants.TEXTUREFORMAT_RGBA, invertY);
         scene = this.getScene();
         if (!scene || !this._texture) {
             return;
         }
-        this._rootElement = scene.getEngine()!.getInputElement()!;
+        this.applyYInversionOnUpdate = invertY;
+        this._rootElement = scene.getEngine().getInputElement();
         this._renderObserver = scene.onBeforeCameraRenderObservable.add((camera: Camera) => this._checkUpdate(camera));
         this._preKeyboardObserver = scene.onPreKeyboardObservable.add((info) => {
             if (!this._focusedControl) {
@@ -660,7 +661,10 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         var textureSize = this.getSize();
         if (this._isFullscreen) {
             let camera = scene.cameraToUseForPointers || scene.activeCamera;
-            let viewport = camera!.viewport;
+            if (!camera) {
+                return;
+            }
+            let viewport = camera.viewport;
             x = x * (textureSize.width / (engine.getRenderWidth() * viewport.width));
             y = y * (textureSize.height / (engine.getRenderHeight() * viewport.height));
         }
@@ -706,7 +710,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
     /** Attach to all scene events required to support pointer events */
     public attach(): void {
-        var scene = this.getScene();
+        const scene = this.getScene();
         if (!scene) {
             return;
         }
@@ -714,16 +718,13 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         let tempViewport = new Viewport(0, 0, 0, 0);
 
         this._pointerMoveObserver = scene.onPrePointerObservable.add((pi, state) => {
-            if (scene!.isPointerCaptured((<IPointerEvent>(pi.event)).pointerId)) {
+            if (scene.isPointerCaptured((<IPointerEvent>(pi.event)).pointerId)) {
                 return;
             }
             if (pi.type !== PointerEventTypes.POINTERMOVE
                 && pi.type !== PointerEventTypes.POINTERUP
                 && pi.type !== PointerEventTypes.POINTERDOWN
                 && pi.type !== PointerEventTypes.POINTERWHEEL) {
-                return;
-            }
-            if (!scene) {
                 return;
             }
 
@@ -957,6 +958,36 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             });
 
             request.open("GET", AdvancedDynamicTexture.SnippetUrl + "/" + snippetId.replace(/#/g, "/"));
+            request.send();
+        });
+    }
+
+    /**
+    * Recreate the content of the ADT from a url json
+    * @param url defines the url to load
+    * @returns a promise that will resolve on success
+    */
+    public parseFromURLAsync(url: string): Promise<void> {
+        if (url === "") {
+            return Promise.resolve();
+        }
+
+        return new Promise((resolve, reject) => {
+            var request = new WebRequest();
+            request.addEventListener("readystatechange", () => {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        var gui = request.responseText;
+                        let serializationObject = JSON.parse(gui);
+                        this.parseContent(serializationObject);
+
+                        resolve();
+                    } else {
+                        reject("Unable to load");
+                    }
+                }
+            });
+            request.open("GET", url);
             request.send();
         });
     }

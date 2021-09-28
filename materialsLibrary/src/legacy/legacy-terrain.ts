@@ -1,4 +1,4 @@
-import * as MatLib from "../terrain";
+import * as MatLib from "../terrain/index";
 
 /**
  * This is the entry point for the UMD module.
@@ -11,4 +11,4 @@ if (typeof globalObject !== "undefined") {
     }
 }
 
-export * from "../terrain";
+export * from "../terrain/index";

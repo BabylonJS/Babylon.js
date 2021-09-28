@@ -5,7 +5,7 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
-
+import { Node } from "../node";
 import { StandardMaterial } from '../Materials/standardMaterial';
 import { Light } from '../Lights/light';
 import { Scene } from '../scene';
@@ -60,6 +60,18 @@ export class LightGizmo extends Gizmo {
         }, PointerEventTypes.POINTERDOWN);
     }
     private _light: Nullable<Light> = null;
+
+    /**
+     * Override attachedNode because lightgizmo only support attached mesh
+     * It will return the attached mesh (if any) and setting an attached node will log
+     * a warning
+     */
+    public get attachedNode() {
+        return this.attachedMesh;
+    }
+    public set attachedNode(value: Nullable<Node>) {
+        console.warn("Nodes cannot be attached to LightGizmo. Attach to a mesh instead.");
+    }
 
     /**
      * The light that the gizmo is attached to
@@ -141,11 +153,15 @@ export class LightGizmo extends Gizmo {
             this._attachedMeshParent.freezeWorldMatrix(this._light.parent.getWorldMatrix());
         }
 
+        // For light positon and direction, a dirty flag is set to true in the setter
+        // It means setting values individualy or copying values willl not call setter and
+        // dirty flag will not be set to true. Hence creating a new Vector3.
         if ((this._light as any).position) {
             // If the gizmo is moved update the light otherwise update the gizmo to match the light
             if (!this.attachedMesh!.position.equals(this._cachedPosition)) {
                 // update light to match gizmo
-                (this._light as any).position.copyFrom(this.attachedMesh!.position);
+                const position = this.attachedMesh!.position;
+                (this._light as any).position = new Vector3(position.x, position.y, position.z);
                 this._cachedPosition.copyFrom(this.attachedMesh!.position);
             } else {
                 // update gizmo to match light
@@ -159,7 +175,8 @@ export class LightGizmo extends Gizmo {
             // If the gizmo is moved update the light otherwise update the gizmo to match the light
             if (Vector3.DistanceSquared(this.attachedMesh!.forward, this._cachedForward) > 0.0001) {
                 // update light to match gizmo
-                (this._light as any).direction.copyFrom(this.attachedMesh!.forward);
+                const direction = this.attachedMesh!.forward;
+                (this._light as any).direction = new Vector3(direction.x, direction.y, direction.z);
                 this._cachedForward.copyFrom(this.attachedMesh!.forward);
             } else if (Vector3.DistanceSquared(this.attachedMesh!.forward, (this._light as any).direction) > 0.0001) {
                 // update gizmo to match light

@@ -6,3 +6,4 @@ export * from "./stereoscopicArcRotateCamera";
 export * from "./stereoscopicFreeCamera";
 export * from "./stereoscopicGamepadCamera";
 export * from "./stereoscopicUniversalCamera";
+export * from "./stereoscopicScreenUniversalCamera";

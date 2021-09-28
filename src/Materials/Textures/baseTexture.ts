@@ -412,7 +412,6 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
     protected _scene: Nullable<Scene> = null;
 
     /** @hidden */
-    public _texture: Nullable<InternalTexture> = null;
     private _uid: Nullable<string> = null;
 
     /**
@@ -547,7 +546,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
             return null;
         }
 
-        const correctedUseSRGBBuffer = !!useSRGBBuffer && engine._caps.supportSRGBBuffers && (engine.webGLVersion > 1 || engine.isWebGPU || noMipmap);
+        const correctedUseSRGBBuffer = engine._getUseSRGBBuffer(!!useSRGBBuffer,  noMipmap);
 
         var texturesCache = engine.getLoadedTexturesCache();
         for (var index = 0; index < texturesCache.length; index++) {

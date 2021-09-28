@@ -16,6 +16,8 @@ export class EngineView {
     clearBeforeCopy?: boolean;
     /** Indicates if the view is enabled (true by default) */
     enabled: boolean;
+    /** Defines a custom function to handle canvas size changes. (the canvas to render into is provided to the callback) */
+    customResize?: (canvas: HTMLCanvasElement) => void;
 }
 
 declare module "../../Engines/engine" {
@@ -141,17 +143,22 @@ Engine.prototype._renderViews = function () {
             scene.activeCamera = camera;
         }
 
-        // Set sizes
-        const width = Math.floor(canvas.clientWidth / this._hardwareScalingLevel);
-        const height = Math.floor(canvas.clientHeight / this._hardwareScalingLevel);
+        if (view.customResize) {
+            view.customResize(canvas);
+        }
+        else {
+            // Set sizes
+            const width = Math.floor(canvas.clientWidth / this._hardwareScalingLevel);
+            const height = Math.floor(canvas.clientHeight / this._hardwareScalingLevel);
 
-        const dimsChanged =
-            width !== canvas.width || parent.width !== canvas.width ||
-            height !== canvas.height || parent.height !== canvas.height;
-        if (canvas.clientWidth && canvas.clientHeight && dimsChanged) {
-            canvas.width = width;
-            canvas.height = height;
-            this.setSize(width, height);
+            const dimsChanged =
+                width !== canvas.width || parent.width !== canvas.width ||
+                height !== canvas.height || parent.height !== canvas.height;
+            if (canvas.clientWidth && canvas.clientHeight && dimsChanged) {
+                canvas.width = width;
+                canvas.height = height;
+                this.setSize(width, height);
+            }
         }
 
         if (!parent.width || !parent.height) {

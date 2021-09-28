@@ -15,6 +15,8 @@ import { StandardMaterial } from '../Materials/standardMaterial';
 import { PointerEventTypes, PointerInfo } from '../Events/pointerEvents';
 import { LinesMesh } from '../Meshes/linesMesh';
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
+import { ShadowLight } from "../Lights/shadowLight";
+import { Light } from "../Lights/light";
 
 /**
  * Cache built by each axis. Used for managing state between all elements of gizmo for enhanced UI
@@ -232,6 +234,21 @@ export class Gizmo implements IDisposable {
     }
 
     /**
+     * Handle position/translation when using an attached node using pivot
+     */
+    protected _handlePivot() {
+        const attachedNodeTransform = this._attachedNode as any;
+        // check there is an active pivot for the TransformNode attached
+        if (attachedNodeTransform.isUsingPivotMatrix && attachedNodeTransform.isUsingPivotMatrix() && attachedNodeTransform.position) {
+            // When a TransformNode has an active pivot, even without parenting,
+            // translation from the world matrix is different from TransformNode.position.
+            // Pivot works like a virtual parent that's using the node orientation.
+            // As the world matrix is transformed by the gizmo and then decomposed to TRS
+            // its translation part must be set to the Node's position.
+            attachedNodeTransform.getWorldMatrix().setTranslation(attachedNodeTransform.position);
+        }
+    }
+    /**
      * computes the rotation/scaling/position of the transform once the Node world matrix has changed.
      * @param value Node, TransformNode or mesh
      */
@@ -316,6 +333,29 @@ export class Gizmo implements IDisposable {
                 lmat.copyFrom(bone.getWorldMatrix());
             }
             bone.markAsDirty();
+        } else {
+            const light = this._attachedNode as ShadowLight;
+            if (light.getTypeID)
+            {
+                const type = light.getTypeID();
+                if (type === Light.LIGHTTYPEID_DIRECTIONALLIGHT || type === Light.LIGHTTYPEID_SPOTLIGHT || type === Light.LIGHTTYPEID_POINTLIGHT) {
+                    const parent = light.parent;
+
+                    if (parent) {
+                        var invParent = this._tempMatrix1;
+                        var nodeLocalMatrix = this._tempMatrix2;
+                        parent.getWorldMatrix().invertToRef(invParent);
+                        light.getWorldMatrix().multiplyToRef(invParent, nodeLocalMatrix);
+                        nodeLocalMatrix.decompose(undefined, this._tempQuaternion, this._tempVector);
+                    } else {
+                        this._attachedNode._worldMatrix.decompose(undefined, this._tempQuaternion, this._tempVector);
+                    }
+                    // setter doesn't copy values. Need a new Vector3
+                    light.position = new Vector3(this._tempVector.x, this._tempVector.y, this._tempVector.z);
+                    Vector3.Backward(false).rotateByQuaternionToRef(this._tempQuaternion, this._tempVector);
+                    light.direction = new Vector3(this._tempVector.x, this._tempVector.y, this._tempVector.z);
+                }
+            }
         }
     }
 

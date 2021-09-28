@@ -444,6 +444,29 @@ export class NodeMaterialBlock {
         // Do nothing
     }
 
+    /** Gets a boolean indicating that the code of this block will be promoted to vertex shader even if connected to fragment output */
+    public get willBeGeneratedIntoVertexShaderFromFragmentShader(): boolean {
+        if (this.isInput || this.isFinalMerger) {
+            return false;
+        }
+
+        if (this._outputs.some((o) => o.isDirectlyConnectedToVertexOutput)) {
+            return false;
+        }
+
+        if (this.target === NodeMaterialBlockTargets.Vertex) {
+            return true;
+        }
+
+        if (this.target === NodeMaterialBlockTargets.VertexAndFragment || this.target === NodeMaterialBlockTargets.Neutral) {
+            if (this._outputs.some((o) => o.isConnectedInVertexShader)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /**
      * Checks if the block is ready
      * @param mesh defines the mesh to be rendered

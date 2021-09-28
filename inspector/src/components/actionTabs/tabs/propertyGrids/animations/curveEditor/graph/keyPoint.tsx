@@ -63,6 +63,7 @@ IKeyPointComponentState
     private _onLinearTangentRequiredObserver: Nullable<Observer<void>>;
     private _onBreakTangentRequiredObserver: Nullable<Observer<void>>;
     private _onUnifyTangentRequiredObserver: Nullable<Observer<void>>;
+    private _onSelectAllKeysObserver: Nullable<Observer<void>>;
 
     private _pointerIsDown: boolean;
     private _sourcePointerX: number;
@@ -82,6 +83,12 @@ IKeyPointComponentState
     private _inVec: Vector2;
     private _outVec: Vector2;
 
+    private _lockX = false;
+    private _lockY = false;
+    
+    private _accumulatedX = 0;
+    private _accumulatedY = 0;
+
     constructor(props: IKeyPointComponentProps) {
         super(props);
 
@@ -89,6 +96,16 @@ IKeyPointComponentState
         
         this._svgHost = React.createRef();
         this._keyPointSVG = React.createRef();
+
+        this._onSelectAllKeysObserver = this.props.context.onSelectAllKeys.add(() => {
+            const isSelected = this.props.context.activeKeyPoints?.indexOf(this) !== -1;
+
+            if (isSelected) {
+                return;
+            }
+
+            this.props.context.activeKeyPoints?.push(this);
+        });
 
         this._onUnifyTangentRequiredObserver = this.props.context.onUnifyTangentRequired.add(() => {
             const isSelected = this.props.context.activeKeyPoints?.indexOf(this) !== -1;
@@ -195,7 +212,7 @@ IKeyPointComponentState
                 let state = SelectionState.None;
 
                 for (let activeKeyPoint of this.props.context.activeKeyPoints) {
-                    if (activeKeyPoint.props.keyId === this.props.keyId && curve !== activeKeyPoint.props.curve) {
+                    if (activeKeyPoint.props.keyId === this.props.keyId && curve !== activeKeyPoint.props.curve && curve.animation === activeKeyPoint.props.curve.animation) {
                         state = SelectionState.Siblings;
                         break;
                     }
@@ -258,6 +275,11 @@ IKeyPointComponentState
     }
 
     componentWillUnmount() {
+        
+        if (this._onSelectAllKeysObserver) {
+            this.props.context.onSelectAllKeys.remove(this._onSelectAllKeysObserver);
+        }
+
         if (this._onUnifyTangentRequiredObserver) {
             this.props.context.onUnifyTangentRequired.remove(this._onUnifyTangentRequiredObserver);
         }
@@ -414,6 +436,11 @@ IKeyPointComponentState
             this.setState({tangentSelectedIndex: 1});
         }
 
+        this._lockX = false;
+        this._lockY = false;
+        this._accumulatedX = 0;
+        this._accumulatedY = 0;
+
         evt.stopPropagation();
     }
 
@@ -449,9 +476,30 @@ IKeyPointComponentState
         }
 
         if (this._controlMode === ControlMode.Key) {
+            const diffX = evt.nativeEvent.offsetX - this._sourcePointerX;
+            const diffY = evt.nativeEvent.offsetY - this._sourcePointerY;
 
-            let newX = this.state.x + (evt.nativeEvent.offsetX - this._sourcePointerX) * this.props.scale;
-            let newY = this.state.y + (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
+            if (evt.shiftKey) {
+                if (!this._lockX && !this._lockY) {
+                    this._accumulatedX += Math.abs(diffX);
+                    this._accumulatedY += Math.abs(diffY);
+
+                    if (this._accumulatedX > 5 || this._accumulatedY > 5) {
+                        if (this._accumulatedX > this._accumulatedY) {
+                            this._lockY = true;
+                        } else {
+                            this._lockX = true;
+                        }
+                    }
+                }
+            } else {
+                this._lockX = false;
+                this._lockY = false;
+            }
+
+
+            let newX = this.state.x + (this._lockX ? 0 : diffX * this.props.scale);
+            let newY = this.state.y + (this._lockY ? 0 : diffY * this.props.scale);
             let previousX = this.props.getPreviousX();
             let nextX = this.props.getNextX();
             const epsilon = 0.01;
@@ -531,6 +579,8 @@ IKeyPointComponentState
                     this.props.curve.updateInTangentFromControlPoint(this.props.keyId, this._extractSlope(tmpVector, this._storedLengthIn, true));
                 }
             }  
+            
+            this.props.context.refreshTarget();
             this.forceUpdate();
         }
 
@@ -549,7 +599,7 @@ IKeyPointComponentState
     }
 
     public render() {
-        if (this.props.context.activeColor && this.props.context.activeColor !== this.props.curve.color) {
+        if (!this.props.context.isChannelEnabled(this.props.curve.animation, this.props.curve.color)) {
             return null;
         }
 

@@ -136,7 +136,7 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                     }
                                     else {
                                         return (
-                                            <FileButtonLineComponent label="Load" onClick={(file) => m.onClick} accept=".json" />
+                                            <FileButtonLineComponent key={m.label} label="Load" onClick={(file) => this.props.globalState.onLoadObservable.notifyObservers(file)} accept=".json" />
                                         )
                                     }
                                 })

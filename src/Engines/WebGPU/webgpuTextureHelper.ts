@@ -1,3 +1,5 @@
+// License for the mipmap generation code:
+//
 // Copyright 2020 Brandon Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,8 +31,7 @@ import { WebGPUHardwareTexture } from './webgpuHardwareTexture';
 import { EngineStore } from "../engineStore";
 import { WebGPUTintWASM } from "./webgpuTintWASM";
 
-// TODO WEBGPU improve mipmap generation by not using the OutputAttachment flag (but that requires an extra copy...) - use compute shaders?
-// see https://github.com/toji/web-texture-tool/tree/main/src
+// TODO WEBGPU improve mipmap generation by using compute shaders
 
 // TODO WEBGPU optimize, don't recreate things that can be cached (bind groups, descriptors, etc)
 
@@ -149,7 +150,7 @@ export class WebGPUTextureHelper {
     private _mipmapSampler: GPUSampler;
     private _pipelines: { [format: string]: Array<GPURenderPipeline> } = {};
     private _compiledShaders: GPUShaderModule[][] = [];
-    private _deferredReleaseTextures: Array<[Nullable<HardwareTextureWrapper | GPUTexture>, Nullable<BaseTexture>, Nullable<InternalTexture>]> = [];
+    private _deferredReleaseTextures: Array<[Nullable<HardwareTextureWrapper | GPUTexture>, Nullable<BaseTexture>]> = [];
     private _commandEncoderForCreation: GPUCommandEncoder;
 
     public static ComputeNumMipmapLevels(width: number, height: number) {
@@ -474,6 +475,8 @@ export class WebGPUTextureHelper {
 
     public static GetWebGPUTextureFormat(type: number, format: number, useSRGBBuffer = false): GPUTextureFormat {
         switch (format) {
+            case Constants.TEXTUREFORMAT_DEPTH16:
+                return WebGPUConstants.TextureFormat.Depth16Unorm;
             case Constants.TEXTUREFORMAT_DEPTH24_STENCIL8:
                 return WebGPUConstants.TextureFormat.Depth24PlusStencil8;
             case Constants.TEXTUREFORMAT_DEPTH32_FLOAT:
@@ -655,7 +658,7 @@ export class WebGPUTextureHelper {
 
         commandEncoder!.pushDebugGroup?.(`internal process texture - invertY=${invertY} premultiplyAlpha=${premultiplyAlpha}`);
 
-        const outputTexture = this.createTexture({ width, height, layers: 1 }, false, false, false, false, false, format, 1, commandEncoder, WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.Sampled);
+        const outputTexture = this.createTexture({ width, height, layers: 1 }, false, false, false, false, false, format, 1, commandEncoder, WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.TextureBinding);
 
         const passEncoder = commandEncoder!.beginRenderPass({
             colorAttachments: [{
@@ -709,7 +712,7 @@ export class WebGPUTextureHelper {
         }
         );
 
-        this._deferredReleaseTextures.push([outputTexture, null, null]);
+        this._deferredReleaseTextures.push([outputTexture, null]);
 
         commandEncoder!.popDebugGroup?.();
 
@@ -773,7 +776,7 @@ export class WebGPUTextureHelper {
 
         const isCompressedFormat = WebGPUTextureHelper.IsCompressedFormat(format);
         const mipLevelCount = hasMipmaps ? WebGPUTextureHelper.ComputeNumMipmapLevels(imageBitmap.width, imageBitmap.height) : 1;
-        const usages = usage >= 0 ? usage : WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.CopyDst | WebGPUConstants.TextureUsage.Sampled;
+        const usages = usage >= 0 ? usage : WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.CopyDst | WebGPUConstants.TextureUsage.TextureBinding;
         additionalUsages |= hasMipmaps && !isCompressedFormat ? WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.RenderAttachment : 0;
 
         if (!isCompressedFormat) {
@@ -813,7 +816,7 @@ export class WebGPUTextureHelper {
 
         const isCompressedFormat = WebGPUTextureHelper.IsCompressedFormat(format);
         const mipLevelCount = hasMipmaps ? WebGPUTextureHelper.ComputeNumMipmapLevels(width, height) : 1;
-        const usages = usage >= 0 ? usage : WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.CopyDst | WebGPUConstants.TextureUsage.Sampled;
+        const usages = usage >= 0 ? usage : WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.CopyDst | WebGPUConstants.TextureUsage.TextureBinding;
         additionalUsages |= hasMipmaps && !isCompressedFormat ? WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.RenderAttachment : 0;
 
         if (!isCompressedFormat) {
@@ -945,10 +948,10 @@ export class WebGPUTextureHelper {
         gpuTextureWrapper.format = WebGPUTextureHelper.GetWebGPUTextureFormat(texture.type, texture.format, texture._useSRGBBuffer);
 
         gpuTextureWrapper.textureUsages =
-            texture._source === InternalTextureSource.RenderTarget || texture.source === InternalTextureSource.MultiRenderTarget ? WebGPUConstants.TextureUsage.Sampled | WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.RenderAttachment :
-                texture._source === InternalTextureSource.Depth ? WebGPUConstants.TextureUsage.Sampled | WebGPUConstants.TextureUsage.RenderAttachment : -1;
+            texture._source === InternalTextureSource.RenderTarget || texture.source === InternalTextureSource.MultiRenderTarget ? WebGPUConstants.TextureUsage.TextureBinding | WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.RenderAttachment :
+                texture._source === InternalTextureSource.DepthStencil ? WebGPUConstants.TextureUsage.TextureBinding | WebGPUConstants.TextureUsage.RenderAttachment : -1;
 
-        gpuTextureWrapper.textureAdditionalUsages = (creationFlags ?? 0) & Constants.TEXTURE_CREATIONFLAG_STORAGE ? WebGPUConstants.TextureUsage.Storage : 0;
+        gpuTextureWrapper.textureAdditionalUsages = (creationFlags ?? 0) & Constants.TEXTURE_CREATIONFLAG_STORAGE ? WebGPUConstants.TextureUsage.StorageBinding : 0;
 
         const hasMipMaps = texture.generateMipMaps;
         const layerCount = depth || 1;
@@ -1137,7 +1140,7 @@ export class WebGPUTextureHelper {
                     // create a temp texture and copy the image to it
                     const srcTexture = this.createTexture({ width, height, layers: 1 }, false, false, false, false, false, format, 1, commandEncoder, WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.Sampled);
 
-                    this._deferredReleaseTextures.push([srcTexture, null, null]);
+                    this._deferredReleaseTextures.push([srcTexture, null]);
 
                     textureExtent.depthOrArrayLayers = 1;
                     this._device.queue.copyExternalImageToTexture({ source: imageBitmap }, { texture: srcTexture }, textureExtent);
@@ -1205,18 +1208,17 @@ export class WebGPUTextureHelper {
         if (WebGPUTextureHelper._IsInternalTexture(texture)) {
             const hardwareTexture = texture._hardwareTexture;
             const irradianceTexture = texture._irradianceTexture;
-            const depthStencilTexture = texture._depthStencilTexture;
 
             // We can't destroy the objects just now because they could be used in the current frame - we delay the destroying after the end of the frame
-            this._deferredReleaseTextures.push([hardwareTexture, irradianceTexture, depthStencilTexture]);
+            this._deferredReleaseTextures.push([hardwareTexture, irradianceTexture]);
         } else {
-            this._deferredReleaseTextures.push([texture, null, null]);
+            this._deferredReleaseTextures.push([texture, null]);
         }
     }
 
     public destroyDeferredTextures(): void {
         for (let i = 0; i < this._deferredReleaseTextures.length; ++i) {
-            const [hardwareTexture, irradianceTexture, depthStencilTexture] = this._deferredReleaseTextures[i];
+            const [hardwareTexture, irradianceTexture] = this._deferredReleaseTextures[i];
 
             if (hardwareTexture) {
                 if (WebGPUTextureHelper._IsHardwareTexture(hardwareTexture)) {
@@ -1226,7 +1228,6 @@ export class WebGPUTextureHelper {
                 }
             }
             irradianceTexture?.dispose();
-            depthStencilTexture?.dispose();
         }
 
         this._deferredReleaseTextures.length = 0;

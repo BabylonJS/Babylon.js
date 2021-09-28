@@ -16,6 +16,12 @@ import { Color3, Color4 } from '../Maths/math.color';
 import { EffectFallbacks } from './effectFallbacks';
 import { WebRequest } from '../Misc/webRequest';
 import { Engine } from '../Engines/engine';
+import { ShaderLanguage } from "./shaderLanguage";
+import { UniformBuffer } from "./uniformBuffer";
+import { TextureSampler } from "./Textures/textureSampler";
+import { StorageBuffer } from "../Buffers/storageBuffer";
+
+declare type ExternalTexture = import("./Textures/externalTexture").ExternalTexture;
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -49,11 +55,26 @@ export interface IShaderMaterialOptions {
     uniformBuffers: string[];
 
     /**
-     * The list of sampler names used in the shader
+     * The list of sampler (texture) names used in the shader
      */
     samplers: string[];
 
     /**
+     * The list of external texture names used in the shader
+     */
+    externalTextures: string[];
+
+    /**
+     * The list of sampler object names used in the shader
+     */
+    samplerObjects: string[];
+
+    /**
+     * The list of storage buffer names used in the shader
+     */
+    storageBuffers: string[];
+
+     /**
      * The list of defines used in the shader
      */
     defines: string[];
@@ -62,6 +83,11 @@ export interface IShaderMaterialOptions {
      * Defines if clip planes have to be turned on: true to turn them on, false to turn them off and null to turn them on/off depending on the scene configuration (scene.clipPlaneX)
      */
     useClipPlane: Nullable<boolean>;
+
+    /**
+     * The language the shader is written in (default: GLSL)
+     */
+    shaderLanguage?: ShaderLanguage;
 }
 
 /**
@@ -76,6 +102,7 @@ export class ShaderMaterial extends Material {
     private _options: IShaderMaterialOptions;
     private _textures: { [name: string]: BaseTexture } = {};
     private _textureArrays: { [name: string]: BaseTexture[] } = {};
+    private _externalTextures: { [name: string]: ExternalTexture } = {};
     private _floats: { [name: string]: number } = {};
     private _ints: { [name: string]: number } = {};
     private _floatsArrays: { [name: string]: number[] } = {};
@@ -93,6 +120,9 @@ export class ShaderMaterial extends Material {
     private _vectors2Arrays: { [name: string]: number[] } = {};
     private _vectors3Arrays: { [name: string]: number[] } = {};
     private _vectors4Arrays: { [name: string]: number[] } = {};
+    private _uniformBuffers: { [name: string]: UniformBuffer } = {};
+    private _textureSamplers: { [name: string]: TextureSampler } = {};
+    private _storageBuffers: { [name: string]: StorageBuffer } = {};
     private _cachedWorldViewMatrix = new Matrix();
     private _cachedWorldViewProjectionMatrix = new Matrix();
     private _renderId: number;
@@ -130,6 +160,9 @@ export class ShaderMaterial extends Material {
             uniforms: ["worldViewProjection"],
             uniformBuffers: [],
             samplers: [],
+            externalTextures: [],
+            samplerObjects: [],
+            storageBuffers: [],
             defines: [],
             useClipPlane: false,
             ...options
@@ -220,6 +253,21 @@ export class ShaderMaterial extends Material {
         this._checkUniform(name);
 
         this._textureArrays[name] = textures;
+
+        return this;
+    }
+
+    /**
+     * Set an internal texture in the shader.
+     * @param name Define the name of the uniform samplers as defined in the shader
+     * @param texture Define the texture to bind to this sampler
+     * @return the material itself allowing "fluent" like uniform updates
+     */
+    public setExternalTexture(name: string, texture: ExternalTexture): ShaderMaterial {
+        if (this._options.externalTextures.indexOf(name) === -1) {
+            this._options.externalTextures.push(name);
+        }
+        this._externalTextures[name] = texture;
 
         return this;
     }
@@ -458,6 +506,51 @@ export class ShaderMaterial extends Material {
         return this;
     }
 
+    /**
+     * Set a uniform buffer in the shader
+     * @param name Define the name of the uniform as defined in the shader
+     * @param buffer Define the value to give to the uniform
+     * @return the material itself allowing "fluent" like uniform updates
+     */
+    public setUniformBuffer(name: string, buffer: UniformBuffer): ShaderMaterial {
+        if (this._options.uniformBuffers.indexOf(name) === -1) {
+            this._options.uniformBuffers.push(name);
+        }
+        this._uniformBuffers[name] = buffer;
+
+        return this;
+    }
+
+    /**
+     * Set a texture sampler in the shader
+     * @param name Define the name of the uniform as defined in the shader
+     * @param sampler Define the value to give to the uniform
+     * @return the material itself allowing "fluent" like uniform updates
+     */
+    public setTextureSampler(name: string, sampler: TextureSampler): ShaderMaterial {
+        if (this._options.samplerObjects.indexOf(name) === -1) {
+            this._options.samplerObjects.push(name);
+        }
+        this._textureSamplers[name] = sampler;
+
+        return this;
+    }
+
+    /**
+     * Set a storage buffer in the shader
+     * @param name Define the name of the storage buffer as defined in the shader
+     * @param buffer Define the value to give to the uniform
+     * @return the material itself allowing "fluent" like uniform updates
+     */
+     public setStorageBuffer(name: string, buffer: StorageBuffer): ShaderMaterial {
+        if (this._options.storageBuffers.indexOf(name) === -1) {
+            this._options.storageBuffers.push(name);
+        }
+        this._storageBuffers[name] = buffer;
+
+        return this;
+    }
+
     private _checkCache(mesh?: AbstractMesh, useInstances?: boolean): boolean {
         if (!mesh) {
             return true;
@@ -532,7 +625,10 @@ export class ShaderMaterial extends Material {
         }
 
         for (var index = 0; index < this._options.defines.length; index++) {
-            defines.push(this._options.defines[index]);
+            const defineToAdd = this._options.defines[index].indexOf("#define") === 0 ?
+                this._options.defines[index] :
+                `#define ${this._options.defines[index]}`;
+            defines.push(defineToAdd);
         }
 
         for (var index = 0; index < this._options.attributes.length; index++) {
@@ -721,7 +817,8 @@ export class ShaderMaterial extends Material {
                 fallbacks: fallbacks,
                 onCompiled: this.onCompiled,
                 onError: this.onError,
-                indexParameters: { maxSimultaneousMorphTargets: numInfluencers }
+                indexParameters: { maxSimultaneousMorphTargets: numInfluencers },
+                shaderLanguage: this._options.shaderLanguage
             }, engine);
 
             this._drawWrapper.effect = effect;
@@ -860,6 +957,11 @@ export class ShaderMaterial extends Material {
                 effect.setTextureArray(name, this._textureArrays[name]);
             }
 
+            // External texture
+            for (name in this._externalTextures) {
+                effect.setExternalTexture(name, this._externalTextures[name]);
+            }
+
             // Int
             for (name in this._ints) {
                 effect.setInt(name, this._ints[name]);
@@ -944,6 +1046,24 @@ export class ShaderMaterial extends Material {
             // Vector4Array
             for (name in this._vectors4Arrays) {
                 effect.setArray4(name, this._vectors4Arrays[name]);
+            }
+
+            // Uniform buffers
+            for (name in this._uniformBuffers) {
+                const buffer = this._uniformBuffers[name].getBuffer();
+                if (buffer) {
+                    effect.bindUniformBuffer(buffer, name);
+                }
+            }
+
+            // Samplers
+            for (name in this._textureSamplers) {
+                effect.setTextureSampler(name, this._textureSamplers[name]);
+            }
+
+            // Storage buffers
+            for (name in this._storageBuffers) {
+                effect.setStorageBuffer(name, this._storageBuffers[name]);
             }
         }
 
@@ -1050,6 +1170,21 @@ export class ShaderMaterial extends Material {
             result.setTexture(key, this._textures[key]);
         }
 
+        // TextureArray
+        for (var key in this._textureArrays) {
+            result.setTextureArray(key, this._textureArrays[key]);
+        }
+
+        // External texture
+        for (var key in this._externalTextures) {
+            result.setExternalTexture(key, this._externalTextures[key]);
+        }
+
+        // Int
+        for (var key in this._ints) {
+            result.setInt(key, this._ints[key]);
+        }
+
         // Float
         for (var key in this._floats) {
             result.setFloat(key, this._floats[key]);
@@ -1065,9 +1200,19 @@ export class ShaderMaterial extends Material {
             result.setColor3(key, this._colors3[key]);
         }
 
+        // Color3Array
+        for (var key in this._colors3Arrays) {
+            result._colors3Arrays[key] = this._colors3Arrays[key];
+        }
+
         // Color4
         for (var key in this._colors4) {
             result.setColor4(key, this._colors4[key]);
+        }
+
+        // Color4Array
+        for (var key in this._colors4Arrays) {
+            result._colors4Arrays[key] = this._colors4Arrays[key];
         }
 
         // Vector2
@@ -1090,6 +1235,11 @@ export class ShaderMaterial extends Material {
             result.setMatrix(key, this._matrices[key]);
         }
 
+        // MatrixArray
+        for (var key in this._matrixArrays) {
+            result._matrixArrays[key] = this._matrixArrays[key].slice();
+        }
+
         // Matrix 3x3
         for (var key in this._matrices3x3) {
             result.setMatrix3x3(key, this._matrices3x3[key]);
@@ -1098,6 +1248,36 @@ export class ShaderMaterial extends Material {
         // Matrix 2x2
         for (var key in this._matrices2x2) {
             result.setMatrix2x2(key, this._matrices2x2[key]);
+        }
+
+        // Vector2Array
+        for (var key in this._vectors2Arrays) {
+            result.setArray2(key, this._vectors2Arrays[key]);
+        }
+
+        // Vector3Array
+        for (var key in this._vectors3Arrays) {
+            result.setArray3(key, this._vectors3Arrays[key]);
+        }
+
+        // Vector4Array
+        for (var key in this._vectors4Arrays) {
+            result.setArray4(key, this._vectors4Arrays[key]);
+        }
+
+        // Uniform buffers
+        for (var key in this._uniformBuffers) {
+            result.setUniformBuffer(key, this._uniformBuffers[key]);
+        }
+
+        // Samplers
+        for (var key in this._textureSamplers) {
+            result.setTextureSampler(key, this._textureSamplers[key]);
+        }
+
+        // Storag buffers
+        for (var key in this._storageBuffers) {
+            result.setStorageBuffer(key, this._storageBuffers[key]);
         }
 
         return result;
@@ -1160,6 +1340,12 @@ export class ShaderMaterial extends Material {
             for (var index = 0; index < array.length; index++) {
                 serializationObject.textureArrays[name].push(array[index].serialize());
             }
+        }
+
+        // Int
+        serializationObject.ints = {};
+        for (name in this._ints) {
+            serializationObject.ints[name] = this._ints[name];
         }
 
         // Float
@@ -1294,12 +1480,17 @@ export class ShaderMaterial extends Material {
             material.setTextureArray(name, textureArray);
         }
 
+        // Int
+        for (name in source.ints) {
+            material.setInt(name, source.ints[name]);
+        }
+
         // Float
         for (name in source.floats) {
             material.setFloat(name, source.floats[name]);
         }
 
-        // Float s
+        // Floats
         for (name in source.floatsArrays) {
             material.setFloats(name, source.floatsArrays[name]);
         }

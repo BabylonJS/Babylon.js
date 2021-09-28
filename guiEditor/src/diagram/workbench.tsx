@@ -23,6 +23,7 @@ import { KeyboardEventTypes, KeyboardInfo } from "babylonjs/Events/keyboardEvent
 import { Line } from "babylonjs-gui/2D/controls/line";
 import { DataStorage } from "babylonjs/Misc/dataStorage";
 import { Grid } from "babylonjs-gui/2D/controls/grid";
+import { Tools } from "../tools";
 require("./workbenchCanvas.scss");
 
 export interface IWorkbenchComponentProps {
@@ -171,6 +172,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         );
 
         this.props.globalState.workbench = this;
+        
     }
 
     keyEvent = (evt: KeyboardEvent) => {
@@ -191,7 +193,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             }
         }
 
-        if (this._ctrlKeyIsPressed) {
+        if (this._ctrlKeyIsPressed && this._focused) {
             if (evt.key === "a") {
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                 let index = 0;
@@ -281,6 +283,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.globalState.onSelectionChangedObservable.notifyObservers(null);
         await this.globalState.guiTexture.parseFromSnippetAsync(snippedId);
         this.loadToEditor();
+        if (this.props.globalState.customLoad) {
+            this.props.globalState.customLoad.action(this.globalState.guiTexture.snippetId).catch((err) => {
+                alert("Unable to load your GUI");
+            });
+        }
+        this.globalState.onSelectionChangedObservable.notifyObservers(null);
     }
 
     loadToEditor() {
@@ -302,7 +310,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     changeSelectionHighlight(value: boolean) {
-        this.selectedGuiNodes.forEach(node => {
+        this._selectedGuiNodes.forEach(node => {
             if (this._outlines) {
                 node.isHighlighted = true;
                 node.highlightLineWidth = value ? 10 : 5;
@@ -346,14 +354,16 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }
     }
 
-    createNewGuiNode(guiControl: Control) {
+    createNewGuiNode(
+        guiControl: Control) {
         this.enableEditorProperties(guiControl);
         guiControl.onPointerUpObservable.add((evt) => {
             this.clicked = false;
         });
 
         guiControl.onPointerDownObservable.add((evt) => {
-            if (!this.isUp) return;
+            if (!this.isUp || evt.buttonIndex > 0) return;
+
             this.isSelected(true, guiControl);
             this.isUp = false;
         });
@@ -399,36 +409,57 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         if (draggedControlParent && draggedControl) {
             if (this._isNotChildInsert(dropLocationControl, draggedControl)) { //checking to make sure the element is not being inserted into a child
 
-                draggedControlParent.removeControl(draggedControl);
                 if (dropLocationControl != null) { //the control you are dragging onto top
                     if (this.props.globalState.workbench.isContainer(dropLocationControl) && //dropping inside a contrainer control
                         this.props.globalState.draggedControlDirection === DragOverLocation.CENTER) {
+                        draggedControlParent.removeControl(draggedControl);
                         (dropLocationControl as Container).addControl(draggedControl);
                     }
                     else if (dropLocationControl.parent) { //dropping inside the controls parent container
-
                         if (dropLocationControl.parent.typeName != "Grid") {
+                            draggedControlParent.removeControl(draggedControl);
                             let index = dropLocationControl.parent.children.indexOf(dropLocationControl);
-                            index = this._adjustParentingIndex(index);  //adjusting index to be before or after based on where the control is over
+                            const reversed = dropLocationControl.parent.typeName == "StackPanel";
+                            
+                            index = this._adjustParentingIndex(index, reversed);  //adjusting index to be before or after based on where the control is over
+
                             dropLocationControl.parent.children.splice(index, 0, draggedControl);
                             draggedControl.parent = dropLocationControl.parent;
                         }
-                        else { //special case for grid
+                        else if (dropLocationControl.parent === draggedControlParent) {  //special case for grid
+                            this._reorderGrid(dropLocationControl.parent as Grid, draggedControl, dropLocationControl);
+                        }
+                        else {
+                            draggedControlParent.removeControl(draggedControl);
                             (dropLocationControl.parent as Container).addControl(draggedControl);
+                            this._reorderGrid(dropLocationControl.parent as Grid, draggedControl, dropLocationControl);
                         }
                     }
                     else {
+                        draggedControlParent.removeControl(draggedControl);
                         this.props.globalState.guiTexture.addControl(draggedControl);
                     }
                 }
                 else {
                     //starting at index 1 because of object "Art-Board-Background" must be at index 0
+                    draggedControlParent.removeControl(draggedControl);
                     draggedControlParent.children.splice(1, 0, draggedControl);
                     draggedControl.parent = draggedControlParent;
                 }
             }
         }
         this.globalState.draggedControl = null;
+        this.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
+    }
+
+    private _reorderGrid(grid: Grid, draggedControl: Control, dropLocationControl: Control) {
+        const cellInfo = Tools.getCellInfo(grid, draggedControl);
+        grid.removeControl(draggedControl);
+
+        let index = grid.children.indexOf(dropLocationControl);
+        index = this._adjustParentingIndex(index);
+
+        Tools.reorderGrid(grid, index, draggedControl, cellInfo);
     }
 
     private _isNotChildInsert(control: Nullable<Control>, draggedControl: Nullable<Control>) {
@@ -441,13 +472,13 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         return true;
     }
 
-    private _adjustParentingIndex(index: number) {
+    private _adjustParentingIndex(index: number, reversed : boolean = false) {
         switch (this.props.globalState.draggedControlDirection) {
             case DragOverLocation.ABOVE:
-                return index + 1;
+                return reversed? index: index + 1;
             case DragOverLocation.BELOW:
             case DragOverLocation.CENTER:
-                return index;
+                return reversed? index + 1: index;
         }
         return index;
     }
@@ -501,9 +532,14 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                     ratioX = cell.widthInPixels;
                     ratioY = cell.heightInPixels;
                 }
+                else if (guiControl.parent.typeName === "Rectangle" || guiControl.parent.typeName === "Button") {
+                    const thickness = (guiControl.parent as Rectangle).thickness * 2;
+                    ratioX = guiControl.parent._currentMeasure.width - thickness;
+                    ratioY = guiControl.parent._currentMeasure.height - thickness;
+                }
                 else {
-                    ratioX = guiControl.parent.widthInPixels;
-                    ratioY = guiControl.parent.heightInPixels;
+                    ratioX = guiControl.parent._currentMeasure.width;
+                    ratioY = guiControl.parent._currentMeasure.height;
                 }
             }
             const left = (guiControl.leftInPixels * 100) / ratioX;
@@ -558,8 +594,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     onDown(evt: React.PointerEvent<HTMLElement>) {
         this._rootContainer.current?.setPointerCapture(evt.pointerId);
-
-        if (!this._isOverGUINode) {
+        if (!this._isOverGUINode && !evt.button) {
             this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         }
 
@@ -618,6 +653,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(`Please note: This editor is still a work in progress. You may submit feedback to msDestiny14 on GitHub.`);
         engine.runRenderLoop(() => { this._scene.render() });
         this.globalState.onNewSceneObservable.notifyObservers(this.globalState.guiTexture.getScene());
+        this.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
     };
 
     //Add map-like controls to an ArcRotate camera
