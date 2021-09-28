@@ -214,6 +214,7 @@ export class Slider3D extends Control3D {
                 }
 
                 if (!!sliderThumbModel) {
+                    sliderThumbModel.parent = sliderBackplate;
                     sliderThumbModel.isPickable = true;
                     sliderThumbModel.position.z = -0.115;
                     sliderThumbModel.scaling = new Vector3(0.025, 0.3, 0.6);
@@ -222,24 +223,18 @@ export class Slider3D extends Control3D {
                     if (!!this._sliderThumbMaterial) {
                         sliderThumbModel.material = this._sliderThumbMaterial;
                     }
-                    if (this._sliderThumb) {
-                        this._sliderThumb.dispose();
-                    }
                     this._sliderThumb = sliderThumbModel;
                 }
             });
 
-        const sliderThumb = BoxBuilder.CreateBox(`${this.name}_sliderthumb`, { size: 0.03 }, scene);
-        sliderThumb.visibility = 0;
-        this._sliderThumb = sliderThumb;
-
+        this._affectMaterial(sliderBackplate);
         return sliderBackplate;
     }
 
     protected _affectMaterial(mesh: AbstractMesh) {
-        this._sliderBackplateMaterial = new MRDLBackplateMaterial(`${this.name}_sliderbackplate_material`, mesh.getScene());
-        this._sliderBarMaterial = new MRDLSliderBarMaterial(`${this.name}_sliderbar_material`, mesh.getScene());
-        this._sliderThumbMaterial = new MRDLSliderThumbMaterial(`${this.name}_sliderthumb_material`, mesh.getScene());
+        this._sliderBackplateMaterial = this._sliderBackplateMaterial ?? new MRDLBackplateMaterial(`${this.name}_sliderbackplate_material`, mesh.getScene());
+        this._sliderBarMaterial = this._sliderBarMaterial ?? new MRDLSliderBarMaterial(`${this.name}_sliderbar_material`, mesh.getScene());
+        this._sliderThumbMaterial = this._sliderThumbMaterial ?? new MRDLSliderThumbMaterial(`${this.name}_sliderthumb_material`, mesh.getScene());
     }
 
     private _createBehavior(): PointerDragBehavior {
