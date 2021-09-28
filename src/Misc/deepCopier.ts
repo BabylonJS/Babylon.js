@@ -1,7 +1,7 @@
 import { EndsWith } from './stringTools';
 import { Logger } from './logger';
 
-var cloneValue = (source: any, destinationObject: any) => {
+const cloneValue = (source: any, destinationObject: any) => {
     if (!source) {
         return null;
     }

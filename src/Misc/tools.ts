@@ -5,7 +5,7 @@ import { Logger } from "./logger";
 import { _TypeStore } from "./typeStore";
 import { DeepCopier } from "./deepCopier";
 import { PrecisionDate } from "./precisionDate";
-import { _DevTools } from "./devTools";
+import { _WarnImport } from "./devTools";
 import { WebRequest } from "./webRequest";
 import { IFileRequest } from "./fileRequest";
 import { EngineStore } from "../Engines/engineStore";
@@ -837,7 +837,7 @@ export class Tools {
      * Check your browser for supported MIME types
      */
     public static CreateScreenshot(engine: Engine, camera: Camera, size: IScreenshotSize | number, successCallback?: (data: string) => void, mimeType: string = "image/png"): void {
-        throw _DevTools.WarnImport("ScreenshotTools");
+        throw _WarnImport("ScreenshotTools");
     }
 
     /**
@@ -856,7 +856,7 @@ export class Tools {
      * to the src parameter of an <img> to display it
      */
     public static CreateScreenshotAsync(engine: Engine, camera: Camera, size: IScreenshotSize | number, mimeType: string = "image/png"): Promise<string> {
-        throw _DevTools.WarnImport("ScreenshotTools");
+        throw _WarnImport("ScreenshotTools");
     }
 
     /**
@@ -879,7 +879,7 @@ export class Tools {
      * @param fileName A name for for the downloaded file.
      */
     public static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: IScreenshotSize | number, successCallback?: (data: string) => void, mimeType: string = "image/png", samples: number = 1, antialiasing: boolean = false, fileName?: string): void {
-        throw _DevTools.WarnImport("ScreenshotTools");
+        throw _WarnImport("ScreenshotTools");
     }
 
     /**
@@ -901,7 +901,7 @@ export class Tools {
      * to the src parameter of an <img> to display it
      */
     public static CreateScreenshotUsingRenderTargetAsync(engine: Engine, camera: Camera, size: IScreenshotSize | number, mimeType: string = "image/png", samples: number = 1, antialiasing: boolean = false, fileName?: string): Promise<string> {
-        throw _DevTools.WarnImport("ScreenshotTools");
+        throw _WarnImport("ScreenshotTools");
     }
 
     /**

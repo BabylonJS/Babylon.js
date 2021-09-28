@@ -25,7 +25,7 @@ import { Constants } from "./Engines/constants";
 import { DomManagement } from "./Misc/domManagement";
 import { EngineStore } from "./Engines/engineStore";
 import { AbstractActionManager } from './Actions/abstractActionManager';
-import { _DevTools } from './Misc/devTools';
+import { _WarnImport } from './Misc/devTools';
 import { WebRequest } from './Misc/webRequest';
 import { InputManager } from './Inputs/scene.inputManager';
 import { PerfCounter } from './Misc/perfCounter';
@@ -135,7 +135,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @returns The default material
      */
     public static DefaultMaterialFactory(scene: Scene): Material {
-        throw _DevTools.WarnImport("StandardMaterial");
+        throw _WarnImport("StandardMaterial");
     }
 
     /**
@@ -143,7 +143,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @returns The collision coordinator
      */
     public static CollisionCoordinatorFactory(): ICollisionCoordinator {
-        throw _DevTools.WarnImport("DefaultCollisionCoordinator");
+        throw _WarnImport("DefaultCollisionCoordinator");
     }
 
     // Members
@@ -4821,7 +4821,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @returns a Ray
      */
     public createPickingRay(x: number, y: number, world: Nullable<Matrix>, camera: Nullable<Camera>, cameraViewSpace = false): Ray {
-        throw _DevTools.WarnImport("Ray");
+        throw _WarnImport("Ray");
     }
 
     /**
@@ -4835,7 +4835,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @returns the current scene
      */
     public createPickingRayToRef(x: number, y: number, world: Nullable<Matrix>, result: Ray, camera: Nullable<Camera>, cameraViewSpace = false): Scene {
-        throw _DevTools.WarnImport("Ray");
+        throw _WarnImport("Ray");
     }
 
     /**
@@ -4846,7 +4846,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @returns a Ray
      */
     public createPickingRayInCameraSpace(x: number, y: number, camera?: Camera): Ray {
-        throw _DevTools.WarnImport("Ray");
+        throw _WarnImport("Ray");
     }
 
     /**
@@ -4858,7 +4858,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @returns the current scene
      */
     public createPickingRayInCameraSpaceToRef(x: number, y: number, result: Ray, camera?: Camera): Scene {
-        throw _DevTools.WarnImport("Ray");
+        throw _WarnImport("Ray");
     }
 
     /** Launch a ray to try to pick a mesh in the scene
@@ -4905,7 +4905,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public pickWithRay(ray: Ray, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean,
         trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo> {
-        throw _DevTools.WarnImport("Ray");
+        throw _WarnImport("Ray");
     }
 
     /**
@@ -4919,7 +4919,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public multiPick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, camera?: Camera,
         trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
-        throw _DevTools.WarnImport("Ray");
+        throw _WarnImport("Ray");
     }
 
     /**
@@ -4930,7 +4930,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @returns an array of PickingInfo
      */
     public multiPickWithRay(ray: Ray, predicate: (mesh: AbstractMesh) => boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
-        throw _DevTools.WarnImport("Ray");
+        throw _WarnImport("Ray");
     }
 
     /**
@@ -5217,7 +5217,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @returns the perf collector belonging to the scene.
      */
     public getPerfCollector(): PerformanceViewerCollector {
-        throw _DevTools.WarnImport("performanceViewerSceneExtension");
+        throw _WarnImport("performanceViewerSceneExtension");
     }
 
     private _computePressureObserver: ComputePressureObserverWrapper | undefined;
