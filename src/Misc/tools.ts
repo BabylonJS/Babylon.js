@@ -14,7 +14,7 @@ import { IOfflineProvider } from "../Offline/IOfflineProvider";
 import { PromisePolyfill } from "./promise";
 import { TimingTools } from "./timingTools";
 import { InstantiationTools } from "./instantiationTools";
-import { GUID } from "./guid";
+import { RandomGUID } from "./guid";
 import { IScreenshotSize } from "./interfaces/screenshotSize";
 import { SliceTools } from "./sliceTools";
 
@@ -911,7 +911,7 @@ export class Tools {
      * @returns a pseudo random id
      */
     public static RandomId(): string {
-        return GUID.RandomId();
+        return RandomGUID();
     }
 
     /**
