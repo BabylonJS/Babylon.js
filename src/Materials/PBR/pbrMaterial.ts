@@ -1,5 +1,5 @@
 import { serialize, SerializationHelper, serializeAsColor3, expandToProperty, serializeAsTexture } from "../../Misc/decorators";
-import { BRDFTextureTools } from "../../Misc/brdfTextureTools";
+import { GetEnvironmentBRDFTexture } from "../../Misc/brdfTextureTools";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
 import { Color3 } from "../../Maths/math.color";
@@ -752,7 +752,7 @@ export class PBRMaterial extends PBRBaseMaterial {
     constructor(name: string, scene: Scene) {
         super(name, scene);
 
-        this._environmentBRDFTexture = BRDFTextureTools.GetEnvironmentBRDFTexture(scene);
+        this._environmentBRDFTexture = GetEnvironmentBRDFTexture(scene);
     }
 
     /**
