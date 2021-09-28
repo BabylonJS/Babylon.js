@@ -1,2 +1,2 @@
-export * from "./asciiArt";
-export * from "./digitalRain";
+export * from "./asciiArt/index";
+export * from "./digitalRain/index";
