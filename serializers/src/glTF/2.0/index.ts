@@ -5,4 +5,4 @@ export * from "./glTFExporterExtension";
 export * from "./glTFMaterialExporter";
 export * from "./glTFSerializer";
 export * from "./glTFUtilities";
-export * from "./Extensions";
+export * from "./Extensions/index";
