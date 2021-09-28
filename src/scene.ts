@@ -34,7 +34,7 @@ import { Color4, Color3 } from './Maths/math.color';
 import { Plane } from './Maths/math.plane';
 import { Frustum } from './Maths/math.frustum';
 import { UniqueIdGenerator } from './Misc/uniqueIdGenerator';
-import { FileTools, LoadFileError, RequestFileError, ReadFileError } from './Misc/fileTools';
+import { LoadFileError, RequestFileError, ReadFileError, ReadFile, RequestFile } from './Misc/fileTools';
 import { IClipPlanesHolder } from './Misc/interfaces/iClipPlanesHolder';
 import { IPointerEvent } from "./Events/deviceInputEvents";
 import { LightConstants } from "./Lights/lightConstants";
@@ -5166,7 +5166,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /** @hidden */
     public _requestFile(url: string, onSuccess: (data: string | ArrayBuffer, request?: WebRequest) => void, onProgress?: (ev: ProgressEvent) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onError?: (error: RequestFileError) => void, onOpened?: (request: WebRequest) => void): IFileRequest {
-        const request = FileTools.RequestFile(url, onSuccess, onProgress, useOfflineSupport ? this.offlineProvider : undefined, useArrayBuffer, onError, onOpened);
+        const request = RequestFile(url, onSuccess, onProgress, useOfflineSupport ? this.offlineProvider : undefined, useArrayBuffer, onError, onOpened);
         this._activeRequests.push(request);
         request.onCompleteObservable.add((request) => {
             this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
@@ -5187,7 +5187,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /** @hidden */
     public _readFile(file: File, onSuccess: (data: string | ArrayBuffer) => void, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean, onError?: (error: ReadFileError) => void): IFileRequest {
-        const request = FileTools.ReadFile(file, onSuccess, onProgress, useArrayBuffer, onError);
+        const request = ReadFile(file, onSuccess, onProgress, useArrayBuffer, onError);
         this._activeRequests.push(request);
         request.onCompleteObservable.add((request) => {
             this._activeRequests.splice(this._activeRequests.indexOf(request), 1);

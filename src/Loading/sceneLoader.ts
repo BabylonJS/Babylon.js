@@ -14,7 +14,7 @@ import { Constants } from "../Engines/constants";
 import { SceneLoaderFlags } from "./sceneLoaderFlags";
 import { IFileRequest } from "../Misc/fileRequest";
 import { WebRequest } from "../Misc/webRequest";
-import { FileTools, LoadFileError } from '../Misc/fileTools';
+import { IsBase64DataUrl, LoadFileError } from '../Misc/fileTools';
 import { TransformNode } from '../Meshes/transformNode';
 import { Geometry } from '../Meshes/geometry';
 import { Light } from '../Lights/light';
@@ -481,7 +481,7 @@ export class SceneLoader {
 
         // Check if we have a direct load url. If the plugin is registered to handle
         // it or it's not a base64 data url, then pass it through the direct load path.
-        if (directLoad && ((plugin.canDirectLoad && plugin.canDirectLoad(fileInfo.url) || !FileTools.IsBase64DataUrl(fileInfo.url)))) {
+        if (directLoad && ((plugin.canDirectLoad && plugin.canDirectLoad(fileInfo.url) || !IsBase64DataUrl(fileInfo.url)))) {
             if (plugin.directLoad) {
                 const result = plugin.directLoad(scene, directLoad);
                 if (result.then) {
