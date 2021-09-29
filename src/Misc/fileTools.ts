@@ -205,8 +205,8 @@ export class FileTools {
             img.removeEventListener("error", errorHandler);
 
             if (onError) {
-                const inputText = input.toString();
-                onError("Error while trying to load image: " + (inputText.length < 32 ? inputText : inputText.slice(0, 32) + "..."), err);
+                const inputText = url || input.toString();
+                onError(`Error while trying to load image: ${inputText}`, err);
             }
 
             if (usingObjectURL && img.src) {
