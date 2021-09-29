@@ -2304,6 +2304,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         _loadUriAsync(context: string, property: IProperty, uri: string): Nullable<Promise<ArrayBufferView>>;
         /** @hidden */
         loadBufferAsync(context: string, buffer: IBuffer, byteOffset: number, byteLength: number): Nullable<Promise<ArrayBufferView>>;
+        private _isMesh;
         private _loadBufferLOD;
         /**
          * Gets an array of LOD properties from lowest to highest.

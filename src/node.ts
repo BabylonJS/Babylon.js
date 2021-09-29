@@ -31,6 +31,7 @@ class _InternalNodeDataInfo {
     public _isParentEnabled = true;
     public _isReady = true;
     public _onEnabledStateChangedObservable = new Observable<boolean>();
+    public _onClonedObservable = new Observable<Node>();
 }
 
 /**
@@ -293,6 +294,13 @@ export class Node implements IBehaviorAware<Node> {
      public get onEnabledStateChangedObservable(): Observable<boolean> {
          return this._nodeDataStorage._onEnabledStateChangedObservable;
      }
+
+    /**
+     * An event triggered when the node is cloned
+     */
+    public get onClonedObservable(): Observable<Node> {
+        return this._nodeDataStorage._onClonedObservable;
+    }
 
     /**
      * Creates a new Node
@@ -788,6 +796,9 @@ export class Node implements IBehaviorAware<Node> {
         // Callback
         this.onDisposeObservable.notifyObservers(this);
         this.onDisposeObservable.clear();
+
+        this.onEnabledStateChangedObservable.clear();
+        this.onClonedObservable.clear();
 
         // Behaviors
         for (var behavior of this._behaviors) {

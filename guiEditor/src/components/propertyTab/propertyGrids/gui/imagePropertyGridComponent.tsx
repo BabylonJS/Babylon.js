@@ -11,7 +11,7 @@ import { TextInputLineComponent } from "../../../../sharedUiComponents/lines/tex
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
 
 const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");
-const verticalMarginIcon: string = require("../../../../sharedUiComponents/imgs/verticalMarginIcon.svg");
+const positionIcon: string = require("../../../../sharedUiComponents/imgs/verticalMarginIcon.svg");
 
 interface IImagePropertyGridComponentProps {
     image: Image,
@@ -42,11 +42,11 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                 <TextLineComponent label="IMAGE" value=" " color="grey"></TextLineComponent>
                 <TextInputLineComponent lockObject={this.props.lockObject} label="Source" target={image} propertyName="source" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <div className="divider">
-                    <FloatLineComponent icon={verticalMarginIcon}  lockObject={this.props.lockObject} label="L" target={image} propertyName="sourceLeft" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent iconLabel={"TODO"} icon={positionIcon}  lockObject={this.props.lockObject} label="L" target={image} propertyName="sourceLeft" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="T" target={image} propertyName="sourceTop" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </div>
                 <div className="divider">
-                    <FloatLineComponent  icon={sizeIcon} lockObject={this.props.lockObject} label="W" target={image} propertyName="sourceWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent iconLabel={"TODO"} icon={sizeIcon} lockObject={this.props.lockObject} label="W" target={image} propertyName="sourceWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="H" target={image} propertyName="sourceHeight" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </div>
                 <CheckBoxLineComponent label="Autoscale" target={image} propertyName="autoScale" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

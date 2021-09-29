@@ -1,4 +1,4 @@
-import * as MatLib from "../triPlanar";
+import * as MatLib from "../triPlanar/index";
 
 /**
  * This is the entry point for the UMD module.
@@ -11,4 +11,4 @@ if (typeof globalObject !== "undefined") {
     }
 }
 
-export * from "../triPlanar";
+export * from "../triPlanar/index";

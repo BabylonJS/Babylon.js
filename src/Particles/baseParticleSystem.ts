@@ -255,6 +255,10 @@ export class BaseParticleSystem {
      */
     public spriteCellHeight = 0;
     /**
+     * If using a spritesheet (isAnimationSheetEnabled), defines wether the sprite animation is looping
+     */
+    public spriteCellLoop = true;
+    /**
      * This allows the system to random pick the start cell ID between startSpriteCellID and endSpriteCellID
      */
     public spriteRandomStartCell = false;

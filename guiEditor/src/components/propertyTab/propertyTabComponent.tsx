@@ -47,12 +47,32 @@ import { FloatLineComponent } from "../../sharedUiComponents/lines/floatLineComp
 import { Color3LineComponent } from "../../sharedUiComponents/lines/color3LineComponent";
 import { TextInputLineComponent } from "../../sharedUiComponents/lines/textInputLineComponent";
 import { ParentingPropertyGridComponent } from "../parentingPropertyGridComponent";
+import { DisplayGridPropertyGridComponent } from "./propertyGrids/gui/displayGridPropertyGridComponent";
+import { DisplayGrid } from "babylonjs-gui/2D/controls/displayGrid";
+import { Button } from "babylonjs-gui/2D/controls/button";
 
 require("./propertyTab.scss");
 const adtIcon: string = require("../../../public/imgs/adtIcon.svg");
 const responsiveIcon: string = require("../../../public/imgs/responsiveIcon.svg");
 const canvasSizeIcon: string = require("../../../public/imgs/canvasSizeIcon.svg");
 const artboardColorIcon: string = require("../../../public/imgs/artboardColorIcon.svg");
+const rectangleIcon: string = require("../../../public/imgs/rectangleIconDark.svg");
+const ellipseIcon: string = require("../../../public/imgs/ellipseIconDark.svg");
+const gridIcon: string = require("../../../public/imgs/gridIconDark.svg");
+const stackPanelIcon: string = require("../../../public/imgs/stackPanelIconDark.svg");
+const textBoxIcon: string = require("../../../public/imgs/textBoxIconDark.svg");
+const sliderIcon: string = require("../../../public/imgs/sliderIconDark.svg");
+const buttonIcon: string = require("../../../public/imgs/buttonIconDark.svg");
+const checkboxIcon: string = require("../../../public/imgs/checkboxIconDark.svg");
+const imageIcon: string = require("../../../public/imgs/imageIconDark.svg");
+const keyboardIcon: string = require("../../../public/imgs/keyboardIconDark.svg");
+const inputFieldIcon: string = require("../../../public/imgs/inputFieldIconDark.svg");
+const lineIcon: string = require("../../../public/imgs/lineIconDark.svg");
+const displaygridIcon: string = require("../../../public/imgs/displaygridIconDark.svg");
+const colorPickerIcon: string = require("../../../public/imgs/colorPickerIconDark.svg");
+const scrollbarIcon: string = require("../../../public/imgs/scrollbarIconDark.svg");
+const imageSliderIcon: string = require("../../../public/imgs/imageSliderIconDark.svg");
+const radioButtonIcon: string = require("../../../public/imgs/radioButtonIconDark.svg");
 const MAX_TEXTURE_SIZE = 16384; //2^14
 
 interface IPropertyTabComponentProps {
@@ -67,13 +87,23 @@ interface IPropertyTabComponentState {
 export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
     private _onBuiltObserver: Nullable<Observer<void>>;
     private _timerIntervalId: number;
-    private _lockObject = new LockObject();
+    private _lockObject : LockObject;
     private _sizeOption: number = 2;
+    private _sizeOptions = [
+        { label: "Web (1920)", value: 0 },
+        { label: "Phone (720)", value: 1 },
+        { label: "Square (1200)", value: 2 },
+    ];
+    private _sizeValues = [
+        new Vector2(1920, 1080),
+        new Vector2(750, 1334),
+        new Vector2(1200, 1200)];
     constructor(props: IPropertyTabComponentProps) {
         super(props);
-
+       
         this.state = { currentNode: null, textureSize: new Vector2(1200, 1200) };
-
+        this._lockObject = new LockObject();
+        this.props.globalState.lockObject = this._lockObject;
         this.props.globalState.onSaveObservable.add(() => {
             this.save(this.saveLocally);
         });
@@ -89,6 +119,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         });
 
         this.props.globalState.onLoadObservable.add((file) => this.load(file));
+        this._sizeOption = DataStorage.ReadBoolean("Responsive", true) ?  2 : this._sizeOptions.length;
 
     }
 
@@ -152,59 +183,67 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         }
     }
 
-    saveToSnippetServer = () => {
+    saveToSnippetServerHelper = (content: string, adt: AdvancedDynamicTexture): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const xmlHttp = new XMLHttpRequest();
+            xmlHttp.onreadystatechange = () => {
+                if (xmlHttp.readyState == 4) {
+                    if (xmlHttp.status == 200) {
+                        const snippet = JSON.parse(xmlHttp.responseText);
+                        const oldId = adt.snippetId;
+                        adt.snippetId = snippet.id;
+                        if (snippet.version && snippet.version != "0") {
+                            adt.snippetId += "#" + snippet.version;
+                        }
+                        const windowAsAny = window as any;
+                        if (windowAsAny.Playground && oldId) {
+                            windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
+                                regex: new RegExp(oldId, "g"),
+                                replace: `parseFromSnippetAsync("${adt.snippetId}`,
+                            });
+                        }
+                        resolve(adt.snippetId);
+                    } else {
+                        reject("Unable to save your GUI");
+                    }
+                }
+            };
+
+            xmlHttp.open("POST", AdvancedDynamicTexture.SnippetUrl + (adt.snippetId ? "/" + adt.snippetId : ""), true);
+            xmlHttp.setRequestHeader("Content-Type", "application/json");
+            const dataToSend = {
+                payload: JSON.stringify({
+                    gui: content,
+                }),
+                name: "",
+                description: "",
+                tags: "",
+            };
+            xmlHttp.send(JSON.stringify(dataToSend));
+        });
+    }
+
+
+    saveToSnippetServer = async () => {
         const adt = this.props.globalState.guiTexture;
         const content = JSON.stringify(adt.serializeContent());
 
-        const xmlHttp = new XMLHttpRequest();
-        xmlHttp.onreadystatechange = () => {
-            if (xmlHttp.readyState == 4) {
-                if (xmlHttp.status == 200) {
-                    const snippet = JSON.parse(xmlHttp.responseText);
-                    const oldId = adt.snippetId;
-                    adt.snippetId = snippet.id;
-                    if (snippet.version && snippet.version != "0") {
-                        adt.snippetId += "#" + snippet.version;
-                    }
-                    this.forceUpdate();
-                    if (navigator.clipboard) {
-                        navigator.clipboard.writeText(adt.snippetId);
-                    }
-
-                    const windowAsAny = window as any;
-
-                    if (windowAsAny.Playground && oldId) {
-                        windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
-                            regex: new RegExp(oldId, "g"),
-                            replace: `parseFromSnippetAsync("${adt.snippetId}`,
-                        });
-                    }
-
-                    alert("GUI saved with ID: " + adt.snippetId + " (please note that the id was also saved to your clipboard)");
-                } else {
-                    alert("Unable to save your GUI");
-                }
+        const savePromise = this.props.globalState.customSave?.action || this.saveToSnippetServerHelper;
+        savePromise(content, adt).then((snippetId: string) => {
+            adt.snippetId = snippetId;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(adt.snippetId);
             }
-        };
-
-        xmlHttp.open("POST", AdvancedDynamicTexture.SnippetUrl + (adt.snippetId ? "/" + adt.snippetId : ""), true);
-        xmlHttp.setRequestHeader("Content-Type", "application/json");
-
-        const dataToSend = {
-            payload: JSON.stringify({
-                gui: content,
-            }),
-            name: "",
-            description: "",
-            tags: "",
-        };
-
-        xmlHttp.send(JSON.stringify(dataToSend));
+            alert("GUI saved with ID: " + adt.snippetId + " (please note that the id was also saved to your clipboard)");
+            this.props.globalState.onBuiltObservable.notifyObservers();
+        }).catch((err: any) => {
+            alert(err);
+        })
+        this.forceUpdate();
     }
 
     loadFromSnippet() {
         const snippedId = window.prompt("Please enter the snippet ID to use");
-
         if (!snippedId) {
             return;
         }
@@ -270,9 +309,13 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 const line = this.state.currentNode as Line;
                 return <LinePropertyGridComponent line={line} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
             }
+            case "DisplayGrid": {
+                const displayGrid = this.state.currentNode as DisplayGrid;
+                return <DisplayGridPropertyGridComponent displayGrid={displayGrid} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
+            }
             case "Button": {
-                const control = this.state.currentNode as Control;
-                return <ControlPropertyGridComponent key="buttonMenu" control={control} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
+                const button = this.state.currentNode as Button;
+                return <RectanglePropertyGridComponent key="buttonMenu" rectangle={button} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
             }
         }
 
@@ -283,23 +326,83 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         return null;
     }
 
+
+    renderControlIcon() {
+        const className = this.state.currentNode?.getClassName();
+        switch (className) {
+            case "TextBlock": {
+                return textBoxIcon;
+            }
+            case "InputText": {
+                return inputFieldIcon;
+            }
+            case "ColorPicker": {
+                return colorPickerIcon;
+            }
+            case "Image": {
+                return imageIcon;
+            }
+            case "Slider": {
+                return sliderIcon;
+            }
+            case "ImageBasedSlider": {
+                return imageSliderIcon;
+            }
+            case "Rectangle": {
+                return rectangleIcon;
+            }
+            case "StackPanel": {
+                return stackPanelIcon;
+            }
+            case "Grid": {
+                return gridIcon;
+            }
+            case "ScrollViewer": {
+                return scrollbarIcon;
+            }
+            case "Ellipse": {
+                return ellipseIcon;
+            }
+            case "Checkbox": {
+                return checkboxIcon;
+            }
+            case "RadioButton": {
+                return radioButtonIcon;
+            }
+            case "Line": {
+                return lineIcon;
+            }
+            case "DisplayGrid": {
+                return displaygridIcon;
+            }
+            case "VirtualKeyboard": {
+                return keyboardIcon;
+            }
+            case "Button": {
+                return buttonIcon;
+            }
+        }
+        return adtIcon;
+    }
+
+
     render() {
 
         if (this.state.currentNode && this.props.globalState.workbench.selectedGuiNodes.length === 1) {
             return (
                 <div id="ge-propertyTab">
                     <div id="header">
-                        <img id="logo" src={adtIcon} />
+                        <img id="logo" src={this.renderControlIcon()} />
                         <div id="title">
                             <TextInputLineComponent noUnderline={true} lockObject={this._lockObject} label="" target={this.state.currentNode} propertyName="name" onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
                         </div>
                     </div>
                     {this.renderProperties()}
-                    <hr className="ge" />
                     {
                         this.state.currentNode?.parent?.typeName === "Grid" &&
                         <ParentingPropertyGridComponent control={this.state.currentNode} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} lockObject={this._lockObject}></ParentingPropertyGridComponent>
                     }
+                    <hr className="ge" />
                     <ButtonLineComponent
                         label="DELETE ELEMENT"
                         onClick={() => {
@@ -319,16 +422,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             );
         }
 
-        const sizeOptions = [
-            { label: "Web (1920)", value: 0 },
-            { label: "Phone (720)", value: 1 },
-            { label: "Square (1200)", value: 2 },
-            { label: "Custom", value: 3 }];
-        const sizeValues = [
-            new Vector2(1920, 1080),
-            new Vector2(750, 1334),
-            new Vector2(1200, 1200)];
-
         return (
             <div id="ge-propertyTab">
                 <div id="header">
@@ -338,7 +431,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 <div>
                     <TextLineComponent tooltip="" label="ART BOARD" value=" " color="grey"></TextLineComponent>
                     {
-                        this.props.globalState.workbench.artBoardBackground !== undefined &&
+                        this.props.globalState.workbench._scene !== undefined &&
                         <Color3LineComponent iconLabel={"Background Color"} lockObject={this._lockObject} icon={artboardColorIcon} label="" target={this.props.globalState.workbench._scene} propertyName="clearColor" onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
                     }
                     <hr className="ge" />
@@ -351,31 +444,38 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         onSelect={(value: boolean) => {
                             this.props.globalState.onResponsiveChangeObservable.notifyObservers(value);
                             DataStorage.WriteBoolean("Responsive", value);
-                        }}
-                    />
-                    <OptionsLineComponent
-                        label=""
-                        iconLabel="Size"
-                        options={sizeOptions}
-                        icon={canvasSizeIcon}
-                        target={this}
-                        propertyName={"_sizeOption"}
-                        noDirectUpdate={true}
-                        onSelect={(value: any) => {
-                            this._sizeOption = value;
-                            if (this._sizeOption != (sizeOptions.length - 1)) {
-                                const newSize = sizeValues[this._sizeOption];
-                                this.props.globalState.workbench.resizeGuiTexture(newSize);
+                            this._sizeOption = this._sizeOptions.length;
+                            if (value) {
+                                this._sizeOption = 0;
+                                this.props.globalState.workbench.resizeGuiTexture(this._sizeValues[this._sizeOption]);
                             }
                             this.forceUpdate();
                         }}
                     />
-                    {this._sizeOption == (sizeOptions.length - 1) &&
+                    {DataStorage.ReadBoolean("Responsive", true) &&
+                        <OptionsLineComponent
+                            label=""
+                            iconLabel="Size"
+                            options={this._sizeOptions}
+                            icon={canvasSizeIcon}
+                            target={this}
+                            propertyName={"_sizeOption"}
+                            noDirectUpdate={true}
+                            onSelect={(value: any) => {
+                                this._sizeOption = value;
+                                if (this._sizeOption !== (this._sizeOptions.length)) {
+                                    const newSize = this._sizeValues[this._sizeOption];
+                                    this.props.globalState.workbench.resizeGuiTexture(newSize);
+                                }
+                                this.forceUpdate();
+                            }}
+                        />}
+                    {this._sizeOption == (this._sizeOptions.length) &&
                         <div className="divider">
                             <FloatLineComponent
                                 icon={canvasSizeIcon}
                                 iconLabel="Canvas Size"
-                                label="X"
+                                label="W"
                                 target={this.state.textureSize}
                                 propertyName="x"
                                 isInteger={true}
@@ -388,7 +488,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 }} ></FloatLineComponent>
                             <FloatLineComponent
                                 icon={canvasSizeIcon}
-                                label="Y"
+                                label="H"
                                 target={this.state.textureSize}
                                 propertyName="y"
                                 isInteger={true}

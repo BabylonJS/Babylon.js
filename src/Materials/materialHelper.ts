@@ -882,10 +882,10 @@ export class MaterialHelper {
                 if (matrices) {
                     effect.setMatrices("mBones", matrices);
                     if (prePassConfiguration && mesh.getScene().prePassRenderer && mesh.getScene().prePassRenderer!.getIndex(Constants.PREPASS_VELOCITY_TEXTURE_TYPE)) {
-                        if (prePassConfiguration.previousBones[mesh.uniqueId]) {
-                            effect.setMatrices("mPreviousBones", prePassConfiguration.previousBones[mesh.uniqueId]);
+                        if (!prePassConfiguration.previousBones[mesh.uniqueId]) {
+                            prePassConfiguration.previousBones[mesh.uniqueId] = matrices.slice();
                         }
-
+                        effect.setMatrices("mPreviousBones", prePassConfiguration.previousBones[mesh.uniqueId]);
                         MaterialHelper._CopyBonesTransformationMatrices(matrices, prePassConfiguration.previousBones[mesh.uniqueId]);
                     }
                 }

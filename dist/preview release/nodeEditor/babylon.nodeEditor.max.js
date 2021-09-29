@@ -10044,7 +10044,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#graph-canvas {\n  width: 100%;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  font: 14px \"acumin-pro\";\n  user-select: none;\n  overflow: hidden;\n  cursor: move;\n  background-image: linear-gradient(to right, #4F4E4F 1px, transparent 1px), linear-gradient(to bottom, #4F4E4F 1px, transparent 1px); }\n  #graph-canvas #selection-container {\n    pointer-events: none; }\n    #graph-canvas #selection-container .selection-box {\n      z-index: 10;\n      position: absolute;\n      background: rgba(72, 72, 196, 0.5);\n      border: blue solid 2px; }\n  #graph-canvas .port {\n    border-radius: 20px;\n    width: 20px;\n    height: 20px;\n    align-self: center; }\n    #graph-canvas .port .img {\n      width: 100%; }\n    #graph-canvas .port img.selected {\n      box-shadow: 0 0 0 2px;\n      border-radius: 50%; }\n    #graph-canvas .port:hover, #graph-canvas .port.selected {\n      filter: brightness(2); }\n  #graph-canvas .portLine {\n    height: 24px;\n    display: grid;\n    grid-template-rows: 100%; }\n  #graph-canvas .port-label {\n    align-items: center; }\n  #graph-canvas .inputsContainer {\n    grid-row: 1;\n    grid-column: 1; }\n    #graph-canvas .inputsContainer .portLine {\n      grid-template-columns: 12px calc(100% - 15px); }\n      #graph-canvas .inputsContainer .portLine .port-label {\n        grid-row: 1;\n        grid-column: 2; }\n      #graph-canvas .inputsContainer .portLine .port {\n        grid-row: 1;\n        grid-column: 1;\n        transform: translateX(-12px); }\n  #graph-canvas .outputsContainer {\n    grid-row: 1;\n    grid-column: 2; }\n    #graph-canvas .outputsContainer .portLine {\n      grid-template-columns: calc(100% - 10px) 12px; }\n      #graph-canvas .outputsContainer .portLine .port-label {\n        grid-row: 1;\n        grid-column: 1;\n        text-align: right; }\n      #graph-canvas .outputsContainer .portLine .port {\n        grid-row: 1;\n        grid-column: 2;\n        transform: translateX(2px); }\n  #graph-canvas #graph-container {\n    width: 100%;\n    height: 100%;\n    left: 0;\n    top: 0;\n    transform-origin: left top;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #graph-canvas #graph-container #frame-container {\n      overflow: visible;\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n    #graph-canvas #graph-container .frame-box {\n      position: absolute;\n      background: rgba(72, 72, 72, 0.7);\n      display: grid;\n      grid-template-rows: 40px calc(100% - 40px);\n      grid-template-columns: 100%;\n      box-sizing: border-box; }\n      #graph-canvas #graph-container .frame-box.collapsed {\n        height: auto !important;\n        width: 200px !important;\n        z-index: 3; }\n        #graph-canvas #graph-container .frame-box.collapsed .frame-box-header {\n          font-size: 16px;\n          grid-template-columns: calc(100% - 37px) 30px 7px; }\n          #graph-canvas #graph-container .frame-box.collapsed .frame-box-header .frame-box-header-collapse {\n            margin-top: -2px; }\n          #graph-canvas #graph-container .frame-box.collapsed .frame-box-header .frame-box-header-close {\n            display: none; }\n        #graph-canvas #graph-container .frame-box.collapsed .frame-comments.has-comments .frame-comment-span {\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden; }\n      #graph-canvas #graph-container .frame-box .frame-box-border {\n        grid-row: 1 / span 2;\n        grid-column: 1;\n        width: 100%;\n        height: 100%;\n        border: transparent solid 4px;\n        pointer-events: none;\n        box-sizing: border-box; }\n      #graph-canvas #graph-container .frame-box .frame-box-header {\n        grid-row: 1;\n        grid-column: 1;\n        background: #484848;\n        color: white;\n        font-size: 24px;\n        text-align: center;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: calc(100% - 74px) 30px 7px 30px 7px;\n        align-content: center;\n        overflow: hidden; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-button {\n          cursor: pointer;\n          align-self: center;\n          transform-origin: 50% 50%;\n          transform: scale(1);\n          stroke: transparent;\n          fill: white;\n          display: grid; }\n          #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-button.down {\n            transform: scale(0.9); }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-collapse {\n          grid-column: 2;\n          grid-row: 1; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-close {\n          grid-column: 4;\n          grid-row: 1; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-title {\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          height: 100%;\n          width: 100%;\n          align-self: stretch;\n          align-items: center;\n          margin-top: -2px; }\n      #graph-canvas #graph-container .frame-box .port-container {\n        margin-top: 6px;\n        margin-bottom: 6px;\n        margin-left: 4px;\n        margin-right: 4px;\n        color: white;\n        grid-row: 2;\n        grid-column: 1;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: 50% 50%;\n        z-index: 2; }\n      #graph-canvas #graph-container .frame-box .frame-comments.has-comments {\n        display: grid;\n        grid-row: 2;\n        grid-column: 1;\n        padding: 0 10px;\n        font-style: italic;\n        word-wrap: break-word; }\n      #graph-canvas #graph-container .frame-box.selected .frame-box-border {\n        border-color: white; }\n      #graph-canvas #graph-container .frame-box .right-handle {\n        grid-area: 1 / 2 / 3 / 2;\n        width: 4px;\n        background-color: transparent;\n        cursor: ew-resize; }\n        #graph-canvas #graph-container .frame-box .right-handle::after {\n          content: \"\";\n          width: 8px;\n          position: absolute;\n          top: 0;\n          bottom: 0;\n          margin-left: -4px;\n          cursor: ew-resize; }\n        #graph-canvas #graph-container .frame-box .right-handle.collapsed {\n          cursor: pointer; }\n      #graph-canvas #graph-container .frame-box .top-right-corner-handle {\n        background-color: transparent;\n        height: 4px;\n        z-index: 21;\n        cursor: ne-resize;\n        width: 4px;\n        margin-left: -6px; }\n        #graph-canvas #graph-container .frame-box .top-right-corner-handle::after {\n          background-color: transparent;\n          cursor: ne-resize;\n          margin-left: unset;\n          top: -4px;\n          height: 10px;\n          width: 10px; }\n      #graph-canvas #graph-container .frame-box .bottom-right-corner-handle {\n        background-color: transparent;\n        height: 0px;\n        z-index: 21;\n        cursor: nw-resize;\n        grid-area: 4 / 2 / 4 / 2;\n        margin-left: -2px; }\n        #graph-canvas #graph-container .frame-box .bottom-right-corner-handle::after {\n          background-color: transparent;\n          height: 10px;\n          cursor: nw-resize;\n          top: unset;\n          bottom: -4px;\n          width: 10px; }\n      #graph-canvas #graph-container .frame-box .left-handle {\n        grid-area: 1 / 1 / 3 / 1;\n        width: 4px;\n        background-color: transparent;\n        cursor: ew-resize; }\n        #graph-canvas #graph-container .frame-box .left-handle::before {\n          content: \"\";\n          width: 8px;\n          position: absolute;\n          top: 0;\n          bottom: 0;\n          margin-left: -4px; }\n      #graph-canvas #graph-container .frame-box .top-left-corner-handle {\n        background-color: transparent;\n        height: 4px;\n        z-index: 21;\n        cursor: nw-resize;\n        width: 4px;\n        margin-left: -4px; }\n        #graph-canvas #graph-container .frame-box .top-left-corner-handle::before {\n          background-color: transparent;\n          cursor: nw-resize;\n          margin-left: unset;\n          top: -4px;\n          height: 10px;\n          width: 10px; }\n      #graph-canvas #graph-container .frame-box .bottom-left-corner-handle {\n        background-color: transparent;\n        height: 0px;\n        z-index: 21;\n        cursor: sw-resize;\n        grid-area: 4 / 1 / 4 / 1; }\n        #graph-canvas #graph-container .frame-box .bottom-left-corner-handle::before {\n          background-color: transparent;\n          height: 10px;\n          cursor: sw-resize;\n          top: unset;\n          bottom: -4px;\n          width: 10px; }\n      #graph-canvas #graph-container .frame-box .top-handle {\n        grid-area: 1 / 1 / 1 / 1;\n        background-color: transparent;\n        height: 4px;\n        cursor: ns-resize; }\n        #graph-canvas #graph-container .frame-box .top-handle::before {\n          content: \"\";\n          width: 100%;\n          position: absolute;\n          top: -4px;\n          bottom: 100%;\n          right: 0;\n          left: 0;\n          margin-bottom: -8px;\n          cursor: ns-resize;\n          height: 8px; }\n      #graph-canvas #graph-container .frame-box .bottom-handle {\n        grid-area: 3 / 1 / 3 / 1;\n        background-color: transparent;\n        height: 4px;\n        cursor: ns-resize; }\n        #graph-canvas #graph-container .frame-box .bottom-handle::after {\n          content: \"\";\n          width: 100%;\n          position: absolute;\n          top: 100%;\n          bottom: 0;\n          right: 0;\n          left: 0;\n          margin-top: -8px;\n          cursor: ns-resize;\n          height: 12px; }\n      #graph-canvas #graph-container .frame-box.collapsed .top-handle, #graph-canvas #graph-container .frame-box.collapsed .top-right-corner-handle, #graph-canvas #graph-container .frame-box.collapsed .right-handle, #graph-canvas #graph-container .frame-box.collapsed .bottom-right-corner-handle, #graph-canvas #graph-container .frame-box.collapsed .bottom-handle, #graph-canvas #graph-container .frame-box.collapsed .bottom-left-corner-handle, #graph-canvas #graph-container .frame-box.collapsed .left-handle, #graph-canvas #graph-container .frame-box.collapsed .top-left-corner-handle {\n        cursor: default; }\n      #graph-canvas #graph-container .frame-box.collapsed .right-handle::after, #graph-canvas #graph-container .frame-box.collapsed .bottom-handle::after, #graph-canvas #graph-container .frame-box.collapsed .top-right-corner-handle::after, #graph-canvas #graph-container .frame-box.collapsed .bottom-right-corner-handle::after {\n        cursor: default; }\n      #graph-canvas #graph-container .frame-box.collapsed .left-handle::before, #graph-canvas #graph-container .frame-box.collapsed .top-handle::before, #graph-canvas #graph-container .frame-box.collapsed .top-left-corner-handle::before, #graph-canvas #graph-container .frame-box.collapsed .bottom-left-corner-handle::before {\n        cursor: default; }\n    #graph-canvas #graph-container #graph-svg-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%;\n      overflow: visible;\n      pointer-events: none;\n      z-index: 2; }\n      #graph-canvas #graph-container #graph-svg-container .link {\n        stroke-width: 4px; }\n        #graph-canvas #graph-container #graph-svg-container .link.selected {\n          stroke: white !important;\n          stroke-dasharray: 10, 2; }\n        #graph-canvas #graph-container #graph-svg-container .link.hidden {\n          display: none; }\n      #graph-canvas #graph-container #graph-svg-container .selection-link {\n        pointer-events: all;\n        stroke-width: 16px;\n        opacity: 0;\n        transition: opacity 75ms;\n        stroke: transparent;\n        cursor: pointer; }\n        #graph-canvas #graph-container #graph-svg-container .selection-link.hidden {\n          display: none; }\n        #graph-canvas #graph-container #graph-svg-container .selection-link:hover, #graph-canvas #graph-container #graph-svg-container .selection-link.selected {\n          stroke: white !important;\n          opacity: 0.4; }\n    #graph-canvas #graph-container #graph-canvas-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n      #graph-canvas #graph-container #graph-canvas-container .visual {\n        z-index: 4;\n        width: 200px;\n        position: absolute;\n        left: 0;\n        top: 0;\n        background: gray;\n        border: 4px solid black;\n        border-radius: 12px;\n        display: grid;\n        grid-template-rows: 30px auto;\n        grid-template-columns: 100%;\n        color: white; }\n        #graph-canvas #graph-container #graph-canvas-container .visual.hidden {\n          display: none; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .comments {\n          position: absolute;\n          top: -50px;\n          width: 200px;\n          height: 45px;\n          overflow: hidden;\n          font-style: italic;\n          opacity: 0.8;\n          display: grid;\n          align-items: flex-end;\n          pointer-events: none; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .selection-border {\n          grid-row: 1 / span 3;\n          grid-column: 1;\n          margin: -4px;\n          transition: border-color 100ms;\n          border: 4px solid black;\n          border-radius: 12px; }\n        #graph-canvas #graph-container #graph-canvas-container .visual.selected .selection-border {\n          border-color: white; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .header {\n          grid-row: 1;\n          grid-column: 1;\n          border: 4px solid black;\n          border-top-right-radius: 7px;\n          border-top-left-radius: 7px;\n          font-size: 16px;\n          text-align: center;\n          margin-top: -1px;\n          margin-left: -1px;\n          margin-right: -1px;\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden;\n          background: black;\n          color: white; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .header.constant {\n            border-color: #464348;\n            background: #464348; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .header.inspector {\n            border-color: #66491b;\n            background: #66491b; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .connections {\n          grid-row: 2;\n          grid-column: 1;\n          display: grid;\n          grid-template-columns: 50% 50%; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .content {\n          min-height: 20px;\n          grid-row: 3;\n          grid-column: 1; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.input-block {\n            grid-row: 2;\n            min-height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px 5px;\n            display: grid;\n            align-content: center; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .content.input-block.small-font {\n              font-size: 17px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.output-block {\n            min-height: 0px;\n            height: 5px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.clamp-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.gradient-block {\n            grid-row: 2;\n            height: 34px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block {\n            grid-row: 2;\n            height: 140px;\n            width: 140px;\n            overflow: hidden;\n            border-bottom-left-radius: 7px;\n            border: black 4px solid;\n            border-left: 0px;\n            border-bottom: 0px; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block img {\n              width: 100%;\n              height: 100%;\n              pointer-events: none; }\n              #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block img.empty {\n                display: none; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.regular-texture-block {\n            margin-top: 30px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.reflection-block {\n            grid-row: 3; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.remap-block {\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.trigonometry-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n", ""]);
+exports.push([module.i, "#graph-canvas {\n  width: 100%;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  font: 14px \"acumin-pro\";\n  user-select: none;\n  overflow: hidden;\n  cursor: move;\n  background-image: linear-gradient(to right, #4F4E4F 1px, transparent 1px), linear-gradient(to bottom, #4F4E4F 1px, transparent 1px); }\n  #graph-canvas #selection-container {\n    pointer-events: none; }\n    #graph-canvas #selection-container .selection-box {\n      z-index: 10;\n      position: absolute;\n      background: rgba(72, 72, 196, 0.5);\n      border: blue solid 2px; }\n  #graph-canvas .port {\n    border-radius: 20px;\n    width: 20px;\n    height: 20px;\n    align-self: center; }\n    #graph-canvas .port .img {\n      width: 100%; }\n    #graph-canvas .port img.selected {\n      box-shadow: 0 0 0 2px;\n      border-radius: 50%; }\n    #graph-canvas .port:hover, #graph-canvas .port.selected {\n      filter: brightness(2); }\n  #graph-canvas .portLine {\n    height: 24px;\n    display: grid;\n    grid-template-rows: 100%; }\n  #graph-canvas .port-label {\n    align-items: center; }\n  #graph-canvas .inputsContainer {\n    grid-row: 1;\n    grid-column: 1; }\n    #graph-canvas .inputsContainer .portLine {\n      grid-template-columns: 12px calc(100% - 15px); }\n      #graph-canvas .inputsContainer .portLine .port-label {\n        grid-row: 1;\n        grid-column: 2; }\n      #graph-canvas .inputsContainer .portLine .port {\n        grid-row: 1;\n        grid-column: 1;\n        transform: translateX(-12px); }\n  #graph-canvas .outputsContainer {\n    grid-row: 1;\n    grid-column: 2; }\n    #graph-canvas .outputsContainer .portLine {\n      grid-template-columns: calc(100% - 10px) 12px; }\n      #graph-canvas .outputsContainer .portLine .port-label {\n        grid-row: 1;\n        grid-column: 1;\n        text-align: right; }\n      #graph-canvas .outputsContainer .portLine .port {\n        grid-row: 1;\n        grid-column: 2;\n        transform: translateX(2px); }\n  #graph-canvas #graph-container {\n    width: 100%;\n    height: 100%;\n    left: 0;\n    top: 0;\n    transform-origin: left top;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #graph-canvas #graph-container #frame-container {\n      overflow: visible;\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n    #graph-canvas #graph-container .frame-box {\n      position: absolute;\n      background: rgba(72, 72, 72, 0.7);\n      display: grid;\n      grid-template-rows: 40px calc(100% - 40px);\n      grid-template-columns: 100%;\n      box-sizing: border-box; }\n      #graph-canvas #graph-container .frame-box.collapsed {\n        height: auto !important;\n        width: 200px !important;\n        z-index: 3; }\n        #graph-canvas #graph-container .frame-box.collapsed .frame-box-header {\n          font-size: 16px;\n          grid-template-columns: calc(100% - 37px) 30px 7px; }\n          #graph-canvas #graph-container .frame-box.collapsed .frame-box-header .frame-box-header-collapse {\n            margin-top: -2px; }\n          #graph-canvas #graph-container .frame-box.collapsed .frame-box-header .frame-box-header-close {\n            display: none; }\n        #graph-canvas #graph-container .frame-box.collapsed .frame-comments.has-comments .frame-comment-span {\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden; }\n      #graph-canvas #graph-container .frame-box .frame-box-border {\n        grid-row: 1 / span 2;\n        grid-column: 1;\n        width: 100%;\n        height: 100%;\n        border: transparent solid 4px;\n        pointer-events: none;\n        box-sizing: border-box; }\n      #graph-canvas #graph-container .frame-box .frame-box-header {\n        grid-row: 1;\n        grid-column: 1;\n        background: #484848;\n        color: white;\n        font-size: 24px;\n        text-align: center;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: calc(100% - 74px) 30px 7px 30px 7px;\n        align-content: center;\n        overflow: hidden; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-button {\n          cursor: pointer;\n          align-self: center;\n          transform-origin: 50% 50%;\n          transform: scale(1);\n          stroke: transparent;\n          fill: white;\n          display: grid; }\n          #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-button.down {\n            transform: scale(0.9); }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-collapse {\n          grid-column: 2;\n          grid-row: 1; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-close {\n          grid-column: 4;\n          grid-row: 1; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-title {\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          height: 100%;\n          width: 100%;\n          align-self: stretch;\n          align-items: center;\n          margin-top: -2px; }\n      #graph-canvas #graph-container .frame-box .port-container {\n        margin-top: 6px;\n        margin-bottom: 6px;\n        margin-left: 4px;\n        margin-right: 4px;\n        color: white;\n        grid-row: 2;\n        grid-column: 1;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: 50% 50%;\n        z-index: 2; }\n      #graph-canvas #graph-container .frame-box .frame-comments.has-comments {\n        display: grid;\n        grid-row: 2;\n        grid-column: 1;\n        padding: 0 10px;\n        font-style: italic;\n        word-wrap: break-word; }\n      #graph-canvas #graph-container .frame-box.selected .frame-box-border {\n        border-color: white; }\n      #graph-canvas #graph-container .frame-box .right-handle {\n        grid-area: 1 / 2 / 3 / 2;\n        width: 4px;\n        background-color: transparent;\n        cursor: ew-resize; }\n        #graph-canvas #graph-container .frame-box .right-handle::after {\n          content: \"\";\n          width: 8px;\n          position: absolute;\n          top: 0;\n          bottom: 0;\n          margin-left: -4px;\n          cursor: ew-resize; }\n        #graph-canvas #graph-container .frame-box .right-handle.collapsed {\n          cursor: pointer; }\n      #graph-canvas #graph-container .frame-box .top-right-corner-handle {\n        background-color: transparent;\n        height: 4px;\n        z-index: 21;\n        cursor: ne-resize;\n        width: 4px;\n        margin-left: -6px; }\n        #graph-canvas #graph-container .frame-box .top-right-corner-handle::after {\n          background-color: transparent;\n          cursor: ne-resize;\n          margin-left: unset;\n          top: -4px;\n          height: 10px;\n          width: 10px; }\n      #graph-canvas #graph-container .frame-box .bottom-right-corner-handle {\n        background-color: transparent;\n        height: 0px;\n        z-index: 21;\n        cursor: nw-resize;\n        grid-area: 4 / 2 / 4 / 2;\n        margin-left: -2px; }\n        #graph-canvas #graph-container .frame-box .bottom-right-corner-handle::after {\n          background-color: transparent;\n          height: 10px;\n          cursor: nw-resize;\n          top: unset;\n          bottom: -4px;\n          width: 10px; }\n      #graph-canvas #graph-container .frame-box .left-handle {\n        grid-area: 1 / 1 / 3 / 1;\n        width: 4px;\n        background-color: transparent;\n        cursor: ew-resize; }\n        #graph-canvas #graph-container .frame-box .left-handle::before {\n          content: \"\";\n          width: 8px;\n          position: absolute;\n          top: 0;\n          bottom: 0;\n          margin-left: -4px; }\n      #graph-canvas #graph-container .frame-box .top-left-corner-handle {\n        background-color: transparent;\n        height: 4px;\n        z-index: 21;\n        cursor: nw-resize;\n        width: 4px;\n        margin-left: -4px; }\n        #graph-canvas #graph-container .frame-box .top-left-corner-handle::before {\n          background-color: transparent;\n          cursor: nw-resize;\n          margin-left: unset;\n          top: -4px;\n          height: 10px;\n          width: 10px; }\n      #graph-canvas #graph-container .frame-box .bottom-left-corner-handle {\n        background-color: transparent;\n        height: 0px;\n        z-index: 21;\n        cursor: sw-resize;\n        grid-area: 4 / 1 / 4 / 1; }\n        #graph-canvas #graph-container .frame-box .bottom-left-corner-handle::before {\n          background-color: transparent;\n          height: 10px;\n          cursor: sw-resize;\n          top: unset;\n          bottom: -4px;\n          width: 10px; }\n      #graph-canvas #graph-container .frame-box .top-handle {\n        grid-area: 1 / 1 / 1 / 1;\n        background-color: transparent;\n        height: 4px;\n        cursor: ns-resize; }\n        #graph-canvas #graph-container .frame-box .top-handle::before {\n          content: \"\";\n          width: 100%;\n          position: absolute;\n          top: -4px;\n          bottom: 100%;\n          right: 0;\n          left: 0;\n          margin-bottom: -8px;\n          cursor: ns-resize;\n          height: 8px; }\n      #graph-canvas #graph-container .frame-box .bottom-handle {\n        grid-area: 3 / 1 / 3 / 1;\n        background-color: transparent;\n        height: 4px;\n        cursor: ns-resize; }\n        #graph-canvas #graph-container .frame-box .bottom-handle::after {\n          content: \"\";\n          width: 100%;\n          position: absolute;\n          top: 100%;\n          bottom: 0;\n          right: 0;\n          left: 0;\n          margin-top: -8px;\n          cursor: ns-resize;\n          height: 12px; }\n      #graph-canvas #graph-container .frame-box.collapsed .top-handle, #graph-canvas #graph-container .frame-box.collapsed .top-right-corner-handle, #graph-canvas #graph-container .frame-box.collapsed .right-handle, #graph-canvas #graph-container .frame-box.collapsed .bottom-right-corner-handle, #graph-canvas #graph-container .frame-box.collapsed .bottom-handle, #graph-canvas #graph-container .frame-box.collapsed .bottom-left-corner-handle, #graph-canvas #graph-container .frame-box.collapsed .left-handle, #graph-canvas #graph-container .frame-box.collapsed .top-left-corner-handle {\n        cursor: default; }\n      #graph-canvas #graph-container .frame-box.collapsed .right-handle::after, #graph-canvas #graph-container .frame-box.collapsed .bottom-handle::after, #graph-canvas #graph-container .frame-box.collapsed .top-right-corner-handle::after, #graph-canvas #graph-container .frame-box.collapsed .bottom-right-corner-handle::after {\n        cursor: default; }\n      #graph-canvas #graph-container .frame-box.collapsed .left-handle::before, #graph-canvas #graph-container .frame-box.collapsed .top-handle::before, #graph-canvas #graph-container .frame-box.collapsed .top-left-corner-handle::before, #graph-canvas #graph-container .frame-box.collapsed .bottom-left-corner-handle::before {\n        cursor: default; }\n    #graph-canvas #graph-container #graph-svg-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%;\n      overflow: visible;\n      pointer-events: none;\n      z-index: 2; }\n      #graph-canvas #graph-container #graph-svg-container .link {\n        stroke-width: 4px; }\n        #graph-canvas #graph-container #graph-svg-container .link.selected {\n          stroke: white !important;\n          stroke-dasharray: 10, 2; }\n        #graph-canvas #graph-container #graph-svg-container .link.hidden {\n          display: none; }\n      #graph-canvas #graph-container #graph-svg-container .selection-link {\n        pointer-events: all;\n        stroke-width: 16px;\n        opacity: 0;\n        transition: opacity 75ms;\n        stroke: transparent;\n        cursor: pointer; }\n        #graph-canvas #graph-container #graph-svg-container .selection-link.hidden {\n          display: none; }\n        #graph-canvas #graph-container #graph-svg-container .selection-link:hover, #graph-canvas #graph-container #graph-svg-container .selection-link.selected {\n          stroke: white !important;\n          opacity: 0.4; }\n    #graph-canvas #graph-container #graph-canvas-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n      #graph-canvas #graph-container #graph-canvas-container .visual {\n        z-index: 4;\n        width: 200px;\n        position: absolute;\n        left: 0;\n        top: 0;\n        background: gray;\n        border: 4px solid black;\n        border-radius: 12px;\n        display: grid;\n        grid-template-rows: 30px auto;\n        grid-template-columns: 100%;\n        color: white; }\n        #graph-canvas #graph-container #graph-canvas-container .visual.hidden {\n          display: none; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .comments {\n          position: absolute;\n          top: -50px;\n          width: 200px;\n          height: 45px;\n          overflow: hidden;\n          font-style: italic;\n          opacity: 0.8;\n          display: grid;\n          align-items: flex-end;\n          pointer-events: none; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .selection-border {\n          grid-row: 1 / span 3;\n          grid-column: 1;\n          margin: -4px;\n          transition: border-color 100ms;\n          border: 4px solid black;\n          border-radius: 12px; }\n        #graph-canvas #graph-container #graph-canvas-container .visual.selected .selection-border {\n          border-color: white; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .header-container {\n          grid-row: 1;\n          grid-column: 1;\n          display: grid;\n          grid-template-columns: 1fr auto;\n          grid-template-rows: 100%;\n          border: 4px solid black;\n          border-top-right-radius: 7px;\n          border-top-left-radius: 7px;\n          background: black;\n          color: white; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .header-container.constant {\n            border-color: #464348;\n            background: #464348; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .header-container.inspector {\n            border-color: #66491b;\n            background: #66491b; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .promotion-warning {\n          grid-row: 1;\n          grid-column: 2;\n          display: none;\n          z-index: 10; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .promotion-warning.visible {\n            display: grid;\n            width: 20px; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .header {\n          grid-row: 1;\n          grid-column: 1;\n          font-size: 16px;\n          text-align: center;\n          margin-top: -1px;\n          margin-left: -1px;\n          margin-right: -1px;\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .connections {\n          grid-row: 2;\n          grid-column: 1;\n          display: grid;\n          grid-template-columns: 50% 50%; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .content {\n          min-height: 20px;\n          grid-row: 3;\n          grid-column: 1; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.input-block {\n            grid-row: 2;\n            min-height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px 5px;\n            display: grid;\n            align-content: center; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .content.input-block.small-font {\n              font-size: 17px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.output-block {\n            min-height: 0px;\n            height: 5px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.clamp-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.gradient-block {\n            grid-row: 2;\n            height: 34px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block {\n            grid-row: 2;\n            height: 140px;\n            width: 140px;\n            overflow: hidden;\n            border-bottom-left-radius: 7px;\n            border: black 4px solid;\n            border-left: 0px;\n            border-bottom: 0px; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block img {\n              width: 100%;\n              height: 100%;\n              pointer-events: none; }\n              #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block img.empty {\n                display: none; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.image-source-block {\n            margin-top: 5px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.regular-texture-block {\n            margin-top: 60px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.reduced-texture-block {\n            margin-top: 30px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.reflection-block {\n            grid-row: 3; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.remap-block {\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.trigonometry-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -54845,6 +54845,17 @@ module.exports = "data:image/svg+xml,%3Csvg viewBox='0 0 24 24' fill='none' xmln
 
 /***/ }),
 
+/***/ "../imgs/triangle.svg":
+/*!****************************!*\
+  !*** ../imgs/triangle.svg ***!
+  \****************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3C!-- Generator: Adobe Illustrator 25.4.1, SVG Export Plug-In . SVG Version: 6.00 Build 0) --%3E %3Csvg version='1.1' id='Layer_1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' x='0px' y='0px' viewBox='0 0 32 32' style='enable-background:new 0 0 32 32;' xml:space='preserve'%3E %3Cstyle type='text/css'%3E .st0%7Bfill:%23FFFFFF;%7D %3C/style%3E %3Cpath class='st0' d='M18.8,4.7c-1.2-2.2-4.5-2.2-5.7,0L2.4,24.2C1.2,26.3,2.8,29,5.2,29h21.5c2.5,0,4-2.7,2.8-4.8L18.8,4.7z'/%3E %3C/svg%3E"
+
+/***/ }),
+
 /***/ "./blockTools.ts":
 /*!***********************!*\
   !*** ./blockTools.ts ***!
@@ -54857,6 +54868,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BlockTools", function() { return BlockTools; });
 /* harmony import */ var babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/Fragment/discardBlock */ "babylonjs/Misc/dataStorage");
 /* harmony import */ var babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__);
+
 
 
 
@@ -55396,6 +55408,8 @@ var BlockTools = /** @class */ (function () {
                 var andBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlock"]("And");
                 andBlock.condition = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ConditionalBlockConditions"].And;
                 return andBlock;
+            case "ImageSourceBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ImageSourceBlock"]("ImageSource");
         }
         return null;
     };
@@ -55696,7 +55710,7 @@ var NodeListComponent = /** @class */ (function (_super) {
             Animation: ["BonesBlock", "MorphTargetsBlock"],
             Color_Management: ["ReplaceColorBlock", "PosterizeBlock", "GradientBlock", "DesaturateBlock"],
             Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
-            Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock", "ReflectionTextureBlock", "TimeBlock", "DeltaTimeBlock", "FragCoordBlock", "ScreenSizeBlock"],
+            Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock", "ReflectionTextureBlock", "TimeBlock", "DeltaTimeBlock", "FragCoordBlock", "ScreenSizeBlock", "ImageSourceBlock"],
             Interpolation: ["LerpBlock", "StepBlock", "SmoothStepBlock", "NLerpBlock"],
             Logical: ["EqualBlock", "NotEqualBlock", "LessThanBlock", "LessOrEqualBlock", "GreaterThanBlock", "GreaterOrEqualBlock", "XorBlock", "OrBlock", "AndBlock"],
             Math__Standard: ["AddBlock", "DivideBlock", "MaxBlock", "MinBlock", "ModBlock", "MultiplyBlock", "NegateBlock", "OneMinusBlock", "ReciprocalBlock", "ScaleBlock", "SignBlock", "SqrtBlock", "SubtractBlock"],
@@ -55910,7 +55924,8 @@ var NodeListComponent = /** @class */ (function (_super) {
         "GreaterOrEqualBlock": "Return a value if an operand is greater or equal to a second operand",
         "XorBlock": "Return a value if (a xor b) > 0",
         "OrBlock": "Return a value if (a or b) > 0",
-        "AndBlock": "Return a value if (a and b) > 0"
+        "AndBlock": "Return a value if (a and b) > 0",
+        "ImageSourceBlock": "Centralize texture access for TextureBlocks"
     };
     return NodeListComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -55978,7 +55993,7 @@ var PreviewAreaComponent = /** @class */ (function (_super) {
             return;
         }
         this.props.globalState.particleSystemBlendMode = newOne;
-        this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+        this.props.globalState.onUpdateRequiredObservable.notifyObservers(null);
         babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].WriteNumber("DefaultParticleSystemBlendMode", newOne);
         this.forceUpdate();
     };
@@ -56841,7 +56856,7 @@ var InputsPropertyTabComponent = /** @class */ (function (_super) {
         return _super.call(this, props) || this;
     }
     InputsPropertyTabComponent.prototype.processInputBlockUpdate = function (ib) {
-        this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+        this.props.globalState.onUpdateRequiredObservable.notifyObservers(ib);
         if (ib.isConstant) {
             this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
         }
@@ -56914,7 +56929,7 @@ var Color3PropertyTabComponent = /** @class */ (function (_super) {
     Color3PropertyTabComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_color3LineComponent__WEBPACK_IMPORTED_MODULE_2__["Color3LineComponent"], { globalState: this.props.globalState, label: "Value", target: this.props.inputBlock, propertyName: "value", onChange: function () {
-                _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.inputBlock);
             } }));
     };
     return Color3PropertyTabComponent;
@@ -56949,7 +56964,7 @@ var Color4PropertyTabComponent = /** @class */ (function (_super) {
     Color4PropertyTabComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_color4LineComponent__WEBPACK_IMPORTED_MODULE_2__["Color4LineComponent"], { globalState: this.props.globalState, label: "Value", target: this.props.inputBlock, propertyName: "value", onChange: function () {
-                _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.inputBlock);
             } }));
     };
     return Color4PropertyTabComponent;
@@ -56987,7 +57002,7 @@ var FloatPropertyTabComponent = /** @class */ (function (_super) {
                 if (_this.props.inputBlock.isConstant) {
                     _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                 }
-                _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.inputBlock);
             } }));
     };
     return FloatPropertyTabComponent;
@@ -57022,7 +57037,7 @@ var MatrixPropertyTabComponent = /** @class */ (function (_super) {
     MatrixPropertyTabComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_matrixLineComponent__WEBPACK_IMPORTED_MODULE_2__["MatrixLineComponent"], { globalState: this.props.globalState, label: "Value", target: this.props.inputBlock, propertyName: "value", onChange: function () {
-                _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.inputBlock);
             }, mode: this.props.inputBlock.matrixMode, onModeChange: function (mode) {
                 _this.props.inputBlock.matrixMode = mode;
             } }));
@@ -57059,7 +57074,7 @@ var Vector2PropertyTabComponent = /** @class */ (function (_super) {
     Vector2PropertyTabComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector2LineComponent__WEBPACK_IMPORTED_MODULE_2__["Vector2LineComponent"], { globalState: this.props.globalState, label: "Value", target: this.props.inputBlock, propertyName: "value", onChange: function () {
-                _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.inputBlock);
             } }));
     };
     return Vector2PropertyTabComponent;
@@ -57094,7 +57109,7 @@ var Vector3PropertyTabComponent = /** @class */ (function (_super) {
     Vector3PropertyTabComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector3LineComponent__WEBPACK_IMPORTED_MODULE_2__["Vector3LineComponent"], { globalState: this.props.globalState, label: "Value", target: this.props.inputBlock, propertyName: "value", onChange: function () {
-                _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.inputBlock);
             } }));
     };
     return Vector3PropertyTabComponent;
@@ -57129,7 +57144,7 @@ var Vector4PropertyTabComponent = /** @class */ (function (_super) {
     Vector4PropertyTabComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector4LineComponent__WEBPACK_IMPORTED_MODULE_2__["Vector4LineComponent"], { globalState: this.props.globalState, label: "Value", target: this.props.inputBlock, propertyName: "value", onChange: function () {
-                _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.inputBlock);
             } }));
     };
     return Vector4PropertyTabComponent;
@@ -57277,7 +57292,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         this.props.globalState.onBuiltObservable.remove(this._onBuiltObserver);
     };
     PropertyTabComponent.prototype.processInputBlockUpdate = function (ib) {
-        this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+        this.props.globalState.onUpdateRequiredObservable.notifyObservers(ib);
         if (ib.isConstant) {
             this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
         }
@@ -57534,6 +57549,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                             _sharedUiComponents_stringTools__WEBPACK_IMPORTED_MODULE_4__["StringTools"].DownloadAsFile(_this.props.globalState.hostDocument, _this.props.globalState.nodeMaterial.generateCode(), "code.txt");
                         } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Export shaders", onClick: function () {
+                            _this.props.globalState.nodeMaterial.build();
                             _sharedUiComponents_stringTools__WEBPACK_IMPORTED_MODULE_4__["StringTools"].DownloadAsFile(_this.props.globalState.hostDocument, _this.props.globalState.nodeMaterial.compiledShaders, "shaders.txt");
                         } }),
                     this.props.globalState.customSave &&
@@ -57729,6 +57745,67 @@ var GradientDisplayManager = /** @class */ (function () {
         contentArea.classList.add("gradient-block");
     };
     return GradientDisplayManager;
+}());
+
+
+
+/***/ }),
+
+/***/ "./diagram/display/imageSourceDisplayManager.ts":
+/*!******************************************************!*\
+  !*** ./diagram/display/imageSourceDisplayManager.ts ***!
+  \******************************************************/
+/*! exports provided: imageSourceDisplayManager */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "imageSourceDisplayManager", function() { return imageSourceDisplayManager; });
+/* harmony import */ var _sharedComponents_textureLineComponent__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../sharedComponents/textureLineComponent */ "./sharedComponents/textureLineComponent.tsx");
+
+var imageSourceDisplayManager = /** @class */ (function () {
+    function imageSourceDisplayManager() {
+    }
+    imageSourceDisplayManager.prototype.getHeaderClass = function (block) {
+        return "";
+    };
+    imageSourceDisplayManager.prototype.shouldDisplayPortLabels = function (block) {
+        return true;
+    };
+    imageSourceDisplayManager.prototype.getHeaderText = function (block) {
+        return block.name;
+    };
+    imageSourceDisplayManager.prototype.getBackgroundColor = function (block) {
+        return "#323232";
+    };
+    imageSourceDisplayManager.prototype.updatePreviewContent = function (block, contentArea) {
+        var _this = this;
+        var imageSourceBlock = block;
+        if (!this._previewCanvas) {
+            contentArea.classList.add("texture-block");
+            contentArea.classList.add("image-source-block");
+            this._previewCanvas = contentArea.ownerDocument.createElement("canvas");
+            this._previewImage = contentArea.ownerDocument.createElement("img");
+            contentArea.appendChild(this._previewImage);
+            this._previewImage.classList.add("empty");
+        }
+        if (imageSourceBlock.texture) {
+            _sharedComponents_textureLineComponent__WEBPACK_IMPORTED_MODULE_0__["TextureLineComponent"].UpdatePreview(this._previewCanvas, imageSourceBlock.texture, 140, {
+                face: 0,
+                displayRed: true,
+                displayAlpha: true,
+                displayBlue: true,
+                displayGreen: true
+            }, function () {
+                _this._previewImage.src = _this._previewCanvas.toDataURL("image/png");
+                _this._previewImage.classList.remove("empty");
+            });
+        }
+        else {
+            this._previewImage.classList.add("empty");
+        }
+    };
+    return imageSourceDisplayManager;
 }());
 
 
@@ -58046,11 +58123,14 @@ var TextureDisplayManager = /** @class */ (function () {
         var textureBlock = block;
         if (!this._previewCanvas) {
             contentArea.classList.add("texture-block");
-            if (block instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_0__["TextureBlock"] || block instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_0__["CurrentScreenBlock"] || block instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_0__["ParticleTextureBlock"]) {
+            if (block instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_0__["TextureBlock"]) {
                 contentArea.classList.add("regular-texture-block");
             }
             if (block instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_0__["ReflectionBlock"]) {
                 contentArea.classList.add("reflection-block");
+            }
+            if (block instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_0__["CurrentScreenBlock"] || block instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_0__["ParticleTextureBlock"]) {
+                contentArea.classList.add("reduced-texture-block");
             }
             this._previewCanvas = contentArea.ownerDocument.createElement("canvas");
             this._previewImage = contentArea.ownerDocument.createElement("img");
@@ -58140,6 +58220,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _display_discardDisplayManager__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./display/discardDisplayManager */ "./diagram/display/discardDisplayManager.ts");
 /* harmony import */ var _display_pbrDisplayManager__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./display/pbrDisplayManager */ "./diagram/display/pbrDisplayManager.ts");
 /* harmony import */ var _display_conditionalDisplayManager__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./display/conditionalDisplayManager */ "./diagram/display/conditionalDisplayManager.ts");
+/* harmony import */ var _display_imageSourceDisplayManager__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./display/imageSourceDisplayManager */ "./diagram/display/imageSourceDisplayManager.ts");
+
 
 
 
@@ -58177,6 +58259,7 @@ DisplayLedger.RegisteredControls["AnisotropyBlock"] = _display_pbrDisplayManager
 DisplayLedger.RegisteredControls["ClearCoatBlock"] = _display_pbrDisplayManager__WEBPACK_IMPORTED_MODULE_8__["PBRDisplayManager"];
 DisplayLedger.RegisteredControls["SheenBlock"] = _display_pbrDisplayManager__WEBPACK_IMPORTED_MODULE_8__["PBRDisplayManager"];
 DisplayLedger.RegisteredControls["SubSurfaceBlock"] = _display_pbrDisplayManager__WEBPACK_IMPORTED_MODULE_8__["PBRDisplayManager"];
+DisplayLedger.RegisteredControls["ImageSourceBlock"] = _display_imageSourceDisplayManager__WEBPACK_IMPORTED_MODULE_10__["imageSourceDisplayManager"];
 
 
 /***/ }),
@@ -58462,8 +58545,8 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
                 editorData.x = _this.x;
                 editorData.y = _this.y;
                 editorData.zoom = _this.zoom;
-                for (var _i = 0, _a = _this._frames; _i < _a.length; _i++) {
-                    var frame = _a[_i];
+                for (var _i = 0, _b = _this._frames; _i < _b.length; _i++) {
+                    var frame = _b[_i];
                     editorData.frames.push(frame.serialize(true));
                 }
             }
@@ -58645,13 +58728,13 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         return this.nodes.filter(function (n) { return n.block === block; })[0];
     };
     GraphCanvasComponent.prototype.reset = function () {
-        for (var _i = 0, _a = this._nodes; _i < _a.length; _i++) {
-            var node = _a[_i];
+        for (var _i = 0, _b = this._nodes; _i < _b.length; _i++) {
+            var node = _b[_i];
             node.dispose();
         }
         var frames = this._frames.splice(0);
-        for (var _b = 0, frames_1 = frames; _b < frames_1.length; _b++) {
-            var frame = frames_1[_b];
+        for (var _c = 0, frames_1 = frames; _c < frames_1.length; _c++) {
+            var frame = frames_1[_c];
             frame.dispose();
         }
         this._nodes = [];
@@ -58673,8 +58756,8 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         if (!portA || !portB) {
             return;
         }
-        for (var _i = 0, _a = this._links; _i < _a.length; _i++) {
-            var currentLink = _a[_i];
+        for (var _i = 0, _b = this._links; _i < _b.length; _i++) {
+            var currentLink = _b[_i];
             if (currentLink.portA === portA && currentLink.portB === portB) {
                 return;
             }
@@ -58752,8 +58835,8 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
                 return;
             }
             if (dagreNode.type === "node") {
-                for (var _i = 0, _a = _this._nodes; _i < _a.length; _i++) {
-                    var node = _a[_i];
+                for (var _i = 0, _b = _this._nodes; _i < _b.length; _i++) {
+                    var node = _b[_i];
                     if (node.id === dagreNode.id) {
                         node.x = dagreNode.x - dagreNode.width / 2;
                         node.y = dagreNode.y - dagreNode.height / 2;
@@ -58763,8 +58846,8 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
                 }
                 return;
             }
-            for (var _b = 0, _c = _this._frames; _b < _c.length; _b++) {
-                var frame = _c[_b];
+            for (var _c = 0, _d = _this._frames; _c < _d.length; _c++) {
+                var frame = _d[_c];
                 if (frame.id === dagreNode.id) {
                     _this._frameIsMoving = true;
                     frame.move(dagreNode.x - dagreNode.width / 2, dagreNode.y - dagreNode.height / 2, false);
@@ -59144,38 +59227,11 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         }
         pointA.connectTo(pointB);
         this.connectPorts(pointA, pointB);
-        if (pointB.innerType === babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].AutoDetect) {
-            // need to potentially propagate the type of pointA to other ports of blocks connected to owner of pointB
-            var refreshNode_1 = function (node) {
-                node.refresh();
-                var links = node.links;
-                // refresh first the nodes so that the right types are assigned to the auto-detect ports
-                links.forEach(function (link) {
-                    var nodeA = link.nodeA, nodeB = link.nodeB;
-                    if (!visitedNodes_1.has(nodeA)) {
-                        visitedNodes_1.add(nodeA);
-                        refreshNode_1(nodeA);
-                    }
-                    if (nodeB && !visitedNodes_1.has(nodeB)) {
-                        visitedNodes_1.add(nodeB);
-                        refreshNode_1(nodeB);
-                    }
-                });
-                // then refresh the links to display the right color between ports
-                links.forEach(function (link) {
-                    if (!visitedLinks_1.has(link)) {
-                        visitedLinks_1.add(link);
-                        link.update();
-                    }
-                });
-            };
-            var visitedNodes_1 = new Set([nodeA]);
-            var visitedLinks_1 = new Set([nodeB.links[nodeB.links.length - 1]]);
-            refreshNode_1(nodeB);
-        }
-        else {
-            nodeB.refresh();
-        }
+        // Need to potentially propagate the type of pointA to other ports of blocks connected to owner of pointB
+        // We also need to check if we want to display the promotion warning
+        var visitedNodes = new Set([nodeA]);
+        var visitedLinks = new Set([nodeB.links[nodeB.links.length - 1]]);
+        GraphCanvasComponent._RefreshNode(nodeB, visitedNodes, visitedLinks);
         linksToNotifyForDispose === null || linksToNotifyForDispose === void 0 ? void 0 : linksToNotifyForDispose.forEach(function (link) {
             link.onDisposedObservable.notifyObservers(link);
             link.onDisposedObservable.clear();
@@ -59194,8 +59250,8 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         this.zoom = editorData.zoom || 1;
         // Frames
         if (editorData.frames) {
-            for (var _a = 0, _b = editorData.frames; _a < _b.length; _a++) {
-                var frameData = _b[_a];
+            for (var _b = 0, _c = editorData.frames; _b < _c.length; _b++) {
+                var frameData = _c[_b];
                 var frame = _graphFrame__WEBPACK_IMPORTED_MODULE_7__["GraphFrame"].Parse(frameData, this, editorData.map);
                 this._frames.push(frame);
             }
@@ -59214,6 +59270,36 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "frame-container" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { id: "graph-svg-container" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "selection-container" }))));
+    };
+    var _a;
+    _a = GraphCanvasComponent;
+    GraphCanvasComponent._RefreshNode = function (node, visitedNodes, visitedLinks) {
+        node.refresh();
+        var links = node.links;
+        if (visitedNodes) {
+            // refresh first the nodes so that the right types are assigned to the auto-detect ports
+            links.forEach(function (link) {
+                var nodeA = link.nodeA, nodeB = link.nodeB;
+                if (!visitedNodes.has(nodeA)) {
+                    visitedNodes.add(nodeA);
+                    _a._RefreshNode(nodeA, visitedNodes, visitedLinks);
+                }
+                if (nodeB && !visitedNodes.has(nodeB)) {
+                    visitedNodes.add(nodeB);
+                    _a._RefreshNode(nodeB, visitedNodes, visitedLinks);
+                }
+            });
+        }
+        if (!visitedLinks) {
+            return;
+        }
+        // then refresh the links to display the right color between ports
+        links.forEach(function (link) {
+            if (!visitedLinks.has(link)) {
+                visitedLinks.add(link);
+                link.update();
+            }
+        });
     };
     return GraphCanvasComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -60562,6 +60648,27 @@ var GraphFrame = /** @class */ (function () {
         var json = _serializationTools__WEBPACK_IMPORTED_MODULE_1__["SerializationTools"].Serialize(state.nodeMaterial, state, this);
         _sharedUiComponents_stringTools__WEBPACK_IMPORTED_MODULE_2__["StringTools"].DownloadAsFile(state.hostDocument, json, this._name + ".json");
     };
+    GraphFrame.prototype.adjustPorts = function () {
+        for (var _i = 0, _a = this.nodes; _i < _a.length; _i++) {
+            var node = _a[_i];
+            for (var _b = 0, _c = node.outputPorts; _b < _c.length; _b++) { // Output
+                var port = _c[_b];
+                if (port.exposedOnFrame) {
+                    if (port.exposedPortPosition !== -1) {
+                        this._exposedOutPorts[port.exposedPortPosition] = port;
+                    }
+                }
+            }
+            for (var _d = 0, _e = node.inputPorts; _d < _e.length; _d++) { // Imports
+                var port = _e[_d];
+                if (port.exposedOnFrame) {
+                    if (port.exposedPortPosition !== -1) {
+                        this._exposedInPorts[port.exposedPortPosition] = port;
+                    }
+                }
+            }
+        }
+    };
     GraphFrame.Parse = function (serializationData, canvas, map) {
         var newFrame = new GraphFrame(null, canvas, true);
         var isCollapsed = !!serializationData.isCollapsed;
@@ -60575,10 +60682,10 @@ var GraphFrame = /** @class */ (function () {
         if (serializationData.blocks && map) {
             var _loop_2 = function () {
                 var actualId = map[blockId];
-                var node_1 = canvas.nodes.filter(function (n) { return n.block.uniqueId === actualId; });
-                if (node_1.length) {
-                    newFrame.nodes.push(node_1[0]);
-                    node_1[0].enclosingFrameId = newFrame.id;
+                var node = canvas.nodes.filter(function (n) { return n.block.uniqueId === actualId; });
+                if (node.length) {
+                    newFrame.nodes.push(node[0]);
+                    node[0].enclosingFrameId = newFrame.id;
                 }
             };
             for (var _i = 0, _a = serializationData.blocks; _i < _a.length; _i++) {
@@ -60589,25 +60696,7 @@ var GraphFrame = /** @class */ (function () {
         else {
             newFrame.refresh();
         }
-        for (var _b = 0, _c = newFrame.nodes; _b < _c.length; _b++) {
-            var node = _c[_b];
-            for (var _d = 0, _e = node.outputPorts; _d < _e.length; _d++) { // Output
-                var port = _e[_d];
-                if (port.exposedOnFrame) {
-                    if (port.exposedPortPosition !== -1) {
-                        newFrame._exposedOutPorts[port.exposedPortPosition] = port;
-                    }
-                }
-            }
-            for (var _f = 0, _g = node.inputPorts; _f < _g.length; _f++) { // Inports
-                var port = _g[_f];
-                if (port.exposedOnFrame) {
-                    if (port.exposedPortPosition !== -1) {
-                        newFrame._exposedInPorts[port.exposedPortPosition] = port;
-                    }
-                }
-            }
-        }
+        newFrame.adjustPorts();
         newFrame.isCollapsed = isCollapsed;
         if (isCollapsed) {
             canvas._frameIsMoving = true;
@@ -60615,8 +60704,8 @@ var GraphFrame = /** @class */ (function () {
             var diff = serializationData.x - newFrame.x;
             newFrame._moveFrame(diff, 0);
             newFrame.cleanAccumulation();
-            for (var _h = 0, _j = newFrame.nodes; _h < _j.length; _h++) {
-                var selectedNode = _j[_h];
+            for (var _b = 0, _c = newFrame.nodes; _b < _c.length; _b++) {
+                var selectedNode = _c[_b];
                 selectedNode.refresh();
             }
             canvas._frameIsMoving = false;
@@ -60653,6 +60742,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+var triangle = __webpack_require__(/*! ../../imgs/triangle.svg */ "../imgs/triangle.svg");
 var GraphNode = /** @class */ (function () {
     function GraphNode(block, globalState) {
         var _this = this;
@@ -60682,7 +60772,10 @@ var GraphNode = /** @class */ (function () {
                 });
             }
         });
-        this._onUpdateRequiredObserver = this._globalState.onUpdateRequiredObservable.add(function () {
+        this._onUpdateRequiredObserver = this._globalState.onUpdateRequiredObservable.add(function (block) {
+            if (block !== _this.block) {
+                return;
+            }
             _this.refresh();
         });
         this._onSelectionBoxMovedObserver = this._globalState.onSelectionBoxMoved.add(function (rect1) {
@@ -60924,8 +61017,9 @@ var GraphNode = /** @class */ (function () {
             this._visual.style.background = this._displayManager.getBackgroundColor(this.block);
             var additionalClass = this._displayManager.getHeaderClass(this.block);
             this._header.classList.value = "header";
+            this._headerContainer.classList.value = "header-container";
             if (additionalClass) {
-                this._header.classList.add(additionalClass);
+                this._headerContainer.classList.add(additionalClass);
             }
         }
         else {
@@ -60947,6 +61041,12 @@ var GraphNode = /** @class */ (function () {
         }
         this._comments.innerHTML = this.block.comments || "";
         this._comments.title = this.block.comments || "";
+        if (this.block.willBeGeneratedIntoVertexShaderFromFragmentShader) {
+            this._promotionWarning.classList.add("visible");
+        }
+        else {
+            this._promotionWarning.classList.remove("visible");
+        }
     };
     GraphNode.prototype._onDown = function (evt) {
         // Check if this is coming from the port
@@ -61023,9 +61123,19 @@ var GraphNode = /** @class */ (function () {
         this._visual.addEventListener("pointerdown", function (evt) { return _this._onDown(evt); });
         this._visual.addEventListener("pointerup", function (evt) { return _this._onUp(evt); });
         this._visual.addEventListener("pointermove", function (evt) { return _this._onMove(evt); });
+        this._headerContainer = root.ownerDocument.createElement("div");
+        this._headerContainer.classList.add("header-container");
+        this._visual.appendChild(this._headerContainer);
         this._header = root.ownerDocument.createElement("div");
         this._header.classList.add("header");
-        this._visual.appendChild(this._header);
+        this._headerContainer.appendChild(this._header);
+        this._promotionWarning = root.ownerDocument.createElement("div");
+        this._promotionWarning.classList.add("promotion-warning");
+        this._promotionWarning.title = "For optimization reasons, this block will be promoted to the vertex shader. You can force it to render in the fragment shader by setting its target to Fragment";
+        var img = root.ownerDocument.createElement("img");
+        img.src = triangle;
+        this._promotionWarning.appendChild(img);
+        this._headerContainer.appendChild(this._promotionWarning);
         this._connections = root.ownerDocument.createElement("div");
         this._connections.classList.add("connections");
         this._visual.appendChild(this._connections);
@@ -61107,14 +61217,16 @@ var GraphNode = /** @class */ (function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "NodeLink", function() { return NodeLink; });
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/dataStorage");
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _graphCanvas__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./graphCanvas */ "./diagram/graphCanvas.tsx");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/dataStorage");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__);
+
 
 var NodeLink = /** @class */ (function () {
     function NodeLink(graphCanvas, portA, nodeA, portB, nodeB) {
         var _this = this;
         this._isVisible = true;
-        this.onDisposedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onDisposedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
         this._portA = portA;
         this._portB = portB;
         this._nodeA = nodeA;
@@ -61241,6 +61353,7 @@ var NodeLink = /** @class */ (function () {
             this._nodeB.links.splice(this._nodeB.links.indexOf(this), 1);
             this._graphCanvas.links.splice(this._graphCanvas.links.indexOf(this), 1);
             this._portA.connectionPoint.disconnectFrom(this._portB.connectionPoint);
+            _graphCanvas__WEBPACK_IMPORTED_MODULE_0__["GraphCanvasComponent"]._RefreshNode(this._nodeB);
         }
         if (notify) {
             this.onDisposedObservable.notifyObservers(this);
@@ -61499,7 +61612,7 @@ var ConditionalPropertyTabComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_genericNodePropertyComponent__WEBPACK_IMPORTED_MODULE_5__["GeneralPropertyTabComponent"], { globalState: this.props.globalState, block: this.props.block }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "PROPERTIES" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_3__["OptionsLineComponent"], { label: "Condition", options: conditionOptions, target: conditionBlock, propertyName: "condition", onSelect: function (value) {
-                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                         _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                         _this.forceUpdate();
                     } }))));
@@ -61730,7 +61843,7 @@ var GeneralPropertyTabComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "GENERAL" },
                 (!this.props.block.isInput || !this.props.block.isAttribute) &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Name", propertyName: "name", target: this.props.block, onChange: function () { return _this.props.globalState.onUpdateRequiredObservable.notifyObservers(); }, validator: function (newName) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Name", propertyName: "name", target: this.props.block, onChange: function () { return _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block); }, validator: function (newName) {
                             if (!_this.props.block.validateBlockName(newName)) {
                                 _this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("\"" + newName + "\" is a reserved name, please choose another");
                                 return false;
@@ -61738,15 +61851,15 @@ var GeneralPropertyTabComponent = /** @class */ (function (_super) {
                             return true;
                         } }),
                 (this.props.block._originalTargetIsNeutral) &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_9__["OptionsLineComponent"], { label: "Target", options: targetOptions, target: this.props.block, propertyName: "target", onSelect: function (value) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_9__["OptionsLineComponent"], { label: "Target", options: targetOptions, target: this.props.block, propertyName: "target", onSelect: function () {
                             _this.forceUpdate();
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                             _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                         } }),
                 (!this.props.block._originalTargetIsNeutral) &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Type", value: babylonjs_Materials_Node_nodeMaterialDecorator__WEBPACK_IMPORTED_MODULE_10__["NodeMaterialBlockTargets"][this.props.block.target] }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Target", value: babylonjs_Materials_Node_nodeMaterialDecorator__WEBPACK_IMPORTED_MODULE_10__["NodeMaterialBlockTargets"][this.props.block.target] }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Type", value: this.props.block.getClassName() }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Comments", propertyName: "comments", target: this.props.block, onChange: function () { return _this.props.globalState.onUpdateRequiredObservable.notifyObservers(); } }))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Comments", propertyName: "comments", target: this.props.block, onChange: function () { return _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block); } }))));
     };
     return GeneralPropertyTabComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -61759,7 +61872,7 @@ var GenericPropertyTabComponent = /** @class */ (function (_super) {
     GenericPropertyTabComponent.prototype.forceRebuild = function (notifiers) {
         var _a;
         if (!notifiers || notifiers.update) {
-            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+            this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
         }
         if (!notifiers || notifiers.rebuild) {
             this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
@@ -61863,7 +61976,7 @@ var GradientPropertyTabComponent = /** @class */ (function (_super) {
         var gradientBlock = this.props.block;
         this.onValueChangedObserver = gradientBlock.onValueChangedObservable.add(function () {
             _this.forceUpdate();
-            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
         });
     };
     GradientPropertyTabComponent.prototype.componentWillUnmount = function () {
@@ -61874,7 +61987,7 @@ var GradientPropertyTabComponent = /** @class */ (function (_super) {
         }
     };
     GradientPropertyTabComponent.prototype.forceRebuild = function () {
-        this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+        this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
         this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
     };
     GradientPropertyTabComponent.prototype.deleteStep = function (step) {
@@ -61915,7 +62028,7 @@ var GradientPropertyTabComponent = /** @class */ (function (_super) {
             return -1;
         });
         gradientBlock.colorStepsUpdated();
-        this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+        this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
         this.forceUpdate();
     };
     GradientPropertyTabComponent.prototype.render = function () {
@@ -61946,7 +62059,7 @@ var GradientPropertyTabComponent = /** @class */ (function (_super) {
                                 break;
                         }
                         _this.forceUpdate();
-                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                         _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                     } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "STEPS" },
@@ -62036,6 +62149,219 @@ var GradientStepComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./diagram/properties/imageSourcePropertyTabComponent.tsx":
+/*!****************************************************************!*\
+  !*** ./diagram/properties/imageSourcePropertyTabComponent.tsx ***!
+  \****************************************************************/
+/*! exports provided: ImageSourcePropertyTabComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ImageSourcePropertyTabComponent", function() { return ImageSourcePropertyTabComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../sharedComponents/fileButtonLineComponent */ "./sharedComponents/fileButtonLineComponent.tsx");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/dataStorage");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
+/* harmony import */ var _sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../sharedComponents/textInputLineComponent */ "./sharedComponents/textInputLineComponent.tsx");
+/* harmony import */ var _sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../sharedComponents/checkBoxLineComponent */ "./sharedComponents/checkBoxLineComponent.tsx");
+/* harmony import */ var _sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../sharedComponents/buttonLineComponent */ "./sharedComponents/buttonLineComponent.tsx");
+/* harmony import */ var _sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../sharedComponents/optionsLineComponent */ "./sharedComponents/optionsLineComponent.tsx");
+/* harmony import */ var _genericNodePropertyComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./genericNodePropertyComponent */ "./diagram/properties/genericNodePropertyComponent.tsx");
+/* harmony import */ var _sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../sharedComponents/floatLineComponent */ "./sharedComponents/floatLineComponent.tsx");
+/* harmony import */ var _sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../sharedComponents/sliderLineComponent */ "./sharedComponents/sliderLineComponent.tsx");
+
+
+
+
+
+
+
+
+
+
+
+
+
+var ImageSourcePropertyTabComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ImageSourcePropertyTabComponent, _super);
+    function ImageSourcePropertyTabComponent(props) {
+        var _this = _super.call(this, props) || this;
+        var texture = _this.imageSourceBlock.texture;
+        _this.state = { isEmbedded: !texture || texture.name.substring(0, 4) === "data" };
+        return _this;
+    }
+    Object.defineProperty(ImageSourcePropertyTabComponent.prototype, "imageSourceBlock", {
+        get: function () {
+            return this.props.block;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    ImageSourcePropertyTabComponent.prototype.UNSAFE_componentWillUpdate = function (nextProps, nextState) {
+        if (nextProps.block !== this.props.block) {
+            var texture = nextProps.block.texture;
+            nextState.isEmbedded = !texture || texture.name.substring(0, 4) === "data";
+            nextState.loadAsCubeTexture = texture && texture.isCube;
+        }
+    };
+    ImageSourcePropertyTabComponent.prototype._generateRandomForCache = function () {
+        return 'xxxxxxxxxxxxxxxxxxxx'.replace(/[x]/g, function (c) {
+            var r = Math.random() * 10 | 0;
+            return r.toString();
+        });
+    };
+    ImageSourcePropertyTabComponent.prototype.updateAfterTextureLoad = function () {
+        this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
+        this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+        this.forceUpdate();
+    };
+    ImageSourcePropertyTabComponent.prototype.removeTexture = function () {
+        var texture = this.imageSourceBlock.texture;
+        if (texture) {
+            texture.dispose();
+            texture = null;
+            this.imageSourceBlock.texture = null;
+        }
+        this.updateAfterTextureLoad();
+    };
+    ImageSourcePropertyTabComponent.prototype._prepareTexture = function () {
+        var texture = this.imageSourceBlock.texture;
+        if (texture) {
+            texture.dispose();
+            texture = null;
+        }
+        if (!texture) {
+            this.imageSourceBlock.texture = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"](null, this.props.globalState.nodeMaterial.getScene(), false, false);
+            texture = this.imageSourceBlock.texture;
+            texture.coordinatesMode = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].EQUIRECTANGULAR_MODE;
+        }
+    };
+    /**
+     * Replaces the texture of the node
+     * @param file the file of the texture to use
+     */
+    ImageSourcePropertyTabComponent.prototype.replaceTexture = function (file) {
+        var _this = this;
+        this._prepareTexture();
+        var texture = this.imageSourceBlock.texture;
+        babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Tools"].ReadFile(file, function (data) {
+            var blob = new Blob([data], { type: "octet/stream" });
+            var reader = new FileReader();
+            reader.readAsDataURL(blob);
+            reader.onloadend = function () {
+                var base64data = reader.result;
+                var extension = undefined;
+                if (file.name.toLowerCase().indexOf(".dds") > 0) {
+                    extension = ".dds";
+                }
+                else if (file.name.toLowerCase().indexOf(".env") > 0) {
+                    extension = ".env";
+                }
+                texture.updateURL(base64data, extension, function () { return _this.updateAfterTextureLoad(); });
+            };
+        }, undefined, true);
+    };
+    ImageSourcePropertyTabComponent.prototype.replaceTextureWithUrl = function (url) {
+        var _this = this;
+        this._prepareTexture();
+        var texture = this.imageSourceBlock.texture;
+        texture.updateURL(url, null, function () { return _this.updateAfterTextureLoad(); });
+    };
+    ImageSourcePropertyTabComponent.prototype.render = function () {
+        var _this = this;
+        var url = "";
+        var texture = this.imageSourceBlock.texture;
+        if (texture && texture.name && texture.name.substring(0, 4) !== "data") {
+            url = texture.name;
+        }
+        url = url.replace(/\?nocache=\d+/, "");
+        var samplingMode = [
+            { label: "Nearest", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].NEAREST_NEAREST },
+            { label: "Linear", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].LINEAR_LINEAR },
+            { label: "Linear & linear mip", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].LINEAR_LINEAR_MIPLINEAR },
+            { label: "Linear & nearest mip", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].LINEAR_LINEAR_MIPNEAREST },
+            { label: "Nearest & linear mip", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].NEAREST_NEAREST_MIPLINEAR },
+            { label: "Nearest & nearest mip", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].NEAREST_NEAREST_MIPNEAREST },
+            { label: "Nearest/Linear", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].NEAREST_LINEAR },
+            { label: "Nearest/Linear & linear mip", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].NEAREST_LINEAR_MIPLINEAR },
+            { label: "Nearest/Linear & nearest mip", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].NEAREST_LINEAR_MIPNEAREST },
+            { label: "Linear/Nearest", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].LINEAR_NEAREST },
+            { label: "Linear/Nearest & linear mip", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].LINEAR_NEAREST_MIPLINEAR },
+            { label: "Linear/Nearest & nearest mip", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].LINEAR_NEAREST_MIPNEAREST }, // 9
+        ];
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_genericNodePropertyComponent__WEBPACK_IMPORTED_MODULE_9__["GeneralPropertyTabComponent"], { globalState: this.props.globalState, block: this.props.block }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "PROPERTIES" },
+                texture && texture.updateSamplingMode &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_8__["OptionsLineComponent"], { label: "Sampling", options: samplingMode, target: texture, noDirectUpdate: true, propertyName: "samplingMode", onSelect: function (value) {
+                            texture.updateSamplingMode(value);
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                        } }),
+                texture &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Clamp U", isSelected: function () { return texture.wrapU === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE; }, onSelect: function (value) {
+                            texture.wrapU = value ? babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE : babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].WRAP_ADDRESSMODE;
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                        } }),
+                texture &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Clamp V", isSelected: function () { return texture.wrapV === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE; }, onSelect: function (value) {
+                            texture.wrapV = value ? babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE : babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].WRAP_ADDRESSMODE;
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                        } }),
+                texture &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__["FloatLineComponent"], { globalState: this.props.globalState, label: "Offset U", target: texture, propertyName: "uOffset", onChange: function () {
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                        } }),
+                texture &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__["FloatLineComponent"], { globalState: this.props.globalState, label: "Offset V", target: texture, propertyName: "vOffset", onChange: function () {
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                        } }),
+                texture &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__["FloatLineComponent"], { globalState: this.props.globalState, label: "Scale U", target: texture, propertyName: "uScale", onChange: function () {
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                        } }),
+                texture &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__["FloatLineComponent"], { globalState: this.props.globalState, label: "Scale V", target: texture, propertyName: "vScale", onChange: function () {
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                        } }),
+                texture &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_11__["SliderLineComponent"], { label: "Rotation U", target: texture, globalState: this.props.globalState, propertyName: "uAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                        } }),
+                texture &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_11__["SliderLineComponent"], { label: "Rotation V", target: texture, globalState: this.props.globalState, propertyName: "vAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                        } }),
+                texture &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_11__["SliderLineComponent"], { label: "Rotation W", target: texture, globalState: this.props.globalState, propertyName: "wAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                        } })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "SOURCE" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Embed static texture", isSelected: function () { return _this.state.isEmbedded; }, onSelect: function (value) {
+                        _this.setState({ isEmbedded: value });
+                        _this.imageSourceBlock.texture = null;
+                        _this.updateAfterTextureLoad();
+                    } }),
+                this.state.isEmbedded &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["FileButtonLineComponent"], { label: "Upload", onClick: function (file) { return _this.replaceTexture(file); }, accept: ".jpg, .png, .tga, .dds, .env" }),
+                !this.state.isEmbedded &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { label: "Link", globalState: this.props.globalState, value: url, onChange: function (newUrl) { return _this.replaceTextureWithUrl(newUrl); } }),
+                !this.state.isEmbedded && url &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_7__["ButtonLineComponent"], { label: "Refresh", onClick: function () { return _this.replaceTextureWithUrl(url + "?nocache=" + _this._generateRandomForCache()); } }),
+                texture &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_7__["ButtonLineComponent"], { label: "Remove", onClick: function () { return _this.removeTexture(); } })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_genericNodePropertyComponent__WEBPACK_IMPORTED_MODULE_9__["GenericPropertyTabComponent"], { globalState: this.props.globalState, block: this.props.block })));
+    };
+    return ImageSourcePropertyTabComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
 /***/ "./diagram/properties/inputNodePropertyComponent.tsx":
 /*!***********************************************************!*\
   !*** ./diagram/properties/inputNodePropertyComponent.tsx ***!
@@ -62094,7 +62420,7 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
         var inputBlock = this.props.block;
         this.onValueChangedObserver = inputBlock.onValueChangedObservable.add(function () {
             _this.forceUpdate();
-            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
         });
     };
     InputPropertyTabComponent.prototype.componentWillUnmount = function () {
@@ -62120,7 +62446,7 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
                                 if (inputBlock.isConstant) {
                                     _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                                 }
-                                _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                                _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                             } }),
                     !inputBlock.isBoolean &&
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_2__["FloatLineComponent"], { globalState: this.props.globalState, label: "Min", target: inputBlock, propertyName: "min", onChange: function () {
@@ -62149,6 +62475,7 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
                                 if (inputBlock.isConstant) {
                                     _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                                 }
+                                _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                             } })));
             }
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialBlockConnectionPointTypes"].Vector2:
@@ -62157,19 +62484,19 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_properties_color3PropertyTabComponent__WEBPACK_IMPORTED_MODULE_6__["Color3PropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_15__["CheckBoxLineComponent"], { label: "Convert to gamma space", propertyName: "convertToGammaSpace", target: this.props.block, onValueChanged: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                         } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_15__["CheckBoxLineComponent"], { label: "Convert to linear space", propertyName: "convertToLinearSpace", target: this.props.block, onValueChanged: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                         } })));
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialBlockConnectionPointTypes"].Color4:
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_properties_color4PropertyTabComponent__WEBPACK_IMPORTED_MODULE_16__["Color4PropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_15__["CheckBoxLineComponent"], { label: "Convert to gamma space", propertyName: "convertToGammaSpace", target: this.props.block, onValueChanged: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                         } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_15__["CheckBoxLineComponent"], { label: "Convert to linear space", propertyName: "convertToLinearSpace", target: this.props.block, onValueChanged: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                         } })));
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialBlockConnectionPointTypes"].Vector3:
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_properties_vector3PropertyTabComponent__WEBPACK_IMPORTED_MODULE_7__["Vector3PropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }));
@@ -62292,13 +62619,13 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
                                     break;
                             }
                             _this.forceUpdate();
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                             _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                         } }),
                 inputBlock.visibleInInspector &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_14__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Group", propertyName: "groupInInspector", target: this.props.block, onChange: function () {
                             _this.forceUpdate();
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                             _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                         } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_11__["OptionsLineComponent"], { label: "Mode", options: modeOptions, target: inputBlock, noDirectUpdate: true, getSelection: function (block) {
@@ -62324,20 +62651,20 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
                                 break;
                         }
                         _this.forceUpdate();
-                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                         _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                     } }),
                 inputBlock.isAttribute &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_11__["OptionsLineComponent"], { label: "Attribute", valuesAreStrings: true, options: attributeOptions, target: inputBlock, propertyName: "name", onSelect: function (value) {
                             inputBlock.setAsAttribute(value);
                             _this.forceUpdate();
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                             _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                         } }),
                 inputBlock.isUniform && animationOptions.length > 0 &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_11__["OptionsLineComponent"], { label: "Animation type", options: animationOptions, target: inputBlock, propertyName: "animationType", onSelect: function (value) {
                             _this.forceUpdate();
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                             _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                         } }),
                 inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["AnimatedInputBlockTypes"].None &&
@@ -62346,7 +62673,7 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_11__["OptionsLineComponent"], { label: "System value", options: systemValuesOptions, target: inputBlock, propertyName: "systemValue", onSelect: function (value) {
                             inputBlock.setAsSystemValue(value);
                             _this.forceUpdate();
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                             _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                         } }),
                 inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["AnimatedInputBlockTypes"].None &&
@@ -62592,7 +62919,7 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
         });
     };
     TexturePropertyTabComponent.prototype.updateAfterTextureLoad = function () {
-        this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+        this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
         this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
         this.forceUpdate();
     };
@@ -62675,7 +63002,7 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
     TexturePropertyTabComponent.prototype.render = function () {
         var _this = this;
         var url = "";
-        var texture = this.textureBlock.texture;
+        var texture = this.textureBlock.hasImageSource ? null : this.textureBlock.texture;
         if (texture && texture.name && texture.name.substring(0, 4) !== "data") {
             url = texture.name;
         }
@@ -62730,90 +63057,92 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_genericNodePropertyComponent__WEBPACK_IMPORTED_MODULE_11__["GeneralPropertyTabComponent"], { globalState: this.props.globalState, block: this.props.block }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "PROPERTIES" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Auto select UV", propertyName: "autoSelectUV", target: this.props.block, onValueChanged: function () {
-                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                     } }),
                 !isInReflectionMode &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Convert to gamma space", propertyName: "convertToGammaSpace", target: this.props.block, onValueChanged: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                         } }),
                 !isInReflectionMode &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Convert to linear space", propertyName: "convertToLinearSpace", target: this.props.block, onValueChanged: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                         } }),
                 texture && showIsInGammaSpace &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Is in gamma space", propertyName: "gammaSpace", target: texture, onValueChanged: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                         } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Disable multiplying by level", propertyName: "disableLevelMultiplication", target: this.props.block, onValueChanged: function () {
-                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                     } }),
                 texture && texture.updateSamplingMode &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_10__["OptionsLineComponent"], { label: "Sampling", options: samplingMode, target: texture, noDirectUpdate: true, propertyName: "samplingMode", onSelect: function (value) {
                             texture.updateSamplingMode(value);
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                         } }),
                 texture && isInReflectionMode &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_10__["OptionsLineComponent"], { label: "Reflection mode", options: reflectionModeOptions, target: texture, propertyName: "coordinatesMode", onSelect: function (value) {
                             texture.coordinatesMode = value;
                             _this.forceUpdate();
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                         } }),
                 texture && !isInReflectionMode && !isFrozenTexture &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Clamp U", isSelected: function () { return texture.wrapU === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE; }, onSelect: function (value) {
                             texture.wrapU = value ? babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE : babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].WRAP_ADDRESSMODE;
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                         } }),
                 texture && !isInReflectionMode && !isFrozenTexture &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Clamp V", isSelected: function () { return texture.wrapV === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE; }, onSelect: function (value) {
                             texture.wrapV = value ? babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE : babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].WRAP_ADDRESSMODE;
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                         } }),
                 texture && !isInReflectionMode && !isFrozenTexture &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { globalState: this.props.globalState, label: "Offset U", target: texture, propertyName: "uOffset", onChange: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                         } }),
                 texture && !isInReflectionMode && !isFrozenTexture &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { globalState: this.props.globalState, label: "Offset V", target: texture, propertyName: "vOffset", onChange: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                         } }),
                 texture && !isInReflectionMode && !isFrozenTexture &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { globalState: this.props.globalState, label: "Scale U", target: texture, propertyName: "uScale", onChange: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                         } }),
                 texture && !isInReflectionMode && !isFrozenTexture &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { globalState: this.props.globalState, label: "Scale V", target: texture, propertyName: "vScale", onChange: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                         } }),
                 texture && !isInReflectionMode && !isFrozenTexture &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Rotation U", target: texture, globalState: this.props.globalState, propertyName: "uAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                         } }),
                 texture && !isInReflectionMode && !isFrozenTexture &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Rotation V", target: texture, globalState: this.props.globalState, propertyName: "vAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                         } }),
                 texture && !isInReflectionMode && !isFrozenTexture &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Rotation W", target: texture, globalState: this.props.globalState, propertyName: "wAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                         } })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "SOURCE" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Embed static texture", isSelected: function () { return _this.state.isEmbedded; }, onSelect: function (value) {
-                        _this.setState({ isEmbedded: value });
-                        _this.textureBlock.texture = null;
-                        _this.updateAfterTextureLoad();
-                    } }),
-                isInReflectionMode &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Load as cube texture", isSelected: function () { return _this.state.loadAsCubeTexture; }, onSelect: function (value) { return _this.setState({ loadAsCubeTexture: value }); } }),
-                isInReflectionMode && this.state.loadAsCubeTexture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Texture is prefiltered", isSelected: function () { return _this.state.textureIsPrefiltered; }, onSelect: function (value) { return _this.setState({ textureIsPrefiltered: value }); } }),
-                this.state.isEmbedded &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["FileButtonLineComponent"], { label: "Upload", onClick: function (file) { return _this.replaceTexture(file); }, accept: ".jpg, .png, .tga, .dds, .env" }),
-                !this.state.isEmbedded &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { label: "Link", globalState: this.props.globalState, value: url, onChange: function (newUrl) { return _this.replaceTextureWithUrl(newUrl); } }),
-                !this.state.isEmbedded && url &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_9__["ButtonLineComponent"], { label: "Refresh", onClick: function () { return _this.replaceTextureWithUrl(url + "?nocache=" + _this._generateRandomForCache()); } }),
-                texture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_9__["ButtonLineComponent"], { label: "Remove", onClick: function () { return _this.removeTexture(); } })),
+            !this.textureBlock.hasImageSource &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "SOURCE" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Embed static texture", isSelected: function () { return _this.state.isEmbedded; }, onSelect: function (value) {
+                            _this.setState({ isEmbedded: value });
+                            _this.textureBlock.texture = null;
+                            _this.updateAfterTextureLoad();
+                        } }),
+                    isInReflectionMode &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Load as cube texture", isSelected: function () { return _this.state.loadAsCubeTexture; }, onSelect: function (value) { return _this.setState({ loadAsCubeTexture: value }); } }),
+                    isInReflectionMode && this.state.loadAsCubeTexture &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Texture is prefiltered", isSelected: function () { return _this.state.textureIsPrefiltered; }, onSelect: function (value) { return _this.setState({ textureIsPrefiltered: value }); } }),
+                    this.state.isEmbedded &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["FileButtonLineComponent"], { label: "Upload", onClick: function (file) { return _this.replaceTexture(file); }, accept: ".jpg, .png, .tga, .dds, .env" }),
+                    !this.state.isEmbedded &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { label: "Link", globalState: this.props.globalState, value: url, onChange: function (newUrl) { return _this.replaceTextureWithUrl(newUrl); } }),
+                    !this.state.isEmbedded && url &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_9__["ButtonLineComponent"], { label: "Refresh", onClick: function () { return _this.replaceTextureWithUrl(url + "?nocache=" + _this._generateRandomForCache()); } }),
+                    texture &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_9__["ButtonLineComponent"], { label: "Remove", onClick: function () { return _this.removeTexture(); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_genericNodePropertyComponent__WEBPACK_IMPORTED_MODULE_11__["GenericPropertyTabComponent"], { globalState: this.props.globalState, block: this.props.block })));
     };
     return TexturePropertyTabComponent;
@@ -62930,7 +63259,7 @@ var TrigonometryPropertyTabComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_genericNodePropertyComponent__WEBPACK_IMPORTED_MODULE_5__["GeneralPropertyTabComponent"], { globalState: this.props.globalState, block: this.props.block }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "PROPERTIES" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_3__["OptionsLineComponent"], { label: "Operation", options: operationOptions, target: trigonometryBlock, propertyName: "operation", onSelect: function (value) {
-                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                         _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                         _this.forceUpdate();
                     } }))));
@@ -62960,6 +63289,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _properties_texturePropertyTabComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./properties/texturePropertyTabComponent */ "./diagram/properties/texturePropertyTabComponent.tsx");
 /* harmony import */ var _properties_trigonometryNodePropertyComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./properties/trigonometryNodePropertyComponent */ "./diagram/properties/trigonometryNodePropertyComponent.tsx");
 /* harmony import */ var _properties_conditionalNodePropertyComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./properties/conditionalNodePropertyComponent */ "./diagram/properties/conditionalNodePropertyComponent.tsx");
+/* harmony import */ var _properties_imageSourcePropertyTabComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./properties/imageSourcePropertyTabComponent */ "./diagram/properties/imageSourcePropertyTabComponent.tsx");
+
 
 
 
@@ -62988,6 +63319,7 @@ PropertyLedger.RegisteredControls["CurrentScreenBlock"] = _properties_texturePro
 PropertyLedger.RegisteredControls["ParticleTextureBlock"] = _properties_texturePropertyTabComponent__WEBPACK_IMPORTED_MODULE_5__["TexturePropertyTabComponent"];
 PropertyLedger.RegisteredControls["TrigonometryBlock"] = _properties_trigonometryNodePropertyComponent__WEBPACK_IMPORTED_MODULE_6__["TrigonometryPropertyTabComponent"];
 PropertyLedger.RegisteredControls["ConditionalBlock"] = _properties_conditionalNodePropertyComponent__WEBPACK_IMPORTED_MODULE_7__["ConditionalPropertyTabComponent"];
+PropertyLedger.RegisteredControls["ImageSourceBlock"] = _properties_imageSourcePropertyTabComponent__WEBPACK_IMPORTED_MODULE_8__["ImageSourcePropertyTabComponent"];
 
 
 /***/ }),
@@ -63352,11 +63684,12 @@ var GraphEditor = /** @class */ (function (_super) {
             if (!evt.ctrlKey || _this.props.globalState.blockKeyboardEvents) {
                 return;
             }
-            if (evt.key === "c") { // Copy
+            if (evt.key === "c" || evt.key === "C") { // Copy
                 _this._copiedNodes = [];
                 _this._copiedFrame = null;
                 if (_this._graphCanvas.selectedFrame) {
                     _this._copiedFrame = _this._graphCanvas.selectedFrame;
+                    _this._copiedFrame.serialize(true);
                     return;
                 }
                 var selectedItems = _this._graphCanvas.selectedNodes;
@@ -63369,7 +63702,7 @@ var GraphEditor = /** @class */ (function (_super) {
                 }
                 _this._copiedNodes = selectedItems.slice(0);
             }
-            else if (evt.key === "v") { // Paste
+            else if (evt.key === "v" || evt.key === "V") { // Paste
                 var rootElement = _this.props.globalState.hostDocument.querySelector(".diagram-container");
                 var zoomLevel = _this._graphCanvas.zoom;
                 var currentY = (_this._mouseLocationY - rootElement.offsetTop - _this._graphCanvas.y - 20) / zoomLevel;
@@ -63399,6 +63732,7 @@ var GraphEditor = /** @class */ (function (_super) {
                         }
                         _this._graphCanvas._frameIsMoving = false;
                     }
+                    newFrame.adjustPorts();
                     if (_this._copiedFrame.isCollapsed) {
                         newFrame.isCollapsed = true;
                     }
@@ -64729,6 +65063,7 @@ var FloatLineComponent = /** @class */ (function (_super) {
     function FloatLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
+        _this._onFocus = false;
         var currentValue = _this.props.target[_this.props.propertyName];
         _this.state = { value: currentValue ? (_this.props.isInteger ? currentValue.toFixed(0) : currentValue.toFixed(_this.props.digits || 4)) : "0" };
         _this._store = currentValue;
@@ -64753,6 +65088,13 @@ var FloatLineComponent = /** @class */ (function (_super) {
             return true;
         }
         return false;
+    };
+    FloatLineComponent.prototype.componentWillUnmount = function () {
+        if (this._onFocus) {
+            if (this.props.onEnter) {
+                this.props.onEnter(this._store);
+            }
+        }
     };
     FloatLineComponent.prototype.raiseOnPropertyChanged = function (newValue, previousValue) {
         if (this.props.onChange) {
@@ -64802,6 +65144,7 @@ var FloatLineComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: className },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", step: this.props.step || "0.01", className: "numeric-input", onBlur: function (evt) {
+                        _this._onFocus = false;
                         _this.props.globalState.blockKeyboardEvents = false;
                         if (_this.props.onEnter) {
                             _this.props.onEnter(_this._store);
@@ -64813,7 +65156,10 @@ var FloatLineComponent = /** @class */ (function (_super) {
                         if (_this.props.onEnter) {
                             _this.props.onEnter(_this._store);
                         }
-                    }, onFocus: function () { return _this.props.globalState.blockKeyboardEvents = true; }, value: this.state.value, onChange: function (evt) { return _this.updateValue(evt.target.value); } })))));
+                    }, onFocus: function () {
+                        _this.props.globalState.blockKeyboardEvents = true;
+                        _this._onFocus = true;
+                    }, value: this.state.value, onChange: function (evt) { return _this.updateValue(evt.target.value); } })))));
     };
     return FloatLineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -65212,11 +65558,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 
 
-var ListLineOption = /** @class */ (function () {
-    function ListLineOption() {
-    }
-    return ListLineOption;
-}());
 var OptionsLineComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(OptionsLineComponent, _super);
     function OptionsLineComponent(props) {
@@ -65509,6 +65850,7 @@ var TextInputLineComponent = /** @class */ (function (_super) {
     function TextInputLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
+        _this._onFocus = false;
         _this.state = { value: _this.props.value !== undefined ? _this.props.value : _this.props.target[_this.props.propertyName] || "" };
         return _this;
     }
@@ -65523,6 +65865,11 @@ var TextInputLineComponent = /** @class */ (function (_super) {
             return true;
         }
         return false;
+    };
+    TextInputLineComponent.prototype.componentWillUnmount = function () {
+        if (this._onFocus) {
+            this.updateValue(this.state.value, true);
+        }
     };
     TextInputLineComponent.prototype.raiseOnPropertyChanged = function (newValue, previousValue) {
         if (this.props.onChange) {
@@ -65553,12 +65900,6 @@ var TextInputLineComponent = /** @class */ (function (_super) {
         }
         if (this.props.propertyName) {
             this.props.target[this.props.propertyName] = value;
-            if (this.props.propertyName === "name") {
-                if (this.props.target[this.props.propertyName] !== value) {
-                    // Name was rejected
-                    this.setState({ value: this.props.target[this.props.propertyName] });
-                }
-            }
         }
     };
     TextInputLineComponent.prototype.render = function () {
@@ -65567,7 +65908,10 @@ var TextInputLineComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value" },
                 this.props.multilines && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("textarea", { value: this.state.value, onFocus: function () { return _this.props.globalState.blockKeyboardEvents = true; }, onChange: function (evt) { return _this.updateValue(evt.target.value, false); }, onKeyDown: function (evt) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("textarea", { value: this.state.value, onFocus: function () {
+                            _this.props.globalState.blockKeyboardEvents = true;
+                            _this._onFocus = true;
+                        }, onChange: function (evt) { return _this.updateValue(evt.target.value, false); }, onKeyDown: function (evt) {
                             if (evt.keyCode !== 13) {
                                 return;
                             }
@@ -65575,9 +65919,13 @@ var TextInputLineComponent = /** @class */ (function (_super) {
                         }, onBlur: function (evt) {
                             _this.updateValue(evt.target.value, true);
                             _this.props.globalState.blockKeyboardEvents = false;
+                            _this._onFocus = false;
                         } })),
                 !this.props.multilines && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { value: this.state.value, onFocus: function () { return _this.props.globalState.blockKeyboardEvents = true; }, onChange: function (evt) { return _this.updateValue(evt.target.value, false); }, onKeyDown: function (evt) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { value: this.state.value, onFocus: function () {
+                            _this.props.globalState.blockKeyboardEvents = true;
+                            _this._onFocus = true;
+                        }, onChange: function (evt) { return _this.updateValue(evt.target.value, false); }, onKeyDown: function (evt) {
                             if (evt.keyCode !== 13) {
                                 return;
                             }
@@ -65585,6 +65933,7 @@ var TextInputLineComponent = /** @class */ (function (_super) {
                         }, onBlur: function (evt) {
                             _this.updateValue(evt.target.value, true);
                             _this.props.globalState.blockKeyboardEvents = false;
+                            _this._onFocus = false;
                         } })))));
     };
     return TextInputLineComponent;

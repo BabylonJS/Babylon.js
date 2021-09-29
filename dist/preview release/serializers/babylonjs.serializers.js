@@ -3786,59 +3786,54 @@ var _Exporter = /** @class */ (function () {
      * @returns Node mapping of unique id to index
      */
     _Exporter.prototype.createSkinsAsync = function (babylonScene, nodeMap, binaryWriter) {
+        var _a;
         var promiseChain = Promise.resolve();
         var skinMap = {};
-        var _loop_2 = function (skeleton) {
+        for (var _i = 0, _b = babylonScene.skeletons; _i < _b.length; _i++) {
+            var skeleton = _b[_i];
             // create skin
             var skin = { joints: [] };
             var inverseBindMatrices = [];
-            var skeletonMesh = babylonScene.meshes.find(function (mesh) { mesh.skeleton === skeleton; });
-            skin.skeleton = skeleton.overrideMesh === null ? (skeletonMesh ? nodeMap[skeletonMesh.uniqueId] : undefined) : nodeMap[skeleton.overrideMesh.uniqueId];
             var boneIndexMap = {};
-            var boneIndexMax = -1;
-            var boneIndex = -1;
-            for (var _b = 0, _c = skeleton.bones; _b < _c.length; _b++) {
-                var bone = _c[_b];
-                boneIndex = bone.getIndex();
-                if (boneIndex > -1) {
+            var maxBoneIndex = -1;
+            for (var i = 0; i < skeleton.bones.length; ++i) {
+                var bone = skeleton.bones[i];
+                var boneIndex = (_a = bone.getIndex()) !== null && _a !== void 0 ? _a : i;
+                if (boneIndex !== -1) {
                     boneIndexMap[boneIndex] = bone;
+                    if (boneIndex > maxBoneIndex) {
+                        maxBoneIndex = boneIndex;
+                    }
                 }
-                boneIndexMax = Math.max(boneIndexMax, boneIndex);
             }
-            for (var i = 0; i <= boneIndexMax; ++i) {
-                var bone = boneIndexMap[i];
+            for (var boneIndex = 0; boneIndex <= maxBoneIndex; ++boneIndex) {
+                var bone = boneIndexMap[boneIndex];
+                inverseBindMatrices.push(bone.getInvertedAbsoluteTransform());
                 var transformNode = bone.getTransformNode();
                 if (transformNode) {
-                    var boneMatrix = bone.getInvertedAbsoluteTransform();
-                    if (this_2._convertToRightHandedSystem) {
-                        _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._GetRightHandedMatrixFromRef(boneMatrix);
-                    }
-                    inverseBindMatrices.push(boneMatrix);
                     skin.joints.push(nodeMap[transformNode.uniqueId]);
+                }
+                else {
+                    babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Exporting a bone without a linked transform node is currently unsupported");
                 }
             }
             // create buffer view for inverse bind matrices
             var byteStride = 64; // 4 x 4 matrix of 32 bit float
             var byteLength = inverseBindMatrices.length * byteStride;
             var bufferViewOffset = binaryWriter.getByteOffset();
-            var bufferView = _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._CreateBufferView(0, bufferViewOffset, byteLength, byteStride, "InverseBindMatrices" + " - " + skeleton.name);
-            this_2._bufferViews.push(bufferView);
-            var bufferViewIndex = this_2._bufferViews.length - 1;
+            var bufferView = _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._CreateBufferView(0, bufferViewOffset, byteLength, undefined, "InverseBindMatrices" + " - " + skeleton.name);
+            this._bufferViews.push(bufferView);
+            var bufferViewIndex = this._bufferViews.length - 1;
             var bindMatrixAccessor = _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._CreateAccessor(bufferViewIndex, "InverseBindMatrices" + " - " + skeleton.name, "MAT4" /* MAT4 */, 5126 /* FLOAT */, inverseBindMatrices.length, null, null, null);
-            var inverseBindAccessorIndex = this_2._accessors.push(bindMatrixAccessor) - 1;
+            var inverseBindAccessorIndex = this._accessors.push(bindMatrixAccessor) - 1;
             skin.inverseBindMatrices = inverseBindAccessorIndex;
-            this_2._skins.push(skin);
-            skinMap[skeleton.uniqueId] = this_2._skins.length - 1;
+            this._skins.push(skin);
+            skinMap[skeleton.uniqueId] = this._skins.length - 1;
             inverseBindMatrices.forEach(function (mat) {
                 mat.m.forEach(function (cell) {
                     binaryWriter.setFloat32(cell);
                 });
             });
-        };
-        var this_2 = this;
-        for (var _i = 0, _a = babylonScene.skeletons; _i < _a.length; _i++) {
-            var skeleton = _a[_i];
-            _loop_2(skeleton);
         }
         return promiseChain.then(function () {
             return skinMap;
@@ -5485,10 +5480,6 @@ var _GLTFUtilities = /** @class */ (function () {
             tangent.z /= length;
         }
     };
-    _GLTFUtilities._GetRightHandedMatrixFromRef = function (matrix) {
-        var m = matrix.m;
-        babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Matrix"].FromValuesToRef(m[0], m[1], -m[2], m[3], m[4], m[5], -m[6], m[7], -m[8], m[9], m[10], m[11], m[12], m[13], m[14], m[15], matrix);
-    };
     _GLTFUtilities._GetDataAccessorElementCount = function (accessorType) {
         switch (accessorType) {
             case "MAT2" /* MAT2 */:
@@ -5579,12 +5570,12 @@ __webpack_require__.r(__webpack_exports__);
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "textureTransformPixelShader", function() { return textureTransformPixelShader; });
-/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Maths/math.vector");
-/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var babylonjs_Engines_shaderStore__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Engines/shaderStore */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Engines_shaderStore__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Engines_shaderStore__WEBPACK_IMPORTED_MODULE_0__);
 
 var name = 'textureTransformPixelShader';
 var shader = "precision highp float;\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\nuniform mat4 textureTransformMat;\nvoid main(void) {\nvec2 uvTransformed=(textureTransformMat*vec4(vUV.xy,1,1)).xy;\ngl_FragColor=texture2D(textureSampler,uvTransformed);\n}";
-babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__["Effect"].ShadersStore[name] = shader;
+babylonjs_Engines_shaderStore__WEBPACK_IMPORTED_MODULE_0__["ShaderStore"].ShadersStore[name] = shader;
 /** @hidden */
 var textureTransformPixelShader = { name: name, shader: shader };
 

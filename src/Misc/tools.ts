@@ -353,10 +353,11 @@ export class Tools {
      * @param onError callback called when the image fails to load
      * @param offlineProvider offline provider for caching
      * @param mimeType optional mime type
+     * @param imageBitmapOptions optional the options to use when creating an ImageBitmap
      * @returns the HTMLImageElement of the loaded image
      */
-    public static LoadImage(input: string | ArrayBuffer | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string): Nullable<HTMLImageElement> {
-        return FileTools.LoadImage(input, onLoad, onError, offlineProvider, mimeType);
+    public static LoadImage(input: string | ArrayBuffer | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string, imageBitmapOptions?: ImageBitmapOptions): Nullable<HTMLImageElement> {
+        return FileTools.LoadImage(input, onLoad, onError, offlineProvider, mimeType, imageBitmapOptions);
     }
 
     /**
@@ -617,8 +618,9 @@ export class Tools {
      * @param fileName defines the filename to download. If present, the result will automatically be downloaded
      * @param invertY true to invert the picture in the Y dimension
      * @param toArrayBuffer true to convert the data to an ArrayBuffer (encoded as `mimeType`) instead of a base64 string
+     * @param quality defines the quality of the result
      */
-    public static DumpData(width: number, height: number, data: ArrayBufferView, successCallback?: (data: string | ArrayBuffer) => void, mimeType: string = "image/png", fileName?: string, invertY = false, toArrayBuffer = false) {
+    public static DumpData(width: number, height: number, data: ArrayBufferView, successCallback?: (data: string | ArrayBuffer) => void, mimeType: string = "image/png", fileName?: string, invertY = false, toArrayBuffer = false, quality?: number) {
         // Create a 2D canvas to store the result
         if (!Tools._ScreenshotCanvas) {
             Tools._ScreenshotCanvas = document.createElement("canvas");
@@ -674,9 +676,9 @@ export class Tools {
                         }
                     };
                     fileReader.readAsArrayBuffer(blob!);
-                });
+                }, mimeType, quality);
             } else {
-                Tools.EncodeScreenshotCanvasData(successCallback, mimeType, fileName, canvas);
+                Tools.EncodeScreenshotCanvasData(successCallback, mimeType, fileName, canvas, quality);
             }
         }
     }
@@ -686,16 +688,16 @@ export class Tools {
      * @param width defines the rendering width
      * @param height defines the rendering height
      * @param data the data array
-     * @param successCallback defines the callback triggered once the data are available
      * @param mimeType defines the mime type of the result
      * @param fileName defines the filename to download. If present, the result will automatically be downloaded
      * @param invertY true to invert the picture in the Y dimension
      * @param toArrayBuffer true to convert the data to an ArrayBuffer (encoded as `mimeType`) instead of a base64 string
+     * @param quality defines the quality of the result
      * @return a promise that resolve to the final data
      */
-    public static DumpDataAsync(width: number, height: number, data: ArrayBufferView, mimeType: string = "image/png", fileName?: string, invertY = false, toArrayBuffer = false): Promise<string | ArrayBuffer> {
+    public static DumpDataAsync(width: number, height: number, data: ArrayBufferView, mimeType: string = "image/png", fileName?: string, invertY = false, toArrayBuffer = false, quality?: number): Promise<string | ArrayBuffer> {
         return new Promise((resolve) => {
-            Tools.DumpData(width, height, data, (result) => resolve(result), mimeType, fileName, invertY, toArrayBuffer);
+            Tools.DumpData(width, height, data, (result) => resolve(result), mimeType, fileName, invertY, toArrayBuffer, quality);
         });
     }
 
@@ -705,8 +707,9 @@ export class Tools {
      * @param canvas Defines the canvas to extract the data from
      * @param successCallback Defines the callback triggered once the data are available
      * @param mimeType Defines the mime type of the result
+     * @param quality defines the quality of the result
      */
-    static ToBlob(canvas: HTMLCanvasElement, successCallback: (blob: Nullable<Blob>) => void, mimeType: string = "image/png"): void {
+    static ToBlob(canvas: HTMLCanvasElement, successCallback: (blob: Nullable<Blob>) => void, mimeType: string = "image/png", quality?: number): void {
         // We need HTMLCanvasElement.toBlob for HD screenshots
         if (!canvas.toBlob) {
             //  low performance polyfill based on toDataURL (https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob)
@@ -725,7 +728,7 @@ export class Tools {
         }
         canvas.toBlob(function (blob) {
             successCallback(blob);
-        }, mimeType);
+        }, mimeType, quality);
     }
 
     /**
@@ -734,10 +737,11 @@ export class Tools {
      * @param mimeType defines the mime type of the result
      * @param fileName defines he filename to download. If present, the result will automatically be downloaded
      * @param canvas canvas to get the data from. If not provided, use the default screenshot canvas
+     * @param quality defines the quality of the result
      */
-    static EncodeScreenshotCanvasData(successCallback?: (data: string) => void, mimeType: string = "image/png", fileName?: string, canvas?: HTMLCanvasElement): void {
+    static EncodeScreenshotCanvasData(successCallback?: (data: string) => void, mimeType: string = "image/png", fileName?: string, canvas?: HTMLCanvasElement, quality?: number): void {
         if (successCallback) {
-            var base64Image = (canvas ?? Tools._ScreenshotCanvas).toDataURL(mimeType);
+            var base64Image = (canvas ?? Tools._ScreenshotCanvas).toDataURL(mimeType, quality);
             successCallback(base64Image);
         }
         else {
@@ -764,7 +768,7 @@ export class Tools {
                     img.src = url;
                     newWindow.document.body.appendChild(img);
                 }
-            }, mimeType);
+            }, mimeType, quality);
         }
     }
 
@@ -1215,6 +1219,10 @@ export class Tools {
      * @returns whether or not the current user agent is safari
      */
     public static IsSafari(): boolean {
+        if (!DomManagement.IsNavigatorAvailable()) {
+            return false;
+        }
+
         return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     }
 }

@@ -4,7 +4,7 @@ import { Observable } from "babylonjs/Misc/observable";
 import { KeyPointComponent } from "./graph/keyPoint";
 import { Scene } from "babylonjs/scene";
 import { IAnimatable } from "babylonjs/Animations/animatable.interface";
-import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
+import { AnimationGroup, TargetedAnimation } from "babylonjs/Animations/animationGroup";
 import { Animatable } from "babylonjs/Animations/animatable";
 
 export class Context {
@@ -12,6 +12,7 @@ export class Context {
     animations: Nullable<Animation[] | TargetedAnimation[]>;
     scene: Scene;
     target: Nullable<IAnimatable>;
+    rootAnimationGroup: Nullable<AnimationGroup>;
     activeAnimations: Animation[] = [];
     activeChannels: {[key: number]: string} = {};
     activeKeyPoints: Nullable<KeyPointComponent[]>;
@@ -31,6 +32,7 @@ export class Context {
     onActiveAnimationChanged = new Observable<void>();
     onActiveKeyPointChanged = new Observable<void>();
     onHostWindowResized = new Observable<void>();
+    onSelectAllKeys = new Observable<void>();
 
     onActiveKeyFrameChanged = new Observable<number>();
 
@@ -98,21 +100,37 @@ export class Context {
         this.scene.stopAnimation(this.target);
         let animatable: Animatable;
         if (forward) {
-            animatable = this.scene.beginAnimation(this.target, this.fromKey, this.toKey, true);
+            if (this.rootAnimationGroup) {
+                this.rootAnimationGroup.start(true, 1.0, this.fromKey, this.toKey);
+            } else {    
+                animatable = this.scene.beginAnimation(this.target, this.fromKey, this.toKey, true);
+            }
         } else {
-            animatable = this.scene.beginAnimation(this.target, this.toKey, this.fromKey, true);
+            if (this.rootAnimationGroup) {
+                this.rootAnimationGroup.start(true, 1.0, this.toKey, this.fromKey);
+            } else {    
+                animatable = this.scene.beginAnimation(this.target, this.toKey, this.fromKey, true);
+            }
         }
         this.forwardAnimation = forward;
 
         // Move
-        animatable.goToFrame(this.activeFrame);
+        if (this.rootAnimationGroup) {
+            this.rootAnimationGroup.goToFrame(this.activeFrame);
+        } else { 
+            animatable!.goToFrame(this.activeFrame);
+        }
 
         this.onAnimationStateChanged.notifyObservers();
     }
 
     public stop() {
         this.isPlaying = false;
-        this.scene.stopAnimation(this.target);
+        if (this.rootAnimationGroup) {
+            this.rootAnimationGroup.stop();
+        } else {
+            this.scene.stopAnimation(this.target);
+        }
 
         this.onAnimationStateChanged.notifyObservers();
     }
@@ -125,7 +143,11 @@ export class Context {
         this.activeFrame = frame;
 
         if (!this.isPlaying) {
-            this.scene.beginAnimation(this.target, this.fromKey, this.toKey, false);
+            if (this.rootAnimationGroup) {
+                this.rootAnimationGroup.start(false, 1.0, this.fromKey, this.toKey);
+            } else { 
+                this.scene.beginAnimation(this.target, this.fromKey, this.toKey, false);
+            }
         }
 
         for (var animationEntry of this.animations) {

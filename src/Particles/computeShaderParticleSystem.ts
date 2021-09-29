@@ -14,6 +14,8 @@ import { ComputeBindingMapping } from "../Engines/Extensions/engine.computeShade
 import { Effect } from "../Materials/effect";
 import { _TypeStore } from "../Misc/typeStore";
 
+import "../ShadersWGSL/gpuUpdateParticles.compute";
+
 /** @hidden */
 export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
 
@@ -44,8 +46,8 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
             "params": { group: 0, binding: 0 },
             "particlesIn": { group: 0, binding: 1 },
             "particlesOut": { group: 0, binding: 2 },
-            "randomTexture": { group: 0, binding: 4 },
-            "randomTexture2": { group: 0, binding: 6 },
+            "randomTexture": { group: 0, binding: 3 },
+            "randomTexture2": { group: 0, binding: 4 },
         };
         if (this._parent._sizeGradientsTexture) {
             bindingsMapping["sizeGradientTexture"] = { group: 1, binding: 1 };
@@ -74,6 +76,7 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
         this._simParamsComputeShader.addUniform("currentCount", 1);
         this._simParamsComputeShader.addUniform("timeDelta", 1);
         this._simParamsComputeShader.addUniform("stopFactor", 1);
+        this._simParamsComputeShader.addUniform("randomTextureSize", 1);
         this._simParamsComputeShader.addUniform("lifeTime", 2);
         this._simParamsComputeShader.addUniform("emitPower", 2);
         if (!this._parent._colorGradientsTexture) {
@@ -88,7 +91,7 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
             this._simParamsComputeShader.addUniform("limitVelocityDamping", 1);
         }
         if (this._parent.isAnimationSheetEnabled) {
-            this._simParamsComputeShader.addUniform("cellInfos", 3);
+            this._simParamsComputeShader.addUniform("cellInfos", 4);
         }
         if (this._parent.noiseTexture) {
             this._simParamsComputeShader.addUniform("noiseStrength", 3);
@@ -128,8 +131,8 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
     public updateParticleBuffer(index: number, targetBuffer: Buffer, currentActiveCount: number): void {
         this._simParamsComputeShader.update();
 
-        this._updateComputeShader.setTexture("randomTexture", this._parent._randomTexture);
-        this._updateComputeShader.setTexture("randomTexture2", this._parent._randomTexture2);
+        this._updateComputeShader.setTexture("randomTexture", this._parent._randomTexture, false);
+        this._updateComputeShader.setTexture("randomTexture2", this._parent._randomTexture2, false);
         if (this._parent._sizeGradientsTexture) {
             this._updateComputeShader.setTexture("sizeGradientTexture", this._parent._sizeGradientsTexture);
         }

@@ -327,12 +327,13 @@ export class AdvancedDynamicTexture extends DynamicTexture {
    * @param samplingMode defines the texture sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
    * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
    */
-    constructor(name: string, width = 0, height = 0, scene: Nullable<Scene>, generateMipMaps = false, samplingMode = Texture.NEAREST_SAMPLINGMODE, invertY?: boolean) {
+    constructor(name: string, width = 0, height = 0, scene: Nullable<Scene>, generateMipMaps = false, samplingMode = Texture.NEAREST_SAMPLINGMODE, invertY = true) {
         super(name, { width: width, height: height }, scene, generateMipMaps, samplingMode, Constants.TEXTUREFORMAT_RGBA, invertY);
         scene = this.getScene();
         if (!scene || !this._texture) {
             return;
         }
+        this.applyYInversionOnUpdate = invertY;
         this._rootElement = scene.getEngine().getInputElement();
         this._renderObserver = scene.onBeforeCameraRenderObservable.add((camera: Camera) => this._checkUpdate(camera));
         this._preKeyboardObserver = scene.onPreKeyboardObservable.add((info) => {
@@ -902,6 +903,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             Object.entries(this._lastControlDown).forEach(([key, value]) => {
                 value._onCanvasBlur();
             });
+            this.focusedControl = null;
             this._lastControlDown = {};
         });
     }
@@ -957,6 +959,36 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             });
 
             request.open("GET", AdvancedDynamicTexture.SnippetUrl + "/" + snippetId.replace(/#/g, "/"));
+            request.send();
+        });
+    }
+
+    /**
+    * Recreate the content of the ADT from a url json
+    * @param url defines the url to load
+    * @returns a promise that will resolve on success
+    */
+    public parseFromURLAsync(url: string): Promise<void> {
+        if (url === "") {
+            return Promise.resolve();
+        }
+
+        return new Promise((resolve, reject) => {
+            var request = new WebRequest();
+            request.addEventListener("readystatechange", () => {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        var gui = request.responseText;
+                        let serializationObject = JSON.parse(gui);
+                        this.parseContent(serializationObject);
+
+                        resolve();
+                    } else {
+                        reject("Unable to load");
+                    }
+                }
+            });
+            request.open("GET", url);
             request.send();
         });
     }

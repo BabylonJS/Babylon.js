@@ -716,7 +716,7 @@ export abstract class EffectLayer {
         }
 
         const reverse = sideOrientation === Material.ClockWiseSideOrientation;
-        engine.setState(material.backFaceCulling, material.zOffset, undefined, reverse, material.cullBackFaces);
+        engine.setState(material.backFaceCulling, material.zOffset, undefined, reverse, material.cullBackFaces, undefined, material.zOffsetUnits);
 
         // Managing instances
         var batch = renderingMesh._getInstancesRenderList(subMesh._id, !!replacementMesh);
@@ -743,7 +743,8 @@ export abstract class EffectLayer {
 
             engine.enableEffect(this._effectLayerMapGenerationDrawWrapper);
             if (!hardwareInstancedRendering) {
-                renderingMesh._bind(subMesh, effect, Material.TriangleFillMode);
+                const fillMode = scene.forcePointsCloud ? Material.PointFillMode : scene.forceWireframe ? Material.WireFrameFillMode : material.fillMode;
+                renderingMesh._bind(subMesh, effect, fillMode);
             }
 
             effect.setMatrix("viewProjection", scene.getTransformMatrix());
