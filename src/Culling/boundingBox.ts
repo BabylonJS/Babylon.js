@@ -7,6 +7,8 @@ import { ICullable } from "./boundingInfo";
 import { Epsilon } from '../Maths/math.constants';
 import { Plane } from '../Maths/math.plane';
 
+declare type DrawWrapper = import("../Materials/drawWrapper").DrawWrapper;
+
 /**
  * Class used to store bounding box information
  */
@@ -63,6 +65,11 @@ export class BoundingBox implements ICullable {
      * @hidden
      */
     public _tag: number;
+
+    /** @hidden */
+    public _drawWrapperFront: DrawWrapper;
+    /** @hidden */
+    public _drawWrapperBack: DrawWrapper;
 
     /**
      * Creates a new bounding box
