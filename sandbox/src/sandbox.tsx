@@ -8,7 +8,7 @@ import { EnvironmentTools } from "./tools/environmentTools";
 import { Vector3 } from "babylonjs/Maths/math.vector";
 import { Deferred } from "babylonjs/Misc/deferred";
 import { Scene } from "babylonjs/scene";
-import { ScreenshotTools } from "babylonjs/Misc/screenshotTools";
+import { CreateScreenshotAsync } from "babylonjs/Misc/screenshotTools";
 import { IScreenshotSize } from "babylonjs/Misc/interfaces/screenshotSize";
 import { Color3, Color4 } from "babylonjs/Maths/math";
 
@@ -216,7 +216,7 @@ export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: b
 
     public static CaptureScreenshotAsync(size: IScreenshotSize | number, mimeType?: string): Promise<string> {
         return this._sceneLoadedDeferred.promise.then((scene) => {
-            return ScreenshotTools.CreateScreenshotAsync(scene.getEngine(), scene.activeCamera!, size, mimeType);
+            return CreateScreenshotAsync(scene.getEngine(), scene.activeCamera!, size, mimeType);
         });
     }
 }
