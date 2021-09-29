@@ -127,7 +127,7 @@ ThinEngine.prototype._createDepthStencilTexture = function (size: TextureSize, o
         internalOptions.comparisonFunction === 0 ? false : internalOptions.bilinearFiltering,
         internalOptions.comparisonFunction
     );
-    
+
     rtWrapper._depthStencilTexture = internalTexture;
     rtWrapper._depthStencilTextureWithStencil = internalOptions.generateStencil;
 
