@@ -206,7 +206,7 @@ export class FileTools {
 
             if (onError) {
                 const inputText = url || input.toString();
-                onError(`Error while trying to load image: ${inputText}`, err);
+                onError(`Error while trying to load image: ${((inputText.indexOf('http') === 0 || inputText.length < 64) ? inputText : inputText.slice(0, 64) + "...")}`, err);
             }
 
             if (usingObjectURL && img.src) {
