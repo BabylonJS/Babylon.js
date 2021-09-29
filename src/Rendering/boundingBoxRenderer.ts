@@ -11,14 +11,16 @@ import { BoundingBox } from "../Culling/boundingBox";
 import { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { ShaderMaterial } from "../Materials/shaderMaterial";
-
-import "../Meshes/Builders/boxBuilder";
-
-import "../Shaders/color.fragment";
-import "../Shaders/color.vertex";
 import { DataBuffer } from '../Buffers/dataBuffer';
 import { Color3 } from '../Maths/math.color';
 import { Observable } from '../Misc/observable';
+import { DrawWrapper } from "../Materials/drawWrapper";
+import { UniformBuffer } from "../Materials/uniformBuffer";
+
+import "../Meshes/Builders/boxBuilder";
+
+import "../Shaders/boundingBoxRenderer.fragment";
+import "../Shaders/boundingBoxRenderer.vertex";
 
 declare module "../scene" {
     export interface Scene {
@@ -150,6 +152,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
     private _indexBuffer: DataBuffer;
     private _fillIndexBuffer: Nullable<DataBuffer> = null;
     private _fillIndexData: Nullable<IndicesArray> = null;
+    private _uniformBuffer: UniformBuffer;
 
     /**
      * Instantiates a new bounding box renderer in a scene.
@@ -158,6 +161,17 @@ export class BoundingBoxRenderer implements ISceneComponent {
     constructor(scene: Scene) {
         this.scene = scene;
         scene._addComponent(this);
+        this._uniformBuffer = new UniformBuffer(this.scene.getEngine(), undefined, undefined, "BoundingBoxRenderer");
+        this._buildUniformLayout();
+    }
+
+    private _buildUniformLayout(): void {
+        const ubo = this._uniformBuffer;
+        ubo.addUniform("color", 4);
+        ubo.addUniform("world", 16);
+        ubo.addUniform("viewProjection", 16);
+        ubo.addUniform("viewProjectionR", 16);
+        ubo.create();
     }
 
     /**
@@ -196,10 +210,11 @@ export class BoundingBoxRenderer implements ISceneComponent {
             return;
         }
 
-        this._colorShader = new ShaderMaterial("colorShader", this.scene, "color",
+        this._colorShader = new ShaderMaterial("colorShader", this.scene, "boundingBoxRenderer",
             {
                 attributes: [VertexBuffer.PositionKind],
-                uniforms: ["world", "viewProjection", "color"]
+                uniforms: ["world", "viewProjection", "color"],
+                uniformBuffers: ["BoundingBoxRenderer"]
             });
 
         this._colorShader.reservedDataStore = {
@@ -254,12 +269,22 @@ export class BoundingBoxRenderer implements ISceneComponent {
 
         var engine = this.scene.getEngine();
         engine.setDepthWrite(false);
-        this._colorShader._preBind();
+
+        const frontColor = this.frontColor.toColor4();
+        const backColor = this.backColor.toColor4();
+        const transformMatrix = this.scene.getTransformMatrix();
 
         for (var boundingBoxIndex = 0; boundingBoxIndex < this.renderList.length; boundingBoxIndex++) {
             var boundingBox = this.renderList.data[boundingBoxIndex];
             if (boundingBox._tag !== renderingGroupId) {
                 continue;
+            }
+            if (!boundingBox._drawWrapperFront && engine._features.createDrawWrapperPerRenderPass) {
+                boundingBox._drawWrapperFront = new DrawWrapper(engine);
+                boundingBox._drawWrapperBack = new DrawWrapper(engine);
+
+                boundingBox._drawWrapperFront.setEffect(this._colorShader.getEffect());
+                boundingBox._drawWrapperBack.setEffect(this._colorShader.getEffect());
             }
 
             this.onBeforeBoxRenderingObservable.notifyObservers(boundingBox);
@@ -273,25 +298,36 @@ export class BoundingBoxRenderer implements ISceneComponent {
                 .multiply(Matrix.Translation(median.x, median.y, median.z))
                 .multiply(boundingBox.getWorldMatrix());
 
-            // VBOs
-            engine.bindBuffers(this._vertexBuffers, this._indexBuffer, <Effect>this._colorShader.getEffect());
-
             const useReverseDepthBuffer = engine.useReverseDepthBuffer;
 
             if (this.showBackLines) {
+                const drawWrapperBack = boundingBox._drawWrapperBack ?? this._colorShader._getDrawWrapper();
+
+                this._colorShader._preBind(drawWrapperBack);
+
+                engine.bindBuffers(this._vertexBuffers, this._indexBuffer, <Effect>this._colorShader.getEffect());
+
                 // Back
                 if (useReverseDepthBuffer) {
                     engine.setDepthFunctionToLessOrEqual();
                 } else {
                     engine.setDepthFunctionToGreaterOrEqual();
                 }
-                this.scene.resetCachedMaterial();
-                this._colorShader.setColor4("color", this.backColor.toColor4());
-                this._colorShader.bind(worldMatrix);
+                this._uniformBuffer.bindToEffect(drawWrapperBack.effect!, "BoundingBoxRenderer");
+                this._uniformBuffer.updateDirectColor4("color", backColor);
+                this._uniformBuffer.updateMatrix("world", worldMatrix);
+                this._uniformBuffer.updateMatrix("viewProjection", transformMatrix);
+                this._uniformBuffer.update();
 
                 // Draw order
                 engine.drawElementsType(Material.LineListDrawMode, 0, 24);
             }
+
+            const drawWrapperFront = boundingBox._drawWrapperFront ?? this._colorShader._getDrawWrapper();
+
+            this._colorShader._preBind(drawWrapperFront);
+
+            engine.bindBuffers(this._vertexBuffers, this._indexBuffer, <Effect>this._colorShader.getEffect());
 
             // Front
             if (useReverseDepthBuffer) {
@@ -299,9 +335,11 @@ export class BoundingBoxRenderer implements ISceneComponent {
             } else {
                 engine.setDepthFunctionToLess();
             }
-            this.scene.resetCachedMaterial();
-            this._colorShader.setColor4("color", this.frontColor.toColor4());
-            this._colorShader.bind(worldMatrix);
+            this._uniformBuffer.bindToEffect(drawWrapperFront.effect!, "BoundingBoxRenderer");
+            this._uniformBuffer.updateDirectColor4("color", frontColor);
+            this._uniformBuffer.updateMatrix("world", worldMatrix);
+            this._uniformBuffer.updateMatrix("viewProjection", transformMatrix);
+            this._uniformBuffer.update();
 
             // Draw order
             engine.drawElementsType(Material.LineListDrawMode, 0, 24);
@@ -373,6 +411,8 @@ export class BoundingBoxRenderer implements ISceneComponent {
         this.renderList.dispose();
 
         this._colorShader.dispose();
+
+        this._uniformBuffer.dispose();
 
         var buffer = this._vertexBuffers[VertexBuffer.PositionKind];
         if (buffer) {
