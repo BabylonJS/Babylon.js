@@ -368,12 +368,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                 icon: buttonIcon,
                 onClick: () => { this.onCreate("TextButton") }
             },
-
-            {
-                label: "ImageButton",
-                icon: buttonIcon,
-                onClick: () => { this.onCreate("ImageButton") }
-            },
             {
                 label: "Checkbox",
                 icon: checkboxIcon,
