@@ -290,6 +290,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     loadToEditor() {
+        const size = this.globalState.guiTexture.getSize();
+        this.resizeGuiTexture(new Vector2(size.width,size.height));
         var children = this.globalState.guiTexture.getChildren();
         children[0].children.forEach(guiElement => {
             if (guiElement.name === "Art-Board-Background" && guiElement.typeName === "Rectangle") {

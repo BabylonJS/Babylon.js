@@ -98,6 +98,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         new Vector2(1920, 1080),
         new Vector2(750, 1334),
         new Vector2(1200, 1200)];
+        
     constructor(props: IPropertyTabComponentProps) {
         super(props);
 
