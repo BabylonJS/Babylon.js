@@ -3,7 +3,7 @@ import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBloc
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
-import { _TypeStore } from '../../../Misc/typeStore';
+import { RegisterClass } from '../../../Misc/typeStore';
 import { Scene } from '../../../scene';
 import { editableInPropertyPage, PropertyTypeForEdition } from "../nodeMaterialDecorator";
 
@@ -89,4 +89,4 @@ export class ClampBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.ClampBlock"] = ClampBlock;
+RegisterClass("BABYLON.ClampBlock", ClampBlock);

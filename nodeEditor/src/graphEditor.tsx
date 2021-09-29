@@ -22,7 +22,7 @@ import { GraphNode } from './diagram/graphNode';
 import { GraphFrame } from './diagram/graphFrame';
 import * as ReactDOM from 'react-dom';
 import { IInspectorOptions } from "babylonjs/Debug/debugLayer";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 import { Popup } from "./sharedComponents/popup";
 
 

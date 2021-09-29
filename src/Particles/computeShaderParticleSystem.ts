@@ -12,7 +12,7 @@ import { Constants } from "../Engines/constants";
 import { UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEffectCommonAccessor";
 import { ComputeBindingMapping } from "../Engines/Extensions/engine.computeShader";
 import { Effect } from "../Materials/effect";
-import { _TypeStore } from "../Misc/typeStore";
+import { RegisterClass } from "../Misc/typeStore";
 
 import "../ShadersWGSL/gpuUpdateParticles.compute";
 
@@ -181,4 +181,4 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.ComputeShaderParticleSystem"] = ComputeShaderParticleSystem;
+RegisterClass("BABYLON.ComputeShaderParticleSystem", ComputeShaderParticleSystem);

@@ -1,7 +1,7 @@
 import { BaseSlider } from "./baseSlider";
 import { Measure } from "../../measure";
 import { Image } from "../image";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 import { Nullable } from 'babylonjs/types';
 import { serialize } from "babylonjs/Misc/decorators";
 import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
@@ -192,4 +192,4 @@ export class ImageBasedSlider extends BaseSlider {
         this.valueBarImage = Image.Parse(serializedObject.valueBarImage, host) as Image;
     }
 }
-_TypeStore.RegisteredTypes["BABYLON.GUI.ImageBasedSlider"] = ImageBasedSlider;
+RegisterClass("BABYLON.GUI.ImageBasedSlider", ImageBasedSlider);

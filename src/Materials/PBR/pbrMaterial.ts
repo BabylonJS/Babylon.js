@@ -7,7 +7,7 @@ import { ImageProcessingConfiguration } from "../../Materials/imageProcessingCon
 import { ColorCurves } from "../../Materials/colorCurves";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { PBRBaseMaterial } from "./pbrBaseMaterial";
-import { _TypeStore } from '../../Misc/typeStore';
+import { RegisterClass } from '../../Misc/typeStore';
 
 /**
  * The Physically based material of BJS.
@@ -832,4 +832,4 @@ export class PBRMaterial extends PBRBaseMaterial {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.PBRMaterial"] = PBRMaterial;
+RegisterClass("BABYLON.PBRMaterial", PBRMaterial);

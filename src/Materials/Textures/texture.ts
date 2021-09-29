@@ -4,7 +4,7 @@ import { Nullable } from "../../types";
 import { Matrix, TmpVectors, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Constants } from "../../Engines/constants";
-import { _TypeStore } from '../../Misc/typeStore';
+import { GetClass, RegisterClass } from '../../Misc/typeStore';
 import { _WarnImport } from '../../Misc/devTools';
 import { IInspectable } from '../../Misc/iInspectable';
 import { ThinEngine } from '../../Engines/thinEngine';
@@ -848,7 +848,7 @@ export class Texture extends BaseTexture {
             if (texture && parsedTexture.animations) {
                 for (var animationIndex = 0; animationIndex < parsedTexture.animations.length; animationIndex++) {
                     var parsedAnimation = parsedTexture.animations[animationIndex];
-                    const internalClass = _TypeStore.GetClass("BABYLON.Animation");
+                    const internalClass = GetClass("BABYLON.Animation");
                     if (internalClass) {
                         texture.animations.push(internalClass.Parse(parsedAnimation));
                     }
@@ -957,5 +957,5 @@ export class Texture extends BaseTexture {
 }
 
 // References the dependencies.
-_TypeStore.RegisteredTypes["BABYLON.Texture"] = Texture;
+RegisterClass("BABYLON.Texture", Texture);
 SerializationHelper._TextureParser = Texture.Parse;

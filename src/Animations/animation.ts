@@ -6,7 +6,7 @@ import { Scalar } from "../Maths/math.scalar";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { SerializationHelper } from "../Misc/decorators";
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 import { IAnimationKey, AnimationKeyInterpolation } from './animationKey';
 import { AnimationRange } from './animationRange';
 import { AnimationEvent } from './animationEvent';
@@ -1352,5 +1352,5 @@ export class Animation {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.Animation"] = Animation;
+RegisterClass("BABYLON.Animation", Animation);
 Node._AnimationRangeFactory = (name: string, from: number, to: number) => new AnimationRange(name, from, to);

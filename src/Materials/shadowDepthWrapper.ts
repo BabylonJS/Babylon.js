@@ -3,7 +3,7 @@ import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { SubMesh } from "../Meshes/subMesh";
 import { Material } from "./material";
-import { _TypeStore } from "../Misc/typeStore";
+import { RegisterClass } from "../Misc/typeStore";
 import { Effect, IEffectCreationOptions } from './effect';
 import { AbstractMesh } from '../Meshes/abstractMesh';
 import { Node } from '../node';

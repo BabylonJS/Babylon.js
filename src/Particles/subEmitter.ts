@@ -1,7 +1,7 @@
 import { Vector3 } from "../Maths/math.vector";
 import { _WarnImport } from '../Misc/devTools';
 import { ThinEngine } from '../Engines/thinEngine';
-import { _TypeStore } from '../Misc/typeStore';
+import { GetClass } from '../Misc/typeStore';
 
 declare type Scene = import("../scene").Scene;
 declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
@@ -50,7 +50,7 @@ export class SubEmitter {
     ) {
         // Create mesh as emitter to support rotation
         if (!particleSystem.emitter || !(<AbstractMesh>particleSystem.emitter).dispose) {
-            const internalClass = _TypeStore.GetClass("BABYLON.AbstractMesh");
+            const internalClass = GetClass("BABYLON.AbstractMesh");
             particleSystem.emitter = new internalClass("SubemitterSystemEmitter", particleSystem.getScene());
         }
     }
@@ -66,7 +66,7 @@ export class SubEmitter {
         } else if (emitter instanceof Vector3) {
             emitter = emitter.clone();
         } else if (emitter.getClassName().indexOf("Mesh") !== -1) {
-            const internalClass = _TypeStore.GetClass("BABYLON.Mesh");
+            const internalClass = GetClass("BABYLON.Mesh");
             emitter = new internalClass("", emitter.getScene());
             (emitter! as any).isVisible = false;
         }

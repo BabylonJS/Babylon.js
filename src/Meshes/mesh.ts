@@ -25,7 +25,7 @@ import { Skeleton } from "../Bones/skeleton";
 import { Constants } from "../Engines/constants";
 import { SerializationHelper } from "../Misc/decorators";
 import { Logger } from "../Misc/logger";
-import { _TypeStore } from "../Misc/typeStore";
+import { GetClass, RegisterClass } from "../Misc/typeStore";
 import { _WarnImport } from "../Misc/devTools";
 import { SceneComponentConstants } from "../sceneComponent";
 import { MeshLODLevel } from "./meshLODLevel";
@@ -3871,7 +3871,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (parsedMesh.animations) {
             for (var animationIndex = 0; animationIndex < parsedMesh.animations.length; animationIndex++) {
                 var parsedAnimation = parsedMesh.animations[animationIndex];
-                const internalClass = _TypeStore.GetClass("BABYLON.Animation");
+                const internalClass = GetClass("BABYLON.Animation");
                 if (internalClass) {
                     mesh.animations.push(internalClass.Parse(parsedAnimation));
                 }
@@ -3977,7 +3977,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 if (parsedInstance.animations) {
                     for (animationIndex = 0; animationIndex < parsedInstance.animations.length; animationIndex++) {
                         parsedAnimation = parsedInstance.animations[animationIndex];
-                        const internalClass = _TypeStore.GetClass("BABYLON.Animation");
+                        const internalClass = GetClass("BABYLON.Animation");
                         if (internalClass) {
                             instance.animations.push(internalClass.Parse(parsedAnimation));
                         }
@@ -4968,4 +4968,4 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.Mesh"] = Mesh;
+RegisterClass("BABYLON.Mesh", Mesh);

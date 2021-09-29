@@ -1,7 +1,7 @@
 import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Material } from "./material";
-import { _TypeStore } from "../Misc/typeStore";
+import { RegisterClass } from "../Misc/typeStore";
 import { serialize, expandToProperty, serializeAsTexture, SerializationHelper } from '../Misc/decorators';
 import { MaterialFlags } from './materialFlags';
 import { MaterialHelper } from './materialHelper';
