@@ -912,8 +912,11 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @returns an object with the JSON serialized data
      */
     public serializeContent(): any {
+        const size = this.getSize();
         let serializationObject = {
-            root: {}
+            root: {},
+            width: size.width,
+            height: size.height,
         };
 
         this._rootContainer.serialize(serializationObject.root);
@@ -927,6 +930,11 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      */
     public parseContent(serializedObject: any) {
         this._rootContainer = Control.Parse(serializedObject.root, this) as Container;
+        const width = serializedObject.width;
+        const height = serializedObject.height;
+        if (width && height) {
+            this.scaleTo(width,height);
+        }
     }
 
     /**
