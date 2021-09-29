@@ -165,7 +165,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     <FloatLineComponent iconLabel={"Scale"} icon={scaleIcon} lockObject={this.props.lockObject} label="X" target={control} propertyName="scaleX" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Y" target={control} propertyName="scaleY" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </div>
-                <SliderLineComponent icon={rotationIcon} label="R" target={control} decimalCount={2} propertyName="rotation" minimum={0} maximum={2 * Math.PI} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <SliderLineComponent lockObject={this.props.lockObject} icon={rotationIcon} label="R" target={control} decimalCount={2} propertyName="rotation" minimum={0} maximum={2 * Math.PI} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <hr className="ge" />
                 <TextLineComponent tooltip="" label="APPEARANCE" value=" " color="grey"></TextLineComponent>
                 {
@@ -182,7 +182,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                             if (newValue === "") { (control as any).background = "Transparent" }
                         }} />
                 }
-                <SliderLineComponent iconLabel={"Alpha"} icon={alphaIcon} label="" target={control} propertyName="alpha" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <SliderLineComponent lockObject={this.props.lockObject} iconLabel={"Alpha"} icon={alphaIcon} label="" target={control} propertyName="alpha" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <TextInputLineComponent iconLabel={"Shadow Color"} icon={shadowColorIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="shadowColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <div className="divider">
                     <FloatLineComponent iconLabel={"Shadow Offset X"} icon={shadowOffsetXIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="shadowOffsetX" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
