@@ -31,8 +31,8 @@ export class ParentingPropertyGridComponent extends React.Component<IParentingPr
 
     getCellInfo() {
         const cellInfo = Tools.getCellInfo(this.props.control.parent as Grid, this.props.control);
-        this._columnNumber = cellInfo.x;
-        this._rowNumber = cellInfo.y;
+        this._rowNumber = cellInfo.x;
+        this._columnNumber = cellInfo.y;
     }
 
     private _changeCell(grid: Grid, draggedControl: Control, newCell : Vector2) {

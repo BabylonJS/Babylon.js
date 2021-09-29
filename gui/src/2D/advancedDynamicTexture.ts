@@ -903,6 +903,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             Object.entries(this._lastControlDown).forEach(([key, value]) => {
                 value._onCanvasBlur();
             });
+            this.focusedControl = null;
             this._lastControlDown = {};
         });
     }
@@ -958,6 +959,36 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             });
 
             request.open("GET", AdvancedDynamicTexture.SnippetUrl + "/" + snippetId.replace(/#/g, "/"));
+            request.send();
+        });
+    }
+
+    /**
+    * Recreate the content of the ADT from a url json
+    * @param url defines the url to load
+    * @returns a promise that will resolve on success
+    */
+    public parseFromURLAsync(url: string): Promise<void> {
+        if (url === "") {
+            return Promise.resolve();
+        }
+
+        return new Promise((resolve, reject) => {
+            var request = new WebRequest();
+            request.addEventListener("readystatechange", () => {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        var gui = request.responseText;
+                        let serializationObject = JSON.parse(gui);
+                        this.parseContent(serializationObject);
+
+                        resolve();
+                    } else {
+                        reject("Unable to load");
+                    }
+                }
+            });
+            request.open("GET", url);
             request.send();
         });
     }
