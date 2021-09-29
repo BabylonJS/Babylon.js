@@ -272,6 +272,33 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     public getDescendants(directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): Control[] {
         return this._rootContainer.getDescendants(directDescendantsOnly, predicate);
     }
+
+    /**
+    * Will return the first control with the given name
+    * @param name defines the name to search for
+    * @return the first control found or null
+    */
+    public getControlByName(name: string): Nullable<Control> {
+        const found = this._rootContainer.getDescendants().filter(control => control.name === name);
+        if (found.length > 0) {
+            return found[0];
+        }
+        return null;
+    }
+
+    /**
+    * Will return the first control with the given id
+    * @param id defines the id to search for
+    * @return the first control found or null
+    */
+    public getControlById(uniqueId: number): Nullable<Control> {
+        const found = this._rootContainer.getDescendants().filter(control => control.uniqueId === uniqueId);
+        if (found.length > 0) {
+            return found[0];
+        }
+        return null;
+    }
+
     /**
     * Gets or sets the current focused control
     */
