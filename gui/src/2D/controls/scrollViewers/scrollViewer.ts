@@ -11,7 +11,7 @@ import { AdvancedDynamicTexture } from "../../advancedDynamicTexture";
 import { _ScrollViewerWindow } from "./scrollViewerWindow";
 import { ScrollBar } from "../sliders/scrollBar";
 import { ImageScrollBar } from "../sliders/imageScrollBar";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
 
 /**
@@ -705,4 +705,4 @@ export class ScrollViewer extends Rectangle {
         super.dispose();
     }
 }
-_TypeStore.RegisteredTypes["BABYLON.GUI.ScrollViewer"] = ScrollViewer;
+RegisterClass("BABYLON.GUI.ScrollViewer", ScrollViewer);

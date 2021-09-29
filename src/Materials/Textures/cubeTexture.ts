@@ -6,7 +6,7 @@ import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
 import { Constants } from "../../Engines/constants";
-import { _TypeStore } from '../../Misc/typeStore';
+import { GetClass, RegisterClass } from '../../Misc/typeStore';
 import { ThinEngine } from '../../Engines/thinEngine';
 
 import "../../Engines/Extensions/engine.cubeTexture";
@@ -384,7 +384,7 @@ export class CubeTexture extends BaseTexture {
         if (parsedTexture.animations) {
             for (var animationIndex = 0; animationIndex < parsedTexture.animations.length; animationIndex++) {
                 var parsedAnimation = parsedTexture.animations[animationIndex];
-                const internalClass = _TypeStore.GetClass("BABYLON.Animation");
+                const internalClass = GetClass("BABYLON.Animation");
                 if (internalClass) {
                     texture.animations.push(internalClass.Parse(parsedAnimation));
                 }
@@ -416,4 +416,4 @@ export class CubeTexture extends BaseTexture {
 
 Texture._CubeTextureParser = CubeTexture.Parse;
 // Some exporters relies on Tools.Instantiate
-_TypeStore.RegisteredTypes["BABYLON.CubeTexture"] = CubeTexture;
+RegisterClass("BABYLON.CubeTexture", CubeTexture);

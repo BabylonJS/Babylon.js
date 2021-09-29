@@ -32,7 +32,7 @@ import { Epsilon } from "../Maths/math.constants";
 import { Plane } from "../Maths/math.plane";
 import { Axis } from "../Maths/math.axis";
 import { IParticleSystem } from "../Particles/IParticleSystem";
-import { _TypeStore } from "../Misc/typeStore";
+import { RegisterClass } from "../Misc/typeStore";
 
 declare type Ray = import("../Culling/ray").Ray;
 declare type Collider = import("../Collisions/collider").Collider;
@@ -2423,4 +2423,4 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.AbstractMesh"] = AbstractMesh;
+RegisterClass("BABYLON.AbstractMesh", AbstractMesh);

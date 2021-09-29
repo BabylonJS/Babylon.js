@@ -26,7 +26,7 @@ import { CannonJSPlugin } from "../../Physics/Plugins/cannonJSPlugin";
 import { OimoJSPlugin } from "../../Physics/Plugins/oimoJSPlugin";
 import { AmmoJSPlugin } from "../../Physics/Plugins/ammoJSPlugin";
 import { ReflectionProbe } from "../../Probes/reflectionProbe";
-import { _TypeStore } from '../../Misc/typeStore';
+import { GetClass } from '../../Misc/typeStore';
 import { Tools } from '../../Misc/tools';
 import { PostProcess } from '../../PostProcesses/postProcess';
 import { EndsWith } from "../../Misc/stringTools";
@@ -197,7 +197,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
         if (parsedData.animations !== undefined && parsedData.animations !== null) {
             for (index = 0, cache = parsedData.animations.length; index < cache; index++) {
                 var parsedAnimation = parsedData.animations[index];
-                const internalClass = _TypeStore.GetClass("BABYLON.Animation");
+                const internalClass = GetClass("BABYLON.Animation");
                 if (internalClass) {
                     let animation = internalClass.Parse(parsedAnimation);
                     scene.animations.push(animation);

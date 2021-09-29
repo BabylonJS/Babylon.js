@@ -1,5 +1,5 @@
 import { BaseSlider } from "./baseSlider";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 import { Nullable } from 'babylonjs/types';
 import { Measure } from '../../measure';
 import { serialize } from "babylonjs/Misc/decorators";
@@ -264,4 +264,4 @@ export class Slider extends BaseSlider {
         context.restore();
     }
 }
-_TypeStore.RegisteredTypes["BABYLON.GUI.Slider"] = Slider;
+RegisterClass("BABYLON.GUI.Slider", Slider);

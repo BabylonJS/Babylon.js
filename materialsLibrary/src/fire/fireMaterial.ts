@@ -14,7 +14,7 @@ import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SubMesh } from "babylonjs/Meshes/subMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 
 import "./fire.fragment";
@@ -397,4 +397,4 @@ export class FireMaterial extends PushMaterial {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.FireMaterial"] = FireMaterial;
+RegisterClass("BABYLON.FireMaterial", FireMaterial);

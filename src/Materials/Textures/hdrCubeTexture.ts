@@ -6,7 +6,7 @@ import { Texture } from "../../Materials/Textures/texture";
 import { Constants } from "../../Engines/constants";
 import { HDRTools } from "../../Misc/HighDynamicRange/hdr";
 import { CubeMapToSphericalPolynomialTools } from "../../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
-import { _TypeStore } from '../../Misc/typeStore';
+import { RegisterClass } from '../../Misc/typeStore';
 import { Tools } from '../../Misc/tools';
 import { ToGammaSpace } from '../../Maths/math.constants';
 import { ThinEngine } from '../../Engines/thinEngine';
@@ -383,4 +383,4 @@ export class HDRCubeTexture extends BaseTexture {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.HDRCubeTexture"] = HDRCubeTexture;
+RegisterClass("BABYLON.HDRCubeTexture", HDRCubeTexture);

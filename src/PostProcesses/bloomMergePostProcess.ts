@@ -6,7 +6,7 @@ import { Camera } from "../Cameras/camera";
 import { Constants } from "../Engines/constants";
 
 import "../Shaders/bloomMerge.fragment";
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 import { serialize } from '../Misc/decorators';
 
 /**
@@ -58,4 +58,4 @@ export class BloomMergePostProcess extends PostProcess {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.BloomMergePostProcess"] = BloomMergePostProcess;
+RegisterClass("BABYLON.BloomMergePostProcess", BloomMergePostProcess);
