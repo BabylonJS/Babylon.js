@@ -412,8 +412,8 @@ module.exports = g;
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* WEBPACK VAR INJECTION */(function(global) {/* harmony import */ var _water__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../water */ "./water/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "WaterMaterial", function() { return _water__WEBPACK_IMPORTED_MODULE_0__["WaterMaterial"]; });
+/* WEBPACK VAR INJECTION */(function(global) {/* harmony import */ var _water_index__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../water/index */ "./water/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "WaterMaterial", function() { return _water_index__WEBPACK_IMPORTED_MODULE_0__["WaterMaterial"]; });
 
 
 /**
@@ -422,8 +422,8 @@ __webpack_require__.r(__webpack_exports__);
  */
 var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
 if (typeof globalObject !== "undefined") {
-    for (var key in _water__WEBPACK_IMPORTED_MODULE_0__) {
-        globalObject.BABYLON[key] = _water__WEBPACK_IMPORTED_MODULE_0__[key];
+    for (var key in _water_index__WEBPACK_IMPORTED_MODULE_0__) {
+        globalObject.BABYLON[key] = _water_index__WEBPACK_IMPORTED_MODULE_0__[key];
     }
 }
 
