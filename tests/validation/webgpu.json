@@ -159,6 +159,11 @@
             "title": "terrain erosion",
             "renderCount": 15,
             "playgroundId": "#C90R62#6"
+        },
+        {
+            "title": "change texture of material",
+            "renderCount": 10,
+            "playgroundId": "#7PN9PH#2"
         }
     ]
 }
