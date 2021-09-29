@@ -692,7 +692,6 @@ export class PrePassRenderer {
         let enablePrePass = false;
         this._scene.imageProcessingConfiguration.applyByPostProcess = false;
 
-        // TODO : find a way to avoid this per case prepass enable
         if (this._scene.depthPeelingRenderer) {
             this._scene.depthPeelingRenderer.setPrePassRenderer(this);
             enablePrePass = true;
