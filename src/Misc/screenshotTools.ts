@@ -5,7 +5,6 @@ import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { FxaaPostProcess } from "../PostProcesses/fxaaPostProcess";
 import { Constants } from "../Engines/constants";
 import { Logger } from "./logger";
-import { RegisterClass } from "./typeStore";
 import { Tools } from "./tools";
 import { IScreenshotSize } from './interfaces/screenshotSize';
 
