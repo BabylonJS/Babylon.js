@@ -3013,58 +3013,58 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _cell__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./cell */ "./cell/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CellMaterial", function() { return _cell__WEBPACK_IMPORTED_MODULE_0__["CellMaterial"]; });
+/* harmony import */ var _cell_index__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./cell/index */ "./cell/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CellMaterial", function() { return _cell_index__WEBPACK_IMPORTED_MODULE_0__["CellMaterial"]; });
 
-/* harmony import */ var _custom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./custom */ "./custom/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CustomShaderStructure", function() { return _custom__WEBPACK_IMPORTED_MODULE_1__["CustomShaderStructure"]; });
+/* harmony import */ var _custom_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./custom/index */ "./custom/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CustomShaderStructure", function() { return _custom_index__WEBPACK_IMPORTED_MODULE_1__["CustomShaderStructure"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ShaderSpecialParts", function() { return _custom__WEBPACK_IMPORTED_MODULE_1__["ShaderSpecialParts"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ShaderSpecialParts", function() { return _custom_index__WEBPACK_IMPORTED_MODULE_1__["ShaderSpecialParts"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CustomMaterial", function() { return _custom__WEBPACK_IMPORTED_MODULE_1__["CustomMaterial"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CustomMaterial", function() { return _custom_index__WEBPACK_IMPORTED_MODULE_1__["CustomMaterial"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ShaderAlebdoParts", function() { return _custom__WEBPACK_IMPORTED_MODULE_1__["ShaderAlebdoParts"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ShaderAlebdoParts", function() { return _custom_index__WEBPACK_IMPORTED_MODULE_1__["ShaderAlebdoParts"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "PBRCustomMaterial", function() { return _custom__WEBPACK_IMPORTED_MODULE_1__["PBRCustomMaterial"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "PBRCustomMaterial", function() { return _custom_index__WEBPACK_IMPORTED_MODULE_1__["PBRCustomMaterial"]; });
 
-/* harmony import */ var _fire__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./fire */ "./fire/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FireMaterial", function() { return _fire__WEBPACK_IMPORTED_MODULE_2__["FireMaterial"]; });
+/* harmony import */ var _fire_index__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./fire/index */ "./fire/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FireMaterial", function() { return _fire_index__WEBPACK_IMPORTED_MODULE_2__["FireMaterial"]; });
 
-/* harmony import */ var _fur__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./fur */ "./fur/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FurMaterial", function() { return _fur__WEBPACK_IMPORTED_MODULE_3__["FurMaterial"]; });
+/* harmony import */ var _fur_index__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./fur/index */ "./fur/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FurMaterial", function() { return _fur_index__WEBPACK_IMPORTED_MODULE_3__["FurMaterial"]; });
 
-/* harmony import */ var _gradient__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./gradient */ "./gradient/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GradientMaterial", function() { return _gradient__WEBPACK_IMPORTED_MODULE_4__["GradientMaterial"]; });
+/* harmony import */ var _gradient_index__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./gradient/index */ "./gradient/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GradientMaterial", function() { return _gradient_index__WEBPACK_IMPORTED_MODULE_4__["GradientMaterial"]; });
 
-/* harmony import */ var _grid__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./grid */ "./grid/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GridMaterial", function() { return _grid__WEBPACK_IMPORTED_MODULE_5__["GridMaterial"]; });
+/* harmony import */ var _grid_index__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./grid/index */ "./grid/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GridMaterial", function() { return _grid_index__WEBPACK_IMPORTED_MODULE_5__["GridMaterial"]; });
 
-/* harmony import */ var _lava__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./lava */ "./lava/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "LavaMaterial", function() { return _lava__WEBPACK_IMPORTED_MODULE_6__["LavaMaterial"]; });
+/* harmony import */ var _lava_index__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./lava/index */ "./lava/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "LavaMaterial", function() { return _lava_index__WEBPACK_IMPORTED_MODULE_6__["LavaMaterial"]; });
 
-/* harmony import */ var _mix__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./mix */ "./mix/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MixMaterial", function() { return _mix__WEBPACK_IMPORTED_MODULE_7__["MixMaterial"]; });
+/* harmony import */ var _mix_index__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./mix/index */ "./mix/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MixMaterial", function() { return _mix_index__WEBPACK_IMPORTED_MODULE_7__["MixMaterial"]; });
 
-/* harmony import */ var _normal__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./normal */ "./normal/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "NormalMaterial", function() { return _normal__WEBPACK_IMPORTED_MODULE_8__["NormalMaterial"]; });
+/* harmony import */ var _normal_index__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./normal/index */ "./normal/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "NormalMaterial", function() { return _normal_index__WEBPACK_IMPORTED_MODULE_8__["NormalMaterial"]; });
 
-/* harmony import */ var _shadowOnly__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./shadowOnly */ "./shadowOnly/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ShadowOnlyMaterial", function() { return _shadowOnly__WEBPACK_IMPORTED_MODULE_9__["ShadowOnlyMaterial"]; });
+/* harmony import */ var _shadowOnly_index__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./shadowOnly/index */ "./shadowOnly/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ShadowOnlyMaterial", function() { return _shadowOnly_index__WEBPACK_IMPORTED_MODULE_9__["ShadowOnlyMaterial"]; });
 
-/* harmony import */ var _simple__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./simple */ "./simple/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SimpleMaterial", function() { return _simple__WEBPACK_IMPORTED_MODULE_10__["SimpleMaterial"]; });
+/* harmony import */ var _simple_index__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./simple/index */ "./simple/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SimpleMaterial", function() { return _simple_index__WEBPACK_IMPORTED_MODULE_10__["SimpleMaterial"]; });
 
-/* harmony import */ var _sky__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./sky */ "./sky/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SkyMaterial", function() { return _sky__WEBPACK_IMPORTED_MODULE_11__["SkyMaterial"]; });
+/* harmony import */ var _sky_index__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./sky/index */ "./sky/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SkyMaterial", function() { return _sky_index__WEBPACK_IMPORTED_MODULE_11__["SkyMaterial"]; });
 
-/* harmony import */ var _terrain__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./terrain */ "./terrain/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TerrainMaterial", function() { return _terrain__WEBPACK_IMPORTED_MODULE_12__["TerrainMaterial"]; });
+/* harmony import */ var _terrain_index__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./terrain/index */ "./terrain/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TerrainMaterial", function() { return _terrain_index__WEBPACK_IMPORTED_MODULE_12__["TerrainMaterial"]; });
 
-/* harmony import */ var _triPlanar__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./triPlanar */ "./triPlanar/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TriPlanarMaterial", function() { return _triPlanar__WEBPACK_IMPORTED_MODULE_13__["TriPlanarMaterial"]; });
+/* harmony import */ var _triPlanar_index__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./triPlanar/index */ "./triPlanar/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TriPlanarMaterial", function() { return _triPlanar_index__WEBPACK_IMPORTED_MODULE_13__["TriPlanarMaterial"]; });
 
-/* harmony import */ var _water__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./water */ "./water/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "WaterMaterial", function() { return _water__WEBPACK_IMPORTED_MODULE_14__["WaterMaterial"]; });
+/* harmony import */ var _water_index__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./water/index */ "./water/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "WaterMaterial", function() { return _water_index__WEBPACK_IMPORTED_MODULE_14__["WaterMaterial"]; });
 
 
 

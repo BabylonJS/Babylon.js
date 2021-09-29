@@ -412,8 +412,8 @@ module.exports = g;
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* WEBPACK VAR INJECTION */(function(global) {/* harmony import */ var _perlinNoise__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../perlinNoise */ "./perlinNoise/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "PerlinNoiseProceduralTexture", function() { return _perlinNoise__WEBPACK_IMPORTED_MODULE_0__["PerlinNoiseProceduralTexture"]; });
+/* WEBPACK VAR INJECTION */(function(global) {/* harmony import */ var _perlinNoise_index__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../perlinNoise/index */ "./perlinNoise/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "PerlinNoiseProceduralTexture", function() { return _perlinNoise_index__WEBPACK_IMPORTED_MODULE_0__["PerlinNoiseProceduralTexture"]; });
 
 
 /**
@@ -422,8 +422,8 @@ __webpack_require__.r(__webpack_exports__);
  */
 var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
 if (typeof globalObject !== "undefined") {
-    for (var key in _perlinNoise__WEBPACK_IMPORTED_MODULE_0__) {
-        globalObject.BABYLON[key] = _perlinNoise__WEBPACK_IMPORTED_MODULE_0__[key];
+    for (var key in _perlinNoise_index__WEBPACK_IMPORTED_MODULE_0__) {
+        globalObject.BABYLON[key] = _perlinNoise_index__WEBPACK_IMPORTED_MODULE_0__[key];
     }
 }
 

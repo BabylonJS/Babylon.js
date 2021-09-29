@@ -47,6 +47,7 @@ declare module GUIEDITOR {
         _scene: BABYLON.Scene;
         private _selectedGuiNodes;
         private _ctrlKeyIsPressed;
+        private _altKeyIsPressed;
         private _constraintDirection;
         private _forcePanning;
         private _forceZooming;
@@ -56,9 +57,10 @@ declare module GUIEDITOR {
         private _canvas;
         private _responsive;
         private _isOverGUINode;
-        private _focused;
         private _clipboard;
         private _selectAll;
+        private _camera;
+        private _cameraRadias;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
@@ -79,7 +81,6 @@ declare module GUIEDITOR {
         appendBlock(guiElement: Control): Control;
         isContainer(guiControl: Control): boolean;
         createNewGuiNode(guiControl: Control): Control;
-        enableEditorProperties(guiControl: Control): void;
         private parent;
         private _reorderGrid;
         private _isNotChildInsert;
@@ -113,6 +114,17 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
+    /**
+     * Class used to provide lock mechanism
+     */
+    export class LockObject {
+        /**
+         * Gets or set if the lock is engaged
+         */
+        lock: boolean;
+    }
+}
+declare module GUIEDITOR {
     export enum DragOverLocation {
         ABOVE = 0,
         BELOW = 1,
@@ -143,6 +155,7 @@ declare module GUIEDITOR {
         workbench: WorkbenchComponent;
         onPropertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>;
         onZoomObservable: BABYLON.Observable<void>;
+        onFitToWindowObservable: BABYLON.Observable<void>;
         onPanObservable: BABYLON.Observable<void>;
         onSelectionButtonObservable: BABYLON.Observable<void>;
         onLoadObservable: BABYLON.Observable<File>;
@@ -158,6 +171,7 @@ declare module GUIEDITOR {
         draggedControl: BABYLON.Nullable<Control>;
         draggedControlDirection: DragOverLocation;
         isSaving: boolean;
+        lockObject: LockObject;
         storeEditorData: (serializationObject: any) => void;
         customSave?: {
             label: string;
@@ -261,17 +275,6 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
-    /**
-     * Class used to provide lock mechanism
-     */
-    export class LockObject {
-        /**
-         * Gets or set if the lock is engaged
-         */
-        lock: boolean;
-    }
-}
-declare module GUIEDITOR {
     interface IFloatLineComponentProps {
         label: string;
         target: any;
@@ -325,6 +328,7 @@ declare module GUIEDITOR {
         margin?: boolean;
         icon?: string;
         iconLabel?: string;
+        lockObject?: LockObject;
     }
     export class SliderLineComponent extends React.Component<ISliderLineComponentProps, {
         value: number;
