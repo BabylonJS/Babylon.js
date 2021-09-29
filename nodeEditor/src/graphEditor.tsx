@@ -241,12 +241,13 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 return;
             }
 
-            if (evt.key === "c") { // Copy
+            if (evt.key === "c" || evt.key === "C") { // Copy
                 this._copiedNodes = [];
                 this._copiedFrame = null;
 
                 if (this._graphCanvas.selectedFrame) {
                     this._copiedFrame = this._graphCanvas.selectedFrame;
+                    this._copiedFrame.serialize(true);
                     return;
                 }
 
@@ -254,20 +255,20 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 if (!selectedItems.length) {
                     return;
                 }
-    
+
                 let selectedItem = selectedItems[0] as GraphNode;
-    
+
                 if (!selectedItem.block) {
                     return;
                 }
 
                 this._copiedNodes = selectedItems.slice(0);
-            } else if (evt.key === "v") { // Paste
+            } else if (evt.key === "v" || evt.key === "V") { // Paste
                 const rootElement = this.props.globalState.hostDocument!.querySelector(".diagram-container") as HTMLDivElement;
                 const zoomLevel = this._graphCanvas.zoom;
                 let currentY = (this._mouseLocationY - rootElement.offsetTop - this._graphCanvas.y - 20) / zoomLevel;
 
-                if (this._copiedFrame) {                    
+                if (this._copiedFrame) {
                     // New frame
                     let newFrame = new GraphFrame(null, this._graphCanvas, true);
                     this._graphCanvas.frames.push(newFrame);
@@ -285,16 +286,18 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     if (this._copiedFrame.nodes.length) {
                         currentX = newFrame.x + this._copiedFrame.nodes[0].x - this._copiedFrame.x;
                         currentY = newFrame.y + this._copiedFrame.nodes[0].y - this._copiedFrame.y;
-                        
+
                         this._graphCanvas._frameIsMoving = true;
                         let newNodes = this.pasteSelection(this._copiedFrame.nodes, currentX, currentY);       
-                        if (newNodes) {           
+                        if (newNodes) {
                             for (var node of newNodes) {
                                 newFrame.syncNode(node);
                             }
                         }
                         this._graphCanvas._frameIsMoving = false;
                     }
+
+                    newFrame.adjustPorts();
 
                     if (this._copiedFrame.isCollapsed) {
                         newFrame.isCollapsed = true;

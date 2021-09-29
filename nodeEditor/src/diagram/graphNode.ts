@@ -13,8 +13,12 @@ import { NodeLink } from './nodeLink';
 import { NodePort } from './nodePort';
 import { GraphFrame } from './graphFrame';
 
+const triangle = require("../../imgs/triangle.svg");
+
 export class GraphNode {
     private _visual: HTMLDivElement;
+    private _headerContainer: HTMLDivElement;
+    private _promotionWarning: HTMLDivElement;
     private _header: HTMLDivElement;
     private _connections: HTMLDivElement;
     private _inputsContainer: HTMLDivElement;
@@ -34,7 +38,7 @@ export class GraphNode {
     private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphFrame | GraphNode | NodeLink | NodePort | FramePortData>>>;
     private _onSelectionBoxMovedObserver: Nullable<Observer<ClientRect | DOMRect>>;
     private _onFrameCreatedObserver: Nullable<Observer<GraphFrame>>;
-    private _onUpdateRequiredObserver: Nullable<Observer<void>>;
+    private _onUpdateRequiredObserver: Nullable<Observer<Nullable<NodeMaterialBlock>>>;
     private _ownerCanvas: GraphCanvasComponent;
     private _isSelected: boolean;
     private _displayManager: Nullable<IDisplayManager> = null;
@@ -187,7 +191,10 @@ export class GraphNode {
             }
         });
 
-        this._onUpdateRequiredObserver = this._globalState.onUpdateRequiredObservable.add(() => {
+        this._onUpdateRequiredObserver = this._globalState.onUpdateRequiredObservable.add((block) => {
+            if (block !== this.block) {
+                return;
+            }
             this.refresh();
         });
 
@@ -282,8 +289,9 @@ export class GraphNode {
             this._visual.style.background = this._displayManager.getBackgroundColor(this.block);
             let additionalClass = this._displayManager.getHeaderClass(this.block);
             this._header.classList.value = "header";
+            this._headerContainer.classList.value = "header-container";
             if (additionalClass) {
-                this._header.classList.add(additionalClass);
+                this._headerContainer.classList.add(additionalClass);
             }
         } else {
             this._header.innerHTML = this.block.name;
@@ -305,7 +313,12 @@ export class GraphNode {
         }
         this._comments.innerHTML = this.block.comments || "";
         this._comments.title = this.block.comments || "";
-
+        
+        if (this.block.willBeGeneratedIntoVertexShaderFromFragmentShader) {
+            this._promotionWarning.classList.add("visible");
+        } else {
+            this._promotionWarning.classList.remove("visible");
+        }
     }
 
     private _onDown(evt: PointerEvent) {
@@ -401,10 +414,21 @@ export class GraphNode {
         this._visual.addEventListener("pointerup", evt => this._onUp(evt));
         this._visual.addEventListener("pointermove", evt => this._onMove(evt));
 
+        this._headerContainer = root.ownerDocument!.createElement("div");
+        this._headerContainer.classList.add("header-container");
+        this._visual.appendChild(this._headerContainer);
+
         this._header = root.ownerDocument!.createElement("div");
         this._header.classList.add("header");
+        this._headerContainer.appendChild(this._header);
 
-        this._visual.appendChild(this._header);
+        this._promotionWarning = root.ownerDocument!.createElement("div");
+        this._promotionWarning.classList.add("promotion-warning");
+        this._promotionWarning.title = "For optimization reasons, this block will be promoted to the vertex shader. You can force it to render in the fragment shader by setting its target to Fragment";
+        const img = root.ownerDocument!.createElement("img");
+        img.src = triangle;
+        this._promotionWarning.appendChild(img);
+        this._headerContainer.appendChild(this._promotionWarning);
 
         this._connections = root.ownerDocument!.createElement("div");
         this._connections.classList.add("connections");

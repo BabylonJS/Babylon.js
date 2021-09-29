@@ -36,6 +36,10 @@ export interface IMultiRenderTargetOptions {
      */
     generateDepthTexture?: boolean;
     /**
+     * Define depth texture format to use
+     */
+    depthTextureFormat?: number;
+    /**
      * Define the number of desired draw buffers
      */
     textureCount?: number;
@@ -134,6 +138,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
     constructor(name: string, size: any, count: number, scene: Scene, options?: IMultiRenderTargetOptions, textureNames?: string[]) {
         var generateMipMaps = options && options.generateMipMaps ? options.generateMipMaps : false;
         var generateDepthTexture = options && options.generateDepthTexture ? options.generateDepthTexture : false;
+        var depthTextureFormat = options && options.depthTextureFormat ? options.depthTextureFormat : Constants.TEXTUREFORMAT_DEPTH16;
         var doNotChangeAspectRatio = !options || options.doNotChangeAspectRatio === undefined ? true : options.doNotChangeAspectRatio;
         var drawOnlyOnFirstAttachmentByDefault = options && options.drawOnlyOnFirstAttachmentByDefault ? options.drawOnlyOnFirstAttachmentByDefault : false;
         super(name, size, scene, generateMipMaps, doNotChangeAspectRatio,
@@ -165,6 +170,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
             generateDepthBuffer: generateDepthBuffer,
             generateStencilBuffer: generateStencilBuffer,
             generateDepthTexture: generateDepthTexture,
+            depthTextureFormat: depthTextureFormat,
             types: types,
             textureCount: count
         };

@@ -836,7 +836,8 @@ IGraphComponentState
         this._sourcePointerX = evt.nativeEvent.offsetX;
         this._sourcePointerY = evt.nativeEvent.offsetY;
 
-        this._inSelectionMode = evt.nativeEvent.ctrlKey;
+        const isMiddleButton = evt.nativeEvent.which == 2 || evt.button == 4;
+        this._inSelectionMode = !isMiddleButton && !evt.altKey;
 
         if (this._inSelectionMode) {
             this._selectionStartX = this._sourcePointerX + 40;

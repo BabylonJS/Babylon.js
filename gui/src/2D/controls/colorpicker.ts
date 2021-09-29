@@ -105,6 +105,10 @@ export class ColorPicker extends Control {
         }
 
         if (this._width.fromString(value)) {
+            if (this._width.getValue(this._host) === 0) {
+                value = '1px';
+                this._width.fromString(value);
+            }
             this._height.fromString(value);
             this._markAsDirty();
         }
@@ -126,6 +130,10 @@ export class ColorPicker extends Control {
         }
 
         if (this._height.fromString(value)) {
+            if (this._height.getValue(this._host) === 0) {
+                value = '1px';
+                this._height.fromString(value);
+            }
             this._width.fromString(value);
             this._markAsDirty();
         }

@@ -80,7 +80,7 @@ export class GUINodeTools {
                 element.height = "40px";
                 return element;
             case "VirtualKeyboard":
-                element = VirtualKeyboard.CreateDefaultLayout();
+                element = VirtualKeyboard.CreateDefaultLayout("VirtualKeyboard");
                 element.addKeysRow(["1", "2", "3", "\u2190"]);
                 return element;
             case "Image":
@@ -124,7 +124,7 @@ export class GUINodeTools {
             case "StackPanel":
                 element = new StackPanel("StackPanel");
                 element.isHighlighted = true;
-                element.width = "160%";
+                element.width = "100%";
                 element.height = "100%";
                 return element;
             case "ScrollViewer":

@@ -34,6 +34,8 @@ declare module BABYLON {
         static OnEngineResizeObservable: Observable<Engine>;
         /** Register handler that is triggered when the scene has been loaded (engine.html) */
         static OnLoadCompleteObservable: Observable<Engine>;
+        /** Register asset manager progress event (engine.html) */
+        static OnAssetManagerProgress: (event: ProgressEvent) => void;
         /** Loads a babylon gltf scene file (engine.html) */
         static LoadSceneFile(sceneFile: string, queryString?: string): void;
         private static SceneParsingEnabled;
@@ -166,18 +168,16 @@ declare module BABYLON {
         static ShowPageErrorMessage(message: string, title?: string, timeout?: number): void;
         /** Quit the Windows Runtime host application. */
         static QuitWindowsApplication(): void;
-        /** Loads a file as text (IFileRequest) */
-        static LoadTextFile(url: string, onSuccess: (data: string) => void, onProgress?: (data: any) => void, onError?: (request?: WebRequest, exception?: any) => void): BABYLON.IFileRequest;
-        /** Load a text based file */
-        static LoadTextFileAsync(url: string): Promise<string>;
-        /** Post data to server (XmlHttpRequest) */
-        /** Post data to server asynchronously */
         /** Shows the default page scene loader. */
         static ShowSceneLoader(): void;
         /** Hides the default page scene loader. */
         static HideSceneLoader(): void;
-        /** Update the default page scene loader status. */
+        /** Update the default page scene loader full status. */
         static UpdateLoaderStatus(status: string, details: string, state: number): void;
+        /** Update the default page scene loader details only. */
+        static UpdateLoaderDetails(details: string, state: number): void;
+        /** Update the default page scene loader progress only. */
+        static UpdateLoaderProgress(progress: string, state: number): void;
         /** Gets all the created engine instances */
         static GetEngineInstances(): BABYLON.Engine[];
         /** Get the last create engine instance */
@@ -232,6 +232,7 @@ declare module BABYLON {
         static CloneAbstractMesh(container: BABYLON.AssetContainer, nodeName: string, cloneName: string): BABYLON.AbstractMesh;
         /** Creates an instance of the specified mesh asset into the scene. (Mesh Instance) */
         static CreateInstancedMesh(container: BABYLON.AssetContainer, meshName: string, instanceName: string): BABYLON.InstancedMesh;
+        /** Clones the specfied transform node from scene. */
         /** Registers a script componment with the scene manager. */
         static RegisterScriptComponent(instance: BABYLON.ScriptComponent, alias: string, validate?: boolean): void;
         /** Destroys a script component instance. */
@@ -1234,7 +1235,15 @@ declare module BABYLON {
      * Asset Preloader Interface (https://doc.babylonjs.com/divingDeeper/importers/assetManager)
      */
     interface IAssetPreloader {
-        addPreloaderTasks(assetsManager: BABYLON.AssetsManager): void;
+        addPreloaderTasks(assetsManager: BABYLON.PreloadAssetsManager): void;
+    }
+    /**
+     * Http Request Header
+     * @class RequestHeader - All rights reserved (c) 2020 Mackey Kinard
+     */
+    class RequestHeader {
+        name: string;
+        value: string;
     }
     /**
      * Trigger Volume State
@@ -1339,6 +1348,60 @@ declare module BABYLON {
         drawLine(points: BABYLON.Vector3[], color?: BABYLON.Color3): void;
     }
     /**
+     * Preload Assets Manager Classes (Note: No Progress Events For Textures)
+     * @class PreloadAssetsManager - All rights reserved (c) 2020 Mackey Kinard
+     */
+    class PreloadAssetsManager extends BABYLON.AssetsManager {
+        /**
+         * Add a ContainerAssetTask to the list of active tasks
+         * Note: Progress Tracking Supported
+         * @param taskName defines the name of the new task
+         * @param meshesNames defines the name of meshes to load
+         * @param rootUrl defines the root url to use to locate files
+         * @param sceneFilename defines the filename of the scene file
+         * @returns a new ContainerAssetTask object
+         */
+        addContainerTask(taskName: string, meshesNames: any, rootUrl: string, sceneFilename: string): BABYLON.ContainerAssetTask;
+        /**
+         * Add a MeshAssetTask to the list of active tasks
+         * Note: Progress Tracking Supported
+         * @param taskName defines the name of the new task
+         * @param meshesNames defines the name of meshes to load
+         * @param rootUrl defines the root url to use to locate files
+         * @param sceneFilename defines the filename of the scene file
+         * @returns a new MeshAssetTask object
+         */
+        addMeshTask(taskName: string, meshesNames: any, rootUrl: string, sceneFilename: string): BABYLON.MeshAssetTask;
+        /**
+         * Add a TextFileAssetTask to the list of active tasks
+         * Note: Progress Tracking Supported
+         * @param taskName defines the name of the new task
+         * @param url defines the url of the file to load
+         * @returns a new TextFileAssetTask object
+         */
+        addTextFileTask(taskName: string, url: string): BABYLON.TextFileAssetTask;
+        /**
+         * Add a BinaryFileAssetTask to the list of active tasks
+         * Note: Progress Tracking Supported
+         * @param taskName defines the name of the new task
+         * @param url defines the url of the file to load
+         * @returns a new BinaryFileAssetTask object
+         */
+        addBinaryFileTask(taskName: string, url: string): BABYLON.BinaryFileAssetTask;
+        /**
+         * Add a ImageAssetTask to the list of active tasks
+         * Note: Progress Tracking Supported
+         * @param taskName defines the name of the new task
+         * @param url defines the url of the file to load
+         * @returns a new ImageAssetTask object
+         */
+        addImageTask(taskName: string, url: string): BABYLON.ImageAssetTask;
+        /**
+         * Handle Preloading Progress Events
+         */
+        private handlePreloadingProgress;
+    }
+    /**
      * Babylon Utility Classes
      * @class Utilities - All rights reserved (c) 2020 Mackey Kinard
      */
@@ -1347,9 +1410,12 @@ declare module BABYLON {
         private static AuxVector;
         private static ZeroVector;
         private static TempMatrix;
+        private static TempMatrix2;
         private static TempVector2;
         private static TempVector3;
         private static TempQuaternion;
+        private static TempQuaternion2;
+        private static TempQuaternion3;
         private static PrintElement;
         private static LoadingState;
         static OnPreloaderProgress: (remainingCount: number, totalCount: number, lastFinishedTask: BABYLON.AbstractAssetTask) => void;
@@ -1535,10 +1601,18 @@ declare module BABYLON {
         static ParseTransformByName(source: BABYLON.IUnityTransform, scene: BABYLON.Scene, defaultValue?: BABYLON.TransformNode): BABYLON.TransformNode;
         /** TODO */
         static ParseChildTransform(parent: BABYLON.TransformNode, source: BABYLON.IUnityTransform, defaultValue?: BABYLON.TransformNode): BABYLON.TransformNode;
+        /** Sets the transform node abosulte position */
+        static SetAbsolutePosition(transform: BABYLON.TransformNode, position: BABYLON.Vector3): void;
         /** Gets the transform node abosulte position */
         static GetAbsolutePosition(transform: BABYLON.TransformNode | BABYLON.Camera, offsetPosition?: BABYLON.Vector3, computeMatrix?: boolean): BABYLON.Vector3;
         /** Gets the transform node abosulte position */
         static GetAbsolutePositionToRef(transform: BABYLON.TransformNode | BABYLON.Camera, result: BABYLON.Vector3, offsetPosition?: BABYLON.Vector3, computeMatrix?: boolean): void;
+        /** Sets the transform node abosulte Rotation */
+        static SetAbsoluteRotation(transform: BABYLON.TransformNode, rotation: BABYLON.Quaternion): void;
+        /** Gets the transform node abosulte rotation */
+        static GetAbsoluteRotation(transform: BABYLON.TransformNode): BABYLON.Quaternion;
+        /** Gets the transform node abosulte rotation */
+        static GetAbsoluteRotationToRef(transform: BABYLON.TransformNode, result: BABYLON.Quaternion): void;
         /** Transforms position from local space to world space. (Using TransformCoordinates) */
         static TransformPoint(owner: BABYLON.TransformNode | BABYLON.Camera, position: BABYLON.Vector3, computeMatrix?: boolean): BABYLON.Vector3;
         /** Inverse transforms position from world space to local space. (Using TransformCoordinates) */
@@ -1607,6 +1681,18 @@ declare module BABYLON {
         static WorldToScreenPoint(scene: BABYLON.Scene, position: BABYLON.Vector3, camera?: BABYLON.Camera): BABYLON.Vector3;
         /** Transforms a point from screen space into world space. */
         static ScreenToWorldPoint(scene: BABYLON.Scene, position: BABYLON.Vector3): BABYLON.Vector3;
+        /** Loads a file as text (IFileRequest) */
+        static LoadTextFile(url: string, onSuccess: (data: string | ArrayBuffer) => void, onProgress?: (data: any) => void, onError?: (request?: WebRequest, exception?: any) => void): BABYLON.IFileRequest;
+        /** Load a text based file */
+        static LoadTextFileAsync(url: string): Promise<string>;
+        /** Get data from server (XmlHttpRequest) */
+        static GetHttpRequest(url: string, headers?: BABYLON.RequestHeader[], onSuccess?: (xhr: XMLHttpRequest) => void, onFailure?: (reason: any) => void, onProgress?: (evt: ProgressEvent) => void, useArrayBuffer?: boolean, overrideMimeType?: string): XMLHttpRequest;
+        /** Get data from server asynchronously */
+        static GetHttpRequestAsync(url: string, headers?: BABYLON.RequestHeader[], onProgress?: (evt: ProgressEvent) => void, useArrayBuffer?: boolean, overrideMimeType?: string): Promise<XMLHttpRequest>;
+        /** Post data to server (XmlHttpRequest) */
+        static PostHttpRequest(url: string, data: any, headers?: BABYLON.RequestHeader[], contentType?: string, onSuccess?: (xhr: XMLHttpRequest) => void, onFailure?: (reason: any) => void, onProgress?: (evt: ProgressEvent) => void, useArrayBuffer?: boolean, overrideMimeType?: string): XMLHttpRequest;
+        /** Post data to server asynchronously */
+        static PostHttpRequestAsync(url: string, data: any, headers?: BABYLON.RequestHeader[], contentType?: string, onProgress?: (evt: ProgressEvent) => void, useArrayBuffer?: boolean, overrideMimeType?: string): Promise<XMLHttpRequest>;
         /** TODO */
         static ConvertAmmoVector3(btVector: any): BABYLON.Vector3;
         /** TODO */
@@ -1768,8 +1854,6 @@ declare class CVTOOLS_unity_metadata implements BABYLON.GLTF2.IGLTFLoaderExtensi
     private _getCachedLightmapByIndex;
     /** @hidden */
     createMaterial(context: string, material: BABYLON.GLTF2.IMaterial, babylonDrawMode: number): BABYLON.Nullable<BABYLON.Material>;
-    /** @hidden */
-    loadDataUrlAsync(context: string, uri: string): Promise<ArrayBufferView>;
     /** @hidden */
     _loadSkinAsync(context: string, node: BABYLON.GLTF2.INode, skin: BABYLON.GLTF2.ISkin): Promise<void>;
     /** @hidden */

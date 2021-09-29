@@ -11,6 +11,9 @@ import { UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEff
 import { Constants } from "../Engines/constants";
 import { _TypeStore } from "../Misc/typeStore";
 
+import "../Shaders/gpuUpdateParticles.fragment";
+import "../Shaders/gpuUpdateParticles.vertex";
+
 declare type Engine = import("../Engines/engine").Engine;
 
 /** @hidden */

@@ -1286,7 +1286,8 @@ export class NativeEngine extends Engine {
         this._native.setViewPort(viewport.x, viewport.y, viewport.width, viewport.height);
     }
 
-    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false, cullBackFaces?: boolean, stencil?: IStencilState): void {
+    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false, cullBackFaces?: boolean, stencil?: IStencilState, zOffsetUnits: number = 0): void {
+        // TODO. zOffsetUnits
         this._native.setState(culling, zOffset, this.cullBackFaces ?? cullBackFaces ?? true, reverseSide);
     }
 
@@ -1310,7 +1311,7 @@ export class NativeEngine extends Engine {
     }
 
     /**
-     * Set the z offset to apply to current rendering
+     * Set the z offset Factor to apply to current rendering
      * @param value defines the offset to apply
      */
     public setZOffset(value: number): void {
@@ -1318,11 +1319,31 @@ export class NativeEngine extends Engine {
     }
 
     /**
-     * Gets the current value of the zOffset
-     * @returns the current zOffset state
+     * Gets the current value of the zOffset Factor
+     * @returns the current zOffset Factor state
      */
     public getZOffset(): number {
-        return this._native.getZOffset();
+        const zOffset = this._native.getZOffset();
+        return this.useReverseDepthBuffer ? -zOffset : zOffset;
+    }
+
+    /**
+     * Set the z offset Units to apply to current rendering
+     * @param value defines the offset to apply
+     */
+    public setZOffsetUnits(value: number): void {
+        // TODO.
+        this._depthCullingState.zOffsetUnits = this.useReverseDepthBuffer ? -value : value;
+    }
+
+    /**
+     * Gets the current value of the zOffset Units
+     * @returns the current zOffset Units state
+     */
+    public getZOffsetUnits(): number {
+        // TODO.
+        const zOffsetUnits = this._depthCullingState.zOffsetUnits;
+        return this.useReverseDepthBuffer ? -zOffsetUnits : zOffsetUnits;
     }
 
     /**
@@ -1986,6 +2007,7 @@ export class NativeEngine extends Engine {
         texture.generateMipMaps = !noMipmap;
         texture.samplingMode = samplingMode;
         texture.invertY = invertY;
+        texture._useSRGBBuffer = this._getUseSRGBBuffer(useSRGBBuffer, noMipmap);
 
         if (!this.doNotHandleContextLost) {
             // Keep a link to the buffer only if we plan to handle context lost
@@ -2040,7 +2062,6 @@ export class NativeEngine extends Engine {
                 const underlyingResource = texture._hardwareTexture.underlyingResource;
 
                 this._native.loadTexture(underlyingResource, data, !noMipmap, invertY, useSRGBBuffer, () => {
-                    texture._useSRGBBuffer = useSRGBBuffer && this._caps.supportSRGBBuffers;
                     texture.baseWidth = this._native.getTextureWidth(underlyingResource);
                     texture.baseHeight = this._native.getTextureHeight(underlyingResource);
                     texture.width = texture.baseWidth;
@@ -2195,10 +2216,6 @@ export class NativeEngine extends Engine {
                 texture.height = info.width;
 
                 EnvironmentTextureTools.UploadEnvSpherical(texture, info);
-
-                if (info.version !== 1) {
-                    throw new Error(`Unsupported babylon environment map version "${info.version}"`);
-                }
 
                 let specularInfo = info.specular as EnvironmentTextureSpecularInfoV1;
                 if (!specularInfo) {

@@ -70,6 +70,9 @@ export class TargetedAnimationGridComponent extends React.Component<ITargetedAni
             this._animationCurveEditorContext.animations = [this.props.targetedAnimation.animation];
             this._animationCurveEditorContext.target = this.props.targetedAnimation.target;
             this._animationCurveEditorContext.scene = this.props.scene;
+            if (this._animationGroup) {
+                this._animationCurveEditorContext.rootAnimationGroup = this._animationGroup;
+            }
         }        
 
         return (
