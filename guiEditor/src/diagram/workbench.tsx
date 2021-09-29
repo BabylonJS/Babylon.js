@@ -16,7 +16,6 @@ import { PointerEventTypes, PointerInfo } from "babylonjs/Events/pointerEvents";
 import { EventState } from "babylonjs/Misc/observable";
 import { IWheelEvent } from "babylonjs/Events/deviceInputEvents";
 import { Epsilon } from "babylonjs/Maths/math.constants";
-import { Button } from "babylonjs-gui/2D/controls/button";
 import { Container } from "babylonjs-gui/2D/controls/container";
 import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
 import { KeyboardEventTypes, KeyboardInfo } from "babylonjs/Events/keyboardEvents";
@@ -54,19 +53,20 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     public _scene: Scene;
     private _selectedGuiNodes: Control[] = [];
     private _ctrlKeyIsPressed = false;
+    private _altKeyIsPressed = false;
     private _constraintDirection = ConstraintDirection.NONE;
     private _forcePanning = false;
     private _forceZooming = false;
-    private _forceSelecting = false;
+    private _forceSelecting = true;
     private _outlines = false;
     private _panning: boolean;
     private _canvas: HTMLCanvasElement;
     private _responsive: boolean;
     private _isOverGUINode = false;
-    private _focused: boolean = false;
     private _clipboard: Control[] = [];
     private _selectAll: boolean = false;
-
+    private _camera: ArcRotateCamera;
+    private _cameraRadias = 1500;
     public get globalState() {
         return this.props.globalState;
     }
@@ -141,6 +141,15 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             }
         });
 
+        props.globalState.onFitToWindowObservable.add(() => {
+            for (let i = 0; i < 2; ++i) {
+                this._camera.alpha = -Math.PI / 2;
+                this._camera.beta = 0;
+                this._camera.radius = this._cameraRadias;
+                this._camera.target = Vector3.Zero();
+            }
+        });
+
         props.globalState.onOutlinesObservable.add(() => {
             this._outlines = !this._outlines;
         });
@@ -172,11 +181,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         );
 
         this.props.globalState.workbench = this;
-        
+
     }
 
     keyEvent = (evt: KeyboardEvent) => {
         this._ctrlKeyIsPressed = evt.ctrlKey;
+        this._altKeyIsPressed = evt.altKey;
         if (evt.shiftKey) {
             this._setConstraintDirection = this._constraintDirection === ConstraintDirection.NONE;
         } else {
@@ -185,7 +195,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }
 
         if (evt.key === "Delete") {
-            if (this._focused) {
+            if (!this.props.globalState.lockObject.lock) {
                 this._selectedGuiNodes.forEach(guiNode => {
                     guiNode.dispose();
                 });
@@ -193,7 +203,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             }
         }
 
-        if (this._ctrlKeyIsPressed && this._focused) {
+        if (this._ctrlKeyIsPressed && !this.props.globalState.lockObject.lock) {
             if (evt.key === "a") {
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                 let index = 0;
@@ -241,7 +251,13 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         if (newControl) { //insert the new control into the adt or parent container
             this.props.globalState.workbench.appendBlock(newControl);
             this.props.globalState.guiTexture.removeControl(newControl);
-            original.parent?.addControl(newControl);
+            if (original.parent?.typeName === "Grid") {
+                const cell = Tools.getCellInfo(original.parent as Grid, original);
+                (original.parent as Grid).addControl(newControl, cell.x, cell.y);
+            }
+            else {
+                original.parent?.addControl(newControl);
+            }
             let index = 1;
             while (this.props.globalState.guiTexture.getDescendants(false).filter(  //search if there are any copies
                 control => control.name === `${newControl.name} Copy ${index}`).length) {
@@ -356,7 +372,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     createNewGuiNode(
         guiControl: Control) {
-        this.enableEditorProperties(guiControl);
+        guiControl.highlightLineWidth = 5;
         guiControl.onPointerUpObservable.add((evt) => {
             this.clicked = false;
         });
@@ -386,22 +402,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         return guiControl;
     }
 
-    enableEditorProperties(guiControl: Control) {
-        switch (guiControl.typeName) {
-            case "Button":
-                (guiControl as Button).pointerDownAnimation = () => null;
-                (guiControl as Button).pointerUpAnimation = () => null;
-                break;
-            case "StackPanel":
-            case "Grid":
-                guiControl.isHighlighted = true;
-                break;
-            default:
-                break;
-        }
-        guiControl.highlightLineWidth = 5;
-    }
-
     private parent(dropLocationControl: Nullable<Control>) {
         const draggedControl = this.props.globalState.draggedControl;
         const draggedControlParent = draggedControl?.parent;
@@ -420,7 +420,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                             draggedControlParent.removeControl(draggedControl);
                             let index = dropLocationControl.parent.children.indexOf(dropLocationControl);
                             const reversed = dropLocationControl.parent.typeName == "StackPanel";
-                            
+
                             index = this._adjustParentingIndex(index, reversed);  //adjusting index to be before or after based on where the control is over
 
                             dropLocationControl.parent.children.splice(index, 0, draggedControl);
@@ -472,13 +472,13 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         return true;
     }
 
-    private _adjustParentingIndex(index: number, reversed : boolean = false) {
+    private _adjustParentingIndex(index: number, reversed: boolean = false) {
         switch (this.props.globalState.draggedControlDirection) {
             case DragOverLocation.ABOVE:
-                return reversed? index: index + 1;
+                return reversed ? index : index + 1;
             case DragOverLocation.BELOW:
             case DragOverLocation.CENTER:
-                return reversed? index + 1: index;
+                return reversed ? index + 1 : index;
         }
         return index;
     }
@@ -623,7 +623,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._scene = new Scene(engine);
         const clearColor = 204 / 255.0;
         this._scene.clearColor = new Color4(clearColor, clearColor, clearColor, 1.0);
-        let camera = new ArcRotateCamera("Camera", -Math.PI / 2, 0, 1024, Vector3.Zero(), this._scene);
+        this._camera = new ArcRotateCamera("Camera", -Math.PI / 2, 0, this._cameraRadias, Vector3.Zero(), this._scene);
         const light = new HemisphericLight("light1", Axis.Y, this._scene);
         light.intensity = 0.9;
 
@@ -641,7 +641,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.artBoardBackground.thickness = 0;
 
         this.globalState.guiTexture.addControl(this.artBoardBackground);
-        this.addControls(this._scene, camera);
+        this.addControls(this._scene, this._camera);
 
         this._scene.getEngine().onCanvasPointerOutObservable.clear();
 
@@ -704,7 +704,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         scene.onPointerObservable.add((p: PointerInfo, e: EventState) => {
             removeObservers();
-            if (p.event.button !== 0 || this._forcePanning) {
+            if (p.event.button !== 0 || this._forcePanning ||
+                this._altKeyIsPressed) {
                 initialPos = this.getPosition(scene, camera, plane);
                 scene.onPointerObservable.add(panningFn, PointerEventTypes.POINTERMOVE);
                 this._panning = true;
@@ -745,6 +746,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 case "r": //outlines
                 case "R":
                     this.globalState.onOutlinesObservable.notifyObservers();
+                    break;
+                case "0": //fit to window
+                    if (this._altKeyIsPressed) {
+                        this.globalState.onFitToWindowObservable.notifyObservers();
+                    }
                     break;
                 default:
                     break;
@@ -845,9 +851,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     render() {
         return (
             <canvas id="workbench-canvas" onPointerMove={(evt) => this.onMove(evt)} onPointerDown={(evt) => this.onDown(evt)} onPointerUp={(evt) => this.onUp(evt)}
-                ref={this._rootContainer}
-                onFocus={() => { this._focused = true; }}
-                onBlur={() => { this._focused = false; }}>
+                ref={this._rootContainer}>
             </canvas>
         );
     }
