@@ -270,7 +270,6 @@ export class DepthPeelingRenderer {
         const MIN_DEPTH = 0;
         const MAX_DEPTH = 1;
 
-        // TODO
         (this._scene.prePassRenderer! as any)._enabled = false;
 
         // Clears
@@ -353,7 +352,6 @@ export class DepthPeelingRenderer {
         // Final composition on default FB
         this._finalCompose(writeId);
 
-        // TODO
         (this._scene.prePassRenderer! as any)._enabled = true;
         this._engine.depthCullingState.depthMask = true;
     }

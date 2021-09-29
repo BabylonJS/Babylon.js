@@ -885,8 +885,6 @@ export class StandardMaterial extends PushMaterial {
         MaterialHelper.PrepareDefinesForMultiview(scene, defines);
 
         // PrePass
-        // TODO : same as in prePassRenderer.ts, we need a better way to order the pipeline
-        // Remove this alpha hack
         const oit = this.needAlphaBlendingForMesh(mesh) && this.getScene().useOrderIndependentTransparency;
         MaterialHelper.PrepareDefinesForPrePass(scene, defines, this.canRenderToMRT && !oit);
 
