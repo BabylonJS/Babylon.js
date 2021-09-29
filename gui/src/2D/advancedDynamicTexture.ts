@@ -292,7 +292,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
 
     private getControlByKey(key: string, value: any): Nullable<Control> {
-        return this._rootContainer.getDescendants().find(control => (control as any)[key] === value) || null;
+        return this._rootContainer.getDescendants().find((control) => (control as any)[key] === value) || null;
     }
 
     /**
