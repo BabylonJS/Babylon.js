@@ -580,7 +580,7 @@ export const DecodeBase64UrlToString = (uri: string): string => {
 /**
  * This will be executed automatically for UMD and es5.
  * If esm dev wants the side effects to execute they will have to run it manually
- * Note - at the moment I am not exporting it (until building native es modules)
+ * Once we build native modules those need to be exported.
  * @hidden
  */
 const initSideEffects = () => {

@@ -781,6 +781,7 @@ export const EnvironmentTextureTools = {
 /**
  * This will be executed automatically for UMD and es5.
  * If esm dev wants the side effects to execute they will have to run it manually
+ * Once we build native modules those need to be exported.
  * @hidden
  */
 const initSideEffects = () => {
