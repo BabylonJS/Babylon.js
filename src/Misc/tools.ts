@@ -2,7 +2,6 @@ import { Nullable, float } from "../types";
 import { Observable } from "./observable";
 import { GetDOMTextContent, IsNavigatorAvailable, IsWindowObjectExist } from "./domManagement";
 import { Logger } from "./logger";
-import { RegisterClass } from "./typeStore";
 import { DeepCopier } from "./deepCopier";
 import { PrecisionDate } from "./precisionDate";
 import { _WarnImport } from "./devTools";
