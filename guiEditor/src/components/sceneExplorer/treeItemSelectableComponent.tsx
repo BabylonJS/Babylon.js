@@ -102,7 +102,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
         }
 
         let children = Tools.SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
-        if(entity.typeName === "StackPanel") {
+        if(entity.typeName === "StackPanel" || entity.typeName === "VirtualKeyboard")  {
             children.reverse();
         }
         return (

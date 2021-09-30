@@ -364,6 +364,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             case "Ellipse":
             case "Grid":
             case "ScrollViewer":
+            case "VirtualKeyboard":
                 return true;
             default:
                 return false;
@@ -419,7 +420,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                         if (dropLocationControl.parent.typeName != "Grid") {
                             draggedControlParent.removeControl(draggedControl);
                             let index = dropLocationControl.parent.children.indexOf(dropLocationControl);
-                            const reversed = dropLocationControl.parent.typeName == "StackPanel";
+                            const reversed = dropLocationControl.parent.typeName === "StackPanel" ||  dropLocationControl.parent.typeName === "VirtualKeyboard";
 
                             index = this._adjustParentingIndex(index, reversed);  //adjusting index to be before or after based on where the control is over
 
