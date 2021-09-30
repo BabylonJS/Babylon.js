@@ -51,6 +51,7 @@
 - Add support to encode and decode .env environment textures using WebP instead of PNG ([simonihmig](https://github.com/simonihmig))
 - Added a new stereoscopic screen rig camera ([RaananW](https://github.com/RaananW))
 - Extended functionality for pointer move with scene pointerMoveTrianglePredicate ([phaselock](https://github.com/lockphase))
+- Added the ability to load a GUI from the snippet server and project it onto a mesh ([PirateJC](https://github.com/piratejc))
 
 ### Engine
 
