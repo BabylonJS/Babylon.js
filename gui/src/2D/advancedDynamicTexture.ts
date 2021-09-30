@@ -279,7 +279,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     * @return the first control found or null
     */
     public getControlByName(name: string): Nullable<Control> {
-        return this.getControlByKey("name", name);
+        return this._getControlByKey("name", name);
     }
 
     /**
@@ -288,10 +288,10 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     * @return the first control found or null
     */
     public getControlById(uniqueId: number): Nullable<Control> {
-        return this.getControlByKey("uniqueId", uniqueId);
+        return this._getControlByKey("uniqueId", uniqueId);
     }
 
-    private getControlByKey(key: string, value: any): Nullable<Control> {
+    private _getControlByKey(key: string, value: any): Nullable<Control> {
         return this._rootContainer.getDescendants().find((control) => (control as any)[key] === value) || null;
     }
 
