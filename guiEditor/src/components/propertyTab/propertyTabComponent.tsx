@@ -88,13 +88,13 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     private _onBuiltObserver: Nullable<Observer<void>>;
     private _timerIntervalId: number;
     private _lockObject: LockObject;
-    private _sizeOption: number = 2;
-    private _sizeOptionsLength = 3;
+    private _sizeOption: number = 10;
+    private _sizeOptionsLength = 12;
 
     constructor(props: IPropertyTabComponentProps) {
         super(props);
 
-        this.state = { currentNode: null, textureSize: new Vector2(1200, 1200) };
+        this.state = { currentNode: null, textureSize: new Vector2(1024, 1024) };
         this._lockObject = new LockObject();
         this.props.globalState.lockObject = this._lockObject;
         this.props.globalState.onSaveObservable.add(() => {
@@ -112,7 +112,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         });
 
         this.props.globalState.onLoadObservable.add((file) => this.load(file));
-        this._sizeOption = DataStorage.ReadBoolean("Responsive", true) ? 2 : this._sizeOptionsLength;
+        this._sizeOption = DataStorage.ReadBoolean("Responsive", true) ? 10 : this._sizeOptionsLength;
 
     }
 
@@ -382,12 +382,31 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
         const _sizeValues = [
             new Vector2(1920, 1080),
+            new Vector2(1366, 768),
+            new Vector2(1280, 800),
+            new Vector2(3840, 2160),
             new Vector2(750, 1334),
-            new Vector2(1200, 1200)];
+            new Vector2(1125, 2436),
+            new Vector2(1170, 2532),
+            new Vector2(1284, 2778),
+            new Vector2(1080, 2220),
+            new Vector2(1080, 2340),
+            new Vector2(1024, 1024),
+            new Vector2(2048, 2048),
+        ];
         const _sizeOptions = [
             { label: "Web (1920)", value: 0 },
-            { label: "Phone (750)", value: 1 },
-            { label: "Square (1200)", value: 2 },
+            { label: "Web (1366)", value: 1 },
+            { label: "Web (1280)", value: 2 },
+            { label: "Web (3840)", value: 3 },
+            { label: "iPhone 8 (750)", value: 4 },
+            { label: "iPhone X, 11 (1125)", value: 5 },
+            { label: "iPhone 12 (1170)", value: 6 },
+            { label: "iPhone Pro Max (1284)", value: 7 },
+            { label: "Google Pixel 4 (1080)", value: 8 },
+            { label: "Google Pixel 5 (1080)", value: 9 },
+            { label: "Square (1024)", value: 10 },
+            { label: "Square (2048)", value: 11 },
         ];
 
         if (this.state.currentNode && this.props.globalState.workbench.selectedGuiNodes.length === 1) {
@@ -404,25 +423,25 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         this.state.currentNode?.parent?.typeName === "Grid" &&
                         <ParentingPropertyGridComponent control={this.state.currentNode} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} lockObject={this._lockObject}></ParentingPropertyGridComponent>
                     }
-                    {this.state.currentNode !== this.props.globalState.guiTexture.getChildren()[0] && 
-                    <>
-                        <hr className="ge" />
-                        <ButtonLineComponent
-                            label="DELETE ELEMENT"
-                            onClick={() => {
-                                this.state.currentNode?.dispose();
-                                this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-                            }}
-                        />
-                        <ButtonLineComponent
-                            label="COPY ELEMENT"
-                            onClick={() => {
-                                if (this.state.currentNode) {
-                                    this.props.globalState.workbench.CopyGUIControl(this.state.currentNode);
-                                }
-                            }}
-                        />
-                    </>}
+                    {this.state.currentNode !== this.props.globalState.guiTexture.getChildren()[0] &&
+                        <>
+                            <hr className="ge" />
+                            <ButtonLineComponent
+                                label="DELETE ELEMENT"
+                                onClick={() => {
+                                    this.state.currentNode?.dispose();
+                                    this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                                }}
+                            />
+                            <ButtonLineComponent
+                                label="COPY ELEMENT"
+                                onClick={() => {
+                                    if (this.state.currentNode) {
+                                        this.props.globalState.workbench.CopyGUIControl(this.state.currentNode);
+                                    }
+                                }}
+                            />
+                        </>}
                 </div>
             );
         }
