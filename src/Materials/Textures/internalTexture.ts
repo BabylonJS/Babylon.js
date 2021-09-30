@@ -143,7 +143,7 @@ export class InternalTexture extends TextureSampler {
      */
     public onLoadedObservable = new Observable<InternalTexture>();
     /**
-     * If this callback is defined is will be called instead of the default _rebuild function
+     * If this callback is defined it will be called instead of the default _rebuild function
      */
     public onRebuildCallback: Nullable<(internalTexture: InternalTexture) => {
         proxy: Nullable<InternalTexture | Promise<InternalTexture>>;
