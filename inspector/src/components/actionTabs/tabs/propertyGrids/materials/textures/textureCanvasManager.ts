@@ -153,7 +153,6 @@ export class TextureCanvasManager {
         this._setMetadata = setMetadata;
         this._setMipLevel = setMipLevel;
 
-        this._size = texture.getSize();
         this._originalTexture = texture;
         this._originalInternalTexture = this._originalTexture._texture;
         this._engine = new Engine(this._UICanvas, true);
@@ -163,6 +162,8 @@ export class TextureCanvasManager {
         this._camera = new FreeCamera('camera', new Vector3(0, 0, -1), this._scene);
         this._camera.mode = Camera.ORTHOGRAPHIC_CAMERA;
         this._cameraPos = new Vector2();
+
+        this.setSize(texture.getSize());
 
         this._channelsTexture = new HtmlElementTexture('ct', this._2DCanvas, { engine: this._engine, scene: null, samplingMode: Texture.NEAREST_SAMPLINGMODE, generateMipMaps: true });
 
@@ -612,9 +613,11 @@ export class TextureCanvasManager {
         this._2DCanvas.height = this._size.height;
         this._3DCanvas.width = this._size.width;
         this._3DCanvas.height = this._size.height;
-        this._planeMaterial.setInt('w', this._size.width);
-        this._planeMaterial.setInt('h', this._size.height);
-        if (oldSize.width != size.width || oldSize.height != size.height) {
+        if (this._planeMaterial) {
+            this._planeMaterial.setInt('w', this._size.width);
+            this._planeMaterial.setInt('h', this._size.height);
+        }
+        if (!oldSize || oldSize.width != size.width || oldSize.height != size.height) {
             this._cameraPos.x = 0;
             this._cameraPos.y = 0;
             this._scale = 1.5 / Math.max(this._size.width, this._size.height);
