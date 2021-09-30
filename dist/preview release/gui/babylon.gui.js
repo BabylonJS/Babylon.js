@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \***********************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \*****************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -1491,6 +1491,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
                 var key = _a[0], value = _a[1];
                 value._onCanvasBlur();
             });
+            _this.focusedControl = null;
             _this._lastControlDown = {};
         });
     };
@@ -1539,6 +1540,35 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
                 }
             });
             request.open("GET", AdvancedDynamicTexture.SnippetUrl + "/" + snippetId.replace(/#/g, "/"));
+            request.send();
+        });
+    };
+    /**
+    * Recreate the content of the ADT from a url json
+    * @param url defines the url to load
+    * @returns a promise that will resolve on success
+    */
+    AdvancedDynamicTexture.prototype.parseFromURLAsync = function (url) {
+        var _this = this;
+        if (url === "") {
+            return Promise.resolve();
+        }
+        return new Promise(function (resolve, reject) {
+            var request = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["WebRequest"]();
+            request.addEventListener("readystatechange", function () {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        var gui = request.responseText;
+                        var serializationObject = JSON.parse(gui);
+                        _this.parseContent(serializationObject);
+                        resolve();
+                    }
+                    else {
+                        reject("Unable to load");
+                    }
+                }
+            });
+            request.open("GET", url);
             request.send();
         });
     };
@@ -2176,6 +2206,10 @@ var ColorPicker = /** @class */ (function (_super) {
                 return;
             }
             if (this._width.fromString(value)) {
+                if (this._width.getValue(this._host) === 0) {
+                    value = '1px';
+                    this._width.fromString(value);
+                }
                 this._height.fromString(value);
                 this._markAsDirty();
             }
@@ -2197,6 +2231,10 @@ var ColorPicker = /** @class */ (function (_super) {
                 return;
             }
             if (this._height.fromString(value)) {
+                if (this._height.getValue(this._host) === 0) {
+                    value = '1px';
+                    this._height.fromString(value);
+                }
                 this._width.fromString(value);
                 this._markAsDirty();
             }
@@ -4601,9 +4639,6 @@ var Control = /** @class */ (function () {
     Object.defineProperty(Control.prototype, "fontFamily", {
         /** Gets or set font family */
         get: function () {
-            if (!this._fontSet) {
-                return "";
-            }
             return this._fontFamily;
         },
         set: function (value) {
@@ -5914,7 +5949,7 @@ var Control = /** @class */ (function () {
         serializationObject.name = this.name;
         serializationObject.className = this.getClassName();
         if (this._font) {
-            serializationObject.fontFamily = this.fontFamily;
+            serializationObject.fontFamily = this._fontFamily;
             serializationObject.fontSize = this.fontSize;
             serializationObject.fontWeight = this.fontWeight;
             serializationObject.fontStyle = this.fontStyle;
@@ -14805,76 +14840,76 @@ babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredT
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _controls__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./controls */ "./2D/controls/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Button", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["Button"]; });
+/* harmony import */ var _controls_index__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./controls/index */ "./2D/controls/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Button", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["Button"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Checkbox", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["Checkbox"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Checkbox", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["Checkbox"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ColorPicker", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["ColorPicker"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ColorPicker", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["ColorPicker"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Container", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["Container"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Container", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["Container"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Control", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["Control"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Control", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["Control"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Ellipse", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["Ellipse"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Ellipse", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["Ellipse"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FocusableButton", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["FocusableButton"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FocusableButton", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["FocusableButton"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Grid", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["Grid"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Grid", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["Grid"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Image", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["Image"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Image", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["Image"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "InputText", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["InputText"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "InputText", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["InputText"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "InputPassword", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["InputPassword"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "InputPassword", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["InputPassword"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Line", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["Line"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Line", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["Line"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MultiLine", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["MultiLine"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MultiLine", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["MultiLine"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "RadioButton", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["RadioButton"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "RadioButton", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["RadioButton"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "StackPanel", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["StackPanel"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "StackPanel", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["StackPanel"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SelectorGroup", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["SelectorGroup"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SelectorGroup", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["SelectorGroup"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CheckboxGroup", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["CheckboxGroup"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CheckboxGroup", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["CheckboxGroup"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "RadioGroup", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["RadioGroup"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "RadioGroup", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["RadioGroup"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SliderGroup", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["SliderGroup"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SliderGroup", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["SliderGroup"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SelectionPanel", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["SelectionPanel"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SelectionPanel", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["SelectionPanel"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ScrollViewer", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["ScrollViewer"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ScrollViewer", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["ScrollViewer"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TextWrapping", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["TextWrapping"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TextWrapping", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["TextWrapping"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TextBlock", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["TextBlock"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TextBlock", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["TextBlock"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TextWrapper", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["TextWrapper"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TextWrapper", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["TextWrapper"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ToggleButton", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["ToggleButton"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ToggleButton", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["ToggleButton"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KeyPropertySet", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["KeyPropertySet"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KeyPropertySet", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["KeyPropertySet"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "VirtualKeyboard", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["VirtualKeyboard"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "VirtualKeyboard", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["VirtualKeyboard"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Rectangle", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["Rectangle"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Rectangle", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["Rectangle"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "DisplayGrid", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["DisplayGrid"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "DisplayGrid", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["DisplayGrid"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "BaseSlider", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["BaseSlider"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "BaseSlider", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["BaseSlider"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Slider", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["Slider"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Slider", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["Slider"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ImageBasedSlider", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["ImageBasedSlider"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ImageBasedSlider", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["ImageBasedSlider"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ScrollBar", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["ScrollBar"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ScrollBar", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["ScrollBar"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ImageScrollBar", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["ImageScrollBar"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ImageScrollBar", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["ImageScrollBar"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "name", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["name"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "name", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["name"]; });
 
 /* harmony import */ var _advancedDynamicTexture__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./advancedDynamicTexture */ "./2D/advancedDynamicTexture.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "AdvancedDynamicTexture", function() { return _advancedDynamicTexture__WEBPACK_IMPORTED_MODULE_1__["AdvancedDynamicTexture"]; });
@@ -18610,6 +18645,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control3D__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control3D */ "./3D/controls/control3D.ts");
+/* harmony import */ var _materials_mrdl_mrdlSliderBarMaterial__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../materials/mrdl/mrdlSliderBarMaterial */ "./3D/materials/mrdl/mrdlSliderBarMaterial.ts");
+/* harmony import */ var _materials_mrdl_mrdlSliderThumbMaterial__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../materials/mrdl/mrdlSliderThumbMaterial */ "./3D/materials/mrdl/mrdlSliderThumbMaterial.ts");
+/* harmony import */ var _materials_mrdl_mrdlBackplateMaterial__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../materials/mrdl/mrdlBackplateMaterial */ "./3D/materials/mrdl/mrdlBackplateMaterial.ts");
 
 
 
@@ -18624,7 +18662,8 @@ var SLIDER_MIN = 0;
 var SLIDER_MAX = 100;
 var SLIDER_VAL = 50;
 var SLIDER_STEP = 0;
-var SLIDER_SCALING = 2.0;
+var SLIDER_SCALING = 1.0;
+var SLIDER_MARGIN = 0.2;
 /**
  * Class used to create a slider in 3D
  */
@@ -18633,11 +18672,13 @@ var Slider3D = /** @class */ (function (_super) {
     /**
      * Creates a new slider
      * @param name defines the control name
+     * @param sliderBackplateVisible defines if the control has a backplate, default is false
      */
-    function Slider3D(name) {
+    function Slider3D(name, sliderBackplateVisible) {
         var _this = _super.call(this, name) || this;
         /** Observable raised when the sldier value changes */
         _this.onValueChangedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        _this._sliderBackplateVisible = sliderBackplateVisible || false;
         _this._minimum = SLIDER_MIN;
         _this._maximum = SLIDER_MAX;
         _this._step = SLIDER_STEP;
@@ -18721,7 +18762,7 @@ var Slider3D = /** @class */ (function (_super) {
             if (!this.node) {
                 return -SLIDER_SCALING / 2;
             }
-            return this._sliderBar.position.x - this._sliderBar.scaling.y / 2;
+            return this._sliderBar.position.x - this._sliderBar.scaling.x / 2;
         },
         enumerable: false,
         configurable: true
@@ -18731,7 +18772,7 @@ var Slider3D = /** @class */ (function (_super) {
             if (!this.node) {
                 return SLIDER_SCALING / 2;
             }
-            return this._sliderBar.position.x + this._sliderBar.scaling.y / 2;
+            return this._sliderBar.position.x + this._sliderBar.scaling.x / 2;
         },
         enumerable: false,
         configurable: true
@@ -18756,32 +18797,76 @@ var Slider3D = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
+    Object.defineProperty(Slider3D.prototype, "sliderBackplateMaterial", {
+        /**
+         * Gets the slider backplate material used by this control
+         */
+        get: function () {
+            return this._sliderBackplateMaterial;
+        },
+        enumerable: false,
+        configurable: true
+    });
     // Mesh association
     Slider3D.prototype._createNode = function (scene) {
-        var anchor = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["TransformNode"](this.name + "_slider", scene);
-        var sliderBar = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["CylinderBuilder"].CreateCylinder(this.name + "_sliderbar", { diameter: 0.03, height: 1.0 }, scene);
-        sliderBar.rotation.z = -Math.PI / 2;
-        sliderBar.scaling.y = SLIDER_SCALING;
-        sliderBar.isPickable = false;
-        sliderBar.setParent(anchor);
-        var sliderThumb = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["BoxBuilder"].CreateBox(this.name + "_sliderthumb", { size: 0.1 }, scene);
-        sliderThumb.scaling = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector3"](SLIDER_SCALING, SLIDER_SCALING, SLIDER_SCALING);
-        sliderThumb.position.x = this._convertToPosition(this.value);
-        sliderThumb.addBehavior(this._createBehavior());
-        sliderThumb.setParent(anchor);
-        this._sliderBar = sliderBar;
-        this._sliderThumb = sliderThumb;
-        return anchor;
+        var _this = this;
+        var sliderBackplate = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["BoxBuilder"].CreateBox(this.name + "_sliderbackplate", {
+            width: 1.0,
+            height: 1.0,
+            depth: 1.0,
+        }, scene);
+        sliderBackplate.isPickable = false;
+        sliderBackplate.visibility = 0;
+        sliderBackplate.scaling = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector3"](1, 0.5, 0.8);
+        babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["SceneLoader"].ImportMeshAsync(undefined, Slider3D.MODEL_BASE_URL, Slider3D.MODEL_FILENAME, scene)
+            .then(function (result) {
+            var sliderBackplateModel = result.meshes[1];
+            var sliderBarModel = result.meshes[1].clone(_this.name + "_sliderbar", sliderBackplate);
+            var sliderThumbModel = result.meshes[1].clone(_this.name + "_sliderthumb", sliderBackplate);
+            sliderBackplateModel.visibility = 0;
+            if (_this._sliderBackplateVisible) {
+                sliderBackplateModel.visibility = 1;
+                sliderBackplateModel.name = _this.name + "_sliderbackplate";
+                sliderBackplateModel.isPickable = false;
+                sliderBackplateModel.scaling.x = 1;
+                sliderBackplateModel.scaling.z = 0.2;
+                sliderBackplateModel.parent = sliderBackplate;
+                if (!!_this._sliderBackplateMaterial) {
+                    sliderBackplateModel.material = _this._sliderBackplateMaterial;
+                }
+                _this._sliderBackplate = sliderBackplateModel;
+            }
+            if (!!sliderBarModel) {
+                sliderBarModel.parent = sliderBackplate;
+                sliderBarModel.position.z = -0.1;
+                sliderBarModel.scaling = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector3"](SLIDER_SCALING - SLIDER_MARGIN, 0.04, 0.3);
+                sliderBarModel.isPickable = false;
+                if (!!_this._sliderBarMaterial) {
+                    sliderBarModel.material = _this._sliderBarMaterial;
+                }
+                _this._sliderBar = sliderBarModel;
+            }
+            if (!!sliderThumbModel) {
+                sliderThumbModel.parent = sliderBackplate;
+                sliderThumbModel.isPickable = true;
+                sliderThumbModel.position.z = -0.115;
+                sliderThumbModel.scaling = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0.025, 0.3, 0.6);
+                sliderThumbModel.position.x = _this._convertToPosition(_this.value);
+                sliderThumbModel.addBehavior(_this._createBehavior());
+                if (!!_this._sliderThumbMaterial) {
+                    sliderThumbModel.material = _this._sliderThumbMaterial;
+                }
+                _this._sliderThumb = sliderThumbModel;
+            }
+        });
+        this._affectMaterial(sliderBackplate);
+        return sliderBackplate;
     };
     Slider3D.prototype._affectMaterial = function (mesh) {
-        var barMaterial = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["StandardMaterial"](this.name + "_sliderbar_material", mesh.getScene());
-        barMaterial.specularColor = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Color3"].Black();
-        this._sliderBar.material = barMaterial;
-        var thumbMaterial = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["StandardMaterial"](this.name + "_sliderthumb_material", mesh.getScene());
-        thumbMaterial.specularColor = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Color3"].Black();
-        mesh.material = thumbMaterial;
-        this._sliderBarMaterial = barMaterial;
-        this._sliderThumbMaterial = thumbMaterial;
+        var _a, _b, _c;
+        this._sliderBackplateMaterial = (_a = this._sliderBackplateMaterial) !== null && _a !== void 0 ? _a : new _materials_mrdl_mrdlBackplateMaterial__WEBPACK_IMPORTED_MODULE_5__["MRDLBackplateMaterial"](this.name + "_sliderbackplate_material", mesh.getScene());
+        this._sliderBarMaterial = (_b = this._sliderBarMaterial) !== null && _b !== void 0 ? _b : new _materials_mrdl_mrdlSliderBarMaterial__WEBPACK_IMPORTED_MODULE_3__["MRDLSliderBarMaterial"](this.name + "_sliderbar_material", mesh.getScene());
+        this._sliderThumbMaterial = (_c = this._sliderThumbMaterial) !== null && _c !== void 0 ? _c : new _materials_mrdl_mrdlSliderThumbMaterial__WEBPACK_IMPORTED_MODULE_4__["MRDLSliderThumbMaterial"](this.name + "_sliderthumb_material", mesh.getScene());
     };
     Slider3D.prototype._createBehavior = function () {
         var _this = this;
@@ -18810,13 +18895,23 @@ var Slider3D = /** @class */ (function (_super) {
      * Releases all associated resources
      */
     Slider3D.prototype.dispose = function () {
-        var _a, _b, _c, _d;
+        var _a, _b, _c, _d, _e, _f;
         _super.prototype.dispose.call(this);
         (_a = this._sliderBar) === null || _a === void 0 ? void 0 : _a.dispose();
         (_b = this._sliderThumb) === null || _b === void 0 ? void 0 : _b.dispose();
         (_c = this._sliderBarMaterial) === null || _c === void 0 ? void 0 : _c.dispose();
         (_d = this._sliderThumbMaterial) === null || _d === void 0 ? void 0 : _d.dispose();
+        (_e = this._sliderBackplate) === null || _e === void 0 ? void 0 : _e.dispose();
+        (_f = this._sliderBackplateMaterial) === null || _f === void 0 ? void 0 : _f.dispose();
     };
+    /**
+     * Base Url for the models.
+     */
+    Slider3D.MODEL_BASE_URL = "https://assets.babylonjs.com/meshes/MRTK/";
+    /**
+     * File name for the 8x4 model.
+     */
+    Slider3D.MODEL_FILENAME = 'mrtk-fluent-backplate.glb';
     return Slider3D;
 }(_control3D__WEBPACK_IMPORTED_MODULE_2__["Control3D"]));
 
@@ -21000,77 +21095,83 @@ var GUI3DManager = /** @class */ (function () {
 /*!*********************!*\
   !*** ./3D/index.ts ***!
   \*********************/
-/*! exports provided: AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, HolographicSlate, HandMenu, MeshButton3D, NearMenu, PlanePanel, ScatterPanel, Slider3D, SpherePanel, StackPanel3D, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchHolographicMenu, TouchToggleButton3D, VolumeBasedPanel, HolographicBackplate, FluentMaterialDefines, FluentMaterial, FluentButtonMaterial, FluentBackplateMaterial, HandleMaterial, SlateGizmo, HandleState, GizmoHandle, SideHandle, CornerHandle, GUI3DManager, Vector3WithInfo */
+/*! exports provided: AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, HolographicSlate, HandMenu, MeshButton3D, NearMenu, PlanePanel, ScatterPanel, Slider3D, SpherePanel, StackPanel3D, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchHolographicMenu, TouchToggleButton3D, VolumeBasedPanel, HolographicBackplate, FluentMaterialDefines, FluentMaterial, FluentButtonMaterial, FluentBackplateMaterial, HandleMaterial, MRDLSliderBarMaterial, MRDLSliderThumbMaterial, MRDLBackplateMaterial, SlateGizmo, HandleState, GizmoHandle, SideHandle, CornerHandle, GUI3DManager, Vector3WithInfo */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _controls__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./controls */ "./3D/controls/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "AbstractButton3D", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["AbstractButton3D"]; });
+/* harmony import */ var _controls_index__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./controls/index */ "./3D/controls/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "AbstractButton3D", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["AbstractButton3D"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Button3D", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["Button3D"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Button3D", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["Button3D"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Container3D", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["Container3D"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Container3D", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["Container3D"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Control3D", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["Control3D"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Control3D", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["Control3D"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CylinderPanel", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["CylinderPanel"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CylinderPanel", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["CylinderPanel"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HolographicButton", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["HolographicButton"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HolographicButton", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["HolographicButton"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HolographicSlate", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["HolographicSlate"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HolographicSlate", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["HolographicSlate"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HandMenu", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["HandMenu"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HandMenu", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["HandMenu"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MeshButton3D", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["MeshButton3D"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MeshButton3D", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["MeshButton3D"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "NearMenu", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["NearMenu"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "NearMenu", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["NearMenu"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "PlanePanel", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["PlanePanel"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "PlanePanel", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["PlanePanel"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ScatterPanel", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["ScatterPanel"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ScatterPanel", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["ScatterPanel"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Slider3D", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["Slider3D"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Slider3D", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["Slider3D"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SpherePanel", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["SpherePanel"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SpherePanel", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["SpherePanel"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "StackPanel3D", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["StackPanel3D"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "StackPanel3D", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["StackPanel3D"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchButton3D", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["TouchButton3D"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchButton3D", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["TouchButton3D"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchMeshButton3D", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["TouchMeshButton3D"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchMeshButton3D", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["TouchMeshButton3D"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchHolographicButton", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["TouchHolographicButton"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchHolographicButton", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["TouchHolographicButton"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchHolographicMenu", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["TouchHolographicMenu"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchHolographicMenu", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["TouchHolographicMenu"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchToggleButton3D", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["TouchToggleButton3D"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchToggleButton3D", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["TouchToggleButton3D"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "VolumeBasedPanel", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["VolumeBasedPanel"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "VolumeBasedPanel", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["VolumeBasedPanel"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HolographicBackplate", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["HolographicBackplate"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HolographicBackplate", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["HolographicBackplate"]; });
 
-/* harmony import */ var _materials__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./materials */ "./3D/materials/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentMaterialDefines", function() { return _materials__WEBPACK_IMPORTED_MODULE_1__["FluentMaterialDefines"]; });
+/* harmony import */ var _materials_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./materials/index */ "./3D/materials/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentMaterialDefines", function() { return _materials_index__WEBPACK_IMPORTED_MODULE_1__["FluentMaterialDefines"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentMaterial", function() { return _materials__WEBPACK_IMPORTED_MODULE_1__["FluentMaterial"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentMaterial", function() { return _materials_index__WEBPACK_IMPORTED_MODULE_1__["FluentMaterial"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentButtonMaterial", function() { return _materials__WEBPACK_IMPORTED_MODULE_1__["FluentButtonMaterial"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentButtonMaterial", function() { return _materials_index__WEBPACK_IMPORTED_MODULE_1__["FluentButtonMaterial"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentBackplateMaterial", function() { return _materials__WEBPACK_IMPORTED_MODULE_1__["FluentBackplateMaterial"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentBackplateMaterial", function() { return _materials_index__WEBPACK_IMPORTED_MODULE_1__["FluentBackplateMaterial"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HandleMaterial", function() { return _materials__WEBPACK_IMPORTED_MODULE_1__["HandleMaterial"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HandleMaterial", function() { return _materials_index__WEBPACK_IMPORTED_MODULE_1__["HandleMaterial"]; });
 
-/* harmony import */ var _gizmos__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./gizmos */ "./3D/gizmos/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SlateGizmo", function() { return _gizmos__WEBPACK_IMPORTED_MODULE_2__["SlateGizmo"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MRDLSliderBarMaterial", function() { return _materials_index__WEBPACK_IMPORTED_MODULE_1__["MRDLSliderBarMaterial"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HandleState", function() { return _gizmos__WEBPACK_IMPORTED_MODULE_2__["HandleState"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MRDLSliderThumbMaterial", function() { return _materials_index__WEBPACK_IMPORTED_MODULE_1__["MRDLSliderThumbMaterial"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GizmoHandle", function() { return _gizmos__WEBPACK_IMPORTED_MODULE_2__["GizmoHandle"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MRDLBackplateMaterial", function() { return _materials_index__WEBPACK_IMPORTED_MODULE_1__["MRDLBackplateMaterial"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SideHandle", function() { return _gizmos__WEBPACK_IMPORTED_MODULE_2__["SideHandle"]; });
+/* harmony import */ var _gizmos_index__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./gizmos/index */ "./3D/gizmos/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SlateGizmo", function() { return _gizmos_index__WEBPACK_IMPORTED_MODULE_2__["SlateGizmo"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CornerHandle", function() { return _gizmos__WEBPACK_IMPORTED_MODULE_2__["CornerHandle"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HandleState", function() { return _gizmos_index__WEBPACK_IMPORTED_MODULE_2__["HandleState"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GizmoHandle", function() { return _gizmos_index__WEBPACK_IMPORTED_MODULE_2__["GizmoHandle"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SideHandle", function() { return _gizmos_index__WEBPACK_IMPORTED_MODULE_2__["SideHandle"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CornerHandle", function() { return _gizmos_index__WEBPACK_IMPORTED_MODULE_2__["CornerHandle"]; });
 
 /* harmony import */ var _gui3DManager__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./gui3DManager */ "./3D/gui3DManager.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GUI3DManager", function() { return _gui3DManager__WEBPACK_IMPORTED_MODULE_3__["GUI3DManager"]; });
@@ -22792,29 +22893,2232 @@ var handleVertexShader = { name: name, shader: shader };
 /*!*******************************!*\
   !*** ./3D/materials/index.ts ***!
   \*******************************/
-/*! exports provided: FluentMaterialDefines, FluentMaterial, FluentButtonMaterial, FluentBackplateMaterial, HandleMaterial */
+/*! exports provided: FluentMaterialDefines, FluentMaterial, FluentButtonMaterial, FluentBackplateMaterial, HandleMaterial, MRDLSliderBarMaterial, MRDLSliderThumbMaterial, MRDLBackplateMaterial */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _fluent__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./fluent */ "./3D/materials/fluent/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentMaterialDefines", function() { return _fluent__WEBPACK_IMPORTED_MODULE_0__["FluentMaterialDefines"]; });
+/* harmony import */ var _fluent_index__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./fluent/index */ "./3D/materials/fluent/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentMaterialDefines", function() { return _fluent_index__WEBPACK_IMPORTED_MODULE_0__["FluentMaterialDefines"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentMaterial", function() { return _fluent__WEBPACK_IMPORTED_MODULE_0__["FluentMaterial"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentMaterial", function() { return _fluent_index__WEBPACK_IMPORTED_MODULE_0__["FluentMaterial"]; });
 
-/* harmony import */ var _fluentButton__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./fluentButton */ "./3D/materials/fluentButton/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentButtonMaterial", function() { return _fluentButton__WEBPACK_IMPORTED_MODULE_1__["FluentButtonMaterial"]; });
+/* harmony import */ var _fluentButton_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./fluentButton/index */ "./3D/materials/fluentButton/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentButtonMaterial", function() { return _fluentButton_index__WEBPACK_IMPORTED_MODULE_1__["FluentButtonMaterial"]; });
 
-/* harmony import */ var _fluentBackplate__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./fluentBackplate */ "./3D/materials/fluentBackplate/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentBackplateMaterial", function() { return _fluentBackplate__WEBPACK_IMPORTED_MODULE_2__["FluentBackplateMaterial"]; });
+/* harmony import */ var _fluentBackplate_index__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./fluentBackplate/index */ "./3D/materials/fluentBackplate/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentBackplateMaterial", function() { return _fluentBackplate_index__WEBPACK_IMPORTED_MODULE_2__["FluentBackplateMaterial"]; });
 
-/* harmony import */ var _handle__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./handle */ "./3D/materials/handle/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HandleMaterial", function() { return _handle__WEBPACK_IMPORTED_MODULE_3__["HandleMaterial"]; });
+/* harmony import */ var _handle_index__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./handle/index */ "./3D/materials/handle/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HandleMaterial", function() { return _handle_index__WEBPACK_IMPORTED_MODULE_3__["HandleMaterial"]; });
+
+/* harmony import */ var _mrdl_index__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./mrdl/index */ "./3D/materials/mrdl/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MRDLSliderBarMaterial", function() { return _mrdl_index__WEBPACK_IMPORTED_MODULE_4__["MRDLSliderBarMaterial"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MRDLSliderThumbMaterial", function() { return _mrdl_index__WEBPACK_IMPORTED_MODULE_4__["MRDLSliderThumbMaterial"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MRDLBackplateMaterial", function() { return _mrdl_index__WEBPACK_IMPORTED_MODULE_4__["MRDLBackplateMaterial"]; });
 
 
 
 
 
+
+
+
+/***/ }),
+
+/***/ "./3D/materials/mrdl/index.ts":
+/*!************************************!*\
+  !*** ./3D/materials/mrdl/index.ts ***!
+  \************************************/
+/*! exports provided: MRDLSliderBarMaterial, MRDLSliderThumbMaterial, MRDLBackplateMaterial */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _mrdlSliderBarMaterial__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./mrdlSliderBarMaterial */ "./3D/materials/mrdl/mrdlSliderBarMaterial.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MRDLSliderBarMaterial", function() { return _mrdlSliderBarMaterial__WEBPACK_IMPORTED_MODULE_0__["MRDLSliderBarMaterial"]; });
+
+/* harmony import */ var _mrdlSliderThumbMaterial__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./mrdlSliderThumbMaterial */ "./3D/materials/mrdl/mrdlSliderThumbMaterial.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MRDLSliderThumbMaterial", function() { return _mrdlSliderThumbMaterial__WEBPACK_IMPORTED_MODULE_1__["MRDLSliderThumbMaterial"]; });
+
+/* harmony import */ var _mrdlBackplateMaterial__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./mrdlBackplateMaterial */ "./3D/materials/mrdl/mrdlBackplateMaterial.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MRDLBackplateMaterial", function() { return _mrdlBackplateMaterial__WEBPACK_IMPORTED_MODULE_2__["MRDLBackplateMaterial"]; });
+
+
+
+
+
+
+/***/ }),
+
+/***/ "./3D/materials/mrdl/mrdlBackplateMaterial.ts":
+/*!****************************************************!*\
+  !*** ./3D/materials/mrdl/mrdlBackplateMaterial.ts ***!
+  \****************************************************/
+/*! exports provided: MRDLBackplateMaterial */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MRDLBackplateMaterial", function() { return MRDLBackplateMaterial; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/decorators */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _shaders_mrdlBackplate_fragment__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./shaders/mrdlBackplate.fragment */ "./3D/materials/mrdl/shaders/mrdlBackplate.fragment.ts");
+/* harmony import */ var _shaders_mrdlBackplate_vertex__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./shaders/mrdlBackplate.vertex */ "./3D/materials/mrdl/shaders/mrdlBackplate.vertex.ts");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/** @hidden */
+var MRDLBackplateMaterialDefines = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(MRDLBackplateMaterialDefines, _super);
+    function MRDLBackplateMaterialDefines() {
+        var _this = _super.call(this) || this;
+        /*
+            "IRIDESCENCE_ENABLE", "SMOOTH_EDGES"
+        */
+        _this.IRIDESCENCE_ENABLED = true;
+        _this.SMOOTH_EDGES = true;
+        _this._needNormals = true;
+        _this.rebuild();
+        return _this;
+    }
+    return MRDLBackplateMaterialDefines;
+}(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialDefines"]));
+/**
+ * Class used to render backplate material with MRDL
+ */
+var MRDLBackplateMaterial = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(MRDLBackplateMaterial, _super);
+    function MRDLBackplateMaterial(name, scene) {
+        var _this = _super.call(this, name, scene) || this;
+        /**
+        * Gets or sets the corner radius on the backplate. If this value is changed, update the lineWidth to match.
+        */
+        _this.radius = 0.3;
+        /**
+         * Gets or sets the line width of the backplate.
+         */
+        _this.lineWidth = 0.003;
+        /**
+         * Gets or sets whether to use absolute sizes when calculating effects on the backplate.
+         * Since desktop and VR/AR have different relative sizes, it's usually best to keep this false.
+         */
+        _this.absoluteSizes = false;
+        /** @hidden */
+        _this._filterWidth = 1;
+        /**
+         * Gets or sets the base color of the backplate.
+         */
+        _this.baseColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color4"](0, 0, 0, 1);
+        /**
+         * Gets or sets the line color of the backplate.
+         */
+        _this.lineColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color4"](0.2, 0.262745, 0.4, 1);
+        /**
+         * Gets or sets the top left Radii Multiplier.
+         */
+        _this.radiusTopLeft = 1.0;
+        /**
+         * Gets or sets the top left Radii Multiplier.
+         */
+        _this.radiusTopRight = 1.0;
+        /**
+        * Gets or sets the top left Radii Multiplier.
+        */
+        _this.radiusBottomLeft = 1.0;
+        /**
+         * Gets or sets the top left Radii Multiplier.
+         */
+        _this.radiusBottomRight = 1.0;
+        /** @hidden */
+        _this._rate = 0;
+        /**
+         * Gets or sets the color of the highlights on the backplate line.
+         */
+        _this.highlightColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color4"](0.239216, 0.435294, 0.827451, 1);
+        /**
+         * Gets or sets the width of the highlights on the backplate line.
+         */
+        _this.highlightWidth = 0;
+        /** @hidden */
+        _this._highlightTransform = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector4"](1, 1, 0, 0);
+        /** @hidden */
+        _this._highlight = 1;
+        /**
+         * Gets or sets the intensity of the iridescence effect.
+         */
+        _this.iridescenceIntensity = 0.45;
+        /**
+         * Gets or sets the intensity of the iridescence effect on the backplate edges.
+         */
+        _this.iridescenceEdgeIntensity = 1;
+        /**
+         * Gets or sets the Tint of the iridescence effect on the backplate.
+         */
+        _this.iridescenceTint = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color4"](1, 1, 1, 1);
+        /** @hidden */
+        _this._angle = -45;
+        /**
+         * Gets or sets the opacity of the backplate (0.0 - 1.0).
+         */
+        _this.fadeOut = 1;
+        /** @hidden */
+        _this._reflected = true;
+        /** @hidden */
+        _this._frequency = 1;
+        /** @hidden */
+        _this._verticalOffset = 0;
+        /**
+         * Gets or sets the gradient color effect on the backplate.
+         */
+        _this.gradientColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color4"](0.74902, 0.74902, 0.74902, 1);
+        /**
+         * Gets or sets the top left gradient color effect on the backplate.
+         */
+        _this.topLeftGradientColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color4"](0.00784314, 0.294118, 0.580392, 1);
+        /**
+         * Gets or sets the top right gradient color effect on the backplate.
+         */
+        _this.topRightGradientColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color4"](0.305882, 0, 1, 1);
+        /**
+         * Gets or sets the bottom left gradient color effect on the backplate.
+         */
+        _this.bottomLeftGradientColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color4"](0.133333, 0.258824, 0.992157, 1);
+        /**
+         * Gets or sets the bottom right gradient color effect on the backplate.
+         */
+        _this.bottomRightGradientColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color4"](0.176471, 0.176471, 0.619608, 1);
+        /**
+         * Gets or sets the edge width of the backplate.
+         */
+        _this.edgeWidth = 0.5;
+        /**
+         * Gets or sets the edge width of the backplate.
+         */
+        _this.edgePower = 1;
+        /**
+         * Gets or sets the edge width of the backplate.
+         */
+        _this.edgeLineGradientBlend = 0.5;
+        _this.alphaMode = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Constants"].ALPHA_DISABLE;
+        _this.backFaceCulling = false;
+        _this._iridescentMapTexture = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"](MRDLBackplateMaterial.IRIDESCENT_MAP_TEXTURE_URL, scene, true, false, babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_SAMPLINGMODE);
+        return _this;
+    }
+    MRDLBackplateMaterial.prototype.needAlphaBlending = function () {
+        return false;
+    };
+    MRDLBackplateMaterial.prototype.needAlphaTesting = function () {
+        return false;
+    };
+    MRDLBackplateMaterial.prototype.getAlphaTestTexture = function () {
+        return null;
+    };
+    // Methods
+    MRDLBackplateMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
+        if (this.isFrozen) {
+            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
+                return true;
+            }
+        }
+        if (!subMesh._materialDefines) {
+            subMesh.materialDefines = new MRDLBackplateMaterialDefines();
+        }
+        var defines = subMesh._materialDefines;
+        var scene = this.getScene();
+        if (this._isReadyForSubMesh(subMesh)) {
+            return true;
+        }
+        var engine = scene.getEngine();
+        // Attribs
+        babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].PrepareDefinesForAttributes(mesh, defines, false, false);
+        // Get correct effect
+        if (defines.isDirty) {
+            defines.markAsProcessed();
+            scene.resetCachedMaterial();
+            // Fallbacks
+            var fallbacks = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["EffectFallbacks"]();
+            if (defines.FOG) {
+                fallbacks.addFallback(1, "FOG");
+            }
+            babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].HandleFallbacksForShadows(defines, fallbacks);
+            defines.IMAGEPROCESSINGPOSTPROCESS = scene.imageProcessingConfiguration.applyByPostProcess;
+            //Attributes
+            var attribs = [babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].PositionKind];
+            if (defines.NORMAL) {
+                attribs.push(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].NormalKind);
+            }
+            if (defines.UV1) {
+                attribs.push(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].UVKind);
+            }
+            if (defines.UV2) {
+                attribs.push(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].UV2Kind);
+            }
+            if (defines.VERTEXCOLOR) {
+                attribs.push(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].ColorKind);
+            }
+            if (defines.TANGENT) {
+                attribs.push(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].TangentKind);
+            }
+            babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].PrepareAttributesForInstances(attribs, defines);
+            // Legacy browser patch
+            var shaderName = "mrdlBackplate";
+            var join = defines.toString();
+            var uniforms = [
+                "world", "viewProjection", "cameraPosition",
+                "_Radius_", "_Line_Width_", "_Absolute_Sizes_", "_Filter_Width_", "_Base_Color_", "_Line_Color_",
+                "_Radius_Top_Left_", "_Radius_Top_Right_", "_Radius_Bottom_Left_", "_Radius_Bottom_Right_",
+                "_Rate_", "_Highlight_Color_", "_Highlight_Width_", "_Highlight_Transform_", "_Highlight_",
+                "_Iridescence_Intensity_", "_Iridescence_Edge_Intensity_", "_Iridescence_Tint_", "_Iridescent_Map_",
+                "_Angle_", "_Reflected_", "_Frequency_", "_Vertical_Offset_", "_Gradient_Color_", "_Top_Left_",
+                "_Top_Right_", "_Bottom_Left_", "_Bottom_Right_", "_Edge_Width_", "_Edge_Power_", "_Line_Gradient_Blend_",
+                "_Fade_Out_"
+            ];
+            var samplers = [];
+            var uniformBuffers = new Array();
+            babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].PrepareUniformsAndSamplersList({
+                uniformsNames: uniforms,
+                uniformBuffersNames: uniformBuffers,
+                samplers: samplers,
+                defines: defines,
+                maxSimultaneousLights: 4
+            });
+            subMesh.setEffect(scene.getEngine().createEffect(shaderName, {
+                attributes: attribs,
+                uniformsNames: uniforms,
+                uniformBuffersNames: uniformBuffers,
+                samplers: samplers,
+                defines: join,
+                fallbacks: fallbacks,
+                onCompiled: this.onCompiled,
+                onError: this.onError,
+                indexParameters: { maxSimultaneousLights: 4 }
+            }, engine), defines);
+        }
+        if (!subMesh.effect || !subMesh.effect.isReady()) {
+            return false;
+        }
+        defines._renderId = scene.getRenderId();
+        subMesh.effect._wasPreviouslyReady = true;
+        return true;
+    };
+    MRDLBackplateMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {
+        var defines = subMesh._materialDefines;
+        if (!defines) {
+            return;
+        }
+        var effect = subMesh.effect;
+        if (!effect) {
+            return;
+        }
+        this._activeEffect = effect;
+        // Matrices
+        this.bindOnlyWorldMatrix(world);
+        this._activeEffect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
+        this._activeEffect.setVector3("cameraPosition", this.getScene().activeCamera.position);
+        // "Round Rect"
+        this._activeEffect.setFloat("_Radius_", this.radius);
+        this._activeEffect.setFloat("_Line_Width_", this.lineWidth);
+        this._activeEffect.setFloat("_Absolute_Sizes_", this.absoluteSizes ? 1.0 : 0.0);
+        this._activeEffect.setFloat("_Filter_Width_", this._filterWidth);
+        this._activeEffect.setDirectColor4("_Base_Color_", this.baseColor);
+        this._activeEffect.setDirectColor4("_Line_Color_", this.lineColor);
+        // "Radii Multipliers"
+        this._activeEffect.setFloat("_Radius_Top_Left_", this.radiusTopLeft);
+        this._activeEffect.setFloat("_Radius_Top_Right_", this.radiusTopRight);
+        this._activeEffect.setFloat("_Radius_Bottom_Left_", this.radiusBottomLeft);
+        this._activeEffect.setFloat("_Radius_Bottom_Right_", this.radiusBottomRight);
+        // "Line Highlight"
+        this._activeEffect.setFloat("_Rate_", this._rate);
+        this._activeEffect.setDirectColor4("_Highlight_Color_", this.highlightColor);
+        this._activeEffect.setFloat("_Highlight_Width_", this.highlightWidth);
+        this._activeEffect.setVector4("_Highlight_Transform_", this._highlightTransform);
+        this._activeEffect.setFloat("_Highlight_", this._highlight);
+        // "Iridescence"
+        //define IRIDESCENCE_ENABLE true;
+        this._activeEffect.setFloat("_Iridescence_Intensity_", this.iridescenceIntensity);
+        this._activeEffect.setFloat("_Iridescence_Edge_Intensity_", this.iridescenceEdgeIntensity);
+        this._activeEffect.setDirectColor4("_Iridescence_Tint_", this.iridescenceTint);
+        this._activeEffect.setTexture("_Iridescent_Map_", this._iridescentMapTexture);
+        this._activeEffect.setFloat("_Angle_", this._angle);
+        this._activeEffect.setFloat("_Reflected_", this._reflected ? 1.0 : 0.0);
+        this._activeEffect.setFloat("_Frequency_", this._frequency);
+        this._activeEffect.setFloat("_Vertical_Offset_", this._verticalOffset);
+        // "Gradient"
+        this._activeEffect.setDirectColor4("_Gradient_Color_", this.gradientColor);
+        this._activeEffect.setDirectColor4("_Top_Left_", this.topLeftGradientColor);
+        this._activeEffect.setDirectColor4("_Top_Right_", this.topRightGradientColor);
+        this._activeEffect.setDirectColor4("_Bottom_Left_", this.bottomLeftGradientColor);
+        this._activeEffect.setDirectColor4("_Bottom_Right_", this.bottomRightGradientColor);
+        //define EDGE_ONLY false;
+        this._activeEffect.setFloat("_Edge_Width_", this.edgeWidth);
+        this._activeEffect.setFloat("_Edge_Power_", this.edgePower);
+        this._activeEffect.setFloat("_Line_Gradient_Blend_", this.edgeLineGradientBlend);
+        // "Fade"
+        this._activeEffect.setFloat("_Fade_Out_", this.fadeOut);
+        // "Antialiasing"
+        //define SMOOTH_EDGES true;
+        this._afterBind(mesh, this._activeEffect);
+    };
+    /**
+     * Get the list of animatables in the material.
+     * @returns the list of animatables object used in the material
+     */
+    MRDLBackplateMaterial.prototype.getAnimatables = function () {
+        return [];
+    };
+    MRDLBackplateMaterial.prototype.dispose = function (forceDisposeEffect) {
+        _super.prototype.dispose.call(this, forceDisposeEffect);
+    };
+    MRDLBackplateMaterial.prototype.clone = function (name) {
+        var _this = this;
+        return babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Clone(function () { return new MRDLBackplateMaterial(name, _this.getScene()); }, this);
+    };
+    MRDLBackplateMaterial.prototype.serialize = function () {
+        var serializationObject = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Serialize(this);
+        serializationObject.customType = "BABYLON.MRDLBackplateMaterial";
+        return serializationObject;
+    };
+    MRDLBackplateMaterial.prototype.getClassName = function () {
+        return "MRDLBackplateMaterial";
+    };
+    // Statics
+    MRDLBackplateMaterial.Parse = function (source, scene, rootUrl) {
+        return babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Parse(function () { return new MRDLBackplateMaterial(source.name, scene); }, source, scene, rootUrl);
+    };
+    /**
+     * URL pointing to the texture used to define the coloring for the Iridescent Map effect.
+     */
+    MRDLBackplateMaterial.IRIDESCENT_MAP_TEXTURE_URL = "https://assets.babylonjs.com/meshes/MRTK/MRDL/mrtk-mrdl-backplate-iridescence.png";
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLBackplateMaterial.prototype, "radius", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLBackplateMaterial.prototype, "lineWidth", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLBackplateMaterial.prototype, "absoluteSizes", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLBackplateMaterial.prototype, "baseColor", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLBackplateMaterial.prototype, "lineColor", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLBackplateMaterial.prototype, "radiusTopLeft", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLBackplateMaterial.prototype, "radiusTopRight", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLBackplateMaterial.prototype, "radiusBottomLeft", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLBackplateMaterial.prototype, "radiusBottomRight", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLBackplateMaterial.prototype, "highlightColor", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLBackplateMaterial.prototype, "highlightWidth", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLBackplateMaterial.prototype, "iridescenceIntensity", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLBackplateMaterial.prototype, "iridescenceEdgeIntensity", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLBackplateMaterial.prototype, "iridescenceTint", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLBackplateMaterial.prototype, "fadeOut", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLBackplateMaterial.prototype, "gradientColor", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLBackplateMaterial.prototype, "topLeftGradientColor", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLBackplateMaterial.prototype, "topRightGradientColor", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLBackplateMaterial.prototype, "bottomLeftGradientColor", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLBackplateMaterial.prototype, "bottomRightGradientColor", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLBackplateMaterial.prototype, "edgeWidth", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLBackplateMaterial.prototype, "edgePower", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLBackplateMaterial.prototype, "edgeLineGradientBlend", void 0);
+    return MRDLBackplateMaterial;
+}(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
+
+babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.GUI.MRDLBackplateMaterial"] = MRDLBackplateMaterial;
+
+
+/***/ }),
+
+/***/ "./3D/materials/mrdl/mrdlSliderBarMaterial.ts":
+/*!****************************************************!*\
+  !*** ./3D/materials/mrdl/mrdlSliderBarMaterial.ts ***!
+  \****************************************************/
+/*! exports provided: MRDLSliderBarMaterial */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MRDLSliderBarMaterial", function() { return MRDLSliderBarMaterial; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/decorators */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _shaders_mrdlSliderBar_fragment__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./shaders/mrdlSliderBar.fragment */ "./3D/materials/mrdl/shaders/mrdlSliderBar.fragment.ts");
+/* harmony import */ var _shaders_mrdlSliderBar_vertex__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./shaders/mrdlSliderBar.vertex */ "./3D/materials/mrdl/shaders/mrdlSliderBar.vertex.ts");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/** @hidden */
+var MRDLSliderBarMaterialDefines = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(MRDLSliderBarMaterialDefines, _super);
+    function MRDLSliderBarMaterialDefines() {
+        var _this = _super.call(this) || this;
+        /*
+            "SKY_ENABLED", "BLOB_ENABLE_2", "IRIDESCENCE_ENABLED"
+        */
+        _this.SKY_ENABLED = true;
+        _this.BLOB_ENABLE_2 = true;
+        _this.IRIDESCENCE_ENABLED = true;
+        _this._needNormals = true;
+        _this._needUVs = true;
+        _this.rebuild();
+        return _this;
+    }
+    return MRDLSliderBarMaterialDefines;
+}(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialDefines"]));
+/**
+ * Class used to render Slider Bar material with MRDL
+ */
+var MRDLSliderBarMaterial = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(MRDLSliderBarMaterial, _super);
+    function MRDLSliderBarMaterial(name, scene) {
+        var _this = _super.call(this, name, scene) || this;
+        /**
+         * Gets or sets the corner Radius on the slider bar.
+         */
+        _this.radius = 0.6;
+        /**
+         * Gets or sets the Bevel Front on the slider bar.
+         */
+        _this.bevelFront = 0.6;
+        /**
+         * Gets or sets the Bevel Front Stretch on the slider bar.
+         */
+        _this.bevelFrontStretch = 0.077;
+        /**
+         * Gets or sets the Bevel Back on the slider bar.
+         */
+        _this.bevelBack = 0;
+        /**
+         * Gets or sets the Bevel Back Stretch on the slider bar.
+         */
+        _this.bevelBackStretch = 0;
+        /**
+         * Gets or sets the top left Radii Multiplier.
+         */
+        _this.radiusTopLeft = 1.0;
+        /**
+         * Gets or sets the top left Radii Multiplier.
+         */
+        _this.radiusTopRight = 1.0;
+        /**
+        * Gets or sets the top left Radii Multiplier.
+        */
+        _this.radiusBottomLeft = 1.0;
+        /**
+         * Gets or sets the top left Radii Multiplier.
+         */
+        _this.radiusBottomRight = 1.0;
+        /**
+         * Gets or sets whether Bulge is enabled.
+         * Default is false.
+         */
+        _this.bulgeEnabled = false;
+        /**
+         * Gets or sets the Bulge Height.
+         */
+        _this.bulgeHeight = -0.323;
+        /**
+         * Gets or sets the Bulge Radius.
+         */
+        _this.bulgeRadius = 0.73;
+        /**
+         * Gets or sets the Sun Intensity.
+         */
+        _this.sunIntensity = 1.102;
+        /**
+         * Gets or sets the Sun Theta.
+         */
+        _this.sunTheta = 0.76;
+        /**
+         * Gets or sets the Sun Phi.
+         */
+        _this.sunPhi = 0.526;
+        /**
+         * Gets or sets the Indirect Diffuse.
+         */
+        _this.indirectDiffuse = 0.658;
+        /**
+         * Gets or sets the base albedo.
+         */
+        _this.albedo = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color4"](0.0117647, 0.505882, 0.996078, 1);
+        /**
+         * Gets or sets the Specular value.
+         */
+        _this.specular = 0;
+        /**
+         * Gets or sets the Shininess value.
+         */
+        _this.shininess = 10;
+        /**
+         * Gets or sets the Sharpness value.
+         */
+        _this.sharpness = 0;
+        /**
+         * Gets or sets the Subsurface value.
+         */
+        _this.subsurface = 0;
+        /**
+         * Gets or sets the left gradient color.
+         */
+        _this.leftGradientColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color4"](0.0117647, 0.505882, 0.996078, 1);
+        /**
+         * Gets or sets the right gradient color.
+         */
+        _this.rightGradientColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color4"](0.0117647, 0.505882, 0.996078, 1);
+        /**
+         * Gets or sets the reflection value.
+         */
+        _this.reflection = 0.749;
+        /**
+         * Gets or sets the front reflect value.
+         */
+        _this.frontReflect = 0;
+        /**
+         * Gets or sets the edge reflect value.
+         */
+        _this.edgeReflect = 0.09;
+        /**
+         * Gets or sets the power value.
+         */
+        _this.power = 8.13;
+        /**
+         * Gets or sets the sky color.
+         */
+        _this.skyColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color4"](0.0117647, 0.964706, 0.996078, 1);
+        /**
+         * Gets or sets the horizon color.
+         */
+        _this.horizonColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color4"](0.0117647, 0.333333, 0.996078, 1);
+        /**
+         * Gets or sets the ground color.
+         */
+        _this.groundColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color4"](0, 0.254902, 0.996078, 1);
+        /**
+         * Gets or sets the horizon power value.
+         */
+        _this.horizonPower = 1;
+        /**
+         * Gets or sets the finger occlusion width value.
+         */
+        _this.width = 0.02;
+        /**
+         * Gets or sets the finger occlusion fuzz value.
+         */
+        _this.fuzz = 0.5;
+        /**
+         * Gets or sets the minimum finger occlusion fuzz value.
+         */
+        _this.minFuzz = 0.001;
+        /**
+         * Gets or sets the finger occlusion clip fade value.
+         */
+        _this.clipFade = 0.01;
+        /**
+         * Gets or sets the hue shift value.
+         */
+        _this.hueShift = 0;
+        /**
+         * Gets or sets the saturation shift value.
+         */
+        _this.saturationShift = 0;
+        /**
+         * Gets or sets the value shift.
+         */
+        _this.valueShift = 0;
+        /**
+         * Gets or sets the position of the hover glow effect.
+         */
+        _this.blobPosition = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0, 0, 0.1);
+        /**
+         * Gets or sets the intensity of the hover glow effect.
+         */
+        _this.blobIntensity = 0.5;
+        /**
+         * Gets or sets the near size of the hover glow effect.
+         */
+        _this.blobNearSize = 0.01;
+        /**
+        * Gets or sets the far size of the hover glow effect.
+        */
+        _this.blobFarSize = 0.03;
+        /**
+         * Gets or sets the distance considered "near" to the mesh, which controls the size of the hover glow effect (see blobNearSize).
+         */
+        _this.blobNearDistance = 0;
+        /**
+         * Gets or sets the distance considered "far" from the mesh, which controls the size of the hover glow effect (see blobFarSize).
+         */
+        _this.blobFarDistance = 0.08;
+        /**
+         * Gets or sets the length of the hover glow effect fade.
+         */
+        _this.blobFadeLength = 0.576;
+        /**
+         * Gets or sets the progress of the hover glow effect selection animation corresponding to the left pointer (0.0 - 1.0).
+         */
+        _this.blobPulse = 0;
+        /**
+         * Gets or sets the opacity of the hover glow effect corresponding to the left pointer (0.0 - 1.0). Default is 0.
+         */
+        _this.blobFade = 1;
+        /**
+         * Gets or sets the position of the hover glow effect.
+         */
+        _this.blobPosition2 = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0.2, 0, 0.1);
+        /**
+         * Gets or sets the size of the hover glow effect when the right pointer is considered "near" to the mesh (see blobNearDistance).
+         */
+        _this.blobNearSize2 = 0.01;
+        /**
+         * Gets or sets the progress of the hover glow effect selection animation corresponding to the right pointer (0.0 - 1.0).
+         */
+        _this.blobPulse2 = 0;
+        /**
+         * Gets or sets the opacity of the hover glow effect corresponding to the right pointer (0.0 - 1.0). Default is 1.
+         */
+        _this.blobFade2 = 1;
+        /**
+         * Gets or sets the texture of the hover glow effect.
+         */
+        _this.blobTexture = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"]("", _this.getScene());
+        /**
+         * Gets or sets the finger position for left index.
+         */
+        _this.leftIndexPosition = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0, 0, 1);
+        /**
+         * Gets or sets the finger position for right index.
+         */
+        _this.rightIndexPosition = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector3"](-1, -1, -1);
+        /**
+         * Gets or sets the finger position for left index middle position.
+         */
+        _this.leftIndexMiddlePosition = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0, 0, 0);
+        /**
+         * Gets or sets the finger position for right index middle position.
+         */
+        _this.rightIndexMiddlePosition = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0, 0, 0);
+        /**
+         * Gets or sets the Decal Scle for XY.
+         */
+        _this.decalScaleXY = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector2"](1.5, 1.5);
+        /**
+         * Gets or sets decalFrontOnly
+         * Default is true
+         */
+        _this.decalFrontOnly = true;
+        /**
+         * Gets or sets the Rim Light intensity.
+         */
+        _this.rimIntensity = 0.287;
+        /**
+         * Gets or sets the Rim Light hue shift value.
+         */
+        _this.rimHueShift = 0;
+        /**
+         * Gets or sets the Rim Light saturation shift value.
+         */
+        _this.rimSaturationShift = 0;
+        /**
+         * Gets or sets the Rim Light value shift.
+         */
+        _this.rimValueShift = -1;
+        /**
+         * Gets or sets the intensity of the iridescence effect.
+         */
+        _this.iridescenceIntensity = 0;
+        /**
+         * @hidden
+         */
+        _this.useGlobalLeftIndex = 1.0;
+        /**
+         * @hidden
+         */
+        _this.useGlobalRightIndex = 1.0;
+        /**
+         * @hidden
+         */
+        _this.globalLeftIndexTipProximity = 0.0;
+        /**
+         * @hidden
+         */
+        _this.globalRightIndexTipProximity = 0.0;
+        /**
+         * @hidden
+         */
+        _this.globalLeftIndexTipPosition = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector4"](0.5, 0.0, -0.55, 1.0);
+        /**
+         * @hidden
+         */
+        _this.globaRightIndexTipPosition = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector4"](0.0, 0.0, 0.0, 1.0);
+        /**
+         * @hidden
+         */
+        _this.globalLeftThumbTipPosition = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector4"](0.5, 0.0, -0.55, 1.0);
+        /**
+         * @hidden
+         */
+        _this.globalRightThumbTipPosition = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector4"](0.0, 0.0, 0.0, 1.0);
+        /**
+         * @hidden
+         */
+        _this.globalLeftIndexMiddlePosition = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector4"](0.5, 0.0, -0.55, 1.0);
+        /**
+         * @hidden
+         */
+        _this.globalRightIndexMiddlePosition = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector4"](0.0, 0.0, 0.0, 1.0);
+        _this.alphaMode = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Constants"].ALPHA_DISABLE;
+        _this.backFaceCulling = false;
+        _this._blueGradientTexture = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"](MRDLSliderBarMaterial.BLUE_GRADIENT_TEXTURE_URL, scene, true, false, babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_SAMPLINGMODE);
+        return _this;
+    }
+    MRDLSliderBarMaterial.prototype.needAlphaBlending = function () {
+        return false;
+    };
+    MRDLSliderBarMaterial.prototype.needAlphaTesting = function () {
+        return false;
+    };
+    MRDLSliderBarMaterial.prototype.getAlphaTestTexture = function () {
+        return null;
+    };
+    // Methods
+    MRDLSliderBarMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
+        if (this.isFrozen) {
+            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
+                return true;
+            }
+        }
+        if (!subMesh._materialDefines) {
+            subMesh.materialDefines = new MRDLSliderBarMaterialDefines();
+        }
+        var defines = subMesh._materialDefines;
+        var scene = this.getScene();
+        if (this._isReadyForSubMesh(subMesh)) {
+            return true;
+        }
+        var engine = scene.getEngine();
+        // Attribs
+        babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].PrepareDefinesForAttributes(mesh, defines, false, false);
+        // Get correct effect
+        if (defines.isDirty) {
+            defines.markAsProcessed();
+            scene.resetCachedMaterial();
+            // Fallbacks
+            var fallbacks = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["EffectFallbacks"]();
+            if (defines.FOG) {
+                fallbacks.addFallback(1, "FOG");
+            }
+            babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].HandleFallbacksForShadows(defines, fallbacks);
+            defines.IMAGEPROCESSINGPOSTPROCESS = scene.imageProcessingConfiguration.applyByPostProcess;
+            //Attributes
+            var attribs = [babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].PositionKind];
+            if (defines.NORMAL) {
+                attribs.push(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].NormalKind);
+            }
+            if (defines.UV1) {
+                attribs.push(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].UVKind);
+            }
+            if (defines.UV2) {
+                attribs.push(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].UV2Kind);
+            }
+            if (defines.VERTEXCOLOR) {
+                attribs.push(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].ColorKind);
+            }
+            if (defines.TANGENT) {
+                attribs.push(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].TangentKind);
+            }
+            babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].PrepareAttributesForInstances(attribs, defines);
+            // Legacy browser patch
+            var shaderName = "mrdlSliderBar";
+            var join = defines.toString();
+            var uniforms = [
+                "world", "viewProjection", "cameraPosition",
+                "_Radius_", "_Bevel_Front_", "_Bevel_Front_Stretch_", "_Bevel_Back_", "_Bevel_Back_Stretch_",
+                "_Radius_Top_Left_", "_Radius_Top_Right_", "_Radius_Bottom_Left_", "_Radius_Bottom_Right_",
+                "_Bulge_Enabled_", "_Bulge_Height_", "_Bulge_Radius_", "_Sun_Intensity_", "_Sun_Theta_", "_Sun_Phi_",
+                "_Indirect_Diffuse_", "_Albedo_", "_Specular_", "_Shininess_", "_Sharpness_", "_Subsurface_",
+                "_Left_Color_", "_Right_Color_", "_Reflection_", "_Front_Reflect_", "_Edge_Reflect_", "_Power_",
+                "_Sky_Color_", "_Horizon_Color_", "_Ground_Color_", "_Horizon_Power_", "_Reflection_Map_",
+                "_Indirect_Environment_", "_Width_", "_Fuzz_", "_Min_Fuzz_", "_Clip_Fade_", "_Hue_Shift_", "_Saturation_Shift_",
+                "_Value_Shift_", "_Blob_Position_", "_Blob_Intensity_", "_Blob_Near_Size_", "_Blob_Far_Size_",
+                "_Blob_Near_Distance_", "_Blob_Far_Distance_", "_Blob_Fade_Length_", "_Blob_Pulse_", "_Blob_Fade_",
+                "_Blob_Texture_", "_Blob_Position_2_", "_Blob_Near_Size_2_", "_Blob_Pulse_2_", "_Blob_Fade_2_",
+                "_Left_Index_Pos_", "_Right_Index_Pos_", "_Left_Index_Middle_Pos_", "_Right_Index_Middle_Pos_",
+                "_Decal_", "_Decal_Scale_XY_", "_Decal_Front_Only_", "_Rim_Intensity_", "_Rim_Texture_", "_Rim_Hue_Shift_",
+                "_Rim_Saturation_Shift_", "_Rim_Value_Shift_", "_Iridescence_Intensity_", "_Iridescence_Texture_",
+                "Use_Global_Left_Index", "Use_Global_Right_Index", "Global_Left_Index_Tip_Position", "Global_Right_Index_Tip_Position",
+                "Global_Left_Thumb_Tip_Position", "Global_Right_Thumb_Tip_Position", "Global_Left_Index_Middle_Position;", "Global_Right_Index_Middle_Position", "Global_Left_Index_Tip_Proximity", "Global_Right_Index_Tip_Proximity"
+            ];
+            var samplers = ["_Rim_Texture_", "_Iridescence_Texture_"];
+            var uniformBuffers = new Array();
+            babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].PrepareUniformsAndSamplersList({
+                uniformsNames: uniforms,
+                uniformBuffersNames: uniformBuffers,
+                samplers: samplers,
+                defines: defines,
+                maxSimultaneousLights: 4
+            });
+            subMesh.setEffect(scene.getEngine().createEffect(shaderName, {
+                attributes: attribs,
+                uniformsNames: uniforms,
+                uniformBuffersNames: uniformBuffers,
+                samplers: samplers,
+                defines: join,
+                fallbacks: fallbacks,
+                onCompiled: this.onCompiled,
+                onError: this.onError,
+                indexParameters: { maxSimultaneousLights: 4 }
+            }, engine), defines, this._materialContext);
+        }
+        if (!subMesh.effect || !subMesh.effect.isReady()) {
+            return false;
+        }
+        defines._renderId = scene.getRenderId();
+        subMesh.effect._wasPreviouslyReady = true;
+        return true;
+    };
+    MRDLSliderBarMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {
+        var defines = subMesh._materialDefines;
+        if (!defines) {
+            return;
+        }
+        var effect = subMesh.effect;
+        if (!effect) {
+            return;
+        }
+        this._activeEffect = effect;
+        // Matrices
+        this.bindOnlyWorldMatrix(world);
+        this._activeEffect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
+        this._activeEffect.setVector3("cameraPosition", this.getScene().activeCamera.position);
+        // "Round Rect"
+        this._activeEffect.setFloat("_Radius_", this.radius);
+        this._activeEffect.setFloat("_Bevel_Front_", this.bevelFront);
+        this._activeEffect.setFloat("_Bevel_Front_Stretch_", this.bevelFrontStretch);
+        this._activeEffect.setFloat("_Bevel_Back_", this.bevelBack);
+        this._activeEffect.setFloat("_Bevel_Back_Stretch_", this.bevelBackStretch);
+        // "Radii Multipliers"
+        this._activeEffect.setFloat("_Radius_Top_Left_", this.radiusTopLeft);
+        this._activeEffect.setFloat("_Radius_Top_Right_", this.radiusTopRight);
+        this._activeEffect.setFloat("_Radius_Bottom_Left_", this.radiusBottomLeft);
+        this._activeEffect.setFloat("_Radius_Bottom_Right_", this.radiusBottomRight);
+        // "Bulge"
+        this._activeEffect.setFloat("_Bulge_Enabled_", this.bulgeEnabled ? 1.0 : 0.0);
+        this._activeEffect.setFloat("_Bulge_Height_", this.bulgeHeight);
+        this._activeEffect.setFloat("_Bulge_Radius_", this.bulgeRadius);
+        // "Sun"
+        this._activeEffect.setFloat("_Sun_Intensity_", this.sunIntensity);
+        this._activeEffect.setFloat("_Sun_Theta_", this.sunTheta);
+        this._activeEffect.setFloat("_Sun_Phi_", this.sunPhi);
+        this._activeEffect.setFloat("_Indirect_Diffuse_", this.indirectDiffuse);
+        // "Diffuse And Specular"
+        this._activeEffect.setDirectColor4("_Albedo_", this.albedo);
+        this._activeEffect.setFloat("_Specular_", this.specular);
+        this._activeEffect.setFloat("_Shininess_", this.shininess);
+        this._activeEffect.setFloat("_Sharpness_", this.sharpness);
+        this._activeEffect.setFloat("_Subsurface_", this.subsurface);
+        // "Gradient"
+        this._activeEffect.setDirectColor4("_Left_Color_", this.leftGradientColor);
+        this._activeEffect.setDirectColor4("_Right_Color_", this.rightGradientColor);
+        // "Reflection"
+        this._activeEffect.setFloat("_Reflection_", this.reflection);
+        this._activeEffect.setFloat("_Front_Reflect_", this.frontReflect);
+        this._activeEffect.setFloat("_Edge_Reflect_", this.edgeReflect);
+        this._activeEffect.setFloat("_Power_", this.power);
+        // "Sky Environment"
+        //define SKY_ENABLED true;
+        this._activeEffect.setDirectColor4("_Sky_Color_", this.skyColor);
+        this._activeEffect.setDirectColor4("_Horizon_Color_", this.horizonColor);
+        this._activeEffect.setDirectColor4("_Ground_Color_", this.groundColor);
+        this._activeEffect.setFloat("_Horizon_Power_", this.horizonPower);
+        // "Mapped Environment"
+        //define ENV_ENABLE false;
+        this._activeEffect.setTexture("_Reflection_Map_", new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"]("", this.getScene()));
+        this._activeEffect.setTexture("_Indirect_Environment_", new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"]("", this.getScene()));
+        // "FingerOcclusion"
+        //define OCCLUSION_ENABLED false;
+        this._activeEffect.setFloat("_Width_", this.width);
+        this._activeEffect.setFloat("_Fuzz_", this.fuzz);
+        this._activeEffect.setFloat("_Min_Fuzz_", this.minFuzz);
+        this._activeEffect.setFloat("_Clip_Fade_", this.clipFade);
+        // "View Based Color Shift"
+        this._activeEffect.setFloat("_Hue_Shift_", this.hueShift);
+        this._activeEffect.setFloat("_Saturation_Shift_", this.saturationShift);
+        this._activeEffect.setFloat("_Value_Shift_", this.valueShift);
+        // "Blob"
+        //define BLOB_ENABLE false;
+        this._activeEffect.setVector3("_Blob_Position_", this.blobPosition);
+        this._activeEffect.setFloat("_Blob_Intensity_", this.blobIntensity);
+        this._activeEffect.setFloat("_Blob_Near_Size_", this.blobNearSize);
+        this._activeEffect.setFloat("_Blob_Far_Size_", this.blobFarSize);
+        this._activeEffect.setFloat("_Blob_Near_Distance_", this.blobNearDistance);
+        this._activeEffect.setFloat("_Blob_Far_Distance_", this.blobFarDistance);
+        this._activeEffect.setFloat("_Blob_Fade_Length_", this.blobFadeLength);
+        this._activeEffect.setFloat("_Blob_Pulse_", this.blobPulse);
+        this._activeEffect.setFloat("_Blob_Fade_", this.blobFade);
+        // "Blob Texture"
+        this._activeEffect.setTexture("_Blob_Texture_", this.blobTexture);
+        // "Blob 2"
+        //define BLOB_ENABLE_2 true;
+        this._activeEffect.setVector3("_Blob_Position_2_", this.blobPosition2);
+        this._activeEffect.setFloat("_Blob_Near_Size_2_", this.blobNearSize2);
+        this._activeEffect.setFloat("_Blob_Pulse_2_", this.blobPulse2);
+        this._activeEffect.setFloat("_Blob_Fade_2_", this.blobFade2);
+        // "Finger Positions"
+        this._activeEffect.setVector3("_Left_Index_Pos_", this.leftIndexPosition);
+        this._activeEffect.setVector3("_Right_Index_Pos_", this.rightIndexPosition);
+        this._activeEffect.setVector3("_Left_Index_Middle_Pos_", this.leftIndexMiddlePosition);
+        this._activeEffect.setVector3("_Right_Index_Middle_Pos_", this.rightIndexMiddlePosition);
+        // "Decal Texture"
+        //define DECAL_ENABLE false;
+        this._activeEffect.setTexture("_Decal_", new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"]("", this.getScene()));
+        this._activeEffect.setVector2("_Decal_Scale_XY_", this.decalScaleXY);
+        this._activeEffect.setFloat("_Decal_Front_Only_", this.decalFrontOnly ? 1.0 : 0.0);
+        // "Rim Light"
+        this._activeEffect.setFloat("_Rim_Intensity_", this.rimIntensity);
+        this._activeEffect.setTexture("_Rim_Texture_", this._blueGradientTexture);
+        this._activeEffect.setFloat("_Rim_Hue_Shift_", this.rimHueShift);
+        this._activeEffect.setFloat("_Rim_Saturation_Shift_", this.rimSaturationShift);
+        this._activeEffect.setFloat("_Rim_Value_Shift_", this.rimValueShift);
+        // "Iridescence"
+        //define IRIDESCENCE_ENABLED true;
+        this._activeEffect.setFloat("_Iridescence_Intensity_", this.iridescenceIntensity);
+        this._activeEffect.setTexture("_Iridescence_Texture_", this._blueGradientTexture);
+        // Global inputs
+        this._activeEffect.setFloat("Use_Global_Left_Index", this.useGlobalLeftIndex);
+        this._activeEffect.setFloat("Use_Global_Right_Index", this.useGlobalRightIndex);
+        this._activeEffect.setVector4("Global_Left_Index_Tip_Position", this.globalLeftIndexTipPosition);
+        this._activeEffect.setVector4("Global_Right_Index_Tip_Position", this.globaRightIndexTipPosition);
+        this._activeEffect.setVector4("Global_Left_Thumb_Tip_Position", this.globalLeftThumbTipPosition);
+        this._activeEffect.setVector4("Global_Right_Thumb_Tip_Position", this.globalRightThumbTipPosition);
+        this._activeEffect.setVector4("Global_Left_Index_Middle_Position", this.globalLeftIndexMiddlePosition);
+        this._activeEffect.setVector4("Global_Right_Index_Middle_Position", this.globalRightIndexMiddlePosition);
+        this._activeEffect.setFloat("Global_Left_Index_Tip_Proximity", this.globalLeftIndexTipProximity);
+        this._activeEffect.setFloat("Global_Right_Index_Tip_Proximity", this.globalRightIndexTipProximity);
+        this._afterBind(mesh, this._activeEffect);
+    };
+    /**
+     * Get the list of animatables in the material.
+     * @returns the list of animatables object used in the material
+     */
+    MRDLSliderBarMaterial.prototype.getAnimatables = function () {
+        return [];
+    };
+    MRDLSliderBarMaterial.prototype.dispose = function (forceDisposeEffect) {
+        _super.prototype.dispose.call(this, forceDisposeEffect);
+    };
+    MRDLSliderBarMaterial.prototype.clone = function (name) {
+        var _this = this;
+        return babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Clone(function () { return new MRDLSliderBarMaterial(name, _this.getScene()); }, this);
+    };
+    MRDLSliderBarMaterial.prototype.serialize = function () {
+        var serializationObject = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Serialize(this);
+        serializationObject.customType = "BABYLON.MRDLSliderBarMaterial";
+        return serializationObject;
+    };
+    MRDLSliderBarMaterial.prototype.getClassName = function () {
+        return "MRDLSliderBarMaterial";
+    };
+    // Statics
+    MRDLSliderBarMaterial.Parse = function (source, scene, rootUrl) {
+        return babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Parse(function () { return new MRDLSliderBarMaterial(source.name, scene); }, source, scene, rootUrl);
+    };
+    /**
+     * URL pointing to the texture used to define the coloring for the Iridescent Map effect.
+     */
+    MRDLSliderBarMaterial.BLUE_GRADIENT_TEXTURE_URL = "https://assets.babylonjs.com/meshes/MRTK/MRDL/mrtk-mrdl-blue-gradient.png";
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "radius", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "bevelFront", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "bevelFrontStretch", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "bevelBack", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "bevelBackStretch", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "radiusTopLeft", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "radiusTopRight", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "radiusBottomLeft", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "radiusBottomRight", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "bulgeEnabled", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "bulgeHeight", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "bulgeRadius", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "sunIntensity", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "sunTheta", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "sunPhi", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "indirectDiffuse", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "albedo", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "specular", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "shininess", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "sharpness", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "subsurface", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "leftGradientColor", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "rightGradientColor", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "reflection", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "frontReflect", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "edgeReflect", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "power", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "skyColor", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "horizonColor", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "groundColor", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "horizonPower", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "width", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "fuzz", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "minFuzz", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "clipFade", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "hueShift", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "saturationShift", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "valueShift", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "blobPosition", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "blobIntensity", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "blobNearSize", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "blobFarSize", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "blobNearDistance", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "blobFarDistance", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "blobFadeLength", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "blobPulse", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "blobFade", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "blobPosition2", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "blobNearSize2", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "blobPulse2", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "blobFade2", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "blobTexture", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "leftIndexPosition", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "rightIndexPosition", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "leftIndexMiddlePosition", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "rightIndexMiddlePosition", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "decalScaleXY", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "decalFrontOnly", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "rimIntensity", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "rimHueShift", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "rimSaturationShift", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "rimValueShift", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderBarMaterial.prototype, "iridescenceIntensity", void 0);
+    return MRDLSliderBarMaterial;
+}(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
+
+babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.GUI.MRDLSliderBarMaterial"] = MRDLSliderBarMaterial;
+
+
+/***/ }),
+
+/***/ "./3D/materials/mrdl/mrdlSliderThumbMaterial.ts":
+/*!******************************************************!*\
+  !*** ./3D/materials/mrdl/mrdlSliderThumbMaterial.ts ***!
+  \******************************************************/
+/*! exports provided: MRDLSliderThumbMaterial */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MRDLSliderThumbMaterial", function() { return MRDLSliderThumbMaterial; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/decorators */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _shaders_mrdlSliderThumb_fragment__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./shaders/mrdlSliderThumb.fragment */ "./3D/materials/mrdl/shaders/mrdlSliderThumb.fragment.ts");
+/* harmony import */ var _shaders_mrdlSliderThumb_vertex__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./shaders/mrdlSliderThumb.vertex */ "./3D/materials/mrdl/shaders/mrdlSliderThumb.vertex.ts");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/** @hidden */
+var MRDLSliderThumbMaterialDefines = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(MRDLSliderThumbMaterialDefines, _super);
+    function MRDLSliderThumbMaterialDefines() {
+        var _this = _super.call(this) || this;
+        /*
+            "SKY_ENABLED", "BLOB_ENABLE_2", "IRIDESCENCE_ENABLED"
+        */
+        _this.SKY_ENABLED = true;
+        _this.BLOB_ENABLE_2 = true;
+        _this.IRIDESCENCE_ENABLED = true;
+        _this._needNormals = true;
+        _this._needUVs = true;
+        _this.rebuild();
+        return _this;
+    }
+    return MRDLSliderThumbMaterialDefines;
+}(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialDefines"]));
+/**
+ * Class used to render Slider Thumb material with MRDL
+ */
+var MRDLSliderThumbMaterial = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(MRDLSliderThumbMaterial, _super);
+    function MRDLSliderThumbMaterial(name, scene) {
+        var _this = _super.call(this, name, scene) || this;
+        /**
+         * Gets or sets the corner Radius on the slider thumb.
+         */
+        _this.radius = 0.157;
+        /**
+         * Gets or sets the Bevel Front on the slider thumb.
+         */
+        _this.bevelFront = 0.065;
+        /**
+         * Gets or sets the Bevel Front Stretch on the slider thumb.
+         */
+        _this.bevelFrontStretch = 0.077;
+        /**
+         * Gets or sets the Bevel Back on the slider thumb.
+         */
+        _this.bevelBack = 0.031;
+        /**
+         * Gets or sets the Bevel Back Stretch on the slider thumb.
+         */
+        _this.bevelBackStretch = 0;
+        /**
+         * Gets or sets the top left Radii Multiplier.
+         */
+        _this.radiusTopLeft = 1.0;
+        /**
+         * Gets or sets the top left Radii Multiplier.
+         */
+        _this.radiusTopRight = 1.0;
+        /**
+        * Gets or sets the top left Radii Multiplier.
+        */
+        _this.radiusBottomLeft = 1.0;
+        /**
+         * Gets or sets the top left Radii Multiplier.
+         */
+        _this.radiusBottomRight = 1.0;
+        /**
+         * Gets or sets whether Bulge is enabled.
+         * Default is false.
+         */
+        _this.bulgeEnabled = false;
+        /**
+         * Gets or sets the Bulge Height.
+         */
+        _this.bulgeHeight = -0.323;
+        /**
+         * Gets or sets the Bulge Radius.
+         */
+        _this.bulgeRadius = 0.73;
+        /**
+         * Gets or sets the Sun Intensity.
+         */
+        _this.sunIntensity = 2;
+        /**
+         * Gets or sets the Sun Theta.
+         */
+        _this.sunTheta = 0.937;
+        /**
+         * Gets or sets the Sun Phi.
+         */
+        _this.sunPhi = 0.555;
+        /**
+         * Gets or sets the Indirect Diffuse.
+         */
+        _this.indirectDiffuse = 1;
+        /**
+         * Gets or sets the base albedo.
+         */
+        _this.albedo = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color4"](0.0117647, 0.505882, 0.996078, 1);
+        /**
+         * Gets or sets the Specular value.
+         */
+        _this.specular = 0;
+        /**
+         * Gets or sets the Shininess value.
+         */
+        _this.shininess = 10;
+        /**
+         * Gets or sets the Sharpness value.
+         */
+        _this.sharpness = 0;
+        /**
+         * Gets or sets the Subsurface value.
+         */
+        _this.subsurface = 0.31;
+        /**
+         * Gets or sets the left gradient color.
+         */
+        _this.leftGradientColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color4"](0.0117647, 0.505882, 0.996078, 1);
+        /**
+         * Gets or sets the right gradient color.
+         */
+        _this.rightGradientColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color4"](0.0117647, 0.505882, 0.996078, 1);
+        /**
+         * Gets or sets the reflection value.
+         */
+        _this.reflection = 0.749;
+        /**
+         * Gets or sets the front reflect value.
+         */
+        _this.frontReflect = 0;
+        /**
+         * Gets or sets the edge reflect value.
+         */
+        _this.edgeReflect = 0.09;
+        /**
+         * Gets or sets the power value.
+         */
+        _this.power = 8.1;
+        /**
+         * Gets or sets the sky color.
+         */
+        _this.skyColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color4"](0.0117647, 0.960784, 0.996078, 1);
+        /**
+         * Gets or sets the horizon color.
+         */
+        _this.horizonColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color4"](0.0117647, 0.333333, 0.996078, 1);
+        /**
+         * Gets or sets the ground color.
+         */
+        _this.groundColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color4"](0, 0.254902, 0.996078, 1);
+        /**
+         * Gets or sets the horizon power value.
+         */
+        _this.horizonPower = 1;
+        /**
+         * Gets or sets the finger occlusion width value.
+         */
+        _this.width = 0.02;
+        /**
+         * Gets or sets the finger occlusion fuzz value.
+         */
+        _this.fuzz = 0.5;
+        /**
+         * Gets or sets the minimum finger occlusion fuzz value.
+         */
+        _this.minFuzz = 0.001;
+        /**
+         * Gets or sets the finger occlusion clip fade value.
+         */
+        _this.clipFade = 0.01;
+        /**
+         * Gets or sets the hue shift value.
+         */
+        _this.hueShift = 0;
+        /**
+         * Gets or sets the saturation shift value.
+         */
+        _this.saturationShift = 0;
+        /**
+         * Gets or sets the value shift.
+         */
+        _this.valueShift = 0;
+        /**
+         * Gets or sets the position of the hover glow effect.
+         */
+        _this.blobPosition = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0, 0, 0.1);
+        /**
+         * Gets or sets the intensity of the hover glow effect.
+         */
+        _this.blobIntensity = 0.5;
+        /**
+         * Gets or sets the near size of the hover glow effect.
+         */
+        _this.blobNearSize = 0.01;
+        /**
+        * Gets or sets the far size of the hover glow effect.
+        */
+        _this.blobFarSize = 0.03;
+        /**
+         * Gets or sets the distance considered "near" to the mesh, which controls the size of the hover glow effect (see blobNearSize).
+         */
+        _this.blobNearDistance = 0;
+        /**
+         * Gets or sets the distance considered "far" from the mesh, which controls the size of the hover glow effect (see blobFarSize).
+         */
+        _this.blobFarDistance = 0.08;
+        /**
+         * Gets or sets the length of the hover glow effect fade.
+         */
+        _this.blobFadeLength = 0.576;
+        /**
+         * Gets or sets the progress of the hover glow effect selection animation corresponding to the left pointer (0.0 - 1.0).
+         */
+        _this.blobPulse = 0;
+        /**
+         * Gets or sets the opacity of the hover glow effect corresponding to the left pointer (0.0 - 1.0). Default is 0.
+         */
+        _this.blobFade = 1;
+        /**
+         * Gets or sets the position of the hover glow effect.
+         */
+        _this.blobPosition2 = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0.2, 0, 0.1);
+        /**
+         * Gets or sets the size of the hover glow effect when the right pointer is considered "near" to the mesh (see blobNearDistance).
+         */
+        _this.blobNearSize2 = 0.01;
+        /**
+         * Gets or sets the progress of the hover glow effect selection animation corresponding to the right pointer (0.0 - 1.0).
+         */
+        _this.blobPulse2 = 0;
+        /**
+         * Gets or sets the opacity of the hover glow effect corresponding to the right pointer (0.0 - 1.0). Default is 1.
+         */
+        _this.blobFade2 = 1;
+        /**
+         * Gets or sets the texture of the hover glow effect.
+         */
+        _this.blobTexture = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"]("", _this.getScene());
+        /**
+         * Gets or sets the finger position for left index.
+         */
+        _this.leftIndexPosition = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0, 0, 1);
+        /**
+         * Gets or sets the finger position for right index.
+         */
+        _this.rightIndexPosition = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector3"](-1, -1, -1);
+        /**
+         * Gets or sets the finger position for left index middle position.
+         */
+        _this.leftIndexMiddlePosition = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0, 0, 0);
+        /**
+         * Gets or sets the finger position for right index middle position.
+         */
+        _this.rightIndexMiddlePosition = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0, 0, 0);
+        /**
+         * Gets or sets the Decal Scle for XY.
+         */
+        _this.decalScaleXY = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector2"](1.5, 1.5);
+        /**
+         * Gets or sets decalFrontOnly
+         * Default is true
+         */
+        _this.decalFrontOnly = true;
+        /**
+         * Gets or sets the Rim Light intensity.
+         */
+        _this.rimIntensity = 0.287;
+        /**
+         * Gets or sets the Rim Light hue shift value.
+         */
+        _this.rimHueShift = 0;
+        /**
+         * Gets or sets the Rim Light saturation shift value.
+         */
+        _this.rimSaturationShift = 0;
+        /**
+         * Gets or sets the Rim Light value shift.
+         */
+        _this.rimValueShift = -1;
+        /**
+         * Gets or sets the intensity of the iridescence effect.
+         */
+        _this.iridescenceIntensity = 0;
+        /**
+         * @hidden
+         */
+        _this.useGlobalLeftIndex = 1.0;
+        /**
+         * @hidden
+         */
+        _this.useGlobalRightIndex = 1.0;
+        /**
+         * @hidden
+         */
+        _this.globalLeftIndexTipProximity = 0.0;
+        /**
+         * @hidden
+         */
+        _this.globalRightIndexTipProximity = 0.0;
+        /**
+         * @hidden
+         */
+        _this.globalLeftIndexTipPosition = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector4"](0.5, 0.0, -0.55, 1.0);
+        /**
+         * @hidden
+         */
+        _this.globaRightIndexTipPosition = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector4"](0.0, 0.0, 0.0, 1.0);
+        /**
+         * @hidden
+         */
+        _this.globalLeftThumbTipPosition = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector4"](0.5, 0.0, -0.55, 1.0);
+        /**
+         * @hidden
+         */
+        _this.globalRightThumbTipPosition = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector4"](0.0, 0.0, 0.0, 1.0);
+        /**
+         * @hidden
+         */
+        _this.globalLeftIndexMiddlePosition = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector4"](0.5, 0.0, -0.55, 1.0);
+        /**
+         * @hidden
+         */
+        _this.globalRightIndexMiddlePosition = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector4"](0.0, 0.0, 0.0, 1.0);
+        _this.alphaMode = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Constants"].ALPHA_DISABLE;
+        _this.backFaceCulling = false;
+        _this._blueGradientTexture = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"](MRDLSliderThumbMaterial.BLUE_GRADIENT_TEXTURE_URL, scene, true, false, babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_SAMPLINGMODE);
+        return _this;
+    }
+    MRDLSliderThumbMaterial.prototype.needAlphaBlending = function () {
+        return false;
+    };
+    MRDLSliderThumbMaterial.prototype.needAlphaTesting = function () {
+        return false;
+    };
+    MRDLSliderThumbMaterial.prototype.getAlphaTestTexture = function () {
+        return null;
+    };
+    // Methods
+    MRDLSliderThumbMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
+        if (this.isFrozen) {
+            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
+                return true;
+            }
+        }
+        if (!subMesh._materialDefines) {
+            subMesh.materialDefines = new MRDLSliderThumbMaterialDefines();
+        }
+        var defines = subMesh._materialDefines;
+        var scene = this.getScene();
+        if (this._isReadyForSubMesh(subMesh)) {
+            return true;
+        }
+        var engine = scene.getEngine();
+        // Attribs
+        babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].PrepareDefinesForAttributes(mesh, defines, false, false);
+        // Get correct effect
+        if (defines.isDirty) {
+            defines.markAsProcessed();
+            scene.resetCachedMaterial();
+            // Fallbacks
+            var fallbacks = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["EffectFallbacks"]();
+            if (defines.FOG) {
+                fallbacks.addFallback(1, "FOG");
+            }
+            babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].HandleFallbacksForShadows(defines, fallbacks);
+            defines.IMAGEPROCESSINGPOSTPROCESS = scene.imageProcessingConfiguration.applyByPostProcess;
+            //Attributes
+            var attribs = [babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].PositionKind];
+            if (defines.NORMAL) {
+                attribs.push(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].NormalKind);
+            }
+            if (defines.UV1) {
+                attribs.push(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].UVKind);
+            }
+            if (defines.UV2) {
+                attribs.push(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].UV2Kind);
+            }
+            if (defines.VERTEXCOLOR) {
+                attribs.push(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].ColorKind);
+            }
+            if (defines.TANGENT) {
+                attribs.push(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].TangentKind);
+            }
+            babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].PrepareAttributesForInstances(attribs, defines);
+            // Legacy browser patch
+            var shaderName = "mrdlSliderThumb";
+            var join = defines.toString();
+            var uniforms = [
+                "world", "viewProjection", "cameraPosition",
+                "_Radius_", "_Bevel_Front_", "_Bevel_Front_Stretch_", "_Bevel_Back_", "_Bevel_Back_Stretch_",
+                "_Radius_Top_Left_", "_Radius_Top_Right_", "_Radius_Bottom_Left_", "_Radius_Bottom_Right_",
+                "_Bulge_Enabled_", "_Bulge_Height_", "_Bulge_Radius_", "_Sun_Intensity_", "_Sun_Theta_", "_Sun_Phi_",
+                "_Indirect_Diffuse_", "_Albedo_", "_Specular_", "_Shininess_", "_Sharpness_", "_Subsurface_",
+                "_Left_Color_", "_Right_Color_", "_Reflection_", "_Front_Reflect_", "_Edge_Reflect_", "_Power_",
+                "_Sky_Color_", "_Horizon_Color_", "_Ground_Color_", "_Horizon_Power_", "_Reflection_Map_",
+                "_Indirect_Environment_", "_Width_", "_Fuzz_", "_Min_Fuzz_", "_Clip_Fade_", "_Hue_Shift_", "_Saturation_Shift_",
+                "_Value_Shift_", "_Blob_Position_", "_Blob_Intensity_", "_Blob_Near_Size_", "_Blob_Far_Size_",
+                "_Blob_Near_Distance_", "_Blob_Far_Distance_", "_Blob_Fade_Length_", "_Blob_Pulse_", "_Blob_Fade_",
+                "_Blob_Texture_", "_Blob_Position_2_", "_Blob_Near_Size_2_", "_Blob_Pulse_2_", "_Blob_Fade_2_",
+                "_Left_Index_Pos_", "_Right_Index_Pos_", "_Left_Index_Middle_Pos_", "_Right_Index_Middle_Pos_",
+                "_Decal_", "_Decal_Scale_XY_", "_Decal_Front_Only_", "_Rim_Intensity_", "_Rim_Texture_", "_Rim_Hue_Shift_",
+                "_Rim_Saturation_Shift_", "_Rim_Value_Shift_", "_Iridescence_Intensity_", "_Iridescence_Texture_",
+                "Use_Global_Left_Index", "Use_Global_Right_Index", "Global_Left_Index_Tip_Position", "Global_Right_Index_Tip_Position",
+                "Global_Left_Thumb_Tip_Position", "Global_Right_Thumb_Tip_Position", "Global_Left_Index_Middle_Position;", "Global_Right_Index_Middle_Position", "Global_Left_Index_Tip_Proximity", "Global_Right_Index_Tip_Proximity"
+            ];
+            var samplers = ["_Rim_Texture_", "_Iridescence_Texture_"];
+            var uniformBuffers = new Array();
+            babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].PrepareUniformsAndSamplersList({
+                uniformsNames: uniforms,
+                uniformBuffersNames: uniformBuffers,
+                samplers: samplers,
+                defines: defines,
+                maxSimultaneousLights: 4
+            });
+            subMesh.setEffect(scene.getEngine().createEffect(shaderName, {
+                attributes: attribs,
+                uniformsNames: uniforms,
+                uniformBuffersNames: uniformBuffers,
+                samplers: samplers,
+                defines: join,
+                fallbacks: fallbacks,
+                onCompiled: this.onCompiled,
+                onError: this.onError,
+                indexParameters: { maxSimultaneousLights: 4 }
+            }, engine), defines);
+        }
+        if (!subMesh.effect || !subMesh.effect.isReady()) {
+            return false;
+        }
+        defines._renderId = scene.getRenderId();
+        subMesh.effect._wasPreviouslyReady = true;
+        return true;
+    };
+    MRDLSliderThumbMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {
+        var defines = subMesh._materialDefines;
+        if (!defines) {
+            return;
+        }
+        var effect = subMesh.effect;
+        if (!effect) {
+            return;
+        }
+        this._activeEffect = effect;
+        // Matrices
+        this.bindOnlyWorldMatrix(world);
+        this._activeEffect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
+        this._activeEffect.setVector3("cameraPosition", this.getScene().activeCamera.position);
+        // "Round Rect"
+        this._activeEffect.setFloat("_Radius_", this.radius);
+        this._activeEffect.setFloat("_Bevel_Front_", this.bevelFront);
+        this._activeEffect.setFloat("_Bevel_Front_Stretch_", this.bevelFrontStretch);
+        this._activeEffect.setFloat("_Bevel_Back_", this.bevelBack);
+        this._activeEffect.setFloat("_Bevel_Back_Stretch_", this.bevelBackStretch);
+        // "Radii Multipliers"
+        this._activeEffect.setFloat("_Radius_Top_Left_", this.radiusTopLeft);
+        this._activeEffect.setFloat("_Radius_Top_Right_", this.radiusTopRight);
+        this._activeEffect.setFloat("_Radius_Bottom_Left_", this.radiusBottomLeft);
+        this._activeEffect.setFloat("_Radius_Bottom_Right_", this.radiusBottomRight);
+        // "Bulge"
+        this._activeEffect.setFloat("_Bulge_Enabled_", this.bulgeEnabled ? 1.0 : 0.0);
+        this._activeEffect.setFloat("_Bulge_Height_", this.bulgeHeight);
+        this._activeEffect.setFloat("_Bulge_Radius_", this.bulgeRadius);
+        // "Sun"
+        this._activeEffect.setFloat("_Sun_Intensity_", this.sunIntensity);
+        this._activeEffect.setFloat("_Sun_Theta_", this.sunTheta);
+        this._activeEffect.setFloat("_Sun_Phi_", this.sunPhi);
+        this._activeEffect.setFloat("_Indirect_Diffuse_", this.indirectDiffuse);
+        // "Diffuse And Specular"
+        this._activeEffect.setDirectColor4("_Albedo_", this.albedo);
+        this._activeEffect.setFloat("_Specular_", this.specular);
+        this._activeEffect.setFloat("_Shininess_", this.shininess);
+        this._activeEffect.setFloat("_Sharpness_", this.sharpness);
+        this._activeEffect.setFloat("_Subsurface_", this.subsurface);
+        // "Gradient"
+        this._activeEffect.setDirectColor4("_Left_Color_", this.leftGradientColor);
+        this._activeEffect.setDirectColor4("_Right_Color_", this.rightGradientColor);
+        // "Reflection"
+        this._activeEffect.setFloat("_Reflection_", this.reflection);
+        this._activeEffect.setFloat("_Front_Reflect_", this.frontReflect);
+        this._activeEffect.setFloat("_Edge_Reflect_", this.edgeReflect);
+        this._activeEffect.setFloat("_Power_", this.power);
+        // "Sky Environment"
+        //define SKY_ENABLED true;
+        this._activeEffect.setDirectColor4("_Sky_Color_", this.skyColor);
+        this._activeEffect.setDirectColor4("_Horizon_Color_", this.horizonColor);
+        this._activeEffect.setDirectColor4("_Ground_Color_", this.groundColor);
+        this._activeEffect.setFloat("_Horizon_Power_", this.horizonPower);
+        // "Mapped Environment"
+        //define ENV_ENABLE false;
+        this._activeEffect.setTexture("_Reflection_Map_", new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"]("", this.getScene()));
+        this._activeEffect.setTexture("_Indirect_Environment_", new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"]("", this.getScene()));
+        // "FingerOcclusion"
+        //define OCCLUSION_ENABLED false;
+        this._activeEffect.setFloat("_Width_", this.width);
+        this._activeEffect.setFloat("_Fuzz_", this.fuzz);
+        this._activeEffect.setFloat("_Min_Fuzz_", this.minFuzz);
+        this._activeEffect.setFloat("_Clip_Fade_", this.clipFade);
+        // "View Based Color Shift"
+        this._activeEffect.setFloat("_Hue_Shift_", this.hueShift);
+        this._activeEffect.setFloat("_Saturation_Shift_", this.saturationShift);
+        this._activeEffect.setFloat("_Value_Shift_", this.valueShift);
+        // "Blob"
+        //define BLOB_ENABLE false;
+        this._activeEffect.setVector3("_Blob_Position_", this.blobPosition);
+        this._activeEffect.setFloat("_Blob_Intensity_", this.blobIntensity);
+        this._activeEffect.setFloat("_Blob_Near_Size_", this.blobNearSize);
+        this._activeEffect.setFloat("_Blob_Far_Size_", this.blobFarSize);
+        this._activeEffect.setFloat("_Blob_Near_Distance_", this.blobNearDistance);
+        this._activeEffect.setFloat("_Blob_Far_Distance_", this.blobFarDistance);
+        this._activeEffect.setFloat("_Blob_Fade_Length_", this.blobFadeLength);
+        this._activeEffect.setFloat("_Blob_Pulse_", this.blobPulse);
+        this._activeEffect.setFloat("_Blob_Fade_", this.blobFade);
+        // "Blob Texture"
+        this._activeEffect.setTexture("_Blob_Texture_", this.blobTexture);
+        // "Blob 2"
+        //define BLOB_ENABLE_2 true;
+        this._activeEffect.setVector3("_Blob_Position_2_", this.blobPosition2);
+        this._activeEffect.setFloat("_Blob_Near_Size_2_", this.blobNearSize2);
+        this._activeEffect.setFloat("_Blob_Pulse_2_", this.blobPulse2);
+        this._activeEffect.setFloat("_Blob_Fade_2_", this.blobFade2);
+        // "Finger Positions"
+        this._activeEffect.setVector3("_Left_Index_Pos_", this.leftIndexPosition);
+        this._activeEffect.setVector3("_Right_Index_Pos_", this.rightIndexPosition);
+        this._activeEffect.setVector3("_Left_Index_Middle_Pos_", this.leftIndexMiddlePosition);
+        this._activeEffect.setVector3("_Right_Index_Middle_Pos_", this.rightIndexMiddlePosition);
+        // "Decal Texture"
+        //define DECAL_ENABLE false;
+        this._activeEffect.setTexture("_Decal_", new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"]("", this.getScene()));
+        this._activeEffect.setVector2("_Decal_Scale_XY_", this.decalScaleXY);
+        this._activeEffect.setFloat("_Decal_Front_Only_", this.decalFrontOnly ? 1.0 : 0.0);
+        // "Rim Light"
+        this._activeEffect.setFloat("_Rim_Intensity_", this.rimIntensity);
+        this._activeEffect.setTexture("_Rim_Texture_", this._blueGradientTexture);
+        this._activeEffect.setFloat("_Rim_Hue_Shift_", this.rimHueShift);
+        this._activeEffect.setFloat("_Rim_Saturation_Shift_", this.rimSaturationShift);
+        this._activeEffect.setFloat("_Rim_Value_Shift_", this.rimValueShift);
+        // "Iridescence"
+        //define IRIDESCENCE_ENABLED true;
+        this._activeEffect.setFloat("_Iridescence_Intensity_", this.iridescenceIntensity);
+        this._activeEffect.setTexture("_Iridescence_Texture_", this._blueGradientTexture);
+        // Global inputs
+        this._activeEffect.setFloat("Use_Global_Left_Index", this.useGlobalLeftIndex);
+        this._activeEffect.setFloat("Use_Global_Right_Index", this.useGlobalRightIndex);
+        this._activeEffect.setVector4("Global_Left_Index_Tip_Position", this.globalLeftIndexTipPosition);
+        this._activeEffect.setVector4("Global_Right_Index_Tip_Position", this.globaRightIndexTipPosition);
+        this._activeEffect.setVector4("Global_Left_Thumb_Tip_Position", this.globalLeftThumbTipPosition);
+        this._activeEffect.setVector4("Global_Right_Thumb_Tip_Position", this.globalRightThumbTipPosition);
+        this._activeEffect.setVector4("Global_Left_Index_Middle_Position", this.globalLeftIndexMiddlePosition);
+        this._activeEffect.setVector4("Global_Right_Index_Middle_Position", this.globalRightIndexMiddlePosition);
+        this._activeEffect.setFloat("Global_Left_Index_Tip_Proximity", this.globalLeftIndexTipProximity);
+        this._activeEffect.setFloat("Global_Right_Index_Tip_Proximity", this.globalRightIndexTipProximity);
+        this._afterBind(mesh, this._activeEffect);
+    };
+    /**
+     * Get the list of animatables in the material.
+     * @returns the list of animatables object used in the material
+     */
+    MRDLSliderThumbMaterial.prototype.getAnimatables = function () {
+        return [];
+    };
+    MRDLSliderThumbMaterial.prototype.dispose = function (forceDisposeEffect) {
+        _super.prototype.dispose.call(this, forceDisposeEffect);
+    };
+    MRDLSliderThumbMaterial.prototype.clone = function (name) {
+        var _this = this;
+        return babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Clone(function () { return new MRDLSliderThumbMaterial(name, _this.getScene()); }, this);
+    };
+    MRDLSliderThumbMaterial.prototype.serialize = function () {
+        var serializationObject = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Serialize(this);
+        serializationObject.customType = "BABYLON.MRDLSliderThumbMaterial";
+        return serializationObject;
+    };
+    MRDLSliderThumbMaterial.prototype.getClassName = function () {
+        return "MRDLSliderThumbMaterial";
+    };
+    // Statics
+    MRDLSliderThumbMaterial.Parse = function (source, scene, rootUrl) {
+        return babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Parse(function () { return new MRDLSliderThumbMaterial(source.name, scene); }, source, scene, rootUrl);
+    };
+    /**
+     * URL pointing to the texture used to define the coloring for the Iridescent Map effect.
+     */
+    MRDLSliderThumbMaterial.BLUE_GRADIENT_TEXTURE_URL = "https://assets.babylonjs.com/meshes/MRTK/MRDL/mrtk-mrdl-blue-gradient.png";
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "radius", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "bevelFront", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "bevelFrontStretch", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "bevelBack", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "bevelBackStretch", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "radiusTopLeft", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "radiusTopRight", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "radiusBottomLeft", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "radiusBottomRight", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "bulgeEnabled", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "bulgeHeight", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "bulgeRadius", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "sunIntensity", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "sunTheta", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "sunPhi", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "indirectDiffuse", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "albedo", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "specular", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "shininess", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "sharpness", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "subsurface", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "leftGradientColor", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "rightGradientColor", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "reflection", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "frontReflect", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "edgeReflect", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "power", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "skyColor", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "horizonColor", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "groundColor", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "horizonPower", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "width", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "fuzz", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "minFuzz", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "clipFade", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "hueShift", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "saturationShift", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "valueShift", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "blobPosition", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "blobIntensity", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "blobNearSize", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "blobFarSize", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "blobNearDistance", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "blobFarDistance", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "blobFadeLength", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "blobPulse", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "blobFade", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "blobPosition2", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "blobNearSize2", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "blobPulse2", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "blobFade2", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "blobTexture", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "leftIndexPosition", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "rightIndexPosition", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "leftIndexMiddlePosition", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "rightIndexMiddlePosition", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "decalScaleXY", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "decalFrontOnly", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "rimIntensity", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "rimHueShift", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "rimSaturationShift", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "rimValueShift", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MRDLSliderThumbMaterial.prototype, "iridescenceIntensity", void 0);
+    return MRDLSliderThumbMaterial;
+}(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
+
+babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.GUI.MRDLSliderThumbMaterial"] = MRDLSliderThumbMaterial;
+
+
+/***/ }),
+
+/***/ "./3D/materials/mrdl/shaders/mrdlBackplate.fragment.ts":
+/*!*************************************************************!*\
+  !*** ./3D/materials/mrdl/shaders/mrdlBackplate.fragment.ts ***!
+  \*************************************************************/
+/*! exports provided: mrdlBackplatePixelShader */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "mrdlBackplatePixelShader", function() { return mrdlBackplatePixelShader; });
+/* harmony import */ var babylonjs_Engines_shaderStore__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Engines/shaderStore */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Engines_shaderStore__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Engines_shaderStore__WEBPACK_IMPORTED_MODULE_0__);
+
+var name = 'mrdlBackplatePixelShader';
+var shader = "uniform vec3 cameraPosition;\nvarying vec3 vPosition;\nvarying vec3 vNormal;\nvarying vec2 vUV;\nvarying vec3 vTangent;\nvarying vec3 vBinormal;\nvarying vec4 vExtra1;\nvarying vec4 vExtra2;\nuniform float _Radius_;\nuniform float _Line_Width_;\nuniform bool _Absolute_Sizes_;\nuniform float _Filter_Width_;\nuniform vec4 _Base_Color_;\nuniform vec4 _Line_Color_;\nuniform float _Radius_Top_Left_;\nuniform float _Radius_Top_Right_;\nuniform float _Radius_Bottom_Left_;\nuniform float _Radius_Bottom_Right_;\nuniform float _Rate_;\nuniform vec4 _Highlight_Color_;\nuniform float _Highlight_Width_;\nuniform vec4 _Highlight_Transform_;\nuniform float _Highlight_;\n\nuniform float _Iridescence_Intensity_;\nuniform float _Iridescence_Edge_Intensity_;\nuniform vec4 _Iridescence_Tint_;\nuniform sampler2D _Iridescent_Map_;\nuniform float _Angle_;\nuniform bool _Reflected_;\nuniform float _Frequency_;\nuniform float _Vertical_Offset_;\nuniform vec4 _Gradient_Color_;\nuniform vec4 _Top_Left_;\nuniform vec4 _Top_Right_;\nuniform vec4 _Bottom_Left_;\nuniform vec4 _Bottom_Right_;\n\nuniform float _Edge_Width_;\nuniform float _Edge_Power_;\nuniform float _Line_Gradient_Blend_;\nuniform float _Fade_Out_;\n\n\nvoid FastLinearTosRGB_B353(\nvec4 Linear,\nout vec4 sRGB)\n{\nsRGB.rgb=sqrt(clamp(Linear.rgb,0.0,1.0));\nsRGB.a=Linear.a;\n}\n\n\nvoid Round_Rect_Fragment_B332(\nfloat Radius,\nfloat Line_Width,\nvec4 Line_Color,\nfloat Filter_Width,\nvec2 UV,\nfloat Line_Visibility,\nvec4 Rect_Parms,\nvec4 Fill_Color,\nout vec4 Color)\n{\nfloat d=length(max(abs(UV)-Rect_Parms.xy,0.0));\nfloat dx=max(fwidth(d)*Filter_Width,0.00001);\n\nfloat g=min(Rect_Parms.z,Rect_Parms.w);\nfloat dgrad=max(fwidth(g)*Filter_Width,0.00001);\nfloat Inside_Rect=clamp(g/dgrad,0.0,1.0);\n\n\nfloat inner=clamp((d+dx*0.5-max(Radius-Line_Width,d-dx*0.5))/dx,0.0,1.0);\nColor=clamp(mix(Fill_Color,Line_Color,inner),0.0,1.0)*Inside_Rect;\n\n\n\n}\n\n\nvoid Iridescence_B343(\nvec3 Position,\nvec3 Normal,\nvec2 UV,\nvec3 Axis,\nvec3 Eye,\nvec4 Tint,\nsampler2D Texture,\nbool Reflected,\nfloat Frequency,\nfloat Vertical_Offset,\nout vec4 Color)\n{\nvec3 i=normalize(Position-Eye);\nvec3 r=reflect(i,Normal);\nfloat idota=dot(i,Axis);\nfloat idotr=dot(i,r);\nfloat x=Reflected ? idotr : idota;\nvec2 xy;\nxy.x=fract((x*Frequency+1.0)*0.5+UV.y*Vertical_Offset);\nxy.y=0.5;\nColor=texture(Texture,xy);\nColor.rgb*=Tint.rgb;\n}\n\n\nvoid Scale_RGB_B346(\nvec4 Color,\nfloat Scalar,\nout vec4 Result)\n{\nResult=vec4(Scalar,Scalar,Scalar,1)*Color;\n}\n\n\nvoid Scale_RGB_B344(\nfloat Scalar,\nvec4 Color,\nout vec4 Result)\n{\nResult=vec4(Scalar,Scalar,Scalar,1)*Color;\n}\n\n\nvoid Line_Fragment_B362(\nvec4 Base_Color,\nvec4 Highlight_Color,\nfloat Highlight_Width,\nvec3 Line_Vertex,\nfloat Highlight,\nout vec4 Line_Color)\n{\nfloat k2=1.0-clamp(abs(Line_Vertex.y/Highlight_Width),0.0,1.0);\nLine_Color=mix(Base_Color,Highlight_Color,Highlight*k2);\n}\n\n\nvoid Edge_B356(\nvec4 RectParms,\nfloat Radius,\nfloat Line_Width,\nvec2 UV,\nfloat Edge_Width,\nfloat Edge_Power,\nout float Result)\n{\nfloat d=length(max(abs(UV)-RectParms.xy,0.0));\nfloat edge=1.0-clamp((1.0-d/(Radius-Line_Width))/Edge_Width,0.0,1.0);\nResult=pow(edge,Edge_Power);\n}\n\n\nvoid Gradient_B355(\nvec4 Gradient_Color,\nvec4 Top_Left,\nvec4 Top_Right,\nvec4 Bottom_Left,\nvec4 Bottom_Right,\nvec2 UV,\nout vec4 Result)\n{\nvec3 top=Top_Left.rgb+(Top_Right.rgb-Top_Left.rgb)*UV.x;\nvec3 bottom=Bottom_Left.rgb+(Bottom_Right.rgb-Bottom_Left.rgb)*UV.x;\nResult.rgb=Gradient_Color.rgb*(bottom+(top-bottom)*UV.y);\nResult.a=1.0;\n}\n\nvoid main()\n{\n\nfloat X_Q338;\nfloat Y_Q338;\nfloat Z_Q338;\nfloat W_Q338;\nX_Q338=vExtra2.x;\nY_Q338=vExtra2.y;\nZ_Q338=vExtra2.z;\nW_Q338=vExtra2.w;\nvec4 Color_Q343;\n#if IRIDESCENCE_ENABLE\nIridescence_B343(vPosition,vNormal,vUV,vBinormal,cameraPosition,_Iridescence_Tint_,_Iridescent_Map_,_Reflected_,_Frequency_,_Vertical_Offset_,Color_Q343);\n#else\nColor_Q343=vec4(0,0,0,0);\n#endif\nvec4 Result_Q344;\nScale_RGB_B344(_Iridescence_Intensity_,Color_Q343,Result_Q344);\nvec4 Line_Color_Q362;\nLine_Fragment_B362(_Line_Color_,_Highlight_Color_,_Highlight_Width_,vTangent,_Highlight_,Line_Color_Q362);\nfloat Result_Q356;\n#if EDGE_ONLY\nEdge_B356(vExtra1,Z_Q338,W_Q338,vUV,_Edge_Width_,_Edge_Power_,Result_Q356);\n#else\nResult_Q356=1.0;\n#endif\n\nvec2 Vec2_Q339=vec2(X_Q338,Y_Q338);\nvec4 Result_Q355;\nGradient_B355(_Gradient_Color_,_Top_Left_,_Top_Right_,_Bottom_Left_,_Bottom_Right_,Vec2_Q339,Result_Q355);\n\nvec4 Linear_Q348;\nLinear_Q348.rgb=clamp(Result_Q355.rgb*Result_Q355.rgb,0.0,1.0);\nLinear_Q348.a=Result_Q355.a;\nvec4 Result_Q346;\nScale_RGB_B346(Linear_Q348,Result_Q356,Result_Q346);\n\nvec4 Sum_Q345=Result_Q346+Result_Q344;\n\nvec4 Color_At_T_Q347=mix(Line_Color_Q362,Result_Q346,_Line_Gradient_Blend_);\n\nvec4 Base_And_Iridescent_Q350;\nBase_And_Iridescent_Q350=_Base_Color_+vec4(Sum_Q345.rgb,0.0);\n\nvec4 Sum_Q349=Color_At_T_Q347+_Iridescence_Edge_Intensity_*Color_Q343;\n\nvec4 Result_Q351=Sum_Q349; Result_Q351.a=1.0;\nvec4 Color_Q332;\nRound_Rect_Fragment_B332(Z_Q338,W_Q338,Result_Q351,_Filter_Width_,vUV,1.0,vExtra1,Base_And_Iridescent_Q350,Color_Q332);\n\nvec4 Result_Q354=_Fade_Out_*Color_Q332;\nvec4 sRGB_Q353;\nFastLinearTosRGB_B353(Result_Q354,sRGB_Q353);\nvec4 Out_Color=sRGB_Q353;\nfloat Clip_Threshold=0.001;\nbool To_sRGB=false;\ngl_FragColor=Out_Color;\n}";
+babylonjs_Engines_shaderStore__WEBPACK_IMPORTED_MODULE_0__["ShaderStore"].ShadersStore[name] = shader;
+/** @hidden */
+var mrdlBackplatePixelShader = { name: name, shader: shader };
+
+
+/***/ }),
+
+/***/ "./3D/materials/mrdl/shaders/mrdlBackplate.vertex.ts":
+/*!***********************************************************!*\
+  !*** ./3D/materials/mrdl/shaders/mrdlBackplate.vertex.ts ***!
+  \***********************************************************/
+/*! exports provided: mrdlBackplateVertexShader */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "mrdlBackplateVertexShader", function() { return mrdlBackplateVertexShader; });
+/* harmony import */ var babylonjs_Engines_shaderStore__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Engines/shaderStore */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Engines_shaderStore__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Engines_shaderStore__WEBPACK_IMPORTED_MODULE_0__);
+
+var name = 'mrdlBackplateVertexShader';
+var shader = "uniform mat4 world;\nuniform mat4 viewProjection;\nuniform vec3 cameraPosition;\nattribute vec3 position;\nattribute vec3 normal;\nattribute vec3 tangent;\nuniform float _Radius_;\nuniform float _Line_Width_;\nuniform bool _Absolute_Sizes_;\nuniform float _Filter_Width_;\nuniform vec4 _Base_Color_;\nuniform vec4 _Line_Color_;\nuniform float _Radius_Top_Left_;\nuniform float _Radius_Top_Right_;\nuniform float _Radius_Bottom_Left_;\nuniform float _Radius_Bottom_Right_;\nuniform float _Rate_;\nuniform vec4 _Highlight_Color_;\nuniform float _Highlight_Width_;\nuniform vec4 _Highlight_Transform_;\nuniform float _Highlight_;\n\nuniform float _Iridescence_Intensity_;\nuniform float _Iridescence_Edge_Intensity_;\nuniform vec4 _Iridescence_Tint_;\nuniform sampler2D _Iridescent_Map_;\nuniform float _Angle_;\nuniform bool _Reflected_;\nuniform float _Frequency_;\nuniform float _Vertical_Offset_;\nuniform vec4 _Gradient_Color_;\nuniform vec4 _Top_Left_;\nuniform vec4 _Top_Right_;\nuniform vec4 _Bottom_Left_;\nuniform vec4 _Bottom_Right_;\n\nuniform float _Edge_Width_;\nuniform float _Edge_Power_;\nuniform float _Line_Gradient_Blend_;\nuniform float _Fade_Out_;\n\nvarying vec3 vPosition;\nvarying vec3 vNormal;\nvarying vec2 vUV;\nvarying vec3 vTangent;\nvarying vec3 vBinormal;\nvarying vec4 vExtra1;\nvarying vec4 vExtra2;\n\nvoid Object_To_World_Pos_B314(\nvec3 Pos_Object,\nout vec3 Pos_World)\n{\nPos_World=(world*vec4(Pos_Object,1.0)).xyz;\n}\n\n\nvoid Round_Rect_Vertex_B357(\nvec2 UV,\nfloat Radius,\nfloat Margin,\nfloat Anisotropy,\nfloat Gradient1,\nfloat Gradient2,\nvec3 Normal,\nvec4 Color_Scale_Translate,\nout vec2 Rect_UV,\nout vec4 Rect_Parms,\nout vec2 Scale_XY,\nout vec2 Line_UV,\nout vec2 Color_UV_Info)\n{\nScale_XY=vec2(Anisotropy,1.0);\nLine_UV=(UV-vec2(0.5,0.5));\nRect_UV=Line_UV*Scale_XY;\nRect_Parms.xy=Scale_XY*0.5-vec2(Radius,Radius)-vec2(Margin,Margin);\nRect_Parms.z=Gradient1;\nRect_Parms.w=Gradient2;\nColor_UV_Info=(Line_UV+vec2(0.5,0.5))*Color_Scale_Translate.xy+Color_Scale_Translate.zw;\n}\n\n\nvoid Line_Vertex_B333(\nvec2 Scale_XY,\nvec2 UV,\nfloat Time,\nfloat Rate,\nvec4 Highlight_Transform,\nout vec3 Line_Vertex)\n{\nfloat angle2=(Rate*Time)*2.0*3.1416;\nfloat sinAngle2=sin(angle2);\nfloat cosAngle2=cos(angle2);\nvec2 xformUV=UV*Highlight_Transform.xy+Highlight_Transform.zw;\nLine_Vertex.x=0.0;\nLine_Vertex.y=cosAngle2*xformUV.x-sinAngle2*xformUV.y;\nLine_Vertex.z=0.0;\n}\n\n\nvoid PickDir_B334(\nfloat Degrees,\nvec3 DirX,\nvec3 DirY,\nout vec3 Dir)\n{\n\nfloat a=Degrees*3.14159/180.0;\nDir=cos(a)*DirX+sin(a)*DirY;\n}\n\n\nvoid Move_Verts_B327(\nfloat Anisotropy,\nvec3 P,\nfloat Radius,\nout vec3 New_P,\nout vec2 New_UV,\nout float Radial_Gradient,\nout vec3 Radial_Dir)\n{\nvec2 UV=P.xy*2.0+0.5;\nvec2 center=clamp(UV,0.0,1.0);\nvec2 delta=UV-center;\nvec2 r2=2.0*vec2(Radius/Anisotropy,Radius);\nNew_UV=center+r2*(UV-2.0*center+0.5);\nNew_P=vec3(New_UV-0.5,P.z);\nRadial_Gradient=1.0-length(delta)*2.0;\nRadial_Dir=vec3(delta*r2,0.0);\n}\n\n\nvoid Pick_Radius_B336(\nfloat Radius,\nfloat Radius_Top_Left,\nfloat Radius_Top_Right,\nfloat Radius_Bottom_Left,\nfloat Radius_Bottom_Right,\nvec3 Position,\nout float Result)\n{\nbool whichY=Position.y>0.0;\nResult=Position.x<0.0 ? (whichY ? Radius_Top_Left : Radius_Bottom_Left) : (whichY ? Radius_Top_Right : Radius_Bottom_Right);\nResult*=Radius;\n}\n\n\nvoid Edge_AA_Vertex_B328(\nvec3 Position_World,\nvec3 Position_Object,\nvec3 Normal_Object,\nvec3 Eye,\nfloat Radial_Gradient,\nvec3 Radial_Dir,\nvec3 Tangent,\nout float Gradient1,\nout float Gradient2)\n{\n\nvec3 I=(Eye-Position_World);\nvec3 T=(vec4(Tangent,0.0)).xyz;\nfloat g=(dot(T,I)<0.0) ? 0.0 : 1.0;\nif (Normal_Object.z==0.0) {\n\nGradient1=Position_Object.z>0.0 ? g : 1.0;\nGradient2=Position_Object.z>0.0 ? 1.0 : g;\n} else {\n\n\n\n\nGradient1=g+(1.0-g)*(Radial_Gradient);\nGradient2=1.0;\n}\n}\n\n\nvoid Object_To_World_Dir_B330(\nvec3 Dir_Object,\nout vec3 Binormal_World,\nout vec3 Binormal_World_N,\nout float Binormal_Length)\n{\nBinormal_World=(world*vec4(Dir_Object,0.0)).xyz;\nBinormal_Length=length(Binormal_World);\nBinormal_World_N=Binormal_World/Binormal_Length;\n}\n\n\nvoid RelativeOrAbsoluteDetail_B341(\nfloat Nominal_Radius,\nfloat Nominal_LineWidth,\nbool Absolute_Measurements,\nfloat Height,\nout float Radius,\nout float Line_Width)\n{\nfloat scale=Absolute_Measurements ? 1.0/Height : 1.0;\nRadius=Nominal_Radius*scale;\nLine_Width=Nominal_LineWidth*scale;\n}\n\nvoid main()\n{\n\nvec3 Nrm_World_Q326;\nNrm_World_Q326=normalize((world*vec4(normal,0.0)).xyz);\n\nvec3 Tangent_World_Q329;\nvec3 Tangent_World_N_Q329;\nfloat Tangent_Length_Q329;\nTangent_World_Q329=(world*vec4(vec3(1,0,0),0.0)).xyz;\nTangent_Length_Q329=length(Tangent_World_Q329);\nTangent_World_N_Q329=Tangent_World_Q329/Tangent_Length_Q329;\nvec3 Binormal_World_Q330;\nvec3 Binormal_World_N_Q330;\nfloat Binormal_Length_Q330;\nObject_To_World_Dir_B330(vec3(0,1,0),Binormal_World_Q330,Binormal_World_N_Q330,Binormal_Length_Q330);\nfloat Radius_Q341;\nfloat Line_Width_Q341;\nRelativeOrAbsoluteDetail_B341(_Radius_,_Line_Width_,_Absolute_Sizes_,Binormal_Length_Q330,Radius_Q341,Line_Width_Q341);\nvec3 Dir_Q334;\nPickDir_B334(_Angle_,Tangent_World_N_Q329,Binormal_World_N_Q330,Dir_Q334);\nfloat Result_Q336;\nPick_Radius_B336(Radius_Q341,_Radius_Top_Left_,_Radius_Top_Right_,_Radius_Bottom_Left_,_Radius_Bottom_Right_,position,Result_Q336);\n\nfloat Anisotropy_Q331=Tangent_Length_Q329/Binormal_Length_Q330;\n\nvec4 Out_Color_Q337=vec4(Result_Q336,Line_Width_Q341,0,1);\nvec3 New_P_Q327;\nvec2 New_UV_Q327;\nfloat Radial_Gradient_Q327;\nvec3 Radial_Dir_Q327;\nMove_Verts_B327(Anisotropy_Q331,position,Result_Q336,New_P_Q327,New_UV_Q327,Radial_Gradient_Q327,Radial_Dir_Q327);\nvec3 Pos_World_Q314;\nObject_To_World_Pos_B314(New_P_Q327,Pos_World_Q314);\nfloat Gradient1_Q328;\nfloat Gradient2_Q328;\n#if SMOOTH_EDGES\nEdge_AA_Vertex_B328(Pos_World_Q314,position,normal,cameraPosition,Radial_Gradient_Q327,Radial_Dir_Q327,tangent,Gradient1_Q328,Gradient2_Q328);\n#else\nGradient1_Q328=1.0;\nGradient2_Q328=1.0;\n#endif\nvec2 Rect_UV_Q357;\nvec4 Rect_Parms_Q357;\nvec2 Scale_XY_Q357;\nvec2 Line_UV_Q357;\nvec2 Color_UV_Info_Q357;\nRound_Rect_Vertex_B357(New_UV_Q327,Result_Q336,0.0,Anisotropy_Q331,Gradient1_Q328,Gradient2_Q328,normal,vec4(1,1,0,0),Rect_UV_Q357,Rect_Parms_Q357,Scale_XY_Q357,Line_UV_Q357,Color_UV_Info_Q357);\nvec3 Line_Vertex_Q333;\nLine_Vertex_B333(Scale_XY_Q357,Line_UV_Q357,(20.0),_Rate_,_Highlight_Transform_,Line_Vertex_Q333);\n\nfloat X_Q359;\nfloat Y_Q359;\nX_Q359=Color_UV_Info_Q357.x;\nY_Q359=Color_UV_Info_Q357.y;\n\nvec4 Vec4_Q358=vec4(X_Q359,Y_Q359,Result_Q336,Line_Width_Q341);\nvec3 Position=Pos_World_Q314;\nvec3 Normal=Nrm_World_Q326;\nvec2 UV=Rect_UV_Q357;\nvec3 Tangent=Line_Vertex_Q333;\nvec3 Binormal=Dir_Q334;\nvec4 Color=Out_Color_Q337;\nvec4 Extra1=Rect_Parms_Q357;\nvec4 Extra2=Vec4_Q358;\nvec4 Extra3=vec4(0,0,0,0);\ngl_Position=viewProjection*vec4(Position,1);\nvPosition=Position;\nvNormal=Normal;\nvUV=UV;\nvTangent=Tangent;\nvBinormal=Binormal;\nvExtra1=Extra1;\nvExtra2=Extra2;\n}";
+babylonjs_Engines_shaderStore__WEBPACK_IMPORTED_MODULE_0__["ShaderStore"].ShadersStore[name] = shader;
+/** @hidden */
+var mrdlBackplateVertexShader = { name: name, shader: shader };
+
+
+/***/ }),
+
+/***/ "./3D/materials/mrdl/shaders/mrdlSliderBar.fragment.ts":
+/*!*************************************************************!*\
+  !*** ./3D/materials/mrdl/shaders/mrdlSliderBar.fragment.ts ***!
+  \*************************************************************/
+/*! exports provided: mrdlSliderBarPixelShader */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "mrdlSliderBarPixelShader", function() { return mrdlSliderBarPixelShader; });
+/* harmony import */ var babylonjs_Engines_shaderStore__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Engines/shaderStore */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Engines_shaderStore__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Engines_shaderStore__WEBPACK_IMPORTED_MODULE_0__);
+
+var name = 'mrdlSliderBarPixelShader';
+var shader = "uniform vec3 cameraPosition;\nvarying vec3 vPosition;\nvarying vec3 vNormal;\nvarying vec2 vUV;\nvarying vec3 vTangent;\nvarying vec3 vBinormal;\nvarying vec4 vColor;\nvarying vec4 vExtra1;\nvarying vec4 vExtra2;\nvarying vec4 vExtra3;\nuniform float _Radius_;\nuniform float _Bevel_Front_;\nuniform float _Bevel_Front_Stretch_;\nuniform float _Bevel_Back_;\nuniform float _Bevel_Back_Stretch_;\nuniform float _Radius_Top_Left_;\nuniform float _Radius_Top_Right_;\nuniform float _Radius_Bottom_Left_;\nuniform float _Radius_Bottom_Right_;\nuniform bool _Bulge_Enabled_;\nuniform float _Bulge_Height_;\nuniform float _Bulge_Radius_;\nuniform float _Sun_Intensity_;\nuniform float _Sun_Theta_;\nuniform float _Sun_Phi_;\nuniform float _Indirect_Diffuse_;\nuniform vec4 _Albedo_;\nuniform float _Specular_;\nuniform float _Shininess_;\nuniform float _Sharpness_;\nuniform float _Subsurface_;\nuniform vec4 _Left_Color_;\nuniform vec4 _Right_Color_;\nuniform float _Reflection_;\nuniform float _Front_Reflect_;\nuniform float _Edge_Reflect_;\nuniform float _Power_;\n\nuniform vec4 _Sky_Color_;\nuniform vec4 _Horizon_Color_;\nuniform vec4 _Ground_Color_;\nuniform float _Horizon_Power_;\n\nuniform sampler2D _Reflection_Map_;\nuniform sampler2D _Indirect_Environment_;\n\nuniform float _Width_;\nuniform float _Fuzz_;\nuniform float _Min_Fuzz_;\nuniform float _Clip_Fade_;\nuniform float _Hue_Shift_;\nuniform float _Saturation_Shift_;\nuniform float _Value_Shift_;\n\nuniform vec3 _Blob_Position_;\nuniform float _Blob_Intensity_;\nuniform float _Blob_Near_Size_;\nuniform float _Blob_Far_Size_;\nuniform float _Blob_Near_Distance_;\nuniform float _Blob_Far_Distance_;\nuniform float _Blob_Fade_Length_;\nuniform float _Blob_Pulse_;\nuniform float _Blob_Fade_;\nuniform sampler2D _Blob_Texture_;\n\nuniform vec3 _Blob_Position_2_;\nuniform float _Blob_Near_Size_2_;\nuniform float _Blob_Pulse_2_;\nuniform float _Blob_Fade_2_;\nuniform vec3 _Left_Index_Pos_;\nuniform vec3 _Right_Index_Pos_;\nuniform vec3 _Left_Index_Middle_Pos_;\nuniform vec3 _Right_Index_Middle_Pos_;\n\nuniform sampler2D _Decal_;\nuniform vec2 _Decal_Scale_XY_;\nuniform bool _Decal_Front_Only_;\nuniform float _Rim_Intensity_;\nuniform sampler2D _Rim_Texture_;\nuniform float _Rim_Hue_Shift_;\nuniform float _Rim_Saturation_Shift_;\nuniform float _Rim_Value_Shift_;\n\nuniform float _Iridescence_Intensity_;\nuniform sampler2D _Iridescence_Texture_;\nuniform bool Use_Global_Left_Index;\nuniform bool Use_Global_Right_Index;\nuniform vec4 Global_Left_Index_Tip_Position;\nuniform vec4 Global_Right_Index_Tip_Position;\nuniform vec4 Global_Left_Thumb_Tip_Position;\nuniform vec4 Global_Right_Thumb_Tip_Position;\nuniform vec4 Global_Left_Index_Middle_Position;\nuniform vec4 Global_Right_Index_Middle_Position;\nuniform float Global_Left_Index_Tip_Proximity;\nuniform float Global_Right_Index_Tip_Proximity;\n\nvoid Blob_Fragment_B30(\nsampler2D Blob_Texture,\nvec4 Blob_Info1,\nvec4 Blob_Info2,\nout vec4 Blob_Color)\n{\nfloat k1=dot(Blob_Info1.xy,Blob_Info1.xy);\nfloat k2=dot(Blob_Info2.xy,Blob_Info2.xy);\nvec3 closer=k1<k2 ? vec3(k1,Blob_Info1.z,Blob_Info1.w) : vec3(k2,Blob_Info2.z,Blob_Info2.w);\nBlob_Color=closer.z*texture(Blob_Texture,vec2(vec2(sqrt(closer.x),closer.y).x,1.0-vec2(sqrt(closer.x),closer.y).y))*clamp(1.0-closer.x,0.0,1.0);\n}\n\n\nvoid FastLinearTosRGB_B42(\nvec4 Linear,\nout vec4 sRGB)\n{\nsRGB.rgb=sqrt(clamp(Linear.rgb,0.0,1.0));\nsRGB.a=Linear.a;\n}\n\n\nvoid Scale_RGB_B59(\nvec4 Color,\nfloat Scalar,\nout vec4 Result)\n{\nResult=vec4(Scalar,Scalar,Scalar,1)*Color;\n}\n\n\nvoid Fragment_Main_B121(\nfloat Sun_Intensity,\nfloat Sun_Theta,\nfloat Sun_Phi,\nvec3 Normal,\nvec4 Albedo,\nfloat Fresnel_Reflect,\nfloat Shininess,\nvec3 Incident,\nvec4 Horizon_Color,\nvec4 Sky_Color,\nvec4 Ground_Color,\nfloat Indirect_Diffuse,\nfloat Specular,\nfloat Horizon_Power,\nfloat Reflection,\nvec4 Reflection_Sample,\nvec4 Indirect_Sample,\nfloat Sharpness,\nfloat SSS,\nfloat Subsurface,\nvec4 Translucence,\nvec4 Rim_Light,\nvec4 Iridescence,\nout vec4 Result)\n{\nfloat theta=Sun_Theta*2.0*3.14159;\nfloat phi=Sun_Phi*3.14159;\nvec3 lightDir=vec3(cos(phi)*cos(theta),sin(phi),cos(phi)*sin(theta));\nfloat NdotL=max(dot(lightDir,Normal),0.0);\n\nvec3 R=reflect(Incident,Normal);\nfloat RdotL=max(0.0,dot(R,lightDir));\nfloat specular=pow(RdotL,Shininess);\nspecular=mix(specular,smoothstep(0.495*Sharpness,1.0-0.495*Sharpness,specular),Sharpness);\nvec4 gi=mix(Ground_Color,Sky_Color,Normal.y*0.5+0.5);\n\nResult=((Sun_Intensity*NdotL+Indirect_Sample*Indirect_Diffuse+Translucence)*(1.0+SSS*Subsurface))*Albedo*(1.0-Fresnel_Reflect)+(Sun_Intensity*specular*Specular+Fresnel_Reflect*Reflection*Reflection_Sample)+Fresnel_Reflect*Rim_Light+Iridescence;\n}\n\n\nvoid Bulge_B79(\nbool Enabled,\nvec3 Normal,\nvec3 Tangent,\nfloat Bulge_Height,\nvec4 UV,\nfloat Bulge_Radius,\nvec3 ButtonN,\nout vec3 New_Normal)\n{\nvec2 xy=clamp(UV.xy*2.0,vec2(-1,-1),vec2(1,1));\nvec3 B=(cross(Normal,Tangent));\n\n\n\n\nfloat k=-clamp(1.0-length(xy)/Bulge_Radius,0.0,1.0)*Bulge_Height;\nk=sin(k*3.14159*0.5);\nk*=smoothstep(0.9998,0.9999,abs(dot(ButtonN,Normal)));\nNew_Normal=Normal*sqrt(1.0-k*k)+(xy.x*Tangent+xy.y*B)*k;\nNew_Normal=Enabled ? New_Normal : Normal;\n}\n\n\nvoid SSS_B77(\nvec3 ButtonN,\nvec3 Normal,\nvec3 Incident,\nout float Result)\n{\nfloat NdotI=abs(dot(Normal,Incident));\nfloat BdotI=abs(dot(ButtonN,Incident));\nResult=(abs(NdotI-BdotI));\n\n}\n\n\nvoid FingerOcclusion_B67(\nfloat Width,\nfloat DistToCenter,\nfloat Fuzz,\nfloat Min_Fuzz,\nvec3 Position,\nvec3 Forward,\nvec3 Nearest,\nfloat Fade_Out,\nout float NotInShadow)\n{\nfloat d=dot((Nearest-Position),Forward);\nfloat sh=smoothstep(Width*0.5,Width*0.5+Fuzz*max(d,0.0)+Min_Fuzz,DistToCenter);\nNotInShadow=1.0-(1.0-sh)*smoothstep(-Fade_Out,0.0,d);\n}\n\n\nvoid FingerOcclusion_B68(\nfloat Width,\nfloat DistToCenter,\nfloat Fuzz,\nfloat Min_Fuzz,\nvec3 Position,\nvec3 Forward,\nvec3 Nearest,\nfloat Fade_Out,\nout float NotInShadow)\n{\nfloat d=dot((Nearest-Position),Forward);\nfloat sh=smoothstep(Width*0.5,Width*0.5+Fuzz*max(d,0.0)+Min_Fuzz,DistToCenter);\nNotInShadow=1.0-(1.0-sh)*smoothstep(-Fade_Out,0.0,d);\n}\n\n\nvoid Scale_Color_B91(\nvec4 Color,\nfloat Scalar,\nout vec4 Result)\n{\nResult=Scalar*Color;\n}\n\n\nvoid From_HSV_B73(\nfloat Hue,\nfloat Saturation,\nfloat Value,\nfloat Alpha,\nout vec4 Color)\n{\n\nvec4 K=vec4(1.0,2.0/3.0,1.0/3.0,3.0);\nvec3 p=abs(fract(vec3(Hue,Hue,Hue)+K.xyz)*6.0-K.www);\nColor.rgb=Value*mix(K.xxx,clamp(p-K.xxx,0.0,1.0),Saturation);\nColor.a=Alpha;\n}\n\n\nvoid Fast_Fresnel_B122(\nfloat Front_Reflect,\nfloat Edge_Reflect,\nfloat Power,\nvec3 Normal,\nvec3 Incident,\nout float Transmit,\nout float Reflect)\n{\nfloat d=max(-dot(Incident,Normal),0.0);\nReflect=Front_Reflect+(Edge_Reflect-Front_Reflect)*pow(.01-d,Power);\nTransmit=1.0-Reflect;\n}\n\n\nvoid Mapped_Environment_B51(\nsampler2D Reflected_Environment,\nsampler2D Indirect_Environment,\nvec3 Dir,\nout vec4 Reflected_Color,\nout vec4 Indirect_Diffuse)\n{\n\nReflected_Color=texture(Reflected_Environment,vec2(atan(Dir.z,Dir.x)/3.14159*0.5,asin(Dir.y)/3.14159+0.5));\nIndirect_Diffuse=texture(Indirect_Environment,vec2(atan(Dir.z,Dir.x)/3.14159*0.5,asin(Dir.y)/3.14159+0.5));\n}\n\n\nvec4 SampleEnv_Bid50(vec3 D,vec4 S,vec4 H,vec4 G,float exponent)\n{\nfloat k=pow(abs(D.y),exponent);\nvec4 C;\nif (D.y>0.0) {\nC=mix(H,S,k);\n} else {\nC=mix(H,G,k);\n}\nreturn C;\n}\nvoid Sky_Environment_B50(\nvec3 Normal,\nvec3 Reflected,\nvec4 Sky_Color,\nvec4 Horizon_Color,\nvec4 Ground_Color,\nfloat Horizon_Power,\nout vec4 Reflected_Color,\nout vec4 Indirect_Color)\n{\n\nReflected_Color=SampleEnv_Bid50(Reflected,Sky_Color,Horizon_Color,Ground_Color,Horizon_Power);\nIndirect_Color=mix(Ground_Color,Sky_Color,Normal.y*0.5+0.5);\n}\n\n\nvoid Min_Segment_Distance_B65(\nvec3 P0,\nvec3 P1,\nvec3 Q0,\nvec3 Q1,\nout vec3 NearP,\nout vec3 NearQ,\nout float Distance)\n{\nvec3 u=P1-P0;\nvec3 v=Q1-Q0;\nvec3 w=P0-Q0;\nfloat a=dot(u,u);\nfloat b=dot(u,v);\nfloat c=dot(v,v);\nfloat d=dot(u,w);\nfloat e=dot(v,w);\nfloat D=a*c-b*b;\nfloat sD=D;\nfloat tD=D;\nfloat sc,sN,tc,tN;\nif (D<0.00001) {\nsN=0.0;\nsD=1.0;\ntN=e;\ntD=c;\n} else {\nsN=(b*e-c*d);\ntN=(a*e-b*d);\nif (sN<0.0) {\nsN=0.0;\ntN=e;\ntD=c;\n} else if (sN>sD) {\nsN=sD;\ntN=e+b;\ntD=c;\n}\n}\nif (tN<0.0) {\ntN=0.0;\nif (-d<0.0) {\nsN=0.0;\n} else if (-d>a) {\nsN=sD;\n} else {\nsN=-d;\nsD=a;\n}\n} else if (tN>tD) {\ntN=tD;\nif ((-d+b)<0.0) {\nsN=0.0;\n} else if ((-d+b)>a) {\nsN=sD;\n} else {\nsN=(-d+b);\nsD=a;\n}\n}\nsc=abs(sN)<0.000001 ? 0.0 : sN/sD;\ntc=abs(tN)<0.000001 ? 0.0 : tN/tD;\nNearP=P0+sc*u;\nNearQ=Q0+tc*v;\nDistance=distance(NearP,NearQ);\n}\n\n\nvoid To_XYZ_B74(\nvec3 Vec3,\nout float X,\nout float Y,\nout float Z)\n{\nX=Vec3.x;\nY=Vec3.y;\nZ=Vec3.z;\n}\n\n\nvoid Finger_Positions_B64(\nvec3 Left_Index_Pos,\nvec3 Right_Index_Pos,\nvec3 Left_Index_Middle_Pos,\nvec3 Right_Index_Middle_Pos,\nout vec3 Left_Index,\nout vec3 Right_Index,\nout vec3 Left_Index_Middle,\nout vec3 Right_Index_Middle)\n{\nLeft_Index=(Use_Global_Left_Index ? Global_Left_Index_Tip_Position.xyz : Left_Index_Pos);\nRight_Index=(Use_Global_Right_Index ? Global_Right_Index_Tip_Position.xyz : Right_Index_Pos);\nLeft_Index_Middle=(Use_Global_Left_Index ? Global_Left_Index_Middle_Position.xyz : Left_Index_Middle_Pos);\nRight_Index_Middle=(Use_Global_Right_Index ? Global_Right_Index_Middle_Position.xyz : Right_Index_Middle_Pos);\n}\n\n\nvoid VaryHSV_B108(\nvec3 HSV_In,\nfloat Hue_Shift,\nfloat Saturation_Shift,\nfloat Value_Shift,\nout vec3 HSV_Out)\n{\nHSV_Out=vec3(fract(HSV_In.x+Hue_Shift),clamp(HSV_In.y+Saturation_Shift,0.0,1.0),clamp(HSV_In.z+Value_Shift,0.0,1.0));\n}\n\n\nvoid Remap_Range_B114(\nfloat In_Min,\nfloat In_Max,\nfloat Out_Min,\nfloat Out_Max,\nfloat In,\nout float Out)\n{\nOut=mix(Out_Min,Out_Max,clamp((In-In_Min)/(In_Max-In_Min),0.0,1.0));\n}\n\n\nvoid To_HSV_B75(\nvec4 Color,\nout float Hue,\nout float Saturation,\nout float Value,\nout float Alpha,\nout vec3 HSV)\n{\n\nvec4 K=vec4(0.0,-1.0/3.0,2.0/3.0,-1.0);\nvec4 p=Color.g<Color.b ? vec4(Color.bg,K.wz) : vec4(Color.gb,K.xy);\nvec4 q=Color.r<p.x ? vec4(p.xyw,Color.r) : vec4(Color.r,p.yzx);\nfloat d=q.x-min(q.w,q.y);\nfloat e=1.0e-10;\nHue=abs(q.z+(q.w-q.y)/(6.0*d+e));\nSaturation=d/(q.x+e);\nValue=q.x;\nAlpha=Color.a;\nHSV=vec3(Hue,Saturation,Value);\n}\n\n\nvoid Code_B110(\nfloat X,\nout float Result)\n{\nResult=(acos(X)/3.14159-0.5)*2.0;\n}\n\n\nvoid Rim_Light_B132(\nvec3 Front,\nvec3 Normal,\nvec3 Incident,\nfloat Rim_Intensity,\nsampler2D Texture,\nout vec4 Result)\n{\nvec3 R=reflect(Incident,Normal);\nfloat RdotF=dot(R,Front);\nfloat RdotL=sqrt(1.0-RdotF*RdotF);\nvec2 UV=vec2(R.y*0.5+0.5,0.5);\nvec4 Color=texture(Texture,UV);\nResult=Color;\n}\n\nvoid main()\n{\nvec4 Blob_Color_Q30;\n#if BLOB_ENABLE\nBlob_Fragment_B30(_Blob_Texture_,vExtra2,vExtra3,Blob_Color_Q30);\n#else\nBlob_Color_Q30=vec4(0,0,0,0);\n#endif\n\nvec3 Incident_Q39=normalize(vPosition-cameraPosition);\n\nvec3 Normalized_Q38=normalize(vNormal);\n\nvec3 Normalized_Q71=normalize(vTangent);\n\nvec4 Color_Q83;\n#if DECAL_ENABLE\nColor_Q83=texture(_Decal_,vUV);\n#else\nColor_Q83=vec4(0,0,0,0);\n#endif\n\nfloat X_Q90;\nfloat Y_Q90;\nfloat Z_Q90;\nfloat W_Q90;\nX_Q90=vExtra1.x;\nY_Q90=vExtra1.y;\nZ_Q90=vExtra1.z;\nW_Q90=vExtra1.w;\n\nvec4 Linear_Q43;\nLinear_Q43.rgb=clamp(_Sky_Color_.rgb*_Sky_Color_.rgb,0.0,1.0);\nLinear_Q43.a=_Sky_Color_.a;\n\nvec4 Linear_Q44;\nLinear_Q44.rgb=clamp(_Horizon_Color_.rgb*_Horizon_Color_.rgb,0.0,1.0);\nLinear_Q44.a=_Horizon_Color_.a;\n\nvec4 Linear_Q45;\nLinear_Q45.rgb=clamp(_Ground_Color_.rgb*_Ground_Color_.rgb,0.0,1.0);\nLinear_Q45.a=_Ground_Color_.a;\nvec3 Left_Index_Q64;\nvec3 Right_Index_Q64;\nvec3 Left_Index_Middle_Q64;\nvec3 Right_Index_Middle_Q64;\nFinger_Positions_B64(_Left_Index_Pos_,_Right_Index_Pos_,_Left_Index_Middle_Pos_,_Right_Index_Middle_Pos_,Left_Index_Q64,Right_Index_Q64,Left_Index_Middle_Q64,Right_Index_Middle_Q64);\n\nvec4 Linear_Q46;\nLinear_Q46.rgb=clamp(_Albedo_.rgb*_Albedo_.rgb,0.0,1.0);\nLinear_Q46.a=_Albedo_.a;\n\nvec3 Normalized_Q107=normalize(vBinormal);\n\nvec3 Incident_Q70=normalize(vPosition-cameraPosition);\nvec3 New_Normal_Q79;\nBulge_B79(_Bulge_Enabled_,Normalized_Q38,Normalized_Q71,_Bulge_Height_,vColor,_Bulge_Radius_,vBinormal,New_Normal_Q79);\nfloat Result_Q77;\nSSS_B77(vBinormal,New_Normal_Q79,Incident_Q39,Result_Q77);\nvec4 Result_Q91;\nScale_Color_B91(Color_Q83,X_Q90,Result_Q91);\nfloat Transmit_Q122;\nfloat Reflect_Q122;\nFast_Fresnel_B122(_Front_Reflect_,_Edge_Reflect_,_Power_,New_Normal_Q79,Incident_Q39,Transmit_Q122,Reflect_Q122);\n\nfloat Product_Q125=Y_Q90*Y_Q90;\nvec3 NearP_Q65;\nvec3 NearQ_Q65;\nfloat Distance_Q65;\nMin_Segment_Distance_B65(Left_Index_Q64,Left_Index_Middle_Q64,vPosition,cameraPosition,NearP_Q65,NearQ_Q65,Distance_Q65);\nvec3 NearP_Q63;\nvec3 NearQ_Q63;\nfloat Distance_Q63;\nMin_Segment_Distance_B65(Right_Index_Q64,Right_Index_Middle_Q64,vPosition,cameraPosition,NearP_Q63,NearQ_Q63,Distance_Q63);\n\nvec3 Reflected_Q47=reflect(Incident_Q39,New_Normal_Q79);\n\nvec4 Product_Q103=Linear_Q46*vec4(1,1,1,1);\nvec4 Result_Q132;\nRim_Light_B132(Normalized_Q107,Normalized_Q38,Incident_Q70,_Rim_Intensity_,_Rim_Texture_,Result_Q132);\n\nfloat Dot_Q72=dot(Incident_Q70,Normalized_Q71);\n\nfloat MaxAB_Q123=max(Reflect_Q122,Product_Q125);\nfloat NotInShadow_Q67;\n#if OCCLUSION_ENABLED\nFingerOcclusion_B67(_Width_,Distance_Q65,_Fuzz_,_Min_Fuzz_,vPosition,vBinormal,NearP_Q65,_Clip_Fade_,NotInShadow_Q67);\n#else\nNotInShadow_Q67=1.0;\n#endif\nfloat NotInShadow_Q68;\n#if OCCLUSION_ENABLED\nFingerOcclusion_B68(_Width_,Distance_Q63,_Fuzz_,_Min_Fuzz_,vPosition,vBinormal,NearP_Q63,_Clip_Fade_,NotInShadow_Q68);\n#else\nNotInShadow_Q68=1.0;\n#endif\nvec4 Reflected_Color_Q51;\nvec4 Indirect_Diffuse_Q51;\n#if ENV_ENABLE\nMapped_Environment_B51(_Reflection_Map_,_Indirect_Environment_,Reflected_Q47,Reflected_Color_Q51,Indirect_Diffuse_Q51);\n#else\nReflected_Color_Q51=vec4(0,0,0,1);\nIndirect_Diffuse_Q51=vec4(0,0,0,1);\n#endif\nvec4 Reflected_Color_Q50;\nvec4 Indirect_Color_Q50;\n#if SKY_ENABLED\nSky_Environment_B50(New_Normal_Q79,Reflected_Q47,Linear_Q43,Linear_Q44,Linear_Q45,_Horizon_Power_,Reflected_Color_Q50,Indirect_Color_Q50);\n#else\nReflected_Color_Q50=vec4(0,0,0,1);\nIndirect_Color_Q50=vec4(0,0,0,1);\n#endif\nfloat Hue_Q75;\nfloat Saturation_Q75;\nfloat Value_Q75;\nfloat Alpha_Q75;\nvec3 HSV_Q75;\nTo_HSV_B75(Product_Q103,Hue_Q75,Saturation_Q75,Value_Q75,Alpha_Q75,HSV_Q75);\nfloat Hue_Q127;\nfloat Saturation_Q127;\nfloat Value_Q127;\nfloat Alpha_Q127;\nvec3 HSV_Q127;\nTo_HSV_B75(Result_Q132,Hue_Q127,Saturation_Q127,Value_Q127,Alpha_Q127,HSV_Q127);\nfloat Result_Q110;\nCode_B110(Dot_Q72,Result_Q110);\n\nfloat AbsA_Q76=abs(Result_Q110);\n\nfloat MinAB_Q58=min(NotInShadow_Q67,NotInShadow_Q68);\n\nvec4 Sum_Q48=Reflected_Color_Q51+Reflected_Color_Q50;\n\nvec4 Sum_Q49=Indirect_Diffuse_Q51+Indirect_Color_Q50;\nvec3 HSV_Out_Q126;\nVaryHSV_B108(HSV_Q127,_Rim_Hue_Shift_,_Rim_Saturation_Shift_,_Rim_Value_Shift_,HSV_Out_Q126);\nfloat Out_Q114;\nRemap_Range_B114(-1.0,1.0,0.0,1.0,Result_Q110,Out_Q114);\n\nfloat Product_Q106;\nProduct_Q106=AbsA_Q76*_Hue_Shift_;\n\nfloat X_Q128;\nfloat Y_Q128;\nfloat Z_Q128;\nTo_XYZ_B74(HSV_Out_Q126,X_Q128,Y_Q128,Z_Q128);\n\nvec2 Vec2_Q112=vec2(Out_Q114,0.5);\nvec3 HSV_Out_Q108;\nVaryHSV_B108(HSV_Q75,Product_Q106,_Saturation_Shift_,_Value_Shift_,HSV_Out_Q108);\nvec4 Color_Q129;\nFrom_HSV_B73(X_Q128,Y_Q128,Z_Q128,0.0,Color_Q129);\n\nvec4 Color_Q111;\n#if IRIDESCENCE_ENABLED\nColor_Q111=texture(_Iridescence_Texture_,Vec2_Q112);\n#else\nColor_Q111=vec4(0,0,0,0);\n#endif\nfloat X_Q74;\nfloat Y_Q74;\nfloat Z_Q74;\nTo_XYZ_B74(HSV_Out_Q108,X_Q74,Y_Q74,Z_Q74);\n\nvec4 Result_Q131=_Rim_Intensity_*Color_Q129;\n\nvec4 Result_Q113=_Iridescence_Intensity_*Color_Q111;\nvec4 Color_Q73;\nFrom_HSV_B73(X_Q74,Y_Q74,Z_Q74,0.0,Color_Q73);\n\nvec4 Result_Q84=Result_Q91+(1.0-Result_Q91.a)*Color_Q73;\nvec4 Result_Q121;\nFragment_Main_B121(_Sun_Intensity_,_Sun_Theta_,_Sun_Phi_,New_Normal_Q79,Result_Q84,MaxAB_Q123,_Shininess_,Incident_Q39,_Horizon_Color_,_Sky_Color_,_Ground_Color_,_Indirect_Diffuse_,_Specular_,_Horizon_Power_,_Reflection_,Sum_Q48,Sum_Q49,_Sharpness_,Result_Q77,_Subsurface_,vec4(0,0,0,0),Result_Q131,Result_Q113,Result_Q121);\nvec4 Result_Q59;\nScale_RGB_B59(Result_Q121,MinAB_Q58,Result_Q59);\nvec4 sRGB_Q42;\nFastLinearTosRGB_B42(Result_Q59,sRGB_Q42);\n\nvec4 Result_Q31=Blob_Color_Q30+(1.0-Blob_Color_Q30.a)*sRGB_Q42;\n\nvec4 Result_Q40=Result_Q31; Result_Q40.a=1.0;\nvec4 Out_Color=Result_Q40;\nfloat Clip_Threshold=0.001;\nbool To_sRGB=false;\ngl_FragColor=Out_Color;\n}";
+babylonjs_Engines_shaderStore__WEBPACK_IMPORTED_MODULE_0__["ShaderStore"].ShadersStore[name] = shader;
+/** @hidden */
+var mrdlSliderBarPixelShader = { name: name, shader: shader };
+
+
+/***/ }),
+
+/***/ "./3D/materials/mrdl/shaders/mrdlSliderBar.vertex.ts":
+/*!***********************************************************!*\
+  !*** ./3D/materials/mrdl/shaders/mrdlSliderBar.vertex.ts ***!
+  \***********************************************************/
+/*! exports provided: mrdlSliderBarVertexShader */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "mrdlSliderBarVertexShader", function() { return mrdlSliderBarVertexShader; });
+/* harmony import */ var babylonjs_Engines_shaderStore__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Engines/shaderStore */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Engines_shaderStore__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Engines_shaderStore__WEBPACK_IMPORTED_MODULE_0__);
+
+var name = 'mrdlSliderBarVertexShader';
+var shader = "uniform mat4 world;\nuniform mat4 viewProjection;\nuniform vec3 cameraPosition;\nattribute vec3 position;\nattribute vec3 normal;\nattribute vec2 uv;\n#ifdef TANGENT\nattribute vec3 tangent;\n#else\nconst vec3 tangent=vec3(0.);\n#endif\nuniform float _Radius_;\nuniform float _Bevel_Front_;\nuniform float _Bevel_Front_Stretch_;\nuniform float _Bevel_Back_;\nuniform float _Bevel_Back_Stretch_;\nuniform float _Radius_Top_Left_;\nuniform float _Radius_Top_Right_;\nuniform float _Radius_Bottom_Left_;\nuniform float _Radius_Bottom_Right_;\nuniform bool _Bulge_Enabled_;\nuniform float _Bulge_Height_;\nuniform float _Bulge_Radius_;\nuniform float _Sun_Intensity_;\nuniform float _Sun_Theta_;\nuniform float _Sun_Phi_;\nuniform float _Indirect_Diffuse_;\nuniform vec4 _Albedo_;\nuniform float _Specular_;\nuniform float _Shininess_;\nuniform float _Sharpness_;\nuniform float _Subsurface_;\nuniform vec4 _Left_Color_;\nuniform vec4 _Right_Color_;\nuniform float _Reflection_;\nuniform float _Front_Reflect_;\nuniform float _Edge_Reflect_;\nuniform float _Power_;\n\nuniform vec4 _Sky_Color_;\nuniform vec4 _Horizon_Color_;\nuniform vec4 _Ground_Color_;\nuniform float _Horizon_Power_;\n\nuniform sampler2D _Reflection_Map_;\nuniform sampler2D _Indirect_Environment_;\n\nuniform float _Width_;\nuniform float _Fuzz_;\nuniform float _Min_Fuzz_;\nuniform float _Clip_Fade_;\nuniform float _Hue_Shift_;\nuniform float _Saturation_Shift_;\nuniform float _Value_Shift_;\n\nuniform vec3 _Blob_Position_;\nuniform float _Blob_Intensity_;\nuniform float _Blob_Near_Size_;\nuniform float _Blob_Far_Size_;\nuniform float _Blob_Near_Distance_;\nuniform float _Blob_Far_Distance_;\nuniform float _Blob_Fade_Length_;\nuniform float _Blob_Pulse_;\nuniform float _Blob_Fade_;\nuniform sampler2D _Blob_Texture_;\n\nuniform vec3 _Blob_Position_2_;\nuniform float _Blob_Near_Size_2_;\nuniform float _Blob_Pulse_2_;\nuniform float _Blob_Fade_2_;\nuniform vec3 _Left_Index_Pos_;\nuniform vec3 _Right_Index_Pos_;\nuniform vec3 _Left_Index_Middle_Pos_;\nuniform vec3 _Right_Index_Middle_Pos_;\n\nuniform sampler2D _Decal_;\nuniform vec2 _Decal_Scale_XY_;\nuniform bool _Decal_Front_Only_;\nuniform float _Rim_Intensity_;\nuniform sampler2D _Rim_Texture_;\nuniform float _Rim_Hue_Shift_;\nuniform float _Rim_Saturation_Shift_;\nuniform float _Rim_Value_Shift_;\n\nuniform float _Iridescence_Intensity_;\nuniform sampler2D _Iridescence_Texture_;\nuniform bool Use_Global_Left_Index;\nuniform bool Use_Global_Right_Index;\nuniform vec4 Global_Left_Index_Tip_Position;\nuniform vec4 Global_Right_Index_Tip_Position;\nuniform vec4 Global_Left_Thumb_Tip_Position;\nuniform vec4 Global_Right_Thumb_Tip_Position;\nuniform float Global_Left_Index_Tip_Proximity;\nuniform float Global_Right_Index_Tip_Proximity;\nvarying vec3 vPosition;\nvarying vec3 vNormal;\nvarying vec2 vUV;\nvarying vec3 vTangent;\nvarying vec3 vBinormal;\nvarying vec4 vColor;\nvarying vec4 vExtra1;\nvarying vec4 vExtra2;\nvarying vec4 vExtra3;\n\nvoid Object_To_World_Pos_B12(\nvec3 Pos_Object,\nout vec3 Pos_World)\n{\nPos_World=(world*vec4(Pos_Object,1.0)).xyz;\n}\n\n\nvoid Object_To_World_Normal_B32(\nvec3 Nrm_Object,\nout vec3 Nrm_World)\n{\nNrm_World=(vec4(Nrm_Object,0.0)).xyz;\n}\n\n\nvoid Blob_Vertex_B23(\nvec3 Position,\nvec3 Normal,\nvec3 Tangent,\nvec3 Bitangent,\nvec3 Blob_Position,\nfloat Intensity,\nfloat Blob_Near_Size,\nfloat Blob_Far_Size,\nfloat Blob_Near_Distance,\nfloat Blob_Far_Distance,\nfloat Blob_Fade_Length,\nfloat Blob_Pulse,\nfloat Blob_Fade,\nout vec4 Blob_Info)\n{\nvec3 blob=(Use_Global_Left_Index ? Global_Left_Index_Tip_Position.xyz : Blob_Position);\nvec3 delta=blob-Position;\nfloat dist=dot(Normal,delta);\nfloat lerpValue=clamp((abs(dist)-Blob_Near_Distance)/(Blob_Far_Distance-Blob_Near_Distance),0.0,1.0);\nfloat fadeValue=1.0-clamp((abs(dist)-Blob_Far_Distance)/Blob_Fade_Length,0.0,1.0);\nfloat size=Blob_Near_Size+(Blob_Far_Size-Blob_Near_Size)*lerpValue;\nvec2 blobXY=vec2(dot(delta,Tangent),dot(delta,Bitangent))/(0.0001+size);\nfloat Fade=fadeValue*Intensity*Blob_Fade;\nfloat Distance=(lerpValue*0.5+0.5)*(1.0-Blob_Pulse);\nBlob_Info=vec4(blobXY.x,blobXY.y,Distance,Fade);\n}\n\n\nvoid Blob_Vertex_B24(\nvec3 Position,\nvec3 Normal,\nvec3 Tangent,\nvec3 Bitangent,\nvec3 Blob_Position,\nfloat Intensity,\nfloat Blob_Near_Size,\nfloat Blob_Far_Size,\nfloat Blob_Near_Distance,\nfloat Blob_Far_Distance,\nfloat Blob_Fade_Length,\nfloat Blob_Pulse,\nfloat Blob_Fade,\nout vec4 Blob_Info)\n{\nvec3 blob=(Use_Global_Right_Index ? Global_Right_Index_Tip_Position.xyz : Blob_Position);\nvec3 delta=blob-Position;\nfloat dist=dot(Normal,delta);\nfloat lerpValue=clamp((abs(dist)-Blob_Near_Distance)/(Blob_Far_Distance-Blob_Near_Distance),0.0,1.0);\nfloat fadeValue=1.0-clamp((abs(dist)-Blob_Far_Distance)/Blob_Fade_Length,0.0,1.0);\nfloat size=Blob_Near_Size+(Blob_Far_Size-Blob_Near_Size)*lerpValue;\nvec2 blobXY=vec2(dot(delta,Tangent),dot(delta,Bitangent))/(0.0001+size);\nfloat Fade=fadeValue*Intensity*Blob_Fade;\nfloat Distance=(lerpValue*0.5+0.5)*(1.0-Blob_Pulse);\nBlob_Info=vec4(blobXY.x,blobXY.y,Distance,Fade);\n}\n\n\nvoid Move_Verts_B130(\nfloat Anisotropy,\nvec3 P,\nfloat Radius,\nfloat Bevel,\nvec3 Normal_Object,\nfloat ScaleZ,\nfloat Stretch,\nout vec3 New_P,\nout vec2 New_UV,\nout float Radial_Gradient,\nout vec3 Radial_Dir,\nout vec3 New_Normal)\n{\nvec2 UV=P.xy*2.0+0.5;\nvec2 center=clamp(UV,0.0,1.0);\nvec2 delta=UV-center;\nfloat deltad=(length(delta)*2.0);\nfloat f=(Bevel+(Radius-Bevel)*Stretch)/Radius;\n\nfloat innerd=clamp(deltad*2.0,0.0,1.0);\nfloat outerd=clamp(deltad*2.0-1.0,0.0,1.0);\nfloat bevelAngle=outerd*3.14159*0.5;\nfloat sinb=sin(bevelAngle);\nfloat cosb=cos(bevelAngle);\nfloat beveld=(1.0-f)*innerd+f*sinb;\nfloat br=outerd;\nvec2 r2=2.0*vec2(Radius/Anisotropy,Radius);\nfloat dir=P.z<0.0001 ? 1.0 : -1.0;\n\nNew_UV=center+r2*((0.5-center)+normalize(delta+vec2(0.0,0.000001))*beveld*0.5);\nNew_P=vec3(New_UV-0.5,P.z+dir*(1.0-cosb)*Bevel*ScaleZ);\nRadial_Gradient=clamp((deltad-0.5)*2.0,0.0,1.0);\nRadial_Dir=vec3(delta*r2,0.0);\nvec3 beveledNormal=cosb*Normal_Object+sinb*vec3(delta.x,delta.y,0.0);\nNew_Normal=Normal_Object.z==0.0 ? Normal_Object : beveledNormal;\n}\n\n\nvoid Object_To_World_Dir_B60(\nvec3 Dir_Object,\nout vec3 Normal_World,\nout vec3 Normal_World_N,\nout float Normal_Length)\n{\nNormal_World=(world*vec4(Dir_Object,0.0)).xyz;\nNormal_Length=length(Normal_World);\nNormal_World_N=Normal_World/Normal_Length;\n}\n\n\nvoid To_XYZ_B78(\nvec3 Vec3,\nout float X,\nout float Y,\nout float Z)\n{\nX=Vec3.x;\nY=Vec3.y;\nZ=Vec3.z;\n}\n\n\nvoid Conditional_Float_B93(\nbool Which,\nfloat If_True,\nfloat If_False,\nout float Result)\n{\nResult=Which ? If_True : If_False;\n}\n\n\nvoid Object_To_World_Dir_B28(\nvec3 Dir_Object,\nout vec3 Binormal_World,\nout vec3 Binormal_World_N,\nout float Binormal_Length)\n{\nBinormal_World=(world*vec4(Dir_Object,0.0)).xyz;\nBinormal_Length=length(Binormal_World);\nBinormal_World_N=Binormal_World/Binormal_Length;\n}\n\n\nvoid Pick_Radius_B69(\nfloat Radius,\nfloat Radius_Top_Left,\nfloat Radius_Top_Right,\nfloat Radius_Bottom_Left,\nfloat Radius_Bottom_Right,\nvec3 Position,\nout float Result)\n{\nbool whichY=Position.y>0.0;\nResult=Position.x<0.0 ? (whichY ? Radius_Top_Left : Radius_Bottom_Left) : (whichY ? Radius_Top_Right : Radius_Bottom_Right);\nResult*=Radius;\n}\n\n\nvoid Conditional_Float_B36(\nbool Which,\nfloat If_True,\nfloat If_False,\nout float Result)\n{\nResult=Which ? If_True : If_False;\n}\n\n\nvoid Greater_Than_B37(\nfloat Left,\nfloat Right,\nout bool Not_Greater_Than,\nout bool Greater_Than)\n{\nGreater_Than=Left>Right;\nNot_Greater_Than=!Greater_Than;\n}\n\n\nvoid Remap_Range_B105(\nfloat In_Min,\nfloat In_Max,\nfloat Out_Min,\nfloat Out_Max,\nfloat In,\nout float Out)\n{\nOut=mix(Out_Min,Out_Max,clamp((In-In_Min)/(In_Max-In_Min),0.0,1.0));\n}\n\nvoid main()\n{\n\nvec2 XY_Q85;\nXY_Q85=(uv-vec2(0.5,0.5))*_Decal_Scale_XY_+vec2(0.5,0.5);\n\nvec3 Tangent_World_Q27;\nvec3 Tangent_World_N_Q27;\nfloat Tangent_Length_Q27;\nTangent_World_Q27=(world*vec4(vec3(1,0,0),0.0)).xyz;\nTangent_Length_Q27=length(Tangent_World_Q27);\nTangent_World_N_Q27=Tangent_World_Q27/Tangent_Length_Q27;\nvec3 Normal_World_Q60;\nvec3 Normal_World_N_Q60;\nfloat Normal_Length_Q60;\nObject_To_World_Dir_B60(vec3(0,0,1),Normal_World_Q60,Normal_World_N_Q60,Normal_Length_Q60);\nfloat X_Q78;\nfloat Y_Q78;\nfloat Z_Q78;\nTo_XYZ_B78(position,X_Q78,Y_Q78,Z_Q78);\n\nvec3 Nrm_World_Q26;\nNrm_World_Q26=normalize((world*vec4(normal,0.0)).xyz);\nvec3 Binormal_World_Q28;\nvec3 Binormal_World_N_Q28;\nfloat Binormal_Length_Q28;\nObject_To_World_Dir_B28(vec3(0,1,0),Binormal_World_Q28,Binormal_World_N_Q28,Binormal_Length_Q28);\n\nfloat Anisotropy_Q29=Tangent_Length_Q27/Binormal_Length_Q28;\nfloat Result_Q69;\nPick_Radius_B69(_Radius_,_Radius_Top_Left_,_Radius_Top_Right_,_Radius_Bottom_Left_,_Radius_Bottom_Right_,position,Result_Q69);\n\nfloat Anisotropy_Q53=Binormal_Length_Q28/Normal_Length_Q60;\nbool Not_Greater_Than_Q37;\nbool Greater_Than_Q37;\nGreater_Than_B37(Z_Q78,0.0,Not_Greater_Than_Q37,Greater_Than_Q37);\n\nvec4 Linear_Q101;\nLinear_Q101.rgb=clamp(_Left_Color_.rgb*_Left_Color_.rgb,0.0,1.0);\nLinear_Q101.a=_Left_Color_.a;\n\nvec4 Linear_Q102;\nLinear_Q102.rgb=clamp(_Right_Color_.rgb*_Right_Color_.rgb,0.0,1.0);\nLinear_Q102.a=_Right_Color_.a;\n\nvec3 Difference_Q61=vec3(0,0,0)-Normal_World_N_Q60;\n\nvec4 Out_Color_Q34=vec4(X_Q78,Y_Q78,Z_Q78,1);\nfloat Result_Q36;\nConditional_Float_B36(Greater_Than_Q37,_Bevel_Back_,_Bevel_Front_,Result_Q36);\nfloat Result_Q94;\nConditional_Float_B36(Greater_Than_Q37,_Bevel_Back_Stretch_,_Bevel_Front_Stretch_,Result_Q94);\nvec3 New_P_Q130;\nvec2 New_UV_Q130;\nfloat Radial_Gradient_Q130;\nvec3 Radial_Dir_Q130;\nvec3 New_Normal_Q130;\nMove_Verts_B130(Anisotropy_Q29,position,Result_Q69,Result_Q36,normal,Anisotropy_Q53,Result_Q94,New_P_Q130,New_UV_Q130,Radial_Gradient_Q130,Radial_Dir_Q130,New_Normal_Q130);\n\nfloat X_Q98;\nfloat Y_Q98;\nX_Q98=New_UV_Q130.x;\nY_Q98=New_UV_Q130.y;\nvec3 Pos_World_Q12;\nObject_To_World_Pos_B12(New_P_Q130,Pos_World_Q12);\nvec3 Nrm_World_Q32;\nObject_To_World_Normal_B32(New_Normal_Q130,Nrm_World_Q32);\nvec4 Blob_Info_Q23;\n#if BLOB_ENABLE\nBlob_Vertex_B23(Pos_World_Q12,Nrm_World_Q26,Tangent_World_N_Q27,Binormal_World_N_Q28,_Blob_Position_,_Blob_Intensity_,_Blob_Near_Size_,_Blob_Far_Size_,_Blob_Near_Distance_,_Blob_Far_Distance_,_Blob_Fade_Length_,_Blob_Pulse_,_Blob_Fade_,Blob_Info_Q23);\n#else\nBlob_Info_Q23=vec4(0,0,0,0);\n#endif\nvec4 Blob_Info_Q24;\n#if BLOB_ENABLE_2\nBlob_Vertex_B24(Pos_World_Q12,Nrm_World_Q26,Tangent_World_N_Q27,Binormal_World_N_Q28,_Blob_Position_2_,_Blob_Intensity_,_Blob_Near_Size_2_,_Blob_Far_Size_,_Blob_Near_Distance_,_Blob_Far_Distance_,_Blob_Fade_Length_,_Blob_Pulse_2_,_Blob_Fade_2_,Blob_Info_Q24);\n#else\nBlob_Info_Q24=vec4(0,0,0,0);\n#endif\nfloat Out_Q105;\nRemap_Range_B105(0.0,1.0,0.0,1.0,X_Q98,Out_Q105);\nfloat X_Q86;\nfloat Y_Q86;\nfloat Z_Q86;\nTo_XYZ_B78(Nrm_World_Q32,X_Q86,Y_Q86,Z_Q86);\n\nvec4 Color_At_T_Q97=mix(Linear_Q101,Linear_Q102,Out_Q105);\n\nfloat Minus_F_Q87=-Z_Q86;\n\nfloat R_Q99;\nfloat G_Q99;\nfloat B_Q99;\nfloat A_Q99;\nR_Q99=Color_At_T_Q97.r; G_Q99=Color_At_T_Q97.g; B_Q99=Color_At_T_Q97.b; A_Q99=Color_At_T_Q97.a;\n\nfloat ClampF_Q88=clamp(0.0,Minus_F_Q87,1.0);\nfloat Result_Q93;\nConditional_Float_B93(_Decal_Front_Only_,ClampF_Q88,1.0,Result_Q93);\n\nvec4 Vec4_Q89=vec4(Result_Q93,Radial_Gradient_Q130,G_Q99,B_Q99);\nvec3 Position=Pos_World_Q12;\nvec3 Normal=Nrm_World_Q32;\nvec2 UV=XY_Q85;\nvec3 Tangent=Tangent_World_N_Q27;\nvec3 Binormal=Difference_Q61;\nvec4 Color=Out_Color_Q34;\nvec4 Extra1=Vec4_Q89;\nvec4 Extra2=Blob_Info_Q23;\nvec4 Extra3=Blob_Info_Q24;\ngl_Position=viewProjection*vec4(Position,1);\nvPosition=Position;\nvNormal=Normal;\nvUV=UV;\nvTangent=Tangent;\nvBinormal=Binormal;\nvColor=Color;\nvExtra1=Extra1;\nvExtra2=Extra2;\nvExtra3=Extra3;\n}";
+babylonjs_Engines_shaderStore__WEBPACK_IMPORTED_MODULE_0__["ShaderStore"].ShadersStore[name] = shader;
+/** @hidden */
+var mrdlSliderBarVertexShader = { name: name, shader: shader };
+
+
+/***/ }),
+
+/***/ "./3D/materials/mrdl/shaders/mrdlSliderThumb.fragment.ts":
+/*!***************************************************************!*\
+  !*** ./3D/materials/mrdl/shaders/mrdlSliderThumb.fragment.ts ***!
+  \***************************************************************/
+/*! exports provided: mrdlSliderThumbPixelShader */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "mrdlSliderThumbPixelShader", function() { return mrdlSliderThumbPixelShader; });
+/* harmony import */ var babylonjs_Engines_shaderStore__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Engines/shaderStore */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Engines_shaderStore__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Engines_shaderStore__WEBPACK_IMPORTED_MODULE_0__);
+
+var name = 'mrdlSliderThumbPixelShader';
+var shader = "uniform vec3 cameraPosition;\nvarying vec3 vPosition;\nvarying vec3 vNormal;\nvarying vec2 vUV;\nvarying vec3 vTangent;\nvarying vec3 vBinormal;\nvarying vec4 vColor;\nvarying vec4 vExtra1;\nvarying vec4 vExtra2;\nvarying vec4 vExtra3;\nuniform float _Radius_;\nuniform float _Bevel_Front_;\nuniform float _Bevel_Front_Stretch_;\nuniform float _Bevel_Back_;\nuniform float _Bevel_Back_Stretch_;\nuniform float _Radius_Top_Left_;\nuniform float _Radius_Top_Right_;\nuniform float _Radius_Bottom_Left_;\nuniform float _Radius_Bottom_Right_;\nuniform bool _Bulge_Enabled_;\nuniform float _Bulge_Height_;\nuniform float _Bulge_Radius_;\nuniform float _Sun_Intensity_;\nuniform float _Sun_Theta_;\nuniform float _Sun_Phi_;\nuniform float _Indirect_Diffuse_;\nuniform vec4 _Albedo_;\nuniform float _Specular_;\nuniform float _Shininess_;\nuniform float _Sharpness_;\nuniform float _Subsurface_;\nuniform vec4 _Left_Color_;\nuniform vec4 _Right_Color_;\nuniform float _Reflection_;\nuniform float _Front_Reflect_;\nuniform float _Edge_Reflect_;\nuniform float _Power_;\n\nuniform vec4 _Sky_Color_;\nuniform vec4 _Horizon_Color_;\nuniform vec4 _Ground_Color_;\nuniform float _Horizon_Power_;\n\nuniform sampler2D _Reflection_Map_;\nuniform sampler2D _Indirect_Environment_;\n\nuniform float _Width_;\nuniform float _Fuzz_;\nuniform float _Min_Fuzz_;\nuniform float _Clip_Fade_;\nuniform float _Hue_Shift_;\nuniform float _Saturation_Shift_;\nuniform float _Value_Shift_;\n\nuniform vec3 _Blob_Position_;\nuniform float _Blob_Intensity_;\nuniform float _Blob_Near_Size_;\nuniform float _Blob_Far_Size_;\nuniform float _Blob_Near_Distance_;\nuniform float _Blob_Far_Distance_;\nuniform float _Blob_Fade_Length_;\nuniform float _Blob_Pulse_;\nuniform float _Blob_Fade_;\nuniform sampler2D _Blob_Texture_;\n\nuniform vec3 _Blob_Position_2_;\nuniform float _Blob_Near_Size_2_;\nuniform float _Blob_Pulse_2_;\nuniform float _Blob_Fade_2_;\nuniform vec3 _Left_Index_Pos_;\nuniform vec3 _Right_Index_Pos_;\nuniform vec3 _Left_Index_Middle_Pos_;\nuniform vec3 _Right_Index_Middle_Pos_;\n\nuniform sampler2D _Decal_;\nuniform vec2 _Decal_Scale_XY_;\nuniform bool _Decal_Front_Only_;\nuniform float _Rim_Intensity_;\nuniform sampler2D _Rim_Texture_;\nuniform float _Rim_Hue_Shift_;\nuniform float _Rim_Saturation_Shift_;\nuniform float _Rim_Value_Shift_;\n\nuniform float _Iridescence_Intensity_;\nuniform sampler2D _Iridescence_Texture_;\nuniform bool Use_Global_Left_Index;\nuniform bool Use_Global_Right_Index;\nuniform vec4 Global_Left_Index_Tip_Position;\nuniform vec4 Global_Right_Index_Tip_Position;\nuniform vec4 Global_Left_Thumb_Tip_Position;\nuniform vec4 Global_Right_Thumb_Tip_Position;\nuniform vec4 Global_Left_Index_Middle_Position;\nuniform vec4 Global_Right_Index_Middle_Position;\nuniform float Global_Left_Index_Tip_Proximity;\nuniform float Global_Right_Index_Tip_Proximity;\n\nvoid Blob_Fragment_B180(\nsampler2D Blob_Texture,\nvec4 Blob_Info1,\nvec4 Blob_Info2,\nout vec4 Blob_Color)\n{\nfloat k1=dot(Blob_Info1.xy,Blob_Info1.xy);\nfloat k2=dot(Blob_Info2.xy,Blob_Info2.xy);\nvec3 closer=k1<k2 ? vec3(k1,Blob_Info1.z,Blob_Info1.w) : vec3(k2,Blob_Info2.z,Blob_Info2.w);\nBlob_Color=closer.z*texture(Blob_Texture,vec2(vec2(sqrt(closer.x),closer.y).x,1.0-vec2(sqrt(closer.x),closer.y).y))*clamp(1.0-closer.x,0.0,1.0);\n}\n\n\nvoid FastLinearTosRGB_B192(\nvec4 Linear,\nout vec4 sRGB)\n{\nsRGB.rgb=sqrt(clamp(Linear.rgb,0.0,1.0));\nsRGB.a=Linear.a;\n}\n\n\nvoid Scale_RGB_B209(\nvec4 Color,\nfloat Scalar,\nout vec4 Result)\n{\nResult=vec4(Scalar,Scalar,Scalar,1)*Color;\n}\n\n\nvoid Fragment_Main_B271(\nfloat Sun_Intensity,\nfloat Sun_Theta,\nfloat Sun_Phi,\nvec3 Normal,\nvec4 Albedo,\nfloat Fresnel_Reflect,\nfloat Shininess,\nvec3 Incident,\nvec4 Horizon_Color,\nvec4 Sky_Color,\nvec4 Ground_Color,\nfloat Indirect_Diffuse,\nfloat Specular,\nfloat Horizon_Power,\nfloat Reflection,\nvec4 Reflection_Sample,\nvec4 Indirect_Sample,\nfloat Sharpness,\nfloat SSS,\nfloat Subsurface,\nvec4 Translucence,\nvec4 Rim_Light,\nvec4 Iridescence,\nout vec4 Result)\n{\nfloat theta=Sun_Theta*2.0*3.14159;\nfloat phi=Sun_Phi*3.14159;\nvec3 lightDir=vec3(cos(phi)*cos(theta),sin(phi),cos(phi)*sin(theta));\nfloat NdotL=max(dot(lightDir,Normal),0.0);\n\nvec3 R=reflect(Incident,Normal);\nfloat RdotL=max(0.0,dot(R,lightDir));\nfloat specular=pow(RdotL,Shininess);\nspecular=mix(specular,smoothstep(0.495*Sharpness,1.0-0.495*Sharpness,specular),Sharpness);\nvec4 gi=mix(Ground_Color,Sky_Color,Normal.y*0.5+0.5);\n\nResult=((Sun_Intensity*NdotL+Indirect_Sample*Indirect_Diffuse+Translucence)*(1.0+SSS*Subsurface))*Albedo*(1.0-Fresnel_Reflect)+(Sun_Intensity*specular*Specular+Fresnel_Reflect*Reflection*Reflection_Sample)+Fresnel_Reflect*Rim_Light+Iridescence;\n}\n\n\nvoid Bulge_B229(\nbool Enabled,\nvec3 Normal,\nvec3 Tangent,\nfloat Bulge_Height,\nvec4 UV,\nfloat Bulge_Radius,\nvec3 ButtonN,\nout vec3 New_Normal)\n{\nvec2 xy=clamp(UV.xy*2.0,vec2(-1,-1),vec2(1,1));\nvec3 B=(cross(Normal,Tangent));\n\n\n\n\nfloat k=-clamp(1.0-length(xy)/Bulge_Radius,0.0,1.0)*Bulge_Height;\nk=sin(k*3.14159*0.5);\nk*=smoothstep(0.9998,0.9999,abs(dot(ButtonN,Normal)));\nNew_Normal=Normal*sqrt(1.0-k*k)+(xy.x*Tangent+xy.y*B)*k;\nNew_Normal=Enabled ? New_Normal : Normal;\n}\n\n\nvoid SSS_B227(\nvec3 ButtonN,\nvec3 Normal,\nvec3 Incident,\nout float Result)\n{\nfloat NdotI=abs(dot(Normal,Incident));\nfloat BdotI=abs(dot(ButtonN,Incident));\nResult=(abs(NdotI-BdotI));\n\n}\n\n\nvoid FingerOcclusion_B217(\nfloat Width,\nfloat DistToCenter,\nfloat Fuzz,\nfloat Min_Fuzz,\nvec3 Position,\nvec3 Forward,\nvec3 Nearest,\nfloat Fade_Out,\nout float NotInShadow)\n{\nfloat d=dot((Nearest-Position),Forward);\nfloat sh=smoothstep(Width*0.5,Width*0.5+Fuzz*max(d,0.0)+Min_Fuzz,DistToCenter);\nNotInShadow=1.0-(1.0-sh)*smoothstep(-Fade_Out,0.0,d);\n}\n\n\nvoid FingerOcclusion_B218(\nfloat Width,\nfloat DistToCenter,\nfloat Fuzz,\nfloat Min_Fuzz,\nvec3 Position,\nvec3 Forward,\nvec3 Nearest,\nfloat Fade_Out,\nout float NotInShadow)\n{\nfloat d=dot((Nearest-Position),Forward);\nfloat sh=smoothstep(Width*0.5,Width*0.5+Fuzz*max(d,0.0)+Min_Fuzz,DistToCenter);\nNotInShadow=1.0-(1.0-sh)*smoothstep(-Fade_Out,0.0,d);\n}\n\n\nvoid Scale_Color_B241(\nvec4 Color,\nfloat Scalar,\nout vec4 Result)\n{\nResult=Scalar*Color;\n}\n\n\nvoid From_HSV_B223(\nfloat Hue,\nfloat Saturation,\nfloat Value,\nfloat Alpha,\nout vec4 Color)\n{\n\nvec4 K=vec4(1.0,2.0/3.0,1.0/3.0,3.0);\nvec3 p=abs(fract(vec3(Hue,Hue,Hue)+K.xyz)*6.0-K.www);\nColor.rgb=Value*mix(K.xxx,clamp(p-K.xxx,0.0,1.0),Saturation);\nColor.a=Alpha;\n}\n\n\nvoid Fast_Fresnel_B272(\nfloat Front_Reflect,\nfloat Edge_Reflect,\nfloat Power,\nvec3 Normal,\nvec3 Incident,\nout float Transmit,\nout float Reflect)\n{\nfloat d=max(-dot(Incident,Normal),0.0);\nReflect=Front_Reflect+(Edge_Reflect-Front_Reflect)*pow(1.0-d,Power);\nTransmit=1.0-Reflect;\n}\n\n\nvoid Mapped_Environment_B201(\nsampler2D Reflected_Environment,\nsampler2D Indirect_Environment,\nvec3 Dir,\nout vec4 Reflected_Color,\nout vec4 Indirect_Diffuse)\n{\n\nReflected_Color=texture(Reflected_Environment,vec2(atan(Dir.z,Dir.x)/3.14159*0.5,asin(Dir.y)/3.14159+0.5));\nIndirect_Diffuse=texture(Indirect_Environment,vec2(atan(Dir.z,Dir.x)/3.14159*0.5,asin(Dir.y)/3.14159+0.5));\n}\n\n\nvec4 SampleEnv_Bid200(vec3 D,vec4 S,vec4 H,vec4 G,float exponent)\n{\nfloat k=pow(abs(D.y),exponent);\nvec4 C;\nif (D.y>0.0) {\nC=mix(H,S,k);\n} else {\nC=mix(H,G,k);\n}\nreturn C;\n}\nvoid Sky_Environment_B200(\nvec3 Normal,\nvec3 Reflected,\nvec4 Sky_Color,\nvec4 Horizon_Color,\nvec4 Ground_Color,\nfloat Horizon_Power,\nout vec4 Reflected_Color,\nout vec4 Indirect_Color)\n{\n\nReflected_Color=SampleEnv_Bid200(Reflected,Sky_Color,Horizon_Color,Ground_Color,Horizon_Power);\nIndirect_Color=mix(Ground_Color,Sky_Color,Normal.y*0.5+0.5);\n}\n\n\nvoid Min_Segment_Distance_B215(\nvec3 P0,\nvec3 P1,\nvec3 Q0,\nvec3 Q1,\nout vec3 NearP,\nout vec3 NearQ,\nout float Distance)\n{\nvec3 u=P1-P0;\nvec3 v=Q1-Q0;\nvec3 w=P0-Q0;\nfloat a=dot(u,u);\nfloat b=dot(u,v);\nfloat c=dot(v,v);\nfloat d=dot(u,w);\nfloat e=dot(v,w);\nfloat D=a*c-b*b;\nfloat sD=D;\nfloat tD=D;\nfloat sc,sN,tc,tN;\nif (D<0.00001) {\nsN=0.0;\nsD=1.0;\ntN=e;\ntD=c;\n} else {\nsN=(b*e-c*d);\ntN=(a*e-b*d);\nif (sN<0.0) {\nsN=0.0;\ntN=e;\ntD=c;\n} else if (sN>sD) {\nsN=sD;\ntN=e+b;\ntD=c;\n}\n}\nif (tN<0.0) {\ntN=0.0;\nif (-d<0.0) {\nsN=0.0;\n} else if (-d>a) {\nsN=sD;\n} else {\nsN=-d;\nsD=a;\n}\n} else if (tN>tD) {\ntN=tD;\nif ((-d+b)<0.0) {\nsN=0.0;\n} else if ((-d+b)>a) {\nsN=sD;\n} else {\nsN=(-d+b);\nsD=a;\n}\n}\nsc=abs(sN)<0.000001 ? 0.0 : sN/sD;\ntc=abs(tN)<0.000001 ? 0.0 : tN/tD;\nNearP=P0+sc*u;\nNearQ=Q0+tc*v;\nDistance=distance(NearP,NearQ);\n}\n\n\nvoid To_XYZ_B224(\nvec3 Vec3,\nout float X,\nout float Y,\nout float Z)\n{\nX=Vec3.x;\nY=Vec3.y;\nZ=Vec3.z;\n}\n\n\nvoid Finger_Positions_B214(\nvec3 Left_Index_Pos,\nvec3 Right_Index_Pos,\nvec3 Left_Index_Middle_Pos,\nvec3 Right_Index_Middle_Pos,\nout vec3 Left_Index,\nout vec3 Right_Index,\nout vec3 Left_Index_Middle,\nout vec3 Right_Index_Middle)\n{\nLeft_Index=(Use_Global_Left_Index ? Global_Left_Index_Tip_Position.xyz : Left_Index_Pos);\nRight_Index=(Use_Global_Right_Index ? Global_Right_Index_Tip_Position.xyz : Right_Index_Pos);\nLeft_Index_Middle=(Use_Global_Left_Index ? Global_Left_Index_Middle_Position.xyz : Left_Index_Middle_Pos);\nRight_Index_Middle=(Use_Global_Right_Index ? Global_Right_Index_Middle_Position.xyz : Right_Index_Middle_Pos);\n}\n\n\nvoid VaryHSV_B258(\nvec3 HSV_In,\nfloat Hue_Shift,\nfloat Saturation_Shift,\nfloat Value_Shift,\nout vec3 HSV_Out)\n{\nHSV_Out=vec3(fract(HSV_In.x+Hue_Shift),clamp(HSV_In.y+Saturation_Shift,0.0,1.0),clamp(HSV_In.z+Value_Shift,0.0,1.0));\n}\n\n\nvoid Remap_Range_B264(\nfloat In_Min,\nfloat In_Max,\nfloat Out_Min,\nfloat Out_Max,\nfloat In,\nout float Out)\n{\nOut=mix(Out_Min,Out_Max,clamp((In-In_Min)/(In_Max-In_Min),0.0,1.0));\n}\n\n\nvoid To_HSV_B225(\nvec4 Color,\nout float Hue,\nout float Saturation,\nout float Value,\nout float Alpha,\nout vec3 HSV)\n{\n\nvec4 K=vec4(0.0,-1.0/3.0,2.0/3.0,-1.0);\nvec4 p=Color.g<Color.b ? vec4(Color.bg,K.wz) : vec4(Color.gb,K.xy);\nvec4 q=Color.r<p.x ? vec4(p.xyw,Color.r) : vec4(Color.r,p.yzx);\nfloat d=q.x-min(q.w,q.y);\nfloat e=1.0e-10;\nHue=abs(q.z+(q.w-q.y)/(6.0*d+e));\nSaturation=d/(q.x+e);\nValue=q.x;\nAlpha=Color.a;\nHSV=vec3(Hue,Saturation,Value);\n}\n\n\nvoid Code_B260(\nfloat X,\nout float Result)\n{\nResult=(acos(X)/3.14159-0.5)*2.0;\n}\n\n\nvoid Rim_Light_B282(\nvec3 Front,\nvec3 Normal,\nvec3 Incident,\nfloat Rim_Intensity,\nsampler2D Texture,\nout vec4 Result)\n{\nvec3 R=reflect(Incident,Normal);\nfloat RdotF=dot(R,Front);\nfloat RdotL=sqrt(1.0-RdotF*RdotF);\nvec2 UV=vec2(R.y*0.5+0.5,0.5);\nvec4 Color=texture(Texture,UV);\nResult=Color;\n}\n\nvoid main()\n{\nvec4 Blob_Color_Q180;\n#if BLOB_ENABLE\nBlob_Fragment_B180(_Blob_Texture_,vExtra2,vExtra3,Blob_Color_Q180);\n#else\nBlob_Color_Q180=vec4(0,0,0,0);\n#endif\n\nvec3 Incident_Q189=normalize(vPosition-cameraPosition);\n\nvec3 Normalized_Q188=normalize(vNormal);\n\nvec3 Normalized_Q221=normalize(vTangent);\n\nvec4 Color_Q233;\n#if DECAL_ENABLE\nColor_Q233=texture(_Decal_,vUV);\n#else\nColor_Q233=vec4(0,0,0,0);\n#endif\n\nfloat X_Q240;\nfloat Y_Q240;\nfloat Z_Q240;\nfloat W_Q240;\nX_Q240=vExtra1.x;\nY_Q240=vExtra1.y;\nZ_Q240=vExtra1.z;\nW_Q240=vExtra1.w;\n\nvec4 Linear_Q193;\nLinear_Q193.rgb=clamp(_Sky_Color_.rgb*_Sky_Color_.rgb,0.0,1.0);\nLinear_Q193.a=_Sky_Color_.a;\n\nvec4 Linear_Q194;\nLinear_Q194.rgb=clamp(_Horizon_Color_.rgb*_Horizon_Color_.rgb,0.0,1.0);\nLinear_Q194.a=_Horizon_Color_.a;\n\nvec4 Linear_Q195;\nLinear_Q195.rgb=clamp(_Ground_Color_.rgb*_Ground_Color_.rgb,0.0,1.0);\nLinear_Q195.a=_Ground_Color_.a;\nvec3 Left_Index_Q214;\nvec3 Right_Index_Q214;\nvec3 Left_Index_Middle_Q214;\nvec3 Right_Index_Middle_Q214;\nFinger_Positions_B214(_Left_Index_Pos_,_Right_Index_Pos_,_Left_Index_Middle_Pos_,_Right_Index_Middle_Pos_,Left_Index_Q214,Right_Index_Q214,Left_Index_Middle_Q214,Right_Index_Middle_Q214);\n\nvec4 Linear_Q196;\nLinear_Q196.rgb=clamp(_Albedo_.rgb*_Albedo_.rgb,0.0,1.0);\nLinear_Q196.a=_Albedo_.a;\n\nvec3 Normalized_Q257=normalize(vBinormal);\n\nvec3 Incident_Q220=normalize(vPosition-cameraPosition);\nvec3 New_Normal_Q229;\nBulge_B229(_Bulge_Enabled_,Normalized_Q188,Normalized_Q221,_Bulge_Height_,vColor,_Bulge_Radius_,vBinormal,New_Normal_Q229);\nfloat Result_Q227;\nSSS_B227(vBinormal,New_Normal_Q229,Incident_Q189,Result_Q227);\nvec4 Result_Q241;\nScale_Color_B241(Color_Q233,X_Q240,Result_Q241);\nfloat Transmit_Q272;\nfloat Reflect_Q272;\nFast_Fresnel_B272(_Front_Reflect_,_Edge_Reflect_,_Power_,New_Normal_Q229,Incident_Q189,Transmit_Q272,Reflect_Q272);\n\nfloat Product_Q275=Y_Q240*Y_Q240;\nvec3 NearP_Q215;\nvec3 NearQ_Q215;\nfloat Distance_Q215;\nMin_Segment_Distance_B215(Left_Index_Q214,Left_Index_Middle_Q214,vPosition,cameraPosition,NearP_Q215,NearQ_Q215,Distance_Q215);\nvec3 NearP_Q213;\nvec3 NearQ_Q213;\nfloat Distance_Q213;\nMin_Segment_Distance_B215(Right_Index_Q214,Right_Index_Middle_Q214,vPosition,cameraPosition,NearP_Q213,NearQ_Q213,Distance_Q213);\n\nvec3 Reflected_Q197=reflect(Incident_Q189,New_Normal_Q229);\n\nvec4 Product_Q253=Linear_Q196*vec4(1,1,1,1);\nvec4 Result_Q282;\nRim_Light_B282(Normalized_Q257,Normalized_Q188,Incident_Q220,_Rim_Intensity_,_Rim_Texture_,Result_Q282);\n\nfloat Dot_Q222=dot(Incident_Q220,Normalized_Q221);\n\nfloat MaxAB_Q273=max(Reflect_Q272,Product_Q275);\nfloat NotInShadow_Q217;\n#if OCCLUSION_ENABLED\nFingerOcclusion_B217(_Width_,Distance_Q215,_Fuzz_,_Min_Fuzz_,vPosition,vBinormal,NearP_Q215,_Clip_Fade_,NotInShadow_Q217);\n#else\nNotInShadow_Q217=1.0;\n#endif\nfloat NotInShadow_Q218;\n#if OCCLUSION_ENABLED\nFingerOcclusion_B218(_Width_,Distance_Q213,_Fuzz_,_Min_Fuzz_,vPosition,vBinormal,NearP_Q213,_Clip_Fade_,NotInShadow_Q218);\n#else\nNotInShadow_Q218=1.0;\n#endif\nvec4 Reflected_Color_Q201;\nvec4 Indirect_Diffuse_Q201;\n#if ENV_ENABLE\nMapped_Environment_B201(_Reflection_Map_,_Indirect_Environment_,Reflected_Q197,Reflected_Color_Q201,Indirect_Diffuse_Q201);\n#else\nReflected_Color_Q201=vec4(0,0,0,1);\nIndirect_Diffuse_Q201=vec4(0,0,0,1);\n#endif\nvec4 Reflected_Color_Q200;\nvec4 Indirect_Color_Q200;\n#if SKY_ENABLED\nSky_Environment_B200(New_Normal_Q229,Reflected_Q197,Linear_Q193,Linear_Q194,Linear_Q195,_Horizon_Power_,Reflected_Color_Q200,Indirect_Color_Q200);\n#else\nReflected_Color_Q200=vec4(0,0,0,1);\nIndirect_Color_Q200=vec4(0,0,0,1);\n#endif\nfloat Hue_Q225;\nfloat Saturation_Q225;\nfloat Value_Q225;\nfloat Alpha_Q225;\nvec3 HSV_Q225;\nTo_HSV_B225(Product_Q253,Hue_Q225,Saturation_Q225,Value_Q225,Alpha_Q225,HSV_Q225);\nfloat Hue_Q277;\nfloat Saturation_Q277;\nfloat Value_Q277;\nfloat Alpha_Q277;\nvec3 HSV_Q277;\nTo_HSV_B225(Result_Q282,Hue_Q277,Saturation_Q277,Value_Q277,Alpha_Q277,HSV_Q277);\nfloat Result_Q260;\nCode_B260(Dot_Q222,Result_Q260);\n\nfloat AbsA_Q226=abs(Result_Q260);\n\nfloat MinAB_Q208=min(NotInShadow_Q217,NotInShadow_Q218);\n\nvec4 Sum_Q198=Reflected_Color_Q201+Reflected_Color_Q200;\n\nvec4 Sum_Q199=Indirect_Diffuse_Q201+Indirect_Color_Q200;\nvec3 HSV_Out_Q276;\nVaryHSV_B258(HSV_Q277,_Rim_Hue_Shift_,_Rim_Saturation_Shift_,_Rim_Value_Shift_,HSV_Out_Q276);\nfloat Out_Q264;\nRemap_Range_B264(-1.0,1.0,0.0,1.0,Result_Q260,Out_Q264);\n\nfloat Product_Q256;\nProduct_Q256=AbsA_Q226*_Hue_Shift_;\n\nfloat X_Q278;\nfloat Y_Q278;\nfloat Z_Q278;\nTo_XYZ_B224(HSV_Out_Q276,X_Q278,Y_Q278,Z_Q278);\n\nvec2 Vec2_Q262=vec2(Out_Q264,0.5);\nvec3 HSV_Out_Q258;\nVaryHSV_B258(HSV_Q225,Product_Q256,_Saturation_Shift_,_Value_Shift_,HSV_Out_Q258);\nvec4 Color_Q279;\nFrom_HSV_B223(X_Q278,Y_Q278,Z_Q278,0.0,Color_Q279);\n\nvec4 Color_Q261;\n#if IRIDESCENCE_ENABLED\nColor_Q261=texture(_Iridescence_Texture_,Vec2_Q262);\n#else\nColor_Q261=vec4(0,0,0,0);\n#endif\nfloat X_Q224;\nfloat Y_Q224;\nfloat Z_Q224;\nTo_XYZ_B224(HSV_Out_Q258,X_Q224,Y_Q224,Z_Q224);\n\nvec4 Result_Q281=_Rim_Intensity_*Color_Q279;\n\nvec4 Result_Q263=_Iridescence_Intensity_*Color_Q261;\nvec4 Color_Q223;\nFrom_HSV_B223(X_Q224,Y_Q224,Z_Q224,0.0,Color_Q223);\n\nvec4 Result_Q234=Result_Q241+(1.0-Result_Q241.a)*Color_Q223;\nvec4 Result_Q271;\nFragment_Main_B271(_Sun_Intensity_,_Sun_Theta_,_Sun_Phi_,New_Normal_Q229,Result_Q234,MaxAB_Q273,_Shininess_,Incident_Q189,_Horizon_Color_,_Sky_Color_,_Ground_Color_,_Indirect_Diffuse_,_Specular_,_Horizon_Power_,_Reflection_,Sum_Q198,Sum_Q199,_Sharpness_,Result_Q227,_Subsurface_,vec4(0,0,0,0),Result_Q281,Result_Q263,Result_Q271);\nvec4 Result_Q209;\nScale_RGB_B209(Result_Q271,MinAB_Q208,Result_Q209);\nvec4 sRGB_Q192;\nFastLinearTosRGB_B192(Result_Q209,sRGB_Q192);\n\nvec4 Result_Q181=Blob_Color_Q180+(1.0-Blob_Color_Q180.a)*sRGB_Q192;\n\nvec4 Result_Q190=Result_Q181; Result_Q190.a=1.0;\nvec4 Out_Color=Result_Q190;\nfloat Clip_Threshold=0.001;\nbool To_sRGB=false;\ngl_FragColor=Out_Color;\n}";
+babylonjs_Engines_shaderStore__WEBPACK_IMPORTED_MODULE_0__["ShaderStore"].ShadersStore[name] = shader;
+/** @hidden */
+var mrdlSliderThumbPixelShader = { name: name, shader: shader };
+
+
+/***/ }),
+
+/***/ "./3D/materials/mrdl/shaders/mrdlSliderThumb.vertex.ts":
+/*!*************************************************************!*\
+  !*** ./3D/materials/mrdl/shaders/mrdlSliderThumb.vertex.ts ***!
+  \*************************************************************/
+/*! exports provided: mrdlSliderThumbVertexShader */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "mrdlSliderThumbVertexShader", function() { return mrdlSliderThumbVertexShader; });
+/* harmony import */ var babylonjs_Engines_shaderStore__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Engines/shaderStore */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Engines_shaderStore__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Engines_shaderStore__WEBPACK_IMPORTED_MODULE_0__);
+
+var name = 'mrdlSliderThumbVertexShader';
+var shader = "uniform mat4 world;\nuniform mat4 viewProjection;\nuniform vec3 cameraPosition;\nattribute vec3 position;\nattribute vec3 normal;\nattribute vec2 uv;\n#ifdef TANGENT\nattribute vec3 tangent;\n#else\nconst vec3 tangent=vec3(0.);\n#endif\nuniform float _Radius_;\nuniform float _Bevel_Front_;\nuniform float _Bevel_Front_Stretch_;\nuniform float _Bevel_Back_;\nuniform float _Bevel_Back_Stretch_;\nuniform float _Radius_Top_Left_;\nuniform float _Radius_Top_Right_;\nuniform float _Radius_Bottom_Left_;\nuniform float _Radius_Bottom_Right_;\nuniform bool _Bulge_Enabled_;\nuniform float _Bulge_Height_;\nuniform float _Bulge_Radius_;\nuniform float _Sun_Intensity_;\nuniform float _Sun_Theta_;\nuniform float _Sun_Phi_;\nuniform float _Indirect_Diffuse_;\nuniform vec4 _Albedo_;\nuniform float _Specular_;\nuniform float _Shininess_;\nuniform float _Sharpness_;\nuniform float _Subsurface_;\nuniform vec4 _Left_Color_;\nuniform vec4 _Right_Color_;\nuniform float _Reflection_;\nuniform float _Front_Reflect_;\nuniform float _Edge_Reflect_;\nuniform float _Power_;\n\nuniform vec4 _Sky_Color_;\nuniform vec4 _Horizon_Color_;\nuniform vec4 _Ground_Color_;\nuniform float _Horizon_Power_;\n\nuniform sampler2D _Reflection_Map_;\nuniform sampler2D _Indirect_Environment_;\n\nuniform float _Width_;\nuniform float _Fuzz_;\nuniform float _Min_Fuzz_;\nuniform float _Clip_Fade_;\nuniform float _Hue_Shift_;\nuniform float _Saturation_Shift_;\nuniform float _Value_Shift_;\n\nuniform vec3 _Blob_Position_;\nuniform float _Blob_Intensity_;\nuniform float _Blob_Near_Size_;\nuniform float _Blob_Far_Size_;\nuniform float _Blob_Near_Distance_;\nuniform float _Blob_Far_Distance_;\nuniform float _Blob_Fade_Length_;\nuniform float _Blob_Pulse_;\nuniform float _Blob_Fade_;\nuniform sampler2D _Blob_Texture_;\n\nuniform vec3 _Blob_Position_2_;\nuniform float _Blob_Near_Size_2_;\nuniform float _Blob_Pulse_2_;\nuniform float _Blob_Fade_2_;\nuniform vec3 _Left_Index_Pos_;\nuniform vec3 _Right_Index_Pos_;\nuniform vec3 _Left_Index_Middle_Pos_;\nuniform vec3 _Right_Index_Middle_Pos_;\n\nuniform sampler2D _Decal_;\nuniform vec2 _Decal_Scale_XY_;\nuniform bool _Decal_Front_Only_;\nuniform float _Rim_Intensity_;\nuniform sampler2D _Rim_Texture_;\nuniform float _Rim_Hue_Shift_;\nuniform float _Rim_Saturation_Shift_;\nuniform float _Rim_Value_Shift_;\n\nuniform float _Iridescence_Intensity_;\nuniform sampler2D _Iridescence_Texture_;\nuniform bool Use_Global_Left_Index;\nuniform bool Use_Global_Right_Index;\nuniform vec4 Global_Left_Index_Tip_Position;\nuniform vec4 Global_Right_Index_Tip_Position;\nuniform vec4 Global_Left_Thumb_Tip_Position;\nuniform vec4 Global_Right_Thumb_Tip_Position;\nuniform float Global_Left_Index_Tip_Proximity;\nuniform float Global_Right_Index_Tip_Proximity;\nvarying vec3 vPosition;\nvarying vec3 vNormal;\nvarying vec2 vUV;\nvarying vec3 vTangent;\nvarying vec3 vBinormal;\nvarying vec4 vColor;\nvarying vec4 vExtra1;\nvarying vec4 vExtra2;\nvarying vec4 vExtra3;\n\nvoid Object_To_World_Pos_B162(\nvec3 Pos_Object,\nout vec3 Pos_World)\n{\nPos_World=(world*vec4(Pos_Object,1.0)).xyz;\n}\n\n\nvoid Object_To_World_Normal_B182(\nvec3 Nrm_Object,\nout vec3 Nrm_World)\n{\nNrm_World=(vec4(Nrm_Object,0.0)).xyz;\n}\n\n\nvoid Blob_Vertex_B173(\nvec3 Position,\nvec3 Normal,\nvec3 Tangent,\nvec3 Bitangent,\nvec3 Blob_Position,\nfloat Intensity,\nfloat Blob_Near_Size,\nfloat Blob_Far_Size,\nfloat Blob_Near_Distance,\nfloat Blob_Far_Distance,\nfloat Blob_Fade_Length,\nfloat Blob_Pulse,\nfloat Blob_Fade,\nout vec4 Blob_Info)\n{\nvec3 blob=(Use_Global_Left_Index ? Global_Left_Index_Tip_Position.xyz : Blob_Position);\nvec3 delta=blob-Position;\nfloat dist=dot(Normal,delta);\nfloat lerpValue=clamp((abs(dist)-Blob_Near_Distance)/(Blob_Far_Distance-Blob_Near_Distance),0.0,1.0);\nfloat fadeValue=1.0-clamp((abs(dist)-Blob_Far_Distance)/Blob_Fade_Length,0.0,1.0);\nfloat size=Blob_Near_Size+(Blob_Far_Size-Blob_Near_Size)*lerpValue;\nvec2 blobXY=vec2(dot(delta,Tangent),dot(delta,Bitangent))/(0.0001+size);\nfloat Fade=fadeValue*Intensity*Blob_Fade;\nfloat Distance=(lerpValue*0.5+0.5)*(1.0-Blob_Pulse);\nBlob_Info=vec4(blobXY.x,blobXY.y,Distance,Fade);\n}\n\n\nvoid Blob_Vertex_B174(\nvec3 Position,\nvec3 Normal,\nvec3 Tangent,\nvec3 Bitangent,\nvec3 Blob_Position,\nfloat Intensity,\nfloat Blob_Near_Size,\nfloat Blob_Far_Size,\nfloat Blob_Near_Distance,\nfloat Blob_Far_Distance,\nfloat Blob_Fade_Length,\nfloat Blob_Pulse,\nfloat Blob_Fade,\nout vec4 Blob_Info)\n{\nvec3 blob=(Use_Global_Right_Index ? Global_Right_Index_Tip_Position.xyz : Blob_Position);\nvec3 delta=blob-Position;\nfloat dist=dot(Normal,delta);\nfloat lerpValue=clamp((abs(dist)-Blob_Near_Distance)/(Blob_Far_Distance-Blob_Near_Distance),0.0,1.0);\nfloat fadeValue=1.0-clamp((abs(dist)-Blob_Far_Distance)/Blob_Fade_Length,0.0,1.0);\nfloat size=Blob_Near_Size+(Blob_Far_Size-Blob_Near_Size)*lerpValue;\nvec2 blobXY=vec2(dot(delta,Tangent),dot(delta,Bitangent))/(0.0001+size);\nfloat Fade=fadeValue*Intensity*Blob_Fade;\nfloat Distance=(lerpValue*0.5+0.5)*(1.0-Blob_Pulse);\nBlob_Info=vec4(blobXY.x,blobXY.y,Distance,Fade);\n}\n\n\nvoid Move_Verts_B280(\nfloat Anisotropy,\nvec3 P,\nfloat Radius,\nfloat Bevel,\nvec3 Normal_Object,\nfloat ScaleZ,\nfloat Stretch,\nout vec3 New_P,\nout vec2 New_UV,\nout float Radial_Gradient,\nout vec3 Radial_Dir,\nout vec3 New_Normal)\n{\nvec2 UV=P.xy*2.0+0.5;\nvec2 center=clamp(UV,0.0,1.0);\nvec2 delta=UV-center;\nfloat deltad=(length(delta)*2.0);\nfloat f=(Bevel+(Radius-Bevel)*Stretch)/Radius;\n\nfloat innerd=clamp(deltad*2.0,0.0,1.0);\nfloat outerd=clamp(deltad*2.0-1.0,0.0,1.0);\nfloat bevelAngle=outerd*3.14159*0.5;\nfloat sinb=sin(bevelAngle);\nfloat cosb=cos(bevelAngle);\nfloat beveld=(1.0-f)*innerd+f*sinb;\nfloat br=outerd;\nvec2 r2=2.0*vec2(Radius/Anisotropy,Radius);\nfloat dir=P.z<0.0001 ? 1.0 : -1.0;\n\nNew_UV=center+r2*((0.5-center)+normalize(delta+vec2(0.0,0.000001))*beveld*0.5);\nNew_P=vec3(New_UV-0.5,P.z+dir*(1.0-cosb)*Bevel*ScaleZ);\nRadial_Gradient=clamp((deltad-0.5)*2.0,0.0,1.0);\nRadial_Dir=vec3(delta*r2,0.0);\nvec3 beveledNormal=cosb*Normal_Object+sinb*vec3(delta.x,delta.y,0.0);\nNew_Normal=Normal_Object.z==0.0 ? Normal_Object : beveledNormal;\n}\n\n\nvoid Object_To_World_Dir_B210(\nvec3 Dir_Object,\nout vec3 Normal_World,\nout vec3 Normal_World_N,\nout float Normal_Length)\n{\nNormal_World=(world*vec4(Dir_Object,0.0)).xyz;\nNormal_Length=length(Normal_World);\nNormal_World_N=Normal_World/Normal_Length;\n}\n\n\nvoid To_XYZ_B228(\nvec3 Vec3,\nout float X,\nout float Y,\nout float Z)\n{\nX=Vec3.x;\nY=Vec3.y;\nZ=Vec3.z;\n}\n\n\nvoid Conditional_Float_B243(\nbool Which,\nfloat If_True,\nfloat If_False,\nout float Result)\n{\nResult=Which ? If_True : If_False;\n}\n\n\nvoid Object_To_World_Dir_B178(\nvec3 Dir_Object,\nout vec3 Binormal_World,\nout vec3 Binormal_World_N,\nout float Binormal_Length)\n{\nBinormal_World=(world*vec4(Dir_Object,0.0)).xyz;\nBinormal_Length=length(Binormal_World);\nBinormal_World_N=Binormal_World/Binormal_Length;\n}\n\n\nvoid Pick_Radius_B219(\nfloat Radius,\nfloat Radius_Top_Left,\nfloat Radius_Top_Right,\nfloat Radius_Bottom_Left,\nfloat Radius_Bottom_Right,\nvec3 Position,\nout float Result)\n{\nbool whichY=Position.y>0.0;\nResult=Position.x<0.0 ? (whichY ? Radius_Top_Left : Radius_Bottom_Left) : (whichY ? Radius_Top_Right : Radius_Bottom_Right);\nResult*=Radius;\n}\n\n\nvoid Conditional_Float_B186(\nbool Which,\nfloat If_True,\nfloat If_False,\nout float Result)\n{\nResult=Which ? If_True : If_False;\n}\n\n\nvoid Greater_Than_B187(\nfloat Left,\nfloat Right,\nout bool Not_Greater_Than,\nout bool Greater_Than)\n{\nGreater_Than=Left>Right;\nNot_Greater_Than=!Greater_Than;\n}\n\n\nvoid Remap_Range_B255(\nfloat In_Min,\nfloat In_Max,\nfloat Out_Min,\nfloat Out_Max,\nfloat In,\nout float Out)\n{\nOut=mix(Out_Min,Out_Max,clamp((In-In_Min)/(In_Max-In_Min),0.0,1.0));\n}\n\nvoid main()\n{\n\nvec2 XY_Q235;\nXY_Q235=(uv-vec2(0.5,0.5))*_Decal_Scale_XY_+vec2(0.5,0.5);\n\nvec3 Tangent_World_Q177;\nvec3 Tangent_World_N_Q177;\nfloat Tangent_Length_Q177;\nTangent_World_Q177=(world*vec4(vec3(1,0,0),0.0)).xyz;\nTangent_Length_Q177=length(Tangent_World_Q177);\nTangent_World_N_Q177=Tangent_World_Q177/Tangent_Length_Q177;\nvec3 Normal_World_Q210;\nvec3 Normal_World_N_Q210;\nfloat Normal_Length_Q210;\nObject_To_World_Dir_B210(vec3(0,0,1),Normal_World_Q210,Normal_World_N_Q210,Normal_Length_Q210);\nfloat X_Q228;\nfloat Y_Q228;\nfloat Z_Q228;\nTo_XYZ_B228(position,X_Q228,Y_Q228,Z_Q228);\n\nvec3 Nrm_World_Q176;\nNrm_World_Q176=normalize((world*vec4(normal,0.0)).xyz);\nvec3 Binormal_World_Q178;\nvec3 Binormal_World_N_Q178;\nfloat Binormal_Length_Q178;\nObject_To_World_Dir_B178(vec3(0,1,0),Binormal_World_Q178,Binormal_World_N_Q178,Binormal_Length_Q178);\n\nfloat Anisotropy_Q179=Tangent_Length_Q177/Binormal_Length_Q178;\nfloat Result_Q219;\nPick_Radius_B219(_Radius_,_Radius_Top_Left_,_Radius_Top_Right_,_Radius_Bottom_Left_,_Radius_Bottom_Right_,position,Result_Q219);\n\nfloat Anisotropy_Q203=Binormal_Length_Q178/Normal_Length_Q210;\nbool Not_Greater_Than_Q187;\nbool Greater_Than_Q187;\nGreater_Than_B187(Z_Q228,0.0,Not_Greater_Than_Q187,Greater_Than_Q187);\n\nvec4 Linear_Q251;\nLinear_Q251.rgb=clamp(_Left_Color_.rgb*_Left_Color_.rgb,0.0,1.0);\nLinear_Q251.a=_Left_Color_.a;\n\nvec4 Linear_Q252;\nLinear_Q252.rgb=clamp(_Right_Color_.rgb*_Right_Color_.rgb,0.0,1.0);\nLinear_Q252.a=_Right_Color_.a;\n\nvec3 Difference_Q211=vec3(0,0,0)-Normal_World_N_Q210;\n\nvec4 Out_Color_Q184=vec4(X_Q228,Y_Q228,Z_Q228,1);\nfloat Result_Q186;\nConditional_Float_B186(Greater_Than_Q187,_Bevel_Back_,_Bevel_Front_,Result_Q186);\nfloat Result_Q244;\nConditional_Float_B186(Greater_Than_Q187,_Bevel_Back_Stretch_,_Bevel_Front_Stretch_,Result_Q244);\nvec3 New_P_Q280;\nvec2 New_UV_Q280;\nfloat Radial_Gradient_Q280;\nvec3 Radial_Dir_Q280;\nvec3 New_Normal_Q280;\nMove_Verts_B280(Anisotropy_Q179,position,Result_Q219,Result_Q186,normal,Anisotropy_Q203,Result_Q244,New_P_Q280,New_UV_Q280,Radial_Gradient_Q280,Radial_Dir_Q280,New_Normal_Q280);\n\nfloat X_Q248;\nfloat Y_Q248;\nX_Q248=New_UV_Q280.x;\nY_Q248=New_UV_Q280.y;\nvec3 Pos_World_Q162;\nObject_To_World_Pos_B162(New_P_Q280,Pos_World_Q162);\nvec3 Nrm_World_Q182;\nObject_To_World_Normal_B182(New_Normal_Q280,Nrm_World_Q182);\nvec4 Blob_Info_Q173;\n#if BLOB_ENABLE\nBlob_Vertex_B173(Pos_World_Q162,Nrm_World_Q176,Tangent_World_N_Q177,Binormal_World_N_Q178,_Blob_Position_,_Blob_Intensity_,_Blob_Near_Size_,_Blob_Far_Size_,_Blob_Near_Distance_,_Blob_Far_Distance_,_Blob_Fade_Length_,_Blob_Pulse_,_Blob_Fade_,Blob_Info_Q173);\n#else\nBlob_Info_Q173=vec4(0,0,0,0);\n#endif\nvec4 Blob_Info_Q174;\n#if BLOB_ENABLE_2\nBlob_Vertex_B174(Pos_World_Q162,Nrm_World_Q176,Tangent_World_N_Q177,Binormal_World_N_Q178,_Blob_Position_2_,_Blob_Intensity_,_Blob_Near_Size_2_,_Blob_Far_Size_,_Blob_Near_Distance_,_Blob_Far_Distance_,_Blob_Fade_Length_,_Blob_Pulse_2_,_Blob_Fade_2_,Blob_Info_Q174);\n#else\nBlob_Info_Q174=vec4(0,0,0,0);\n#endif\nfloat Out_Q255;\nRemap_Range_B255(0.0,1.0,0.0,1.0,X_Q248,Out_Q255);\nfloat X_Q236;\nfloat Y_Q236;\nfloat Z_Q236;\nTo_XYZ_B228(Nrm_World_Q182,X_Q236,Y_Q236,Z_Q236);\n\nvec4 Color_At_T_Q247=mix(Linear_Q251,Linear_Q252,Out_Q255);\n\nfloat Minus_F_Q237=-Z_Q236;\n\nfloat R_Q249;\nfloat G_Q249;\nfloat B_Q249;\nfloat A_Q249;\nR_Q249=Color_At_T_Q247.r; G_Q249=Color_At_T_Q247.g; B_Q249=Color_At_T_Q247.b; A_Q249=Color_At_T_Q247.a;\n\nfloat ClampF_Q238=clamp(0.0,Minus_F_Q237,1.0);\nfloat Result_Q243;\nConditional_Float_B243(_Decal_Front_Only_,ClampF_Q238,1.0,Result_Q243);\n\nvec4 Vec4_Q239=vec4(Result_Q243,Radial_Gradient_Q280,G_Q249,B_Q249);\nvec3 Position=Pos_World_Q162;\nvec3 Normal=Nrm_World_Q182;\nvec2 UV=XY_Q235;\nvec3 Tangent=Tangent_World_N_Q177;\nvec3 Binormal=Difference_Q211;\nvec4 Color=Out_Color_Q184;\nvec4 Extra1=Vec4_Q239;\nvec4 Extra2=Blob_Info_Q173;\nvec4 Extra3=Blob_Info_Q174;\ngl_Position=viewProjection*vec4(Position,1);\nvPosition=Position;\nvNormal=Normal;\nvUV=UV;\nvTangent=Tangent;\nvBinormal=Binormal;\nvColor=Color;\nvExtra1=Extra1;\nvExtra2=Extra2;\nvExtra3=Extra3;\n}";
+babylonjs_Engines_shaderStore__WEBPACK_IMPORTED_MODULE_0__["ShaderStore"].ShadersStore[name] = shader;
+/** @hidden */
+var mrdlSliderThumbVertexShader = { name: name, shader: shader };
 
 
 /***/ }),
@@ -22863,168 +25167,174 @@ var Vector3WithInfo = /** @class */ (function (_super) {
 /*!******************!*\
   !*** ./index.ts ***!
   \******************/
-/*! exports provided: Button, Checkbox, ColorPicker, Container, Control, Ellipse, FocusableButton, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, TextWrapper, ToggleButton, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name, AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, HolographicSlate, HandMenu, MeshButton3D, NearMenu, PlanePanel, ScatterPanel, Slider3D, SpherePanel, StackPanel3D, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchHolographicMenu, TouchToggleButton3D, VolumeBasedPanel, HolographicBackplate, FluentMaterialDefines, FluentMaterial, FluentButtonMaterial, FluentBackplateMaterial, HandleMaterial, SlateGizmo, HandleState, GizmoHandle, SideHandle, CornerHandle, GUI3DManager, Vector3WithInfo */
+/*! exports provided: Button, Checkbox, ColorPicker, Container, Control, Ellipse, FocusableButton, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, TextWrapper, ToggleButton, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name, AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, HolographicSlate, HandMenu, MeshButton3D, NearMenu, PlanePanel, ScatterPanel, Slider3D, SpherePanel, StackPanel3D, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchHolographicMenu, TouchToggleButton3D, VolumeBasedPanel, HolographicBackplate, FluentMaterialDefines, FluentMaterial, FluentButtonMaterial, FluentBackplateMaterial, HandleMaterial, MRDLSliderBarMaterial, MRDLSliderThumbMaterial, MRDLBackplateMaterial, SlateGizmo, HandleState, GizmoHandle, SideHandle, CornerHandle, GUI3DManager, Vector3WithInfo */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _2D__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./2D */ "./2D/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Button", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["Button"]; });
+/* harmony import */ var _2D_index__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./2D/index */ "./2D/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Button", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["Button"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Checkbox", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["Checkbox"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Checkbox", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["Checkbox"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ColorPicker", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["ColorPicker"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ColorPicker", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["ColorPicker"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Container", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["Container"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Container", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["Container"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Control", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["Control"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Control", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["Control"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Ellipse", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["Ellipse"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Ellipse", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["Ellipse"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FocusableButton", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["FocusableButton"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FocusableButton", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["FocusableButton"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Grid", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["Grid"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Grid", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["Grid"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Image", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["Image"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Image", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["Image"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "InputText", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["InputText"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "InputText", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["InputText"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "InputPassword", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["InputPassword"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "InputPassword", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["InputPassword"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Line", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["Line"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Line", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["Line"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MultiLine", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["MultiLine"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MultiLine", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["MultiLine"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "RadioButton", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["RadioButton"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "RadioButton", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["RadioButton"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "StackPanel", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["StackPanel"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "StackPanel", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["StackPanel"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SelectorGroup", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["SelectorGroup"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SelectorGroup", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["SelectorGroup"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CheckboxGroup", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["CheckboxGroup"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CheckboxGroup", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["CheckboxGroup"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "RadioGroup", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["RadioGroup"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "RadioGroup", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["RadioGroup"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SliderGroup", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["SliderGroup"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SliderGroup", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["SliderGroup"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SelectionPanel", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["SelectionPanel"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SelectionPanel", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["SelectionPanel"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ScrollViewer", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["ScrollViewer"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ScrollViewer", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["ScrollViewer"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TextWrapping", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["TextWrapping"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TextWrapping", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["TextWrapping"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TextBlock", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["TextBlock"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TextBlock", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["TextBlock"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TextWrapper", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["TextWrapper"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TextWrapper", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["TextWrapper"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ToggleButton", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["ToggleButton"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ToggleButton", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["ToggleButton"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KeyPropertySet", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["KeyPropertySet"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KeyPropertySet", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["KeyPropertySet"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "VirtualKeyboard", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["VirtualKeyboard"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "VirtualKeyboard", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["VirtualKeyboard"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Rectangle", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["Rectangle"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Rectangle", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["Rectangle"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "DisplayGrid", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["DisplayGrid"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "DisplayGrid", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["DisplayGrid"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "BaseSlider", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["BaseSlider"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "BaseSlider", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["BaseSlider"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Slider", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["Slider"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Slider", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["Slider"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ImageBasedSlider", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["ImageBasedSlider"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ImageBasedSlider", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["ImageBasedSlider"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ScrollBar", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["ScrollBar"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ScrollBar", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["ScrollBar"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ImageScrollBar", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["ImageScrollBar"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ImageScrollBar", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["ImageScrollBar"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "name", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["name"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "name", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["name"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "AdvancedDynamicTexture", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["AdvancedDynamicTexture"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "AdvancedDynamicTexture", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["AdvancedDynamicTexture"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "AdvancedDynamicTextureInstrumentation", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["AdvancedDynamicTextureInstrumentation"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "AdvancedDynamicTextureInstrumentation", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["AdvancedDynamicTextureInstrumentation"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Vector2WithInfo", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["Vector2WithInfo"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Vector2WithInfo", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["Vector2WithInfo"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Matrix2D", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["Matrix2D"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Matrix2D", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["Matrix2D"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Measure", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["Measure"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Measure", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["Measure"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MultiLinePoint", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["MultiLinePoint"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MultiLinePoint", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["MultiLinePoint"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Style", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["Style"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Style", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["Style"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ValueAndUnit", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["ValueAndUnit"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ValueAndUnit", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["ValueAndUnit"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "XmlLoader", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["XmlLoader"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "XmlLoader", function() { return _2D_index__WEBPACK_IMPORTED_MODULE_0__["XmlLoader"]; });
 
-/* harmony import */ var _3D__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./3D */ "./3D/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "AbstractButton3D", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["AbstractButton3D"]; });
+/* harmony import */ var _3D_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./3D/index */ "./3D/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "AbstractButton3D", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["AbstractButton3D"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Button3D", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["Button3D"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Button3D", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["Button3D"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Container3D", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["Container3D"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Container3D", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["Container3D"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Control3D", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["Control3D"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Control3D", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["Control3D"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CylinderPanel", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["CylinderPanel"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CylinderPanel", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["CylinderPanel"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HolographicButton", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["HolographicButton"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HolographicButton", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["HolographicButton"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HolographicSlate", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["HolographicSlate"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HolographicSlate", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["HolographicSlate"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HandMenu", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["HandMenu"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HandMenu", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["HandMenu"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MeshButton3D", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["MeshButton3D"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MeshButton3D", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["MeshButton3D"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "NearMenu", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["NearMenu"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "NearMenu", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["NearMenu"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "PlanePanel", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["PlanePanel"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "PlanePanel", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["PlanePanel"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ScatterPanel", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["ScatterPanel"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ScatterPanel", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["ScatterPanel"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Slider3D", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["Slider3D"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Slider3D", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["Slider3D"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SpherePanel", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["SpherePanel"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SpherePanel", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["SpherePanel"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "StackPanel3D", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["StackPanel3D"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "StackPanel3D", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["StackPanel3D"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchButton3D", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["TouchButton3D"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchButton3D", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["TouchButton3D"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchMeshButton3D", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["TouchMeshButton3D"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchMeshButton3D", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["TouchMeshButton3D"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchHolographicButton", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["TouchHolographicButton"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchHolographicButton", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["TouchHolographicButton"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchHolographicMenu", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["TouchHolographicMenu"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchHolographicMenu", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["TouchHolographicMenu"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchToggleButton3D", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["TouchToggleButton3D"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchToggleButton3D", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["TouchToggleButton3D"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "VolumeBasedPanel", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["VolumeBasedPanel"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "VolumeBasedPanel", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["VolumeBasedPanel"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HolographicBackplate", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["HolographicBackplate"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HolographicBackplate", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["HolographicBackplate"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentMaterialDefines", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["FluentMaterialDefines"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentMaterialDefines", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["FluentMaterialDefines"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentMaterial", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["FluentMaterial"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentMaterial", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["FluentMaterial"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentButtonMaterial", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["FluentButtonMaterial"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentButtonMaterial", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["FluentButtonMaterial"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentBackplateMaterial", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["FluentBackplateMaterial"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentBackplateMaterial", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["FluentBackplateMaterial"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HandleMaterial", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["HandleMaterial"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HandleMaterial", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["HandleMaterial"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SlateGizmo", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["SlateGizmo"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MRDLSliderBarMaterial", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["MRDLSliderBarMaterial"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HandleState", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["HandleState"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MRDLSliderThumbMaterial", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["MRDLSliderThumbMaterial"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GizmoHandle", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["GizmoHandle"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MRDLBackplateMaterial", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["MRDLBackplateMaterial"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SideHandle", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["SideHandle"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SlateGizmo", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["SlateGizmo"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CornerHandle", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["CornerHandle"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HandleState", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["HandleState"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GUI3DManager", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["GUI3DManager"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GizmoHandle", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["GizmoHandle"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Vector3WithInfo", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["Vector3WithInfo"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SideHandle", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["SideHandle"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CornerHandle", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["CornerHandle"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GUI3DManager", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["GUI3DManager"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Vector3WithInfo", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["Vector3WithInfo"]; });
 
 
 
@@ -23036,7 +25346,7 @@ __webpack_require__.r(__webpack_exports__);
 /*!**************************!*\
   !*** ./legacy/legacy.ts ***!
   \**************************/
-/*! exports provided: Button, Checkbox, ColorPicker, Container, Control, Ellipse, FocusableButton, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, TextWrapper, ToggleButton, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name, AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, HolographicSlate, HandMenu, MeshButton3D, NearMenu, PlanePanel, ScatterPanel, Slider3D, SpherePanel, StackPanel3D, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchHolographicMenu, TouchToggleButton3D, VolumeBasedPanel, HolographicBackplate, FluentMaterialDefines, FluentMaterial, FluentButtonMaterial, FluentBackplateMaterial, HandleMaterial, SlateGizmo, HandleState, GizmoHandle, SideHandle, CornerHandle, GUI3DManager, Vector3WithInfo */
+/*! exports provided: Button, Checkbox, ColorPicker, Container, Control, Ellipse, FocusableButton, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, TextWrapper, ToggleButton, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name, AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, HolographicSlate, HandMenu, MeshButton3D, NearMenu, PlanePanel, ScatterPanel, Slider3D, SpherePanel, StackPanel3D, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchHolographicMenu, TouchToggleButton3D, VolumeBasedPanel, HolographicBackplate, FluentMaterialDefines, FluentMaterial, FluentButtonMaterial, FluentBackplateMaterial, HandleMaterial, MRDLSliderBarMaterial, MRDLSliderThumbMaterial, MRDLBackplateMaterial, SlateGizmo, HandleState, GizmoHandle, SideHandle, CornerHandle, GUI3DManager, Vector3WithInfo */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -23183,6 +25493,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentBackplateMaterial", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["FluentBackplateMaterial"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HandleMaterial", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["HandleMaterial"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MRDLSliderBarMaterial", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["MRDLSliderBarMaterial"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MRDLSliderThumbMaterial", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["MRDLSliderThumbMaterial"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MRDLBackplateMaterial", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["MRDLBackplateMaterial"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SlateGizmo", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["SlateGizmo"]; });
 

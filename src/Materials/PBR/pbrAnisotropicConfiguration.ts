@@ -83,6 +83,10 @@ export class PBRAnisotropicConfiguration {
      * @returns - boolean indicating that the submesh is ready or not.
      */
     public isReadyForSubMesh(defines: IMaterialAnisotropicDefines, scene: Scene): boolean {
+        if (!this._isEnabled) {
+            return true;
+        }
+
         if (defines._areTexturesDirty) {
             if (scene.texturesEnabled) {
                 if (this._texture && MaterialFlags.AnisotropicTextureEnabled) {
@@ -133,6 +137,10 @@ export class PBRAnisotropicConfiguration {
      * @param isFrozen defines whether the material is frozen or not.
      */
     public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, isFrozen: boolean): void {
+        if (!this._isEnabled) {
+            return;
+        }
+
         if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {
             if (this._texture && MaterialFlags.AnisotropicTextureEnabled) {
                 uniformBuffer.updateFloat2("vAnisotropyInfos", this._texture.coordinatesIndex, this._texture.level);

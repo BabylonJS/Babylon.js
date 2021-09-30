@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \***********************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \*****************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -412,8 +412,8 @@ module.exports = g;
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* WEBPACK VAR INJECTION */(function(global) {/* harmony import */ var _starfield__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../starfield */ "./starfield/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "StarfieldProceduralTexture", function() { return _starfield__WEBPACK_IMPORTED_MODULE_0__["StarfieldProceduralTexture"]; });
+/* WEBPACK VAR INJECTION */(function(global) {/* harmony import */ var _starfield_index__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../starfield/index */ "./starfield/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "StarfieldProceduralTexture", function() { return _starfield_index__WEBPACK_IMPORTED_MODULE_0__["StarfieldProceduralTexture"]; });
 
 
 /**
@@ -422,8 +422,8 @@ __webpack_require__.r(__webpack_exports__);
  */
 var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
 if (typeof globalObject !== "undefined") {
-    for (var key in _starfield__WEBPACK_IMPORTED_MODULE_0__) {
-        globalObject.BABYLON[key] = _starfield__WEBPACK_IMPORTED_MODULE_0__[key];
+    for (var key in _starfield_index__WEBPACK_IMPORTED_MODULE_0__) {
+        globalObject.BABYLON[key] = _starfield_index__WEBPACK_IMPORTED_MODULE_0__[key];
     }
 }
 

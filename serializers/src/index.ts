@@ -1,3 +1,3 @@
-export * from "./OBJ";
-export * from "./glTF";
-export * from "./stl";
+export * from "./OBJ/index";
+export * from "./glTF/index";
+export * from "./stl/index";

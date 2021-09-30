@@ -25946,7 +25946,6 @@ declare module BABYLON {
         private _skeleton;
         private _localMatrix;
         private _restPose;
-        private _bindPose;
         private _baseMatrix;
         private _absoluteTransform;
         private _invertedAbsoluteTransform;
@@ -26019,7 +26018,7 @@ declare module BABYLON {
         getLocalMatrix(): Matrix;
         /**
          * Gets the base matrix (initial matrix which remains unchanged)
-         * @returns a matrix
+         * @returns the base matrix (as known as bind pose matrix)
          */
         getBaseMatrix(): Matrix;
         /**
@@ -26035,11 +26034,13 @@ declare module BABYLON {
         /**
          * Gets the bind pose matrix
          * @returns the bind pose matrix
+         * @deprecated Please use getBaseMatrix instead
          */
         getBindPose(): Matrix;
         /**
          * Sets the bind pose matrix
          * @param matrix the local-space bind pose to set for this bone
+         * @deprecated Please use updateMatrix instead
          */
         setBindPose(matrix: Matrix): void;
         /**
@@ -30862,7 +30863,7 @@ declare module BABYLON {
          */
         enableUVMorphing: boolean;
         /**
-         * Sets a boolean indicating that adding new target will or will not update the underlying data buffers
+         * Sets a boolean indicating that adding new target or updating an existing target will not update the underlying data buffers
          */
         set areUpdatesFrozen(block: boolean);
         get areUpdatesFrozen(): boolean;
@@ -37216,7 +37217,6 @@ declare module BABYLON {
         get m(): DeepImmutable<Float32Array | Array<number>>;
         /** @hidden */
         _markAsUpdated(): void;
-        /** @hidden */
         private _updateIdentityStatus;
         /**
          * Creates an empty matrix (filled with zeros)
@@ -49729,6 +49729,11 @@ declare module BABYLON {
         get target(): Vector3;
         set target(value: Vector3);
         /**
+         * Return the current target position of the camera. This value is expressed in local space.
+         * @returns the target position
+         */
+        getTarget(): Vector3;
+        /**
          * Define the current local position of the camera in the scene
          */
         get position(): Vector3;
@@ -56322,7 +56327,7 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Camera used to simulate stereoscopic rendering (based on UniversalCamera)
+     * Camera used to simulate stereoscopic rendering on real screens (based on UniversalCamera)
      * @see https://doc.babylonjs.com/features/cameras
      */
     export class StereoscopicScreenUniversalCamera extends UniversalCamera {
@@ -56343,10 +56348,10 @@ declare module BABYLON {
          * @param name defines camera name
          * @param position defines initial position
          * @param scene defines the hosting scene
-         * @param _distanceToProjectionPlane defines distance between each color axis
+         * @param distanceToProjectionPlane defines distance between each color axis. The rig cameras will receive this as their negative z position!
          * @param distanceBetweenEyes defines is stereoscopic is done side by side or over under
          */
-        constructor(name: string, position: Vector3, scene: Scene, _distanceToProjectionPlane?: number, distanceBetweenEyes?: number);
+        constructor(name: string, position: Vector3, scene: Scene, distanceToProjectionPlane?: number, distanceBetweenEyes?: number);
         /**
          * Gets camera class name
          * @returns StereoscopicScreenUniversalCamera

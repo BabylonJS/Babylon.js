@@ -31,7 +31,6 @@ const lineIcon: string = require("../public/imgs/lineIcon.svg");
 const displaygridIcon: string = require("../public/imgs/displaygridIcon.svg");
 const colorPickerIcon: string = require("../public/imgs/colorPickerIcon.svg");
 const scrollbarIcon: string = require("../public/imgs/scrollbarIcon.svg");
-const imageSliderIcon: string = require("../public/imgs/imageSliderIcon.svg");
 const radioButtonIcon: string = require("../public/imgs/radioButtonIcon.svg");
 
 interface IGraphEditorProps {
@@ -369,12 +368,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                 icon: buttonIcon,
                 onClick: () => { this.onCreate("TextButton") }
             },
-
-            {
-                label: "ImageButton",
-                icon: buttonIcon,
-                onClick: () => { this.onCreate("ImageButton") }
-            },
             {
                 label: "Checkbox",
                 icon: checkboxIcon,
@@ -389,11 +382,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                 label: "Slider",
                 icon: sliderIcon,
                 onClick: () => { this.onCreate("Slider") }
-            },
-            {
-                label: "ImageBasedSlider",
-                icon: imageSliderIcon,
-                onClick: () => { this.onCreate("ImageBasedSlider") }
             },
             {
                 label: "VirtualKeyboard",
