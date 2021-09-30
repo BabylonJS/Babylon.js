@@ -69,7 +69,7 @@ export class ArcRotateCamera extends TargetCamera {
 
     /**
      * Defines the target mesh of the camera.
-     * The camera looks towards it form the radius distance.
+     * The camera looks towards it from the radius distance.
      */
     public get targetHost(): Nullable<AbstractMesh> {
         return this._targetHost;
