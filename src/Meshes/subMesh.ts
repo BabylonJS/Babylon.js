@@ -112,6 +112,16 @@ export class SubMesh implements ICullable {
         }
     }
 
+    /**
+     * Resets the draw wrappers cache
+     */
+    public resetDrawCache(): void {
+        for (const drawWrapper of this._drawWrappers) {
+            drawWrapper?.dispose();
+        }
+        this._drawWrappers = [];
+    }
+
     /** @hidden */
     public _linesIndexCount: number = 0;
     private _mesh: AbstractMesh;
@@ -679,6 +689,8 @@ export class SubMesh implements ICullable {
         // Remove from mesh
         var index = this._mesh.subMeshes.indexOf(this);
         this._mesh.subMeshes.splice(index, 1);
+
+        this.resetDrawCache();
     }
 
     /**

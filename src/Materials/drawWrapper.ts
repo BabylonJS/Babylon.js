@@ -39,4 +39,8 @@ export class DrawWrapper {
             this.drawContext?.reset();
         }
     }
+
+    public dispose(): void {
+        this.drawContext?.dispose();
+    }
 }
