@@ -34,7 +34,6 @@ type VirtualMeshInfo = {
  * And observables for position/rotation changes
  */
 export class BaseSixDofDragBehavior implements Behavior<Mesh> {
-
     protected static _virtualScene: Scene;
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
     private _attachedToElement: boolean = false;
@@ -286,8 +285,6 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                 this._virtualMeshesInfo[pointerId] = this._createVirtualMeshInfo();
             }
             const virtualMeshesInfo = this._virtualMeshesInfo[pointerId];
-
-            // Rotate with the hand if this is near interaction
             const isXRPointer = (<PointerEvent>pointerInfo.event).pointerType === "xr";
 
             if (pointerInfo.type == PointerEventTypes.POINTERDOWN) {
@@ -439,11 +436,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
 
     private _applyZOffset(node: TransformNode, localOriginDragDifference: number, zDragFactor: number) {
         // Determine how much the controller moved to/away towards the dragged object and use this to move the object further when its further away
-        let zOffsetDifference = node.position.z < 1 ? localOriginDragDifference * zDragFactor : localOriginDragDifference * zDragFactor * node.position.z;
-        console.log("_applyZOffset amount: "+zOffsetDifference);
-        console.log(localOriginDragDifference);
-        console.log(node.position.z);
-        node.position.z -= zOffsetDifference;
+        node.position.z -= node.position.z < 1 ? localOriginDragDifference * zDragFactor : localOriginDragDifference * zDragFactor * node.position.z;
         if (node.position.z < 0) {
             node.position.z = 0;
         }
