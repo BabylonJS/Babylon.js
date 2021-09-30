@@ -704,8 +704,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public onPointerUp: (evt: IPointerEvent, pickInfo: Nullable<PickingInfo>, type: PointerEventTypes) => void;
     /** Callback called when a pointer pick is detected */
     public onPointerPick: (evt: IPointerEvent, pickInfo: PickingInfo) => void;
-	
-	/**
+
+    /**
      * Gets or sets a predicate used to select candidate faces for a pointer move event
      */
     public pointerMoveTrianglePredicate: ((p0: Vector3, p1: Vector3, p2: Vector3, ray: Ray) => boolean) | undefined;
