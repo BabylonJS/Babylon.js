@@ -30,6 +30,7 @@ import { IDrawContext } from "./IDrawContext";
 import { ICanvas, IImage } from "./ICanvas";
 import { IStencilState } from "../States/IStencilState";
 import { RenderTargetWrapper } from "./renderTargetWrapper";
+import { NativeHandle, NativeDataStream } from "./Native/nativeDataStream";
 
 interface INativeCamera {
     createVideo(constraints: MediaTrackConstraints): any;
@@ -124,47 +125,47 @@ interface INativeEngine {
     readonly STENCIL_OP_PASS_Z_DECRSAT: number;
     readonly STENCIL_OP_PASS_Z_INVERT: number;
 
-    readonly COMMAND_DELETEVERTEXARRAY: number;
-    readonly COMMAND_DELETEINDEXBUFFER: number;
-    readonly COMMAND_DELETEVERTEXBUFFER: number;
-    readonly COMMAND_SETPROGRAM: number;
-    readonly COMMAND_SETMATRIX: number;
-    readonly COMMAND_SETMATRIX3X3: number;
-    readonly COMMAND_SETMATRIX2X2: number;
-    readonly COMMAND_SETMATRICES: number;
-    readonly COMMAND_SETINT: number;
-    readonly COMMAND_SETINTARRAY: number;
-    readonly COMMAND_SETINTARRAY2: number;
-    readonly COMMAND_SETINTARRAY3: number;
-    readonly COMMAND_SETINTARRAY4: number;
-    readonly COMMAND_SETFLOATARRAY: number;
-    readonly COMMAND_SETFLOATARRAY2: number;
-    readonly COMMAND_SETFLOATARRAY3: number;
-    readonly COMMAND_SETFLOATARRAY4: number;
-    readonly COMMAND_SETTEXTURESAMPLING: number;
-    readonly COMMAND_SETTEXTUREWRAPMODE: number;
-    readonly COMMAND_SETTEXTUREANISOTROPICLEVEL: number;
-    readonly COMMAND_SETTEXTURE: number;
-    readonly COMMAND_BINDVERTEXARRAY: number;
-    readonly COMMAND_SETSTATE: number;
-    readonly COMMAND_DELETEPROGRAM: number;
-    readonly COMMAND_SETZOFFSET: number;
-    readonly COMMAND_SETZOFFSETUNITS: number;
-    readonly COMMAND_SETDEPTHTEST: number;
-    readonly COMMAND_SETDEPTHWRITE: number;
-    readonly COMMAND_SETCOLORWRITE: number;
-    readonly COMMAND_SETBLENDMODE: number;
-    readonly COMMAND_SETFLOAT: number;
-    readonly COMMAND_SETFLOAT2: number;
-    readonly COMMAND_SETFLOAT3: number;
-    readonly COMMAND_SETFLOAT4: number;
-    readonly COMMAND_BINDFRAMEBUFFER: number;
-    readonly COMMAND_UNBINDFRAMEBUFFER: number;
-    readonly COMMAND_DELETEFRAMEBUFFER: number;
-    readonly COMMAND_DRAWINDEXED: number;
-    readonly COMMAND_DRAW: number;
-    readonly COMMAND_CLEAR: number;
-    readonly COMMAND_SETSTENCIL: number;
+    readonly COMMAND_DELETEVERTEXARRAY: NativeHandle;
+    readonly COMMAND_DELETEINDEXBUFFER: NativeHandle;
+    readonly COMMAND_DELETEVERTEXBUFFER: NativeHandle;
+    readonly COMMAND_SETPROGRAM: NativeHandle;
+    readonly COMMAND_SETMATRIX: NativeHandle;
+    readonly COMMAND_SETMATRIX3X3: NativeHandle;
+    readonly COMMAND_SETMATRIX2X2: NativeHandle;
+    readonly COMMAND_SETMATRICES: NativeHandle;
+    readonly COMMAND_SETINT: NativeHandle;
+    readonly COMMAND_SETINTARRAY: NativeHandle;
+    readonly COMMAND_SETINTARRAY2: NativeHandle;
+    readonly COMMAND_SETINTARRAY3: NativeHandle;
+    readonly COMMAND_SETINTARRAY4: NativeHandle;
+    readonly COMMAND_SETFLOATARRAY: NativeHandle;
+    readonly COMMAND_SETFLOATARRAY2: NativeHandle;
+    readonly COMMAND_SETFLOATARRAY3: NativeHandle;
+    readonly COMMAND_SETFLOATARRAY4: NativeHandle;
+    readonly COMMAND_SETTEXTURESAMPLING: NativeHandle;
+    readonly COMMAND_SETTEXTUREWRAPMODE: NativeHandle;
+    readonly COMMAND_SETTEXTUREANISOTROPICLEVEL: NativeHandle;
+    readonly COMMAND_SETTEXTURE: NativeHandle;
+    readonly COMMAND_BINDVERTEXARRAY: NativeHandle;
+    readonly COMMAND_SETSTATE: NativeHandle;
+    readonly COMMAND_DELETEPROGRAM: NativeHandle;
+    readonly COMMAND_SETZOFFSET: NativeHandle;
+    readonly COMMAND_SETZOFFSETUNITS: NativeHandle;
+    readonly COMMAND_SETDEPTHTEST: NativeHandle;
+    readonly COMMAND_SETDEPTHWRITE: NativeHandle;
+    readonly COMMAND_SETCOLORWRITE: NativeHandle;
+    readonly COMMAND_SETBLENDMODE: NativeHandle;
+    readonly COMMAND_SETFLOAT: NativeHandle;
+    readonly COMMAND_SETFLOAT2: NativeHandle;
+    readonly COMMAND_SETFLOAT3: NativeHandle;
+    readonly COMMAND_SETFLOAT4: NativeHandle;
+    readonly COMMAND_BINDFRAMEBUFFER: NativeHandle;
+    readonly COMMAND_UNBINDFRAMEBUFFER: NativeHandle;
+    readonly COMMAND_DELETEFRAMEBUFFER: NativeHandle;
+    readonly COMMAND_DRAWINDEXED: NativeHandle;
+    readonly COMMAND_DRAW: NativeHandle;
+    readonly COMMAND_CLEAR: NativeHandle;
+    readonly COMMAND_SETSTENCIL: NativeHandle;
 
     readonly COMMAND_VALIDATION_COMMAND: number;
     readonly COMMAND_VALIDATION_UINT32: number;
@@ -211,9 +212,9 @@ interface INativeEngine {
     setViewPort(x: number, y: number, width: number, height: number): void;
     setStencil(mask: number, stencilOpFail: number, depthOpFail: number, depthOpPass: number, func: number, ref: number): void;
 
-    setCommandBuffer(buffer: ArrayBuffer): void;
-    setCommandValidationBuffer(buffer: ArrayBuffer): void;
-    submitCommandBuffer(commandCount: number, bufferByteCount: number): void;
+    setCommandDataStream(dataStream: NativeDataStream): void;
+    setCommandValidationDataStream(dataStream: NativeDataStream): void;
+    submitCommands(): void;
 }
 
 class NativePipelineContext implements IPipelineContext {
@@ -822,122 +823,18 @@ export interface NativeEngineOptions {
 }
 
 /** @hidden */
-class Buffer {
-    private readonly _setBufferSize: (size: number) => void;
-    private _buffer: ArrayBuffer;
-    /**
-     * Index for 8-bit values. Given that we have to align on 32-bit boundaries for the 32-bit typed arrays,
-     * we can fill the extra 3 bytes with more byte-length values. For example:
-     * Before:
-     * |COMMAND1|--------|--------|--------|CMD1ARG1BYTE1|CMD1ARG1BYTE2|CMD1ARG1BYTE3|CMD1ARG1BYTE4|COMMAND2|...
-     * After:
-     * |COMMAND1|COMMAND2|COMMAND3|COMMAND4|CMD1ARG1BYTE1|CMD1ARG1BYTE2|CMD1ARG1BYTE3|CMD1ARG1BYTE4|--------|...
-     * This leads to about a 12% decrease in size.
-     */
-    private _index8 = 0;
-    /**
-     * Index for 32-bit values.
-     */
-    private _index32 = 1;
-
-    private _uint8Array: Uint8Array;
-    private _uint32Array: Uint32Array;
-    private _int32Array: Int32Array;
-    private _float32Array: Float32Array;
-
-    public constructor(initialSize: number, onBufferChanged: (buffer: ArrayBuffer) => void) {
-        this._setBufferSize = (size: number) => {
-            this._buffer = new ArrayBuffer(size);
-            this._uint8Array = new Uint8Array(this._buffer);
-            this._uint32Array = new Uint32Array(this._buffer);
-            this._int32Array = new Int32Array(this._buffer);
-            this._float32Array = new Float32Array(this._buffer);
-
-            onBufferChanged(this._buffer);
-        };
-
-        this._setBufferSize(initialSize);
-    }
-
-    /**
-     * Returns the length of the buffer in bytes.
-     */
-    public get length() {
-        return Math.max(this._index8, this._index32 * 4);
-    }
-
-    public pushUint8(value: number) {
-        this._uint8Array[this._index8++] = value;
-        if (this._index8 % 4 == 0) {
-            this._ensureCapacity(1);
-            this._index8 = (this._index32++) * 4;
-        }
-    }
-
-    public pushUint32(value: number) {
-        this._ensureCapacity(1);
-        this._uint32Array[this._index32++] = value;
-    }
-
-    public pushUint32s(values: ArrayLike<number>) {
-        this._ensureCapacity(values.length);
-        this._uint32Array.set(values, this._index32);
-        this._index32 += values.length;
-    }
-
-    public pushInt32(value: number) {
-        this._ensureCapacity(1);
-        this._int32Array[this._index32++] = value;
-    }
-
-    public pushInt32s(values: ArrayLike<number>) {
-        this._ensureCapacity(values.length);
-        this._int32Array.set(values, this._index32);
-        this._index32 += values.length;
-    }
-
-    public pushFloat32(value: number) {
-        this._ensureCapacity(1);
-        this._float32Array[this._index32++] = value;
-    }
-
-    public pushFloat32s(values: ArrayLike<number>) {
-        this._ensureCapacity(values.length);
-        this._float32Array.set(values, this._index32);
-        this._index32 += values.length;
-    }
-
-    public reset() {
-        this._index8 = 0;
-        this._index32 = 1;
-    }
-
-    private _ensureCapacity(additionalElements: number) {
-        const requestedTotalElements = this._index32 + additionalElements;
-        const currentElementCapacity = this._buffer.byteLength / 4;
-        if (requestedTotalElements >= currentElementCapacity) {
-            additionalElements = Math.max(requestedTotalElements - currentElementCapacity, currentElementCapacity >> 1);
-            const newByteLength = (currentElementCapacity + additionalElements) * 4;
-            const oldArray = this._uint8Array;
-            console.log(`Growing buffer from ${currentElementCapacity * 4} bytes to ${newByteLength} bytes.`);
-            this._setBufferSize(newByteLength);
-            this._uint8Array.set(oldArray);
-        }
-    }
-}
-
-/** @hidden */
 class CommandBufferEncoder {
-    private readonly _commandBuffer: Buffer;
-    private readonly _validationBuffer?: Buffer;
+    private readonly _commandStream: NativeDataStream;
+    private readonly _validationStream?: NativeDataStream;
     private _isCommandBufferScopeActive = false;
-    private _commandCount = 0;
 
     public constructor(private readonly _nativeEngine: INativeEngine, enableValidation = false) {
-        this._commandBuffer = new Buffer(1024, (buffer) => this._nativeEngine.setCommandBuffer(buffer));
+        this._commandStream = new NativeDataStream();
+        this._nativeEngine.setCommandDataStream(this._commandStream);
 
         if (enableValidation) {
-            this._validationBuffer = new Buffer(1024, (buffer) => this._nativeEngine.setCommandValidationBuffer(buffer));
+            this._validationStream = new NativeDataStream();
+            this._nativeEngine.setCommandValidationDataStream(this._validationStream);
         }
     }
 
@@ -960,66 +857,63 @@ class CommandBufferEncoder {
         this._submitCommandBuffer();
     }
 
-    public startEncodingCommand(command: number) {
+    public startEncodingCommand(command: NativeHandle) {
         // console.log(`COMMAND BUFFER: Encode command: ${command}`);
-        this._commandCount++;
-        this._commandBuffer.pushUint8(command);
-        if (this._validationBuffer) {
-            this._validationBuffer.pushUint8(this._nativeEngine.COMMAND_VALIDATION_COMMAND);
-        }
+        this._commandStream.writeNativeHandle(command);
+        this._validationStream?.writeUint8(this._nativeEngine.COMMAND_VALIDATION_COMMAND);
     }
 
     public encodeCommandArgAsUInt32(commandArg: unknown) {
         // console.log(`COMMAND BUFFER:   Encode uint32: ${commandArg}`);
-        this._commandBuffer.pushUint32(commandArg as number);
-        if (this._validationBuffer) {
-            this._validationBuffer.pushUint8(this._nativeEngine.COMMAND_VALIDATION_UINT32);
-            this._validationBuffer.pushUint8(1);
+        this._commandStream.writeUint32(commandArg as number);
+        if (this._validationStream) {
+            this._validationStream.writeUint8(this._nativeEngine.COMMAND_VALIDATION_UINT32);
+            this._validationStream.writeUint8(1);
         }
     }
 
     public encodeCommandArgAsUInt32s(commandArg: Uint32Array) {
         // console.log(`COMMAND BUFFER:   Encode uint32s: ${commandArg}`);
-        this._commandBuffer.pushUint32s(commandArg);
-        if (this._validationBuffer) {
-            this._validationBuffer.pushUint8(this._nativeEngine.COMMAND_VALIDATION_UINT32);
-            this._validationBuffer.pushUint8(commandArg.length);
+        this._commandStream.writeUint32Array(commandArg);
+        if (this._validationStream) {
+            this._validationStream.writeUint8(this._nativeEngine.COMMAND_VALIDATION_UINT32);
+            this._validationStream.writeUint8(commandArg.length);
         }
     }
 
     public encodeCommandArgAsInt32(commandArg: unknown) {
         // console.log(`COMMAND BUFFER:   Encode uint32: ${commandArg}`);
-        this._commandBuffer.pushInt32(commandArg as number);
-        if (this._validationBuffer) {
-            this._validationBuffer.pushUint8(this._nativeEngine.COMMAND_VALIDATION_INT32);
-            this._validationBuffer.pushUint8(1);
+        this._commandStream.writeInt32(commandArg as number);
+        if (this._validationStream) {
+            this._validationStream.writeUint8(this._nativeEngine.COMMAND_VALIDATION_INT32);
+            this._validationStream.writeUint8(1);
         }
     }
 
     public encodeCommandArgAsInt32s(commandArg: Int32Array) {
         // console.log(`COMMAND BUFFER:   Encode uint32s: ${commandArg}`);
-        this._commandBuffer.pushInt32s(commandArg);
-        if (this._validationBuffer) {
-            this._validationBuffer.pushUint8(this._nativeEngine.COMMAND_VALIDATION_INT32);
-            this._validationBuffer.pushUint8(commandArg.length);
+        this._commandStream.writeInt32Array(commandArg);
+        if (this._validationStream) {
+            this._validationStream.writeUint8(this._nativeEngine.COMMAND_VALIDATION_INT32);
+            this._validationStream.writeUint8(commandArg.length);
         }
     }
 
     public encodeCommandArgAsFloat32(commandArg: unknown) {
         // console.log(`COMMAND BUFFER:   Encode float32: ${commandArg}`);
-        this._commandBuffer.pushFloat32(commandArg as number);
-        if (this._validationBuffer) {
-            this._validationBuffer.pushUint8(this._nativeEngine.COMMAND_VALIDATION_FLOAT);
-            this._validationBuffer.pushUint8(1);
+        this._commandStream.writeFloat32(commandArg as number);
+        if (this._validationStream) {
+            this._validationStream.writeUint8(this._nativeEngine.COMMAND_VALIDATION_FLOAT);
+            this._validationStream.writeUint8(1);
         }
     }
 
     public encodeCommandArgAsFloat32s(commandArg: Float32Array) {
         // console.log(`COMMAND BUFFER:   Encode float32s: ${commandArg}`);
-        this._commandBuffer.pushFloat32s(commandArg);
-        if (this._validationBuffer) {
-            this._validationBuffer.pushUint8(this._nativeEngine.COMMAND_VALIDATION_FLOAT);
-            this._validationBuffer.pushUint8(commandArg.length);
+        this._commandStream.writeFloat32Array(commandArg);
+        if (this._validationStream) {
+            this._validationStream.writeUint8(this._nativeEngine.COMMAND_VALIDATION_FLOAT);
+            this._validationStream.writeUint8(commandArg.length);
         }
     }
 
@@ -1030,12 +924,7 @@ class CommandBufferEncoder {
     }
 
     private _submitCommandBuffer() {
-        if (this._commandBuffer.length > 0) {
-            this._nativeEngine.submitCommandBuffer(this._commandCount, this._commandBuffer.length);
-            this._commandCount = 0;
-            this._commandBuffer.reset();
-            this._validationBuffer?.reset();
-        }
+        this._nativeEngine.submitCommands();
     }
 }
 
