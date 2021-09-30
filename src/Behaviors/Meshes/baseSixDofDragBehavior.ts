@@ -29,29 +29,12 @@ type VirtualMeshInfo = {
 };
 
 /**
- * Rotation mode of meshes dragged by motion controllers
- */
-export enum SixDofDragRotationType {
-    /**
-     * Dragged mesh does not rotate
-     */
-    NO_ROTATION,
-    /**
-     * Dragged mesh rotates around the camera, similar to when not using a motion controller
-     */
-    AROUND_USER,
-    /**
-     * Dragged mesh rotates 1:1 with the motion controller
-     */
-    WITH_CONTROLLER,
-}
-
-/**
  * Base behavior for six degrees of freedom interactions in XR experiences.
  * Creates virtual meshes that are dragged around
  * And observables for position/rotation changes
  */
 export class BaseSixDofDragBehavior implements Behavior<Mesh> {
+
     protected static _virtualScene: Scene;
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
     private _attachedToElement: boolean = false;
@@ -62,10 +45,17 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
     private _tmpVector: Vector3 = new Vector3();
     private _tmpQuaternion: Quaternion = new Quaternion();
 
+    protected _dragType = {
+        NONE:0,
+        DRAG:1,
+        DRAG_WITH_CONTROLLER:2,
+        NEAR_DRAG:3,
+    };
+
     protected _scene: Scene;
     protected _moving = false;
     protected _ownerNode: TransformNode;
-    protected _dragging: boolean = false;
+    protected _dragging = this._dragType.NONE;
 
     /**
      * The list of child meshes that can receive drag events
@@ -129,10 +119,6 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
      * Should the behavior allow simultaneous pointers to interact with the owner node.
      */
     public allowMultiPointer: boolean = true;
-    /**
-     * Should the behavior rotate with the motion controller, when one is used.
-     */
-    public motionControllerRotationType: SixDofDragRotationType = SixDofDragRotationType.WITH_CONTROLLER;
 
     /**
      *  The name of the behavior
@@ -241,28 +227,31 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
         virtualMeshesInfo.originMesh.removeChild(virtualMeshesInfo.pivotMesh);
     }
 
-    private _pointerUpdateXR(controllerTransform: AbstractMesh, pointerId: number, zDragFactor: number, rotationType: SixDofDragRotationType) {
+    private _pointerUpdateXR(controllerTransform: AbstractMesh, pointerId: number, zDragFactor: number) {
         const virtualMeshesInfo = this._virtualMeshesInfo[pointerId];
         virtualMeshesInfo.pivotMesh.computeWorldMatrix(true);
         virtualMeshesInfo.originMesh.position.copyFrom(controllerTransform.position);
         virtualMeshesInfo.originMesh.rotationQuaternion!.copyFrom(controllerTransform.rotationQuaternion!);
 
         // Z scaling logic
-        const originDragDirection = TmpVectors.Vector3[0];
+        // Camera.getForwardRay modifies TmpVectors.Vector[0-3], so cache it in advance
+        const cameraForwardVec = TmpVectors.Vector3[0];
+        const originDragDirection = TmpVectors.Vector3[1];
+        cameraForwardVec.copyFrom(this._pointerCamera!.getForwardRay().direction);
         virtualMeshesInfo.originMesh.position.subtractToRef(virtualMeshesInfo.lastOriginPosition, originDragDirection);
         virtualMeshesInfo.lastOriginPosition.copyFrom(virtualMeshesInfo.originMesh.position);
         const controllerDragDistance = originDragDirection.length();
         originDragDirection.normalize();
 
-        const cameraToPivot = TmpVectors.Vector3[1];
-        const controllerToPivot = TmpVectors.Vector3[2];
+        const cameraToPivot = TmpVectors.Vector3[2];
+        const controllerToPivot = TmpVectors.Vector3[3];
         virtualMeshesInfo.pivotMesh.absolutePosition.subtractToRef(this._pointerCamera!.globalPosition, cameraToPivot);
         virtualMeshesInfo.pivotMesh.absolutePosition.subtractToRef(virtualMeshesInfo.originMesh.position, controllerToPivot);
         const controllerToPivotDistance = controllerToPivot.length();
         cameraToPivot.normalize();
         controllerToPivot.normalize();
 
-        const controllerDragScaling = Math.abs(Vector3.Dot(originDragDirection, controllerToPivot)) * Vector3.Dot(originDragDirection, this._pointerCamera!.getForwardRay().direction);
+        const controllerDragScaling = Math.abs(Vector3.Dot(originDragDirection, controllerToPivot)) * Vector3.Dot(originDragDirection, cameraForwardVec);
         let zOffsetScaling = controllerDragScaling * zDragFactor * controllerDragDistance * controllerToPivotDistance;
 
         // Prevent pulling the mesh through the controller
@@ -299,7 +288,6 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
             const virtualMeshesInfo = this._virtualMeshesInfo[pointerId];
 
             // Rotate with the hand if this is near interaction
-            const rotationType = pointerInfo.pickInfo?.originMesh ? SixDofDragRotationType.WITH_CONTROLLER : this.motionControllerRotationType;
             const isXRPointer = (<PointerEvent>pointerInfo.event).pointerType === "xr";
 
             if (pointerInfo.type == PointerEventTypes.POINTERDOWN) {
@@ -326,17 +314,17 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                         pointerInfo.pickInfo.ray.origin.copyFrom(this._pointerCamera!.globalPosition);
                     }
 
-                    this._dragging = true;
                     this._ownerNode.computeWorldMatrix(true);
-
                     const virtualMeshesInfo = this._virtualMeshesInfo[pointerId];
 
                     if (isXRPointer) {
+                        this._dragging = pointerInfo.pickInfo.originMesh ? this._dragType.NEAR_DRAG : this._dragType.DRAG_WITH_CONTROLLER;
                         const controllerTransform = pointerInfo.pickInfo.originTransform!;
                         virtualMeshesInfo.originMesh.position.copyFrom(controllerTransform.position);
                         virtualMeshesInfo.originMesh.rotationQuaternion!.copyFrom(controllerTransform.rotationQuaternion!);
                     }
                     else {
+                        this._dragging = this._dragType.DRAG;
                         virtualMeshesInfo.originMesh.position.copyFrom(pointerInfo.pickInfo.ray.origin);
                     }
 
@@ -391,7 +379,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     this.currentDraggingPointerIds.splice(registeredPointerIndex, 1);
                     if (this.currentDraggingPointerIds.length === 0) {
                         this._moving = false;
-                        this._dragging = false;
+                        this._dragging = this._dragType.NONE;
 
                         // Reattach camera controls
                         if (this.detachCameraControls && this._attachedToElement && this._pointerCamera && !this._pointerCamera.leftCamera) {
@@ -421,14 +409,12 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                         zDragFactor = 0;
                     }
 
-                    this._dragging = true;
                     this._ownerNode.computeWorldMatrix(true);
-
                     if (!isXRPointer) {
                         this._pointerUpdate2D(pointerInfo.pickInfo.ray!, pointerId, zDragFactor);
                     }
                     else {
-                        this._pointerUpdateXR(pointerInfo.pickInfo.originTransform!, pointerId, zDragFactor, rotationType);
+                        this._pointerUpdateXR(pointerInfo.pickInfo.originTransform!, pointerId, zDragFactor);
                     }
 
                     // Get change in rotation
