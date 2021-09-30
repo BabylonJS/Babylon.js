@@ -63,6 +63,7 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         _scene: Scene;
         private _selectedGuiNodes;
         private _ctrlKeyIsPressed;
+        private _altKeyIsPressed;
         private _constraintDirection;
         private _forcePanning;
         private _forceZooming;
@@ -72,9 +73,10 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         private _canvas;
         private _responsive;
         private _isOverGUINode;
-        private _focused;
         private _clipboard;
         private _selectAll;
+        private _camera;
+        private _cameraRadias;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
@@ -95,7 +97,6 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         appendBlock(guiElement: Control): Control;
         isContainer(guiControl: Control): boolean;
         createNewGuiNode(guiControl: Control): Control;
-        enableEditorProperties(guiControl: Control): void;
         private parent;
         private _reorderGrid;
         private _isNotChildInsert;
@@ -128,6 +129,17 @@ declare module "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent" {
         allowNullValue?: boolean;
     }
 }
+declare module "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject" {
+    /**
+     * Class used to provide lock mechanism
+     */
+    export class LockObject {
+        /**
+         * Gets or set if the lock is engaged
+         */
+        lock: boolean;
+    }
+}
 declare module "babylonjs-gui-editor/globalState" {
     import { Nullable } from "babylonjs/types";
     import { Observable } from "babylonjs/Misc/observable";
@@ -139,6 +151,7 @@ declare module "babylonjs-gui-editor/globalState" {
     import { Vector2 } from "babylonjs/Maths/math.vector";
     import { Scene } from "babylonjs/scene";
     import { Control } from "babylonjs-gui/2D/controls/control";
+    import { LockObject } from "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject";
     export enum DragOverLocation {
         ABOVE = 0,
         BELOW = 1,
@@ -169,6 +182,7 @@ declare module "babylonjs-gui-editor/globalState" {
         workbench: WorkbenchComponent;
         onPropertyChangedObservable: Observable<PropertyChangedEvent>;
         onZoomObservable: Observable<void>;
+        onFitToWindowObservable: Observable<void>;
         onPanObservable: Observable<void>;
         onSelectionButtonObservable: Observable<void>;
         onLoadObservable: Observable<File>;
@@ -184,6 +198,7 @@ declare module "babylonjs-gui-editor/globalState" {
         draggedControl: Nullable<Control>;
         draggedControlDirection: DragOverLocation;
         isSaving: boolean;
+        lockObject: LockObject;
         storeEditorData: (serializationObject: any) => void;
         customSave?: {
             label: string;
@@ -292,17 +307,6 @@ declare module "babylonjs-gui-editor/sharedUiComponents/stringTools" {
         static DownloadAsFile(document: HTMLDocument, content: string, filename: string): void;
     }
 }
-declare module "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject" {
-    /**
-     * Class used to provide lock mechanism
-     */
-    export class LockObject {
-        /**
-         * Gets or set if the lock is engaged
-         */
-        lock: boolean;
-    }
-}
 declare module "babylonjs-gui-editor/sharedUiComponents/lines/floatLineComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
@@ -348,6 +352,7 @@ declare module "babylonjs-gui-editor/sharedUiComponents/lines/sliderLineComponen
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
+    import { LockObject } from "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject";
     interface ISliderLineComponentProps {
         label: string;
         target?: any;
@@ -364,6 +369,7 @@ declare module "babylonjs-gui-editor/sharedUiComponents/lines/sliderLineComponen
         margin?: boolean;
         icon?: string;
         iconLabel?: string;
+        lockObject?: LockObject;
     }
     export class SliderLineComponent extends React.Component<ISliderLineComponentProps, {
         value: number;
@@ -2187,6 +2193,7 @@ declare module GUIEDITOR {
         _scene: BABYLON.Scene;
         private _selectedGuiNodes;
         private _ctrlKeyIsPressed;
+        private _altKeyIsPressed;
         private _constraintDirection;
         private _forcePanning;
         private _forceZooming;
@@ -2196,9 +2203,10 @@ declare module GUIEDITOR {
         private _canvas;
         private _responsive;
         private _isOverGUINode;
-        private _focused;
         private _clipboard;
         private _selectAll;
+        private _camera;
+        private _cameraRadias;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
@@ -2219,7 +2227,6 @@ declare module GUIEDITOR {
         appendBlock(guiElement: Control): Control;
         isContainer(guiControl: Control): boolean;
         createNewGuiNode(guiControl: Control): Control;
-        enableEditorProperties(guiControl: Control): void;
         private parent;
         private _reorderGrid;
         private _isNotChildInsert;
@@ -2253,6 +2260,17 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
+    /**
+     * Class used to provide lock mechanism
+     */
+    export class LockObject {
+        /**
+         * Gets or set if the lock is engaged
+         */
+        lock: boolean;
+    }
+}
+declare module GUIEDITOR {
     export enum DragOverLocation {
         ABOVE = 0,
         BELOW = 1,
@@ -2283,6 +2301,7 @@ declare module GUIEDITOR {
         workbench: WorkbenchComponent;
         onPropertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>;
         onZoomObservable: BABYLON.Observable<void>;
+        onFitToWindowObservable: BABYLON.Observable<void>;
         onPanObservable: BABYLON.Observable<void>;
         onSelectionButtonObservable: BABYLON.Observable<void>;
         onLoadObservable: BABYLON.Observable<File>;
@@ -2298,6 +2317,7 @@ declare module GUIEDITOR {
         draggedControl: BABYLON.Nullable<Control>;
         draggedControlDirection: DragOverLocation;
         isSaving: boolean;
+        lockObject: LockObject;
         storeEditorData: (serializationObject: any) => void;
         customSave?: {
             label: string;
@@ -2401,17 +2421,6 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
-    /**
-     * Class used to provide lock mechanism
-     */
-    export class LockObject {
-        /**
-         * Gets or set if the lock is engaged
-         */
-        lock: boolean;
-    }
-}
-declare module GUIEDITOR {
     interface IFloatLineComponentProps {
         label: string;
         target: any;
@@ -2465,6 +2474,7 @@ declare module GUIEDITOR {
         margin?: boolean;
         icon?: string;
         iconLabel?: string;
+        lockObject?: LockObject;
     }
     export class SliderLineComponent extends React.Component<ISliderLineComponentProps, {
         value: number;
