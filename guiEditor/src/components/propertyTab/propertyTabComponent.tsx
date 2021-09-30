@@ -404,22 +404,25 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         this.state.currentNode?.parent?.typeName === "Grid" &&
                         <ParentingPropertyGridComponent control={this.state.currentNode} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} lockObject={this._lockObject}></ParentingPropertyGridComponent>
                     }
-                    <hr className="ge" />
-                    <ButtonLineComponent
-                        label="DELETE ELEMENT"
-                        onClick={() => {
-                            this.state.currentNode?.dispose();
-                            this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-                        }}
-                    />
-                    <ButtonLineComponent
-                        label="COPY ELEMENT"
-                        onClick={() => {
-                            if (this.state.currentNode) {
-                                this.props.globalState.workbench.CopyGUIControl(this.state.currentNode);
-                            }
-                        }}
-                    />
+                    {this.state.currentNode !== this.props.globalState.guiTexture.getChildren()[0] && 
+                    <>
+                        <hr className="ge" />
+                        <ButtonLineComponent
+                            label="DELETE ELEMENT"
+                            onClick={() => {
+                                this.state.currentNode?.dispose();
+                                this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                            }}
+                        />
+                        <ButtonLineComponent
+                            label="COPY ELEMENT"
+                            onClick={() => {
+                                if (this.state.currentNode) {
+                                    this.props.globalState.workbench.CopyGUIControl(this.state.currentNode);
+                                }
+                            }}
+                        />
+                    </>}
                 </div>
             );
         }
