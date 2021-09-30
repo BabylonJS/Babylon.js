@@ -1614,7 +1614,7 @@ export class WebGPUEngine extends Engine {
      * @returns the new context
      */
     public createDrawContext(): WebGPUDrawContext | undefined {
-        return new WebGPUDrawContext();
+        return new WebGPUDrawContext(this._bufferManager);
     }
 
     /** @hidden */
@@ -2869,6 +2869,9 @@ export class WebGPUEngine extends Engine {
             this._applyRenderPassChanges(renderPass, true);
             if (!this._snapshotRenderingRecordBundles) {
                 this._counters.numBundleReuseNonCompatMode++;
+                if (this._currentDrawContext.indirectDrawBuffer) {
+                    this._currentDrawContext.setIndirectData(count, instancesCount || 1, start);
+                }
                 this._bundleList.addBundle(this._currentDrawContext.fastBundle);
                 this._reportDrawCall();
                 return;
@@ -2934,13 +2937,22 @@ export class WebGPUEngine extends Engine {
         }
 
         // draw
-        if (drawType === 0) {
+        const nonCompatMode = !this.compatibilityMode && !this._snapshotRenderingRecordBundles;
+
+        if (nonCompatMode && this._currentDrawContext.indirectDrawBuffer) {
+            this._currentDrawContext.setIndirectData(count, instancesCount || 1, start);
+            if (drawType === 0) {
+                renderPass2.drawIndexedIndirect(this._currentDrawContext.indirectDrawBuffer, 0);
+            } else {
+                renderPass2.drawIndirect(this._currentDrawContext.indirectDrawBuffer, 0);
+            }            
+        } else if (drawType === 0) {
             renderPass2.drawIndexed(count, instancesCount || 1, start, 0, 0);
         } else {
             renderPass2.draw(count, instancesCount || 1, start, 0);
         }
 
-        if (!this.compatibilityMode && !this._snapshotRenderingRecordBundles) {
+        if (nonCompatMode) {
             this._currentDrawContext.fastBundle = (renderPass2 as GPURenderBundleEncoder).finish();
             this._bundleList.addBundle(this._currentDrawContext.fastBundle);
         }
