@@ -53,11 +53,6 @@ varying vec3 vPositionW;
 
 #ifdef VELOCITY
 uniform mat4 previousViewProjection;
-#ifdef BONES_VELOCITY_ENABLED
-#if NUM_BONE_INFLUENCERS > 0
-uniform mat4 mPreviousBones[BonesPerMesh];
-#endif
-#endif
 
 varying vec4 vCurrentPosition;
 varying vec4 vPreviousPosition;

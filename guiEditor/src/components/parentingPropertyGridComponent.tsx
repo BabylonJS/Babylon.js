@@ -31,8 +31,8 @@ export class ParentingPropertyGridComponent extends React.Component<IParentingPr
 
     getCellInfo() {
         const cellInfo = Tools.getCellInfo(this.props.control.parent as Grid, this.props.control);
-        this._columnNumber = cellInfo.x;
-        this._rowNumber = cellInfo.y;
+        this._rowNumber = cellInfo.x;
+        this._columnNumber = cellInfo.y;
     }
 
     private _changeCell(grid: Grid, draggedControl: Control, newCell : Vector2) {
@@ -48,11 +48,11 @@ export class ParentingPropertyGridComponent extends React.Component<IParentingPr
                 <hr className="ge" />
                 <TextLineComponent tooltip="" label="GRID PARENTING" value=" " color="grey"></TextLineComponent>
                 <div className="divider">
-                    <FloatLineComponent label={"Row #"} target={this} propertyName={"_rowNumber"} isInteger={true} min={0} onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    <FloatLineComponent lockObject={this.props.lockObject} label={"Row #"} target={this} propertyName={"_rowNumber"} isInteger={true} min={0} onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         onChange={(newValue) => {
                             this.updateGridPosition();
                         }} />
-                    <FloatLineComponent label={"Column #"} target={this} propertyName={"_columnNumber"} isInteger={true} min={0} onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    <FloatLineComponent lockObject={this.props.lockObject} label={"Column #"} target={this} propertyName={"_columnNumber"} isInteger={true} min={0} onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         onChange={(newValue) => {
                             this.updateGridPosition();
                         }} />

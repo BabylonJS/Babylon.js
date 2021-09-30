@@ -272,6 +272,29 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     public getDescendants(directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): Control[] {
         return this._rootContainer.getDescendants(directDescendantsOnly, predicate);
     }
+
+    /**
+    * Will return the first control with the given name
+    * @param name defines the name to search for
+    * @return the first control found or null
+    */
+    public getControlByName(name: string): Nullable<Control> {
+        return this._getControlByKey("name", name);
+    }
+
+    /**
+    * Will return the first control with the given id
+    * @param uniqueId defines the id to search for
+    * @return the first control found or null
+    */
+    public getControlById(uniqueId: number): Nullable<Control> {
+        return this._getControlByKey("uniqueId", uniqueId);
+    }
+
+    private _getControlByKey(key: string, value: any): Nullable<Control> {
+        return this._rootContainer.getDescendants().find((control) => (control as any)[key] === value) || null;
+    }
+
     /**
     * Gets or sets the current focused control
     */
@@ -903,6 +926,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             Object.entries(this._lastControlDown).forEach(([key, value]) => {
                 value._onCanvasBlur();
             });
+            this.focusedControl = null;
             this._lastControlDown = {};
         });
     }
@@ -966,6 +990,36 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             });
 
             request.open("GET", AdvancedDynamicTexture.SnippetUrl + "/" + snippetId.replace(/#/g, "/"));
+            request.send();
+        });
+    }
+
+    /**
+    * Recreate the content of the ADT from a url json
+    * @param url defines the url to load
+    * @returns a promise that will resolve on success
+    */
+    public parseFromURLAsync(url: string): Promise<void> {
+        if (url === "") {
+            return Promise.resolve();
+        }
+
+        return new Promise((resolve, reject) => {
+            var request = new WebRequest();
+            request.addEventListener("readystatechange", () => {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        var gui = request.responseText;
+                        let serializationObject = JSON.parse(gui);
+                        this.parseContent(serializationObject);
+
+                        resolve();
+                    } else {
+                        reject("Unable to load");
+                    }
+                }
+            });
+            request.open("GET", url);
             request.send();
         });
     }

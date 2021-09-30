@@ -61,7 +61,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                 let newcd = new ValueAndUnit(cd.getValue(grid.host), cd.unit);
                 return (
                     <div className="divider">
-                        <FloatLineComponent key={`c${i}`} label={`Column ${i}`} target={newcd} propertyName={"_value"} digits={cd.unit == 1 ? 0 : 2}
+                        <FloatLineComponent lockObject={this.props.lockObject} key={`c${i}`} label={`Column ${i}`} target={newcd} propertyName={"_value"} digits={cd.unit == 1 ? 0 : 2}
                             onChange={(newValue) => {
                                 grid.setColumnDefinition(i, newValue, newcd.unit == 1 ? true : false);
                                 this.forceUpdate();
