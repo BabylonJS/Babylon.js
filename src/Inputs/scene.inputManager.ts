@@ -678,7 +678,7 @@ export class InputManager {
             }
 
             // Meshes
-            var pickResult = scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerMovePredicate, false, scene.cameraToUseForPointers);
+            var pickResult = scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerMovePredicate, false, scene.cameraToUseForPointers, scene.pointerMoveTrianglePredicate);
 
             this._processPointerMove(pickResult, evt as IPointerEvent);
         };

@@ -49,6 +49,7 @@
 - Added a global OnTextureLoadErrorObservable to handle texture loading errors during model load ([RaananW](https://github.com/RaananW))
 - Add support to encode and decode .env environment textures using WebP instead of PNG ([simonihmig](https://github.com/simonihmig))
 - Added a new stereoscopic screen rig camera ([RaananW](https://github.com/RaananW))
+- Extended functionality for pointer move with scene pointerMoveTrianglePredicate ([phaselock](https://github.com/lockphase))
 
 ### Engine
 
