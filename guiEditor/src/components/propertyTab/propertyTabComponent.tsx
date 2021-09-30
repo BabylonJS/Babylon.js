@@ -87,20 +87,13 @@ interface IPropertyTabComponentState {
 export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
     private _onBuiltObserver: Nullable<Observer<void>>;
     private _timerIntervalId: number;
-    private _lockObject : LockObject;
+    private _lockObject: LockObject;
     private _sizeOption: number = 2;
-    private _sizeOptions = [
-        { label: "Web (1920)", value: 0 },
-        { label: "Phone (720)", value: 1 },
-        { label: "Square (1200)", value: 2 },
-    ];
-    private _sizeValues = [
-        new Vector2(1920, 1080),
-        new Vector2(750, 1334),
-        new Vector2(1200, 1200)];
+    private _sizeOptionsLength = 3;
+
     constructor(props: IPropertyTabComponentProps) {
         super(props);
-       
+
         this.state = { currentNode: null, textureSize: new Vector2(1200, 1200) };
         this._lockObject = new LockObject();
         this.props.globalState.lockObject = this._lockObject;
@@ -119,7 +112,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         });
 
         this.props.globalState.onLoadObservable.add((file) => this.load(file));
-        this._sizeOption = DataStorage.ReadBoolean("Responsive", true) ?  2 : this._sizeOptions.length;
+        this._sizeOption = DataStorage.ReadBoolean("Responsive", true) ? 2 : this._sizeOptionsLength;
 
     }
 
@@ -385,8 +378,17 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         return adtIcon;
     }
 
-
     render() {
+
+        const _sizeValues = [
+            new Vector2(1920, 1080),
+            new Vector2(750, 1334),
+            new Vector2(1200, 1200)];
+        const _sizeOptions = [
+            { label: "Web (1920)", value: 0 },
+            { label: "Phone (750)", value: 1 },
+            { label: "Square (1200)", value: 2 },
+        ];
 
         if (this.state.currentNode && this.props.globalState.workbench.selectedGuiNodes.length === 1) {
             return (
@@ -444,10 +446,10 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         onSelect={(value: boolean) => {
                             this.props.globalState.onResponsiveChangeObservable.notifyObservers(value);
                             DataStorage.WriteBoolean("Responsive", value);
-                            this._sizeOption = this._sizeOptions.length;
+                            this._sizeOption = _sizeOptions.length;
                             if (value) {
                                 this._sizeOption = 0;
-                                this.props.globalState.workbench.resizeGuiTexture(this._sizeValues[this._sizeOption]);
+                                this.props.globalState.workbench.resizeGuiTexture(_sizeValues[this._sizeOption]);
                             }
                             this.forceUpdate();
                         }}
@@ -456,21 +458,22 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         <OptionsLineComponent
                             label=""
                             iconLabel="Size"
-                            options={this._sizeOptions}
+                            options={_sizeOptions}
                             icon={canvasSizeIcon}
                             target={this}
                             propertyName={"_sizeOption"}
                             noDirectUpdate={true}
                             onSelect={(value: any) => {
                                 this._sizeOption = value;
-                                if (this._sizeOption !== (this._sizeOptions.length)) {
-                                    const newSize = this._sizeValues[this._sizeOption];
+                                if (this._sizeOption !== (_sizeOptions.length)) {
+                                    const newSize = _sizeValues[this._sizeOption];
+
                                     this.props.globalState.workbench.resizeGuiTexture(newSize);
                                 }
                                 this.forceUpdate();
                             }}
                         />}
-                    {this._sizeOption == (this._sizeOptions.length) &&
+                    {this._sizeOption == (_sizeOptions.length) &&
                         <div className="divider">
                             <FloatLineComponent
                                 icon={canvasSizeIcon}
