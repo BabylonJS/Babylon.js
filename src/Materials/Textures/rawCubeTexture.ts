@@ -81,6 +81,15 @@ export class RawCubeTexture extends CubeTexture {
 
     /** @hidden */
     public static _UpdateRGBDAsync(internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial>, lodScale: number, lodOffset: number): Promise<void> {
+        internalTexture.onRebuildCallback = (_internalTexture) => {
+            const proxy = internalTexture.getEngine().createRawCubeTexture(null, internalTexture.width, internalTexture.format, internalTexture.type,
+                internalTexture.generateMipMaps, internalTexture.invertY, internalTexture.samplingMode, internalTexture._compression);
+            return {
+                proxy: EnvironmentTextureTools._UpdateRGBDAsync(proxy, internalTexture._bufferViewArrayArray!, internalTexture._sphericalPolynomial, internalTexture._lodGenerationScale, internalTexture._lodGenerationOffset),
+                isReady: true,
+                isAsync: true
+            };
+        };
         internalTexture._source = InternalTextureSource.CubeRawRGBD;
         internalTexture._bufferViewArrayArray = data;
         internalTexture._lodGenerationScale = lodScale;
