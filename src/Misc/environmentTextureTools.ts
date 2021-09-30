@@ -715,7 +715,7 @@ export class EnvironmentTextureTools {
     }
 
     /** @hidden */
-    public static _UpdateRGBDAsync(internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial>, lodScale: number, lodOffset: number): Promise<void> {
+    public static _UpdateRGBDAsync(internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial>, lodScale: number, lodOffset: number): Promise<InternalTexture> {
         internalTexture._source = InternalTextureSource.CubeRawRGBD;
         internalTexture._bufferViewArrayArray = data;
         internalTexture._lodGenerationScale = lodScale;
@@ -724,6 +724,7 @@ export class EnvironmentTextureTools {
 
         return EnvironmentTextureTools.UploadLevelsAsync(internalTexture, data).then(() => {
             internalTexture.isReady = true;
+            return internalTexture;
         });
     }
 }
