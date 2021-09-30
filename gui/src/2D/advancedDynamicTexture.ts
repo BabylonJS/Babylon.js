@@ -284,7 +284,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
 
     /**
     * Will return the first control with the given id
-    * @param id defines the id to search for
+    * @param uniqueId defines the id to search for
     * @return the first control found or null
     */
     public getControlById(uniqueId: number): Nullable<Control> {
