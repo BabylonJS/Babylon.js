@@ -310,6 +310,9 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         this._drawWrapper = new DrawWrapper(this._engine);
         this._useInstancing = this._engine.getCaps().instancedArrays;
+        if (this._drawWrapper.drawContext) {
+            this._drawWrapper.drawContext.useInstancing = this._useInstancing;
+        }
 
         this._createIndexBuffer();
         this._createVertexBuffers();
@@ -1069,6 +1072,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         }
         this._vertexBuffers["offset"] = offsets;
 
+        this._drawWrapper.drawContext?.reset();
     }
 
     private _createIndexBuffer() {
@@ -1747,19 +1751,20 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         // Effect
         var join = defines.join("\n");
         if (this._drawWrapper.defines !== join) {
-            this._drawWrapper.defines = join;
-
             var attributesNamesOrOptions: Array<string> = [];
             var effectCreationOption: Array<string> = [];
             var samplers: Array<string> = [];
 
             this.fillUniformsAttributesAndSamplerNames(effectCreationOption, attributesNamesOrOptions, samplers);
 
-            this._drawWrapper.effect = this._engine.createEffect(
-                "particles",
-                attributesNamesOrOptions,
-                effectCreationOption,
-                samplers, join);
+            this._drawWrapper.setEffect(
+                this._engine.createEffect(
+                    "particles",
+                    attributesNamesOrOptions,
+                    effectCreationOption,
+                    samplers, join
+                ),
+                join);
         }
 
         return this._drawWrapper;
@@ -1891,6 +1896,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         for (var key in this._vertexBuffers) {
             this._vertexBuffers[key]._rebuild();
         }
+
+        this._drawWrapper.drawContext?.reset();
     }
 
     /**
@@ -2049,6 +2056,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      * @param disposeTexture defines if the particle texture must be disposed as well (true by default)
      */
     public dispose(disposeTexture = true): void {
+        this._drawWrapper.dispose();
+
         if (this._vertexBuffer) {
             this._vertexBuffer.dispose();
             this._vertexBuffer = null;
