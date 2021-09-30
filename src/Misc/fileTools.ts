@@ -185,7 +185,8 @@ export const LoadImage = (input: string | ArrayBuffer | ArrayBufferView | Blob, 
             });
         }, undefined, offlineProvider || undefined, true, (request, exception) => {
             if (onError) {
-                onError("Error while trying to load image: " + input, exception);
+                const inputText = url || input.toString();
+                onError(`Error while trying to load image: ${((inputText.indexOf('http') === 0 || inputText.length < 64) ? inputText : inputText.slice(0, 64) + "...")}`, exception);
             }
         });
 

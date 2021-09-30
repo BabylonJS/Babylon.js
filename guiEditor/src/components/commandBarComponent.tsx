@@ -11,7 +11,7 @@ const handIcon: string = require("../../public/imgs/handIcon.svg");
 const zoomIcon: string = require("../../public/imgs/zoomIcon.svg");
 const guidesIcon: string = require("../../public/imgs/guidesIcon.svg");
 const logoIcon: string = require("../../public/imgs/babylonLogo.svg");
-
+const canvasFitIcon: string = require("../../public/imgs/canvasFitIcon.svg");
 
 require("../scss/commandBar.scss");
 
@@ -22,9 +22,9 @@ interface ICommandBarComponentProps {
 }
 
 export class CommandBarComponent extends React.Component<ICommandBarComponentProps> {
-    private _panning: boolean;
-    private _zooming: boolean;
-    private _selecting: boolean;
+    private _panning: boolean = false;
+    private _zooming: boolean = false;
+    private _selecting: boolean = true;
     private _outlines: boolean;
     public constructor(props: ICommandBarComponentProps) {
         super(props);
@@ -100,6 +100,8 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                         onClick={() => { if (!this._panning) this.props.globalState.onPanObservable.notifyObservers(); }} />
                     <CommandButtonComponent tooltip="Zoom" shortcut="E" icon={zoomIcon} isActive={this._zooming}
                         onClick={() => { if (!this._zooming) this.props.globalState.onZoomObservable.notifyObservers(); }} />
+                    <CommandButtonComponent tooltip="Fit to Window" shortcut="Alt+F" icon={canvasFitIcon} isActive={false}
+                        onClick={() => { this.props.globalState.onFitToWindowObservable.notifyObservers(); }} />
                     <CommandButtonComponent tooltip="Toggle Guides" shortcut="R" icon={guidesIcon} isActive={this._outlines}
                         onClick={() => { this.props.globalState.onOutlinesObservable.notifyObservers(); }} />
                 </div>

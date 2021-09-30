@@ -412,8 +412,8 @@ module.exports = g;
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* WEBPACK VAR INJECTION */(function(global) {/* harmony import */ var _sky__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../sky */ "./sky/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SkyMaterial", function() { return _sky__WEBPACK_IMPORTED_MODULE_0__["SkyMaterial"]; });
+/* WEBPACK VAR INJECTION */(function(global) {/* harmony import */ var _sky_index__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../sky/index */ "./sky/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SkyMaterial", function() { return _sky_index__WEBPACK_IMPORTED_MODULE_0__["SkyMaterial"]; });
 
 
 /**
@@ -422,8 +422,8 @@ __webpack_require__.r(__webpack_exports__);
  */
 var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
 if (typeof globalObject !== "undefined") {
-    for (var key in _sky__WEBPACK_IMPORTED_MODULE_0__) {
-        globalObject.BABYLON[key] = _sky__WEBPACK_IMPORTED_MODULE_0__[key];
+    for (var key in _sky_index__WEBPACK_IMPORTED_MODULE_0__) {
+        globalObject.BABYLON[key] = _sky_index__WEBPACK_IMPORTED_MODULE_0__[key];
     }
 }
 

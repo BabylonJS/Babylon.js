@@ -87,7 +87,7 @@ interface IPropertyTabComponentState {
 export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
     private _onBuiltObserver: Nullable<Observer<void>>;
     private _timerIntervalId: number;
-    private _lockObject = new LockObject();
+    private _lockObject : LockObject;
     private _sizeOption: number = 2;
     private _sizeOptions = [
         { label: "Web (1920)", value: 0 },
@@ -100,9 +100,10 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         new Vector2(1200, 1200)];
     constructor(props: IPropertyTabComponentProps) {
         super(props);
-
+       
         this.state = { currentNode: null, textureSize: new Vector2(1200, 1200) };
-
+        this._lockObject = new LockObject();
+        this.props.globalState.lockObject = this._lockObject;
         this.props.globalState.onSaveObservable.add(() => {
             this.save(this.saveLocally);
         });

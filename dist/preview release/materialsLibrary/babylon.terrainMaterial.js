@@ -412,8 +412,8 @@ module.exports = g;
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* WEBPACK VAR INJECTION */(function(global) {/* harmony import */ var _terrain__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../terrain */ "./terrain/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TerrainMaterial", function() { return _terrain__WEBPACK_IMPORTED_MODULE_0__["TerrainMaterial"]; });
+/* WEBPACK VAR INJECTION */(function(global) {/* harmony import */ var _terrain_index__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../terrain/index */ "./terrain/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TerrainMaterial", function() { return _terrain_index__WEBPACK_IMPORTED_MODULE_0__["TerrainMaterial"]; });
 
 
 /**
@@ -422,8 +422,8 @@ __webpack_require__.r(__webpack_exports__);
  */
 var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
 if (typeof globalObject !== "undefined") {
-    for (var key in _terrain__WEBPACK_IMPORTED_MODULE_0__) {
-        globalObject.BABYLON[key] = _terrain__WEBPACK_IMPORTED_MODULE_0__[key];
+    for (var key in _terrain_index__WEBPACK_IMPORTED_MODULE_0__) {
+        globalObject.BABYLON[key] = _terrain_index__WEBPACK_IMPORTED_MODULE_0__[key];
     }
 }
 

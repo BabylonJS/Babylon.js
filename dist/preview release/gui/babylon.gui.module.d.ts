@@ -679,6 +679,12 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
          */
         parseFromSnippetAsync(snippetId: string): Promise<void>;
         /**
+        * Recreate the content of the ADT from a url json
+        * @param url defines the url to load
+        * @returns a promise that will resolve on success
+        */
+        parseFromURLAsync(url: string): Promise<void>;
+        /**
          * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh)
          * @param mesh defines the mesh which will receive the texture
          * @param width defines the texture width (1024 by default)
@@ -5866,22 +5872,896 @@ declare module "babylonjs-gui/3D/controls/scatterPanel" {
         protected _finalProcessing(): void;
     }
 }
+declare module "babylonjs-gui/3D/materials/mrdl/shaders/mrdlSliderBar.fragment" {
+    /** @hidden */
+    export var mrdlSliderBarPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module "babylonjs-gui/3D/materials/mrdl/shaders/mrdlSliderBar.vertex" {
+    /** @hidden */
+    export var mrdlSliderBarVertexShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module "babylonjs-gui/3D/materials/mrdl/mrdlSliderBarMaterial" {
+    import { Nullable } from "babylonjs/types";
+    import { Matrix, Vector2, Vector3, Vector4 } from "babylonjs/Maths/math.vector";
+    import { IAnimatable } from "babylonjs/Animations/animatable.interface";
+    import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+    import { Texture } from "babylonjs/Materials/Textures/texture";
+    import { PushMaterial } from "babylonjs/Materials/pushMaterial";
+    import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+    import { SubMesh } from "babylonjs/Meshes/subMesh";
+    import { Mesh } from "babylonjs/Meshes/mesh";
+    import { Scene } from "babylonjs/scene";
+    import { Color4 } from "babylonjs/Maths/math.color";
+    import "babylonjs-gui/3D/materials/mrdl/shaders/mrdlSliderBar.fragment";
+    import "babylonjs-gui/3D/materials/mrdl/shaders/mrdlSliderBar.vertex";
+    /**
+     * Class used to render Slider Bar material with MRDL
+     */
+    export class MRDLSliderBarMaterial extends PushMaterial {
+        /**
+         * URL pointing to the texture used to define the coloring for the Iridescent Map effect.
+         */
+        static BLUE_GRADIENT_TEXTURE_URL: string;
+        private _blueGradientTexture;
+        /**
+         * Gets or sets the corner Radius on the slider bar.
+         */
+        radius: number;
+        /**
+         * Gets or sets the Bevel Front on the slider bar.
+         */
+        bevelFront: number;
+        /**
+         * Gets or sets the Bevel Front Stretch on the slider bar.
+         */
+        bevelFrontStretch: number;
+        /**
+         * Gets or sets the Bevel Back on the slider bar.
+         */
+        bevelBack: number;
+        /**
+         * Gets or sets the Bevel Back Stretch on the slider bar.
+         */
+        bevelBackStretch: number;
+        /**
+         * Gets or sets the top left Radii Multiplier.
+         */
+        radiusTopLeft: number;
+        /**
+         * Gets or sets the top left Radii Multiplier.
+         */
+        radiusTopRight: number;
+        /**
+        * Gets or sets the top left Radii Multiplier.
+        */
+        radiusBottomLeft: number;
+        /**
+         * Gets or sets the top left Radii Multiplier.
+         */
+        radiusBottomRight: number;
+        /**
+         * Gets or sets whether Bulge is enabled.
+         * Default is false.
+         */
+        bulgeEnabled: boolean;
+        /**
+         * Gets or sets the Bulge Height.
+         */
+        bulgeHeight: number;
+        /**
+         * Gets or sets the Bulge Radius.
+         */
+        bulgeRadius: number;
+        /**
+         * Gets or sets the Sun Intensity.
+         */
+        sunIntensity: number;
+        /**
+         * Gets or sets the Sun Theta.
+         */
+        sunTheta: number;
+        /**
+         * Gets or sets the Sun Phi.
+         */
+        sunPhi: number;
+        /**
+         * Gets or sets the Indirect Diffuse.
+         */
+        indirectDiffuse: number;
+        /**
+         * Gets or sets the base albedo.
+         */
+        albedo: Color4;
+        /**
+         * Gets or sets the Specular value.
+         */
+        specular: number;
+        /**
+         * Gets or sets the Shininess value.
+         */
+        shininess: number;
+        /**
+         * Gets or sets the Sharpness value.
+         */
+        sharpness: number;
+        /**
+         * Gets or sets the Subsurface value.
+         */
+        subsurface: number;
+        /**
+         * Gets or sets the left gradient color.
+         */
+        leftGradientColor: Color4;
+        /**
+         * Gets or sets the right gradient color.
+         */
+        rightGradientColor: Color4;
+        /**
+         * Gets or sets the reflection value.
+         */
+        reflection: number;
+        /**
+         * Gets or sets the front reflect value.
+         */
+        frontReflect: number;
+        /**
+         * Gets or sets the edge reflect value.
+         */
+        edgeReflect: number;
+        /**
+         * Gets or sets the power value.
+         */
+        power: number;
+        /**
+         * Gets or sets the sky color.
+         */
+        skyColor: Color4;
+        /**
+         * Gets or sets the horizon color.
+         */
+        horizonColor: Color4;
+        /**
+         * Gets or sets the ground color.
+         */
+        groundColor: Color4;
+        /**
+         * Gets or sets the horizon power value.
+         */
+        horizonPower: number;
+        /**
+         * Gets or sets the finger occlusion width value.
+         */
+        width: number;
+        /**
+         * Gets or sets the finger occlusion fuzz value.
+         */
+        fuzz: number;
+        /**
+         * Gets or sets the minimum finger occlusion fuzz value.
+         */
+        minFuzz: number;
+        /**
+         * Gets or sets the finger occlusion clip fade value.
+         */
+        clipFade: number;
+        /**
+         * Gets or sets the hue shift value.
+         */
+        hueShift: number;
+        /**
+         * Gets or sets the saturation shift value.
+         */
+        saturationShift: number;
+        /**
+         * Gets or sets the value shift.
+         */
+        valueShift: number;
+        /**
+         * Gets or sets the position of the hover glow effect.
+         */
+        blobPosition: Vector3;
+        /**
+         * Gets or sets the intensity of the hover glow effect.
+         */
+        blobIntensity: number;
+        /**
+         * Gets or sets the near size of the hover glow effect.
+         */
+        blobNearSize: number;
+        /**
+        * Gets or sets the far size of the hover glow effect.
+        */
+        blobFarSize: number;
+        /**
+         * Gets or sets the distance considered "near" to the mesh, which controls the size of the hover glow effect (see blobNearSize).
+         */
+        blobNearDistance: number;
+        /**
+         * Gets or sets the distance considered "far" from the mesh, which controls the size of the hover glow effect (see blobFarSize).
+         */
+        blobFarDistance: number;
+        /**
+         * Gets or sets the length of the hover glow effect fade.
+         */
+        blobFadeLength: number;
+        /**
+         * Gets or sets the progress of the hover glow effect selection animation corresponding to the left pointer (0.0 - 1.0).
+         */
+        blobPulse: number;
+        /**
+         * Gets or sets the opacity of the hover glow effect corresponding to the left pointer (0.0 - 1.0). Default is 0.
+         */
+        blobFade: number;
+        /**
+         * Gets or sets the position of the hover glow effect.
+         */
+        blobPosition2: Vector3;
+        /**
+         * Gets or sets the size of the hover glow effect when the right pointer is considered "near" to the mesh (see blobNearDistance).
+         */
+        blobNearSize2: number;
+        /**
+         * Gets or sets the progress of the hover glow effect selection animation corresponding to the right pointer (0.0 - 1.0).
+         */
+        blobPulse2: number;
+        /**
+         * Gets or sets the opacity of the hover glow effect corresponding to the right pointer (0.0 - 1.0). Default is 1.
+         */
+        blobFade2: number;
+        /**
+         * Gets or sets the texture of the hover glow effect.
+         */
+        blobTexture: Texture;
+        /**
+         * Gets or sets the finger position for left index.
+         */
+        leftIndexPosition: Vector3;
+        /**
+         * Gets or sets the finger position for right index.
+         */
+        rightIndexPosition: Vector3;
+        /**
+         * Gets or sets the finger position for left index middle position.
+         */
+        leftIndexMiddlePosition: Vector3;
+        /**
+         * Gets or sets the finger position for right index middle position.
+         */
+        rightIndexMiddlePosition: Vector3;
+        /**
+         * Gets or sets the Decal Scle for XY.
+         */
+        decalScaleXY: Vector2;
+        /**
+         * Gets or sets decalFrontOnly
+         * Default is true
+         */
+        decalFrontOnly: boolean;
+        /**
+         * Gets or sets the Rim Light intensity.
+         */
+        rimIntensity: number;
+        /**
+         * Gets or sets the Rim Light hue shift value.
+         */
+        rimHueShift: number;
+        /**
+         * Gets or sets the Rim Light saturation shift value.
+         */
+        rimSaturationShift: number;
+        /**
+         * Gets or sets the Rim Light value shift.
+         */
+        rimValueShift: number;
+        /**
+         * Gets or sets the intensity of the iridescence effect.
+         */
+        iridescenceIntensity: number;
+        /**
+         * @hidden
+         */
+        useGlobalLeftIndex: number;
+        /**
+         * @hidden
+         */
+        useGlobalRightIndex: number;
+        /**
+         * @hidden
+         */
+        globalLeftIndexTipProximity: number;
+        /**
+         * @hidden
+         */
+        globalRightIndexTipProximity: number;
+        /**
+         * @hidden
+         */
+        globalLeftIndexTipPosition: Vector4;
+        /**
+         * @hidden
+         */
+        globaRightIndexTipPosition: Vector4;
+        /**
+         * @hidden
+         */
+        globalLeftThumbTipPosition: Vector4;
+        /**
+         * @hidden
+         */
+        globalRightThumbTipPosition: Vector4;
+        /**
+         * @hidden
+         */
+        globalLeftIndexMiddlePosition: Vector4;
+        /**
+         * @hidden
+         */
+        globalRightIndexMiddlePosition: Vector4;
+        constructor(name: string, scene: Scene);
+        needAlphaBlending(): boolean;
+        needAlphaTesting(): boolean;
+        getAlphaTestTexture(): Nullable<BaseTexture>;
+        isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
+        bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
+        /**
+         * Get the list of animatables in the material.
+         * @returns the list of animatables object used in the material
+         */
+        getAnimatables(): IAnimatable[];
+        dispose(forceDisposeEffect?: boolean): void;
+        clone(name: string): MRDLSliderBarMaterial;
+        serialize(): any;
+        getClassName(): string;
+        static Parse(source: any, scene: Scene, rootUrl: string): MRDLSliderBarMaterial;
+    }
+}
+declare module "babylonjs-gui/3D/materials/mrdl/shaders/mrdlSliderThumb.fragment" {
+    /** @hidden */
+    export var mrdlSliderThumbPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module "babylonjs-gui/3D/materials/mrdl/shaders/mrdlSliderThumb.vertex" {
+    /** @hidden */
+    export var mrdlSliderThumbVertexShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module "babylonjs-gui/3D/materials/mrdl/mrdlSliderThumbMaterial" {
+    import { Nullable } from "babylonjs/types";
+    import { Matrix, Vector2, Vector3, Vector4 } from "babylonjs/Maths/math.vector";
+    import { IAnimatable } from "babylonjs/Animations/animatable.interface";
+    import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+    import { Texture } from "babylonjs/Materials/Textures/texture";
+    import { PushMaterial } from "babylonjs/Materials/pushMaterial";
+    import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+    import { SubMesh } from "babylonjs/Meshes/subMesh";
+    import { Mesh } from "babylonjs/Meshes/mesh";
+    import { Scene } from "babylonjs/scene";
+    import { Color4 } from "babylonjs/Maths/math.color";
+    import "babylonjs-gui/3D/materials/mrdl/shaders/mrdlSliderThumb.fragment";
+    import "babylonjs-gui/3D/materials/mrdl/shaders/mrdlSliderThumb.vertex";
+    /**
+     * Class used to render Slider Thumb material with MRDL
+     */
+    export class MRDLSliderThumbMaterial extends PushMaterial {
+        /**
+         * URL pointing to the texture used to define the coloring for the Iridescent Map effect.
+         */
+        static BLUE_GRADIENT_TEXTURE_URL: string;
+        private _blueGradientTexture;
+        /**
+         * Gets or sets the corner Radius on the slider thumb.
+         */
+        radius: number;
+        /**
+         * Gets or sets the Bevel Front on the slider thumb.
+         */
+        bevelFront: number;
+        /**
+         * Gets or sets the Bevel Front Stretch on the slider thumb.
+         */
+        bevelFrontStretch: number;
+        /**
+         * Gets or sets the Bevel Back on the slider thumb.
+         */
+        bevelBack: number;
+        /**
+         * Gets or sets the Bevel Back Stretch on the slider thumb.
+         */
+        bevelBackStretch: number;
+        /**
+         * Gets or sets the top left Radii Multiplier.
+         */
+        radiusTopLeft: number;
+        /**
+         * Gets or sets the top left Radii Multiplier.
+         */
+        radiusTopRight: number;
+        /**
+        * Gets or sets the top left Radii Multiplier.
+        */
+        radiusBottomLeft: number;
+        /**
+         * Gets or sets the top left Radii Multiplier.
+         */
+        radiusBottomRight: number;
+        /**
+         * Gets or sets whether Bulge is enabled.
+         * Default is false.
+         */
+        bulgeEnabled: boolean;
+        /**
+         * Gets or sets the Bulge Height.
+         */
+        bulgeHeight: number;
+        /**
+         * Gets or sets the Bulge Radius.
+         */
+        bulgeRadius: number;
+        /**
+         * Gets or sets the Sun Intensity.
+         */
+        sunIntensity: number;
+        /**
+         * Gets or sets the Sun Theta.
+         */
+        sunTheta: number;
+        /**
+         * Gets or sets the Sun Phi.
+         */
+        sunPhi: number;
+        /**
+         * Gets or sets the Indirect Diffuse.
+         */
+        indirectDiffuse: number;
+        /**
+         * Gets or sets the base albedo.
+         */
+        albedo: Color4;
+        /**
+         * Gets or sets the Specular value.
+         */
+        specular: number;
+        /**
+         * Gets or sets the Shininess value.
+         */
+        shininess: number;
+        /**
+         * Gets or sets the Sharpness value.
+         */
+        sharpness: number;
+        /**
+         * Gets or sets the Subsurface value.
+         */
+        subsurface: number;
+        /**
+         * Gets or sets the left gradient color.
+         */
+        leftGradientColor: Color4;
+        /**
+         * Gets or sets the right gradient color.
+         */
+        rightGradientColor: Color4;
+        /**
+         * Gets or sets the reflection value.
+         */
+        reflection: number;
+        /**
+         * Gets or sets the front reflect value.
+         */
+        frontReflect: number;
+        /**
+         * Gets or sets the edge reflect value.
+         */
+        edgeReflect: number;
+        /**
+         * Gets or sets the power value.
+         */
+        power: number;
+        /**
+         * Gets or sets the sky color.
+         */
+        skyColor: Color4;
+        /**
+         * Gets or sets the horizon color.
+         */
+        horizonColor: Color4;
+        /**
+         * Gets or sets the ground color.
+         */
+        groundColor: Color4;
+        /**
+         * Gets or sets the horizon power value.
+         */
+        horizonPower: number;
+        /**
+         * Gets or sets the finger occlusion width value.
+         */
+        width: number;
+        /**
+         * Gets or sets the finger occlusion fuzz value.
+         */
+        fuzz: number;
+        /**
+         * Gets or sets the minimum finger occlusion fuzz value.
+         */
+        minFuzz: number;
+        /**
+         * Gets or sets the finger occlusion clip fade value.
+         */
+        clipFade: number;
+        /**
+         * Gets or sets the hue shift value.
+         */
+        hueShift: number;
+        /**
+         * Gets or sets the saturation shift value.
+         */
+        saturationShift: number;
+        /**
+         * Gets or sets the value shift.
+         */
+        valueShift: number;
+        /**
+         * Gets or sets the position of the hover glow effect.
+         */
+        blobPosition: Vector3;
+        /**
+         * Gets or sets the intensity of the hover glow effect.
+         */
+        blobIntensity: number;
+        /**
+         * Gets or sets the near size of the hover glow effect.
+         */
+        blobNearSize: number;
+        /**
+        * Gets or sets the far size of the hover glow effect.
+        */
+        blobFarSize: number;
+        /**
+         * Gets or sets the distance considered "near" to the mesh, which controls the size of the hover glow effect (see blobNearSize).
+         */
+        blobNearDistance: number;
+        /**
+         * Gets or sets the distance considered "far" from the mesh, which controls the size of the hover glow effect (see blobFarSize).
+         */
+        blobFarDistance: number;
+        /**
+         * Gets or sets the length of the hover glow effect fade.
+         */
+        blobFadeLength: number;
+        /**
+         * Gets or sets the progress of the hover glow effect selection animation corresponding to the left pointer (0.0 - 1.0).
+         */
+        blobPulse: number;
+        /**
+         * Gets or sets the opacity of the hover glow effect corresponding to the left pointer (0.0 - 1.0). Default is 0.
+         */
+        blobFade: number;
+        /**
+         * Gets or sets the position of the hover glow effect.
+         */
+        blobPosition2: Vector3;
+        /**
+         * Gets or sets the size of the hover glow effect when the right pointer is considered "near" to the mesh (see blobNearDistance).
+         */
+        blobNearSize2: number;
+        /**
+         * Gets or sets the progress of the hover glow effect selection animation corresponding to the right pointer (0.0 - 1.0).
+         */
+        blobPulse2: number;
+        /**
+         * Gets or sets the opacity of the hover glow effect corresponding to the right pointer (0.0 - 1.0). Default is 1.
+         */
+        blobFade2: number;
+        /**
+         * Gets or sets the texture of the hover glow effect.
+         */
+        blobTexture: Texture;
+        /**
+         * Gets or sets the finger position for left index.
+         */
+        leftIndexPosition: Vector3;
+        /**
+         * Gets or sets the finger position for right index.
+         */
+        rightIndexPosition: Vector3;
+        /**
+         * Gets or sets the finger position for left index middle position.
+         */
+        leftIndexMiddlePosition: Vector3;
+        /**
+         * Gets or sets the finger position for right index middle position.
+         */
+        rightIndexMiddlePosition: Vector3;
+        /**
+         * Gets or sets the Decal Scle for XY.
+         */
+        decalScaleXY: Vector2;
+        /**
+         * Gets or sets decalFrontOnly
+         * Default is true
+         */
+        decalFrontOnly: boolean;
+        /**
+         * Gets or sets the Rim Light intensity.
+         */
+        rimIntensity: number;
+        /**
+         * Gets or sets the Rim Light hue shift value.
+         */
+        rimHueShift: number;
+        /**
+         * Gets or sets the Rim Light saturation shift value.
+         */
+        rimSaturationShift: number;
+        /**
+         * Gets or sets the Rim Light value shift.
+         */
+        rimValueShift: number;
+        /**
+         * Gets or sets the intensity of the iridescence effect.
+         */
+        iridescenceIntensity: number;
+        /**
+         * @hidden
+         */
+        useGlobalLeftIndex: number;
+        /**
+         * @hidden
+         */
+        useGlobalRightIndex: number;
+        /**
+         * @hidden
+         */
+        globalLeftIndexTipProximity: number;
+        /**
+         * @hidden
+         */
+        globalRightIndexTipProximity: number;
+        /**
+         * @hidden
+         */
+        globalLeftIndexTipPosition: Vector4;
+        /**
+         * @hidden
+         */
+        globaRightIndexTipPosition: Vector4;
+        /**
+         * @hidden
+         */
+        globalLeftThumbTipPosition: Vector4;
+        /**
+         * @hidden
+         */
+        globalRightThumbTipPosition: Vector4;
+        /**
+         * @hidden
+         */
+        globalLeftIndexMiddlePosition: Vector4;
+        /**
+         * @hidden
+         */
+        globalRightIndexMiddlePosition: Vector4;
+        constructor(name: string, scene: Scene);
+        needAlphaBlending(): boolean;
+        needAlphaTesting(): boolean;
+        getAlphaTestTexture(): Nullable<BaseTexture>;
+        isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
+        bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
+        /**
+         * Get the list of animatables in the material.
+         * @returns the list of animatables object used in the material
+         */
+        getAnimatables(): IAnimatable[];
+        dispose(forceDisposeEffect?: boolean): void;
+        clone(name: string): MRDLSliderThumbMaterial;
+        serialize(): any;
+        getClassName(): string;
+        static Parse(source: any, scene: Scene, rootUrl: string): MRDLSliderThumbMaterial;
+    }
+}
+declare module "babylonjs-gui/3D/materials/mrdl/shaders/mrdlBackplate.fragment" {
+    /** @hidden */
+    export var mrdlBackplatePixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module "babylonjs-gui/3D/materials/mrdl/shaders/mrdlBackplate.vertex" {
+    /** @hidden */
+    export var mrdlBackplateVertexShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module "babylonjs-gui/3D/materials/mrdl/mrdlBackplateMaterial" {
+    import { Nullable } from "babylonjs/types";
+    import { Matrix, Vector4 } from "babylonjs/Maths/math.vector";
+    import { IAnimatable } from "babylonjs/Animations/animatable.interface";
+    import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+    import { PushMaterial } from "babylonjs/Materials/pushMaterial";
+    import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+    import { SubMesh } from "babylonjs/Meshes/subMesh";
+    import { Mesh } from "babylonjs/Meshes/mesh";
+    import { Scene } from "babylonjs/scene";
+    import { Color4 } from "babylonjs/Maths/math.color";
+    import "babylonjs-gui/3D/materials/mrdl/shaders/mrdlBackplate.fragment";
+    import "babylonjs-gui/3D/materials/mrdl/shaders/mrdlBackplate.vertex";
+    /**
+     * Class used to render backplate material with MRDL
+     */
+    export class MRDLBackplateMaterial extends PushMaterial {
+        /**
+         * URL pointing to the texture used to define the coloring for the Iridescent Map effect.
+         */
+        static IRIDESCENT_MAP_TEXTURE_URL: string;
+        private _iridescentMapTexture;
+        /**
+        * Gets or sets the corner radius on the backplate. If this value is changed, update the lineWidth to match.
+        */
+        radius: number;
+        /**
+         * Gets or sets the line width of the backplate.
+         */
+        lineWidth: number;
+        /**
+         * Gets or sets whether to use absolute sizes when calculating effects on the backplate.
+         * Since desktop and VR/AR have different relative sizes, it's usually best to keep this false.
+         */
+        absoluteSizes: boolean;
+        /** @hidden */
+        _filterWidth: number;
+        /**
+         * Gets or sets the base color of the backplate.
+         */
+        baseColor: Color4;
+        /**
+         * Gets or sets the line color of the backplate.
+         */
+        lineColor: Color4;
+        /**
+         * Gets or sets the top left Radii Multiplier.
+         */
+        radiusTopLeft: number;
+        /**
+         * Gets or sets the top left Radii Multiplier.
+         */
+        radiusTopRight: number;
+        /**
+        * Gets or sets the top left Radii Multiplier.
+        */
+        radiusBottomLeft: number;
+        /**
+         * Gets or sets the top left Radii Multiplier.
+         */
+        radiusBottomRight: number;
+        /** @hidden */
+        _rate: number;
+        /**
+         * Gets or sets the color of the highlights on the backplate line.
+         */
+        highlightColor: Color4;
+        /**
+         * Gets or sets the width of the highlights on the backplate line.
+         */
+        highlightWidth: number;
+        /** @hidden */
+        _highlightTransform: Vector4;
+        /** @hidden */
+        _highlight: number;
+        /**
+         * Gets or sets the intensity of the iridescence effect.
+         */
+        iridescenceIntensity: number;
+        /**
+         * Gets or sets the intensity of the iridescence effect on the backplate edges.
+         */
+        iridescenceEdgeIntensity: number;
+        /**
+         * Gets or sets the Tint of the iridescence effect on the backplate.
+         */
+        iridescenceTint: Color4;
+        /** @hidden */
+        _angle: number;
+        /**
+         * Gets or sets the opacity of the backplate (0.0 - 1.0).
+         */
+        fadeOut: number;
+        /** @hidden */
+        _reflected: boolean;
+        /** @hidden */
+        _frequency: number;
+        /** @hidden */
+        _verticalOffset: number;
+        /**
+         * Gets or sets the gradient color effect on the backplate.
+         */
+        gradientColor: Color4;
+        /**
+         * Gets or sets the top left gradient color effect on the backplate.
+         */
+        topLeftGradientColor: Color4;
+        /**
+         * Gets or sets the top right gradient color effect on the backplate.
+         */
+        topRightGradientColor: Color4;
+        /**
+         * Gets or sets the bottom left gradient color effect on the backplate.
+         */
+        bottomLeftGradientColor: Color4;
+        /**
+         * Gets or sets the bottom right gradient color effect on the backplate.
+         */
+        bottomRightGradientColor: Color4;
+        /**
+         * Gets or sets the edge width of the backplate.
+         */
+        edgeWidth: number;
+        /**
+         * Gets or sets the edge width of the backplate.
+         */
+        edgePower: number;
+        /**
+         * Gets or sets the edge width of the backplate.
+         */
+        edgeLineGradientBlend: number;
+        constructor(name: string, scene: Scene);
+        needAlphaBlending(): boolean;
+        needAlphaTesting(): boolean;
+        getAlphaTestTexture(): Nullable<BaseTexture>;
+        isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
+        bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
+        /**
+         * Get the list of animatables in the material.
+         * @returns the list of animatables object used in the material
+         */
+        getAnimatables(): IAnimatable[];
+        dispose(forceDisposeEffect?: boolean): void;
+        clone(name: string): MRDLBackplateMaterial;
+        serialize(): any;
+        getClassName(): string;
+        static Parse(source: any, scene: Scene, rootUrl: string): MRDLBackplateMaterial;
+    }
+}
 declare module "babylonjs-gui/3D/controls/slider3D" {
     import { Nullable } from "babylonjs/types";
     import { Observable } from "babylonjs/Misc/observable";
     import { TransformNode } from "babylonjs/Meshes/transformNode";
     import { Scene } from "babylonjs/scene";
     import { Control3D } from "babylonjs-gui/3D/controls/control3D";
-    import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+    import { MRDLSliderBarMaterial } from "babylonjs-gui/3D/materials/mrdl/mrdlSliderBarMaterial";
+    import { MRDLSliderThumbMaterial } from "babylonjs-gui/3D/materials/mrdl/mrdlSliderThumbMaterial";
+    import { MRDLBackplateMaterial } from "babylonjs-gui/3D/materials/mrdl/mrdlBackplateMaterial";
     /**
      * Class used to create a slider in 3D
      */
     export class Slider3D extends Control3D {
+        /**
+         * Base Url for the models.
+         */
+        static MODEL_BASE_URL: string;
+        /**
+         * File name for the 8x4 model.
+         */
+        static MODEL_FILENAME: string;
+        private _sliderBackplate;
+        private _sliderBackplateMaterial;
         private _sliderBarMaterial;
         private _sliderThumbMaterial;
         private _sliderThumb;
         private _sliderBar;
+        private _sliderBackplateVisible;
         private _minimum;
         private _maximum;
         private _value;
@@ -5891,8 +6771,9 @@ declare module "babylonjs-gui/3D/controls/slider3D" {
         /**
          * Creates a new slider
          * @param name defines the control name
+         * @param sliderBackplateVisible defines if the control has a backplate, default is false
          */
-        constructor(name?: string);
+        constructor(name?: string, sliderBackplateVisible?: boolean);
         /**
          * Gets the mesh used to render this control
          */
@@ -5914,11 +6795,15 @@ declare module "babylonjs-gui/3D/controls/slider3D" {
         /**
          * Gets the slider bar material used by this control
          */
-        get sliderBarMaterial(): StandardMaterial;
+        get sliderBarMaterial(): MRDLSliderBarMaterial;
         /**
          * Gets the slider thumb material used by this control
          */
-        get sliderThumbMaterial(): StandardMaterial;
+        get sliderThumbMaterial(): MRDLSliderThumbMaterial;
+        /**
+         * Gets the slider backplate material used by this control
+         */
+        get sliderBackplateMaterial(): MRDLBackplateMaterial;
         protected _createNode(scene: Scene): TransformNode;
         protected _affectMaterial(mesh: AbstractMesh): void;
         private _createBehavior;
@@ -6120,11 +7005,17 @@ declare module "babylonjs-gui/3D/materials/fluentBackplate/index" {
 declare module "babylonjs-gui/3D/materials/handle/index" {
     export * from "babylonjs-gui/3D/materials/handle/handleMaterial";
 }
+declare module "babylonjs-gui/3D/materials/mrdl/index" {
+    export * from "babylonjs-gui/3D/materials/mrdl/mrdlSliderBarMaterial";
+    export * from "babylonjs-gui/3D/materials/mrdl/mrdlSliderThumbMaterial";
+    export * from "babylonjs-gui/3D/materials/mrdl/mrdlBackplateMaterial";
+}
 declare module "babylonjs-gui/3D/materials/index" {
     export * from "babylonjs-gui/3D/materials/fluent/index";
     export * from "babylonjs-gui/3D/materials/fluentButton/index";
     export * from "babylonjs-gui/3D/materials/fluentBackplate/index";
     export * from "babylonjs-gui/3D/materials/handle/index";
+    export * from "babylonjs-gui/3D/materials/mrdl/index";
 }
 declare module "babylonjs-gui/3D/gizmos/index" {
     export * from "babylonjs-gui/3D/gizmos/slateGizmo";
@@ -6803,6 +7694,12 @@ declare module BABYLON.GUI {
          * @returns a promise that will resolve on success
          */
         parseFromSnippetAsync(snippetId: string): Promise<void>;
+        /**
+        * Recreate the content of the ADT from a url json
+        * @param url defines the url to load
+        * @returns a promise that will resolve on success
+        */
+        parseFromURLAsync(url: string): Promise<void>;
         /**
          * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh)
          * @param mesh defines the mesh which will receive the texture
@@ -11607,14 +12504,848 @@ declare module BABYLON.GUI {
     }
 }
 declare module BABYLON.GUI {
+    /** @hidden */
+    export var mrdlSliderBarPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON.GUI {
+    /** @hidden */
+    export var mrdlSliderBarVertexShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to render Slider Bar material with MRDL
+     */
+    export class MRDLSliderBarMaterial extends BABYLON.PushMaterial {
+        /**
+         * URL pointing to the texture used to define the coloring for the Iridescent Map effect.
+         */
+        static BLUE_GRADIENT_TEXTURE_URL: string;
+        private _blueGradientTexture;
+        /**
+         * Gets or sets the corner Radius on the slider bar.
+         */
+        radius: number;
+        /**
+         * Gets or sets the Bevel Front on the slider bar.
+         */
+        bevelFront: number;
+        /**
+         * Gets or sets the Bevel Front Stretch on the slider bar.
+         */
+        bevelFrontStretch: number;
+        /**
+         * Gets or sets the Bevel Back on the slider bar.
+         */
+        bevelBack: number;
+        /**
+         * Gets or sets the Bevel Back Stretch on the slider bar.
+         */
+        bevelBackStretch: number;
+        /**
+         * Gets or sets the top left Radii Multiplier.
+         */
+        radiusTopLeft: number;
+        /**
+         * Gets or sets the top left Radii Multiplier.
+         */
+        radiusTopRight: number;
+        /**
+        * Gets or sets the top left Radii Multiplier.
+        */
+        radiusBottomLeft: number;
+        /**
+         * Gets or sets the top left Radii Multiplier.
+         */
+        radiusBottomRight: number;
+        /**
+         * Gets or sets whether Bulge is enabled.
+         * Default is false.
+         */
+        bulgeEnabled: boolean;
+        /**
+         * Gets or sets the Bulge Height.
+         */
+        bulgeHeight: number;
+        /**
+         * Gets or sets the Bulge Radius.
+         */
+        bulgeRadius: number;
+        /**
+         * Gets or sets the Sun Intensity.
+         */
+        sunIntensity: number;
+        /**
+         * Gets or sets the Sun Theta.
+         */
+        sunTheta: number;
+        /**
+         * Gets or sets the Sun Phi.
+         */
+        sunPhi: number;
+        /**
+         * Gets or sets the Indirect Diffuse.
+         */
+        indirectDiffuse: number;
+        /**
+         * Gets or sets the base albedo.
+         */
+        albedo: BABYLON.Color4;
+        /**
+         * Gets or sets the Specular value.
+         */
+        specular: number;
+        /**
+         * Gets or sets the Shininess value.
+         */
+        shininess: number;
+        /**
+         * Gets or sets the Sharpness value.
+         */
+        sharpness: number;
+        /**
+         * Gets or sets the Subsurface value.
+         */
+        subsurface: number;
+        /**
+         * Gets or sets the left gradient color.
+         */
+        leftGradientColor: BABYLON.Color4;
+        /**
+         * Gets or sets the right gradient color.
+         */
+        rightGradientColor: BABYLON.Color4;
+        /**
+         * Gets or sets the reflection value.
+         */
+        reflection: number;
+        /**
+         * Gets or sets the front reflect value.
+         */
+        frontReflect: number;
+        /**
+         * Gets or sets the edge reflect value.
+         */
+        edgeReflect: number;
+        /**
+         * Gets or sets the power value.
+         */
+        power: number;
+        /**
+         * Gets or sets the sky color.
+         */
+        skyColor: BABYLON.Color4;
+        /**
+         * Gets or sets the horizon color.
+         */
+        horizonColor: BABYLON.Color4;
+        /**
+         * Gets or sets the ground color.
+         */
+        groundColor: BABYLON.Color4;
+        /**
+         * Gets or sets the horizon power value.
+         */
+        horizonPower: number;
+        /**
+         * Gets or sets the finger occlusion width value.
+         */
+        width: number;
+        /**
+         * Gets or sets the finger occlusion fuzz value.
+         */
+        fuzz: number;
+        /**
+         * Gets or sets the minimum finger occlusion fuzz value.
+         */
+        minFuzz: number;
+        /**
+         * Gets or sets the finger occlusion clip fade value.
+         */
+        clipFade: number;
+        /**
+         * Gets or sets the hue shift value.
+         */
+        hueShift: number;
+        /**
+         * Gets or sets the saturation shift value.
+         */
+        saturationShift: number;
+        /**
+         * Gets or sets the value shift.
+         */
+        valueShift: number;
+        /**
+         * Gets or sets the position of the hover glow effect.
+         */
+        blobPosition: BABYLON.Vector3;
+        /**
+         * Gets or sets the intensity of the hover glow effect.
+         */
+        blobIntensity: number;
+        /**
+         * Gets or sets the near size of the hover glow effect.
+         */
+        blobNearSize: number;
+        /**
+        * Gets or sets the far size of the hover glow effect.
+        */
+        blobFarSize: number;
+        /**
+         * Gets or sets the distance considered "near" to the mesh, which controls the size of the hover glow effect (see blobNearSize).
+         */
+        blobNearDistance: number;
+        /**
+         * Gets or sets the distance considered "far" from the mesh, which controls the size of the hover glow effect (see blobFarSize).
+         */
+        blobFarDistance: number;
+        /**
+         * Gets or sets the length of the hover glow effect fade.
+         */
+        blobFadeLength: number;
+        /**
+         * Gets or sets the progress of the hover glow effect selection animation corresponding to the left pointer (0.0 - 1.0).
+         */
+        blobPulse: number;
+        /**
+         * Gets or sets the opacity of the hover glow effect corresponding to the left pointer (0.0 - 1.0). Default is 0.
+         */
+        blobFade: number;
+        /**
+         * Gets or sets the position of the hover glow effect.
+         */
+        blobPosition2: BABYLON.Vector3;
+        /**
+         * Gets or sets the size of the hover glow effect when the right pointer is considered "near" to the mesh (see blobNearDistance).
+         */
+        blobNearSize2: number;
+        /**
+         * Gets or sets the progress of the hover glow effect selection animation corresponding to the right pointer (0.0 - 1.0).
+         */
+        blobPulse2: number;
+        /**
+         * Gets or sets the opacity of the hover glow effect corresponding to the right pointer (0.0 - 1.0). Default is 1.
+         */
+        blobFade2: number;
+        /**
+         * Gets or sets the texture of the hover glow effect.
+         */
+        blobTexture: BABYLON.Texture;
+        /**
+         * Gets or sets the finger position for left index.
+         */
+        leftIndexPosition: BABYLON.Vector3;
+        /**
+         * Gets or sets the finger position for right index.
+         */
+        rightIndexPosition: BABYLON.Vector3;
+        /**
+         * Gets or sets the finger position for left index middle position.
+         */
+        leftIndexMiddlePosition: BABYLON.Vector3;
+        /**
+         * Gets or sets the finger position for right index middle position.
+         */
+        rightIndexMiddlePosition: BABYLON.Vector3;
+        /**
+         * Gets or sets the Decal Scle for XY.
+         */
+        decalScaleXY: BABYLON.Vector2;
+        /**
+         * Gets or sets decalFrontOnly
+         * Default is true
+         */
+        decalFrontOnly: boolean;
+        /**
+         * Gets or sets the Rim Light intensity.
+         */
+        rimIntensity: number;
+        /**
+         * Gets or sets the Rim Light hue shift value.
+         */
+        rimHueShift: number;
+        /**
+         * Gets or sets the Rim Light saturation shift value.
+         */
+        rimSaturationShift: number;
+        /**
+         * Gets or sets the Rim Light value shift.
+         */
+        rimValueShift: number;
+        /**
+         * Gets or sets the intensity of the iridescence effect.
+         */
+        iridescenceIntensity: number;
+        /**
+         * @hidden
+         */
+        useGlobalLeftIndex: number;
+        /**
+         * @hidden
+         */
+        useGlobalRightIndex: number;
+        /**
+         * @hidden
+         */
+        globalLeftIndexTipProximity: number;
+        /**
+         * @hidden
+         */
+        globalRightIndexTipProximity: number;
+        /**
+         * @hidden
+         */
+        globalLeftIndexTipPosition: BABYLON.Vector4;
+        /**
+         * @hidden
+         */
+        globaRightIndexTipPosition: BABYLON.Vector4;
+        /**
+         * @hidden
+         */
+        globalLeftThumbTipPosition: BABYLON.Vector4;
+        /**
+         * @hidden
+         */
+        globalRightThumbTipPosition: BABYLON.Vector4;
+        /**
+         * @hidden
+         */
+        globalLeftIndexMiddlePosition: BABYLON.Vector4;
+        /**
+         * @hidden
+         */
+        globalRightIndexMiddlePosition: BABYLON.Vector4;
+        constructor(name: string, scene: BABYLON.Scene);
+        needAlphaBlending(): boolean;
+        needAlphaTesting(): boolean;
+        getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
+        isReadyForSubMesh(mesh: BABYLON.AbstractMesh, subMesh: BABYLON.SubMesh, useInstances?: boolean): boolean;
+        bindForSubMesh(world: BABYLON.Matrix, mesh: BABYLON.Mesh, subMesh: BABYLON.SubMesh): void;
+        /**
+         * Get the list of animatables in the material.
+         * @returns the list of animatables object used in the material
+         */
+        getAnimatables(): BABYLON.IAnimatable[];
+        dispose(forceDisposeEffect?: boolean): void;
+        clone(name: string): MRDLSliderBarMaterial;
+        serialize(): any;
+        getClassName(): string;
+        static Parse(source: any, scene: BABYLON.Scene, rootUrl: string): MRDLSliderBarMaterial;
+    }
+}
+declare module BABYLON.GUI {
+    /** @hidden */
+    export var mrdlSliderThumbPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON.GUI {
+    /** @hidden */
+    export var mrdlSliderThumbVertexShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to render Slider Thumb material with MRDL
+     */
+    export class MRDLSliderThumbMaterial extends BABYLON.PushMaterial {
+        /**
+         * URL pointing to the texture used to define the coloring for the Iridescent Map effect.
+         */
+        static BLUE_GRADIENT_TEXTURE_URL: string;
+        private _blueGradientTexture;
+        /**
+         * Gets or sets the corner Radius on the slider thumb.
+         */
+        radius: number;
+        /**
+         * Gets or sets the Bevel Front on the slider thumb.
+         */
+        bevelFront: number;
+        /**
+         * Gets or sets the Bevel Front Stretch on the slider thumb.
+         */
+        bevelFrontStretch: number;
+        /**
+         * Gets or sets the Bevel Back on the slider thumb.
+         */
+        bevelBack: number;
+        /**
+         * Gets or sets the Bevel Back Stretch on the slider thumb.
+         */
+        bevelBackStretch: number;
+        /**
+         * Gets or sets the top left Radii Multiplier.
+         */
+        radiusTopLeft: number;
+        /**
+         * Gets or sets the top left Radii Multiplier.
+         */
+        radiusTopRight: number;
+        /**
+        * Gets or sets the top left Radii Multiplier.
+        */
+        radiusBottomLeft: number;
+        /**
+         * Gets or sets the top left Radii Multiplier.
+         */
+        radiusBottomRight: number;
+        /**
+         * Gets or sets whether Bulge is enabled.
+         * Default is false.
+         */
+        bulgeEnabled: boolean;
+        /**
+         * Gets or sets the Bulge Height.
+         */
+        bulgeHeight: number;
+        /**
+         * Gets or sets the Bulge Radius.
+         */
+        bulgeRadius: number;
+        /**
+         * Gets or sets the Sun Intensity.
+         */
+        sunIntensity: number;
+        /**
+         * Gets or sets the Sun Theta.
+         */
+        sunTheta: number;
+        /**
+         * Gets or sets the Sun Phi.
+         */
+        sunPhi: number;
+        /**
+         * Gets or sets the Indirect Diffuse.
+         */
+        indirectDiffuse: number;
+        /**
+         * Gets or sets the base albedo.
+         */
+        albedo: BABYLON.Color4;
+        /**
+         * Gets or sets the Specular value.
+         */
+        specular: number;
+        /**
+         * Gets or sets the Shininess value.
+         */
+        shininess: number;
+        /**
+         * Gets or sets the Sharpness value.
+         */
+        sharpness: number;
+        /**
+         * Gets or sets the Subsurface value.
+         */
+        subsurface: number;
+        /**
+         * Gets or sets the left gradient color.
+         */
+        leftGradientColor: BABYLON.Color4;
+        /**
+         * Gets or sets the right gradient color.
+         */
+        rightGradientColor: BABYLON.Color4;
+        /**
+         * Gets or sets the reflection value.
+         */
+        reflection: number;
+        /**
+         * Gets or sets the front reflect value.
+         */
+        frontReflect: number;
+        /**
+         * Gets or sets the edge reflect value.
+         */
+        edgeReflect: number;
+        /**
+         * Gets or sets the power value.
+         */
+        power: number;
+        /**
+         * Gets or sets the sky color.
+         */
+        skyColor: BABYLON.Color4;
+        /**
+         * Gets or sets the horizon color.
+         */
+        horizonColor: BABYLON.Color4;
+        /**
+         * Gets or sets the ground color.
+         */
+        groundColor: BABYLON.Color4;
+        /**
+         * Gets or sets the horizon power value.
+         */
+        horizonPower: number;
+        /**
+         * Gets or sets the finger occlusion width value.
+         */
+        width: number;
+        /**
+         * Gets or sets the finger occlusion fuzz value.
+         */
+        fuzz: number;
+        /**
+         * Gets or sets the minimum finger occlusion fuzz value.
+         */
+        minFuzz: number;
+        /**
+         * Gets or sets the finger occlusion clip fade value.
+         */
+        clipFade: number;
+        /**
+         * Gets or sets the hue shift value.
+         */
+        hueShift: number;
+        /**
+         * Gets or sets the saturation shift value.
+         */
+        saturationShift: number;
+        /**
+         * Gets or sets the value shift.
+         */
+        valueShift: number;
+        /**
+         * Gets or sets the position of the hover glow effect.
+         */
+        blobPosition: BABYLON.Vector3;
+        /**
+         * Gets or sets the intensity of the hover glow effect.
+         */
+        blobIntensity: number;
+        /**
+         * Gets or sets the near size of the hover glow effect.
+         */
+        blobNearSize: number;
+        /**
+        * Gets or sets the far size of the hover glow effect.
+        */
+        blobFarSize: number;
+        /**
+         * Gets or sets the distance considered "near" to the mesh, which controls the size of the hover glow effect (see blobNearSize).
+         */
+        blobNearDistance: number;
+        /**
+         * Gets or sets the distance considered "far" from the mesh, which controls the size of the hover glow effect (see blobFarSize).
+         */
+        blobFarDistance: number;
+        /**
+         * Gets or sets the length of the hover glow effect fade.
+         */
+        blobFadeLength: number;
+        /**
+         * Gets or sets the progress of the hover glow effect selection animation corresponding to the left pointer (0.0 - 1.0).
+         */
+        blobPulse: number;
+        /**
+         * Gets or sets the opacity of the hover glow effect corresponding to the left pointer (0.0 - 1.0). Default is 0.
+         */
+        blobFade: number;
+        /**
+         * Gets or sets the position of the hover glow effect.
+         */
+        blobPosition2: BABYLON.Vector3;
+        /**
+         * Gets or sets the size of the hover glow effect when the right pointer is considered "near" to the mesh (see blobNearDistance).
+         */
+        blobNearSize2: number;
+        /**
+         * Gets or sets the progress of the hover glow effect selection animation corresponding to the right pointer (0.0 - 1.0).
+         */
+        blobPulse2: number;
+        /**
+         * Gets or sets the opacity of the hover glow effect corresponding to the right pointer (0.0 - 1.0). Default is 1.
+         */
+        blobFade2: number;
+        /**
+         * Gets or sets the texture of the hover glow effect.
+         */
+        blobTexture: BABYLON.Texture;
+        /**
+         * Gets or sets the finger position for left index.
+         */
+        leftIndexPosition: BABYLON.Vector3;
+        /**
+         * Gets or sets the finger position for right index.
+         */
+        rightIndexPosition: BABYLON.Vector3;
+        /**
+         * Gets or sets the finger position for left index middle position.
+         */
+        leftIndexMiddlePosition: BABYLON.Vector3;
+        /**
+         * Gets or sets the finger position for right index middle position.
+         */
+        rightIndexMiddlePosition: BABYLON.Vector3;
+        /**
+         * Gets or sets the Decal Scle for XY.
+         */
+        decalScaleXY: BABYLON.Vector2;
+        /**
+         * Gets or sets decalFrontOnly
+         * Default is true
+         */
+        decalFrontOnly: boolean;
+        /**
+         * Gets or sets the Rim Light intensity.
+         */
+        rimIntensity: number;
+        /**
+         * Gets or sets the Rim Light hue shift value.
+         */
+        rimHueShift: number;
+        /**
+         * Gets or sets the Rim Light saturation shift value.
+         */
+        rimSaturationShift: number;
+        /**
+         * Gets or sets the Rim Light value shift.
+         */
+        rimValueShift: number;
+        /**
+         * Gets or sets the intensity of the iridescence effect.
+         */
+        iridescenceIntensity: number;
+        /**
+         * @hidden
+         */
+        useGlobalLeftIndex: number;
+        /**
+         * @hidden
+         */
+        useGlobalRightIndex: number;
+        /**
+         * @hidden
+         */
+        globalLeftIndexTipProximity: number;
+        /**
+         * @hidden
+         */
+        globalRightIndexTipProximity: number;
+        /**
+         * @hidden
+         */
+        globalLeftIndexTipPosition: BABYLON.Vector4;
+        /**
+         * @hidden
+         */
+        globaRightIndexTipPosition: BABYLON.Vector4;
+        /**
+         * @hidden
+         */
+        globalLeftThumbTipPosition: BABYLON.Vector4;
+        /**
+         * @hidden
+         */
+        globalRightThumbTipPosition: BABYLON.Vector4;
+        /**
+         * @hidden
+         */
+        globalLeftIndexMiddlePosition: BABYLON.Vector4;
+        /**
+         * @hidden
+         */
+        globalRightIndexMiddlePosition: BABYLON.Vector4;
+        constructor(name: string, scene: BABYLON.Scene);
+        needAlphaBlending(): boolean;
+        needAlphaTesting(): boolean;
+        getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
+        isReadyForSubMesh(mesh: BABYLON.AbstractMesh, subMesh: BABYLON.SubMesh, useInstances?: boolean): boolean;
+        bindForSubMesh(world: BABYLON.Matrix, mesh: BABYLON.Mesh, subMesh: BABYLON.SubMesh): void;
+        /**
+         * Get the list of animatables in the material.
+         * @returns the list of animatables object used in the material
+         */
+        getAnimatables(): BABYLON.IAnimatable[];
+        dispose(forceDisposeEffect?: boolean): void;
+        clone(name: string): MRDLSliderThumbMaterial;
+        serialize(): any;
+        getClassName(): string;
+        static Parse(source: any, scene: BABYLON.Scene, rootUrl: string): MRDLSliderThumbMaterial;
+    }
+}
+declare module BABYLON.GUI {
+    /** @hidden */
+    export var mrdlBackplatePixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON.GUI {
+    /** @hidden */
+    export var mrdlBackplateVertexShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to render backplate material with MRDL
+     */
+    export class MRDLBackplateMaterial extends BABYLON.PushMaterial {
+        /**
+         * URL pointing to the texture used to define the coloring for the Iridescent Map effect.
+         */
+        static IRIDESCENT_MAP_TEXTURE_URL: string;
+        private _iridescentMapTexture;
+        /**
+        * Gets or sets the corner radius on the backplate. If this value is changed, update the lineWidth to match.
+        */
+        radius: number;
+        /**
+         * Gets or sets the line width of the backplate.
+         */
+        lineWidth: number;
+        /**
+         * Gets or sets whether to use absolute sizes when calculating effects on the backplate.
+         * Since desktop and VR/AR have different relative sizes, it's usually best to keep this false.
+         */
+        absoluteSizes: boolean;
+        /** @hidden */
+        _filterWidth: number;
+        /**
+         * Gets or sets the base color of the backplate.
+         */
+        baseColor: BABYLON.Color4;
+        /**
+         * Gets or sets the line color of the backplate.
+         */
+        lineColor: BABYLON.Color4;
+        /**
+         * Gets or sets the top left Radii Multiplier.
+         */
+        radiusTopLeft: number;
+        /**
+         * Gets or sets the top left Radii Multiplier.
+         */
+        radiusTopRight: number;
+        /**
+        * Gets or sets the top left Radii Multiplier.
+        */
+        radiusBottomLeft: number;
+        /**
+         * Gets or sets the top left Radii Multiplier.
+         */
+        radiusBottomRight: number;
+        /** @hidden */
+        _rate: number;
+        /**
+         * Gets or sets the color of the highlights on the backplate line.
+         */
+        highlightColor: BABYLON.Color4;
+        /**
+         * Gets or sets the width of the highlights on the backplate line.
+         */
+        highlightWidth: number;
+        /** @hidden */
+        _highlightTransform: BABYLON.Vector4;
+        /** @hidden */
+        _highlight: number;
+        /**
+         * Gets or sets the intensity of the iridescence effect.
+         */
+        iridescenceIntensity: number;
+        /**
+         * Gets or sets the intensity of the iridescence effect on the backplate edges.
+         */
+        iridescenceEdgeIntensity: number;
+        /**
+         * Gets or sets the Tint of the iridescence effect on the backplate.
+         */
+        iridescenceTint: BABYLON.Color4;
+        /** @hidden */
+        _angle: number;
+        /**
+         * Gets or sets the opacity of the backplate (0.0 - 1.0).
+         */
+        fadeOut: number;
+        /** @hidden */
+        _reflected: boolean;
+        /** @hidden */
+        _frequency: number;
+        /** @hidden */
+        _verticalOffset: number;
+        /**
+         * Gets or sets the gradient color effect on the backplate.
+         */
+        gradientColor: BABYLON.Color4;
+        /**
+         * Gets or sets the top left gradient color effect on the backplate.
+         */
+        topLeftGradientColor: BABYLON.Color4;
+        /**
+         * Gets or sets the top right gradient color effect on the backplate.
+         */
+        topRightGradientColor: BABYLON.Color4;
+        /**
+         * Gets or sets the bottom left gradient color effect on the backplate.
+         */
+        bottomLeftGradientColor: BABYLON.Color4;
+        /**
+         * Gets or sets the bottom right gradient color effect on the backplate.
+         */
+        bottomRightGradientColor: BABYLON.Color4;
+        /**
+         * Gets or sets the edge width of the backplate.
+         */
+        edgeWidth: number;
+        /**
+         * Gets or sets the edge width of the backplate.
+         */
+        edgePower: number;
+        /**
+         * Gets or sets the edge width of the backplate.
+         */
+        edgeLineGradientBlend: number;
+        constructor(name: string, scene: BABYLON.Scene);
+        needAlphaBlending(): boolean;
+        needAlphaTesting(): boolean;
+        getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
+        isReadyForSubMesh(mesh: BABYLON.AbstractMesh, subMesh: BABYLON.SubMesh, useInstances?: boolean): boolean;
+        bindForSubMesh(world: BABYLON.Matrix, mesh: BABYLON.Mesh, subMesh: BABYLON.SubMesh): void;
+        /**
+         * Get the list of animatables in the material.
+         * @returns the list of animatables object used in the material
+         */
+        getAnimatables(): BABYLON.IAnimatable[];
+        dispose(forceDisposeEffect?: boolean): void;
+        clone(name: string): MRDLBackplateMaterial;
+        serialize(): any;
+        getClassName(): string;
+        static Parse(source: any, scene: BABYLON.Scene, rootUrl: string): MRDLBackplateMaterial;
+    }
+}
+declare module BABYLON.GUI {
     /**
      * Class used to create a slider in 3D
      */
     export class Slider3D extends Control3D {
+        /**
+         * Base Url for the models.
+         */
+        static MODEL_BASE_URL: string;
+        /**
+         * File name for the 8x4 model.
+         */
+        static MODEL_FILENAME: string;
+        private _sliderBackplate;
+        private _sliderBackplateMaterial;
         private _sliderBarMaterial;
         private _sliderThumbMaterial;
         private _sliderThumb;
         private _sliderBar;
+        private _sliderBackplateVisible;
         private _minimum;
         private _maximum;
         private _value;
@@ -11624,8 +13355,9 @@ declare module BABYLON.GUI {
         /**
          * Creates a new slider
          * @param name defines the control name
+         * @param sliderBackplateVisible defines if the control has a backplate, default is false
          */
-        constructor(name?: string);
+        constructor(name?: string, sliderBackplateVisible?: boolean);
         /**
          * Gets the mesh used to render this control
          */
@@ -11647,11 +13379,15 @@ declare module BABYLON.GUI {
         /**
          * Gets the slider bar material used by this control
          */
-        get sliderBarMaterial(): BABYLON.StandardMaterial;
+        get sliderBarMaterial(): MRDLSliderBarMaterial;
         /**
          * Gets the slider thumb material used by this control
          */
-        get sliderThumbMaterial(): BABYLON.StandardMaterial;
+        get sliderThumbMaterial(): MRDLSliderThumbMaterial;
+        /**
+         * Gets the slider backplate material used by this control
+         */
+        get sliderBackplateMaterial(): MRDLBackplateMaterial;
         protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
         protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
         private _createBehavior;
