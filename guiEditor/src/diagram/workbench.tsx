@@ -68,6 +68,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _camera: ArcRotateCamera;
     private _cameraRadias: number;
     private _cameraMaxRadiasFactor = 8192; // 2^13
+    private _pasted: boolean;
     public get globalState() {
         return this.props.globalState;
     }
@@ -199,7 +200,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         if (evt.key === "Delete") {
             if (!this.props.globalState.lockObject.lock) {
                 this._selectedGuiNodes.forEach(guiNode => {
-                    guiNode.dispose();
+                    if (guiNode !== this.globalState.guiTexture.getChildren()[0]) {
+                        guiNode.dispose();
+                    }
                 });
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
             }
@@ -218,10 +221,14 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             else if (evt.key === "c") {
                 this.copyToClipboard();
             }
-            else if (evt.key === "v") {
+            else if (evt.key === "v" && !this._pasted) {
                 this.globalState.onSelectionChangedObservable.notifyObservers(null);
                 this.pasteFromClipboard();
+                this._pasted = true;
             }
+        }
+        else if (!this._ctrlKeyIsPressed) {
+            this._pasted = false;
         }
     };
 
