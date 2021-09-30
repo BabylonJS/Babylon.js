@@ -9,7 +9,7 @@ import { Observer, Observable } from "../../Misc/observable";
 import { TransformNode } from "../../Meshes/transformNode";
 import { PickingInfo } from "../../Collisions/pickingInfo";
 import { Camera } from "../../Cameras/camera";
-import { PositionGizmo } from "../../Gizmos/positionGizmo";
+import { Ray } from "../../Culling/ray";
 
 /**
  * Data store to track virtual pointers movement
@@ -66,8 +66,6 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
     protected _moving = false;
     protected _ownerNode: TransformNode;
     protected _dragging: boolean = false;
-
-    private _posGizmoDrag: PositionGizmo;
 
     /**
      * The list of child meshes that can receive drag events
@@ -176,9 +174,6 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
         const pivotMesh = new AbstractMesh("", BaseSixDofDragBehavior._virtualScene);
         pivotMesh.rotationQuaternion = new Quaternion();
 
-        this._posGizmoDrag = new PositionGizmo();
-        this._posGizmoDrag.attachedMesh = originMesh;
-
         return {
             dragging: false,
             moving: false,
@@ -211,183 +206,73 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
         }
     }
 
-    private _pointerDown2D(pointerInfo: PointerInfo) {
-        if (pointerInfo.pickInfo &&
-            pointerInfo.pickInfo.hit &&
-            pointerInfo.pickInfo.pickedMesh &&
-            pointerInfo.pickInfo.pickedPoint &&
-            pointerInfo.pickInfo.ray
+    private _pointerUpdate2D(ray: Ray, pointerId: number, zDragFactor: number) {
+        if (
+            this._pointerCamera &&
+            this._pointerCamera.cameraRigMode == Camera.RIG_MODE_NONE &&
+            !this._pointerCamera._isLeftCamera &&
+            !this._pointerCamera._isRightCamera
         ) {
-            if (
-                this._pointerCamera &&
-                this._pointerCamera.cameraRigMode === Camera.RIG_MODE_NONE &&
-                !this._pointerCamera._isLeftCamera &&
-                !this._pointerCamera._isRightCamera
-            ) {
-                pointerInfo.pickInfo.ray.origin.copyFrom(this._pointerCamera!.globalPosition);
-            }
-
-            this._dragging = true;
-            this._ownerNode.computeWorldMatrix(true);
-
-            const pointerId = (<PointerEvent>pointerInfo.event).pointerId;
-            const virtualMeshesInfo = this._virtualMeshesInfo[pointerId];
-
-            virtualMeshesInfo.originMesh.position.copyFrom(pointerInfo.pickInfo.ray.origin);
-            virtualMeshesInfo.lastOriginPosition.copyFrom(virtualMeshesInfo.originMesh.position);
-
-            virtualMeshesInfo.dragMesh.position.copyFrom(pointerInfo.pickInfo.pickedPoint);
-            virtualMeshesInfo.lastDragPosition.copyFrom(pointerInfo.pickInfo.pickedPoint);
-
-            virtualMeshesInfo.pivotMesh.position.copyFrom(this._ownerNode.getAbsolutePivotPoint());
-            virtualMeshesInfo.pivotMesh.rotationQuaternion!.copyFrom(this._ownerNode.absoluteRotationQuaternion);
-
-            virtualMeshesInfo.startingPosition.copyFrom(virtualMeshesInfo.dragMesh.position);
-            virtualMeshesInfo.startingPivotPosition.copyFrom(virtualMeshesInfo.pivotMesh.position);
-            virtualMeshesInfo.startingOrientation.copyFrom(virtualMeshesInfo.dragMesh.rotationQuaternion!);
-            virtualMeshesInfo.startingPivotOrientation.copyFrom(virtualMeshesInfo.pivotMesh.rotationQuaternion!);
-
-            virtualMeshesInfo.originMesh.lookAt(virtualMeshesInfo.dragMesh.position);
+            ray.origin.copyFrom(this._pointerCamera!.globalPosition);
+            zDragFactor = 0;
         }
+
+        const virtualMeshesInfo = this._virtualMeshesInfo[pointerId];
+
+        // Calculate controller drag distance in controller space
+        const originDragDifference = TmpVectors.Vector3[0];
+        ray.origin.subtractToRef(virtualMeshesInfo.lastOriginPosition, originDragDifference);
+        virtualMeshesInfo.lastOriginPosition.copyFrom(ray.origin);
+        const localOriginDragDifference = -Vector3.Dot(originDragDifference, ray.direction);
+
+        virtualMeshesInfo.originMesh.addChild(virtualMeshesInfo.dragMesh);
+        virtualMeshesInfo.originMesh.addChild(virtualMeshesInfo.pivotMesh);
+
+        this._applyZOffset(virtualMeshesInfo.dragMesh, localOriginDragDifference, zDragFactor);
+        this._applyZOffset(virtualMeshesInfo.pivotMesh, localOriginDragDifference, zDragFactor);
+
+        // Update the controller position
+        virtualMeshesInfo.originMesh.position.copyFrom(ray.origin);
+        const lookAt = TmpVectors.Vector3[0];
+        ray.origin.addToRef(ray.direction, lookAt);
+        virtualMeshesInfo.originMesh.lookAt(lookAt);
+
+        virtualMeshesInfo.originMesh.removeChild(virtualMeshesInfo.dragMesh);
+        virtualMeshesInfo.originMesh.removeChild(virtualMeshesInfo.pivotMesh);
     }
 
-    private _pointerDownXR(pointerInfo: PointerInfo, rotationType: SixDofDragRotationType) {
-        if (pointerInfo.pickInfo &&
-            pointerInfo.pickInfo.hit &&
-            pointerInfo.pickInfo.pickedMesh &&
-            pointerInfo.pickInfo.pickedPoint &&
-            pointerInfo.pickInfo.ray && 
-            pointerInfo.pickInfo.originTransform
-        ) {
-            this._dragging = true;
-            this._ownerNode.computeWorldMatrix(true);
+    private _pointerUpdateXR(controllerTransform: AbstractMesh, pointerId: number, zDragFactor: number, rotationType: SixDofDragRotationType) {
+        const virtualMeshesInfo = this._virtualMeshesInfo[pointerId];
+        virtualMeshesInfo.pivotMesh.computeWorldMatrix(true);
+        virtualMeshesInfo.originMesh.position.copyFrom(controllerTransform.position);
+        virtualMeshesInfo.originMesh.rotationQuaternion!.copyFrom(controllerTransform.rotationQuaternion!);
 
-            const pointerId = (<PointerEvent>pointerInfo.event).pointerId;
-            const virtualMeshesInfo = this._virtualMeshesInfo[pointerId];
-            const controllerTransform = pointerInfo.pickInfo.originTransform;
+        // Z scaling logic
+        const originDragDirection = TmpVectors.Vector3[0];
+        virtualMeshesInfo.originMesh.position.subtractToRef(virtualMeshesInfo.lastOriginPosition, originDragDirection);
+        virtualMeshesInfo.lastOriginPosition.copyFrom(virtualMeshesInfo.originMesh.position);
+        const controllerDragDistance = originDragDirection.length();
+        originDragDirection.normalize();
 
-            virtualMeshesInfo.originMesh.position.copyFrom(controllerTransform.position);
-            virtualMeshesInfo.lastOriginPosition.copyFrom(virtualMeshesInfo.originMesh.position);
-            virtualMeshesInfo.originMesh.rotationQuaternion!.copyFrom(controllerTransform.rotationQuaternion!);
+        const cameraToPivot = TmpVectors.Vector3[1];
+        const controllerToPivot = TmpVectors.Vector3[2];
+        virtualMeshesInfo.pivotMesh.absolutePosition.subtractToRef(this._pointerCamera!.globalPosition, cameraToPivot);
+        virtualMeshesInfo.pivotMesh.absolutePosition.subtractToRef(virtualMeshesInfo.originMesh.position, controllerToPivot);
+        const controllerToPivotDistance = controllerToPivot.length();
+        cameraToPivot.normalize();
+        controllerToPivot.normalize();
 
-            virtualMeshesInfo.originMesh.computeWorldMatrix(true);
+        const controllerDragScaling = Math.abs(Vector3.Dot(originDragDirection, controllerToPivot)) * Vector3.Dot(originDragDirection, this._pointerCamera!.getForwardRay().direction);
+        let zOffsetScaling = controllerDragScaling * zDragFactor * controllerDragDistance * controllerToPivotDistance;
 
-            virtualMeshesInfo.dragMesh.position.copyFrom(pointerInfo.pickInfo.pickedPoint);
-
-            virtualMeshesInfo.pivotMesh.position.copyFrom(this._ownerNode.getAbsolutePivotPoint());
-            virtualMeshesInfo.pivotMesh.rotationQuaternion!.copyFrom(this._ownerNode.absoluteRotationQuaternion);
-
-            virtualMeshesInfo.pivotMesh.computeWorldMatrix(true);
-            virtualMeshesInfo.startingPosition.copyFrom(virtualMeshesInfo.dragMesh.position);
-            virtualMeshesInfo.startingPivotPosition.copyFrom(virtualMeshesInfo.pivotMesh.position);
-            virtualMeshesInfo.startingOrientation.copyFrom(virtualMeshesInfo.dragMesh.rotationQuaternion!);
-            virtualMeshesInfo.startingPivotOrientation.copyFrom(virtualMeshesInfo.pivotMesh.rotationQuaternion!);
-
-            virtualMeshesInfo.originMesh.addChild(virtualMeshesInfo.dragMesh);
-            virtualMeshesInfo.originMesh.addChild(virtualMeshesInfo.pivotMesh);
+        // Prevent pulling the mesh through the controller
+        if (zOffsetScaling + controllerToPivotDistance < 0.1) {
+            zOffsetScaling = Math.min(controllerToPivotDistance, 0.1);
         }
-    }
+        controllerToPivot.scaleInPlace(zOffsetScaling);
 
-    private _pointerUpdate2D(pointerInfo: PointerInfo, zDragFactor: number) {
-        if (pointerInfo.pickInfo &&
-            pointerInfo.pickInfo.ray
-        ) {
-            if (
-                this._pointerCamera &&
-                this._pointerCamera.cameraRigMode == Camera.RIG_MODE_NONE &&
-                !this._pointerCamera._isLeftCamera &&
-                !this._pointerCamera._isRightCamera
-            ) {
-                pointerInfo.pickInfo.ray.origin.copyFrom(this._pointerCamera!.globalPosition);
-                zDragFactor = 0;
-            }
-
-            const pointerId = (<PointerEvent>pointerInfo.event).pointerId;
-            const virtualMeshesInfo = this._virtualMeshesInfo[pointerId];
-
-            // Calculate controller drag distance in controller space
-            const originDragDifference = TmpVectors.Vector3[0];
-            pointerInfo.pickInfo.ray.origin.subtractToRef(virtualMeshesInfo.lastOriginPosition, originDragDifference);
-            virtualMeshesInfo.lastOriginPosition.copyFrom(pointerInfo.pickInfo.ray.origin);
-            const localOriginDragDifference = -Vector3.Dot(originDragDifference, pointerInfo.pickInfo.ray.direction);
-
-            virtualMeshesInfo.originMesh.addChild(virtualMeshesInfo.dragMesh);
-            virtualMeshesInfo.originMesh.addChild(virtualMeshesInfo.pivotMesh);
-
-            this._applyZOffset(virtualMeshesInfo.dragMesh, localOriginDragDifference, zDragFactor);
-            this._applyZOffset(virtualMeshesInfo.pivotMesh, localOriginDragDifference, zDragFactor);
-
-            // Update the controller position
-            // In case of near interaction, ray origin is finger tip
-            virtualMeshesInfo.originMesh.position.copyFrom(pointerInfo.pickInfo.ray.origin);
-            const lookAt = TmpVectors.Vector3[0];
-            pointerInfo.pickInfo.ray.origin.addToRef(pointerInfo.pickInfo.ray.direction, lookAt);
-            virtualMeshesInfo.originMesh.lookAt(lookAt);
-
-            virtualMeshesInfo.originMesh.removeChild(virtualMeshesInfo.dragMesh);
-            virtualMeshesInfo.originMesh.removeChild(virtualMeshesInfo.pivotMesh);
-
-            // Get change in rotation
-            this._tmpQuaternion.copyFrom(virtualMeshesInfo.startingPivotOrientation);
-            this._tmpQuaternion.x = -this._tmpQuaternion.x;
-            this._tmpQuaternion.y = -this._tmpQuaternion.y;
-            this._tmpQuaternion.z = -this._tmpQuaternion.z;
-            virtualMeshesInfo.pivotMesh.rotationQuaternion!.multiplyToRef(this._tmpQuaternion, this._tmpQuaternion);
-            virtualMeshesInfo.pivotMesh.position.subtractToRef(virtualMeshesInfo.startingPivotPosition, this._tmpVector);
-        }
-    }
-
-    private _pointerUpdateXR(pointerInfo: PointerInfo, zDragFactor: number, rotationType: SixDofDragRotationType) {
-        if (pointerInfo.pickInfo &&
-            pointerInfo.pickInfo.ray &&
-            pointerInfo.pickInfo.originTransform
-        ) {
-            this._dragging = true;
-            this._ownerNode.computeWorldMatrix(true);
-
-            const pointerId = (<PointerEvent>pointerInfo.event).pointerId;
-            const virtualMeshesInfo = this._virtualMeshesInfo[pointerId];
-
-            virtualMeshesInfo.pivotMesh.computeWorldMatrix(true);
-            const controllerTransform = pointerInfo.pickInfo.originTransform;
-            virtualMeshesInfo.originMesh.position.copyFrom(controllerTransform.position);
-            virtualMeshesInfo.originMesh.rotationQuaternion!.copyFrom(controllerTransform.rotationQuaternion!);
-
-            // Z scaling logic
-            {
-                const originDragDifference = TmpVectors.Vector3[0];
-                virtualMeshesInfo.originMesh.position.subtractToRef(virtualMeshesInfo.lastOriginPosition, originDragDifference);
-                virtualMeshesInfo.lastOriginPosition.copyFrom(virtualMeshesInfo.originMesh.position);
-                const controllerDragDistance = originDragDifference.length();
-                originDragDifference.normalize();
-
-                const cameraToPivot = virtualMeshesInfo.pivotMesh.absolutePosition.subtract(this._pointerCamera!.globalPosition).normalize();
-                const controllerToPivot = virtualMeshesInfo.pivotMesh.absolutePosition.subtract(virtualMeshesInfo.originMesh.position);
-                const controllerToPivotDistance = controllerToPivot.length();
-                controllerToPivot.normalize();
-
-                const zDragScaling = Math.abs(Vector3.Dot(originDragDifference, controllerToPivot));
-                const towardCameraScaling = Vector3.Dot(originDragDifference, cameraToPivot);
-                let zOffsetScaling = zDragScaling * towardCameraScaling * zDragFactor * controllerDragDistance;
-
-                // Prevent pulling the mesh through the controller
-                if (zOffsetScaling + controllerToPivotDistance < 0.1) {
-                    zOffsetScaling = 0.1 - controllerToPivotDistance;
-                }
-                controllerToPivot.scaleInPlace(zOffsetScaling);
-
-                virtualMeshesInfo.pivotMesh.setAbsolutePosition(virtualMeshesInfo.pivotMesh.absolutePosition.add(controllerToPivot));
-                virtualMeshesInfo.dragMesh.setAbsolutePosition(virtualMeshesInfo.dragMesh.absolutePosition.add(controllerToPivot));
-            }
-
-            // Get change in rotation
-            this._tmpQuaternion.copyFrom(virtualMeshesInfo.startingPivotOrientation);
-            this._tmpQuaternion.x = -this._tmpQuaternion.x;
-            this._tmpQuaternion.y = -this._tmpQuaternion.y;
-            this._tmpQuaternion.z = -this._tmpQuaternion.z;
-            virtualMeshesInfo.pivotMesh.absoluteRotationQuaternion!.multiplyToRef(this._tmpQuaternion, this._tmpQuaternion);
-            virtualMeshesInfo.pivotMesh.absolutePosition.subtractToRef(virtualMeshesInfo.startingPivotPosition, this._tmpVector);
-        }
+        virtualMeshesInfo.pivotMesh.setAbsolutePosition(virtualMeshesInfo.pivotMesh.absolutePosition.add(controllerToPivot));
+        virtualMeshesInfo.dragMesh.setAbsolutePosition(virtualMeshesInfo.dragMesh.absolutePosition.add(controllerToPivot));
     }
 
     /**
@@ -424,18 +309,56 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     pointerInfo.pickInfo.hit &&
                     pointerInfo.pickInfo.pickedMesh &&
                     pointerInfo.pickInfo.pickedPoint &&
-                    pointerInfo.pickInfo.ray &&
+                    pointerInfo.pickInfo.ray && 
+                    (!isXRPointer || pointerInfo.pickInfo.originTransform) &&
                     pickPredicate(pointerInfo.pickInfo.pickedMesh)
                 ) {
                     if (!this.allowMultiPointer && this.currentDraggingPointerIds.length > 0) {
                         return;
                     }
 
-                    if (!isXRPointer) {
-                        this._pointerDown2D(pointerInfo);
+                    if (
+                        this._pointerCamera &&
+                        this._pointerCamera.cameraRigMode === Camera.RIG_MODE_NONE &&
+                        !this._pointerCamera._isLeftCamera &&
+                        !this._pointerCamera._isRightCamera
+                    ) {
+                        pointerInfo.pickInfo.ray.origin.copyFrom(this._pointerCamera!.globalPosition);
+                    }
+
+                    this._dragging = true;
+                    this._ownerNode.computeWorldMatrix(true);
+
+                    const virtualMeshesInfo = this._virtualMeshesInfo[pointerId];
+
+                    if (isXRPointer) {
+                        const controllerTransform = pointerInfo.pickInfo.originTransform!;
+                        virtualMeshesInfo.originMesh.position.copyFrom(controllerTransform.position);
+                        virtualMeshesInfo.originMesh.rotationQuaternion!.copyFrom(controllerTransform.rotationQuaternion!);
                     }
                     else {
-                        this._pointerDownXR(pointerInfo, rotationType);
+                        virtualMeshesInfo.originMesh.position.copyFrom(pointerInfo.pickInfo.ray.origin);
+                    }
+
+                    virtualMeshesInfo.lastOriginPosition.copyFrom(virtualMeshesInfo.originMesh.position);
+
+                    virtualMeshesInfo.dragMesh.position.copyFrom(pointerInfo.pickInfo.pickedPoint);
+                    virtualMeshesInfo.lastDragPosition.copyFrom(pointerInfo.pickInfo.pickedPoint);
+
+                    virtualMeshesInfo.pivotMesh.position.copyFrom(this._ownerNode.getAbsolutePivotPoint());
+                    virtualMeshesInfo.pivotMesh.rotationQuaternion!.copyFrom(this._ownerNode.absoluteRotationQuaternion);
+
+                    virtualMeshesInfo.startingPosition.copyFrom(virtualMeshesInfo.dragMesh.position);
+                    virtualMeshesInfo.startingPivotPosition.copyFrom(virtualMeshesInfo.pivotMesh.position);
+                    virtualMeshesInfo.startingOrientation.copyFrom(virtualMeshesInfo.dragMesh.rotationQuaternion!);
+                    virtualMeshesInfo.startingPivotOrientation.copyFrom(virtualMeshesInfo.pivotMesh.rotationQuaternion!);
+
+                    if (isXRPointer) {
+                        virtualMeshesInfo.originMesh.addChild(virtualMeshesInfo.dragMesh);
+                        virtualMeshesInfo.originMesh.addChild(virtualMeshesInfo.pivotMesh);
+                    }
+                    else {
+                        virtualMeshesInfo.originMesh.lookAt(virtualMeshesInfo.dragMesh.position);
                     }
 
                     // Update state
@@ -485,7 +408,11 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
             } else if (pointerInfo.type == PointerEventTypes.POINTERMOVE) {
                 const registeredPointerIndex = this.currentDraggingPointerIds.indexOf(pointerId);
 
-                if (registeredPointerIndex !== -1 && virtualMeshesInfo.dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.ray) {
+                if (registeredPointerIndex !== -1 &&
+                    virtualMeshesInfo.dragging &&
+                    pointerInfo.pickInfo &&
+                    (pointerInfo.pickInfo.ray || pointerInfo.pickInfo.originTransform))
+                {
                     let zDragFactor = this.zDragFactor;
 
                     // 2 pointer interaction should not have a z axis drag factor
@@ -494,12 +421,23 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                         zDragFactor = 0;
                     }
 
+                    this._dragging = true;
+                    this._ownerNode.computeWorldMatrix(true);
+
                     if (!isXRPointer) {
-                        this._pointerUpdate2D(pointerInfo, zDragFactor);
+                        this._pointerUpdate2D(pointerInfo.pickInfo.ray!, pointerId, zDragFactor);
                     }
                     else {
-                        this._pointerUpdateXR(pointerInfo, zDragFactor, rotationType);
+                        this._pointerUpdateXR(pointerInfo.pickInfo.originTransform!, pointerId, zDragFactor, rotationType);
                     }
+
+                    // Get change in rotation
+                    this._tmpQuaternion.copyFrom(virtualMeshesInfo.startingPivotOrientation);
+                    this._tmpQuaternion.x = -this._tmpQuaternion.x;
+                    this._tmpQuaternion.y = -this._tmpQuaternion.y;
+                    this._tmpQuaternion.z = -this._tmpQuaternion.z;
+                    virtualMeshesInfo.pivotMesh.absoluteRotationQuaternion!.multiplyToRef(this._tmpQuaternion, this._tmpQuaternion);
+                    virtualMeshesInfo.pivotMesh.absolutePosition.subtractToRef(virtualMeshesInfo.startingPivotPosition, this._tmpVector);
 
                     this.onDragObservable.notifyObservers({ delta: this._tmpVector, position: virtualMeshesInfo.pivotMesh.position, pickInfo: pointerInfo.pickInfo });
 
@@ -515,7 +453,11 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
 
     private _applyZOffset(node: TransformNode, localOriginDragDifference: number, zDragFactor: number) {
         // Determine how much the controller moved to/away towards the dragged object and use this to move the object further when its further away
-        node.position.z -= node.position.z < 1 ? localOriginDragDifference * zDragFactor : localOriginDragDifference * zDragFactor * node.position.z;
+        let zOffsetDifference = node.position.z < 1 ? localOriginDragDifference * zDragFactor : localOriginDragDifference * zDragFactor * node.position.z;
+        console.log("_applyZOffset amount: "+zOffsetDifference);
+        console.log(localOriginDragDifference);
+        console.log(node.position.z);
+        node.position.z -= zOffsetDifference;
         if (node.position.z < 0) {
             node.position.z = 0;
         }
