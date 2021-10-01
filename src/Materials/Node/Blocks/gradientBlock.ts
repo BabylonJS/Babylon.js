@@ -3,7 +3,7 @@ import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBloc
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
-import { _TypeStore } from '../../../Misc/typeStore';
+import { RegisterClass } from '../../../Misc/typeStore';
 import { Color3 } from '../../../Maths/math.color';
 import { Scene } from '../../../scene';
 import { Observable } from '../../../Misc/observable';
@@ -193,4 +193,4 @@ export class GradientBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.GradientBlock"] = GradientBlock;
+RegisterClass("BABYLON.GradientBlock", GradientBlock);

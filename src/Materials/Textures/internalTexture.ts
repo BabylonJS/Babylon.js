@@ -1,7 +1,6 @@
 import { Observable } from "../../Misc/observable";
 import { Nullable, int } from "../../types";
 import { ICanvas, ICanvasRenderingContext } from "../../Engines/ICanvas";
-import { _DevTools } from '../../Misc/devTools';
 import { HardwareTextureWrapper } from "./hardwareTextureWrapper";
 import { TextureSampler } from "./textureSampler";
 
@@ -81,11 +80,6 @@ export enum InternalTextureSource {
  */
 export class InternalTexture extends TextureSampler {
 
-    /** @hidden */
-    public static _UpdateRGBDAsync = (internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial>, lodScale: number, lodOffset: number): Promise<void> => {
-        throw _DevTools.WarnImport("environmentTextureTools");
-    }
-
     /**
      * Defines if the texture is ready
      */
@@ -142,6 +136,14 @@ export class InternalTexture extends TextureSampler {
      * Observable called when the texture is loaded
      */
     public onLoadedObservable = new Observable<InternalTexture>();
+    /**
+     * If this callback is defined it will be called instead of the default _rebuild function
+     */
+    public onRebuildCallback: Nullable<(internalTexture: InternalTexture) => {
+        proxy: Nullable<InternalTexture | Promise<InternalTexture>>;
+        isReady: boolean;
+        isAsync: boolean;
+    }> = null;
     /**
      * Gets the width of the texture
      */
@@ -314,14 +316,27 @@ export class InternalTexture extends TextureSampler {
 
     /** @hidden */
     public _rebuild(): void {
-        var proxy: InternalTexture;
         this.isReady = false;
         this._cachedCoordinatesMode = null;
         this._cachedWrapU = null;
         this._cachedWrapV = null;
         this._cachedWrapR = null;
         this._cachedAnisotropicFilteringLevel = null;
+        if (this.onRebuildCallback) {
+            const data = this.onRebuildCallback(this);
+            const swapAndSetIsReady = (proxyInternalTexture: InternalTexture) => {
+                proxyInternalTexture._swapAndDie(this, false);
+                this.isReady = data.isReady;
+            };
+            if (data.isAsync) {
+                (data.proxy as Promise<InternalTexture>).then(swapAndSetIsReady);
+            } else {
+                swapAndSetIsReady((data.proxy as InternalTexture));
+            }
+            return;
+        }
 
+        let proxy: InternalTexture;
         switch (this.source) {
             case InternalTextureSource.Temp:
                 break;
@@ -379,11 +394,8 @@ export class InternalTexture extends TextureSampler {
                 break;
 
             case InternalTextureSource.CubeRawRGBD:
-                proxy = this._engine.createRawCubeTexture(null, this.width, this.format, this.type, this.generateMipMaps, this.invertY, this.samplingMode, this._compression);
-                InternalTexture._UpdateRGBDAsync(proxy, this._bufferViewArrayArray!, this._sphericalPolynomial, this._lodGenerationScale, this._lodGenerationOffset).then(() => {
-                    proxy._swapAndDie(this, false);
-                    this.isReady = true;
-                });
+                // This case is being handeled by the environment texture tools and is not a part of the rebuild process.
+                // To use CubeRawRGBD use updateRGBDAsync on the cube texture.
                 return;
 
             case InternalTextureSource.CubePrefiltered:

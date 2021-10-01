@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!*****************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \*****************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \************************************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -906,6 +906,25 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
     */
     AdvancedDynamicTexture.prototype.getDescendants = function (directDescendantsOnly, predicate) {
         return this._rootContainer.getDescendants(directDescendantsOnly, predicate);
+    };
+    /**
+    * Will return the first control with the given name
+    * @param name defines the name to search for
+    * @return the first control found or null
+    */
+    AdvancedDynamicTexture.prototype.getControlByName = function (name) {
+        return this._getControlByKey("name", name);
+    };
+    /**
+    * Will return the first control with the given id
+    * @param uniqueId defines the id to search for
+    * @return the first control found or null
+    */
+    AdvancedDynamicTexture.prototype.getControlById = function (uniqueId) {
+        return this._getControlByKey("uniqueId", uniqueId);
+    };
+    AdvancedDynamicTexture.prototype._getControlByKey = function (key, value) {
+        return this._rootContainer.getDescendants().find(function (control) { return control[key] === value; }) || null;
     };
     Object.defineProperty(AdvancedDynamicTexture.prototype, "focusedControl", {
         /**
@@ -1889,7 +1908,7 @@ var Button = /** @class */ (function (_super) {
     return Button;
 }(_rectangle__WEBPACK_IMPORTED_MODULE_1__["Rectangle"]));
 
-babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_5__["_TypeStore"].RegisteredTypes["BABYLON.GUI.Button"] = Button;
+Object(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_5__["RegisterClass"])("BABYLON.GUI.Button", Button);
 
 
 /***/ }),
@@ -2087,7 +2106,7 @@ var Checkbox = /** @class */ (function (_super) {
     return Checkbox;
 }(_control__WEBPACK_IMPORTED_MODULE_2__["Control"]));
 
-babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.GUI.Checkbox"] = Checkbox;
+Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.GUI.Checkbox", Checkbox);
 
 
 /***/ }),
@@ -3510,7 +3529,7 @@ var ColorPicker = /** @class */ (function (_super) {
     return ColorPicker;
 }(_control__WEBPACK_IMPORTED_MODULE_2__["Control"]));
 
-babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.GUI.ColorPicker"] = ColorPicker;
+Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.GUI.ColorPicker", ColorPicker);
 
 
 /***/ }),
@@ -4048,7 +4067,7 @@ var Container = /** @class */ (function (_super) {
     return Container;
 }(_control__WEBPACK_IMPORTED_MODULE_2__["Control"]));
 
-babylonjs_Misc_logger__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.GUI.Container"] = Container;
+Object(babylonjs_Misc_logger__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.GUI.Container", Container);
 
 
 /***/ }),
@@ -6231,7 +6250,7 @@ var Control = /** @class */ (function () {
     return Control;
 }());
 
-babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.GUI.Control"] = Control;
+Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.GUI.Control", Control);
 
 
 /***/ }),
@@ -6494,7 +6513,7 @@ var DisplayGrid = /** @class */ (function (_super) {
     return DisplayGrid;
 }(_control__WEBPACK_IMPORTED_MODULE_1__["Control"]));
 
-babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__["_TypeStore"].RegisteredTypes["BABYLON.GUI.DisplayGrid"] = DisplayGrid;
+Object(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__["RegisterClass"])("BABYLON.GUI.DisplayGrid", DisplayGrid);
 
 
 /***/ }),
@@ -6598,7 +6617,7 @@ var Ellipse = /** @class */ (function (_super) {
     return Ellipse;
 }(_container__WEBPACK_IMPORTED_MODULE_1__["Container"]));
 
-babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_3__["_TypeStore"].RegisteredTypes["BABYLON.GUI.Ellipse"] = Ellipse;
+Object(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_3__["RegisterClass"])("BABYLON.GUI.Ellipse", Ellipse);
 
 
 /***/ }),
@@ -6708,7 +6727,7 @@ var FocusableButton = /** @class */ (function (_super) {
     return FocusableButton;
 }(_button__WEBPACK_IMPORTED_MODULE_1__["Button"]));
 
-babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__["_TypeStore"].RegisteredTypes["BABYLON.GUI.FocusableButton"] = FocusableButton;
+Object(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__["RegisterClass"])("BABYLON.GUI.FocusableButton", FocusableButton);
 
 
 /***/ }),
@@ -7226,7 +7245,7 @@ var Grid = /** @class */ (function (_super) {
     return Grid;
 }(_container__WEBPACK_IMPORTED_MODULE_1__["Container"]));
 
-babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["_TypeStore"].RegisteredTypes["BABYLON.GUI.Grid"] = Grid;
+Object(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["RegisterClass"])("BABYLON.GUI.Grid", Grid);
 
 
 /***/ }),
@@ -8114,7 +8133,7 @@ var Image = /** @class */ (function (_super) {
     return Image;
 }(_control__WEBPACK_IMPORTED_MODULE_2__["Control"]));
 
-babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.GUI.Image"] = Image;
+Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.GUI.Image", Image);
 
 
 /***/ }),
@@ -8299,7 +8318,7 @@ var InputPassword = /** @class */ (function (_super) {
     return InputPassword;
 }(_inputText__WEBPACK_IMPORTED_MODULE_1__["InputText"]));
 
-babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__["_TypeStore"].RegisteredTypes["BABYLON.GUI.InputPassword"] = InputPassword;
+Object(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__["RegisterClass"])("BABYLON.GUI.InputPassword", InputPassword);
 
 
 /***/ }),
@@ -9414,7 +9433,7 @@ var InputText = /** @class */ (function (_super) {
     return InputText;
 }(_control__WEBPACK_IMPORTED_MODULE_2__["Control"]));
 
-babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.GUI.InputText"] = InputText;
+Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.GUI.InputText", InputText);
 
 
 /***/ }),
@@ -9704,7 +9723,7 @@ var Line = /** @class */ (function (_super) {
     return Line;
 }(_control__WEBPACK_IMPORTED_MODULE_2__["Control"]));
 
-babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.GUI.Line"] = Line;
+Object(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.GUI.Line", Line);
 
 
 /***/ }),
@@ -9985,7 +10004,7 @@ var MultiLine = /** @class */ (function (_super) {
     return MultiLine;
 }(_control__WEBPACK_IMPORTED_MODULE_2__["Control"]));
 
-babylonjs_Meshes_abstractMesh__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.GUI.MultiLine"] = MultiLine;
+Object(babylonjs_Meshes_abstractMesh__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.GUI.MultiLine", MultiLine);
 
 
 /***/ }),
@@ -10210,7 +10229,7 @@ var RadioButton = /** @class */ (function (_super) {
     return RadioButton;
 }(_control__WEBPACK_IMPORTED_MODULE_2__["Control"]));
 
-babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.GUI.RadioButton"] = RadioButton;
+Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.GUI.RadioButton", RadioButton);
 
 
 /***/ }),
@@ -10362,7 +10381,7 @@ var Rectangle = /** @class */ (function (_super) {
     return Rectangle;
 }(_container__WEBPACK_IMPORTED_MODULE_1__["Container"]));
 
-babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__["_TypeStore"].RegisteredTypes["BABYLON.GUI.Rectangle"] = Rectangle;
+Object(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__["RegisterClass"])("BABYLON.GUI.Rectangle", Rectangle);
 
 
 /***/ }),
@@ -11061,7 +11080,7 @@ var ScrollViewer = /** @class */ (function (_super) {
     return ScrollViewer;
 }(_rectangle__WEBPACK_IMPORTED_MODULE_1__["Rectangle"]));
 
-babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_7__["_TypeStore"].RegisteredTypes["BABYLON.GUI.ScrollViewer"] = ScrollViewer;
+Object(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_7__["RegisterClass"])("BABYLON.GUI.ScrollViewer", ScrollViewer);
 
 
 /***/ }),
@@ -12569,7 +12588,7 @@ var ImageBasedSlider = /** @class */ (function (_super) {
     return ImageBasedSlider;
 }(_baseSlider__WEBPACK_IMPORTED_MODULE_1__["BaseSlider"]));
 
-babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_4__["_TypeStore"].RegisteredTypes["BABYLON.GUI.ImageBasedSlider"] = ImageBasedSlider;
+Object(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_4__["RegisterClass"])("BABYLON.GUI.ImageBasedSlider", ImageBasedSlider);
 
 
 /***/ }),
@@ -13288,7 +13307,7 @@ var Slider = /** @class */ (function (_super) {
     return Slider;
 }(_baseSlider__WEBPACK_IMPORTED_MODULE_1__["BaseSlider"]));
 
-babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__["_TypeStore"].RegisteredTypes["BABYLON.GUI.Slider"] = Slider;
+Object(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__["RegisterClass"])("BABYLON.GUI.Slider", Slider);
 
 
 /***/ }),
@@ -13521,7 +13540,7 @@ var StackPanel = /** @class */ (function (_super) {
     return StackPanel;
 }(_container__WEBPACK_IMPORTED_MODULE_2__["Container"]));
 
-babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.GUI.StackPanel"] = StackPanel;
+Object(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.GUI.StackPanel", StackPanel);
 
 
 /***/ }),
@@ -14162,7 +14181,7 @@ var TextBlock = /** @class */ (function (_super) {
     return TextBlock;
 }(_control__WEBPACK_IMPORTED_MODULE_3__["Control"]));
 
-babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.GUI.TextBlock"] = TextBlock;
+Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.GUI.TextBlock", TextBlock);
 
 
 /***/ }),
@@ -14550,7 +14569,7 @@ var ToggleButton = /** @class */ (function (_super) {
     return ToggleButton;
 }(_rectangle__WEBPACK_IMPORTED_MODULE_2__["Rectangle"]));
 
-babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.GUI.ToggleButton"] = ToggleButton;
+Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.GUI.ToggleButton", ToggleButton);
 
 
 /***/ }),
@@ -14826,7 +14845,7 @@ var VirtualKeyboard = /** @class */ (function (_super) {
     return VirtualKeyboard;
 }(_stackPanel__WEBPACK_IMPORTED_MODULE_2__["StackPanel"]));
 
-babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.GUI.VirtualKeyboard"] = VirtualKeyboard;
+Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.GUI.VirtualKeyboard", VirtualKeyboard);
 
 
 /***/ }),
@@ -15849,13 +15868,13 @@ var XmlLoader = /** @class */ (function () {
     };
     XmlLoader.prototype._getClassAttribute = function (attributeName) {
         var attribute = attributeName.split(".");
-        var className = babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].GetClass("BABYLON.GUI." + attribute[0]);
+        var className = Object(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_1__["GetClass"])("BABYLON.GUI." + attribute[0]);
         return className[attribute[1]];
     };
     XmlLoader.prototype._createGuiElement = function (node, parent, linkParent) {
         if (linkParent === void 0) { linkParent = true; }
         try {
-            var className = babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].GetClass("BABYLON.GUI." + node.nodeName);
+            var className = Object(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_1__["GetClass"])("BABYLON.GUI." + node.nodeName);
             var guiNode = new className();
             if (parent && linkParent) {
                 parent.addControl(guiNode);
@@ -21484,7 +21503,7 @@ var FluentMaterial = /** @class */ (function (_super) {
     return FluentMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.GUI.FluentMaterial"] = FluentMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.GUI.FluentMaterial", FluentMaterial);
 
 
 /***/ }),
@@ -22000,7 +22019,7 @@ var FluentBackplateMaterial = /** @class */ (function (_super) {
     return FluentBackplateMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.GUI.FluentBackplateMaterial"] = FluentBackplateMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.GUI.FluentBackplateMaterial", FluentBackplateMaterial);
 
 
 /***/ }),
@@ -22617,7 +22636,7 @@ var FluentButtonMaterial = /** @class */ (function (_super) {
     return FluentButtonMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.GUI.FluentButtonMaterial"] = FluentButtonMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.GUI.FluentButtonMaterial", FluentButtonMaterial);
 
 
 /***/ }),
@@ -23376,7 +23395,7 @@ var MRDLBackplateMaterial = /** @class */ (function (_super) {
     return MRDLBackplateMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.GUI.MRDLBackplateMaterial"] = MRDLBackplateMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.GUI.MRDLBackplateMaterial", MRDLBackplateMaterial);
 
 
 /***/ }),
@@ -24181,7 +24200,7 @@ var MRDLSliderBarMaterial = /** @class */ (function (_super) {
     return MRDLSliderBarMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.GUI.MRDLSliderBarMaterial"] = MRDLSliderBarMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.GUI.MRDLSliderBarMaterial", MRDLSliderBarMaterial);
 
 
 /***/ }),
@@ -24986,7 +25005,7 @@ var MRDLSliderThumbMaterial = /** @class */ (function (_super) {
     return MRDLSliderThumbMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.GUI.MRDLSliderThumbMaterial"] = MRDLSliderThumbMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.GUI.MRDLSliderThumbMaterial", MRDLSliderThumbMaterial);
 
 
 /***/ }),

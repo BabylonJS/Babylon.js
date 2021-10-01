@@ -13,7 +13,7 @@ import { MaterialHelper } from "../Materials/materialHelper";
 import { Scene } from "../scene";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Color4 } from "../Maths/math.color";
-import { _DevTools } from "../Misc/devTools";
+import { _WarnImport } from "../Misc/devTools";
 import { Observer } from "../Misc/observable";
 import { Engine } from "../Engines/engine";
 import { Nullable } from "../types";
@@ -302,7 +302,7 @@ export class GeometryBufferRenderer {
 
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
-        throw _DevTools.WarnImport("GeometryBufferRendererSceneComponent");
+        throw _WarnImport("GeometryBufferRendererSceneComponent");
     };
 
     /**

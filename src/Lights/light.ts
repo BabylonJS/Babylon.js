@@ -8,7 +8,7 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Effect } from "../Materials/effect";
 import { UniformBuffer } from "../Materials/uniformBuffer";
 import { IShadowGenerator } from "./Shadows/shadowGenerator";
-import { _TypeStore } from '../Misc/typeStore';
+import { GetClass } from '../Misc/typeStore';
 import { ISortableLight, LightConstants } from "./lightConstants";
 
 /**
@@ -695,7 +695,7 @@ export abstract class Light extends Node implements ISortableLight {
         if (parsedLight.animations) {
             for (var animationIndex = 0; animationIndex < parsedLight.animations.length; animationIndex++) {
                 var parsedAnimation = parsedLight.animations[animationIndex];
-                const internalClass = _TypeStore.GetClass("BABYLON.Animation");
+                const internalClass = GetClass("BABYLON.Animation");
                 if (internalClass) {
                     light.animations.push(internalClass.Parse(parsedAnimation));
                 }

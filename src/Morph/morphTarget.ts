@@ -7,7 +7,7 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { VertexBuffer } from "../Buffers/buffer";
 import { AnimationPropertiesOverride } from "../Animations/animationPropertiesOverride";
 import { serialize, SerializationHelper } from "../Misc/decorators";
-import { _TypeStore } from '../Misc/typeStore';
+import { GetClass } from '../Misc/typeStore';
 
 declare type Animation = import("../Animations/animation").Animation;
 
@@ -301,7 +301,7 @@ export class MorphTarget implements IAnimatable {
         if (serializationObject.animations) {
             for (var animationIndex = 0; animationIndex < serializationObject.animations.length; animationIndex++) {
                 var parsedAnimation = serializationObject.animations[animationIndex];
-                const internalClass = _TypeStore.GetClass("BABYLON.Animation");
+                const internalClass = GetClass("BABYLON.Animation");
                 if (internalClass) {
                     result.animations.push(internalClass.Parse(parsedAnimation));
                 }

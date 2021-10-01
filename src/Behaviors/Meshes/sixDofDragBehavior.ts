@@ -6,6 +6,7 @@ import { Observable, Observer } from "../../Misc/observable";
 import { BaseSixDofDragBehavior } from "./baseSixDofDragBehavior";
 import { TransformNode } from "../../Meshes/transformNode";
 import { Space } from "../../Maths/math.axis";
+
 /**
  * A behavior that when attached to a mesh will allow the mesh to be dragged around based on directions and origin of the pointer's ray
  */
@@ -39,6 +40,11 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
      * If `rotateDraggedObject` is set to `true`, this parameter determines if we are only rotating around the y axis (yaw)
      */
     public rotateAroundYOnly = false;
+
+    /**
+     * Should the behavior rotate 1:1 with the motion controller, when one is used.
+     */
+    public rotateWithMotionController = false;
 
     /**
      *  The name of the behavior
@@ -112,14 +118,21 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
         let pointerDelta = TmpVectors.Vector3[0];
         pointerDelta.setAll(0);
 
-        if (this.rotateDraggedObject) {
-            if (this.rotateAroundYOnly) {
-                // Convert change in rotation to only y axis rotation
-                Quaternion.RotationYawPitchRollToRef(worldDeltaRotation.toEulerAngles().y, 0, 0, TmpVectors.Quaternion[0]);
-            } else {
-                TmpVectors.Quaternion[0].copyFrom(worldDeltaRotation);
+        if (this._dragging === this._dragType.DRAG) {
+            if (this.rotateDraggedObject) {
+                if (this.rotateAroundYOnly) {
+                    // Convert change in rotation to only y axis rotation
+                    Quaternion.RotationYawPitchRollToRef(worldDeltaRotation.toEulerAngles().y, 0, 0, TmpVectors.Quaternion[0]);
+                } else {
+                    TmpVectors.Quaternion[0].copyFrom(worldDeltaRotation);
+                }
+                TmpVectors.Quaternion[0].multiplyToRef(this._startingOrientation, this._targetOrientation);
             }
-            TmpVectors.Quaternion[0].multiplyToRef(this._startingOrientation, this._targetOrientation);
+        }
+        else if (this._dragging === this._dragType.NEAR_DRAG ||
+                 (this._dragging === this._dragType.DRAG_WITH_CONTROLLER &&
+                  this.rotateWithMotionController)) {
+            worldDeltaRotation.multiplyToRef(this._startingOrientation, this._targetOrientation);
         }
 
         this._targetPosition.copyFrom(this._startingPosition).addInPlace(worldDeltaPosition);

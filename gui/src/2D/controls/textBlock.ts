@@ -2,7 +2,7 @@ import { Observable } from "babylonjs/Misc/observable";
 import { Measure } from "../measure";
 import { ValueAndUnit } from "../valueAndUnit";
 import { Control } from "./control";
-import { _TypeStore } from "babylonjs/Misc/typeStore";
+import { RegisterClass } from "babylonjs/Misc/typeStore";
 import { Nullable } from "babylonjs/types";
 import { serialize } from 'babylonjs/Misc/decorators';
 import { ICanvasRenderingContext } from 'babylonjs/Engines/ICanvas';
@@ -557,4 +557,4 @@ export class TextBlock extends Control {
         this.onTextChangedObservable.clear();
     }
 }
-_TypeStore.RegisteredTypes["BABYLON.GUI.TextBlock"] = TextBlock;
+RegisterClass("BABYLON.GUI.TextBlock", TextBlock);

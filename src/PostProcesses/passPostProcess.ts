@@ -6,7 +6,7 @@ import { Engine } from "../Engines/engine";
 
 import "../Shaders/pass.fragment";
 import "../Shaders/passCube.fragment";
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 import { SerializationHelper } from '../Misc/decorators';
 
 declare type Scene = import("../scene").Scene;
@@ -50,7 +50,7 @@ export class PassPostProcess extends PostProcess {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.PassPostProcess"] = PassPostProcess;
+RegisterClass("BABYLON.PassPostProcess", PassPostProcess);
 
 /**
  * PassCubePostProcess which produces an output the same as it's input (which must be a cube texture)

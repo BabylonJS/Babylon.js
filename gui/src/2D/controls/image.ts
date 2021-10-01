@@ -4,7 +4,7 @@ import { Tools } from "babylonjs/Misc/tools";
 
 import { Control } from "./control";
 import { Measure } from "../measure";
-import { _TypeStore } from "babylonjs/Misc/typeStore";
+import { RegisterClass } from "babylonjs/Misc/typeStore";
 import { serialize } from "babylonjs/Misc/decorators";
 import { Engine } from "babylonjs/Engines/engine";
 import { ICanvas, ICanvasRenderingContext, IImage } from "babylonjs/Engines/ICanvas";
@@ -900,4 +900,4 @@ export class Image extends Control {
     /** NINE_PATCH */
     public static readonly STRETCH_NINE_PATCH = 4;
 }
-_TypeStore.RegisteredTypes["BABYLON.GUI.Image"] = Image;
+RegisterClass("BABYLON.GUI.Image", Image);

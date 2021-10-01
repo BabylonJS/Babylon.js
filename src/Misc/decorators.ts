@@ -1,7 +1,7 @@
 import { Tags } from "../Misc/tags";
 import { Nullable } from "../types";
 import { Quaternion, Vector2, Vector3, Matrix } from "../Maths/math.vector";
-import { _DevTools } from './devTools';
+import { _WarnImport } from './devTools';
 import { IAnimatable } from '../Animations/animatable.interface';
 import { Color4, Color3 } from '../Maths/math.color';
 
@@ -221,22 +221,22 @@ export class SerializationHelper {
 
     /** @hidden */
     public static _ImageProcessingConfigurationParser = (sourceProperty: any): ImageProcessingConfiguration => {
-        throw _DevTools.WarnImport("ImageProcessingConfiguration");
+        throw _WarnImport("ImageProcessingConfiguration");
     }
 
     /** @hidden */
     public static _FresnelParametersParser = (sourceProperty: any): FresnelParameters => {
-        throw _DevTools.WarnImport("FresnelParameters");
+        throw _WarnImport("FresnelParameters");
     }
 
     /** @hidden */
     public static _ColorCurvesParser = (sourceProperty: any): ColorCurves => {
-        throw _DevTools.WarnImport("ColorCurves");
+        throw _WarnImport("ColorCurves");
     }
 
     /** @hidden */
     public static _TextureParser = (sourceProperty: any, scene: Scene, rootUrl: string): Nullable<BaseTexture> => {
-        throw _DevTools.WarnImport("Texture");
+        throw _WarnImport("Texture");
     }
 
     /**
