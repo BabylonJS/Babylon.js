@@ -6,7 +6,7 @@ import { Rectangle } from "./rectangle";
 import { Control } from "./control";
 import { TextBlock } from "./textBlock";
 import { Image } from "./image";
-import { _TypeStore } from "babylonjs/Misc/typeStore";
+import { RegisterClass } from "babylonjs/Misc/typeStore";
 import { PointerInfoBase } from "babylonjs/Events/pointerEvents";
 
 /**
@@ -321,4 +321,4 @@ export class ToggleButton extends Rectangle {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.GUI.ToggleButton"] = ToggleButton;
+RegisterClass("BABYLON.GUI.ToggleButton", ToggleButton);

@@ -5,7 +5,7 @@ import * as WebGPUConstants from './webgpuConstants';
 import { Logger } from '../../Misc/logger';
 import { ThinEngine } from "../thinEngine";
 import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
-import { CodeStringParsingTools } from "../../Misc/codeStringParsingTools";
+import { RemoveComments } from "../../Misc/codeStringParsingTools";
 
 import "../../ShadersWGSL/ShadersInclude/bonesDeclaration";
 import "../../ShadersWGSL/ShadersInclude/bonesVertex";
@@ -100,7 +100,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
     }
 
     public preProcessShaderCode(code: string): string {
-        return CodeStringParsingTools.RemoveComments(code);
+        return RemoveComments(code);
     }
 
     public varyingProcessor(varying: string, isFragment: boolean, preProcessors: { [key: string]: string }, processingContext: Nullable<ShaderProcessingContext>) {

@@ -18,7 +18,7 @@ import "../../../Engines/Extensions/engine.renderTarget";
 import "../../../Engines/Extensions/engine.renderTargetCube";
 import "../../../Shaders/procedural.vertex";
 import { DataBuffer } from '../../../Buffers/dataBuffer';
-import { _TypeStore } from '../../../Misc/typeStore';
+import { RegisterClass } from '../../../Misc/typeStore';
 import { NodeMaterial } from '../../Node/nodeMaterial';
 import { TextureSize } from '../../../Materials/Textures/textureCreationOptions';
 import { EngineStore } from '../../../Engines/engineStore';
@@ -686,4 +686,4 @@ export class ProceduralTexture extends Texture {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.ProceduralTexture"] = ProceduralTexture;
+RegisterClass("BABYLON.ProceduralTexture", ProceduralTexture);

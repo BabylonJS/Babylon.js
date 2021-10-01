@@ -2094,10 +2094,6 @@ export class VRExperienceHelper {
         var hit = this._scene.pickWithRay(ray, this._raySelectionPredicate);
 
         if (hit) {
-            // Populate the controllers mesh that can be used for drag/drop
-            if ((<any>gazer)._laserPointer) {
-                hit.originMesh = (<any>gazer)._laserPointer.parent;
-            }
             this._scene.simulatePointerMove(hit, { pointerId: gazer._id });
         }
         gazer._currentHit = hit;

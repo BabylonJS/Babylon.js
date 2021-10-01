@@ -14,7 +14,7 @@ import { Color4 } from '../Maths/math.color';
 import "../Engines/Extensions/engine.renderTarget";
 import { NodeMaterial } from '../Materials/Node/nodeMaterial';
 import { serialize, serializeAsColor4, SerializationHelper } from '../Misc/decorators';
-import { _TypeStore } from '../Misc/typeStore';
+import { GetClass, RegisterClass } from '../Misc/typeStore';
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { AbstractScene } from "../abstractScene";
 import { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
@@ -900,7 +900,7 @@ export class PostProcess {
      * @returns a new post process
      */
     public static Parse(parsedPostProcess: any, scene: Scene, rootUrl: string): Nullable<PostProcess> {
-        var postProcessType = _TypeStore.GetClass(parsedPostProcess.customType);
+        var postProcessType = GetClass(parsedPostProcess.customType);
 
         if (!postProcessType || !postProcessType._Parse) {
             return null;
@@ -934,4 +934,4 @@ export class PostProcess {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.PostProcess"] = PostProcess;
+RegisterClass("BABYLON.PostProcess", PostProcess);

@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!*****************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \*****************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \************************************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -541,7 +541,7 @@ var BrickProceduralTexture = /** @class */ (function (_super) {
     return BrickProceduralTexture;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["ProceduralTexture"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.BrickProceduralTexture"] = BrickProceduralTexture;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.BrickProceduralTexture", BrickProceduralTexture);
 
 
 /***/ }),
@@ -701,7 +701,7 @@ var CloudProceduralTexture = /** @class */ (function (_super) {
     return CloudProceduralTexture;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["ProceduralTexture"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.CloudProceduralTexture"] = CloudProceduralTexture;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.CloudProceduralTexture", CloudProceduralTexture);
 
 
 /***/ }),
@@ -951,7 +951,7 @@ var FireProceduralTexture = /** @class */ (function (_super) {
     return FireProceduralTexture;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["ProceduralTexture"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.FireProceduralTexture"] = FireProceduralTexture;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.FireProceduralTexture", FireProceduralTexture);
 
 
 /***/ }),
@@ -1091,7 +1091,7 @@ var GrassProceduralTexture = /** @class */ (function (_super) {
     return GrassProceduralTexture;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["ProceduralTexture"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.GrassProceduralTexture"] = GrassProceduralTexture;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.GrassProceduralTexture", GrassProceduralTexture);
 
 
 /***/ }),
@@ -1122,35 +1122,35 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _brick__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./brick */ "./brick/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "BrickProceduralTexture", function() { return _brick__WEBPACK_IMPORTED_MODULE_0__["BrickProceduralTexture"]; });
+/* harmony import */ var _brick_index__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./brick/index */ "./brick/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "BrickProceduralTexture", function() { return _brick_index__WEBPACK_IMPORTED_MODULE_0__["BrickProceduralTexture"]; });
 
-/* harmony import */ var _cloud__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./cloud */ "./cloud/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CloudProceduralTexture", function() { return _cloud__WEBPACK_IMPORTED_MODULE_1__["CloudProceduralTexture"]; });
+/* harmony import */ var _cloud_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./cloud/index */ "./cloud/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CloudProceduralTexture", function() { return _cloud_index__WEBPACK_IMPORTED_MODULE_1__["CloudProceduralTexture"]; });
 
-/* harmony import */ var _fire__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./fire */ "./fire/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FireProceduralTexture", function() { return _fire__WEBPACK_IMPORTED_MODULE_2__["FireProceduralTexture"]; });
+/* harmony import */ var _fire_index__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./fire/index */ "./fire/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FireProceduralTexture", function() { return _fire_index__WEBPACK_IMPORTED_MODULE_2__["FireProceduralTexture"]; });
 
-/* harmony import */ var _grass__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./grass */ "./grass/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GrassProceduralTexture", function() { return _grass__WEBPACK_IMPORTED_MODULE_3__["GrassProceduralTexture"]; });
+/* harmony import */ var _grass_index__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./grass/index */ "./grass/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GrassProceduralTexture", function() { return _grass_index__WEBPACK_IMPORTED_MODULE_3__["GrassProceduralTexture"]; });
 
-/* harmony import */ var _marble__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./marble */ "./marble/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MarbleProceduralTexture", function() { return _marble__WEBPACK_IMPORTED_MODULE_4__["MarbleProceduralTexture"]; });
+/* harmony import */ var _marble_index__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./marble/index */ "./marble/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MarbleProceduralTexture", function() { return _marble_index__WEBPACK_IMPORTED_MODULE_4__["MarbleProceduralTexture"]; });
 
-/* harmony import */ var _normalMap__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./normalMap */ "./normalMap/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "NormalMapProceduralTexture", function() { return _normalMap__WEBPACK_IMPORTED_MODULE_5__["NormalMapProceduralTexture"]; });
+/* harmony import */ var _normalMap_index__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./normalMap/index */ "./normalMap/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "NormalMapProceduralTexture", function() { return _normalMap_index__WEBPACK_IMPORTED_MODULE_5__["NormalMapProceduralTexture"]; });
 
-/* harmony import */ var _perlinNoise__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./perlinNoise */ "./perlinNoise/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "PerlinNoiseProceduralTexture", function() { return _perlinNoise__WEBPACK_IMPORTED_MODULE_6__["PerlinNoiseProceduralTexture"]; });
+/* harmony import */ var _perlinNoise_index__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./perlinNoise/index */ "./perlinNoise/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "PerlinNoiseProceduralTexture", function() { return _perlinNoise_index__WEBPACK_IMPORTED_MODULE_6__["PerlinNoiseProceduralTexture"]; });
 
-/* harmony import */ var _road__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./road */ "./road/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "RoadProceduralTexture", function() { return _road__WEBPACK_IMPORTED_MODULE_7__["RoadProceduralTexture"]; });
+/* harmony import */ var _road_index__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./road/index */ "./road/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "RoadProceduralTexture", function() { return _road_index__WEBPACK_IMPORTED_MODULE_7__["RoadProceduralTexture"]; });
 
-/* harmony import */ var _starfield__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./starfield */ "./starfield/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "StarfieldProceduralTexture", function() { return _starfield__WEBPACK_IMPORTED_MODULE_8__["StarfieldProceduralTexture"]; });
+/* harmony import */ var _starfield_index__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./starfield/index */ "./starfield/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "StarfieldProceduralTexture", function() { return _starfield_index__WEBPACK_IMPORTED_MODULE_8__["StarfieldProceduralTexture"]; });
 
-/* harmony import */ var _wood__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./wood */ "./wood/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "WoodProceduralTexture", function() { return _wood__WEBPACK_IMPORTED_MODULE_9__["WoodProceduralTexture"]; });
+/* harmony import */ var _wood_index__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./wood/index */ "./wood/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "WoodProceduralTexture", function() { return _wood_index__WEBPACK_IMPORTED_MODULE_9__["WoodProceduralTexture"]; });
 
 
 
@@ -1371,7 +1371,7 @@ var MarbleProceduralTexture = /** @class */ (function (_super) {
     return MarbleProceduralTexture;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["ProceduralTexture"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.MarbleProceduralTexture"] = MarbleProceduralTexture;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.MarbleProceduralTexture", MarbleProceduralTexture);
 
 
 /***/ }),
@@ -1496,7 +1496,7 @@ var NormalMapProceduralTexture = /** @class */ (function (_super) {
     return NormalMapProceduralTexture;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["ProceduralTexture"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.NormalMapProceduralTexture"] = NormalMapProceduralTexture;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.NormalMapProceduralTexture", NormalMapProceduralTexture);
 
 
 /***/ }),
@@ -1621,7 +1621,7 @@ var PerlinNoiseProceduralTexture = /** @class */ (function (_super) {
     return PerlinNoiseProceduralTexture;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["ProceduralTexture"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.PerlinNoiseProceduralTexture"] = PerlinNoiseProceduralTexture;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.PerlinNoiseProceduralTexture", PerlinNoiseProceduralTexture);
 
 
 /***/ }),
@@ -1733,7 +1733,7 @@ var RoadProceduralTexture = /** @class */ (function (_super) {
     return RoadProceduralTexture;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["ProceduralTexture"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.RoadProceduralTexture"] = RoadProceduralTexture;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.RoadProceduralTexture", RoadProceduralTexture);
 
 
 /***/ }),
@@ -2004,7 +2004,7 @@ var StarfieldProceduralTexture = /** @class */ (function (_super) {
     return StarfieldProceduralTexture;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["ProceduralTexture"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.StarfieldProceduralTexture"] = StarfieldProceduralTexture;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.StarfieldProceduralTexture", StarfieldProceduralTexture);
 
 
 /***/ }),
@@ -2132,7 +2132,7 @@ var WoodProceduralTexture = /** @class */ (function (_super) {
     return WoodProceduralTexture;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["ProceduralTexture"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.WoodProceduralTexture"] = WoodProceduralTexture;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.WoodProceduralTexture", WoodProceduralTexture);
 
 
 /***/ }),

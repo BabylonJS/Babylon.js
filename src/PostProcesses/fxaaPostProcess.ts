@@ -8,7 +8,7 @@ import { Constants } from "../Engines/constants";
 
 import "../Shaders/fxaa.fragment";
 import "../Shaders/fxaa.vertex";
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 import { SerializationHelper } from '../Misc/decorators';
 
 declare type Scene = import("../scene").Scene;
@@ -63,4 +63,4 @@ export class FxaaPostProcess extends PostProcess {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.FxaaPostProcess"] = FxaaPostProcess;
+RegisterClass("BABYLON.FxaaPostProcess", FxaaPostProcess);
