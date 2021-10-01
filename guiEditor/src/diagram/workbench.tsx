@@ -67,7 +67,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _selectAll: boolean = false;
     private _camera: ArcRotateCamera;
     private _cameraRadias: number;
-    private _cameraMaxRadiasFactor = 8192; // 2^13
+    private _cameraMaxRadiasFactor = 16384; // 2^13
     private _pasted: boolean;
     public get globalState() {
         return this.props.globalState;
@@ -660,6 +660,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.globalState.guiTexture.addControl(this.artBoardBackground);
         this.setCameraRadius();
         this._camera = new ArcRotateCamera("Camera", -Math.PI / 2, 0, this._cameraRadias, Vector3.Zero(), this._scene);
+        this._camera.maxZ =  this._cameraMaxRadiasFactor * 2;
         this.addControls(this._scene, this._camera);
 
         this._scene.getEngine().onCanvasPointerOutObservable.clear();
