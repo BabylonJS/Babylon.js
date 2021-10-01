@@ -618,11 +618,7 @@ void main(void) {
     #endif
 
     #ifdef PREPASS_DEPTH
-        float dMetric = vViewPos.z;
-        #ifdef USE_REVERSE_DEPTHBUFFER
-            dMetric *= -1;
-        #endif
-        gl_FragData[PREPASS_DEPTH_INDEX] = vec4(dMetric, 0.0, 0.0, writeGeometryInfo); // Linear depth
+        gl_FragData[PREPASS_DEPTH_INDEX] = vec4(vViewPos.z, 0.0, 0.0, writeGeometryInfo); // Linear depth
     #endif
 
     #ifdef PREPASS_NORMAL
