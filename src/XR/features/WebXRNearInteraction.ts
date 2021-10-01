@@ -340,7 +340,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                         }
                     }
                 }
-                
+
                 controllerData.xrControllerTransform = controllerData.xrController.grip || null;
             } else {
                 return;

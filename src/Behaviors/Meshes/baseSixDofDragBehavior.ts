@@ -45,10 +45,10 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
     private _tmpQuaternion: Quaternion = new Quaternion();
 
     protected _dragType = {
-        NONE:0,
-        DRAG:1,
-        DRAG_WITH_CONTROLLER:2,
-        NEAR_DRAG:3,
+        NONE: 0,
+        DRAG: 1,
+        DRAG_WITH_CONTROLLER: 2,
+        NEAR_DRAG: 3,
     };
 
     protected _scene: Scene;
@@ -294,7 +294,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     pointerInfo.pickInfo.hit &&
                     pointerInfo.pickInfo.pickedMesh &&
                     pointerInfo.pickInfo.pickedPoint &&
-                    pointerInfo.pickInfo.ray && 
+                    pointerInfo.pickInfo.ray &&
                     (!isXRPointer || pointerInfo.pickInfo.originTransform) &&
                     pickPredicate(pointerInfo.pickInfo.pickedMesh)
                 ) {
