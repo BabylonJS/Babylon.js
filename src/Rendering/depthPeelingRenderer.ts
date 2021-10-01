@@ -57,6 +57,17 @@ export class DepthPeelingRenderer {
     private _prePassEffectConfiguration: DepthPeelingEffectConfiguration;
 
     private _blendBackTexture: InternalTexture;
+    private _layoutCache = [[true], [true, true], [true, true, true]];
+
+    private static _DEPTH_CLEAR_VALUE = -99999.0;
+    private static _MIN_DEPTH = 0;
+    private static _MAX_DEPTH = 1;
+
+    private _colorCache = [
+        new Color4(DepthPeelingRenderer._DEPTH_CLEAR_VALUE, DepthPeelingRenderer._DEPTH_CLEAR_VALUE, 0, 0),
+        new Color4(-DepthPeelingRenderer._MIN_DEPTH, DepthPeelingRenderer._MAX_DEPTH, 0, 0),
+        new Color4(0, 0, 0, 0)
+    ];
 
     /**
      * Instanciates the depth peeling renderer
@@ -266,32 +277,28 @@ export class DepthPeelingRenderer {
             return;
         }
 
-        const DEPTH_CLEAR_VALUE = -99999.0;
-        const MIN_DEPTH = 0;
-        const MAX_DEPTH = 1;
-
         (this._scene.prePassRenderer! as any)._enabled = false;
 
         // Clears
         this._engine.bindFramebuffer(this._depthMrts[0].renderTarget!);
-        let attachments = this._engine.buildTextureLayout([true]);
+        let attachments = this._engine.buildTextureLayout(this._layoutCache[0]);
         this._engine.bindAttachments(attachments);
-        this._engine.clear(new Color4(DEPTH_CLEAR_VALUE, DEPTH_CLEAR_VALUE, 0, 0), true, false, false);
+        this._engine.clear(this._colorCache[0], true, false, false);
 
         this._engine.bindFramebuffer(this._depthMrts[1].renderTarget!);
-        this._engine.clear(new Color4(-MIN_DEPTH, MAX_DEPTH, 0, 0), true, false, false);
+        this._engine.clear(this._colorCache[1], true, false, false);
 
         this._engine.bindFramebuffer(this._colorMrts[0].renderTarget!);
-        attachments = this._engine.buildTextureLayout([true, true]);
+        attachments = this._engine.buildTextureLayout(this._layoutCache[1]);
         this._engine.bindAttachments(attachments);
-        this._engine.clear(new Color4(0, 0, 0, 0), true, false, false);
+        this._engine.clear(this._colorCache[2], true, false, false);
 
         this._engine.bindFramebuffer(this._colorMrts[1].renderTarget!);
-        this._engine.clear(new Color4(0, 0, 0, 0), true, false, false);
+        this._engine.clear(this._colorCache[2], true, false, false);
 
         // Draw depth for first pass
         this._engine.bindFramebuffer(this._depthMrts[0].renderTarget!);
-        attachments = this._engine.buildTextureLayout([true]);
+        attachments = this._engine.buildTextureLayout(this._layoutCache[0]);
         this._engine.bindAttachments(attachments);
 
         this._engine.setAlphaEquation(Constants.ALPHA_EQUATION_MAX);
@@ -316,21 +323,22 @@ export class DepthPeelingRenderer {
 
             // Clears
             this._engine.bindFramebuffer(this._depthMrts[writeId].renderTarget!);
-            attachments = this._engine.buildTextureLayout([true]);
+            attachments = this._engine.buildTextureLayout(this._layoutCache[0]);
             this._engine.bindAttachments(attachments);
-            this._engine.clear(new Color4(DEPTH_CLEAR_VALUE, DEPTH_CLEAR_VALUE, 0, 0), true, false, false);
+            this._engine.clear(this._colorCache[0], true, false, false);
 
             this._engine.bindFramebuffer(this._colorMrts[writeId].renderTarget!);
-            attachments = this._engine.buildTextureLayout([true, true]);
+            attachments = this._engine.buildTextureLayout(this._layoutCache[1]);
             this._engine.bindAttachments(attachments);
-            this._engine.clear(new Color4(0, 0, 0, 0), true, false, false);
+            this._engine.clear(this._colorCache[2], true, false, false);
 
             this._engine.bindFramebuffer(this._depthMrts[writeId].renderTarget!);
-            attachments = this._engine.buildTextureLayout([true, true, true]);
+            attachments = this._engine.buildTextureLayout(this._layoutCache[2]);
             this._engine.bindAttachments(attachments);
 
             this._engine.setAlphaEquation(Constants.ALPHA_EQUATION_MAX);
             this._engine._alphaState.alphaBlend = true;
+            this._engine.depthCullingState.depthTest = false;
             this._engine.applyStates();
 
             // Render
@@ -338,7 +346,7 @@ export class DepthPeelingRenderer {
 
             // Back color
             this._engine.bindFramebuffer(this._blendBackMrt.renderTarget!);
-            attachments = this._engine.buildTextureLayout([true]);
+            attachments = this._engine.buildTextureLayout(this._layoutCache[0]);
             this._engine.bindAttachments(attachments);
             this._engine.setAlphaEquation(Constants.ALPHA_EQUATION_ADD);
             this._engine.setAlphaMode(Constants.ALPHA_LAYER_ACCUMULATE);
