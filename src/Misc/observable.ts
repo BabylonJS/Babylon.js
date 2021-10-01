@@ -157,7 +157,7 @@ export class Observable<T> {
     private _eventState: EventState;
 
     private _onObserverAdded: Nullable<(observer: Observer<T>) => void>;
-    
+
     /**
      * Create an observable from a Promise.
      * @param promise a promise to observe for fulfillment.
