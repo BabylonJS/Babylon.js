@@ -81,7 +81,7 @@ export class ShadowDepthWrapper {
      */
     constructor(baseMaterial: Material, scene: Scene, options?: IIOptionShadowDepthMaterial) {
         this._baseMaterial = baseMaterial;
-        this._scene = scene;
+        this._scene = scene ?? Engine.LastCreatedScene;
         this._options = options;
 
         this._subMeshToEffect = new Map();
