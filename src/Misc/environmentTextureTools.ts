@@ -709,6 +709,16 @@ export function UploadEnvSpherical(texture: InternalTexture, info: EnvironmentTe
 
 /** @hidden */
 export function _UpdateRGBDAsync(internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial>, lodScale: number, lodOffset: number): Promise<InternalTexture> {
+    const proxy = internalTexture.getEngine().createRawCubeTexture(null, internalTexture.width, internalTexture.format, internalTexture.type,
+        internalTexture.generateMipMaps, internalTexture.invertY, internalTexture.samplingMode, internalTexture._compression);
+    const proxyPromise = UploadLevelsAsync(proxy, data);
+    internalTexture.onRebuildCallback = (_internalTexture) => {
+        return {
+            proxy: proxyPromise,
+            isReady: true,
+            isAsync: true
+        };
+    };
     internalTexture._source = InternalTextureSource.CubeRawRGBD;
     internalTexture._bufferViewArrayArray = data;
     internalTexture._lodGenerationScale = lodScale;
