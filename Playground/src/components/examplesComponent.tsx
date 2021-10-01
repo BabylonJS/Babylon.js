@@ -20,10 +20,10 @@ interface IScript {
     samples: ISample[];
 }
 
-export class ExamplesComponent extends React.Component<IExamplesComponentProps, { filter: string }> {
-    private _state = "removed";
+export class ExamplesComponent extends React.Component<IExamplesComponentProps, { filter: string; className: string }> {
     private _documentationRoot = "https://doc.babylonjs.com";
-    private _searchUrl = "https://babylonjs-newdocs.search.windows.net/indexes/playgrounds/docs?api-version=2020-06-30&$top=1000&api-key=820DCA4087091C0386B0F0A266710390&$filter=isMain%20eq%20true";
+    private _searchUrl =
+        "https://babylonjs-newdocs.search.windows.net/indexes/playgrounds/docs?api-version=2020-06-30&$top=1000&api-key=820DCA4087091C0386B0F0A266710390&$filter=isMain%20eq%20true";
     private _rootRef: React.RefObject<HTMLDivElement>;
     private _searchBoxRef: React.RefObject<HTMLInputElement>;
     private _scripts: IScript[];
@@ -32,26 +32,24 @@ export class ExamplesComponent extends React.Component<IExamplesComponentProps, 
         super(props);
         this._loadScriptsAsync();
 
-        this.state = { filter: "" };
+        this.state = { filter: "", className: "removed" };
         this._rootRef = React.createRef();
         this._searchBoxRef = React.createRef();
 
         this.props.globalState.onExamplesDisplayChangedObservable.add(() => {
-            if (this._state !== "visible") {
-                this._rootRef.current!.classList.remove("removed");
+            if (this.state.className !== "visible") {
+                this.setState({
+                    ...this.state,
+                    className: "visible",
+                });
                 setTimeout(() => {
-                    this._rootRef.current!.classList.add("visible");
-                    this._state = "visible";
-                    setTimeout(() => {
-                        this._searchBoxRef.current!.focus();
-                    }, 250);
-                }, 16);
+                    this._searchBoxRef.current!.focus();
+                }, 250);
             } else {
-                this._rootRef.current!.classList.remove("visible");
-                this._state = "";
-                setTimeout(() => {
-                    this._rootRef.current!.classList.add("removed");
-                }, 200);
+                this.setState({
+                    ...this.state,
+                    className: "removed",
+                });
             }
         });
     }
@@ -64,16 +62,16 @@ export class ExamplesComponent extends React.Component<IExamplesComponentProps, 
 
         let list = await response.json();
 
-        for(var value of list.value) {
+        for (var value of list.value) {
             let newSample = {
                 title: value.title,
                 doc: this._documentationRoot + value.documentationPage,
                 icon: this._documentationRoot + value.imageUrl,
                 PGID: value.playgroundId,
-                description: value.description
-            }
+                description: value.description,
+            };
 
-            let filter = this._scripts.filter(s => s.title === value.category);
+            let filter = this._scripts.filter((s) => s.title === value.category);
             let script: IScript;
 
             if (filter && filter.length) {
@@ -81,7 +79,7 @@ export class ExamplesComponent extends React.Component<IExamplesComponentProps, 
             } else {
                 script = {
                     title: value.category,
-                    samples: []
+                    samples: [],
                 };
                 this._scripts.push(script);
             }
@@ -91,7 +89,6 @@ export class ExamplesComponent extends React.Component<IExamplesComponentProps, 
     }
 
     private async _loadScriptsAsync() {
-
         this._scripts = [];
 
         await this._fillScriptAsync();
@@ -133,7 +130,7 @@ export class ExamplesComponent extends React.Component<IExamplesComponentProps, 
         }
 
         return (
-            <div id="examples" className={this._state} ref={this._rootRef}>
+            <div id="examples" className={this.state.className} ref={this._rootRef}>
                 <div id="examples-header">Examples</div>
                 <div id="examples-filter">
                     <input
@@ -151,7 +148,11 @@ export class ExamplesComponent extends React.Component<IExamplesComponentProps, 
                 <div id="examples-list">
                     {this._scripts.map((s) => {
                         let active = s.samples.filter((ss) => {
-                            return !this.state.filter || ss.title.toLowerCase().indexOf(this.state.filter.toLowerCase()) !== -1 || ss.description.toLowerCase().indexOf(this.state.filter.toLowerCase()) !== -1;
+                            return (
+                                !this.state.filter ||
+                                ss.title.toLowerCase().indexOf(this.state.filter.toLowerCase()) !== -1 ||
+                                ss.description.toLowerCase().indexOf(this.state.filter.toLowerCase()) !== -1
+                            );
                         });
 
                         if (active.length === 0) {
@@ -164,7 +165,10 @@ export class ExamplesComponent extends React.Component<IExamplesComponentProps, 
                                 {active.map((ss, i) => {
                                     return (
                                         <div className="example" key={ss.title + i} onClick={() => this._onLoadPG(ss.PGID)}>
-                                            <img src={ss.icon.replace("icons", "https://doc.babylonjs.com/examples/icons")} />
+                                            <img
+                                                src={this.state.className === "visible" ? ss.icon.replace("icons", "https://doc.babylonjs.com/examples/icons") : ""}
+                                                alt={ss.title}
+                                            />
                                             <div className="example-title">{ss.title}</div>
                                             <div className="example-description">{ss.description}</div>
                                             <a className="example-link" href={ss.doc} target="_blank">
