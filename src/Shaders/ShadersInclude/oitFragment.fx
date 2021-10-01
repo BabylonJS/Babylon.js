@@ -4,6 +4,9 @@
     // -------------------------
 
     float fragDepth = gl_FragCoord.z;   // 0 - 1
+    #ifdef USE_REVERSE_DEPTHBUFFER
+        fragDepth = -fragDepth;
+    #endif
 
     ivec2 fragCoord = ivec2(gl_FragCoord.xy);
     vec2 lastDepth = texelFetch(oitDepthSampler, fragCoord, 0).rg;
@@ -32,7 +35,7 @@
 
     if (fragDepth > nearestDepth && fragDepth < furthestDepth) {
         // This needs to be peeled.
-        // The ones remaining after MAX blended for 
+        // The ones remaining after MAX blended for
         // all need-to-peel will be peeled next pass.
         depth.rg = vec2(-fragDepth, fragDepth);
         return;
