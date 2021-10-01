@@ -61,7 +61,6 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
         }
         if (nextProps.selectedEntity) {
             if (Tools.LookForItem(nextProps.entity, nextProps.selectedEntity)) {
-                //nextState.isExpanded = true;
                 return true;
             }
         }
@@ -127,7 +126,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
         }
         let isExpanded = entity.reservedDataStore.isExpanded || Tools.LookForItem(this.props.entity, this.props.selectedEntity);
         entity.reservedDataStore.isExpanded = isExpanded;
-        
+
         const chevron = isExpanded ? <img src={expandedIcon} className="icon" /> : <img src={collapsedIcon} className="icon" />
         const children = entity.getClassName() === "MultiMaterial" ? [] : Tools.SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
         const hasChildren = children.length > 0;
