@@ -1,4 +1,4 @@
-export interface NativeHandle extends Uint32Array {
+export interface NativeData extends Uint32Array {
 }
 
 interface INativeDataStream {
@@ -82,7 +82,7 @@ export class NativeDataStream {
         this._position = NativeDataStream._indexToPosition(index + values.length + 1);
     }
 
-    public writeNativeHandle(handle: NativeHandle) {
+    public writeNativeData(handle: NativeData) {
         this.writeUint32Array(handle);
     }
 
