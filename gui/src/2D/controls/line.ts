@@ -7,7 +7,7 @@ import { Scene } from "babylonjs/scene";
 import { Control } from "./control";
 import { ValueAndUnit } from "../valueAndUnit";
 import { Measure } from "../measure";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 import { serialize } from 'babylonjs/Misc/decorators';
 import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
 
@@ -256,4 +256,4 @@ export class Line extends Control {
         }
     }
 }
-_TypeStore.RegisteredTypes["BABYLON.GUI.Line"] = Line;
+RegisterClass("BABYLON.GUI.Line", Line);

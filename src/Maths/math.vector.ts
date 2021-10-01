@@ -4,7 +4,7 @@ import { Viewport } from './math.viewport';
 import { DeepImmutable, Nullable, FloatArray, float } from "../types";
 import { ArrayTools } from '../Misc/arrayTools';
 import { IPlaneLike } from './math.like';
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 import { Plane } from './math.plane';
 import { PerformanceConfigurator } from '../Engines/performanceConfigurator';
 
@@ -6335,10 +6335,10 @@ export class TmpVectors {
     public static Matrix = ArrayTools.BuildTuple(8, Matrix.Identity); // 8 temp Matrices at once should be enough
 }
 
-_TypeStore.RegisteredTypes["BABYLON.Vector2"] = Vector2;
-_TypeStore.RegisteredTypes["BABYLON.Vector3"] = Vector3;
-_TypeStore.RegisteredTypes["BABYLON.Vector4"] = Vector4;
-_TypeStore.RegisteredTypes["BABYLON.Matrix"] = Matrix;
+RegisterClass("BABYLON.Vector2", Vector2);
+RegisterClass("BABYLON.Vector3", Vector3);
+RegisterClass("BABYLON.Vector4", Vector4);
+RegisterClass("BABYLON.Matrix", Matrix);
 
 const mtxConvertNDCToHalfZRange = Matrix.FromValues(
     1, 0, 0, 0,

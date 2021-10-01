@@ -1,7 +1,7 @@
 import { Observable } from "../Misc/observable";
 import { FloatArray, Nullable } from "../types";
 import { Constants } from "../Engines/constants";
-import { DomManagement } from "../Misc/domManagement";
+import { GetDOMTextContent, IsWindowObjectExist } from "../Misc/domManagement";
 import { Logger } from "../Misc/logger";
 import { IDisposable } from '../scene';
 import { IPipelineContext } from '../Engines/IPipelineContext';
@@ -275,7 +275,7 @@ export class Effect implements IDisposable {
         var vertexSource: any;
         var fragmentSource: any;
 
-        let hostDocument = DomManagement.IsWindowObjectExist() ? this._engine.getHostDocument() : null;
+        let hostDocument = IsWindowObjectExist() ? this._engine.getHostDocument() : null;
 
         if (baseName.vertexSource) {
             vertexSource = "source:" + baseName.vertexSource;
@@ -552,7 +552,7 @@ export class Effect implements IDisposable {
         if (typeof (HTMLElement) !== "undefined") {
             // DOM element ?
             if (shader instanceof HTMLElement) {
-                var shaderCode = DomManagement.GetDOMTextContent(shader);
+                var shaderCode = GetDOMTextContent(shader);
                 callback(shaderCode);
                 return;
             }

@@ -17,7 +17,7 @@ import { Particle } from "./particle";
 import { SubEmitter, SubEmitterType } from "./subEmitter";
 import { Constants } from "../Engines/constants";
 import { SerializationHelper } from "../Misc/decorators";
-import { _TypeStore } from '../Misc/typeStore';
+import { GetClass } from '../Misc/typeStore';
 import { IAnimatable } from '../Animations/animatable.interface';
 import { DrawWrapper } from "../Materials/drawWrapper";
 
@@ -2530,7 +2530,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             scene = sceneOrEngine as Scene;
         }
 
-        const internalClass = _TypeStore.GetClass("BABYLON.Texture");
+        const internalClass = GetClass("BABYLON.Texture");
         if (internalClass && scene) {
             // Texture
             if (parsedParticleSystem.texture) {
@@ -2570,7 +2570,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         if (parsedParticleSystem.animations) {
             for (var animationIndex = 0; animationIndex < parsedParticleSystem.animations.length; animationIndex++) {
                 var parsedAnimation = parsedParticleSystem.animations[animationIndex];
-                const internalClass = _TypeStore.GetClass("BABYLON.Animation");
+                const internalClass = GetClass("BABYLON.Animation");
                 if (internalClass) {
                     particleSystem.animations.push(internalClass.Parse(parsedAnimation));
                 }
@@ -2700,7 +2700,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         }
 
         if (parsedParticleSystem.noiseTexture && scene) {
-            const internalClass = _TypeStore.GetClass("BABYLON.ProceduralTexture");
+            const internalClass = GetClass("BABYLON.ProceduralTexture");
             particleSystem.noiseTexture = internalClass.Parse(parsedParticleSystem.noiseTexture, scene, rootUrl);
         }
 

@@ -23,7 +23,7 @@ import { TransformBlock } from './Blocks/transformBlock';
 import { VertexOutputBlock } from './Blocks/Vertex/vertexOutputBlock';
 import { FragmentOutputBlock } from './Blocks/Fragment/fragmentOutputBlock';
 import { InputBlock } from './Blocks/Input/inputBlock';
-import { _TypeStore } from '../../Misc/typeStore';
+import { GetClass, RegisterClass } from '../../Misc/typeStore';
 import { serialize, SerializationHelper } from '../../Misc/decorators';
 import { TextureBlock } from './Blocks/Dual/textureBlock';
 import { ReflectionTextureBaseBlock } from './Blocks/Dual/reflectionTextureBaseBlock';
@@ -1788,7 +1788,7 @@ export class NodeMaterial extends PushMaterial {
 
         // Create blocks
         for (var parsedBlock of source.blocks) {
-            let blockType = _TypeStore.GetClass(parsedBlock.customType);
+            let blockType = GetClass(parsedBlock.customType);
             if (blockType) {
                 let block: NodeMaterialBlock = new blockType();
                 block._deserialize(parsedBlock, this.getScene(), rootUrl);
@@ -1978,4 +1978,4 @@ export class NodeMaterial extends PushMaterial {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.NodeMaterial"] = NodeMaterial;
+RegisterClass("BABYLON.NodeMaterial", NodeMaterial);

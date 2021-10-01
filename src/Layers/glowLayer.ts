@@ -16,7 +16,7 @@ import { BlurPostProcess } from "../PostProcesses/blurPostProcess";
 import { EffectLayer } from "./effectLayer";
 import { AbstractScene } from "../abstractScene";
 import { Constants } from "../Engines/constants";
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 import { Engine } from '../Engines/engine';
 import { Color4 } from '../Maths/math.color';
 
@@ -634,4 +634,4 @@ export class GlowLayer extends EffectLayer {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.GlowLayer"] = GlowLayer;
+RegisterClass("BABYLON.GlowLayer", GlowLayer);

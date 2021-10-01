@@ -8,7 +8,7 @@ import { ShaderDefineAndOperator } from './Expressions/Operators/shaderDefineAnd
 import { ShaderDefineExpression } from './Expressions/shaderDefineExpression';
 import { ShaderDefineArithmeticOperator } from './Expressions/Operators/shaderDefineArithmeticOperator';
 import { ProcessingOptions } from './shaderProcessingOptions';
-import { _DevTools } from '../../Misc/devTools';
+import { _WarnImport } from '../../Misc/devTools';
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
 
 declare type WebRequest = import("../../Misc/webRequest").WebRequest;
@@ -461,6 +461,6 @@ export class ShaderProcessor {
      * @hidden
      */
     public static _FileToolsLoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void): IFileRequest {
-        throw _DevTools.WarnImport("FileTools");
+        throw _WarnImport("FileTools");
     }
 }
