@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!*****************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \*****************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \************************************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -541,7 +541,7 @@ var BrickProceduralTexture = /** @class */ (function (_super) {
     return BrickProceduralTexture;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["ProceduralTexture"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.BrickProceduralTexture"] = BrickProceduralTexture;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.BrickProceduralTexture", BrickProceduralTexture);
 
 
 /***/ }),
@@ -701,7 +701,7 @@ var CloudProceduralTexture = /** @class */ (function (_super) {
     return CloudProceduralTexture;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["ProceduralTexture"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.CloudProceduralTexture"] = CloudProceduralTexture;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.CloudProceduralTexture", CloudProceduralTexture);
 
 
 /***/ }),
@@ -951,7 +951,7 @@ var FireProceduralTexture = /** @class */ (function (_super) {
     return FireProceduralTexture;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["ProceduralTexture"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.FireProceduralTexture"] = FireProceduralTexture;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.FireProceduralTexture", FireProceduralTexture);
 
 
 /***/ }),
@@ -1091,7 +1091,7 @@ var GrassProceduralTexture = /** @class */ (function (_super) {
     return GrassProceduralTexture;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["ProceduralTexture"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.GrassProceduralTexture"] = GrassProceduralTexture;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.GrassProceduralTexture", GrassProceduralTexture);
 
 
 /***/ }),
@@ -1371,7 +1371,7 @@ var MarbleProceduralTexture = /** @class */ (function (_super) {
     return MarbleProceduralTexture;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["ProceduralTexture"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.MarbleProceduralTexture"] = MarbleProceduralTexture;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.MarbleProceduralTexture", MarbleProceduralTexture);
 
 
 /***/ }),
@@ -1496,7 +1496,7 @@ var NormalMapProceduralTexture = /** @class */ (function (_super) {
     return NormalMapProceduralTexture;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["ProceduralTexture"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.NormalMapProceduralTexture"] = NormalMapProceduralTexture;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.NormalMapProceduralTexture", NormalMapProceduralTexture);
 
 
 /***/ }),
@@ -1621,7 +1621,7 @@ var PerlinNoiseProceduralTexture = /** @class */ (function (_super) {
     return PerlinNoiseProceduralTexture;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["ProceduralTexture"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.PerlinNoiseProceduralTexture"] = PerlinNoiseProceduralTexture;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.PerlinNoiseProceduralTexture", PerlinNoiseProceduralTexture);
 
 
 /***/ }),
@@ -1733,7 +1733,7 @@ var RoadProceduralTexture = /** @class */ (function (_super) {
     return RoadProceduralTexture;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["ProceduralTexture"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.RoadProceduralTexture"] = RoadProceduralTexture;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.RoadProceduralTexture", RoadProceduralTexture);
 
 
 /***/ }),
@@ -2004,7 +2004,7 @@ var StarfieldProceduralTexture = /** @class */ (function (_super) {
     return StarfieldProceduralTexture;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["ProceduralTexture"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.StarfieldProceduralTexture"] = StarfieldProceduralTexture;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.StarfieldProceduralTexture", StarfieldProceduralTexture);
 
 
 /***/ }),
@@ -2132,7 +2132,7 @@ var WoodProceduralTexture = /** @class */ (function (_super) {
     return WoodProceduralTexture;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["ProceduralTexture"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.WoodProceduralTexture"] = WoodProceduralTexture;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.WoodProceduralTexture", WoodProceduralTexture);
 
 
 /***/ }),
