@@ -9,6 +9,7 @@ import { Node } from '../node';
 import { ShadowGenerator } from '../Lights/Shadows/shadowGenerator';
 import { RandomGUID } from '../Misc/guid';
 import { DrawWrapper } from "./drawWrapper";
+import { Engine } from "../Engines/engine";
 
 /**
  * Options to be used when creating a shadow depth material
