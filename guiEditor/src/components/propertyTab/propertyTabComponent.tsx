@@ -81,20 +81,18 @@ interface IPropertyTabComponentProps {
 
 interface IPropertyTabComponentState {
     currentNode: Nullable<Control>;
-    textureSize: Vector2;
 }
 
 export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
     private _onBuiltObserver: Nullable<Observer<void>>;
     private _timerIntervalId: number;
     private _lockObject: LockObject;
-    private _sizeOption: number = 10;
-    private _sizeOptionsLength = 12;
+    private _sizeOption: number;
 
     constructor(props: IPropertyTabComponentProps) {
         super(props);
 
-        this.state = { currentNode: null, textureSize: new Vector2(1024, 1024) };
+        this.state = { currentNode: null };
         this._lockObject = new LockObject();
         this.props.globalState.lockObject = this._lockObject;
         this.props.globalState.onSaveObservable.add(() => {
@@ -112,7 +110,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         });
 
         this.props.globalState.onLoadObservable.add((file) => this.load(file));
-        this._sizeOption = DataStorage.ReadBoolean("Responsive", true) ? 10 : this._sizeOptionsLength;
 
     }
 
@@ -126,8 +123,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             }
         });
         this.props.globalState.onResizeObservable.add((newSize) => {
-            this.setState({ textureSize: newSize });
             this.props.globalState.workbench.artBoardBackground._markAsDirty(true);
+            this.forceUpdate();
         });
 
         this._onBuiltObserver = this.props.globalState.onBuiltObservable.add(() => {
@@ -380,6 +377,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
     render() {
 
+        if(this.props.globalState.guiTexture == undefined) return null;
         const _sizeValues = [
             new Vector2(1920, 1080),
             new Vector2(1366, 768),
@@ -408,6 +406,14 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             { label: "Square (1024)", value: 10 },
             { label: "Square (2048)", value: 11 },
         ];
+
+        const size = this.props.globalState.guiTexture.getSize();
+        let textureSize = new Vector2(size.width, size.height);
+        this._sizeOption = _sizeValues.findIndex((value) => value.x == textureSize.x && value.y == textureSize.y);
+        if(this._sizeOption < 0) {
+            this.props.globalState.onResponsiveChangeObservable.notifyObservers(false);
+            DataStorage.WriteBoolean("Responsive", false);
+        }
 
         if (this.state.currentNode && this.props.globalState.workbench.selectedGuiNodes.length === 1) {
             return (
@@ -495,33 +501,33 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 this.forceUpdate();
                             }}
                         />}
-                    {this._sizeOption == (_sizeOptions.length) &&
+                    {!DataStorage.ReadBoolean("Responsive", true) &&
                         <div className="divider">
                             <FloatLineComponent
                                 icon={canvasSizeIcon}
                                 iconLabel="Canvas Size"
                                 label="W"
-                                target={this.state.textureSize}
+                                target={textureSize}
                                 propertyName="x"
                                 isInteger={true}
                                 min={1}
                                 max={MAX_TEXTURE_SIZE}
                                 onChange={(newvalue) => {
                                     if (!isNaN(newvalue)) {
-                                        this.props.globalState.workbench.resizeGuiTexture(new Vector2(newvalue, this.state.textureSize.y));
+                                        this.props.globalState.workbench.resizeGuiTexture(new Vector2(newvalue, textureSize.y));
                                     }
                                 }} ></FloatLineComponent>
                             <FloatLineComponent
                                 icon={canvasSizeIcon}
                                 label="H"
-                                target={this.state.textureSize}
+                                target={textureSize}
                                 propertyName="y"
                                 isInteger={true}
                                 min={1}
                                 max={MAX_TEXTURE_SIZE}
                                 onChange={(newvalue) => {
                                     if (!isNaN(newvalue)) {
-                                        this.props.globalState.workbench.resizeGuiTexture(new Vector2(this.state.textureSize.x, newvalue));
+                                        this.props.globalState.workbench.resizeGuiTexture(new Vector2(textureSize.x, newvalue));
                                     }
                                 }}
                             ></FloatLineComponent>
