@@ -31,7 +31,6 @@ import { ICanvas, IImage } from "./ICanvas";
 import { IStencilState } from "../States/IStencilState";
 import { RenderTargetWrapper } from "./renderTargetWrapper";
 import { NativeHandle, NativeDataStream } from "./Native/nativeDataStream";
-import { ValidatedNativeDataStream } from "./Native/validatedNativeDataStream";
 
 interface INativeCamera {
     createVideo(constraints: MediaTrackConstraints): any;
@@ -168,11 +167,6 @@ interface INativeEngine {
     readonly COMMAND_CLEAR: NativeHandle;
     readonly COMMAND_SETSTENCIL: NativeHandle;
 
-    readonly COMMAND_VALIDATION_COMMAND: number;
-    readonly COMMAND_VALIDATION_UINT32: number;
-    readonly COMMAND_VALIDATION_INT32: number;
-    readonly COMMAND_VALIDATION_FLOAT: number;
-
     dispose(): void;
 
     requestAnimationFrame(callback: () => void): void;
@@ -214,7 +208,6 @@ interface INativeEngine {
     setStencil(mask: number, stencilOpFail: number, depthOpFail: number, depthOpPass: number, func: number, ref: number): void;
 
     setCommandDataStream(dataStream: NativeDataStream): void;
-    setCommandValidationDataStream(dataStream: NativeDataStream): void;
     submitCommands(): void;
 }
 
@@ -825,18 +818,12 @@ export interface NativeEngineOptions {
 
 /** @hidden */
 class CommandBufferEncoder {
-    private readonly _commandStream: ValidatedNativeDataStream;
-    private readonly _validationStream?: NativeDataStream;
+    private readonly _commandStream: NativeDataStream;
     private _isCommandBufferScopeActive = false;
 
-    public constructor(private readonly _nativeEngine: INativeEngine, enableValidation = false) {
-        this._commandStream = new ValidatedNativeDataStream();
+    public constructor(private readonly _nativeEngine: INativeEngine) {
+        this._commandStream = new NativeDataStream();
         this._nativeEngine.setCommandDataStream(this._commandStream);
-
-        if (enableValidation) {
-            this._validationStream = new NativeDataStream();
-            this._nativeEngine.setCommandValidationDataStream(this._validationStream);
-        }
     }
 
     public beginCommandScope() {
@@ -861,61 +848,36 @@ class CommandBufferEncoder {
     public startEncodingCommand(command: NativeHandle) {
         // console.log(`COMMAND BUFFER: Encode command: ${command}`);
         this._commandStream.writeNativeHandle(command);
-        this._validationStream?.writeUint8(this._nativeEngine.COMMAND_VALIDATION_COMMAND);
     }
 
     public encodeCommandArgAsUInt32(commandArg: unknown) {
         // console.log(`COMMAND BUFFER:   Encode uint32: ${commandArg}`);
         this._commandStream.writeUint32(commandArg as number);
-        if (this._validationStream) {
-            this._validationStream.writeUint8(this._nativeEngine.COMMAND_VALIDATION_UINT32);
-            this._validationStream.writeUint8(1);
-        }
     }
 
     public encodeCommandArgAsUInt32s(commandArg: Uint32Array) {
         // console.log(`COMMAND BUFFER:   Encode uint32s: ${commandArg}`);
         this._commandStream.writeUint32Array(commandArg);
-        if (this._validationStream) {
-            this._validationStream.writeUint8(this._nativeEngine.COMMAND_VALIDATION_UINT32);
-            this._validationStream.writeUint8(commandArg.length);
-        }
     }
 
     public encodeCommandArgAsInt32(commandArg: unknown) {
         // console.log(`COMMAND BUFFER:   Encode uint32: ${commandArg}`);
         this._commandStream.writeInt32(commandArg as number);
-        if (this._validationStream) {
-            this._validationStream.writeUint8(this._nativeEngine.COMMAND_VALIDATION_INT32);
-            this._validationStream.writeUint8(1);
-        }
     }
 
     public encodeCommandArgAsInt32s(commandArg: Int32Array) {
         // console.log(`COMMAND BUFFER:   Encode uint32s: ${commandArg}`);
         this._commandStream.writeInt32Array(commandArg);
-        if (this._validationStream) {
-            this._validationStream.writeUint8(this._nativeEngine.COMMAND_VALIDATION_INT32);
-            this._validationStream.writeUint8(commandArg.length);
-        }
     }
 
     public encodeCommandArgAsFloat32(commandArg: unknown) {
         // console.log(`COMMAND BUFFER:   Encode float32: ${commandArg}`);
         this._commandStream.writeFloat32(commandArg as number);
-        if (this._validationStream) {
-            this._validationStream.writeUint8(this._nativeEngine.COMMAND_VALIDATION_FLOAT);
-            this._validationStream.writeUint8(1);
-        }
     }
 
     public encodeCommandArgAsFloat32s(commandArg: Float32Array) {
         // console.log(`COMMAND BUFFER:   Encode float32s: ${commandArg}`);
         this._commandStream.writeFloat32Array(commandArg);
-        if (this._validationStream) {
-            this._validationStream.writeUint8(this._nativeEngine.COMMAND_VALIDATION_FLOAT);
-            this._validationStream.writeUint8(commandArg.length);
-        }
     }
 
     public encodeCommandArgAsNativeHandle(commandArg: NativeHandle) {
