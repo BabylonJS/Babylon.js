@@ -957,7 +957,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         const width = serializedObject.width;
         const height = serializedObject.height;
         if (width && height) {
-            this.scaleTo(width,height);
+            this.scaleTo(width, height);
         }
     }
 
