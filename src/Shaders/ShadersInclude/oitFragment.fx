@@ -5,7 +5,7 @@
 
     float fragDepth = gl_FragCoord.z;   // 0 - 1
     #ifdef USE_REVERSE_DEPTHBUFFER
-        fragDepth = -fragDepth;
+        fragDepth = 1.0-fragDepth;
     #endif
 
     ivec2 fragCoord = ivec2(gl_FragCoord.xy);
@@ -15,7 +15,6 @@
     // depth value always increases
     // so we can use MAX blend equation
     depth.rg = vec2(-MAX_DEPTH);
-
     // front color always increases
     // so we can use MAX blend equation
     frontColor = lastFrontColor;
@@ -26,7 +25,6 @@
     float nearestDepth = -lastDepth.x;
     float furthestDepth = lastDepth.y;
     float alphaMultiplier = 1.0 - lastFrontColor.a;
-
 
     if (fragDepth < nearestDepth || fragDepth > furthestDepth) {
         // Skip this depth since it's been peeled.
