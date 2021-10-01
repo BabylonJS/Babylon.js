@@ -159,6 +159,30 @@ export class Observable<T> {
     private _onObserverAdded: Nullable<(observer: Observer<T>) => void>;
 
     /**
+     * Create an observable from a Promise.
+     * @param promise a promise to observe for fulfillment.
+     * @param onErrorObservable an observable to notify if a promise was rejected.
+     * @returns the new Observable
+     */
+    public static FromPromise<T, E = Error>(promise: Promise<T>, onErrorObservable?: Observable<E>): Observable<T> {
+        let observable = new Observable<T>();
+
+        promise
+            .then((ret: T) => {
+                observable.notifyObservers(ret);
+            })
+            .catch((err) => {
+                if (onErrorObservable) {
+                    onErrorObservable.notifyObservers(err as E);
+                } else {
+                    throw err;
+                }
+            });
+
+        return observable;
+    }
+
+    /**
      * Gets the list of observers
      */
     public get observers(): Array<Observer<T>> {
