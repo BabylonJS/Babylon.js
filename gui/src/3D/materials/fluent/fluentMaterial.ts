@@ -11,7 +11,7 @@ import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SubMesh } from "babylonjs/Meshes/subMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
-import { _TypeStore } from "babylonjs/Misc/typeStore";
+import { RegisterClass } from "babylonjs/Misc/typeStore";
 import { Color3, Color4 } from "babylonjs/Maths/math.color";
 
 import "./shaders/fluent.vertex";
@@ -309,4 +309,4 @@ export class FluentMaterial extends PushMaterial {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.GUI.FluentMaterial"] = FluentMaterial;
+RegisterClass("BABYLON.GUI.FluentMaterial", FluentMaterial);

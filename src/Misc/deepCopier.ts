@@ -1,7 +1,7 @@
-import { StringTools } from './stringTools';
+import { EndsWith } from './stringTools';
 import { Logger } from './logger';
 
-var cloneValue = (source: any, destinationObject: any) => {
+const cloneValue = (source: any, destinationObject: any) => {
     if (!source) {
         return null;
     }
@@ -51,7 +51,7 @@ export class DeepCopier {
                 continue;
             }
 
-            if (StringTools.EndsWith(prop, "Observable")) {
+            if (EndsWith(prop, "Observable")) {
                 continue;
             }
 

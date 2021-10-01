@@ -9,7 +9,7 @@ import { NodeMaterialSystemValues } from '../../Enums/nodeMaterialSystemValues';
 import { InputBlock } from '../Input/inputBlock';
 import { Light } from '../../../../Lights/light';
 import { Nullable } from '../../../../types';
-import { _TypeStore } from '../../../../Misc/typeStore';
+import { RegisterClass } from '../../../../Misc/typeStore';
 import { AbstractMesh } from '../../../../Meshes/abstractMesh';
 import { Effect } from '../../../effect';
 import { Mesh } from '../../../../Meshes/mesh';
@@ -19,7 +19,7 @@ import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMateri
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { SheenBlock } from './sheenBlock';
 import { BaseTexture } from '../../../Textures/baseTexture';
-import { BRDFTextureTools } from '../../../../Misc/brdfTextureTools';
+import { GetEnvironmentBRDFTexture } from '../../../../Misc/brdfTextureTools';
 import { MaterialFlags } from '../../../materialFlags';
 import { AnisotropyBlock } from './anisotropyBlock';
 import { ReflectionBlock } from './reflectionBlock';
@@ -934,7 +934,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         this._scene = state.sharedData.scene;
 
         if (!this._environmentBRDFTexture) {
-            this._environmentBRDFTexture = BRDFTextureTools.GetEnvironmentBRDFTexture(this._scene);
+            this._environmentBRDFTexture = GetEnvironmentBRDFTexture(this._scene);
         }
 
         const reflectionBlock = this.reflection.isConnected ? this.reflection.connectedPoint?.ownerBlock as ReflectionBlock : null;
@@ -1364,4 +1364,4 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.PBRMetallicRoughnessBlock"] = PBRMetallicRoughnessBlock;
+RegisterClass("BABYLON.PBRMetallicRoughnessBlock", PBRMetallicRoughnessBlock);

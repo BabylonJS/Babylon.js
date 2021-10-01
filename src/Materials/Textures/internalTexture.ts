@@ -1,7 +1,6 @@
 import { Observable } from "../../Misc/observable";
 import { Nullable, int } from "../../types";
 import { ICanvas, ICanvasRenderingContext } from "../../Engines/ICanvas";
-import { _DevTools } from '../../Misc/devTools';
 import { HardwareTextureWrapper } from "./hardwareTextureWrapper";
 import { TextureSampler } from "./textureSampler";
 
@@ -80,11 +79,6 @@ export enum InternalTextureSource {
  * This class should not be used directly
  */
 export class InternalTexture extends TextureSampler {
-
-    /** @hidden */
-    public static _UpdateRGBDAsync = (internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial>, lodScale: number, lodOffset: number): Promise<InternalTexture> => {
-        throw _DevTools.WarnImport("environmentTextureTools");
-    }
 
     /**
      * Defines if the texture is ready
@@ -400,11 +394,8 @@ export class InternalTexture extends TextureSampler {
                 break;
 
             case InternalTextureSource.CubeRawRGBD:
-                proxy = this._engine.createRawCubeTexture(null, this.width, this.format, this.type, this.generateMipMaps, this.invertY, this.samplingMode, this._compression);
-                InternalTexture._UpdateRGBDAsync(proxy, this._bufferViewArrayArray!, this._sphericalPolynomial, this._lodGenerationScale, this._lodGenerationOffset).then(() => {
-                    proxy._swapAndDie(this, false);
-                    this.isReady = true;
-                });
+                // This case is being handeled by the environment texture tools and is not a part of the rebuild process.
+                // To use CubeRawRGBD use updateRGBDAsync on the cube texture.
                 return;
 
             case InternalTextureSource.CubePrefiltered:

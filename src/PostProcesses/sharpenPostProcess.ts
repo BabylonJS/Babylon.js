@@ -5,7 +5,7 @@ import { PostProcess, PostProcessOptions } from "./postProcess";
 import { Constants } from "../Engines/constants";
 
 import "../Shaders/sharpen.fragment";
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 import { serialize, SerializationHelper } from '../Misc/decorators';
 
 declare type Engine = import("../Engines/engine").Engine;
@@ -67,4 +67,4 @@ export class SharpenPostProcess extends PostProcess {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.SharpenPostProcess"] = SharpenPostProcess;
+RegisterClass("BABYLON.SharpenPostProcess", SharpenPostProcess);

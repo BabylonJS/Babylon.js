@@ -5,7 +5,7 @@ import { Camera } from "../Cameras/camera";
 import { Effect } from "../Materials/effect";
 
 import "../Shaders/anaglyph.fragment";
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 
 /**
  * Postprocess used to generate anaglyphic rendering
@@ -40,4 +40,4 @@ export class AnaglyphPostProcess extends PostProcess {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.AnaglyphPostProcess"] = AnaglyphPostProcess;
+RegisterClass("BABYLON.AnaglyphPostProcess", AnaglyphPostProcess);

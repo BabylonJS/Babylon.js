@@ -25,7 +25,7 @@ import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { CubeTexture } from "../Materials/Textures/cubeTexture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { _TypeStore } from "../Misc/typeStore";
+import { RegisterClass } from "../Misc/typeStore";
 import { MaterialFlags } from "./materialFlags";
 
 import "../Shaders/default.fragment";
@@ -1989,7 +1989,7 @@ export class StandardMaterial extends PushMaterial {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.StandardMaterial"] = StandardMaterial;
+RegisterClass("BABYLON.StandardMaterial", StandardMaterial);
 
 Scene.DefaultMaterialFactory = (scene: Scene) => {
     return new StandardMaterial("default material", scene);

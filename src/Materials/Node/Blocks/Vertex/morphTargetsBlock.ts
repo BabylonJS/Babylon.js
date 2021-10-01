@@ -10,7 +10,7 @@ import { Mesh } from '../../../../Meshes/mesh';
 import { MaterialHelper } from '../../../materialHelper';
 import { VertexBuffer } from '../../../../Buffers/buffer';
 import { InputBlock } from '../Input/inputBlock';
-import { _TypeStore } from '../../../../Misc/typeStore';
+import { RegisterClass } from '../../../../Misc/typeStore';
 
 import "../../../../Shaders/ShadersInclude/morphTargetsVertexDeclaration";
 import "../../../../Shaders/ShadersInclude/morphTargetsVertexGlobalDeclaration";
@@ -318,4 +318,4 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.MorphTargetsBlock"] = MorphTargetsBlock;
+RegisterClass("BABYLON.MorphTargetsBlock", MorphTargetsBlock);
