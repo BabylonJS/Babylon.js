@@ -4,7 +4,7 @@ import { MaterialDefines } from "babylonjs/Materials/materialDefines";
 import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 import { ShaderCodeInliner } from "babylonjs/Engines/Processors/shaderCodeInliner";
 import { ICustomShaderNameResolveOptions } from "babylonjs/Materials/material";
 
@@ -321,4 +321,4 @@ export class PBRCustomMaterial extends PBRMaterial {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.PBRCustomMaterial"] = PBRCustomMaterial;
+RegisterClass("BABYLON.PBRCustomMaterial", PBRCustomMaterial);
