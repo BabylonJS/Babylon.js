@@ -40,6 +40,10 @@ import { IPointerEvent } from "./Events/deviceInputEvents";
 import { LightConstants } from "./Lights/lightConstants";
 import { IComputePressureData, ComputePressureObserverWrapper } from "./Misc/computePressure";
 
+// This is imported here with side effects.
+// This line should be removed from here and be added during the build process of the es6-lts-module
+import "./scene.lts";
+
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
 declare type Animation = import("./Animations/animation").Animation;
