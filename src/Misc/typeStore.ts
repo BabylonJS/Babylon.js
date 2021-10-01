@@ -1,13 +1,12 @@
 /** @hidden */
-export class _TypeStore {
-    /** @hidden */
-    public static RegisteredTypes: { [key: string]: Object } = {};
+const _RegisteredTypes: { [key: string]: Object } = {};
 
-    /** @hidden */
-    public static GetClass(fqdn: string): any {
-        if (this.RegisteredTypes && this.RegisteredTypes[fqdn]) {
-            return this.RegisteredTypes[fqdn];
-        }
-        return null;
-    }
+/** @hidden */
+export function RegisterClass(className: string, type: Object) {
+    _RegisteredTypes[className] = type;
+}
+
+/** @hidden */
+export function GetClass(fqdn: string): any {
+    return _RegisteredTypes[fqdn];
 }

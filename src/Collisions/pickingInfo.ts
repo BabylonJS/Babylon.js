@@ -50,6 +50,10 @@ export class PickingInfo {
      */
     public originMesh: Nullable<AbstractMesh> = null;
     /**
+     * The mesh used for picking (eg. 6dof controller), if one exists.
+     */
+    public originTransform: Nullable<AbstractMesh> = null;
+    /**
      * The ray that was used to perform the picking.
      */
     public ray: Nullable<Ray> = null;

@@ -1,4 +1,4 @@
-import { DomManagement } from './domManagement';
+import { IsWindowObjectExist } from './domManagement';
 
 /**
  * Class used to provide helper for timing
@@ -9,7 +9,7 @@ export class TimingTools {
      * @param action defines the action to execute after the current execution block
      */
     public static SetImmediate(action: () => void) {
-        if (DomManagement.IsWindowObjectExist() && window.setImmediate) {
+        if (IsWindowObjectExist() && window.setImmediate) {
             window.setImmediate(action);
         } else {
             setTimeout(action, 1);

@@ -2,7 +2,7 @@ import { serialize, serializeAsImageProcessingConfiguration, expandToProperty } 
 import { Observer } from "../../Misc/observable";
 import { Logger } from "../../Misc/logger";
 import { SmartArray } from "../../Misc/smartArray";
-import { BRDFTextureTools } from "../../Misc/brdfTextureTools";
+import { GetEnvironmentBRDFTexture } from "../../Misc/brdfTextureTools";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
 import { Matrix, Vector4 } from "../../Maths/math.vector";
@@ -974,7 +974,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             return this._renderTargets;
         };
 
-        this._environmentBRDFTexture = BRDFTextureTools.GetEnvironmentBRDFTexture(scene);
+        this._environmentBRDFTexture = GetEnvironmentBRDFTexture(scene);
         this.subSurface = new PBRSubSurfaceConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this), this._markScenePrePassDirty.bind(this), scene);
         this.prePassConfiguration = new PrePassConfiguration();
     }
