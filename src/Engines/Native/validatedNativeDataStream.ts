@@ -1,4 +1,4 @@
-import { NativeDataStream, NativeHandle } from "./nativeDataStream";
+import { NativeDataStream, NativeData } from "./nativeDataStream";
 
 declare var _native: any;
 
@@ -42,9 +42,9 @@ export class ValidatedNativeDataStream extends NativeDataStream {
         super.writeFloat32Array(values);
     }
 
-    public override writeNativeHandle(handle: NativeHandle) {
-        super.writeUint32(_native.NativeDataStream.VALIDATION_NATIVE_HANDLE);
-        super.writeNativeHandle(handle);
+    public override writeNativeData(handle: NativeData) {
+        super.writeUint32(_native.NativeDataStream.VALIDATION_NATIVE_DATA);
+        super.writeNativeData(handle);
     }
 
     public override writeBoolean(value: boolean) {

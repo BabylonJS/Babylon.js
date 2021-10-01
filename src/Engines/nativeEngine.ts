@@ -30,7 +30,7 @@ import { IDrawContext } from "./IDrawContext";
 import { ICanvas, IImage } from "./ICanvas";
 import { IStencilState } from "../States/IStencilState";
 import { RenderTargetWrapper } from "./renderTargetWrapper";
-import { NativeHandle, NativeDataStream } from "./Native/nativeDataStream";
+import { NativeData, NativeDataStream } from "./Native/nativeDataStream";
 
 interface INativeCamera {
     createVideo(constraints: MediaTrackConstraints): any;
@@ -125,47 +125,47 @@ interface INativeEngine {
     readonly STENCIL_OP_PASS_Z_DECRSAT: number;
     readonly STENCIL_OP_PASS_Z_INVERT: number;
 
-    readonly COMMAND_DELETEVERTEXARRAY: NativeHandle;
-    readonly COMMAND_DELETEINDEXBUFFER: NativeHandle;
-    readonly COMMAND_DELETEVERTEXBUFFER: NativeHandle;
-    readonly COMMAND_SETPROGRAM: NativeHandle;
-    readonly COMMAND_SETMATRIX: NativeHandle;
-    readonly COMMAND_SETMATRIX3X3: NativeHandle;
-    readonly COMMAND_SETMATRIX2X2: NativeHandle;
-    readonly COMMAND_SETMATRICES: NativeHandle;
-    readonly COMMAND_SETINT: NativeHandle;
-    readonly COMMAND_SETINTARRAY: NativeHandle;
-    readonly COMMAND_SETINTARRAY2: NativeHandle;
-    readonly COMMAND_SETINTARRAY3: NativeHandle;
-    readonly COMMAND_SETINTARRAY4: NativeHandle;
-    readonly COMMAND_SETFLOATARRAY: NativeHandle;
-    readonly COMMAND_SETFLOATARRAY2: NativeHandle;
-    readonly COMMAND_SETFLOATARRAY3: NativeHandle;
-    readonly COMMAND_SETFLOATARRAY4: NativeHandle;
-    readonly COMMAND_SETTEXTURESAMPLING: NativeHandle;
-    readonly COMMAND_SETTEXTUREWRAPMODE: NativeHandle;
-    readonly COMMAND_SETTEXTUREANISOTROPICLEVEL: NativeHandle;
-    readonly COMMAND_SETTEXTURE: NativeHandle;
-    readonly COMMAND_BINDVERTEXARRAY: NativeHandle;
-    readonly COMMAND_SETSTATE: NativeHandle;
-    readonly COMMAND_DELETEPROGRAM: NativeHandle;
-    readonly COMMAND_SETZOFFSET: NativeHandle;
-    readonly COMMAND_SETZOFFSETUNITS: NativeHandle;
-    readonly COMMAND_SETDEPTHTEST: NativeHandle;
-    readonly COMMAND_SETDEPTHWRITE: NativeHandle;
-    readonly COMMAND_SETCOLORWRITE: NativeHandle;
-    readonly COMMAND_SETBLENDMODE: NativeHandle;
-    readonly COMMAND_SETFLOAT: NativeHandle;
-    readonly COMMAND_SETFLOAT2: NativeHandle;
-    readonly COMMAND_SETFLOAT3: NativeHandle;
-    readonly COMMAND_SETFLOAT4: NativeHandle;
-    readonly COMMAND_BINDFRAMEBUFFER: NativeHandle;
-    readonly COMMAND_UNBINDFRAMEBUFFER: NativeHandle;
-    readonly COMMAND_DELETEFRAMEBUFFER: NativeHandle;
-    readonly COMMAND_DRAWINDEXED: NativeHandle;
-    readonly COMMAND_DRAW: NativeHandle;
-    readonly COMMAND_CLEAR: NativeHandle;
-    readonly COMMAND_SETSTENCIL: NativeHandle;
+    readonly COMMAND_DELETEVERTEXARRAY: NativeData;
+    readonly COMMAND_DELETEINDEXBUFFER: NativeData;
+    readonly COMMAND_DELETEVERTEXBUFFER: NativeData;
+    readonly COMMAND_SETPROGRAM: NativeData;
+    readonly COMMAND_SETMATRIX: NativeData;
+    readonly COMMAND_SETMATRIX3X3: NativeData;
+    readonly COMMAND_SETMATRIX2X2: NativeData;
+    readonly COMMAND_SETMATRICES: NativeData;
+    readonly COMMAND_SETINT: NativeData;
+    readonly COMMAND_SETINTARRAY: NativeData;
+    readonly COMMAND_SETINTARRAY2: NativeData;
+    readonly COMMAND_SETINTARRAY3: NativeData;
+    readonly COMMAND_SETINTARRAY4: NativeData;
+    readonly COMMAND_SETFLOATARRAY: NativeData;
+    readonly COMMAND_SETFLOATARRAY2: NativeData;
+    readonly COMMAND_SETFLOATARRAY3: NativeData;
+    readonly COMMAND_SETFLOATARRAY4: NativeData;
+    readonly COMMAND_SETTEXTURESAMPLING: NativeData;
+    readonly COMMAND_SETTEXTUREWRAPMODE: NativeData;
+    readonly COMMAND_SETTEXTUREANISOTROPICLEVEL: NativeData;
+    readonly COMMAND_SETTEXTURE: NativeData;
+    readonly COMMAND_BINDVERTEXARRAY: NativeData;
+    readonly COMMAND_SETSTATE: NativeData;
+    readonly COMMAND_DELETEPROGRAM: NativeData;
+    readonly COMMAND_SETZOFFSET: NativeData;
+    readonly COMMAND_SETZOFFSETUNITS: NativeData;
+    readonly COMMAND_SETDEPTHTEST: NativeData;
+    readonly COMMAND_SETDEPTHWRITE: NativeData;
+    readonly COMMAND_SETCOLORWRITE: NativeData;
+    readonly COMMAND_SETBLENDMODE: NativeData;
+    readonly COMMAND_SETFLOAT: NativeData;
+    readonly COMMAND_SETFLOAT2: NativeData;
+    readonly COMMAND_SETFLOAT3: NativeData;
+    readonly COMMAND_SETFLOAT4: NativeData;
+    readonly COMMAND_BINDFRAMEBUFFER: NativeData;
+    readonly COMMAND_UNBINDFRAMEBUFFER: NativeData;
+    readonly COMMAND_DELETEFRAMEBUFFER: NativeData;
+    readonly COMMAND_DRAWINDEXED: NativeData;
+    readonly COMMAND_DRAW: NativeData;
+    readonly COMMAND_CLEAR: NativeData;
+    readonly COMMAND_SETSTENCIL: NativeData;
 
     dispose(): void;
 
@@ -845,9 +845,9 @@ class CommandBufferEncoder {
         this._submitCommandBuffer();
     }
 
-    public startEncodingCommand(command: NativeHandle) {
+    public startEncodingCommand(command: NativeData) {
         // console.log(`COMMAND BUFFER: Encode command: ${command}`);
-        this._commandStream.writeNativeHandle(command);
+        this._commandStream.writeNativeData(command);
     }
 
     public encodeCommandArgAsUInt32(commandArg: unknown) {
@@ -880,8 +880,8 @@ class CommandBufferEncoder {
         this._commandStream.writeFloat32Array(commandArg);
     }
 
-    public encodeCommandArgAsNativeHandle(commandArg: NativeHandle) {
-        this._commandStream.writeNativeHandle(commandArg);
+    public encodeCommandArgAsNativeData(commandArg: NativeData) {
+        this._commandStream.writeNativeData(commandArg);
     }
 
     public finishEncodingCommand() {
@@ -1087,13 +1087,13 @@ export class NativeEngine extends Engine {
         if (this._currentFramebuffer !== framebuffer) {
             if (this._currentFramebuffer) {
                 this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_UNBINDFRAMEBUFFER);
-                this._commandBufferEncoder.encodeCommandArgAsNativeHandle(this._currentFramebuffer as NativeHandle);
+                this._commandBufferEncoder.encodeCommandArgAsNativeData(this._currentFramebuffer as NativeData);
                 this._commandBufferEncoder.finishEncodingCommand();
             }
 
             if (framebuffer) {
                 this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_BINDFRAMEBUFFER);
-                this._commandBufferEncoder.encodeCommandArgAsNativeHandle(framebuffer as NativeHandle);
+                this._commandBufferEncoder.encodeCommandArgAsNativeData(framebuffer as NativeData);
                 this._commandBufferEncoder.finishEncodingCommand();
             }
 
@@ -1199,13 +1199,13 @@ export class NativeEngine extends Engine {
 
     private _deleteVertexArray(vertexArray: unknown) {
         this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_DELETEVERTEXARRAY);
-        this._commandBufferEncoder.encodeCommandArgAsNativeHandle(vertexArray as NativeHandle);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(vertexArray as NativeData);
         this._commandBufferEncoder.finishEncodingCommand();
     }
 
     public bindVertexArrayObject(vertexArray: WebGLVertexArrayObject): void {
         this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_BINDVERTEXARRAY);
-        this._commandBufferEncoder.encodeCommandArgAsNativeHandle(vertexArray as NativeHandle);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(vertexArray as NativeData);
         this._commandBufferEncoder.finishEncodingCommand();
     }
 
@@ -1343,7 +1343,7 @@ export class NativeEngine extends Engine {
     protected _setProgram(program: WebGLProgram): void {
         if (this._currentProgram !== program) {
             this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_SETPROGRAM);
-            this._commandBufferEncoder.encodeCommandArgAsNativeHandle(program as NativeHandle);
+            this._commandBufferEncoder.encodeCommandArgAsNativeData(program as NativeData);
             this._commandBufferEncoder.finishEncodingCommand();
             this._currentProgram = program;
         }
@@ -1353,7 +1353,7 @@ export class NativeEngine extends Engine {
         const nativePipelineContext = pipelineContext as NativePipelineContext;
         if (nativePipelineContext && nativePipelineContext.nativeProgram) {
             this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_DELETEPROGRAM);
-            this._commandBufferEncoder.encodeCommandArgAsNativeHandle(nativePipelineContext.nativeProgram);
+            this._commandBufferEncoder.encodeCommandArgAsNativeData(nativePipelineContext.nativeProgram);
             this._commandBufferEncoder.finishEncodingCommand();
         }
     }
@@ -1391,7 +1391,7 @@ export class NativeEngine extends Engine {
 
         const matrixArray = matrix.toArray() as Float32Array;
         this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_SETMATRIX);
-        this._commandBufferEncoder.encodeCommandArgAsNativeHandle(uniform as any as NativeHandle);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
         this._commandBufferEncoder.encodeCommandArgAsFloat32s(matrixArray);
         this._commandBufferEncoder.finishEncodingCommand();
     }
@@ -1811,7 +1811,7 @@ export class NativeEngine extends Engine {
         }
 
         this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_SETINT);
-        this._commandBufferEncoder.encodeCommandArgAsNativeHandle(uniform as any as NativeHandle);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
         this._commandBufferEncoder.encodeCommandArgAsInt32(int);
         this._commandBufferEncoder.finishEncodingCommand();
         return true;
@@ -1823,7 +1823,7 @@ export class NativeEngine extends Engine {
         }
 
         this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_SETINTARRAY);
-        this._commandBufferEncoder.encodeCommandArgAsNativeHandle(uniform as any as NativeHandle);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
         this._commandBufferEncoder.encodeCommandArgAsInt32s(array);
         this._commandBufferEncoder.finishEncodingCommand();
         return true;
@@ -1835,7 +1835,7 @@ export class NativeEngine extends Engine {
         }
 
         this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_SETINTARRAY2);
-        this._commandBufferEncoder.encodeCommandArgAsNativeHandle(uniform as any as NativeHandle);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
         this._commandBufferEncoder.encodeCommandArgAsInt32s(array);
         this._commandBufferEncoder.finishEncodingCommand();
         return true;
@@ -1847,7 +1847,7 @@ export class NativeEngine extends Engine {
         }
 
         this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_SETINTARRAY3);
-        this._commandBufferEncoder.encodeCommandArgAsNativeHandle(uniform as any as NativeHandle);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
         this._commandBufferEncoder.encodeCommandArgAsInt32s(array);
         this._commandBufferEncoder.finishEncodingCommand();
         return true;
@@ -1859,7 +1859,7 @@ export class NativeEngine extends Engine {
         }
 
         this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_SETINTARRAY4);
-        this._commandBufferEncoder.encodeCommandArgAsNativeHandle(uniform as any as NativeHandle);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
         this._commandBufferEncoder.encodeCommandArgAsInt32s(array);
         this._commandBufferEncoder.finishEncodingCommand();
         return true;
@@ -1871,7 +1871,7 @@ export class NativeEngine extends Engine {
         }
 
         this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_SETFLOATARRAY);
-        this._commandBufferEncoder.encodeCommandArgAsNativeHandle(uniform as any as NativeHandle);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
         this._commandBufferEncoder.encodeCommandArgAsFloat32s(array);
         this._commandBufferEncoder.finishEncodingCommand();
         return true;
@@ -1883,7 +1883,7 @@ export class NativeEngine extends Engine {
         }
 
         this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_SETFLOATARRAY2);
-        this._commandBufferEncoder.encodeCommandArgAsNativeHandle(uniform as any as NativeHandle);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
         this._commandBufferEncoder.encodeCommandArgAsFloat32s(array);
         this._commandBufferEncoder.finishEncodingCommand();
         return true;
@@ -1895,7 +1895,7 @@ export class NativeEngine extends Engine {
         }
 
         this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_SETFLOATARRAY3);
-        this._commandBufferEncoder.encodeCommandArgAsNativeHandle(uniform as any as NativeHandle);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
         this._commandBufferEncoder.encodeCommandArgAsFloat32s(array);
         this._commandBufferEncoder.finishEncodingCommand();
         return true;
@@ -1907,7 +1907,7 @@ export class NativeEngine extends Engine {
         }
 
         this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_SETFLOATARRAY4);
-        this._commandBufferEncoder.encodeCommandArgAsNativeHandle(uniform as any as NativeHandle);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
         this._commandBufferEncoder.encodeCommandArgAsFloat32s(array);
         this._commandBufferEncoder.finishEncodingCommand();
         return true;
@@ -1955,7 +1955,7 @@ export class NativeEngine extends Engine {
         }
 
         this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_SETMATRICES);
-        this._commandBufferEncoder.encodeCommandArgAsNativeHandle(uniform as any as NativeHandle);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
         this._commandBufferEncoder.encodeCommandArgAsFloat32s(matrices);
         this._commandBufferEncoder.finishEncodingCommand();
 
@@ -1968,7 +1968,7 @@ export class NativeEngine extends Engine {
         }
 
         this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_SETMATRIX3X3);
-        this._commandBufferEncoder.encodeCommandArgAsNativeHandle(uniform as any as NativeHandle);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
         this._commandBufferEncoder.encodeCommandArgAsFloat32s(matrix);
         this._commandBufferEncoder.finishEncodingCommand();
         return true;
@@ -1980,7 +1980,7 @@ export class NativeEngine extends Engine {
         }
 
         this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_SETMATRIX2X2);
-        this._commandBufferEncoder.encodeCommandArgAsNativeHandle(uniform as any as NativeHandle);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
         this._commandBufferEncoder.encodeCommandArgAsFloat32s(matrix);
         this._commandBufferEncoder.finishEncodingCommand();
         return true;
@@ -1992,7 +1992,7 @@ export class NativeEngine extends Engine {
         }
 
         this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_SETFLOAT);
-        this._commandBufferEncoder.encodeCommandArgAsNativeHandle(uniform as any as NativeHandle);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(value);
         this._commandBufferEncoder.finishEncodingCommand();
         return true;
@@ -2004,7 +2004,7 @@ export class NativeEngine extends Engine {
         }
 
         this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_SETFLOAT2);
-        this._commandBufferEncoder.encodeCommandArgAsNativeHandle(uniform as any as NativeHandle);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(x);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(y);
         this._commandBufferEncoder.finishEncodingCommand();
@@ -2017,7 +2017,7 @@ export class NativeEngine extends Engine {
         }
 
         this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_SETFLOAT3);
-        this._commandBufferEncoder.encodeCommandArgAsNativeHandle(uniform as any as NativeHandle);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(x);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(y);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(z);
@@ -2031,7 +2031,7 @@ export class NativeEngine extends Engine {
         }
 
         this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_SETFLOAT4);
-        this._commandBufferEncoder.encodeCommandArgAsNativeHandle(uniform as any as NativeHandle);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(x);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(y);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(z);
@@ -2354,7 +2354,7 @@ export class NativeEngine extends Engine {
     public _releaseFramebufferObjects(framebuffer: Nullable<WebGLFramebuffer>): void {
         if (framebuffer) {
             this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_DELETEFRAMEBUFFER);
-            this._commandBufferEncoder.encodeCommandArgAsNativeHandle(framebuffer as NativeHandle);
+            this._commandBufferEncoder.encodeCommandArgAsNativeData(framebuffer as NativeData);
             this._commandBufferEncoder.finishEncodingCommand();
         }
     }
@@ -2721,7 +2721,7 @@ export class NativeEngine extends Engine {
     // filter is a NativeFilter.XXXX value.
     private _setTextureSampling(texture: WebGLTexture, filter: number) {
         this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_SETTEXTURESAMPLING);
-        this._commandBufferEncoder.encodeCommandArgAsNativeHandle(texture as NativeHandle);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(texture as NativeData);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(filter);
         this._commandBufferEncoder.finishEncodingCommand();
     }
@@ -2729,7 +2729,7 @@ export class NativeEngine extends Engine {
     // addressModes are NativeAddressMode.XXXX values.
     private _setTextureWrapMode(texture: WebGLTexture, addressModeU: number, addressModeV: number, addressModeW: number) {
         this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_SETTEXTUREWRAPMODE);
-        this._commandBufferEncoder.encodeCommandArgAsNativeHandle(texture as NativeHandle);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(texture as NativeData);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(addressModeU);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(addressModeV);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(addressModeW);
@@ -2738,8 +2738,8 @@ export class NativeEngine extends Engine {
 
     private _setTextureCore(uniform: WebGLUniformLocation, texture: Nullable<WebGLTexture>) {
         this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_SETTEXTURE);
-        this._commandBufferEncoder.encodeCommandArgAsNativeHandle(uniform as any as NativeHandle);
-        this._commandBufferEncoder.encodeCommandArgAsNativeHandle(texture as NativeHandle);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(texture as NativeData);
         this._commandBufferEncoder.finishEncodingCommand();
     }
 
@@ -2755,7 +2755,7 @@ export class NativeEngine extends Engine {
 
         if (internalTexture._cachedAnisotropicFilteringLevel !== value) {
             this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_SETTEXTUREANISOTROPICLEVEL);
-            this._commandBufferEncoder.encodeCommandArgAsNativeHandle(internalTexture._hardwareTexture.underlyingResource);
+            this._commandBufferEncoder.encodeCommandArgAsNativeData(internalTexture._hardwareTexture.underlyingResource);
             this._commandBufferEncoder.encodeCommandArgAsUInt32(value);
             this._commandBufferEncoder.finishEncodingCommand();
             internalTexture._cachedAnisotropicFilteringLevel = value;
@@ -2791,14 +2791,14 @@ export class NativeEngine extends Engine {
     protected _deleteBuffer(buffer: NativeDataBuffer): void {
         if (buffer.nativeIndexBuffer) {
             this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_DELETEINDEXBUFFER);
-            this._commandBufferEncoder.encodeCommandArgAsNativeHandle(buffer.nativeIndexBuffer);
+            this._commandBufferEncoder.encodeCommandArgAsNativeData(buffer.nativeIndexBuffer);
             this._commandBufferEncoder.finishEncodingCommand();
             delete buffer.nativeIndexBuffer;
         }
 
         if (buffer.nativeVertexBuffer) {
             this._commandBufferEncoder.startEncodingCommand(this._native.COMMAND_DELETEVERTEXBUFFER);
-            this._commandBufferEncoder.encodeCommandArgAsNativeHandle(buffer.nativeVertexBuffer);
+            this._commandBufferEncoder.encodeCommandArgAsNativeData(buffer.nativeVertexBuffer);
             this._commandBufferEncoder.finishEncodingCommand();
             delete buffer.nativeVertexBuffer;
         }
