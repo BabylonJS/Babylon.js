@@ -13,11 +13,20 @@ declare type GroundMesh = import("./groundMesh").GroundMesh;
 declare var earcut: any;
 
 declare module "./mesh" {
+    interface Mesh {
+        /**
+         * Sets the mesh material by the material or multiMaterial `id` property
+         * @param id is a string identifying the material or the multiMaterial
+         * @returns the current mesh
+         * @deprecated Please use setMaterialById instead
+         */
+        setMaterialByID(id: string): Mesh;
+    }
     namespace Mesh {
         /**
      * Creates a ribbon mesh. Please consider using the same method from the MeshBuilder class instead
      * @see https://doc.babylonjs.com/how_to/parametric_shapes
-     * @lts
+     * @deprecated
      * @param name defines the name of the mesh to create
      * @param pathArray is a required array of paths, what are each an array of successive Vector3. The pathArray parameter depicts the ribbon geometry.
      * @param closeArray creates a seam between the first and the last paths of the path array (default is false)
@@ -43,7 +52,7 @@ declare module "./mesh" {
 
         /**
          * Creates a plane polygonal mesh.  By default, this is a disc. Please consider using the same method from the MeshBuilder class instead
-         * @lts
+         * @deprecated
          * @param name defines the name of the mesh to create
          * @param radius sets the radius size (float) of the polygon (default 0.5)
          * @param tessellation sets the number of polygon sides (positive integer, default 64). So a tessellation valued to 3 will build a triangle, to 4 a square, etc
@@ -56,7 +65,7 @@ declare module "./mesh" {
 
         /**
          * Creates a box mesh. Please consider using the same method from the MeshBuilder class instead
-         * @lts
+         * @deprecated
          * @param name defines the name of the mesh to create
          * @param size sets the size (float) of each box side (default 1)
          * @param scene defines the hosting scene
@@ -68,7 +77,7 @@ declare module "./mesh" {
 
         /**
          * Creates a sphere mesh. Please consider using the same method from the MeshBuilder class instead
-         * @lts
+         * @deprecated
          * @param name defines the name of the mesh to create
          * @param segments sets the sphere number of horizontal stripes (positive integer, default 32)
          * @param diameter sets the diameter size (float) of the sphere (default 1)
@@ -81,7 +90,7 @@ declare module "./mesh" {
 
         /**
          * Creates a hemisphere mesh. Please consider using the same method from the MeshBuilder class instead
-         * @lts
+         * @deprecated
          * @param name defines the name of the mesh to create
          * @param segments sets the sphere number of horizontal stripes (positive integer, default 32)
          * @param diameter sets the diameter size (float) of the sphere (default 1)
@@ -92,7 +101,7 @@ declare module "./mesh" {
 
         /**
          * Creates a cylinder or a cone mesh. Please consider using the same method from the MeshBuilder class instead
-         * @lts
+         * @deprecated
          * @param name defines the name of the mesh to create
          * @param height sets the height size (float) of the cylinder/cone (float, default 2)
          * @param diameterTop set the top cap diameter (floats, default 1)
@@ -119,7 +128,7 @@ declare module "./mesh" {
         // Torus  (Code from SharpDX.org)
         /**
          * Creates a torus mesh. Please consider using the same method from the MeshBuilder class instead
-         * @lts
+         * @deprecated
          * @param name defines the name of the mesh to create
          * @param diameter sets the diameter size (float) of the torus (default 1)
          * @param thickness sets the diameter size of the tube of the torus (float, default 0.5)
@@ -133,7 +142,7 @@ declare module "./mesh" {
 
         /**
          * Creates a torus knot mesh. Please consider using the same method from the MeshBuilder class instead
-         * @lts
+         * @deprecated
          * @param name defines the name of the mesh to create
          * @param radius sets the global radius size (float) of the torus knot (default 2)
          * @param tube sets the diameter size of the tube of the torus (float, default 0.5)
@@ -161,7 +170,7 @@ declare module "./mesh" {
 
         /**
          * Creates a line mesh. Please consider using the same method from the MeshBuilder class instead.
-         * @lts
+         * @deprecated
          * @param name defines the name of the mesh to create
          * @param points is an array successive Vector3
          * @param scene defines the hosting scene
@@ -173,7 +182,7 @@ declare module "./mesh" {
 
         /**
          * Creates a dashed line mesh. Please consider using the same method from the MeshBuilder class instead
-         * @lts
+         * @deprecated
          * @param name defines the name of the mesh to create
          * @param points is an array successive Vector3
          * @param dashSize is the size of the dashes relatively the dash number (positive float, default 3)
@@ -202,7 +211,7 @@ declare module "./mesh" {
          * You can set the mesh side orientation with the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
          * Remember you can only change the shape positions, not their number when updating a polygon.
-         * @lts
+         * @deprecated
          * @see https://doc.babylonjs.com/how_to/parametric_shapes#non-regular-polygon
          * @param name defines the name of the mesh to create
          * @param shape is a required array of successive Vector3 representing the corners of the polygon in th XoZ plane, that is y = 0 for all vectors
@@ -217,7 +226,7 @@ declare module "./mesh" {
 
         /**
          * Creates an extruded polygon mesh, with depth in the Y direction. Please consider using the same method from the MeshBuilder class instead.
-         * @lts
+         * @deprecated
          * @see https://doc.babylonjs.com/how_to/parametric_shapes#extruded-non-regular-polygon
          * @param name defines the name of the mesh to create
          * @param shape is a required array of successive Vector3 representing the corners of the polygon in th XoZ plane, that is y = 0 for all vectors
@@ -245,7 +254,7 @@ declare module "./mesh" {
          * The extrusion is a parametric shape. It has no predefined shape. Its final shape will depend on the input parameters. Please consider using the same method from the MeshBuilder class instead
          * @see https://doc.babylonjs.com/how_to/parametric_shapes
          * @see https://doc.babylonjs.com/how_to/parametric_shapes#extruded-shapes
-         * @lts
+         * @deprecated
          * @param name defines the name of the mesh to create
          * @param shape is a required array of successive Vector3. This array depicts the shape to be extruded in its local space : the shape must be designed in the xOy plane and will be extruded along the Z axis
          * @param path is a required array of successive Vector3. This is the axis curve the shape is extruded along
@@ -277,7 +286,7 @@ declare module "./mesh" {
          * It has no predefined shape. Its final shape will depend on the input parameters.
          * Please consider using the same method from the MeshBuilder class instead
          * @see https://doc.babylonjs.com/how_to/parametric_shapes#extruded-shapes
-         * @lts
+         * @deprecated
          * @param name defines the name of the mesh to create
          * @param shape is a required array of successive Vector3. This array depicts the shape to be extruded in its local space : the shape must be designed in the xOy plane and will be extruded along the Z axis
          * @param path is a required array of successive Vector3. This is the axis curve the shape is extruded along
@@ -310,7 +319,7 @@ declare module "./mesh" {
         /**
          * Creates lathe mesh.
          * The lathe is a shape with a symmetry axis : a 2D model shape is rotated around this axis to design the lathe.
-         * @lts
+         * @deprecated
          * @param name defines the name of the mesh to create
          * @param shape is a required array of successive Vector3. This array depicts the shape to be rotated in its local space : the shape must be designed in the xOy plane and will be rotated around the Y axis. It's usually a 2D shape, so the Vector3 z coordinates are often set to zero
          * @param radius is the radius value of the lathe
@@ -324,7 +333,7 @@ declare module "./mesh" {
 
         /**
          * Creates a plane mesh.
-         * @lts
+         * @deprecated
          * @param name defines the name of the mesh to create
          * @param size sets the size (float) of both sides of the plane at once (default 1)
          * @param scene defines the hosting scene
@@ -336,7 +345,7 @@ declare module "./mesh" {
 
         /**
          * Creates a ground mesh.
-         * @lts
+         * @deprecated
          * @param name defines the name of the mesh to create
          * @param width set the width of the ground
          * @param height set the height of the ground
@@ -349,7 +358,7 @@ declare module "./mesh" {
 
         /**
          * Creates a tiled ground mesh.
-         * @lts
+         * @deprecated
          * @param name defines the name of the mesh to create
          * @param xmin set the ground minimum X coordinate
          * @param zmin set the ground minimum Y coordinate
@@ -375,7 +384,7 @@ declare module "./mesh" {
 
         /**
          * Creates a ground mesh from a height map.
-         * @lts
+         * @deprecated
          * @see https://doc.babylonjs.com/babylon101/height_map
          * @param name defines the name of the mesh to create
          * @param url sets the URL of the height map image resource
@@ -409,7 +418,7 @@ declare module "./mesh" {
          * The tube is a parametric shape.
          * It has no predefined shape. Its final shape will depend on the input parameters.
          * Please consider using the same method from the MeshBuilder class instead
-         * @lts
+         * @deprecated
          * @see https://doc.babylonjs.com/how_to/parametric_shapes
          * @param name defines the name of the mesh to create
          * @param path is a required array of successive Vector3. It is the curve used as the axis of the tube
@@ -450,7 +459,7 @@ declare module "./mesh" {
          * * You can also set the mesh side orientation with the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
          * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
          * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
-         * @lts
+         * @deprecated
          * @param name defines the name of the mesh to create
          * @param options defines the options used to create the mesh
          * @param scene defines the hosting scene
@@ -482,7 +491,7 @@ declare module "./mesh" {
      * * You can also set the mesh side orientation with the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
      * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
      * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
-     * @lts
+     * @deprecated
      * @param name defines the name of the mesh
      * @param options defines the options used to create the mesh
      * @param scene defines the hosting scene
@@ -499,7 +508,7 @@ declare module "./mesh" {
          * Creates a decal mesh.
          * Please consider using the same method from the MeshBuilder class instead.
          * A decal is a mesh usually applied as a model onto the surface of another mesh
-         * @lts
+         * @deprecated
          * @param name  defines the name of the mesh
          * @param sourceMesh defines the mesh receiving the decal
          * @param position sets the position of the decal in world coordinates
@@ -511,7 +520,7 @@ declare module "./mesh" {
         let CreateDecal: (name: string, sourceMesh: AbstractMesh, position: Vector3, normal: Vector3, size: Vector3, angle: number) => Mesh;
 
         /** Creates a Capsule Mesh
-         * @lts
+         * @deprecated
          * @param name defines the name of the mesh.
          * @param options the constructors options used to shape the mesh.
          * @param scene defines the scene the mesh is scoped to.
@@ -521,6 +530,10 @@ declare module "./mesh" {
         let CreateCapsule: (name: string, options: ICreateCapsuleOptions, scene: Scene) => Mesh;
     }
 }
+
+Mesh.prototype.setMaterialByID = function(id: string): Mesh {
+    return this.setMaterialById(id);
+};
 
 Mesh.CreateDisc = Mesh.CreateDisc || (() => { throw _DevTools.WarnImport("MeshBuilder"); });
 Mesh.CreateBox = Mesh.CreateBox || (() => { throw _DevTools.WarnImport("MeshBuilder"); });
