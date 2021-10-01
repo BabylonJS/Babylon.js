@@ -282,15 +282,6 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         return this._getControlByKey("name", name);
     }
 
-    /**
-    * Will return the first control with the given id
-    * @param uniqueId defines the id to search for
-    * @return the first control found or null
-    */
-    public getControlById(uniqueId: number): Nullable<Control> {
-        return this._getControlByKey("uniqueId", uniqueId);
-    }
-
     private _getControlByKey(key: string, value: any): Nullable<Control> {
         return this._rootContainer.getDescendants().find((control) => (control as any)[key] === value) || null;
     }
@@ -956,7 +947,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._rootContainer = Control.Parse(serializedObject.root, this) as Container;
         const width = serializedObject.width;
         const height = serializedObject.height;
-        if (width && height) {
+        if (typeof(width) === "number" && typeof(height) === "number" && width >= 0 && height >= 0) {
             this.scaleTo(width, height);
         }
     }
