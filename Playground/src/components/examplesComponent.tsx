@@ -20,7 +20,7 @@ interface IScript {
     samples: ISample[];
 }
 
-export class ExamplesComponent extends React.Component<IExamplesComponentProps, { filter: string; className: string }> {
+export class ExamplesComponent extends React.Component<IExamplesComponentProps, { filter: string; className: string; openedOnce: boolean; }> {
     private _documentationRoot = "https://doc.babylonjs.com";
     private _searchUrl =
         "https://babylonjs-newdocs.search.windows.net/indexes/playgrounds/docs?api-version=2020-06-30&$top=1000&api-key=820DCA4087091C0386B0F0A266710390&$filter=isMain%20eq%20true";
@@ -32,7 +32,7 @@ export class ExamplesComponent extends React.Component<IExamplesComponentProps, 
         super(props);
         this._loadScriptsAsync();
 
-        this.state = { filter: "", className: "removed" };
+        this.state = { filter: "", className: "removed", openedOnce: false };
         this._rootRef = React.createRef();
         this._searchBoxRef = React.createRef();
 
@@ -41,6 +41,7 @@ export class ExamplesComponent extends React.Component<IExamplesComponentProps, 
                 this.setState({
                     ...this.state,
                     className: "visible",
+                    openedOnce: true
                 });
                 setTimeout(() => {
                     this._searchBoxRef.current!.focus();
@@ -166,7 +167,7 @@ export class ExamplesComponent extends React.Component<IExamplesComponentProps, 
                                     return (
                                         <div className="example" key={ss.title + i} onClick={() => this._onLoadPG(ss.PGID)}>
                                             <img
-                                                src={this.state.className === "visible" ? ss.icon.replace("icons", "https://doc.babylonjs.com/examples/icons") : ""}
+                                                src={this.state.openedOnce ? ss.icon.replace("icons", "https://doc.babylonjs.com/examples/icons") : ""}
                                                 alt={ss.title}
                                             />
                                             <div className="example-title">{ss.title}</div>
