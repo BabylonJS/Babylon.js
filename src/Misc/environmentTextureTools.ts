@@ -708,7 +708,7 @@ export function UploadEnvSpherical(texture: InternalTexture, info: EnvironmentTe
 }
 
 /** @hidden */
-export function _UpdateRGBDAsync(internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial>, lodScale: number, lodOffset: number): Promise<void> {
+export function _UpdateRGBDAsync(internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial>, lodScale: number, lodOffset: number): Promise<InternalTexture> {
     internalTexture._source = InternalTextureSource.CubeRawRGBD;
     internalTexture._bufferViewArrayArray = data;
     internalTexture._lodGenerationScale = lodScale;
@@ -717,6 +717,7 @@ export function _UpdateRGBDAsync(internalTexture: InternalTexture, data: ArrayBu
 
     return UploadLevelsAsync(internalTexture, data).then(() => {
         internalTexture.isReady = true;
+        return internalTexture;
     });
 }
 
@@ -777,16 +778,3 @@ export const EnvironmentTextureTools = {
      */
     UploadEnvSpherical,
 };
-
-/**
- * This will be executed automatically for UMD and es5.
- * If esm dev wants the side effects to execute they will have to run it manually
- * Once we build native modules those need to be exported.
- * @hidden
- */
-const initSideEffects = () => {
-    // References the dependencies.
-    InternalTexture._UpdateRGBDAsync = _UpdateRGBDAsync;
-};
-
-initSideEffects();
