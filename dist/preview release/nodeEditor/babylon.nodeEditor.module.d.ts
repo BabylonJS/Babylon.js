@@ -2375,6 +2375,7 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/sliderLineCompone
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-node-editor/sharedUiComponents/propertyChangedEvent";
+    import { LockObject } from "babylonjs-node-editor/sharedUiComponents/tabs/propertyGrids/lockObject";
     interface ISliderLineComponentProps {
         label: string;
         target?: any;
@@ -2391,6 +2392,7 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/sliderLineCompone
         margin?: boolean;
         icon?: string;
         iconLabel?: string;
+        lockObject?: LockObject;
     }
     export class SliderLineComponent extends React.Component<ISliderLineComponentProps, {
         value: number;
@@ -5066,6 +5068,7 @@ declare module NODEEDITOR {
         margin?: boolean;
         icon?: string;
         iconLabel?: string;
+        lockObject?: LockObject;
     }
     export class SliderLineComponent extends React.Component<ISliderLineComponentProps, {
         value: number;

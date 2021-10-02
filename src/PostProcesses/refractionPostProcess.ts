@@ -6,7 +6,7 @@ import { PostProcess, PostProcessOptions } from "./postProcess";
 import { Engine } from "../Engines/engine";
 
 import "../Shaders/refraction.fragment";
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 import { SerializationHelper, serialize } from '../Misc/decorators';
 
 declare type Scene = import("../scene").Scene;
@@ -134,4 +134,4 @@ export class RefractionPostProcess extends PostProcess {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.RefractionPostProcess"] = RefractionPostProcess;
+RegisterClass("BABYLON.RefractionPostProcess", RefractionPostProcess);

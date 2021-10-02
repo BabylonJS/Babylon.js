@@ -60,6 +60,11 @@
         "insertText": "let advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI(\"${1:name}\", true, scene);\nlet loadedGUI = advancedTexture.parseFromSnippetAsync(\"${2:your_snippet_url_no_#}\");"
     },
     {
+        "label": "Project a GUI from the snippet server, onto a mesh",
+        "documentation": "Coming Soon",
+        "insertText": "let guiTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateForMesh(\"${1:mesh to project onto}\", 1024, 1024);\nawait guiTexture.parseFromSnippetAsync(\"${2:your_snippet_url_no_#}\");"
+    },
+    {
         "label": "Show the Inspector",
         "documentation": "https://doc.babylonjs.com/features/playground_debuglayer",
         "insertText": "scene.debugLayer.show({\n     embedMode:true\n});"

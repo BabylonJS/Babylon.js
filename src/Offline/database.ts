@@ -1,7 +1,7 @@
 import { Nullable } from "../types";
 import { Tools } from "../Misc/tools";
 import { Logger } from "../Misc/logger";
-import { TGATools } from "../Misc/tga";
+import { GetTGAHeader } from "../Misc/tga";
 import { Engine } from "../Engines/engine";
 import { IOfflineProvider } from "./IOfflineProvider";
 import { WebRequest } from "../Misc/webRequest";
@@ -701,7 +701,7 @@ export class Database implements IOfflineProvider {
 
             if (dataType & 2) {
                 // Check header width and height since there is no "TGA" magic number
-                var tgaHeader = TGATools.GetTGAHeader(xhr.response);
+                var tgaHeader = GetTGAHeader(xhr.response);
 
                 if (tgaHeader.width && tgaHeader.height && tgaHeader.width > 0 && tgaHeader.height > 0) {
                     return true;

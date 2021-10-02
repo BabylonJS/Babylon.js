@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!*****************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \*****************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \************************************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -521,7 +521,7 @@ var GrassProceduralTexture = /** @class */ (function (_super) {
     return GrassProceduralTexture;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["ProceduralTexture"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.GrassProceduralTexture"] = GrassProceduralTexture;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.GrassProceduralTexture", GrassProceduralTexture);
 
 
 /***/ }),
@@ -552,8 +552,8 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* WEBPACK VAR INJECTION */(function(global) {/* harmony import */ var _grass__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../grass */ "./grass/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GrassProceduralTexture", function() { return _grass__WEBPACK_IMPORTED_MODULE_0__["GrassProceduralTexture"]; });
+/* WEBPACK VAR INJECTION */(function(global) {/* harmony import */ var _grass_index__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../grass/index */ "./grass/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GrassProceduralTexture", function() { return _grass_index__WEBPACK_IMPORTED_MODULE_0__["GrassProceduralTexture"]; });
 
 
 /**
@@ -562,8 +562,8 @@ __webpack_require__.r(__webpack_exports__);
  */
 var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
 if (typeof globalObject !== "undefined") {
-    for (var key in _grass__WEBPACK_IMPORTED_MODULE_0__) {
-        globalObject.BABYLON[key] = _grass__WEBPACK_IMPORTED_MODULE_0__[key];
+    for (var key in _grass_index__WEBPACK_IMPORTED_MODULE_0__) {
+        globalObject.BABYLON[key] = _grass_index__WEBPACK_IMPORTED_MODULE_0__[key];
     }
 }
 

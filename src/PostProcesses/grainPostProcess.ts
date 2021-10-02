@@ -6,7 +6,7 @@ import { Engine } from "../Engines/engine";
 import { Constants } from "../Engines/constants";
 
 import "../Shaders/grain.fragment";
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 import { serialize, SerializationHelper } from '../Misc/decorators';
 
 declare type Scene = import("../scene").Scene;
@@ -65,4 +65,4 @@ export class GrainPostProcess extends PostProcess {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.GrainPostProcess"] = GrainPostProcess;
+RegisterClass("BABYLON.GrainPostProcess", GrainPostProcess);

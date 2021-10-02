@@ -6,12 +6,12 @@ import { Texture } from "../../Materials/Textures/texture";
 import { Constants } from "../../Engines/constants";
 import { HDRTools } from "../../Misc/HighDynamicRange/hdr";
 import { CubeMapToSphericalPolynomialTools } from "../../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
-import { _TypeStore } from '../../Misc/typeStore';
+import { RegisterClass } from '../../Misc/typeStore';
 import { Tools } from '../../Misc/tools';
 import { ToGammaSpace } from '../../Maths/math.constants';
 import { ThinEngine } from '../../Engines/thinEngine';
 import { HDRFiltering } from "../../Materials/Textures/Filtering/hdrFiltering";
-import { TextureTools } from "../../Misc/textureTools";
+import { ToHalfFloat } from "../../Misc/textureTools";
 import "../../Engines/Extensions/engine.rawTexture";
 import "../../Materials/Textures/baseTexture.polynomial";
 
@@ -219,9 +219,9 @@ export class HDRCubeTexture extends BaseTexture {
 
                         // Convert to half float texture for fallback.
                         if (shortArray) {
-                            shortArray[(i * 3) + 0] = TextureTools.ToHalfFloat(dataFace[(i * 3) + 0]);
-                            shortArray[(i * 3) + 1] = TextureTools.ToHalfFloat(dataFace[(i * 3) + 1]);
-                            shortArray[(i * 3) + 2] = TextureTools.ToHalfFloat(dataFace[(i * 3) + 2]);
+                            shortArray[(i * 3) + 0] = ToHalfFloat(dataFace[(i * 3) + 0]);
+                            shortArray[(i * 3) + 1] = ToHalfFloat(dataFace[(i * 3) + 1]);
+                            shortArray[(i * 3) + 2] = ToHalfFloat(dataFace[(i * 3) + 2]);
                         }
 
                         // Convert to int texture for fallback.
@@ -383,4 +383,4 @@ export class HDRCubeTexture extends BaseTexture {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.HDRCubeTexture"] = HDRCubeTexture;
+RegisterClass("BABYLON.HDRCubeTexture", HDRCubeTexture);

@@ -6,11 +6,11 @@ import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
 import { Constants } from "../../Engines/constants";
-import { _TypeStore } from '../../Misc/typeStore';
+import { GetClass, RegisterClass } from '../../Misc/typeStore';
 import { ThinEngine } from '../../Engines/thinEngine';
 
 import "../../Engines/Extensions/engine.cubeTexture";
-import { StringTools } from '../../Misc/stringTools';
+import { StartsWith } from '../../Misc/stringTools';
 import { Observable } from '../../Misc/observable';
 
 /**
@@ -220,7 +220,7 @@ export class CubeTexture extends BaseTexture {
      * @param files defines the six files to load for the different faces in that order: px, py, pz, nx, ny, nz
      */
     public updateURL(url: string, forcedExtension?: string, onLoad: Nullable<() => void> = null, prefiltered: boolean = false, onError: Nullable<(message?: string, exception?: any) => void> = null, extensions: Nullable<string[]> = null, delayLoad = false, files: Nullable<string[]> = null): void {
-        if (!this.name || StringTools.StartsWith(this.name, "data:")) {
+        if (!this.name || StartsWith(this.name, "data:")) {
             this.name = url;
         }
         this.url = url;
@@ -384,7 +384,7 @@ export class CubeTexture extends BaseTexture {
         if (parsedTexture.animations) {
             for (var animationIndex = 0; animationIndex < parsedTexture.animations.length; animationIndex++) {
                 var parsedAnimation = parsedTexture.animations[animationIndex];
-                const internalClass = _TypeStore.GetClass("BABYLON.Animation");
+                const internalClass = GetClass("BABYLON.Animation");
                 if (internalClass) {
                     texture.animations.push(internalClass.Parse(parsedAnimation));
                 }
@@ -416,4 +416,4 @@ export class CubeTexture extends BaseTexture {
 
 Texture._CubeTextureParser = CubeTexture.Parse;
 // Some exporters relies on Tools.Instantiate
-_TypeStore.RegisteredTypes["BABYLON.CubeTexture"] = CubeTexture;
+RegisterClass("BABYLON.CubeTexture", CubeTexture);

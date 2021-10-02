@@ -20,7 +20,7 @@ import { EffectLayer } from "./effectLayer";
 import { AbstractScene } from "../abstractScene";
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 import { Color4, Color3 } from '../Maths/math.color';
 
 import "../Shaders/glowMapMerge.fragment";
@@ -865,4 +865,4 @@ export class HighlightLayer extends EffectLayer {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.HighlightLayer"] = HighlightLayer;
+RegisterClass("BABYLON.HighlightLayer", HighlightLayer);

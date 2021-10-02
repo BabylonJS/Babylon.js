@@ -9,7 +9,7 @@ import { Scene } from '../../../../scene';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
-import { _TypeStore } from '../../../../Misc/typeStore';
+import { GetClass, RegisterClass } from '../../../../Misc/typeStore';
 import { Color3, Color4, TmpColors } from '../../../../Maths/math';
 import { AnimatedInputBlockTypes } from './animatedInputBlockTypes';
 import { Observable } from '../../../../Misc/observable';
@@ -798,7 +798,7 @@ export class InputBlock extends NodeMaterialBlock {
         if (serializationObject.valueType === "number") {
             this._storedValue = serializationObject.value;
         } else {
-            let valueType = _TypeStore.GetClass(serializationObject.valueType);
+            let valueType = GetClass(serializationObject.valueType);
 
             if (valueType) {
                 this._storedValue = valueType.FromArray(serializationObject.value);
@@ -807,4 +807,4 @@ export class InputBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.InputBlock"] = InputBlock;
+RegisterClass("BABYLON.InputBlock", InputBlock);

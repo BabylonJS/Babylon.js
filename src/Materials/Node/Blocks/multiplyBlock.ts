@@ -3,7 +3,7 @@ import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBloc
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
-import { _TypeStore } from '../../../Misc/typeStore';
+import { RegisterClass } from '../../../Misc/typeStore';
 /**
  * Block used to multiply 2 values
  */
@@ -63,4 +63,4 @@ export class MultiplyBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.MultiplyBlock"] = MultiplyBlock;
+RegisterClass("BABYLON.MultiplyBlock", MultiplyBlock);
