@@ -15,7 +15,7 @@ import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SubMesh } from "babylonjs/Meshes/subMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 
 import "./terrain.fragment";
 import "./terrain.vertex";
@@ -476,4 +476,4 @@ export class TerrainMaterial extends PushMaterial {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.TerrainMaterial"] = TerrainMaterial;
+RegisterClass("BABYLON.TerrainMaterial", TerrainMaterial);

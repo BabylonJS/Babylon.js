@@ -13,7 +13,7 @@ import { ValueAndUnit } from "../valueAndUnit";
 import { Measure } from "../measure";
 import { Style } from "../style";
 import { Matrix2D, Vector2WithInfo } from "../math2D";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 import { SerializationHelper, serialize } from 'babylonjs/Misc/decorators';
 import { ICanvasRenderingContext } from 'babylonjs/Engines/ICanvas';
 import { Engine } from "babylonjs/Engines/engine";
@@ -611,9 +611,6 @@ export class Control {
 
     /** Gets or set font family */
     public get fontFamily(): string {
-        if (!this._fontSet) {
-            return "";
-        }
         return this._fontFamily;
     }
 
@@ -2072,7 +2069,7 @@ export class Control {
         serializationObject.className = this.getClassName();
 
         if (this._font) {
-            serializationObject.fontFamily = this.fontFamily;
+            serializationObject.fontFamily = this._fontFamily;
             serializationObject.fontSize = this.fontSize;
             serializationObject.fontWeight = this.fontWeight;
             serializationObject.fontStyle = this.fontStyle;
@@ -2234,4 +2231,4 @@ export class Control {
         context.translate(-x, -y);
     }
 }
-_TypeStore.RegisteredTypes["BABYLON.GUI.Control"] = Control;
+RegisterClass("BABYLON.GUI.Control", Control);

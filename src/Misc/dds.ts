@@ -8,16 +8,16 @@ import { CubeMapToSphericalPolynomialTools } from "../Misc/HighDynamicRange/cube
 import { Scene } from '../scene';
 import { BaseTexture } from '../Materials/Textures/baseTexture';
 import { ThinEngine } from '../Engines/thinEngine';
-import { TextureTools } from "./textureTools";
+import { FromHalfFloat, ToHalfFloat } from "./textureTools";
 
 import "../Engines/Extensions/engine.cubeTexture";
 
 // Based on demo done by Brandon Jones - http://media.tojicode.com/webgl-samples/dds.html
 // All values and structures referenced from:
 // http://msdn.microsoft.com/en-us/library/bb943991.aspx/
-var DDS_MAGIC = 0x20534444;
+const DDS_MAGIC = 0x20534444;
 
-var
+const
     //DDSD_CAPS = 0x1,
     //DDSD_HEIGHT = 0x2,
     //DDSD_WIDTH = 0x4,
@@ -31,7 +31,7 @@ var
 //     DDSCAPS_MIPMAP = 0x400000,
 //     DDSCAPS_TEXTURE = 0x1000;
 
-var DDSCAPS2_CUBEMAP = 0x200;
+const DDSCAPS2_CUBEMAP = 0x200;
 // DDSCAPS2_CUBEMAP_POSITIVEX = 0x400,
 // DDSCAPS2_CUBEMAP_NEGATIVEX = 0x800,
 // DDSCAPS2_CUBEMAP_POSITIVEY = 0x1000,
@@ -40,7 +40,7 @@ var DDSCAPS2_CUBEMAP = 0x200;
 // DDSCAPS2_CUBEMAP_NEGATIVEZ = 0x8000,
 // DDSCAPS2_VOLUME = 0x200000;
 
-var
+const
     //DDPF_ALPHAPIXELS = 0x1,
     //DDPF_ALPHA = 0x2,
     DDPF_FOURCC = 0x4,
@@ -221,13 +221,13 @@ export class DDSTools {
         for (var y = 0; y < height; y++) {
             for (var x = 0; x < width; x++) {
                 var srcPos = (x + y * width) * 4;
-                destArray[index] = TextureTools.FromHalfFloat(srcData[srcPos]);
-                destArray[index + 1] = TextureTools.FromHalfFloat(srcData[srcPos + 1]);
-                destArray[index + 2] = TextureTools.FromHalfFloat(srcData[srcPos + 2]);
+                destArray[index] = FromHalfFloat(srcData[srcPos]);
+                destArray[index + 1] = FromHalfFloat(srcData[srcPos + 1]);
+                destArray[index + 2] = FromHalfFloat(srcData[srcPos + 2]);
                 if (DDSTools.StoreLODInAlphaChannel) {
                     destArray[index + 3] = lod;
                 } else {
-                    destArray[index + 3] = TextureTools.FromHalfFloat(srcData[srcPos + 3]);
+                    destArray[index + 3] = FromHalfFloat(srcData[srcPos + 3]);
                 }
                 index += 4;
             }
@@ -247,7 +247,7 @@ export class DDSTools {
                     destArray[index] = srcData[srcPos];
                     destArray[index + 1] = srcData[srcPos + 1];
                     destArray[index + 2] = srcData[srcPos + 2];
-                    destArray[index + 3] = TextureTools.ToHalfFloat(lod);
+                    destArray[index + 3] = ToHalfFloat(lod);
                     index += 4;
                 }
             }
@@ -285,13 +285,13 @@ export class DDSTools {
         var index = 0;
         for (var y = 0; y < height; y++) {
             for (var x = 0; x < width; x++) {
-                destArray[index] = TextureTools.ToHalfFloat(srcData[index]);
-                destArray[index + 1] = TextureTools.ToHalfFloat(srcData[index + 1]);
-                destArray[index + 2] = TextureTools.ToHalfFloat(srcData[index + 2]);
+                destArray[index] = ToHalfFloat(srcData[index]);
+                destArray[index + 1] = ToHalfFloat(srcData[index + 1]);
+                destArray[index + 2] = ToHalfFloat(srcData[index + 2]);
                 if (DDSTools.StoreLODInAlphaChannel) {
-                    destArray[index + 3] = TextureTools.ToHalfFloat(lod);
+                    destArray[index + 3] = ToHalfFloat(lod);
                 } else {
-                    destArray[index + 3] = TextureTools.ToHalfFloat(srcData[index + 3]);
+                    destArray[index + 3] = ToHalfFloat(srcData[index + 3]);
                 }
                 index += 4;
             }
@@ -329,13 +329,13 @@ export class DDSTools {
         for (var y = 0; y < height; y++) {
             for (var x = 0; x < width; x++) {
                 var srcPos = (x + y * width) * 4;
-                destArray[index] = Scalar.Clamp(TextureTools.FromHalfFloat(srcData[srcPos])) * 255;
-                destArray[index + 1] = Scalar.Clamp(TextureTools.FromHalfFloat(srcData[srcPos + 1])) * 255;
-                destArray[index + 2] = Scalar.Clamp(TextureTools.FromHalfFloat(srcData[srcPos + 2])) * 255;
+                destArray[index] = Scalar.Clamp(FromHalfFloat(srcData[srcPos])) * 255;
+                destArray[index + 1] = Scalar.Clamp(FromHalfFloat(srcData[srcPos + 1])) * 255;
+                destArray[index + 2] = Scalar.Clamp(FromHalfFloat(srcData[srcPos + 2])) * 255;
                 if (DDSTools.StoreLODInAlphaChannel) {
                     destArray[index + 3] = lod;
                 } else {
-                    destArray[index + 3] = Scalar.Clamp(TextureTools.FromHalfFloat(srcData[srcPos + 3])) * 255;
+                    destArray[index + 3] = Scalar.Clamp(FromHalfFloat(srcData[srcPos + 3])) * 255;
                 }
                 index += 4;
             }

@@ -1,4 +1,4 @@
-import * as GLTF1 from "../glTF/1.0";
+import * as GLTF1 from "../glTF/1.0/index";
 
 /**
  * This is the entry point for the UMD module.

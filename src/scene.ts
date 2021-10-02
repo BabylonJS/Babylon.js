@@ -22,10 +22,10 @@ import { RenderingGroupInfo, RenderingManager, IRenderingManagerAutoClearSetup }
 import { ISceneComponent, ISceneSerializableComponent, Stage, SimpleStageAction, RenderTargetsStageAction, RenderTargetStageAction, MeshStageAction, EvaluateSubMeshStageAction, PreActiveMeshStageAction, CameraStageAction, RenderingGroupStageAction, RenderingMeshStageAction, PointerMoveStageAction, PointerUpDownStageAction, CameraStageFrameBufferAction } from "./sceneComponent";
 import { Engine } from "./Engines/engine";
 import { Constants } from "./Engines/constants";
-import { DomManagement } from "./Misc/domManagement";
+import { IsWindowObjectExist } from "./Misc/domManagement";
 import { EngineStore } from "./Engines/engineStore";
 import { AbstractActionManager } from './Actions/abstractActionManager';
-import { _DevTools } from './Misc/devTools';
+import { _WarnImport } from './Misc/devTools';
 import { WebRequest } from './Misc/webRequest';
 import { InputManager } from './Inputs/scene.inputManager';
 import { PerfCounter } from './Misc/perfCounter';
@@ -34,7 +34,7 @@ import { Color4, Color3 } from './Maths/math.color';
 import { Plane } from './Maths/math.plane';
 import { Frustum } from './Maths/math.frustum';
 import { UniqueIdGenerator } from './Misc/uniqueIdGenerator';
-import { FileTools, LoadFileError, RequestFileError, ReadFileError } from './Misc/fileTools';
+import { LoadFileError, RequestFileError, ReadFileError, ReadFile, RequestFile, LoadFile } from './Misc/fileTools';
 import { IClipPlanesHolder } from './Misc/interfaces/iClipPlanesHolder';
 import { IPointerEvent } from "./Events/deviceInputEvents";
 import { LightConstants } from "./Lights/lightConstants";
@@ -135,7 +135,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @returns The default material
      */
     public static DefaultMaterialFactory(scene: Scene): Material {
-        throw _DevTools.WarnImport("StandardMaterial");
+        throw _WarnImport("StandardMaterial");
     }
 
     /**
@@ -143,7 +143,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @returns The collision coordinator
      */
     public static CollisionCoordinatorFactory(): ICollisionCoordinator {
-        throw _DevTools.WarnImport("DefaultCollisionCoordinator");
+        throw _WarnImport("DefaultCollisionCoordinator");
     }
 
     // Members
@@ -704,6 +704,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public onPointerUp: (evt: IPointerEvent, pickInfo: Nullable<PickingInfo>, type: PointerEventTypes) => void;
     /** Callback called when a pointer pick is detected */
     public onPointerPick: (evt: IPointerEvent, pickInfo: PickingInfo) => void;
+
+    /**
+     * Gets or sets a predicate used to select candidate faces for a pointer move event
+     */
+    public pointerMoveTrianglePredicate: ((p0: Vector3, p1: Vector3, p2: Vector3, ray: Ray) => boolean) | undefined;
 
     /**
      * This observable event is triggered when any ponter event is triggered. It is registered during Scene.attachControl() and it is called BEFORE the 3D engine process anything (mesh/sprite picking for instance).
@@ -1481,7 +1486,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             this.postProcessManager = new PostProcessManager(this);
         }
 
-        if (DomManagement.IsWindowObjectExist()) {
+        if (IsWindowObjectExist()) {
             this.attachControl();
         }
 
@@ -4825,7 +4830,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @returns a Ray
      */
     public createPickingRay(x: number, y: number, world: Nullable<Matrix>, camera: Nullable<Camera>, cameraViewSpace = false): Ray {
-        throw _DevTools.WarnImport("Ray");
+        throw _WarnImport("Ray");
     }
 
     /**
@@ -4839,7 +4844,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @returns the current scene
      */
     public createPickingRayToRef(x: number, y: number, world: Nullable<Matrix>, result: Ray, camera: Nullable<Camera>, cameraViewSpace = false): Scene {
-        throw _DevTools.WarnImport("Ray");
+        throw _WarnImport("Ray");
     }
 
     /**
@@ -4850,7 +4855,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @returns a Ray
      */
     public createPickingRayInCameraSpace(x: number, y: number, camera?: Camera): Ray {
-        throw _DevTools.WarnImport("Ray");
+        throw _WarnImport("Ray");
     }
 
     /**
@@ -4862,7 +4867,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @returns the current scene
      */
     public createPickingRayInCameraSpaceToRef(x: number, y: number, result: Ray, camera?: Camera): Scene {
-        throw _DevTools.WarnImport("Ray");
+        throw _WarnImport("Ray");
     }
 
     /** Launch a ray to try to pick a mesh in the scene
@@ -4909,7 +4914,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public pickWithRay(ray: Ray, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean,
         trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo> {
-        throw _DevTools.WarnImport("Ray");
+        throw _WarnImport("Ray");
     }
 
     /**
@@ -4923,7 +4928,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public multiPick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, camera?: Camera,
         trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
-        throw _DevTools.WarnImport("Ray");
+        throw _WarnImport("Ray");
     }
 
     /**
@@ -4934,7 +4939,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @returns an array of PickingInfo
      */
     public multiPickWithRay(ray: Ray, predicate: (mesh: AbstractMesh) => boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
-        throw _DevTools.WarnImport("Ray");
+        throw _WarnImport("Ray");
     }
 
     /**
@@ -5149,7 +5154,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /** @hidden */
     public _loadFile(fileOrUrl: File | string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void, onOpened?: (request: WebRequest) => void): IFileRequest {
-        const request = FileTools.LoadFile(fileOrUrl, onSuccess, onProgress, useOfflineSupport ? this.offlineProvider : undefined, useArrayBuffer, onError, onOpened);
+        const request = LoadFile(fileOrUrl, onSuccess, onProgress, useOfflineSupport ? this.offlineProvider : undefined, useArrayBuffer, onError, onOpened);
         this._activeRequests.push(request);
         request.onCompleteObservable.add((request) => {
             this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
@@ -5170,7 +5175,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /** @hidden */
     public _requestFile(url: string, onSuccess: (data: string | ArrayBuffer, request?: WebRequest) => void, onProgress?: (ev: ProgressEvent) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onError?: (error: RequestFileError) => void, onOpened?: (request: WebRequest) => void): IFileRequest {
-        const request = FileTools.RequestFile(url, onSuccess, onProgress, useOfflineSupport ? this.offlineProvider : undefined, useArrayBuffer, onError, onOpened);
+        const request = RequestFile(url, onSuccess, onProgress, useOfflineSupport ? this.offlineProvider : undefined, useArrayBuffer, onError, onOpened);
         this._activeRequests.push(request);
         request.onCompleteObservable.add((request) => {
             this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
@@ -5191,7 +5196,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /** @hidden */
     public _readFile(file: File, onSuccess: (data: string | ArrayBuffer) => void, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean, onError?: (error: ReadFileError) => void): IFileRequest {
-        const request = FileTools.ReadFile(file, onSuccess, onProgress, useArrayBuffer, onError);
+        const request = ReadFile(file, onSuccess, onProgress, useArrayBuffer, onError);
         this._activeRequests.push(request);
         request.onCompleteObservable.add((request) => {
             this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
@@ -5221,7 +5226,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @returns the perf collector belonging to the scene.
      */
     public getPerfCollector(): PerformanceViewerCollector {
-        throw _DevTools.WarnImport("performanceViewerSceneExtension");
+        throw _WarnImport("performanceViewerSceneExtension");
     }
 
     private _computePressureObserver: ComputePressureObserverWrapper | undefined;

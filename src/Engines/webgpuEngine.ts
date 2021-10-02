@@ -1,5 +1,5 @@
 import { Logger } from "../Misc/logger";
-import { DomManagement } from '../Misc/domManagement';
+import { IsWindowObjectExist } from '../Misc/domManagement';
 import { Nullable, DataArray, IndicesArray, Immutable } from "../types";
 import { Color4 } from "../Maths/math";
 import { Engine } from "../Engines/engine";
@@ -573,7 +573,7 @@ export class WebGPUEngine extends Engine {
         this._options = options;
         this.premultipliedAlpha = options.premultipliedAlpha ?? true;
 
-        const devicePixelRatio = DomManagement.IsWindowObjectExist() ? (window.devicePixelRatio || 1.0) : 1.0;
+        const devicePixelRatio = IsWindowObjectExist() ? (window.devicePixelRatio || 1.0) : 1.0;
         const limitDeviceRatio = options.limitDeviceRatio || devicePixelRatio;
         const adaptToDeviceRatio = options.adaptToDeviceRatio ?? false;
 
@@ -748,7 +748,7 @@ export class WebGPUEngine extends Engine {
         }
 
         if (glslangOptions.jsPath && glslangOptions.wasmPath) {
-            if (DomManagement.IsWindowObjectExist()) {
+            if (IsWindowObjectExist()) {
                 return Tools.LoadScriptAsync(glslangOptions.jsPath)
                     .then(() => {
                         return (self as any).glslang(glslangOptions!.wasmPath);

@@ -50,7 +50,6 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
 
     constructor(props: ISceneExplorerComponentProps) {
         super(props);
-
         this.state = { filter: null, selectedEntity: null, scene: this.props.scene ? this.props.scene : null };
         this._onNewSceneObserver = this.props.globalState.onNewSceneObservable.add((scene: Nullable<Scene>) => {
             this.setState({

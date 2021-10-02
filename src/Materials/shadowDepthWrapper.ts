@@ -3,12 +3,11 @@ import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { SubMesh } from "../Meshes/subMesh";
 import { Material } from "./material";
-import { _TypeStore } from "../Misc/typeStore";
 import { Effect, IEffectCreationOptions } from './effect';
 import { AbstractMesh } from '../Meshes/abstractMesh';
 import { Node } from '../node';
 import { ShadowGenerator } from '../Lights/Shadows/shadowGenerator';
-import { GUID } from '../Misc/guid';
+import { RandomGUID } from '../Misc/guid';
 import { DrawWrapper } from "./drawWrapper";
 
 /**
@@ -188,7 +187,7 @@ export class ShadowDepthWrapper {
                 drawWrapper: [],
                 mainDrawWrapper,
                 depthDefines: "",
-                token: GUID.RandomId()
+                token: RandomGUID()
             };
             params.drawWrapper[passIdForDrawWrapper] = mainDrawWrapper;
             this._subMeshToDepthWrapper.set(subMesh, shadowGenerator, params);

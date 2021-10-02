@@ -330,6 +330,10 @@ export class PBRSubSurfaceConfiguration {
      * @returns - boolean indicating that the submesh is ready or not.
      */
     public isReadyForSubMesh(defines: IMaterialSubSurfaceDefines, scene: Scene): boolean {
+        if (!this._isRefractionEnabled && !this._isTranslucencyEnabled && !this._isScatteringEnabled) {
+            return true;
+        }
+
         if (defines._areTexturesDirty) {
             if (scene.texturesEnabled) {
                 if (this._thicknessTexture && MaterialFlags.ThicknessTextureEnabled) {
@@ -356,6 +360,14 @@ export class PBRSubSurfaceConfiguration {
      * @param scene defines the scene to the material belongs to.
      */
     public prepareDefines(defines: IMaterialSubSurfaceDefines, scene: Scene): void {
+        if (!this._isRefractionEnabled && !this._isTranslucencyEnabled && !this._isScatteringEnabled) {
+            defines.SUBSURFACE = false;
+            defines.SS_TRANSLUCENCY = false;
+            defines.SS_SCATTERING = false;
+            defines.SS_REFRACTION = false;
+            return;
+        }
+
         if (defines._areTexturesDirty) {
             defines.SUBSURFACE = false;
 
@@ -457,6 +469,10 @@ export class PBRSubSurfaceConfiguration {
      * @param subMesh the submesh to bind data for
     */
     public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, isFrozen: boolean, lodBasedMicrosurface: boolean, realTimeFiltering: boolean, subMesh: SubMesh): void {
+        if (!this._isRefractionEnabled && !this._isTranslucencyEnabled && !this._isScatteringEnabled) {
+            return;
+        }
+
         const defines = subMesh!.materialDefines as unknown as IMaterialSubSurfaceDefines;
 
         var refractionTexture = this._getRefractionTexture(scene);

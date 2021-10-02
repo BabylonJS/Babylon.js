@@ -14,7 +14,7 @@ import "../../Shaders/shadowMap.fragment";
 import "../../Shaders/shadowMap.vertex";
 import "../../Shaders/depthBoxBlur.fragment";
 import { Observer } from '../../Misc/observable';
-import { _DevTools } from '../../Misc/devTools';
+import { _WarnImport } from '../../Misc/devTools';
 import { ShadowGenerator } from './shadowGenerator';
 import { DirectionalLight } from '../directionalLight';
 
@@ -718,7 +718,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
 
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
-        throw _DevTools.WarnImport("ShadowGeneratorSceneComponent");
+        throw _WarnImport("ShadowGeneratorSceneComponent");
     }
 
     /**

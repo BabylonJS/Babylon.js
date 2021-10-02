@@ -6,7 +6,7 @@ import { Scalar } from "../Maths/math.scalar";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { SerializationHelper } from "../Misc/decorators";
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 import { IAnimationKey, AnimationKeyInterpolation } from './animationKey';
 import { AnimationRange } from './animationRange';
 import { AnimationEvent } from './animationEvent';
@@ -154,7 +154,7 @@ export class Animation {
     /**
      * Create and start an animation on a node
      * @param name defines the name of the global animation that will be run on all nodes
-     * @param node defines the root node where the animation will take place
+     * @param target defines the target where the animation will take place
      * @param targetProperty defines property to animate
      * @param framePerSecond defines the number of frame per second yo use
      * @param totalFrame defines the number of frames in total
@@ -163,11 +163,12 @@ export class Animation {
      * @param loopMode defines which loop mode you want to use (off by default)
      * @param easingFunction defines the easing function to use (linear by default)
      * @param onAnimationEnd defines the callback to call when animation end
+     * @param scene defines the hosting scene
      * @returns the animatable created for this animation
      */
-    public static CreateAndStartAnimation(name: string, node: Node, targetProperty: string,
+    public static CreateAndStartAnimation(name: string, target: any, targetProperty: string,
         framePerSecond: number, totalFrame: number,
-        from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Nullable<Animatable> {
+        from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void, scene?: Scene): Nullable<Animatable> {
 
         var animation = Animation._PrepareAnimation(name, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
 
@@ -175,7 +176,15 @@ export class Animation {
             return null;
         }
 
-        return node.getScene().beginDirectAnimation(node, [animation], 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
+        if (target.getScene) {
+            scene = target.getScene();
+        }
+
+        if (!scene) {
+            return null;
+        }
+
+        return scene.beginDirectAnimation(target, [animation], 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
     }
 
     /**
@@ -1343,5 +1352,5 @@ export class Animation {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.Animation"] = Animation;
+RegisterClass("BABYLON.Animation", Animation);
 Node._AnimationRangeFactory = (name: string, from: number, to: number) => new AnimationRange(name, from, to);

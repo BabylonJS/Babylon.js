@@ -13,7 +13,7 @@ import { Constants } from "../Engines/constants";
 
 import "../Shaders/lensFlare.fragment";
 import "../Shaders/lensFlare.vertex";
-import { _DevTools } from '../Misc/devTools';
+import { _WarnImport } from '../Misc/devTools';
 import { DataBuffer } from '../Buffers/dataBuffer';
 import { Color3 } from '../Maths/math.color';
 import { Viewport } from '../Maths/math.viewport';
@@ -70,7 +70,7 @@ export class LensFlareSystem {
 
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
-        throw _DevTools.WarnImport("LensFlareSystemSceneComponent");
+        throw _WarnImport("LensFlareSystemSceneComponent");
     }
 
     /**

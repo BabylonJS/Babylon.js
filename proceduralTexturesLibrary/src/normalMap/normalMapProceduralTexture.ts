@@ -2,7 +2,7 @@ import { serializeAsTexture, SerializationHelper } from "babylonjs/Misc/decorato
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
 import { Scene } from "babylonjs/scene";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 
 import "./normalMapProceduralTexture.fragment";
 
@@ -73,4 +73,4 @@ export class NormalMapProceduralTexture extends ProceduralTexture {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.NormalMapProceduralTexture"] = NormalMapProceduralTexture;
+RegisterClass("BABYLON.NormalMapProceduralTexture", NormalMapProceduralTexture);

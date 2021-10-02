@@ -3,7 +3,7 @@ import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialB
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from '../../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
-import { _TypeStore } from '../../../../Misc/typeStore';
+import { RegisterClass } from '../../../../Misc/typeStore';
 import { Nullable } from '../../../../types';
 import { Texture } from '../../../Textures/texture';
 import { Engine } from '../../../../Engines/engine';
@@ -156,4 +156,4 @@ export class ImageSourceBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.ImageSourceBlock"] = ImageSourceBlock;
+RegisterClass("BABYLON.ImageSourceBlock", ImageSourceBlock);

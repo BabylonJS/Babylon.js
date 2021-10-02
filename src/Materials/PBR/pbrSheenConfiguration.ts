@@ -135,6 +135,10 @@ export class PBRSheenConfiguration {
      * @returns - boolean indicating that the submesh is ready or not.
      */
     public isReadyForSubMesh(defines: IMaterialSheenDefines, scene: Scene): boolean {
+        if (!this._isEnabled) {
+            return true;
+        }
+
         if (defines._areTexturesDirty) {
             if (scene.texturesEnabled) {
                 if (this._texture && MaterialFlags.SheenTextureEnabled) {
@@ -205,6 +209,10 @@ export class PBRSheenConfiguration {
      * @param subMesh the submesh to bind data for
      */
     public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, isFrozen: boolean, subMesh?: SubMesh): void {
+        if (!this._isEnabled) {
+            return;
+        }
+
         const defines = subMesh!.materialDefines as unknown as IMaterialSheenDefines;
 
         const identicalTextures = defines.SHEEN_TEXTURE_ROUGHNESS_IDENTICAL;

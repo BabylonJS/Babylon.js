@@ -46,7 +46,7 @@ interface ICommonControlPropertyGridComponentProps {
 export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
     private _width = this.props.control.width;
     private _height = this.props.control.height;
-    private _responsive : boolean = false; 
+    private _responsive: boolean = false;
     constructor(props: ICommonControlPropertyGridComponentProps) {
         super(props);
         this._responsive = DataStorage.ReadBoolean("Responsive", true);
@@ -66,14 +66,21 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
     private _checkAndUpdateValues(propertyName: string, value: string) {
         //check if it contains either a px or a % sign
         let percentage = this._responsive;
-        if (value.charAt(value.length - 1) == '%') {
+        let negative = value.charAt(0) === '-';
+        if (value.charAt(value.length - 1) === '%') {
             percentage = true;
         }
-        let newValue = value.split('').filter(function (item) {
-            return (!isNaN(parseInt(item)));
-        }).join('');
+        else if (value.charAt(value.length - 1) === 'x' && value.charAt(value.length - 2) === 'p') {
+            percentage = false;
+        }
 
+        let newValue = value.match(/([\d\.\,]+)/g)?.[0];
+        if (!newValue) {
+            newValue = '0';
+        }
+        newValue = (negative ? '-' : '') + newValue;
         newValue += percentage ? '%' : 'px';
+
         (this.props.control as any)[propertyName] = newValue;
         this.forceUpdate();
     }
@@ -112,19 +119,30 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 <div className="divider">
                     <TextInputLineComponent numbersOnly={true} iconLabel={"Scale"} icon={sizeIcon} lockObject={this.props.lockObject} label="W" target={this} propertyName="_width" onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         onChange={(newValue) => {
-                            this._width = newValue;
+
                             if (control.typeName === "Image") {
                                 (control as Image).autoScale = false;
-                            };
+                            }
+                            else if (this.props.control.typeName === "ColorPicker") {
+                                if (newValue === '0' || newValue === '-') {
+                                    newValue = "1";
+                                }
+                            }
+                            this._width = newValue;
                             this._checkAndUpdateValues("width", this._width.toString());
                         }
                         } />
                     <TextInputLineComponent numbersOnly={true} lockObject={this.props.lockObject} label="H" target={this} propertyName="_height" onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         onChange={(newValue) => {
-                            this._height = newValue;
                             if (control.typeName === "Image") {
                                 (control as Image).autoScale = false;
-                            };
+                            }
+                            else if (this.props.control.typeName === "ColorPicker") {
+                                if (newValue === "0" || newValue === "-") {
+                                    newValue = "1";
+                                }
+                            }
+                            this._height = newValue;
                             this._checkAndUpdateValues("height", this._height.toString());
                         }
                         } />
@@ -147,7 +165,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     <FloatLineComponent iconLabel={"Scale"} icon={scaleIcon} lockObject={this.props.lockObject} label="X" target={control} propertyName="scaleX" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Y" target={control} propertyName="scaleY" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </div>
-                <SliderLineComponent icon={rotationIcon} label="R" target={control} propertyName="rotation" minimum={0} maximum={2 * Math.PI} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <SliderLineComponent lockObject={this.props.lockObject} icon={rotationIcon} label="R" target={control} decimalCount={2} propertyName="rotation" minimum={0} maximum={2 * Math.PI} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <hr className="ge" />
                 <TextLineComponent tooltip="" label="APPEARANCE" value=" " color="grey"></TextLineComponent>
                 {
@@ -164,7 +182,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                             if (newValue === "") { (control as any).background = "Transparent" }
                         }} />
                 }
-                <SliderLineComponent iconLabel={"Alpha"} icon={alphaIcon} label="" target={control} propertyName="alpha" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <SliderLineComponent lockObject={this.props.lockObject} iconLabel={"Alpha"} icon={alphaIcon} label="" target={control} propertyName="alpha" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <TextInputLineComponent iconLabel={"Shadow Color"} icon={shadowColorIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="shadowColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <div className="divider">
                     <FloatLineComponent iconLabel={"Shadow Offset X"} icon={shadowOffsetXIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="shadowOffsetX" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -178,7 +196,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     <TextInputLineComponent iconLabel={"Font Size"} icon={fontSizeIcon} lockObject={this.props.lockObject} label="" target={control} numbersOnly={true} propertyName="fontSize" onChange={(newValue) => this._checkAndUpdateValues("fontSize", newValue)} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </div>
                 <div className="divider">
-                    <TextInputLineComponent iconLabel={"Font Weight"} icon={shadowBlurIcon} lockObject={this.props.lockObject} label="" target={control} numbersOnly={true} propertyName="fontWeight" onChange={(newValue) => this._checkAndUpdateValues("fontWeight", newValue)} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <TextInputLineComponent iconLabel={"Font Weight"} icon={shadowBlurIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="fontWeight" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <TextInputLineComponent iconLabel={"Font Style"} icon={fontStyleIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="fontStyle" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </div>
             </div>

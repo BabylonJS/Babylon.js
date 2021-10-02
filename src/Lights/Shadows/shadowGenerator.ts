@@ -20,7 +20,7 @@ import { PostProcess } from "../../PostProcesses/postProcess";
 import { BlurPostProcess } from "../../PostProcesses/blurPostProcess";
 import { Constants } from "../../Engines/constants";
 import { Observable } from '../../Misc/observable';
-import { _DevTools } from '../../Misc/devTools';
+import { _WarnImport } from '../../Misc/devTools';
 import { EffectFallbacks } from '../../Materials/effectFallbacks';
 import { RenderingManager } from '../../Rendering/renderingManager';
 import { DrawWrapper } from "../../Materials/drawWrapper";
@@ -812,7 +812,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
-        throw _DevTools.WarnImport("ShadowGeneratorSceneComponent");
+        throw _WarnImport("ShadowGeneratorSceneComponent");
     }
 
     /**

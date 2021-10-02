@@ -88,68 +88,184 @@ enum BASIS_FORMATS {
  * Used to load .Basis files
  * See https://github.com/BinomialLLC/basis_universal/tree/master/webgl
  */
-export class BasisTools {
-    private static _IgnoreSupportedFormats = false;
+export const BasisToolsOptions = {
     /**
      * URL to use when loading the basis transcoder
      */
-    public static JSModuleURL = "https://preview.babylonjs.com/basisTranscoder/basis_transcoder.js";
+    JSModuleURL: "https://preview.babylonjs.com/basisTranscoder/basis_transcoder.js",
     /**
      * URL to use when loading the wasm module for the transcoder
      */
-    public static WasmModuleURL = "https://preview.babylonjs.com/basisTranscoder/basis_transcoder.wasm";
+    WasmModuleURL: "https://preview.babylonjs.com/basisTranscoder/basis_transcoder.wasm"
+};
+
+/**
+ * Get the internal format to be passed to texImage2D corresponding to the .basis format value
+ * @param basisFormat format chosen from GetSupportedTranscodeFormat
+ * @returns internal format corresponding to the Basis format
+ */
+export const GetInternalFormatFromBasisFormat = (basisFormat: number) => {
+    // Corresponding internal formats
+    var COMPRESSED_RGB_S3TC_DXT1_EXT = 0x83F1;
+    var COMPRESSED_RGBA_S3TC_DXT5_EXT = 0x83F3;
+    var RGB_ETC1_Format = 36196;
+
+    if (basisFormat === BASIS_FORMATS.cTFETC1) {
+        return RGB_ETC1_Format;
+    } else if (basisFormat === BASIS_FORMATS.cTFBC1) {
+        return COMPRESSED_RGB_S3TC_DXT1_EXT;
+    } else if (basisFormat === BASIS_FORMATS.cTFBC3) {
+        return COMPRESSED_RGBA_S3TC_DXT5_EXT;
+    } else {
+        throw "The chosen Basis transcoder format is not currently supported";
+    }
+};
+
+let _WorkerPromise: Nullable<Promise<Worker>> = null;
+let _Worker: Nullable<Worker> = null;
+let _actionId = 0;
+let _IgnoreSupportedFormats = false;
+const _CreateWorkerAsync = () => {
+    if (!_WorkerPromise) {
+        _WorkerPromise = new Promise((res, reject) => {
+            if (_Worker) {
+                res(_Worker);
+            } else {
+                Tools.LoadFileAsync(BasisToolsOptions.WasmModuleURL).then((wasmBinary) => {
+                    const workerBlobUrl = URL.createObjectURL(new Blob([`(${workerFunc})()`], { type: "application/javascript" }));
+                    _Worker = new Worker(workerBlobUrl);
+
+                    var initHandler = (msg: any) => {
+                        if (msg.data.action === "init") {
+                            _Worker!.removeEventListener("message", initHandler);
+                            res(_Worker!);
+                        } else if (msg.data.action === "error") {
+                            reject(msg.data.error || "error initializing worker");
+                        }
+                    };
+                    _Worker.addEventListener("message", initHandler);
+                    _Worker.postMessage({ action: "init", url: BasisToolsOptions.JSModuleURL, wasmBinary: wasmBinary });
+                }).catch(reject);
+            }
+        });
+    }
+    return _WorkerPromise;
+};
+
+/**
+ * Transcodes a loaded image file to compressed pixel data
+ * @param data image data to transcode
+ * @param config configuration options for the transcoding
+ * @returns a promise resulting in the transcoded image
+ */
+export const TranscodeAsync = (data: ArrayBuffer | ArrayBufferView, config: BasisTranscodeConfiguration): Promise <TranscodeResult> => {
+    const dataView = data instanceof ArrayBuffer ? new Uint8Array(data) : data;
+
+    return new Promise((res, rej) => {
+        _CreateWorkerAsync().then(() => {
+            var actionId = _actionId++;
+            var messageHandler = (msg: any) => {
+                if (msg.data.action === "transcode" && msg.data.id === actionId) {
+                    _Worker!.removeEventListener("message", messageHandler);
+                    if (!msg.data.success) {
+                        rej("Transcode is not supported on this device");
+                    } else {
+                        res(msg.data);
+                    }
+                }
+            };
+            _Worker!.addEventListener("message", messageHandler);
+
+            const dataViewCopy = new Uint8Array(dataView.byteLength);
+            dataViewCopy.set(new Uint8Array(dataView.buffer, dataView.byteOffset, dataView.byteLength));
+            _Worker!.postMessage({ action: "transcode", id: actionId, imageData: dataViewCopy, config: config, ignoreSupportedFormats: _IgnoreSupportedFormats }, [dataViewCopy.buffer]);
+        }, (error) => {
+            rej(error);
+        });
+    });
+};
+
+/**
+ * Loads a texture from the transcode result
+ * @param texture texture load to
+ * @param transcodeResult the result of transcoding the basis file to load from
+ */
+export const LoadTextureFromTranscodeResult = (texture: InternalTexture, transcodeResult: TranscodeResult) => {
+    let engine = texture.getEngine() as Engine;
+    for (var i = 0; i < transcodeResult.fileInfo.images.length; i++) {
+        var rootImage = transcodeResult.fileInfo.images[i].levels[0];
+        texture._invertVScale = texture.invertY;
+        if (transcodeResult.format === -1) {
+            // No compatable compressed format found, fallback to RGB
+            texture.type = Constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
+            texture.format = Constants.TEXTUREFORMAT_RGB;
+
+            if (engine._features.basisNeedsPOT && (Scalar.Log2(rootImage.width) % 1 !== 0 || Scalar.Log2(rootImage.height) % 1 !== 0)) {
+                // Create non power of two texture
+                let source = new InternalTexture(engine, InternalTextureSource.Temp);
+
+                texture._invertVScale = texture.invertY;
+                source.type = Constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
+                source.format = Constants.TEXTUREFORMAT_RGB;
+                // Fallback requires aligned width/height
+                source.width = (rootImage.width + 3) & ~3;
+                source.height = (rootImage.height + 3) & ~3;
+                engine._bindTextureDirectly(engine._gl.TEXTURE_2D, source, true);
+                engine._uploadDataToTextureDirectly(source, rootImage.transcodedPixels, i, 0, Constants.TEXTUREFORMAT_RGB, true);
+
+                // Resize to power of two
+                engine._rescaleTexture(source, texture, engine.scenes[0], engine._getInternalFormat(Constants.TEXTUREFORMAT_RGB), () => {
+                    engine._releaseTexture(source);
+                    engine._bindTextureDirectly(engine._gl.TEXTURE_2D, texture, true);
+                });
+            } else {
+                // Fallback is already inverted
+                texture._invertVScale = !texture.invertY;
+
+                // Upload directly
+                texture.width = (rootImage.width + 3) & ~3;
+                texture.height = (rootImage.height + 3) & ~3;
+                engine._uploadDataToTextureDirectly(texture, rootImage.transcodedPixels, i, 0, Constants.TEXTUREFORMAT_RGB, true);
+            }
+
+        } else {
+            texture.width = rootImage.width;
+            texture.height = rootImage.height;
+
+            // Upload all mip levels in the file
+            transcodeResult.fileInfo.images[i].levels.forEach((level: any, index: number) => {
+                engine._uploadCompressedDataToTextureDirectly(texture, BasisTools.GetInternalFormatFromBasisFormat(transcodeResult.format!), level.width, level.height, level.transcodedPixels, i, index);
+            });
+
+            if (engine._features.basisNeedsPOT && (Scalar.Log2(texture.width) % 1 !== 0 || Scalar.Log2(texture.height) % 1 !== 0)) {
+                Tools.Warn("Loaded .basis texture width and height are not a power of two. Texture wrapping will be set to Texture.CLAMP_ADDRESSMODE as other modes are not supported with non power of two dimensions in webGL 1.");
+                texture._cachedWrapU = Texture.CLAMP_ADDRESSMODE;
+                texture._cachedWrapV = Texture.CLAMP_ADDRESSMODE;
+            }
+        }
+    }
+};
+
+/**
+ * Used to load .Basis files
+ * See https://github.com/BinomialLLC/basis_universal/tree/master/webgl
+ */
+export const BasisTools = {
+    /**
+     * URL to use when loading the basis transcoder
+     */
+    JSModuleURL: BasisToolsOptions.JSModuleURL,
+    /**
+     * URL to use when loading the wasm module for the transcoder
+     */
+    WasmModuleURL: BasisToolsOptions.WasmModuleURL,
 
     /**
      * Get the internal format to be passed to texImage2D corresponding to the .basis format value
      * @param basisFormat format chosen from GetSupportedTranscodeFormat
      * @returns internal format corresponding to the Basis format
      */
-    public static GetInternalFormatFromBasisFormat(basisFormat: number) {
-        // Corrisponding internal formats
-        var COMPRESSED_RGB_S3TC_DXT1_EXT = 0x83F1;
-        var COMPRESSED_RGBA_S3TC_DXT5_EXT = 0x83F3;
-        var RGB_ETC1_Format = 36196;
-
-        if (basisFormat === BASIS_FORMATS.cTFETC1) {
-            return RGB_ETC1_Format;
-        } else if (basisFormat === BASIS_FORMATS.cTFBC1) {
-            return COMPRESSED_RGB_S3TC_DXT1_EXT;
-        } else if (basisFormat === BASIS_FORMATS.cTFBC3) {
-            return COMPRESSED_RGBA_S3TC_DXT5_EXT;
-        } else {
-            throw "The chosen Basis transcoder format is not currently supported";
-        }
-    }
-
-    private static _WorkerPromise: Nullable<Promise<Worker>> = null;
-    private static _Worker: Nullable<Worker> = null;
-    private static _actionId = 0;
-    private static _CreateWorkerAsync() {
-        if (!this._WorkerPromise) {
-            this._WorkerPromise = new Promise((res, reject) => {
-                if (this._Worker) {
-                    res(this._Worker);
-                } else {
-                    Tools.LoadFileAsync(BasisTools.WasmModuleURL).then((wasmBinary) => {
-                        const workerBlobUrl = URL.createObjectURL(new Blob([`(${workerFunc})()`], { type: "application/javascript" }));
-                        this._Worker = new Worker(workerBlobUrl);
-
-                        var initHandler = (msg: any) => {
-                            if (msg.data.action === "init") {
-                                this._Worker!.removeEventListener("message", initHandler);
-                                res(this._Worker!);
-                            } else if (msg.data.action === "error") {
-                                reject(msg.data.error || "error initializing worker");
-                            }
-                        };
-                        this._Worker.addEventListener("message", initHandler);
-                        this._Worker.postMessage({ action: "init", url: BasisTools.JSModuleURL, wasmBinary: wasmBinary });
-                    }).catch(reject);
-                }
-            });
-        }
-        return this._WorkerPromise;
-    }
+    GetInternalFormatFromBasisFormat,
 
     /**
      * Transcodes a loaded image file to compressed pixel data
@@ -157,94 +273,15 @@ export class BasisTools {
      * @param config configuration options for the transcoding
      * @returns a promise resulting in the transcoded image
      */
-    public static TranscodeAsync(data: ArrayBuffer | ArrayBufferView, config: BasisTranscodeConfiguration): Promise<TranscodeResult> {
-        const dataView = data instanceof ArrayBuffer ? new Uint8Array(data) : data;
-
-        return new Promise((res, rej) => {
-            this._CreateWorkerAsync().then(() => {
-                var actionId = this._actionId++;
-                var messageHandler = (msg: any) => {
-                    if (msg.data.action === "transcode" && msg.data.id === actionId) {
-                        this._Worker!.removeEventListener("message", messageHandler);
-                        if (!msg.data.success) {
-                            rej("Transcode is not supported on this device");
-                        } else {
-                            res(msg.data);
-                        }
-                    }
-                };
-                this._Worker!.addEventListener("message", messageHandler);
-
-                const dataViewCopy = new Uint8Array(dataView.byteLength);
-                dataViewCopy.set(new Uint8Array(dataView.buffer, dataView.byteOffset, dataView.byteLength));
-                this._Worker!.postMessage({ action: "transcode", id: actionId, imageData: dataViewCopy, config: config, ignoreSupportedFormats: this._IgnoreSupportedFormats }, [dataViewCopy.buffer]);
-            }, (error) => {
-                rej(error);
-            });
-        });
-    }
+    TranscodeAsync,
 
     /**
      * Loads a texture from the transcode result
      * @param texture texture load to
      * @param transcodeResult the result of transcoding the basis file to load from
      */
-    public static LoadTextureFromTranscodeResult(texture: InternalTexture, transcodeResult: TranscodeResult) {
-        let engine = texture.getEngine() as Engine;
-        for (var i = 0; i < transcodeResult.fileInfo.images.length; i++) {
-            var rootImage = transcodeResult.fileInfo.images[i].levels[0];
-            texture._invertVScale = texture.invertY;
-            if (transcodeResult.format === -1) {
-                // No compatable compressed format found, fallback to RGB
-                texture.type = Constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
-                texture.format = Constants.TEXTUREFORMAT_RGB;
-
-                if (engine._features.basisNeedsPOT && (Scalar.Log2(rootImage.width) % 1 !== 0 || Scalar.Log2(rootImage.height) % 1 !== 0)) {
-                    // Create non power of two texture
-                    let source = new InternalTexture(engine, InternalTextureSource.Temp);
-
-                    texture._invertVScale = texture.invertY;
-                    source.type = Constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
-                    source.format = Constants.TEXTUREFORMAT_RGB;
-                    // Fallback requires aligned width/height
-                    source.width = (rootImage.width + 3) & ~3;
-                    source.height = (rootImage.height + 3) & ~3;
-                    engine._bindTextureDirectly(engine._gl.TEXTURE_2D, source, true);
-                    engine._uploadDataToTextureDirectly(source, rootImage.transcodedPixels, i, 0, Constants.TEXTUREFORMAT_RGB, true);
-
-                    // Resize to power of two
-                    engine._rescaleTexture(source, texture, engine.scenes[0], engine._getInternalFormat(Constants.TEXTUREFORMAT_RGB), () => {
-                        engine._releaseTexture(source);
-                        engine._bindTextureDirectly(engine._gl.TEXTURE_2D, texture, true);
-                    });
-                } else {
-                    // Fallback is already inverted
-                    texture._invertVScale = !texture.invertY;
-
-                    // Upload directly
-                    texture.width = (rootImage.width + 3) & ~3;
-                    texture.height = (rootImage.height + 3) & ~3;
-                    engine._uploadDataToTextureDirectly(texture, rootImage.transcodedPixels, i, 0, Constants.TEXTUREFORMAT_RGB, true);
-                }
-
-            } else {
-                texture.width = rootImage.width;
-                texture.height = rootImage.height;
-
-                // Upload all mip levels in the file
-                transcodeResult.fileInfo.images[i].levels.forEach((level: any, index: number) => {
-                    engine._uploadCompressedDataToTextureDirectly(texture, BasisTools.GetInternalFormatFromBasisFormat(transcodeResult.format!), level.width, level.height, level.transcodedPixels, i, index);
-                });
-
-                if (engine._features.basisNeedsPOT && (Scalar.Log2(texture.width) % 1 !== 0 || Scalar.Log2(texture.height) % 1 !== 0)) {
-                    Tools.Warn("Loaded .basis texture width and height are not a power of two. Texture wrapping will be set to Texture.CLAMP_ADDRESSMODE as other modes are not supported with non power of two dimensions in webGL 1.");
-                    texture._cachedWrapU = Texture.CLAMP_ADDRESSMODE;
-                    texture._cachedWrapV = Texture.CLAMP_ADDRESSMODE;
-                }
-            }
-        }
-    }
-}
+    LoadTextureFromTranscodeResult
+};
 
 // WorkerGlobalScope
 declare function importScripts(...urls: string[]): void;
