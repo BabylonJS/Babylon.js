@@ -57,7 +57,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _constraintDirection = ConstraintDirection.NONE;
     private _forcePanning = false;
     private _forceZooming = false;
-    private _forceSelecting = true;
+    private _forceMoving = true;
+    private _forceSelecting = false;
     private _outlines = false;
     private _panning: boolean;
     private _canvas: HTMLCanvasElement;
@@ -113,8 +114,23 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         props.globalState.onPanObservable.add(() => {
             this._forcePanning = !this._forcePanning;
             this._forceSelecting = false;
+            this._forceMoving = false;
             this._forceZooming = false;
             if (!this._forcePanning) {
+                this.globalState.onSelectionButtonObservable.notifyObservers();
+            }
+            else {
+                this._canvas.style.cursor = "move";
+            }
+        });
+
+
+        props.globalState.onMoveObservable.add(() => {
+            this._forceMoving = !this._forceMoving;
+            this._forcePanning = false;
+            this._forceSelecting = false;
+            this._forceZooming = false;
+            if (!this._forceMoving) {
                 this.globalState.onSelectionButtonObservable.notifyObservers();
             }
             else {
@@ -126,6 +142,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this._forceSelecting = true;
             this._forcePanning = false;
             this._forceZooming = false;
+            this._forceMoving = false;
             this._canvas.style.cursor = "default"
         });
 
@@ -133,6 +150,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this._forceZooming = !this._forceZooming;
             this._forcePanning = false;
             this._forceSelecting = false;
+            this._forceMoving = false;
             if (!this._forceZooming) {
                 this.globalState.onSelectionButtonObservable.notifyObservers();
             }
@@ -379,9 +397,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         guiControl.onPointerDownObservable.add((evt) => {
             if (!this.isUp || evt.buttonIndex > 0) return;
-
-            this.isSelected(true, guiControl);
-            this.isUp = false;
+            if (this._forceSelecting) {
+                this.isSelected(true, guiControl);
+                this.isUp = false;
+            }
         });
 
         guiControl.onPointerEnterObservable.add((evt) => {
@@ -595,12 +614,16 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     onDown(evt: React.PointerEvent<HTMLElement>) {
         this._rootContainer.current?.setPointerCapture(evt.pointerId);
         if (!this._isOverGUINode && !evt.button) {
-            this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+            if (this._forceSelecting) {
+                this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+            }
+            return;
         }
-
-        var pos = this.getGroundPosition();
-        this._mouseStartPointX = pos ? pos.x : this._mouseStartPointX;
-        this._mouseStartPointY = pos ? -pos.z : this._mouseStartPointY;
+        if (this._forceMoving) {
+            var pos = this.getGroundPosition();
+            this._mouseStartPointX = pos ? pos.x : this._mouseStartPointX;
+            this._mouseStartPointY = pos ? -pos.z : this._mouseStartPointY;
+        }
     }
 
     public isUp: boolean = true;
