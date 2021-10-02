@@ -59,6 +59,7 @@ export class DepthOfFieldMergePostProcess extends PostProcess {
      */
     constructor(name: string, originalFromInput: PostProcess, circleOfConfusion: PostProcess, private blurSteps: Array<PostProcess>, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
         super(name, "depthOfFieldMerge", [], ["circleOfConfusionSampler", "blurStep0", "blurStep1", "blurStep2"], options, camera, samplingMode, engine, reusable, null, textureType, undefined, null, true);
+        this.externalTextureSamplerBinding = true;
         this.onApplyObservable.add((effect: Effect) => {
             effect.setTextureFromPostProcess("textureSampler", originalFromInput);
             effect.setTextureFromPostProcessOutput("circleOfConfusionSampler", circleOfConfusion);
