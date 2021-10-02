@@ -3,7 +3,7 @@ import { Engine } from "../../engine";
 import { WebGPUEngine } from "../../webgpuEngine";
 
 WebGPUEngine.prototype.setAlphaMode = function (mode: number, noDepthWriteChange: boolean = false): void {
-    if (this._alphaMode === mode) {
+    if (this._alphaMode === mode && (mode === Constants.ALPHA_DISABLE && !this._alphaState.alphaBlend || mode !== Constants.ALPHA_DISABLE && this._alphaState.alphaBlend)) {
         return;
     }
 
