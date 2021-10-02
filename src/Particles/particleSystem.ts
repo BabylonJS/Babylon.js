@@ -247,6 +247,9 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     public setCustomEffect(effect: Nullable<Effect>, blendMode: number = 0) {
         this._customWrappers[blendMode] = new DrawWrapper(this._engine);
         this._customWrappers[blendMode]!.effect = effect;
+        if (this._customWrappers[blendMode]!.drawContext) {
+            this._customWrappers[blendMode]!.drawContext!.useInstancing = this._useInstancing;
+        }
     }
 
     /** @hidden */
