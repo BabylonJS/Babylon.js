@@ -1,5 +1,4 @@
-export interface NativeData extends Uint32Array {
-}
+export type NativeData = Uint32Array;
 
 interface INativeDataStream {
     writeBytes(buffer: ArrayBuffer, byteLength: number): void;
@@ -56,27 +55,27 @@ export class NativeDataStream {
     }
 
     public writeUint32Array(values: Uint32Array): void {
-        this._byteAlign32();
+        this._byteAlign4();
         this._autoFlushIfNecessary(4 + values.byteLength);
-        let index = NativeDataStream._positionToIndex(this._position);
+        const index = NativeDataStream._positionToIndex(this._position);
         this._uint32s[index] = values.length;
         this._uint32s.set(values, index + 1);
         this._position = NativeDataStream._indexToPosition(index + values.length + 1);
     }
 
     public writeInt32Array(values: Int32Array): void {
-        this._byteAlign32();
+        this._byteAlign4();
         this._autoFlushIfNecessary(4 + values.byteLength);
-        let index = NativeDataStream._positionToIndex(this._position);
+        const index = NativeDataStream._positionToIndex(this._position);
         this._uint32s[index] = values.length;
         this._int32s.set(values, index + 1);
         this._position = NativeDataStream._indexToPosition(index + values.length + 1);
     }
 
     public writeFloat32Array(values: Float32Array): void {
-        this._byteAlign32();
+        this._byteAlign4();
         this._autoFlushIfNecessary(4 + values.byteLength);
-        let index = NativeDataStream._positionToIndex(this._position);
+        const index = NativeDataStream._positionToIndex(this._position);
         this._uint32s[index] = values.length;
         this._float32s.set(values, index + 1);
         this._position = NativeDataStream._indexToPosition(index + values.length + 1);
@@ -90,7 +89,7 @@ export class NativeDataStream {
         this.writeUint32(value ? 1 : 0);
     }
 
-    private _byteAlign32(): void {
+    private _byteAlign4(): void {
         this._position = NativeDataStream._indexToPosition(NativeDataStream._positionToIndex(this._position));
     }
 
