@@ -18,7 +18,7 @@ import { DirectionalLight } from "../../../Lights/directionalLight";
 import { GeometryBufferRenderer } from "../../../Rendering/geometryBufferRenderer";
 import { Scene } from "../../../scene";
 import { Constants } from "../../../Engines/constants";
-import { _TypeStore } from '../../../Misc/typeStore';
+import { RegisterClass } from '../../../Misc/typeStore';
 import { MotionBlurPostProcess } from "../../motionBlurPostProcess";
 import { ScreenSpaceReflectionPostProcess } from "../../screenSpaceReflectionPostProcess";
 
@@ -1253,4 +1253,4 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
     public static LuminanceSteps: number = 6;
 }
 
-_TypeStore.RegisteredTypes["BABYLON.StandardRenderingPipeline"] = StandardRenderingPipeline;
+RegisterClass("BABYLON.StandardRenderingPipeline", StandardRenderingPipeline);

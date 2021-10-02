@@ -1,6 +1,6 @@
 import { Container } from "./container";
 import { Measure } from "../measure";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 import { serialize } from 'babylonjs/Misc/decorators';
 import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
 
@@ -138,4 +138,4 @@ export class Rectangle extends Container {
         }
     }
 }
-_TypeStore.RegisteredTypes["BABYLON.GUI.Rectangle"] = Rectangle;
+RegisterClass("BABYLON.GUI.Rectangle", Rectangle);

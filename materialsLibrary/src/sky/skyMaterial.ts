@@ -11,7 +11,7 @@ import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SubMesh } from "babylonjs/Meshes/subMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 
 import "./sky.fragment";
 import "./sky.vertex";
@@ -377,4 +377,4 @@ export class SkyMaterial extends PushMaterial {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.SkyMaterial"] = SkyMaterial;
+RegisterClass("BABYLON.SkyMaterial", SkyMaterial);

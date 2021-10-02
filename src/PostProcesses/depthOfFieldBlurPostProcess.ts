@@ -8,7 +8,7 @@ import { BlurPostProcess } from "./blurPostProcess";
 import { Engine } from "../Engines/engine";
 import { Scene } from "../scene";
 import { Constants } from "../Engines/constants";
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 import { serialize } from '../Misc/decorators';
 
 /**
@@ -65,4 +65,4 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.DepthOfFieldBlurPostProcess"] = DepthOfFieldBlurPostProcess;
+RegisterClass("BABYLON.DepthOfFieldBlurPostProcess", DepthOfFieldBlurPostProcess);

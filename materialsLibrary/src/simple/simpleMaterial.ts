@@ -14,7 +14,7 @@ import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SubMesh } from "babylonjs/Meshes/subMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 
 import "./simple.fragment";
 import "./simple.vertex";
@@ -333,4 +333,4 @@ export class SimpleMaterial extends PushMaterial {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.SimpleMaterial"] = SimpleMaterial;
+RegisterClass("BABYLON.SimpleMaterial", SimpleMaterial);

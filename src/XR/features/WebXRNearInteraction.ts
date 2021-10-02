@@ -21,6 +21,7 @@ import { Color3 } from "../../Maths/math.color";
 
 type ControllerData = {
     xrController?: WebXRInputSource;
+    xrControllerTransform: Nullable<AbstractMesh>;
     squeezeComponent?: WebXRControllerComponent;
     selectionComponent?: WebXRControllerComponent;
     onButtonChangedObserver?: Nullable<Observer<WebXRControllerComponent>>;
@@ -94,6 +95,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
 
         this._controllers[xrController.uniqueId] = {
             xrController,
+            xrControllerTransform: null,
             meshUnderPointer: null,
             nearInteractionMesh: null,
             pick: null,
@@ -338,6 +340,8 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                         }
                     }
                 }
+
+                controllerData.xrControllerTransform = controllerData.xrController.grip || null;
             } else {
                 return;
             }
@@ -660,6 +664,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                     pickingInfo.hit = result.hit;
                     pickingInfo.pickedMesh = mesh;
                     pickingInfo.pickedPoint = result.pickedPoint;
+                    pickingInfo.originTransform = controllerData.xrControllerTransform;
                     pickingInfo.originMesh = controllerData.pickIndexMeshTip;
                     pickingInfo.distance = result.distance;
                 }

@@ -1,5 +1,5 @@
 import { Observable } from "../Misc/observable";
-import { DomManagement } from "../Misc/domManagement";
+import { IsWindowObjectExist } from "../Misc/domManagement";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { PoseEnabledControllerHelper } from "../Gamepads/Controllers/poseEnabledController";
@@ -38,7 +38,7 @@ export class GamepadManager {
      * @param _scene BabylonJS scene
      */
     constructor(private _scene?: Scene) {
-        if (!DomManagement.IsWindowObjectExist()) {
+        if (!IsWindowObjectExist()) {
             this._gamepadEventSupported = false;
         } else {
             this._gamepadEventSupported = 'GamepadEvent' in window;
