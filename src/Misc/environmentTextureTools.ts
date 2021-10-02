@@ -444,6 +444,7 @@ function _OnImageReadyAsync(image: HTMLImageElement | ImageBitmap, engine: Engin
 
             rgbdPostProcess!.getEffect().executeWhenCompiled(() => {
                 // Uncompress the data to a RTT
+                rgbdPostProcess!.externalTextureSamplerBinding = true;
                 rgbdPostProcess!.onApply = (effect) => {
                     effect._bindTexture("textureSampler", tempTexture);
                     effect.setFloat2("scale", 1, engine._features.needsInvertingBitmap && (image instanceof ImageBitmap) ? -1 : 1);

@@ -356,6 +356,7 @@ export class HighlightLayer extends EffectLayer {
         if (this._options.alphaBlendingMode === Constants.ALPHA_COMBINE) {
             this._downSamplePostprocess = new PassPostProcess("HighlightLayerPPP", this._options.blurTextureSizeRatio,
                 null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
+            this._downSamplePostprocess.externalTextureSamplerBinding = true;
             this._downSamplePostprocess.onApplyObservable.add((effect) => {
                 effect.setTexture("textureSampler", this._mainTexture);
             });
@@ -382,6 +383,7 @@ export class HighlightLayer extends EffectLayer {
                 null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, textureType);
             this._horizontalBlurPostprocess.width = blurTextureWidth;
             this._horizontalBlurPostprocess.height = blurTextureHeight;
+            this._horizontalBlurPostprocess.externalTextureSamplerBinding = true;
             this._horizontalBlurPostprocess.onApplyObservable.add((effect) => {
                 effect.setTexture("textureSampler", this._mainTexture);
             });

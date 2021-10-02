@@ -1510,6 +1510,7 @@ export class Engine extends ThinEngine {
             this._rescalePostProcess = Engine._RescalePostProcessFactory(this);
         }
 
+        this._rescalePostProcess.externalTextureSamplerBinding = true;
         this._rescalePostProcess.getEffect().executeWhenCompiled(() => {
             this._rescalePostProcess.onApply = function (effect) {
                 effect._bindTexture("textureSampler", source);

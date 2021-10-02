@@ -177,6 +177,13 @@ export class PostProcess {
     private _renderId = 0;
     private _textureType: number;
     private _textureFormat: number;
+
+    // if _externalTextureSamplerBinding is true, the "apply" method won't bind the textureSampler texture, it is expected to be done by the "outside" (by the onApplyObservable observers most probably).
+    // It is an optimization in case an observer will overwrite the textureSampler texture that has just been bound by "apply": in this case the binding set by "apply" is moot (as it is overwritten) and it is even
+    // counter-productive in some cases because if the texture bound by "apply" is different from the currently texture bound, (the one set by the onApplyObservable observer, for eg) some
+    // internal structures (materialContext) will be dirtified, which may impact performances
+    public externalTextureSamplerBinding = false;
+
     /**
     * Smart array of input and output textures for the post process.
     * @hidden
@@ -751,7 +758,9 @@ export class PostProcess {
             source = this.inputTexture;
         }
 
-        this._drawWrapper.effect._bindTexture("textureSampler", source?.texture);
+        if (!this.externalTextureSamplerBinding) {
+            this._drawWrapper.effect._bindTexture("textureSampler", source?.texture);
+        }
 
         // Parameters
         this._drawWrapper.effect.setVector2("scale", this._scaleRatio);

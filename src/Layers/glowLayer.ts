@@ -276,6 +276,7 @@ export class GlowLayer extends EffectLayer {
             null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, textureType);
         this._horizontalBlurPostprocess1.width = blurTextureWidth;
         this._horizontalBlurPostprocess1.height = blurTextureHeight;
+        this._horizontalBlurPostprocess1.externalTextureSamplerBinding = true;
         this._horizontalBlurPostprocess1.onApplyObservable.add((effect) => {
             effect.setTexture("textureSampler", this._mainTexture);
         });
@@ -293,6 +294,7 @@ export class GlowLayer extends EffectLayer {
             null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, textureType);
         this._horizontalBlurPostprocess2.width = blurTextureWidth2;
         this._horizontalBlurPostprocess2.height = blurTextureHeight2;
+        this._horizontalBlurPostprocess2.externalTextureSamplerBinding = true;
         this._horizontalBlurPostprocess2.onApplyObservable.add((effect) => {
             effect.setTexture("textureSampler", this._blurTexture1);
         });
