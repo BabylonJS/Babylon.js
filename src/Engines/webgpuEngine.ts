@@ -549,6 +549,7 @@ export class WebGPUEngine extends Engine {
 
         this._isWebGPU = true;
         this._shaderPlatformName = "WEBGPU";
+        this._alphaMode = Constants.ALPHA_DISABLE;
 
         if (options.deterministicLockstep === undefined) {
             options.deterministicLockstep = false;
@@ -1042,7 +1043,7 @@ export class WebGPUEngine extends Engine {
             this._depthCullingState.depthFunc = Constants.LEQUAL;
 
             this._alphaState.reset();
-            this._alphaMode = Constants.ALPHA_ADD;
+            this._alphaMode = Constants.ALPHA_DISABLE;
             this._alphaEquation = Constants.ALPHA_DISABLE;
             this._cacheRenderPipeline.setAlphaBlendFactors(this._alphaState._blendFunctionParameters, this._alphaState._blendEquationParameters);
             this._cacheRenderPipeline.setAlphaBlendEnabled(false);
