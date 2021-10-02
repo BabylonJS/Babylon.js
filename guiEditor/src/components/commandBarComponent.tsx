@@ -12,6 +12,7 @@ const zoomIcon: string = require("../../public/imgs/zoomIcon.svg");
 const guidesIcon: string = require("../../public/imgs/guidesIcon.svg");
 const logoIcon: string = require("../../public/imgs/babylonLogo.svg");
 const canvasFitIcon: string = require("../../public/imgs/canvasFitIcon.svg");
+const moveIcon: string = require("../../public/imgs/moveIcon.svg");
 
 require("../scss/commandBar.scss");
 
@@ -24,7 +25,8 @@ interface ICommandBarComponentProps {
 export class CommandBarComponent extends React.Component<ICommandBarComponentProps> {
     private _panning: boolean = false;
     private _zooming: boolean = false;
-    private _selecting: boolean = true;
+    private _selecting: boolean = false;
+    private _moving: boolean = true;
     private _outlines: boolean;
     public constructor(props: ICommandBarComponentProps) {
         super(props);
@@ -33,6 +35,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
             this._panning = !this._panning;
             this._zooming = false;
             this._selecting = false;
+            this._moving = false;
             this.forceUpdate();
         });
 
@@ -40,6 +43,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
             this._selecting = true;
             this._panning = false;
             this._zooming = false;
+            this._moving = false;
             this.forceUpdate();
         });
 
@@ -47,6 +51,15 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
             this._zooming = !this._zooming;
             this._panning = false;
             this._selecting = false;
+            this._moving = false;
+            this.forceUpdate();
+        });
+
+        props.globalState.onMoveObservable.add(() => {
+            this._zooming = false;
+            this._panning = false;
+            this._selecting = false;
+            this._moving = !this._moving;
             this.forceUpdate();
         });
 
@@ -96,6 +109,8 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                     ]} />
                     <CommandButtonComponent tooltip="Select" icon={pointerIcon} shortcut="Q" isActive={this._selecting}
                         onClick={() => { if (!this._selecting) this.props.globalState.onSelectionButtonObservable.notifyObservers(); }} />
+                    <CommandButtonComponent tooltip="Move" icon={moveIcon} shortcut="M" isActive={this._moving}
+                        onClick={() => { if (!this._moving) this.props.globalState.onMoveObservable.notifyObservers(); }} />
                     <CommandButtonComponent tooltip="Pan" icon={handIcon} shortcut="W" isActive={this._panning}
                         onClick={() => { if (!this._panning) this.props.globalState.onPanObservable.notifyObservers(); }} />
                     <CommandButtonComponent tooltip="Zoom" shortcut="E" icon={zoomIcon} isActive={this._zooming}
