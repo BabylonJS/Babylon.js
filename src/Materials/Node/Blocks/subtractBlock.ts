@@ -3,7 +3,7 @@ import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBloc
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
-import { _TypeStore } from '../../../Misc/typeStore';
+import { RegisterClass } from '../../../Misc/typeStore';
 /**
  * Block used to subtract 2 vectors
  */
@@ -63,4 +63,4 @@ export class SubtractBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.SubtractBlock"] = SubtractBlock;
+RegisterClass("BABYLON.SubtractBlock", SubtractBlock);

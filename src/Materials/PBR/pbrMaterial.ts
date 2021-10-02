@@ -1,5 +1,5 @@
 import { serialize, SerializationHelper, serializeAsColor3, expandToProperty, serializeAsTexture } from "../../Misc/decorators";
-import { BRDFTextureTools } from "../../Misc/brdfTextureTools";
+import { GetEnvironmentBRDFTexture } from "../../Misc/brdfTextureTools";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
 import { Color3 } from "../../Maths/math.color";
@@ -7,7 +7,7 @@ import { ImageProcessingConfiguration } from "../../Materials/imageProcessingCon
 import { ColorCurves } from "../../Materials/colorCurves";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { PBRBaseMaterial } from "./pbrBaseMaterial";
-import { _TypeStore } from '../../Misc/typeStore';
+import { RegisterClass } from '../../Misc/typeStore';
 
 /**
  * The Physically based material of BJS.
@@ -752,7 +752,7 @@ export class PBRMaterial extends PBRBaseMaterial {
     constructor(name: string, scene: Scene) {
         super(name, scene);
 
-        this._environmentBRDFTexture = BRDFTextureTools.GetEnvironmentBRDFTexture(scene);
+        this._environmentBRDFTexture = GetEnvironmentBRDFTexture(scene);
     }
 
     /**
@@ -832,4 +832,4 @@ export class PBRMaterial extends PBRBaseMaterial {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.PBRMaterial"] = PBRMaterial;
+RegisterClass("BABYLON.PBRMaterial", PBRMaterial);

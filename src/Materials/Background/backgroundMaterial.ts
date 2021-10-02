@@ -20,7 +20,7 @@ import { Texture } from "../../Materials/Textures/texture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import { IShadowLight } from "../../Lights/shadowLight";
 import { Constants } from "../../Engines/constants";
-import { _TypeStore } from "../../Misc/typeStore";
+import { RegisterClass } from "../../Misc/typeStore";
 import { MaterialFlags } from "../materialFlags";
 import { Color3 } from '../../Maths/math.color';
 
@@ -1245,4 +1245,4 @@ export class BackgroundMaterial extends PushMaterial {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.BackgroundMaterial"] = BackgroundMaterial;
+RegisterClass("BABYLON.BackgroundMaterial", BackgroundMaterial);

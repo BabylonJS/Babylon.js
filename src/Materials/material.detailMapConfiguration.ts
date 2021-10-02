@@ -1,7 +1,6 @@
 import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Material } from "./material";
-import { _TypeStore } from "../Misc/typeStore";
 import { serialize, expandToProperty, serializeAsTexture, SerializationHelper } from '../Misc/decorators';
 import { MaterialFlags } from './materialFlags';
 import { MaterialHelper } from './materialHelper';
@@ -99,6 +98,10 @@ export class DetailMapConfiguration {
      * @returns - boolean indicating that the submesh is ready or not.
      */
     public isReadyForSubMesh(defines: IMaterialDetailMapDefines, scene: Scene): boolean {
+        if (!this._isEnabled) {
+            return true;
+        }
+
         const engine = scene.getEngine();
 
         if (defines._areTexturesDirty && scene.texturesEnabled) {

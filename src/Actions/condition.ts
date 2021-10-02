@@ -1,5 +1,5 @@
 import { Action } from "./action";
-import { _TypeStore } from "../Misc/typeStore";
+import { RegisterClass } from "../Misc/typeStore";
 
 declare type ActionManager = import("./actionManager").ActionManager;
 
@@ -322,6 +322,6 @@ export class StateCondition extends Condition {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.ValueCondition"] = ValueCondition;
-_TypeStore.RegisteredTypes["BABYLON.PredicateCondition"] = PredicateCondition;
-_TypeStore.RegisteredTypes["BABYLON.StateCondition"] = StateCondition;
+RegisterClass("BABYLON.ValueCondition", ValueCondition);
+RegisterClass("BABYLON.PredicateCondition", PredicateCondition);
+RegisterClass("BABYLON.StateCondition", StateCondition);

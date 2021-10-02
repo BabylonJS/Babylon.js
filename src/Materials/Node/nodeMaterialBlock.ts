@@ -11,7 +11,7 @@ import { NodeMaterial, NodeMaterialDefines } from './nodeMaterial';
 import { InputBlock } from './Blocks/Input/inputBlock';
 import { UniqueIdGenerator } from '../../Misc/uniqueIdGenerator';
 import { Scene } from '../../scene';
-import { _TypeStore } from '../../Misc/typeStore';
+import { GetClass } from '../../Misc/typeStore';
 import { EffectFallbacks } from '../effectFallbacks';
 
 /**
@@ -748,7 +748,7 @@ export class NodeMaterialBlock {
     public clone(scene: Scene, rootUrl: string = "") {
         let serializationObject = this.serialize();
 
-        let blockType = _TypeStore.GetClass(serializationObject.customType);
+        let blockType = GetClass(serializationObject.customType);
         if (blockType) {
             let block: NodeMaterialBlock = new blockType();
             block._deserialize(serializationObject, scene, rootUrl);

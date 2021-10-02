@@ -528,6 +528,7 @@ declare module INSPECTOR {
         onClose: (window: Window) => void;
         onResize?: () => void;
         onKeyUp?: (evt: KeyboardEvent) => void;
+        onKeyDown?: (evt: KeyboardEvent) => void;
     }
     export class PopupComponent extends React.Component<IPopupComponentProps, {
         isComponentMounted: boolean;
@@ -794,6 +795,7 @@ declare module INSPECTOR {
         margin?: boolean;
         icon?: string;
         iconLabel?: string;
+        lockObject?: LockObject;
     }
     export class SliderLineComponent extends React.Component<ISliderLineComponentProps, {
         value: number;
@@ -1088,6 +1090,7 @@ declare module INSPECTOR {
         private _onLinearTangentRequiredObserver;
         private _onBreakTangentRequiredObserver;
         private _onUnifyTangentRequiredObserver;
+        private _onSelectAllKeysObserver;
         private _pointerIsDown;
         private _sourcePointerX;
         private _sourcePointerY;
@@ -1145,6 +1148,7 @@ declare module INSPECTOR {
         onActiveAnimationChanged: BABYLON.Observable<void>;
         onActiveKeyPointChanged: BABYLON.Observable<void>;
         onHostWindowResized: BABYLON.Observable<void>;
+        onSelectAllKeys: BABYLON.Observable<void>;
         onActiveKeyFrameChanged: BABYLON.Observable<number>;
         onFrameSet: BABYLON.Observable<number>;
         onFrameManuallyEntered: BABYLON.Observable<number>;
@@ -1674,7 +1678,7 @@ declare module INSPECTOR {
         constructor(props: IAnimationCurveEditorComponentProps);
         onCloseAnimationCurveEditor(window: Window | null): void;
         shouldComponentUpdate(newProps: IAnimationCurveEditorComponentProps, newState: IAnimationCurveEditorComponentState): boolean;
-        private _onKeyUp;
+        private _onKeyDown;
         render(): JSX.Element;
     }
 }
@@ -3497,6 +3501,7 @@ declare module INSPECTOR {
         private _reflectorHostname;
         private _reflectorPort;
         private _reflector;
+        private _envOptions;
         constructor(props: IPaneComponentProps);
         componentDidMount(): void;
         componentWillUnmount(): void;

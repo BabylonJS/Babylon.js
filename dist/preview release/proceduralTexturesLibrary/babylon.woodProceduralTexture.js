@@ -412,8 +412,8 @@ module.exports = g;
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* WEBPACK VAR INJECTION */(function(global) {/* harmony import */ var _wood__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../wood */ "./wood/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "WoodProceduralTexture", function() { return _wood__WEBPACK_IMPORTED_MODULE_0__["WoodProceduralTexture"]; });
+/* WEBPACK VAR INJECTION */(function(global) {/* harmony import */ var _wood_index__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../wood/index */ "./wood/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "WoodProceduralTexture", function() { return _wood_index__WEBPACK_IMPORTED_MODULE_0__["WoodProceduralTexture"]; });
 
 
 /**
@@ -422,8 +422,8 @@ __webpack_require__.r(__webpack_exports__);
  */
 var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
 if (typeof globalObject !== "undefined") {
-    for (var key in _wood__WEBPACK_IMPORTED_MODULE_0__) {
-        globalObject.BABYLON[key] = _wood__WEBPACK_IMPORTED_MODULE_0__[key];
+    for (var key in _wood_index__WEBPACK_IMPORTED_MODULE_0__) {
+        globalObject.BABYLON[key] = _wood_index__WEBPACK_IMPORTED_MODULE_0__[key];
     }
 }
 
@@ -555,7 +555,7 @@ var WoodProceduralTexture = /** @class */ (function (_super) {
     return WoodProceduralTexture;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["ProceduralTexture"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.WoodProceduralTexture"] = WoodProceduralTexture;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.WoodProceduralTexture", WoodProceduralTexture);
 
 
 /***/ }),

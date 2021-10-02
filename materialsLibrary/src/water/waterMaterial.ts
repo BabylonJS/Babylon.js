@@ -21,7 +21,7 @@ import { SubMesh } from "babylonjs/Meshes/subMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Camera } from "babylonjs/Cameras/camera";
 import { Scene } from "babylonjs/scene";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 
 import "./water.fragment";
 import "./water.vertex";
@@ -778,4 +778,4 @@ export class WaterMaterial extends PushMaterial {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.WaterMaterial"] = WaterMaterial;
+RegisterClass("BABYLON.WaterMaterial", WaterMaterial);

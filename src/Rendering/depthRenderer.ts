@@ -14,7 +14,7 @@ import { DrawWrapper } from "../Materials/drawWrapper";
 
 import "../Shaders/depth.fragment";
 import "../Shaders/depth.vertex";
-import { _DevTools } from '../Misc/devTools';
+import { _WarnImport } from '../Misc/devTools';
 
 /**
  * This represents a depth renderer in Babylon.
@@ -47,7 +47,7 @@ export class DepthRenderer {
 
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
-        throw _DevTools.WarnImport("DepthRendererSceneComponent");
+        throw _WarnImport("DepthRendererSceneComponent");
     }
 
     /**

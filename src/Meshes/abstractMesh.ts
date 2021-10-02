@@ -24,7 +24,7 @@ import { Constants } from "../Engines/constants";
 import { AbstractActionManager } from "../Actions/abstractActionManager";
 import { UniformBuffer } from "../Materials/uniformBuffer";
 import { _MeshCollisionData } from "../Collisions/meshCollisionData";
-import { _DevTools } from "../Misc/devTools";
+import { _WarnImport } from "../Misc/devTools";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import { extractMinAndMax } from "../Maths/math.functions";
 import { Color3, Color4 } from "../Maths/math.color";
@@ -32,7 +32,7 @@ import { Epsilon } from "../Maths/math.constants";
 import { Plane } from "../Maths/math.plane";
 import { Axis } from "../Maths/math.axis";
 import { IParticleSystem } from "../Particles/IParticleSystem";
-import { _TypeStore } from "../Misc/typeStore";
+import { RegisterClass } from "../Misc/typeStore";
 
 declare type Ray = import("../Culling/ray").Ray;
 declare type Collider = import("../Collisions/collider").Collider;
@@ -2398,7 +2398,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @returns the currentAbstractMesh
      */
     disableEdgesRendering(): AbstractMesh {
-        throw _DevTools.WarnImport("EdgesRenderer");
+        throw _WarnImport("EdgesRenderer");
     }
 
     /**
@@ -2411,7 +2411,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @see https://www.babylonjs-playground.com/#19O9TU#0
      */
     enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean, options?: IEdgesRendererOptions): AbstractMesh {
-        throw _DevTools.WarnImport("EdgesRenderer");
+        throw _WarnImport("EdgesRenderer");
     }
 
     /**
@@ -2423,4 +2423,4 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.AbstractMesh"] = AbstractMesh;
+RegisterClass("BABYLON.AbstractMesh", AbstractMesh);

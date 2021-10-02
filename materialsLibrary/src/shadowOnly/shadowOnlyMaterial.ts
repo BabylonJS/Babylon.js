@@ -13,7 +13,7 @@ import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SubMesh } from "babylonjs/Meshes/subMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 
 import "./shadowOnly.fragment";
 import "./shadowOnly.vertex";
@@ -294,4 +294,4 @@ export class ShadowOnlyMaterial extends PushMaterial {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.ShadowOnlyMaterial"] = ShadowOnlyMaterial;
+RegisterClass("BABYLON.ShadowOnlyMaterial", ShadowOnlyMaterial);

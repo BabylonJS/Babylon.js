@@ -63242,6 +63242,7 @@ var TrigonometryPropertyTabComponent = /** @class */ (function (_super) {
             { label: "Round", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_4__["TrigonometryBlockOperations"].Round },
             { label: "Ceiling", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_4__["TrigonometryBlockOperations"].Ceiling },
             { label: "Floor", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_4__["TrigonometryBlockOperations"].Floor },
+            { label: "Sqrt", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_4__["TrigonometryBlockOperations"].Sqrt },
             { label: "ArcCos", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_4__["TrigonometryBlockOperations"].ArcCos },
             { label: "ArcSin", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_4__["TrigonometryBlockOperations"].ArcSin },
             { label: "ArcTan", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_4__["TrigonometryBlockOperations"].ArcTan },

@@ -46910,12 +46910,27 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
         }
         return false;
     };
-    AnimationCurveEditorComponent.prototype._onKeyUp = function (evt) {
+    AnimationCurveEditorComponent.prototype._onKeyDown = function (evt) {
         var _a;
         switch (evt.key) {
             case "Delete":
                 if ((_a = this.props.context.activeKeyPoints) === null || _a === void 0 ? void 0 : _a.length) {
                     this.props.context.onDeleteKeyActiveKeyPoints.notifyObservers();
+                }
+                break;
+            case " ":
+                if (this.props.context.isPlaying) {
+                    this.props.context.stop();
+                }
+                else {
+                    this.props.context.play(true);
+                }
+                break;
+            case "a":
+                if (evt.ctrlKey) {
+                    this.props.context.onSelectAllKeys.notifyObservers();
+                    this.props.context.onActiveKeyPointChanged.notifyObservers();
+                    evt.preventDefault();
                 }
                 break;
         }
@@ -46927,7 +46942,7 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
                     _this.setState({ isOpen: true });
                 } }),
             this.state.isOpen &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_popupComponent__WEBPACK_IMPORTED_MODULE_3__["PopupComponent"], { id: "curve-editor", title: "Animation Curve Editor", size: { width: 1024, height: 512 }, onResize: function () { return _this.props.context.onHostWindowResized.notifyObservers(); }, onClose: function (window) { return _this.onCloseAnimationCurveEditor(window); }, onKeyUp: function (evt) { return _this._onKeyUp(evt); } },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_popupComponent__WEBPACK_IMPORTED_MODULE_3__["PopupComponent"], { id: "curve-editor", title: "Animation Curve Editor", size: { width: 1024, height: 512 }, onResize: function () { return _this.props.context.onHostWindowResized.notifyObservers(); }, onClose: function (window) { return _this.onCloseAnimationCurveEditor(window); }, onKeyDown: function (evt) { return _this._onKeyDown(evt); } },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "curve-editor" },
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_topBarComponent__WEBPACK_IMPORTED_MODULE_5__["TopBarComponent"], { globalState: this.props.globalState, context: this.props.context }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sideBar_sideBarComponent__WEBPACK_IMPORTED_MODULE_7__["SideBarComponent"], { globalState: this.props.globalState, context: this.props.context }),
@@ -47659,6 +47674,7 @@ var Context = /** @class */ (function () {
         this.onActiveAnimationChanged = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onActiveKeyPointChanged = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onHostWindowResized = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onSelectAllKeys = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onActiveKeyFrameChanged = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onFrameSet = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onFrameManuallyEntered = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
@@ -49027,7 +49043,8 @@ var GraphComponent = /** @class */ (function (_super) {
         evt.currentTarget.setPointerCapture(evt.pointerId);
         this._sourcePointerX = evt.nativeEvent.offsetX;
         this._sourcePointerY = evt.nativeEvent.offsetY;
-        this._inSelectionMode = evt.nativeEvent.ctrlKey;
+        var isMiddleButton = evt.nativeEvent.which == 2 || evt.button == 4;
+        this._inSelectionMode = !isMiddleButton && !evt.altKey;
         if (this._inSelectionMode) {
             this._selectionStartX = this._sourcePointerX + 40;
             this._selectionStartY = this._sourcePointerY;
@@ -49177,6 +49194,14 @@ var KeyPointComponent = /** @class */ (function (_super) {
         _this.state = { selectedState: SelectionState.None, x: _this.props.x, y: _this.props.y, tangentSelectedIndex: -1 };
         _this._svgHost = react__WEBPACK_IMPORTED_MODULE_2__["createRef"]();
         _this._keyPointSVG = react__WEBPACK_IMPORTED_MODULE_2__["createRef"]();
+        _this._onSelectAllKeysObserver = _this.props.context.onSelectAllKeys.add(function () {
+            var _a, _b;
+            var isSelected = ((_a = _this.props.context.activeKeyPoints) === null || _a === void 0 ? void 0 : _a.indexOf(_this)) !== -1;
+            if (isSelected) {
+                return;
+            }
+            (_b = _this.props.context.activeKeyPoints) === null || _b === void 0 ? void 0 : _b.push(_this);
+        });
         _this._onUnifyTangentRequiredObserver = _this.props.context.onUnifyTangentRequired.add(function () {
             var _a;
             var isSelected = ((_a = _this.props.context.activeKeyPoints) === null || _a === void 0 ? void 0 : _a.indexOf(_this)) !== -1;
@@ -49319,6 +49344,9 @@ var KeyPointComponent = /** @class */ (function (_super) {
         return _this;
     }
     KeyPointComponent.prototype.componentWillUnmount = function () {
+        if (this._onSelectAllKeysObserver) {
+            this.props.context.onSelectAllKeys.remove(this._onSelectAllKeysObserver);
+        }
         if (this._onUnifyTangentRequiredObserver) {
             this.props.context.onUnifyTangentRequired.remove(this._onUnifyTangentRequiredObserver);
         }
@@ -54421,8 +54449,8 @@ var TextureCanvasComponent = /** @class */ (function (_super) {
     TextureCanvasComponent.prototype.render = function () {
         return react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { id: "canvas-ui", ref: this.props.canvasUI, tabIndex: 1 }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { id: "canvas-2D", ref: this.props.canvas2D, width: this.props.texture.getSize().width, height: this.props.texture.getSize().height, hidden: true }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { id: "canvas-3D", ref: this.props.canvas3D, width: this.props.texture.getSize().width, height: this.props.texture.getSize().height, hidden: true }));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { id: "canvas-2D", ref: this.props.canvas2D, hidden: true }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { id: "canvas-3D", ref: this.props.canvas3D, hidden: true }));
     };
     return TextureCanvasComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -54507,7 +54535,6 @@ var TextureCanvasManager = /** @class */ (function () {
         this._onUpdate = onUpdate;
         this._setMetadata = setMetadata;
         this._setMipLevel = setMipLevel;
-        this._size = texture.getSize();
         this._originalTexture = texture;
         this._originalInternalTexture = this._originalTexture._texture;
         this._engine = new babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["Engine"](this._UICanvas, true);
@@ -54516,6 +54543,7 @@ var TextureCanvasManager = /** @class */ (function () {
         this._camera = new babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["FreeCamera"]('camera', new babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0, 0, -1), this._scene);
         this._camera.mode = babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["Camera"].ORTHOGRAPHIC_CAMERA;
         this._cameraPos = new babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["Vector2"]();
+        this.setSize(texture.getSize());
         this._channelsTexture = new babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["HtmlElementTexture"]('ct', this._2DCanvas, { engine: this._engine, scene: null, samplingMode: babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_SAMPLINGMODE, generateMipMaps: true });
         this._3DEngine = new babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["Engine"](this._3DCanvas);
         this._3DScene = new babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["Scene"](this._3DEngine, { virtual: true });
@@ -55028,9 +55056,11 @@ var TextureCanvasManager = /** @class */ (function () {
         this._2DCanvas.height = this._size.height;
         this._3DCanvas.width = this._size.width;
         this._3DCanvas.height = this._size.height;
-        this._planeMaterial.setInt('w', this._size.width);
-        this._planeMaterial.setInt('h', this._size.height);
-        if (oldSize.width != size.width || oldSize.height != size.height) {
+        if (this._planeMaterial) {
+            this._planeMaterial.setInt('w', this._size.width);
+            this._planeMaterial.setInt('h', this._size.height);
+        }
+        if (!oldSize || oldSize.width != size.width || oldSize.height != size.height) {
             this._cameraPos.x = 0;
             this._cameraPos.y = 0;
             this._scale = 1.5 / Math.max(this._size.width, this._size.height);
@@ -55999,6 +56029,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/optionsLineComponent */ "./sharedUiComponents/lines/optionsLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
+
 
 
 
@@ -56154,10 +56186,11 @@ var SkeletonPropertyGridComponent = /** @class */ (function (_super) {
                 skeleton.overrideMesh &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Override mesh", value: skeleton.overrideMesh.name, onLink: function () { return _this.onOverrideMeshLink(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Use texture to store matrices", target: skeleton, propertyName: "useTextureToStoreBoneMatrices", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "DEBUG", selection: this.props.globalState },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Enabled", isSelected: function () { return _this._skeletonViewersEnabled; }, onSelect: function () { return _this.switchSkeletonViewers(); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_8__["OptionsLineComponent"], { label: "displayMode", options: debugModeOptions, target: this._skeletonViewerDisplayOptions, propertyName: "displayMode", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function () { return _this.changeDisplayMode(); } }),
-                    displayOptions)),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: "Return to rest", onClick: function () { return skeleton.returnToRest(); } })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "DEBUG", selection: this.props.globalState },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Enabled", isSelected: function () { return _this._skeletonViewersEnabled; }, onSelect: function () { return _this.switchSkeletonViewers(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_8__["OptionsLineComponent"], { label: "displayMode", options: debugModeOptions, target: this._skeletonViewerDisplayOptions, propertyName: "displayMode", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function () { return _this.changeDisplayMode(); } }),
+                displayOptions),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animations_animationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_5__["AnimationGridComponent"], { globalState: this.props.globalState, animatable: skeleton, scene: skeleton.getScene(), lockObject: this.props.lockObject })));
     };
     return SkeletonPropertyGridComponent;
@@ -58893,6 +58926,10 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var GIF = __webpack_require__(/*! gif.js.optimized */ "../../node_modules/gif.js.optimized/dist/gif.js");
+var envExportImageTypes = [
+    { label: "PNG", value: 0, imageType: "image/png" },
+    { label: "WebP", value: 1, imageType: "image/webp" },
+];
 var ToolsTabComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ToolsTabComponent, _super);
     function ToolsTabComponent(props) {
@@ -58905,6 +58942,7 @@ var ToolsTabComponent = /** @class */ (function (_super) {
         _this._crunchingGIF = false;
         _this._reflectorHostname = "localhost";
         _this._reflectorPort = 1234;
+        _this._envOptions = { imageTypeIndex: 0, imageQuality: 0.8 };
         _this.state = { tag: "Record video" };
         var sceneImportDefaults = _this.props.globalState.sceneImportDefaults;
         if (sceneImportDefaults["overwriteAnimations"] === undefined) {
@@ -59076,7 +59114,10 @@ var ToolsTabComponent = /** @class */ (function (_super) {
     };
     ToolsTabComponent.prototype.createEnvTexture = function () {
         var scene = this.props.scene;
-        babylonjs_Misc_videoRecorder__WEBPACK_IMPORTED_MODULE_5__["EnvironmentTextureTools"].CreateEnvTextureAsync(scene.environmentTexture)
+        babylonjs_Misc_videoRecorder__WEBPACK_IMPORTED_MODULE_5__["EnvironmentTextureTools"].CreateEnvTextureAsync(scene.environmentTexture, {
+            imageType: envExportImageTypes[this._envOptions.imageTypeIndex].imageType,
+            imageQuality: this._envOptions.imageQuality
+        })
             .then(function (buffer) {
             var blob = new Blob([buffer], { type: "octet/stream" });
             babylonjs_Misc_videoRecorder__WEBPACK_IMPORTED_MODULE_5__["Tools"].Download(blob, "environment.env");
@@ -59169,7 +59210,13 @@ var ToolsTabComponent = /** @class */ (function (_super) {
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Export to GLB", onClick: function () { return _this.exportGLTF(); } }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Export to Babylon", onClick: function () { return _this.exportBabylon(); } }),
                         !scene.getEngine().premultipliedAlpha && scene.environmentTexture && scene.environmentTexture._prefiltered && scene.activeCamera &&
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Generate .env texture", onClick: function () { return _this.createEnvTexture(); } }))),
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Generate .env texture", onClick: function () { return _this.createEnvTexture(); } }),
+                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_13__["OptionsLineComponent"], { label: "Image type", options: envExportImageTypes, target: this._envOptions, propertyName: "imageTypeIndex", onSelect: function () {
+                                        _this.forceUpdate();
+                                    } }),
+                                this._envOptions.imageTypeIndex > 0 &&
+                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { label: "Quality", isInteger: false, min: 0, max: 1, target: this._envOptions, propertyName: "imageQuality" })))),
             BABYLON.GLTFFileLoader &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tools_gltfComponent__WEBPACK_IMPORTED_MODULE_6__["GLTFComponent"], { scene: scene, globalState: this.props.globalState }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "REFLECTOR", selection: this.props.globalState },
@@ -60804,6 +60851,11 @@ var PopupComponent = /** @class */ (function (_super) {
             this._window.addEventListener("keyup", function (evt) {
                 if (_this.props.onKeyUp) {
                     _this.props.onKeyUp(evt);
+                }
+            });
+            this._window.addEventListener("keydown", function (evt) {
+                if (_this.props.onKeyDown) {
+                    _this.props.onKeyDown(evt);
                 }
             });
             this._window.addEventListener("beforeunload", function () { return _this._window && onClose(_this._window); });
@@ -65596,7 +65648,7 @@ var SliderLineComponent = /** @class */ (function (_super) {
             this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
             (!this.props.icon || this.props.label != "") &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.margin ? "label withMargins" : "label", title: this.props.label }, this.props.label),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { isInteger: this.props.decimalCount === 0, smallUI: true, label: "", target: this.state, digits: this.props.decimalCount === undefined ? 4 : this.props.decimalCount, propertyName: "value", min: this.props.minimum, max: this.props.maximum, onEnter: function () {
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { lockObject: this.props.lockObject, isInteger: this.props.decimalCount === 0, smallUI: true, label: "", target: this.state, digits: this.props.decimalCount === undefined ? 4 : this.props.decimalCount, propertyName: "value", min: this.props.minimum, max: this.props.maximum, onEnter: function () {
                     var changed = _this.prepareDataToRead(_this.state.value);
                     _this.onChange(changed);
                 }, onChange: function (evt) { var changed = _this.prepareDataToRead(_this.state.value); _this.onChange(changed); } }),
@@ -65665,24 +65717,24 @@ var TextInputLineComponent = /** @class */ (function (_super) {
     };
     TextInputLineComponent.prototype.updateValue = function (value) {
         if (this.props.numbersOnly) {
-            var checkValue = value;
-            if (value[0] === "-") {
-                checkValue = value.substr(1);
-            }
-            if (/[^0-9\.\p\x\%]/g.test(checkValue)) {
+            if (/[^0-9\.\p\x\%\-]/g.test(value)) {
                 return;
             }
             if (!value) {
                 value = "0";
             }
+            //Removing starting zero if there is a number of a minus after it. 
+            if (value.search(/0+[0-9\-]/g) === 0) {
+                value = value.substr(1);
+            }
         }
         this._localChange = true;
         var store = this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName];
         this.setState({ value: value });
-        this.raiseOnPropertyChanged(value, store);
         if (this.props.propertyName) {
             this.props.target[this.props.propertyName] = value;
         }
+        this.raiseOnPropertyChanged(value, store);
     };
     TextInputLineComponent.prototype.render = function () {
         var _this = this;

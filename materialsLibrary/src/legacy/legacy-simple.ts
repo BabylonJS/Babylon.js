@@ -1,4 +1,4 @@
-import * as MatLib from "../simple";
+import * as MatLib from "../simple/index";
 
 /**
  * This is the entry point for the UMD module.
@@ -11,4 +11,4 @@ if (typeof globalObject !== "undefined") {
     }
 }
 
-export * from "../simple";
+export * from "../simple/index";
