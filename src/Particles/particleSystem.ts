@@ -111,7 +111,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     private _vertexBuffers: { [key: string]: VertexBuffer } = {};
     private _spriteBuffer: Nullable<Buffer>;
     private _indexBuffer: Nullable<DataBuffer>;
-    private _drawWrapper: DrawWrapper;
+    private _drawWrappers: { [blendMode: number]: DrawWrapper };
     private _customWrappers: { [blendMode: number]: Nullable<DrawWrapper> };
     private _scaledColorStep = new Color4(0, 0, 0, 0);
     private _colorDiff = new Color4(0, 0, 0, 0);
@@ -311,10 +311,10 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         this._customWrappers = { 0: new DrawWrapper(this._engine) };
         this._customWrappers[0]!.effect = customEffect;
 
-        this._drawWrapper = new DrawWrapper(this._engine);
+        this._drawWrappers = { 0: new DrawWrapper(this._engine) };
         this._useInstancing = this._engine.getCaps().instancedArrays;
-        if (this._drawWrapper.drawContext) {
-            this._drawWrapper.drawContext.useInstancing = this._useInstancing;
+        if (this._drawWrappers[0].drawContext) {
+            this._drawWrappers[0].drawContext.useInstancing = this._useInstancing;
         }
 
         this._createIndexBuffer();
@@ -977,6 +977,16 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         return this;
     }
 
+    /**
+     * Resets the draw wrappers cache
+     */
+    public resetDrawCache(): void {
+        for (const blendMode in this._drawWrappers) {
+            const drawWrapper = this._drawWrappers[blendMode];
+            drawWrapper.drawContext?.reset();
+        }
+    }
+
     private _fetchR(u: number, v: number, width: number, height: number, pixels: Uint8Array): number {
         u = Math.abs(u) * 0.5 + 0.5;
         v = Math.abs(v) * 0.5 + 0.5;
@@ -1075,7 +1085,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         }
         this._vertexBuffers["offset"] = offsets;
 
-        this._drawWrapper.drawContext?.reset();
+        this.resetDrawCache();
     }
 
     private _createIndexBuffer() {
@@ -1752,15 +1762,24 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         this.fillDefines(defines, blendMode);
 
         // Effect
+        let drawWrapper = this._drawWrappers[blendMode];
+        if (!drawWrapper) {
+            drawWrapper = new DrawWrapper(this._engine);
+            if (drawWrapper.drawContext) {
+                drawWrapper.drawContext.useInstancing = this._useInstancing;
+            }
+            this._drawWrappers[blendMode] = drawWrapper;
+        }
+
         var join = defines.join("\n");
-        if (this._drawWrapper.defines !== join) {
+        if (drawWrapper.defines !== join) {
             var attributesNamesOrOptions: Array<string> = [];
             var effectCreationOption: Array<string> = [];
             var samplers: Array<string> = [];
 
             this.fillUniformsAttributesAndSamplerNames(effectCreationOption, attributesNamesOrOptions, samplers);
 
-            this._drawWrapper.setEffect(
+            drawWrapper.setEffect(
                 this._engine.createEffect(
                     "particles",
                     attributesNamesOrOptions,
@@ -1770,7 +1789,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                 join);
         }
 
-        return this._drawWrapper;
+        return drawWrapper;
     }
 
     /**
@@ -1900,7 +1919,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             this._vertexBuffers[key]._rebuild();
         }
 
-        this._drawWrapper.drawContext?.reset();
+        this.resetDrawCache();
     }
 
     /**
@@ -2059,7 +2078,12 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      * @param disposeTexture defines if the particle texture must be disposed as well (true by default)
      */
     public dispose(disposeTexture = true): void {
-        this._drawWrapper.dispose();
+        for (const blendMode in this._drawWrappers) {
+            const drawWrapper = this._drawWrappers[blendMode];
+            drawWrapper.dispose();
+        }
+
+        this._drawWrappers = {};
 
         if (this._vertexBuffer) {
             this._vertexBuffer.dispose();

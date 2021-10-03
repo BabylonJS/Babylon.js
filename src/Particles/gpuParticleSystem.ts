@@ -75,7 +75,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
     private _randomTextureSize: number;
     private _actualFrame = 0;
-    private _drawWrapper: DrawWrapper;
+    private _drawWrappers: { [blendMode: number]: DrawWrapper };
     private _customWrappers: { [blendMode: number]: Nullable<DrawWrapper> };
 
     private readonly _rawTextureWidth = 256;
@@ -369,6 +369,16 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         (<any>this._colorGradientsTexture) = null;
 
         return this;
+    }
+
+    /**
+     * Resets the draw wrappers cache
+     */
+    public resetDrawCache(): void {
+        for (const blendMode in this._drawWrappers) {
+            const drawWrapper = this._drawWrappers[blendMode];
+            drawWrapper.drawContext?.reset();
+        }
     }
 
     /** @hidden */
@@ -776,7 +786,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._customWrappers = { 0: new DrawWrapper(this._engine) };
         this._customWrappers[0]!.effect = customEffect;
 
-        this._drawWrapper = new DrawWrapper(this._engine);
+        this._drawWrappers = { 0: new DrawWrapper(this._engine) };
+        if (this._drawWrappers[0].drawContext) {
+            this._drawWrappers[0].drawContext.useInstancing = true;
+        }
 
         // Setup the default processing configuration to the scene.
         this._attachImageProcessingConfiguration(null);
@@ -910,6 +923,8 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         renderVertexBuffers["uv"] = spriteSource.createVertexBuffer("uv", 2, 2);
 
         this._platform.createVertexBuffers(updateBuffer, renderVertexBuffers);
+
+        this.resetDrawCache();
     }
 
     private _initialize(force = false): void {
@@ -1175,9 +1190,17 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this.fillDefines(defines, blendMode);
 
         // Effect
-        const join = defines.join("\n");
-        if (this._drawWrapper.defines !== join) {
-            this._drawWrapper.defines = join;
+        let drawWrapper = this._drawWrappers[blendMode];
+        if (!drawWrapper) {
+            drawWrapper = new DrawWrapper(this._engine);
+            if (drawWrapper.drawContext) {
+                drawWrapper.drawContext.useInstancing = true;
+            }
+            this._drawWrappers[blendMode] = drawWrapper;
+        }
+
+        var join = defines.join("\n");
+        if (drawWrapper.defines !== join) {
 
             const attributes: Array<string> = [];
             const uniforms: Array<string> = [];
@@ -1185,14 +1208,17 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
             this.fillUniformsAttributesAndSamplerNames(uniforms, attributes, samplers);
 
-            this._drawWrapper.effect = this._engine.createEffect(
-                "gpuRenderParticles",
-                attributes,
-                uniforms,
-                samplers, join);
+            drawWrapper.setEffect(
+                this._engine.createEffect(
+                    "gpuRenderParticles",
+                    attributes,
+                    uniforms,
+                    samplers, join
+                ),
+                join);
         }
 
-        return this._drawWrapper;
+        return drawWrapper;
     }
 
     /** @hidden */
@@ -1639,6 +1665,13 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @param disposeTexture defines if the particule texture must be disposed as well (true by default)
      */
     public dispose(disposeTexture = true): void {
+        for (const blendMode in this._drawWrappers) {
+            const drawWrapper = this._drawWrappers[blendMode];
+            drawWrapper.dispose();
+        }
+
+        this._drawWrappers = {};
+
         if (this._scene) {
             var index = this._scene.particleSystems.indexOf(this);
             if (index > -1) {
