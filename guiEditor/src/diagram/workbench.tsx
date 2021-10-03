@@ -131,13 +131,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this._forceMoving = !this._forceMoving;
             this._forcePanning = false;
             this._forceZooming = false;
-            if (!this._forceMoving) {
-                this.globalState.onSelectionButtonObservable.notifyObservers();
-            }
-            else {
-                this._canvas.style.cursor = "move";
-            }
-
             this.updateHitTest(this.globalState.guiTexture.getChildren()[0], this._forceSelecting);
             if (!this._forceSelecting) {
                 this.updateHitTestForSelection(true);
@@ -151,6 +144,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this._forceZooming = false;
             this._canvas.style.cursor = "default"
             this.updateHitTest(this.globalState.guiTexture.getChildren()[0], this._forceSelecting);
+            if (this._forceMoving) {
+                this.updateHitTestForSelection(true);
+            }
             this.artBoardBackground.isHitTestVisible = true;
         });
 

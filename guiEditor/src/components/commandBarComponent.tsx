@@ -43,7 +43,6 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
             this._selecting = !this._selecting;
             this._panning = false;
             this._zooming = false;
-            this._moving = false;
             this.forceUpdate();
         });
 
@@ -58,7 +57,6 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
         props.globalState.onMoveObservable.add(() => {
             this._zooming = false;
             this._panning = false;
-            this._selecting = false;
             this._moving = !this._moving;
             this.forceUpdate();
         });
@@ -108,9 +106,9 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                         },
                     ]} />
                     <CommandButtonComponent tooltip="Select" icon={pointerIcon} shortcut="Q" isActive={this._selecting}
-                        onClick={() => { if (!this._selecting) this.props.globalState.onSelectionButtonObservable.notifyObservers(); }} />
+                        onClick={() => { this.props.globalState.onSelectionButtonObservable.notifyObservers(); }} />
                     <CommandButtonComponent tooltip="Move" icon={moveIcon} shortcut="M" isActive={this._moving}
-                        onClick={() => { if (!this._moving) this.props.globalState.onMoveObservable.notifyObservers(); }} />
+                        onClick={() => { this.props.globalState.onMoveObservable.notifyObservers(); }} />
                     <CommandButtonComponent tooltip="Pan" icon={handIcon} shortcut="W" isActive={this._panning}
                         onClick={() => { if (!this._panning) this.props.globalState.onPanObservable.notifyObservers(); }} />
                     <CommandButtonComponent tooltip="Zoom" shortcut="E" icon={zoomIcon} isActive={this._zooming}
