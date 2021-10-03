@@ -40,7 +40,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
         });
 
         props.globalState.onSelectionButtonObservable.add(() => {
-            this._selecting = true;
+            this._selecting = !this._selecting;
             this._panning = false;
             this._zooming = false;
             this._moving = false;

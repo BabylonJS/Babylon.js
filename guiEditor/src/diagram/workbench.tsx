@@ -122,13 +122,14 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             else {
                 this._canvas.style.cursor = "move";
             }
+            this.updateHitTest(this.globalState.guiTexture.getChildren()[0], this._forceSelecting);
+            this.artBoardBackground.isHitTestVisible = true;
         });
 
 
         props.globalState.onMoveObservable.add(() => {
             this._forceMoving = !this._forceMoving;
             this._forcePanning = false;
-            this._forceSelecting = false;
             this._forceZooming = false;
             if (!this._forceMoving) {
                 this.globalState.onSelectionButtonObservable.notifyObservers();
@@ -136,14 +137,21 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             else {
                 this._canvas.style.cursor = "move";
             }
+
+            this.updateHitTest(this.globalState.guiTexture.getChildren()[0], this._forceSelecting);
+            if (!this._forceSelecting) {
+                this.updateHitTestForSelection(true);
+            }
+            this.artBoardBackground.isHitTestVisible = true;
         });
 
         props.globalState.onSelectionButtonObservable.add(() => {
-            this._forceSelecting = true;
+            this._forceSelecting = !this._forceSelecting;
             this._forcePanning = false;
             this._forceZooming = false;
-            this._forceMoving = false;
             this._canvas.style.cursor = "default"
+            this.updateHitTest(this.globalState.guiTexture.getChildren()[0], this._forceSelecting);
+            this.artBoardBackground.isHitTestVisible = true;
         });
 
         props.globalState.onZoomObservable.add(() => {
@@ -157,6 +165,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             else {
                 this._canvas.style.cursor = "zoom-in";
             }
+            this.updateHitTest(this.globalState.guiTexture.getChildren()[0], this._forceSelecting);
+            this.artBoardBackground.isHitTestVisible = true;
         });
 
         props.globalState.onFitToWindowObservable.add(() => {
@@ -240,6 +250,22 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             }
         }
     };
+
+    private updateHitTest(guiControl: Control, value: boolean) {
+        guiControl.isHitTestVisible = value;
+        if (this.props.globalState.workbench.isContainer(guiControl)) {
+            (guiControl as Container).children.forEach(child => {
+                this.updateHitTest(child, value);
+            });
+        }
+    }
+
+    private updateHitTestForSelection(value: boolean) {
+        if(this._forceSelecting && !value) return;
+        this.selectedGuiNodes.forEach((control) => {
+            control.isHitTestVisible = value;
+        });
+    }
 
     private copyToClipboard() {
         if (this._selectAll) {
@@ -354,6 +380,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 node.highlightLineWidth = 10;
             }
         });
+        this.updateHitTestForSelection(value);
     }
 
     resizeGuiTexture(newvalue: Vector2) {
@@ -382,6 +409,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             case "Ellipse":
             case "Grid":
             case "ScrollViewer":
+            case "Container":
                 return true;
             default:
                 return false;
@@ -405,10 +433,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         guiControl.onPointerEnterObservable.add((evt) => {
             this._isOverGUINode = true;
+            console.log("In:" + guiControl);
         });
 
         guiControl.onPointerOutObservable.add((evt) => {
             this._isOverGUINode = false;
+            console.log("Out:" + guiControl);
         });
 
         if (this.isContainer(guiControl)) {
@@ -417,7 +447,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             });
         }
         guiControl.isReadOnly = true;
-
         return guiControl;
     }
 
@@ -613,6 +642,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     onDown(evt: React.PointerEvent<HTMLElement>) {
         this._rootContainer.current?.setPointerCapture(evt.pointerId);
+        console.log("Is Over Node: " + this._isOverGUINode)
         if (!this._isOverGUINode && !evt.button) {
             if (this._forceSelecting) {
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
