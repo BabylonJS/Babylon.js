@@ -822,7 +822,7 @@ class CommandBufferEncoder {
     private _isCommandBufferScopeActive = false;
 
     public constructor(private readonly _nativeEngine: INativeEngine) {
-        this._commandStream = new NativeDataStream();
+        this._commandStream = NativeEngine._createNativeDataStream();
         this._nativeEngine.setCommandDataStream(this._commandStream);
     }
 
@@ -1060,6 +1060,11 @@ export class NativeEngine extends Engine {
             this._deleteVertexArray(this._boundBuffersVertexArray);
         }
         this._native.dispose();
+    }
+
+    /** @hidden */
+    public static _createNativeDataStream(): NativeDataStream {
+        return new NativeDataStream();
     }
 
     /**
