@@ -531,6 +531,7 @@ declare module "./mesh" {
     }
 }
 
+/** @hidden */
 export const _injectLTS = () => {
     Mesh.prototype.setMaterialByID = function (id: string): Mesh {
         return this.setMaterialById(id);
