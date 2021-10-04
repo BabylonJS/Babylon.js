@@ -797,34 +797,33 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         scene.onKeyboardObservable.add((k: KeyboardInfo, e: KeyboardEventTypes) => {
             switch (k.event.key) {
-                case "q": //select
-                case "Q":
+                case "s": //select
+                case "S":
                     if (!this._forceSelecting)
                         this.globalState.onSelectionButtonObservable.notifyObservers();
                     break;
-                case "e": //pan
-                case "E":
+                case "p": //pan
+                case "P":
                     if (!this._forcePanning)
                         this.globalState.onPanObservable.notifyObservers();
                     break;
-                case "r": //zoom
-                case "R":
+                case "z": //zoom
+                case "Z":
                     if (!this._forceZooming)
                         this.globalState.onZoomObservable.notifyObservers();
                     break;
-                case "t": //outlines
-                case "T":
+                case "g": //outlines
+                case "G":
                     this.globalState.onOutlinesObservable.notifyObservers();
                     break;
-                case "w": //outlines
-                case "W":
+                case "m": //move
+                case "M":
                     if (!this._forceMoving)
                         this.globalState.onMoveObservable.notifyObservers();
                     break;
-                case "0": //fit to window
-                    if (this._altKeyIsPressed) {
-                        this.globalState.onFitToWindowObservable.notifyObservers();
-                    }
+                case "f": //fit to window
+                case "F":
+                    this.globalState.onFitToWindowObservable.notifyObservers();
                     break;
                 default:
                     break;
