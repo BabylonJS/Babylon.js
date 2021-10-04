@@ -1924,6 +1924,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         this.getScene()._activeIndices.addCount(subMesh.indexCount * instancesCount, false);
 
         // Draw
+        if (engine._currentDrawContext) {
+            engine._currentDrawContext.useInstancing = true;
+        }
         this._bind(subMesh, effect, fillMode);
         this._draw(subMesh, fillMode, instancesCount);
 
@@ -1952,6 +1955,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         this.getScene()._activeIndices.addCount(subMesh.indexCount * instancesCount, false);
 
         // Draw
+        if (engine._currentDrawContext) {
+            engine._currentDrawContext.useInstancing = true;
+        }
         this._bind(subMesh, effect, fillMode);
         this._draw(subMesh, fillMode, instancesCount);
 
@@ -1996,6 +2002,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (hardwareInstancedRendering) {
             this._renderWithInstances(subMesh, fillMode, batch, effect, engine);
         } else {
+            if (engine._currentDrawContext) {
+                engine._currentDrawContext.useInstancing = false;
+            }
+
             let instanceCount = 0;
             if (batch.renderSelf[subMesh._id]) {
                 // Draw

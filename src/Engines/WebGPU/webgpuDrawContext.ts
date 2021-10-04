@@ -46,6 +46,7 @@ export class WebGPUDrawContext implements IDrawContext {
         }
 
         this._useInstancing = use;
+        this._currentInstanceCount = -1;
     }
 
     constructor(bufferManager: WebGPUBufferManager) {
