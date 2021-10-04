@@ -3,15 +3,15 @@ import { Grid } from "babylonjs-gui/2D/controls/grid";
 import { Vector2 } from "babylonjs/Maths/math";
 
 export class Tools {
-    public static LookForItem(item: any, selectedEntity: any): boolean {
-        if (item === selectedEntity) {
+    public static LookForItem(item: any, selectedEntity: any, firstIteration : boolean = true): boolean {
+        if (!firstIteration && item === selectedEntity) {
             return true;
         }
 
         const children = item.getChildren ? item.getChildren() : item.children;
-        if (children && item.getClassName() !== "MultiMaterial") {
+        if (children) {
             for (var child of children) {
-                if (Tools.LookForItem(child, selectedEntity)) {
+                if (Tools.LookForItem(child, selectedEntity, false)) {
                     return true;
                 }
             }
