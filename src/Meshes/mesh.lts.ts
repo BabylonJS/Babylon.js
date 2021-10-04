@@ -5,6 +5,7 @@ import { Scene } from "../scene";
 import { Nullable } from "../types";
 import { AbstractMesh } from "./abstractMesh";
 import { ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
+import { ExtendMeshToGoldberg } from "./Builders/goldbergBuilder";
 import { Mesh } from "./mesh";
 
 declare type LinesMesh = import("./linesMesh").LinesMesh;
@@ -528,6 +529,14 @@ declare module "./mesh" {
          * @deprecated Please use MeshBuilder instead
          */
         let CreateCapsule: (name: string, options: ICreateCapsuleOptions, scene: Scene) => Mesh;
+
+        /**
+         * Extends a mesh to a Goldberg mesh
+         * @param mesh the mesh to convert
+         * Warning  the mesh to convert MUST be an import of a perviously exported Goldberg mesh
+         * @deprecated Please use ExtendMeshToGoldberg instead
+         */
+        let ExtendToGoldberg: (mesh: Mesh) => Mesh;
     }
 }
 
@@ -553,4 +562,5 @@ export const _injectLTS = () => {
     Mesh.CreateIcoSphere = Mesh.CreateIcoSphere || (() => { throw _WarnImport("MeshBuilder"); });
     Mesh.CreateDecal = Mesh.CreateDecal || (() => { throw _WarnImport("MeshBuilder"); });
     Mesh.CreateCapsule = Mesh.CreateCapsule || (() => { throw _WarnImport("MeshBuilder"); });
+    Mesh.ExtendToGoldberg = Mesh.ExtendToGoldberg || ExtendMeshToGoldberg;
 };
