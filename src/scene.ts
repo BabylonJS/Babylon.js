@@ -5025,5 +5025,5 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 }
 
 // LTS version
-import { _injectLTS } from "./scene.lts";
-_injectLTS();
+import { _injectLTSScene } from "./scene.lts";
+_injectLTSScene();

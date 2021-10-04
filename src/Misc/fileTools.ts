@@ -13,6 +13,7 @@ import { ThinEngine } from '../Engines/thinEngine';
 import { EngineStore } from '../Engines/engineStore';
 import { Logger } from './logger';
 import { TimingTools } from './timingTools';
+import { _injectLTSFileTools } from './fileTools.lts';
 
 const base64DataUrlRegEx = new RegExp(/^data:([^,]+\/[^,]+)?;base64,/i);
 
@@ -590,61 +591,6 @@ const initSideEffects = () => {
     ShaderProcessor._FileToolsLoadFile = LoadFile;
 };
 
-/**
- * Backwards compatibility.
- * @hidden
- * @deprecated
- */
-export const FileTools = {
-    DecodeBase64UrlToBinary,
-    DecodeBase64UrlToString,
-    DefaultRetryStrategy: FileToolsOptions.DefaultRetryStrategy,
-    BaseUrl: FileToolsOptions.BaseUrl,
-    CorsBehavior: FileToolsOptions.CorsBehavior,
-    PreprocessUrl: FileToolsOptions.PreprocessUrl,
-    IsBase64DataUrl,
-    IsFileURL,
-    LoadFile,
-    LoadImage,
-    ReadFile,
-    RequestFile,
-    SetCorsBehavior,
-};
-
-Object.defineProperty(FileTools, "DefaultRetryStrategy", {
-    get: function (this: null) {
-        return FileToolsOptions.DefaultRetryStrategy;
-    },
-    set: function (this: null, value: (url: string, request: WebRequest, retryIndex: number) => number) {
-        FileToolsOptions.DefaultRetryStrategy = value;
-    }
-});
-
-Object.defineProperty(FileTools, "BaseUrl", {
-    get: function (this: null) {
-        return FileToolsOptions.BaseUrl;
-    },
-    set: function (this: null, value: string) {
-        FileToolsOptions.BaseUrl = value;
-    }
-});
-
-Object.defineProperty(FileTools, "PreprocessUrl", {
-    get: function (this: null) {
-        return FileToolsOptions.PreprocessUrl;
-    },
-    set: function (this: null, value: (url: string) => string) {
-        FileToolsOptions.PreprocessUrl = value;
-    }
-});
-
-Object.defineProperty(FileTools, "CorsBehavior", {
-    get: function (this: null) {
-        return FileToolsOptions.CorsBehavior;
-    },
-    set: function (this: null, value: string | ((url: string | string[]) => string)) {
-        FileToolsOptions.CorsBehavior = value;
-    }
-});
-
 initSideEffects();
+
+_injectLTSFileTools();

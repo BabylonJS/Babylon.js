@@ -4415,5 +4415,5 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 RegisterClass("BABYLON.Mesh", Mesh);
 
 // LTS
-import { _injectLTS } from "./mesh.lts";
-_injectLTS();
+import { _injectLTSMesh } from "./mesh.lts";
+_injectLTSMesh();
