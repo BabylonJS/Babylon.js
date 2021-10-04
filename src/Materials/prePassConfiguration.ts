@@ -67,6 +67,8 @@ export class PrePassConfiguration {
                     this.currentViewProjection = scene.getTransformMatrix().clone();
                 }
 
+                const engine = scene.getEngine();
+
                 if (this.currentViewProjection.updateFlag !== scene.getTransformMatrix().updateFlag) {
                     // First update of the prepass configuration for this rendering pass
                     this.previousViewProjection.copyFrom(this.currentViewProjection);
