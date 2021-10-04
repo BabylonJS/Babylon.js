@@ -125,7 +125,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 this._canvas.style.cursor = "move";
             }
             this.updateHitTest(this.globalState.guiTexture.getChildren()[0], this._forceSelecting);
-            //this.artBoardBackground.isHitTestVisible = true;
+            this.artBoardBackground.isHitTestVisible = true;
         });
 
 
@@ -138,7 +138,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             if (!this._forceSelecting) {
                 this.updateHitTestForSelection(true);
             }
-            //this.artBoardBackground.isHitTestVisible = true;
+            this.artBoardBackground.isHitTestVisible = true;
         });
 
         props.globalState.onSelectionButtonObservable.add(() => {
@@ -151,7 +151,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             if (this._forceMoving) {
                 this.updateHitTestForSelection(true);
             }
-            //this.artBoardBackground.isHitTestVisible = true;
+            this.artBoardBackground.isHitTestVisible = true;
         });
 
         props.globalState.onZoomObservable.add(() => {
@@ -166,7 +166,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 this._canvas.style.cursor = "zoom-in";
             }
             this.updateHitTest(this.globalState.guiTexture.getChildren()[0], this._forceSelecting);
-            //this.artBoardBackground.isHitTestVisible = true;
+            this.artBoardBackground.isHitTestVisible = true;
         });
 
         props.globalState.onFitToWindowObservable.add(() => {
@@ -259,7 +259,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     };
 
     private updateHitTest(guiControl: Control, value: boolean) {
-        //guiControl.isHitTestVisible = true;
+        guiControl.isHitTestVisible = value;
         if (this.props.globalState.workbench.isContainer(guiControl)) {
             (guiControl as Container).children.forEach(child => {
                 this.updateHitTest(child, value);
@@ -270,7 +270,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private updateHitTestForSelection(value: boolean) {
         if (this._forceSelecting && !value) return;
         this.selectedGuiNodes.forEach((control) => {
-            //control.isHitTestVisible = true;
+            control.isHitTestVisible = value;
         });
     }
 
@@ -395,7 +395,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 node.highlightLineWidth = 10;
             }
         });
-       // this.updateHitTestForSelection(value);
+        this.updateHitTestForSelection(value);
     }
 
     resizeGuiTexture(newvalue: Vector2) {
@@ -450,20 +450,21 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         guiControl.onPointerEnterObservable.add((evt) => {
             this._isOverGUINode = true;
-            console.log("In:" + guiControl);
+            console.log("In:" + guiControl.name);
         });
 
         guiControl.onPointerOutObservable.add((evt) => {
             this._isOverGUINode = false;
-            console.log("Out:" + guiControl);
+            console.log("Out:" + guiControl.name);
         });
 
         if (this.isContainer(guiControl)) {
             (guiControl as Container).children.forEach(child => {
+                this.createNewGuiNode(child);
             });
         }
         guiControl.isReadOnly = true;
-        //guiControl.isHitTestVisible = true;
+        guiControl.isHitTestVisible = true;
         return guiControl;
     }
 
@@ -763,7 +764,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         };
 
         const zoomFnMouse = (p: PointerInfo, e: EventState) => {
-            //const newPos = this.getPosition(scene, camera, plane);
             this.zooming(this._altKeyIsPressed ? -10 : 10, scene, camera, plane, inertialPanning);
         };
 
@@ -774,8 +774,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         scene.onPointerObservable.add((p: PointerInfo, e: EventState) => {
             removeObservers();
-            if (p.event.button !== 0 || this._forcePanning ||
-                (this._altKeyIsPressed && !this._forceZooming)) {
+            if (p.event.button !== 0 || this._forcePanning) {
                 initialPos = this.getPosition(scene, camera, plane);
                 scene.onPointerObservable.add(panningFn, PointerEventTypes.POINTERMOVE);
                 this._panning = true;
