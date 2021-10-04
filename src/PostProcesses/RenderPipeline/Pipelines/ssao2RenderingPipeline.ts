@@ -10,7 +10,7 @@ import { PostProcessRenderPipeline } from "../../../PostProcesses/RenderPipeline
 import { PostProcessRenderEffect } from "../../../PostProcesses/RenderPipeline/postProcessRenderEffect";
 import { PassPostProcess } from "../../../PostProcesses/passPostProcess";
 import { Scene } from "../../../scene";
-import { _TypeStore } from '../../../Misc/typeStore';
+import { RegisterClass } from '../../../Misc/typeStore';
 import { EngineStore } from '../../../Engines/engineStore';
 import { SSAO2Configuration } from "../../../Rendering/ssao2Configuration";
 import { PrePassRenderer } from "../../../Rendering/prePassRenderer";
@@ -537,4 +537,4 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.SSAO2RenderingPipeline"] = SSAO2RenderingPipeline;
+RegisterClass("BABYLON.SSAO2RenderingPipeline", SSAO2RenderingPipeline);

@@ -630,7 +630,7 @@ var CustomMaterial = /** @class */ (function (_super) {
     return CustomMaterial;
 }(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["StandardMaterial"]));
 
-babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.CustomMaterial"] = CustomMaterial;
+Object(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.CustomMaterial", CustomMaterial);
 
 
 /***/ }),
@@ -913,7 +913,7 @@ var PBRCustomMaterial = /** @class */ (function (_super) {
     return PBRCustomMaterial;
 }(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["PBRMaterial"]));
 
-babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.PBRCustomMaterial"] = PBRCustomMaterial;
+Object(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.PBRCustomMaterial", PBRCustomMaterial);
 
 
 /***/ }),

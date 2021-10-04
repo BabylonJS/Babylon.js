@@ -1,4 +1,4 @@
-import { CodeStringParsingTools } from "../../Misc/codeStringParsingTools";
+import { EscapeRegExp, ExtractBetweenMarkers, FindBackward, IsIdentifierChar, RemoveComments, SkipWhitespaces } from "../../Misc/codeStringParsingTools";
 
 interface IInlineFunctionDescr {
     name: string;
@@ -86,7 +86,7 @@ export class ShaderCodeInliner {
             const [funcType, funcName] = [funcNameMatch[3], funcNameMatch[4]];
 
             // extract the parameters of the function as a whole string (without the leading / trailing parenthesis)
-            const funcParamsEndIndex = CodeStringParsingTools.ExtractBetweenMarkers('(', ')', this._sourceCode, funcParamsStartIndex);
+            const funcParamsEndIndex = ExtractBetweenMarkers('(', ')', this._sourceCode, funcParamsStartIndex);
             if (funcParamsEndIndex < 0) {
                 if (this.debug) {
                     console.warn(`Could not extract the parameters the function '${funcName}' (type=${funcType}). funcParamsStartIndex=${funcParamsStartIndex}`);
@@ -97,7 +97,7 @@ export class ShaderCodeInliner {
             const funcParams = this._sourceCode.substring(funcParamsStartIndex + 1, funcParamsEndIndex);
 
             // extract the body of the function (with the curly brackets)
-            const funcBodyStartIndex = CodeStringParsingTools.SkipWhitespaces(this._sourceCode, funcParamsEndIndex + 1);
+            const funcBodyStartIndex = SkipWhitespaces(this._sourceCode, funcParamsEndIndex + 1);
             if (funcBodyStartIndex === this._sourceCode.length) {
                 if (this.debug) {
                     console.warn(`Could not extract the body of the function '${funcName}' (type=${funcType}). funcParamsEndIndex=${funcParamsEndIndex}`);
@@ -106,7 +106,7 @@ export class ShaderCodeInliner {
                 continue;
             }
 
-            const funcBodyEndIndex = CodeStringParsingTools.ExtractBetweenMarkers('{', '}', this._sourceCode, funcBodyStartIndex);
+            const funcBodyEndIndex = ExtractBetweenMarkers('{', '}', this._sourceCode, funcBodyStartIndex);
             if (funcBodyEndIndex < 0) {
                 if (this.debug) {
                     console.warn(`Could not extract the body of the function '${funcName}' (type=${funcType}). funcBodyStartIndex=${funcBodyStartIndex}`);
@@ -117,7 +117,7 @@ export class ShaderCodeInliner {
             const funcBody = this._sourceCode.substring(funcBodyStartIndex, funcBodyEndIndex + 1);
 
             // process the parameters: extract each names
-            const params = CodeStringParsingTools.RemoveComments(funcParams).split(",");
+            const params = RemoveComments(funcParams).split(",");
             const paramNames = [];
 
             for (let p = 0; p < params.length; ++p) {
@@ -190,20 +190,20 @@ export class ShaderCodeInliner {
                 }
 
                 // Make sure "name" is not part of a bigger string
-                if (functionCallIndex === 0 || CodeStringParsingTools.IsIdentifierChar(this._sourceCode.charAt(functionCallIndex - 1))) {
+                if (functionCallIndex === 0 || IsIdentifierChar(this._sourceCode.charAt(functionCallIndex - 1))) {
                     startIndex = functionCallIndex + name.length;
                     continue;
                 }
 
                 // Find the opening parenthesis
-                const callParamsStartIndex = CodeStringParsingTools.SkipWhitespaces(this._sourceCode, functionCallIndex + name.length);
+                const callParamsStartIndex = SkipWhitespaces(this._sourceCode, functionCallIndex + name.length);
                 if (callParamsStartIndex === this._sourceCode.length || this._sourceCode.charAt(callParamsStartIndex) !== '(') {
                     startIndex = functionCallIndex + name.length;
                     continue;
                 }
 
                 // extract the parameters of the function call as a whole string (without the leading / trailing parenthesis)
-                const callParamsEndIndex = CodeStringParsingTools.ExtractBetweenMarkers('(', ')', this._sourceCode, callParamsStartIndex);
+                const callParamsEndIndex = ExtractBetweenMarkers('(', ')', this._sourceCode, callParamsStartIndex);
                 if (callParamsEndIndex < 0) {
                     if (this.debug) {
                         console.warn(`Could not extract the parameters of the function call. Function '${name}' (type=${type}). callParamsStartIndex=${callParamsStartIndex}`);
@@ -222,7 +222,7 @@ export class ShaderCodeInliner {
                     let curIdx = 0, startParamIdx = 0;
                     while (curIdx < s.length) {
                         if (s.charAt(curIdx) === '(') {
-                            const idx2 = CodeStringParsingTools.ExtractBetweenMarkers('(', ')', s, curIdx);
+                            const idx2 = ExtractBetweenMarkers('(', ')', s, curIdx);
                             if (idx2 < 0) {
                                 return null;
                             }
@@ -239,7 +239,7 @@ export class ShaderCodeInliner {
                     return parameters;
                 };
 
-                const params = splitParameterCall(CodeStringParsingTools.RemoveComments(callParams));
+                const params = splitParameterCall(RemoveComments(callParams));
 
                 if (params === null) {
                     if (this.debug) {
@@ -283,7 +283,7 @@ export class ShaderCodeInliner {
                     // FUNCTYPE retParamName;
                     // {function body}
                     // and replace the function call by retParamName
-                    const injectDeclarationIndex = CodeStringParsingTools.FindBackward(this._sourceCode, functionCallIndex - 1, '\n');
+                    const injectDeclarationIndex = FindBackward(this._sourceCode, functionCallIndex - 1, '\n');
 
                     partBefore = this._sourceCode.substring(0, injectDeclarationIndex + 1);
                     let partBetween = this._sourceCode.substring(injectDeclarationIndex + 1, functionCallIndex);
@@ -313,14 +313,14 @@ export class ShaderCodeInliner {
 
     private _replaceNames(code: string, sources: string[], destinations: string[]): string {
         for (let i = 0; i < sources.length; ++i) {
-            const source = new RegExp(CodeStringParsingTools.EscapeRegExp(sources[i]), 'g'),
+            const source = new RegExp(EscapeRegExp(sources[i]), 'g'),
                 sourceLen = sources[i].length,
                 destination = destinations[i];
 
             code = code.replace(source, (match, ...args) => {
                 const offset: number = args[0];
                 // Make sure "source" is not part of a bigger identifier (for eg, if source=view and we matched it with viewDirection)
-                if (CodeStringParsingTools.IsIdentifierChar(code.charAt(offset - 1)) || CodeStringParsingTools.IsIdentifierChar(code.charAt(offset + sourceLen))) {
+                if (IsIdentifierChar(code.charAt(offset - 1)) || IsIdentifierChar(code.charAt(offset + sourceLen))) {
                     return sources[i];
                 }
                 return destination;

@@ -3,7 +3,7 @@ import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialB
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
-import { _TypeStore } from '../../../../Misc/typeStore';
+import { RegisterClass } from '../../../../Misc/typeStore';
 import { Nullable } from '../../../../types';
 import { Scene } from '../../../../scene';
 import { Effect } from '../../../effect';
@@ -158,4 +158,4 @@ export class LightInformationBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.LightInformationBlock"] = LightInformationBlock;
+RegisterClass("BABYLON.LightInformationBlock", LightInformationBlock);

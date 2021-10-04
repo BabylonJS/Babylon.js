@@ -1011,7 +1011,7 @@ var MixMaterial = /** @class */ (function (_super) {
     return MixMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.MixMaterial"] = MixMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.MixMaterial", MixMaterial);
 
 
 /***/ }),

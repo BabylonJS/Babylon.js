@@ -54449,8 +54449,8 @@ var TextureCanvasComponent = /** @class */ (function (_super) {
     TextureCanvasComponent.prototype.render = function () {
         return react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { id: "canvas-ui", ref: this.props.canvasUI, tabIndex: 1 }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { id: "canvas-2D", ref: this.props.canvas2D, width: this.props.texture.getSize().width, height: this.props.texture.getSize().height, hidden: true }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { id: "canvas-3D", ref: this.props.canvas3D, width: this.props.texture.getSize().width, height: this.props.texture.getSize().height, hidden: true }));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { id: "canvas-2D", ref: this.props.canvas2D, hidden: true }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { id: "canvas-3D", ref: this.props.canvas3D, hidden: true }));
     };
     return TextureCanvasComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -54535,7 +54535,6 @@ var TextureCanvasManager = /** @class */ (function () {
         this._onUpdate = onUpdate;
         this._setMetadata = setMetadata;
         this._setMipLevel = setMipLevel;
-        this._size = texture.getSize();
         this._originalTexture = texture;
         this._originalInternalTexture = this._originalTexture._texture;
         this._engine = new babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["Engine"](this._UICanvas, true);
@@ -54544,6 +54543,7 @@ var TextureCanvasManager = /** @class */ (function () {
         this._camera = new babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["FreeCamera"]('camera', new babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0, 0, -1), this._scene);
         this._camera.mode = babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["Camera"].ORTHOGRAPHIC_CAMERA;
         this._cameraPos = new babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["Vector2"]();
+        this.setSize(texture.getSize());
         this._channelsTexture = new babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["HtmlElementTexture"]('ct', this._2DCanvas, { engine: this._engine, scene: null, samplingMode: babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_SAMPLINGMODE, generateMipMaps: true });
         this._3DEngine = new babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["Engine"](this._3DCanvas);
         this._3DScene = new babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["Scene"](this._3DEngine, { virtual: true });
@@ -55056,9 +55056,11 @@ var TextureCanvasManager = /** @class */ (function () {
         this._2DCanvas.height = this._size.height;
         this._3DCanvas.width = this._size.width;
         this._3DCanvas.height = this._size.height;
-        this._planeMaterial.setInt('w', this._size.width);
-        this._planeMaterial.setInt('h', this._size.height);
-        if (oldSize.width != size.width || oldSize.height != size.height) {
+        if (this._planeMaterial) {
+            this._planeMaterial.setInt('w', this._size.width);
+            this._planeMaterial.setInt('h', this._size.height);
+        }
+        if (!oldSize || oldSize.width != size.width || oldSize.height != size.height) {
             this._cameraPos.x = 0;
             this._cameraPos.y = 0;
             this._scale = 1.5 / Math.max(this._size.width, this._size.height);

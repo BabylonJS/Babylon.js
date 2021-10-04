@@ -524,6 +524,13 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
         */
         getDescendants(directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): Control[];
         /**
+        * Will return the first control with the given name
+        * @param name defines the name to search for
+        * @return the first control found or null
+        */
+        getControlByName(name: string): Nullable<Control>;
+        private _getControlByKey;
+        /**
         * Gets or sets the current focused control
         */
         get focusedControl(): Nullable<IFocusableControl>;
@@ -7539,6 +7546,13 @@ declare module BABYLON.GUI {
         * @return all child controls
         */
         getDescendants(directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): Control[];
+        /**
+        * Will return the first control with the given name
+        * @param name defines the name to search for
+        * @return the first control found or null
+        */
+        getControlByName(name: string): BABYLON.Nullable<Control>;
+        private _getControlByKey;
         /**
         * Gets or sets the current focused control
         */

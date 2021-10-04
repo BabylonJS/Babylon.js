@@ -4,7 +4,7 @@ import { Nullable } from "../../../types";
 import { Engine } from "../../../Engines/engine";
 import { InternalTexture } from "../../../Materials/Textures/internalTexture";
 import { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
-import { StringTools } from '../../../Misc/stringTools';
+import { EndsWith } from '../../../Misc/stringTools';
 import { Logger } from '../../../Misc/logger';
 
 /**
@@ -25,7 +25,7 @@ export class _KTXTextureLoader implements IInternalTextureLoader {
      */
     public canLoad(extension: string, mimeType?: string): boolean {
         // The ".ktx2" file extension is still up for debate: https://github.com/KhronosGroup/KTX-Specification/issues/18
-        return StringTools.EndsWith(extension, ".ktx") || StringTools.EndsWith(extension, ".ktx2") || mimeType === "image/ktx" || mimeType === "image/ktx2";
+        return EndsWith(extension, ".ktx") || EndsWith(extension, ".ktx2") || mimeType === "image/ktx" || mimeType === "image/ktx2";
     }
 
     /**

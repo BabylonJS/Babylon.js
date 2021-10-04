@@ -4,7 +4,7 @@ import { PostProcess, PostProcessOptions } from "./postProcess";
 import { Engine } from "../Engines/engine";
 
 import "../Shaders/displayPass.fragment";
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 import { SerializationHelper } from '../Misc/decorators';
 
 declare type Scene = import("../scene").Scene;
@@ -46,4 +46,4 @@ export class DisplayPassPostProcess extends PostProcess {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.DisplayPassPostProcess"] = DisplayPassPostProcess;
+RegisterClass("BABYLON.DisplayPassPostProcess", DisplayPassPostProcess);

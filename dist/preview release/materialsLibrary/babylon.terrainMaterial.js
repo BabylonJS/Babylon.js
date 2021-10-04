@@ -939,7 +939,7 @@ var TerrainMaterial = /** @class */ (function (_super) {
     return TerrainMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.TerrainMaterial"] = TerrainMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.TerrainMaterial", TerrainMaterial);
 
 
 /***/ }),

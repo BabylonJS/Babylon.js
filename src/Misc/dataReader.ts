@@ -1,4 +1,4 @@
-import { StringTools } from './stringTools';
+import { Decode } from './stringTools';
 
 /**
  * Interface for a data buffer
@@ -84,7 +84,7 @@ export class DataReader {
      * @returns The string read
      */
     public readString(byteLength: number): string {
-        return StringTools.Decode(this.readUint8Array(byteLength));
+        return Decode(this.readUint8Array(byteLength));
     }
 
     /**
