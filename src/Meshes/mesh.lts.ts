@@ -533,6 +533,7 @@ declare module "./mesh" {
          * Extends a mesh to a Goldberg mesh
          * Warning  the mesh to convert MUST be an import of a perviously exported Goldberg mesh
          * @param mesh the mesh to convert
+         * @returns the extended mesh
          * @deprecated Please use ExtendMeshToGoldberg instead
          */
         function ExtendToGoldberg(mesh: Mesh): Mesh;
