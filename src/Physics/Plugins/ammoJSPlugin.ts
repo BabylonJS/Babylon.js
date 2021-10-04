@@ -574,11 +574,11 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
 
             let localMatrix;
 
-            if (topLevelObject && topLevelObject != object) {
+            if (topLevelObject && topLevelObject !== object) {
                 // top level matrix used for shape transform doesn't take scale into account.
                 // Moreover, every children vertex position must be in that space.
                 // So, each vertex position here is transform by (mesh world matrix * toplevelMatrix -1)
-                var topLevelQuaternion;
+                let topLevelQuaternion;
                 if (topLevelObject.rotationQuaternion) {
                     topLevelQuaternion = topLevelObject.rotationQuaternion;
                 } else if (topLevelObject.rotation) {
