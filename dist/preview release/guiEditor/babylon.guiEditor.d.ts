@@ -19,7 +19,7 @@ declare module GUIEDITOR {
 }
 declare module GUIEDITOR {
     export class Tools {
-        static LookForItem(item: any, selectedEntity: any): boolean;
+        static LookForItem(item: any, selectedEntity: any, firstIteration?: boolean): boolean;
         private static _RecursiveRemoveHiddenMeshesAndHoistChildren;
         static SortAndFilter(parent: any, items: any[]): any[];
         static getCellInfo(grid: Grid, control: Control): BABYLON.Vector2;
@@ -61,11 +61,14 @@ declare module GUIEDITOR {
         private _selectAll;
         private _camera;
         private _cameraRadias;
+        private _cameraMaxRadiasFactor;
+        private _pasted;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
         constructor(props: IWorkbenchComponentProps);
         keyEvent: (evt: KeyboardEvent) => void;
+        private setCameraRadius;
         private copyToClipboard;
         private pasteFromClipboard;
         CopyGUIControl(original: Control): void;
@@ -789,15 +792,12 @@ declare module GUIEDITOR {
     }
     interface IPropertyTabComponentState {
         currentNode: BABYLON.Nullable<Control>;
-        textureSize: BABYLON.Vector2;
     }
     export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
         private _onBuiltObserver;
         private _timerIntervalId;
         private _lockObject;
         private _sizeOption;
-        private _sizeOptions;
-        private _sizeValues;
         constructor(props: IPropertyTabComponentProps);
         componentDidMount(): void;
         componentWillUnmount(): void;
@@ -809,7 +809,7 @@ declare module GUIEDITOR {
         loadFromSnippet(): void;
         renderProperties(): JSX.Element | null;
         renderControlIcon(): string;
-        render(): JSX.Element;
+        render(): JSX.Element | null;
     }
 }
 declare module GUIEDITOR {
@@ -897,7 +897,6 @@ declare module GUIEDITOR {
         filter: BABYLON.Nullable<string>;
     }
     export class TreeItemSelectableComponent extends React.Component<ITreeItemSelectableComponentProps, {
-        isExpanded: boolean;
         isSelected: boolean;
         isHovered: boolean;
         dragOverLocation: DragOverLocation;
@@ -909,13 +908,12 @@ declare module GUIEDITOR {
         constructor(props: ITreeItemSelectableComponentProps);
         switchExpandedState(): void;
         shouldComponentUpdate(nextProps: ITreeItemSelectableComponentProps, nextState: {
-            isExpanded: boolean;
             isSelected: boolean;
         }): boolean;
         scrollIntoView(): void;
         componentWillUnmount(): void;
         onSelect(): void;
-        renderChildren(): (JSX.Element | null)[] | null;
+        renderChildren(isExpanded: boolean): (JSX.Element | null)[] | null;
         render(): JSX.Element | null;
         dragOver(event: React.DragEvent<HTMLDivElement>): void;
         drop(): void;

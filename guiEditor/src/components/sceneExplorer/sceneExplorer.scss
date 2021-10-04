@@ -199,6 +199,10 @@
         cursor: pointer;
     }
 
+    .addComponent {
+        display: none;
+    }
+
     .makeChild{
        grid-column: 3;
     }
