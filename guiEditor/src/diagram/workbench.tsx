@@ -133,6 +133,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this._forceMoving = !this._forceMoving;
             this._forcePanning = false;
             this._forceZooming = false;
+            this._forceSelecting = false;
             this.updateHitTest(this.globalState.guiTexture.getChildren()[0], this._forceSelecting);
             if (!this._forceSelecting) {
                 this.updateHitTestForSelection(true);
@@ -144,6 +145,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this._forceSelecting = !this._forceSelecting;
             this._forcePanning = false;
             this._forceZooming = false;
+            this._forceMoving = false;
             this._canvas.style.cursor = "default"
             this.updateHitTest(this.globalState.guiTexture.getChildren()[0], this._forceSelecting);
             if (this._forceMoving) {
@@ -271,7 +273,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             control.isHitTestVisible = value;
         });
     }
-    
+
     private setCameraRadius() {
         const size = this.props.globalState.guiTexture.getSize();
         this._cameraRadias = size.width > size.height ? size.width : size.height;
@@ -364,7 +366,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     loadToEditor() {
         const size = this.globalState.guiTexture.getSize();
-        this.resizeGuiTexture(new Vector2(size.width,size.height));
+        this.resizeGuiTexture(new Vector2(size.width, size.height));
         var children = this.globalState.guiTexture.getChildren();
         children[0].children.forEach(guiElement => {
             if (guiElement.name === "Art-Board-Background" && guiElement.typeName === "Rectangle") {
@@ -448,6 +450,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         guiControl.onPointerEnterObservable.add((evt) => {
             this._isOverGUINode = true;
+            console.log("In:" + guiControl);
         });
 
         guiControl.onPointerOutObservable.add((evt) => {
@@ -460,6 +463,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             });
         }
         guiControl.isReadOnly = true;
+        guiControl.isHitTestVisible = true;
         return guiControl;
     }
 
@@ -707,7 +711,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.globalState.guiTexture.addControl(this.artBoardBackground);
         this.setCameraRadius();
         this._camera = new ArcRotateCamera("Camera", -Math.PI / 2, 0, this._cameraRadias, Vector3.Zero(), this._scene);
-        this._camera.maxZ =  this._cameraMaxRadiasFactor * 2;
+        this._camera.maxZ = this._cameraMaxRadiasFactor * 2;
         this.addControls(this._scene, this._camera);
 
         this._scene.getEngine().onCanvasPointerOutObservable.clear();
@@ -759,8 +763,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         };
 
         const zoomFnMouse = (p: PointerInfo, e: EventState) => {
-            const newPos = this.getPosition(scene, camera, plane);
-            const deltaVector = initialPos.subtract(newPos);
+            //const newPos = this.getPosition(scene, camera, plane);
             this.zooming(this._altKeyIsPressed ? -10 : 10, scene, camera, plane, inertialPanning);
         };
 
@@ -797,6 +800,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             switch (k.event.key) {
                 case "q": //select
                 case "Q":
+                    if (!this._forceSelecting)
                         this.globalState.onSelectionButtonObservable.notifyObservers();
                     break;
                 case "e": //pan
@@ -815,6 +819,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                     break;
                 case "w": //outlines
                 case "W":
+                    if (!this._forceMoving)
                         this.globalState.onMoveObservable.notifyObservers();
                     break;
                 case "0": //fit to window
