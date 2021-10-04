@@ -57,8 +57,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _constraintDirection = ConstraintDirection.NONE;
     private _forcePanning = false;
     private _forceZooming = false;
-    private _forceMoving = true;
-    private _forceSelecting = false;
+    private _forceMoving = false;
+    private _forceSelecting = true;
     private _outlines = false;
     private _panning: boolean;
     private _canvas: HTMLCanvasElement;
@@ -259,7 +259,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     };
 
     private updateHitTest(guiControl: Control, value: boolean) {
-        guiControl.isHitTestVisible = value;
+        guiControl.isHitTestVisible = true;
         if (this.props.globalState.workbench.isContainer(guiControl)) {
             (guiControl as Container).children.forEach(child => {
                 this.updateHitTest(child, value);
@@ -270,7 +270,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private updateHitTestForSelection(value: boolean) {
         if (this._forceSelecting && !value) return;
         this.selectedGuiNodes.forEach((control) => {
-            control.isHitTestVisible = value;
+            control.isHitTestVisible = true;
         });
     }
 
