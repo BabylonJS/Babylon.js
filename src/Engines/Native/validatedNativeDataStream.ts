@@ -1,8 +1,17 @@
+import { NativeEngine } from "../nativeEngine";
 import { NativeDataStream, NativeData } from "./nativeDataStream";
 
 declare var _native: any;
 
-export class ValidatedNativeDataStream extends NativeDataStream {
+NativeEngine._createNativeDataStream = function () {
+    if (_native.NativeDataStream.VALIDATION_ENABLED) {
+        return new ValidatedNativeDataStream();
+    } else {
+        return new NativeDataStream();
+    }
+};
+
+class ValidatedNativeDataStream extends NativeDataStream {
     constructor () {
         super();
     }
