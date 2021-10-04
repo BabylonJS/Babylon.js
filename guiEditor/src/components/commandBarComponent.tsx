@@ -25,8 +25,8 @@ interface ICommandBarComponentProps {
 export class CommandBarComponent extends React.Component<ICommandBarComponentProps> {
     private _panning: boolean = false;
     private _zooming: boolean = false;
-    private _selecting: boolean = false;
-    private _moving: boolean = true;
+    private _selecting: boolean = true;
+    private _moving: boolean = false;
     private _outlines: boolean;
     public constructor(props: ICommandBarComponentProps) {
         super(props);
