@@ -38,7 +38,7 @@ declare module "./mesh" {
          * @returns a new Mesh
          * @deprecated Please use MeshBuilder instead
          */
-        let CreateRibbon: (
+        function CreateRibbon(
             name: string,
             pathArray: Vector3[][],
             closeArray: boolean,
@@ -48,7 +48,7 @@ declare module "./mesh" {
             updatable?: boolean,
             sideOrientation?: number,
             instance?: Mesh
-        ) => Mesh;
+        ): Mesh;
 
         /**
          * Creates a plane polygonal mesh.  By default, this is a disc.
@@ -61,7 +61,7 @@ declare module "./mesh" {
          * @returns a new Mesh
          * @deprecated Please use MeshBuilder instead
          */
-        let CreateDisc: (name: string, radius: number, tessellation: number, scene: Nullable<Scene>, updatable?: boolean, sideOrientation?: number) => Mesh;
+        function CreateDisc(name: string, radius: number, tessellation: number, scene: Nullable<Scene>, updatable?: boolean, sideOrientation?: number): Mesh;
 
         /**
          * Creates a box mesh.
@@ -73,7 +73,7 @@ declare module "./mesh" {
          * @returns a new Mesh
          * @deprecated Please use MeshBuilder instead
          */
-        let CreateBox: (name: string, size: number, scene: Nullable<Scene>, updatable?: boolean, sideOrientation?: number) => Mesh;
+        function CreateBox(name: string, size: number, scene: Nullable<Scene>, updatable?: boolean, sideOrientation?: number): Mesh;
 
         /**
          * Creates a sphere mesh.
@@ -86,7 +86,7 @@ declare module "./mesh" {
          * @returns a new Mesh
          * @deprecated Please use MeshBuilder instead
          */
-        let CreateSphere: (name: string, segments: number, diameter: number, scene?: Scene, updatable?: boolean, sideOrientation?: number) => Mesh;
+        function CreateSphere(name: string, segments: number, diameter: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
 
         /**
          * Creates a hemisphere mesh.
@@ -97,7 +97,7 @@ declare module "./mesh" {
          * @returns a new Mesh
          * @deprecated Please use MeshBuilder instead
          */
-        let CreateHemisphere: (name: string, segments: number, diameter: number, scene?: Scene) => Mesh;
+        function CreateHemisphere(name: string, segments: number, diameter: number, scene?: Scene): Mesh;
 
         /**
          * Creates a cylinder or a cone mesh.
@@ -113,7 +113,7 @@ declare module "./mesh" {
          * @returns a new Mesh
          * @deprecated Please use MeshBuilder instead
          */
-        let CreateCylinder: (
+        function CreateCylinder(
             name: string,
             height: number,
             diameterTop: number,
@@ -123,7 +123,7 @@ declare module "./mesh" {
             scene?: Scene,
             updatable?: any,
             sideOrientation?: number
-        ) => Mesh;
+        ): Mesh;
 
         // Torus  (Code from SharpDX.org)
         /**
@@ -138,7 +138,7 @@ declare module "./mesh" {
          * @returns a new Mesh
          * @deprecated Please use MeshBuilder instead
          */
-        let CreateTorus: (name: string, diameter: number, thickness: number, tessellation: number, scene?: Scene, updatable?: boolean, sideOrientation?: number) => Mesh;
+        function CreateTorus(name: string, diameter: number, thickness: number, tessellation: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
 
         /**
          * Creates a torus knot mesh.
@@ -155,7 +155,7 @@ declare module "./mesh" {
          * @returns a new Mesh
          * @deprecated Please use MeshBuilder instead
          */
-        let CreateTorusKnot: (
+        function CreateTorusKnot(
             name: string,
             radius: number,
             tube: number,
@@ -166,7 +166,7 @@ declare module "./mesh" {
             scene?: Scene,
             updatable?: boolean,
             sideOrientation?: number
-        ) => Mesh;
+        ): Mesh;
 
         /**
          * Creates a line mesh..
@@ -178,7 +178,7 @@ declare module "./mesh" {
          * @returns a new Mesh
          * @deprecated Please use MeshBuilder instead
          */
-        let CreateLines: (name: string, points: Vector3[], scene: Nullable<Scene>, updatable: boolean, instance?: Nullable<LinesMesh>) => LinesMesh;
+        function CreateLines(name: string, points: Vector3[], scene: Nullable<Scene>, updatable: boolean, instance?: Nullable<LinesMesh>): LinesMesh;
 
         /**
          * Creates a dashed line mesh.
@@ -193,7 +193,7 @@ declare module "./mesh" {
          * @returns a new Mesh
          * @deprecated Please use MeshBuilder instead
          */
-        let CreateDashedLines: (
+        function CreateDashedLines(
             name: string,
             points: Vector3[],
             dashSize: number,
@@ -202,7 +202,7 @@ declare module "./mesh" {
             scene: Nullable<Scene>,
             updatable?: boolean,
             instance?: LinesMesh
-        ) => LinesMesh;
+        ): LinesMesh;
 
         /**
          * Creates a polygon mesh.Please consider using the same method from the MeshBuilder class instead
@@ -222,7 +222,7 @@ declare module "./mesh" {
          * @returns a new Mesh
          * @deprecated Please use MeshBuilder instead
          */
-        let CreatePolygon: (name: string, shape: Vector3[], scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number, earcutInjection?: any) => Mesh;
+        function CreatePolygon(name: string, shape: Vector3[], scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number, earcutInjection?: any): Mesh;
 
         /**
          * Creates an extruded polygon mesh, with depth in the Y direction..
@@ -238,7 +238,7 @@ declare module "./mesh" {
          * @returns a new Mesh
          * @deprecated Please use MeshBuilder instead
          */
-        let ExtrudePolygon: (
+        function ExtrudePolygon(
             name: string,
             shape: Vector3[],
             depth: number,
@@ -247,7 +247,7 @@ declare module "./mesh" {
             updatable?: boolean,
             sideOrientation?: number,
             earcutInjection?: any
-        ) => Mesh;
+        ): Mesh;
 
         /**
          * Creates an extruded shape mesh.
@@ -267,7 +267,7 @@ declare module "./mesh" {
          * @returns a new Mesh
          * @deprecated Please use MeshBuilder instead
          */
-        let ExtrudeShape: (
+        function ExtrudeShape(
             name: string,
             shape: Vector3[],
             path: Vector3[],
@@ -278,7 +278,7 @@ declare module "./mesh" {
             updatable?: boolean,
             sideOrientation?: number,
             instance?: Mesh
-        ) => Mesh;
+        ): Mesh;
 
         /**
          * Creates an custom extruded shape mesh.
@@ -301,7 +301,7 @@ declare module "./mesh" {
          * @returns a new Mesh
          * @deprecated Please use MeshBuilder instead
          */
-        let ExtrudeShapeCustom: (
+        function ExtrudeShapeCustom(
             name: string,
             shape: Vector3[],
             path: Vector3[],
@@ -314,7 +314,7 @@ declare module "./mesh" {
             updatable?: boolean,
             sideOrientation?: number,
             instance?: Mesh
-        ) => Mesh;
+        ): Mesh;
 
         /**
          * Creates lathe mesh.
@@ -329,7 +329,7 @@ declare module "./mesh" {
          * @returns a new Mesh
          * @deprecated Please use MeshBuilder instead
          */
-        let CreateLathe: (name: string, shape: Vector3[], radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number) => Mesh;
+        function CreateLathe(name: string, shape: Vector3[], radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
 
         /**
          * Creates a plane mesh.
@@ -341,7 +341,7 @@ declare module "./mesh" {
          * @returns a new Mesh
          * @deprecated Please use MeshBuilder instead
          */
-        let CreatePlane: (name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation?: number) => Mesh;
+        function CreatePlane(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
 
         /**
          * Creates a ground mesh.
@@ -354,7 +354,7 @@ declare module "./mesh" {
          * @returns a new Mesh
          * @deprecated Please use MeshBuilder instead
          */
-        let CreateGround: (name: string, width: number, height: number, subdivisions: number, scene?: Scene, updatable?: boolean) => Mesh;
+        function CreateGround(name: string, width: number, height: number, subdivisions: number, scene?: Scene, updatable?: boolean): Mesh;
 
         /**
          * Creates a tiled ground mesh.
@@ -370,7 +370,7 @@ declare module "./mesh" {
          * @returns a new Mesh
          * @deprecated Please use MeshBuilder instead
          */
-        let CreateTiledGround: (
+        function CreateTiledGround(
             name: string,
             xmin: number,
             zmin: number,
@@ -380,7 +380,7 @@ declare module "./mesh" {
             precision: { w: number; h: number },
             scene: Scene,
             updatable?: boolean
-        ) => Mesh;
+        ): Mesh;
 
         /**
          * Creates a ground mesh from a height map.
@@ -399,7 +399,7 @@ declare module "./mesh" {
          * @returns a new Mesh
          * @deprecated Please use MeshBuilder instead
          */
-        let CreateGroundFromHeightMap: (
+        function CreateGroundFromHeightMap(
             name: string,
             url: string,
             width: number,
@@ -411,7 +411,7 @@ declare module "./mesh" {
             updatable?: boolean,
             onReady?: (mesh: GroundMesh) => void,
             alphaFilter?: number
-        ) => GroundMesh;
+        ): GroundMesh;
 
         /**
          * Creates a tube mesh.
@@ -432,7 +432,7 @@ declare module "./mesh" {
          * @returns a new Mesh
          * @deprecated Please use MeshBuilder instead
          */
-        let CreateTube: (
+        function CreateTube(
             name: string,
             path: Vector3[],
             radius: number,
@@ -443,7 +443,7 @@ declare module "./mesh" {
             updatable?: boolean,
             sideOrientation?: number,
             instance?: Mesh
-        ) => Mesh;
+        ): Mesh;
 
         /**
          * Creates a polyhedron mesh.
@@ -465,7 +465,7 @@ declare module "./mesh" {
          * @returns a new Mesh
          * @deprecated Please use MeshBuilder instead
          */
-        let CreatePolyhedron: (
+        function CreatePolyhedron(
             name: string,
             options: {
                 type?: number;
@@ -480,7 +480,7 @@ declare module "./mesh" {
                 sideOrientation?: number;
             },
             scene: Scene
-        ) => Mesh;
+        ): Mesh;
 
         /**
          * Creates a sphere based upon an icosahedron with 20 triangular faces which can be subdivided
@@ -491,18 +491,18 @@ declare module "./mesh" {
          * * You can also set the mesh side orientation with the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
          * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
          * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+         * @see https://doc.babylonjs.com/how_to/polyhedra_shapes#icosphere
          * @param name defines the name of the mesh
          * @param options defines the options used to create the mesh
          * @param scene defines the hosting scene
          * @returns a new Mesh
-         * @see https://doc.babylonjs.com/how_to/polyhedra_shapes#icosphere
          * @deprecated Please use MeshBuilder instead
          */
-        let CreateIcoSphere: (
+        function CreateIcoSphere(
             name: string,
             options: { radius?: number; flat?: boolean; subdivisions?: number; sideOrientation?: number; updatable?: boolean },
             scene: Scene
-        ) => Mesh;
+        ): Mesh;
 
         /**
          * Creates a decal mesh.
@@ -517,7 +517,7 @@ declare module "./mesh" {
          * @returns a new Mesh
          * @deprecated Please use MeshBuilder instead
          */
-        let CreateDecal: (name: string, sourceMesh: AbstractMesh, position: Vector3, normal: Vector3, size: Vector3, angle: number) => Mesh;
+        function CreateDecal(name: string, sourceMesh: AbstractMesh, position: Vector3, normal: Vector3, size: Vector3, angle: number): Mesh;
 
         /** Creates a Capsule Mesh
          * @param name defines the name of the mesh.
@@ -527,7 +527,7 @@ declare module "./mesh" {
          * @see https://doc.babylonjs.com/how_to/capsule_shape
          * @deprecated Please use MeshBuilder instead
          */
-        let CreateCapsule: (name: string, options: ICreateCapsuleOptions, scene: Scene) => Mesh;
+        function CreateCapsule(name: string, options: ICreateCapsuleOptions, scene: Scene): Mesh;
 
         /**
          * Extends a mesh to a Goldberg mesh
@@ -535,7 +535,7 @@ declare module "./mesh" {
          * @param mesh the mesh to convert
          * @deprecated Please use ExtendMeshToGoldberg instead
          */
-        let ExtendToGoldberg: (mesh: Mesh) => Mesh;
+        function ExtendToGoldberg(mesh: Mesh): Mesh;
     }
 }
 
