@@ -457,6 +457,10 @@ export class ThinEngine {
     protected _boundTexturesCache: { [key: string]: Nullable<InternalTexture> } = {};
     protected _currentEffect: Nullable<Effect>;
     /** @hidden */
+    public _currentDrawContext: IDrawContext;
+    /** @hidden */
+    public _currentMaterialContext: IMaterialContext;
+    /** @hidden */
     protected _currentProgram: Nullable<WebGLProgram>;
     protected _compiledEffects: { [key: string]: Effect } = {};
     private _vertexAttribArraysEnabled: boolean[] = [];
