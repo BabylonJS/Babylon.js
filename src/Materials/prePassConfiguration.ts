@@ -29,6 +29,8 @@ export class PrePassConfiguration {
      */
     public previousBones: { [index: number]: Float32Array } = {};
 
+    private _lastUpdateFrameId: number;
+
     /**
      * Add the required uniforms to the current list.
      * @param uniforms defines the current uniform list.
@@ -57,7 +59,7 @@ export class PrePassConfiguration {
         if (scene.prePassRenderer && scene.prePassRenderer.enabled && scene.prePassRenderer.currentRTisSceneRT) {
             if (scene.prePassRenderer.getIndex(Constants.PREPASS_VELOCITY_TEXTURE_TYPE) !== -1) {
                 if (!this.previousWorldMatrices[mesh.uniqueId]) {
-                    this.previousWorldMatrices[mesh.uniqueId] = Matrix.Identity();
+                    this.previousWorldMatrices[mesh.uniqueId] = world.clone();
                 }
 
                 if (!this.previousViewProjection) {
@@ -69,6 +71,10 @@ export class PrePassConfiguration {
                     // First update of the prepass configuration for this rendering pass
                     this.previousViewProjection.copyFrom(this.currentViewProjection);
                     this.currentViewProjection.copyFrom(scene.getTransformMatrix());
+                } else if (this._lastUpdateFrameId !== engine.frameId) {
+                    // The scene transformation did not change from the previous frame (so no camera motion), we must update previousViewProjection accordingly
+                    this._lastUpdateFrameId = engine.frameId;
+                    this.previousViewProjection.copyFrom(this.currentViewProjection);
                 }
 
                 effect.setMatrix("previousWorld", this.previousWorldMatrices[mesh.uniqueId]);
