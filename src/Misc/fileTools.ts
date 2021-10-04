@@ -593,6 +593,7 @@ const initSideEffects = () => {
 /**
  * Backwards compatibility.
  * @hidden
+ * @deprecated
  */
 export const FileTools = {
     DecodeBase64UrlToBinary,
@@ -609,5 +610,41 @@ export const FileTools = {
     RequestFile,
     SetCorsBehavior,
 };
+
+Object.defineProperty(FileTools, "DefaultRetryStrategy", {
+    get: function (this: null) {
+        return FileToolsOptions.DefaultRetryStrategy;
+    },
+    set: function (this: null, value: (url: string, request: WebRequest, retryIndex: number) => number) {
+        FileToolsOptions.DefaultRetryStrategy = value;
+    }
+});
+
+Object.defineProperty(FileTools, "BaseUrl", {
+    get: function (this: null) {
+        return FileToolsOptions.BaseUrl;
+    },
+    set: function (this: null, value: string) {
+        FileToolsOptions.BaseUrl = value;
+    }
+});
+
+Object.defineProperty(FileTools, "PreprocessUrl", {
+    get: function (this: null) {
+        return FileToolsOptions.PreprocessUrl;
+    },
+    set: function (this: null, value: (url: string) => string) {
+        FileToolsOptions.PreprocessUrl = value;
+    }
+});
+
+Object.defineProperty(FileTools, "CorsBehavior", {
+    get: function (this: null) {
+        return FileToolsOptions.CorsBehavior;
+    },
+    set: function (this: null, value: string | ((url: string | string[]) => string)) {
+        FileToolsOptions.CorsBehavior = value;
+    }
+});
 
 initSideEffects();

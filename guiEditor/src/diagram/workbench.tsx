@@ -67,7 +67,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _clipboard: Control[] = [];
     private _selectAll: boolean = false;
     private _camera: ArcRotateCamera;
-    private _cameraRadias = 1500;
+    private _cameraRadias: number;
+    private _cameraMaxRadiasFactor = 16384; // 2^13
+    private _pasted: boolean;
     public get globalState() {
         return this.props.globalState;
     }
@@ -166,6 +168,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         });
 
         props.globalState.onFitToWindowObservable.add(() => {
+            this.setCameraRadius();
             for (let i = 0; i < 2; ++i) {
                 this._camera.alpha = -Math.PI / 2;
                 this._camera.beta = 0;
@@ -221,7 +224,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         if (evt.key === "Delete") {
             if (!this.props.globalState.lockObject.lock) {
                 this._selectedGuiNodes.forEach(guiNode => {
-                    guiNode.dispose();
+                    if (guiNode !== this.globalState.guiTexture.getChildren()[0]) {
+                        guiNode.dispose();
+                    }
                 });
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
             }
@@ -240,10 +245,14 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             else if (evt.key === "c") {
                 this.copyToClipboard();
             }
-            else if (evt.key === "v") {
+            else if (evt.key === "v" && !this._pasted) {
                 this.globalState.onSelectionChangedObservable.notifyObservers(null);
                 this.pasteFromClipboard();
+                this._pasted = true;
             }
+        }
+        else if (!this._ctrlKeyIsPressed) {
+            this._pasted = false;
         }
     };
 
@@ -261,6 +270,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.selectedGuiNodes.forEach((control) => {
             control.isHitTestVisible = value;
         });
+    }
+    
+    private setCameraRadius() {
+        const size = this.props.globalState.guiTexture.getSize();
+        this._cameraRadias = size.width > size.height ? size.width : size.height;
+        this._cameraRadias += this._cameraRadias - (this._cameraRadias / 1.5);
     }
 
     private copyToClipboard() {
@@ -348,6 +363,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     loadToEditor() {
+        const size = this.globalState.guiTexture.getSize();
+        this.resizeGuiTexture(new Vector2(size.width,size.height));
         var children = this.globalState.guiTexture.getChildren();
         children[0].children.forEach(guiElement => {
             if (guiElement.name === "Art-Board-Background" && guiElement.typeName === "Rectangle") {
@@ -385,6 +402,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.globalState.guiTexture.scaleTo(newvalue.x, newvalue.y);
         this.globalState.guiTexture.markAsDirty();
         this.globalState.onResizeObservable.notifyObservers(newvalue);
+        this.globalState.onFitToWindowObservable.notifyObservers();
     }
 
     findNodeFromGuiElement(guiControl: Control) {
@@ -406,6 +424,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             case "Grid":
             case "ScrollViewer":
             case "Container":
+            case "VirtualKeyboard":
                 return true;
             default:
                 return false;
@@ -461,7 +480,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                         if (dropLocationControl.parent.typeName != "Grid") {
                             draggedControlParent.removeControl(draggedControl);
                             let index = dropLocationControl.parent.children.indexOf(dropLocationControl);
-                            const reversed = dropLocationControl.parent.typeName == "StackPanel";
+                            const reversed = dropLocationControl.parent.typeName === "StackPanel" || dropLocationControl.parent.typeName === "VirtualKeyboard";
 
                             index = this._adjustParentingIndex(index, reversed);  //adjusting index to be before or after based on where the control is over
 
@@ -670,7 +689,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._scene = new Scene(engine);
         const clearColor = 204 / 255.0;
         this._scene.clearColor = new Color4(clearColor, clearColor, clearColor, 1.0);
-        this._camera = new ArcRotateCamera("Camera", -Math.PI / 2, 0, this._cameraRadias, Vector3.Zero(), this._scene);
         const light = new HemisphericLight("light1", Axis.Y, this._scene);
         light.intensity = 0.9;
 
@@ -680,7 +698,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._textureMesh.scaling.z = textureSize;
         this.globalState.guiTexture = AdvancedDynamicTexture.CreateForMesh(this._textureMesh, textureSize, textureSize, true);
         this._textureMesh.showBoundingBox = true;
-
         this.artBoardBackground = new Rectangle("Art-Board-Background");
         this.artBoardBackground.width = "100%"
         this.artBoardBackground.height = "100%";
@@ -688,6 +705,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.artBoardBackground.thickness = 0;
 
         this.globalState.guiTexture.addControl(this.artBoardBackground);
+        this.setCameraRadius();
+        this._camera = new ArcRotateCamera("Camera", -Math.PI / 2, 0, this._cameraRadias, Vector3.Zero(), this._scene);
+        this._camera.maxZ =  this._cameraMaxRadiasFactor * 2;
         this.addControls(this._scene, this._camera);
 
         this._scene.getEngine().onCanvasPointerOutObservable.clear();
@@ -707,7 +727,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     addControls(scene: Scene, camera: ArcRotateCamera) {
         camera.inertia = 0.7;
         camera.lowerRadiusLimit = 10;
-        camera.upperRadiusLimit = 2500;
+        camera.upperRadiusLimit = this._cameraMaxRadiasFactor;
         camera.upperBetaLimit = Math.PI / 2 - 0.1;
         camera.angularSensibilityX = camera.angularSensibilityY = 500;
 
