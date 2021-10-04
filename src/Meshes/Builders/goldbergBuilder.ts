@@ -145,11 +145,21 @@ export class GoldbergBuilder {
 }
 
 /**
+ * Standard Generic type to extend a class
+ */
+type MeshExtendToGoldberg<T = {}> = new (...args: any[]) => T;
+
+/**
+ * Restrict the type to extending a Mesh
+ */
+type isMesh = MeshExtendToGoldberg<Mesh>;
+
+/**
  * Mixin to extend the Mesh class to a Goldberg class
  * When applied to extend a mesh tthe mesh must be an import of a previously exported Goldberg mesh
  */
-function GoldbergCreate() {
-    return class Goldberg extends Mesh {
+function GoldbergCreate<TBase extends isMesh>(Base: TBase) {
+    return class Goldberg extends Base {
         public faceColors: Color4[] = [];
         public faceCenters: Vector3[] = [];
         public faceZaxis: Vector3[] = [];
@@ -311,7 +321,7 @@ function GoldbergCreate() {
 /**
  * Function to use when extending the mesh class to a Goldberg class
  */
-const GoldbergMesh = GoldbergCreate();
+const GoldbergMesh = GoldbergCreate(Mesh);
 /**
  * Function to use when extending the mesh class to a Goldberg class
  */

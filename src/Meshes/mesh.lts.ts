@@ -5,7 +5,6 @@ import { Scene } from "../scene";
 import { Nullable } from "../types";
 import { AbstractMesh } from "./abstractMesh";
 import { ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
-import { ExtendMeshToGoldberg } from "./Builders/goldbergBuilder";
 import { Mesh } from "./mesh";
 
 declare type LinesMesh = import("./linesMesh").LinesMesh;
@@ -562,5 +561,5 @@ export const _injectLTS = () => {
     Mesh.CreateIcoSphere = Mesh.CreateIcoSphere || (() => { throw _WarnImport("MeshBuilder"); });
     Mesh.CreateDecal = Mesh.CreateDecal || (() => { throw _WarnImport("MeshBuilder"); });
     Mesh.CreateCapsule = Mesh.CreateCapsule || (() => { throw _WarnImport("MeshBuilder"); });
-    Mesh.ExtendToGoldberg = Mesh.ExtendToGoldberg || ExtendMeshToGoldberg;
+    Mesh.ExtendToGoldberg = Mesh.ExtendToGoldberg || (() => { throw _WarnImport("MeshBuilder"); });
 };
