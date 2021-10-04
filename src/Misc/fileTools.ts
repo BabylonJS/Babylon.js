@@ -590,24 +590,7 @@ const initSideEffects = () => {
     ShaderProcessor._FileToolsLoadFile = LoadFile;
 };
 
-/**
- * Backwards compatibility.
- * @hidden
- */
-export const FileTools = {
-    DecodeBase64UrlToBinary,
-    DecodeBase64UrlToString,
-    DefaultRetryStrategy: FileToolsOptions.DefaultRetryStrategy,
-    BaseUrl: FileToolsOptions.BaseUrl,
-    CorsBehavior: FileToolsOptions.CorsBehavior,
-    PreprocessUrl: FileToolsOptions.PreprocessUrl,
-    IsBase64DataUrl,
-    IsFileURL,
-    LoadFile,
-    LoadImage,
-    ReadFile,
-    RequestFile,
-    SetCorsBehavior,
-};
-
 initSideEffects();
+
+import { _injectLTS } from './fileTools.lts';
+_injectLTS();

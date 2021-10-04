@@ -6,7 +6,7 @@ import { Nullable } from "../../types";
 import { Tools } from '../../Misc/tools';
 import "../../Engines/Extensions/engine.rawTexture";
 import { Constants } from '../../Engines/constants';
-import { FileTools } from '../../Misc/fileTools';
+import { LoadImage } from '../../Misc/fileTools';
 
 /**
  * This represents a texture coming from an equirectangular image supported by the web browser canvas.
@@ -94,7 +94,7 @@ export class EquiRectangularCubeTexture extends BaseTexture {
      */
     private loadImage(loadTextureCallback: () => void, onError: Nullable<(message?: string, exception?: any) => void>): void {
         const canvas = document.createElement('canvas');
-        FileTools.LoadImage(this.url, (image) => {
+        LoadImage(this.url, (image) => {
             this._width = image.width;
             this._height = image.height;
             canvas.width = this._width;
