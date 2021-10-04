@@ -25,8 +25,8 @@ import { Skeleton } from "../Bones/skeleton";
 import { Constants } from "../Engines/constants";
 import { SerializationHelper } from "../Misc/decorators";
 import { Logger } from "../Misc/logger";
-import { _TypeStore } from "../Misc/typeStore";
-import { _DevTools } from "../Misc/devTools";
+import { GetClass, RegisterClass } from "../Misc/typeStore";
+import { _WarnImport } from "../Misc/devTools";
 import { SceneComponentConstants } from "../sceneComponent";
 import { MeshLODLevel } from "./meshLODLevel";
 import { Path3D } from "../Maths/math.path";
@@ -3294,12 +3294,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     // Instances
     /** @hidden */
     public static _instancedMeshFactory(name: string, mesh: Mesh): InstancedMesh {
-        throw _DevTools.WarnImport("InstancedMesh");
+        throw _WarnImport("InstancedMesh");
     }
 
     /** @hidden */
     public static _PhysicsImpostorParser(scene: Scene, physicObject: IPhysicsEnabledObject, jsonObject: any): PhysicsImpostor {
-        throw _DevTools.WarnImport("PhysicsImpostor");
+        throw _WarnImport("PhysicsImpostor");
     }
 
     /**
@@ -3658,12 +3658,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     // Statics
     /** @hidden */
     public static _GroundMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
-        throw _DevTools.WarnImport("GroundMesh");
+        throw _WarnImport("GroundMesh");
     };
 
     /** @hidden */
     public static _LinesMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
-        throw _DevTools.WarnImport("LinesMesh");
+        throw _WarnImport("LinesMesh");
     };
 
     /**
@@ -3856,7 +3856,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (parsedMesh.animations) {
             for (var animationIndex = 0; animationIndex < parsedMesh.animations.length; animationIndex++) {
                 var parsedAnimation = parsedMesh.animations[animationIndex];
-                const internalClass = _TypeStore.GetClass("BABYLON.Animation");
+                const internalClass = GetClass("BABYLON.Animation");
                 if (internalClass) {
                     mesh.animations.push(internalClass.Parse(parsedAnimation));
                 }
@@ -3962,7 +3962,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 if (parsedInstance.animations) {
                     for (animationIndex = 0; animationIndex < parsedInstance.animations.length; animationIndex++) {
                         parsedAnimation = parsedInstance.animations[animationIndex];
-                        const internalClass = _TypeStore.GetClass("BABYLON.Animation");
+                        const internalClass = GetClass("BABYLON.Animation");
                         if (internalClass) {
                             instance.animations.push(internalClass.Parse(parsedAnimation));
                         }
@@ -4010,13 +4010,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         return mesh;
     }
 
-    /**
-     * Extends a mesh to a Goldberg mesh
-     * @param mesh the mesh to convert
-     * Warning  the mesh to convert MUST be an import of a peviously exported Goldberg mesh
-     */
-    public static ExtendToGoldberg(mesh: Mesh) {
-    }
     // Skeletons
 
     /**
@@ -4419,7 +4412,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.Mesh"] = Mesh;
+RegisterClass("BABYLON.Mesh", Mesh);
 
 // LTS
 import { _injectLTS } from "./mesh.lts";

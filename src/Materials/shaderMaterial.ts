@@ -11,7 +11,7 @@ import { Texture } from "../Materials/Textures/texture";
 import { MaterialHelper } from "./materialHelper";
 import { Effect, IEffectCreationOptions } from "./effect";
 import { Material } from "./material";
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 import { Color3, Color4 } from '../Maths/math.color';
 import { EffectFallbacks } from './effectFallbacks';
 import { WebRequest } from '../Misc/webRequest';
@@ -1650,4 +1650,4 @@ export class ShaderMaterial extends Material {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.ShaderMaterial"] = ShaderMaterial;
+RegisterClass("BABYLON.ShaderMaterial", ShaderMaterial);

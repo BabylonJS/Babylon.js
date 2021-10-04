@@ -6,7 +6,6 @@ import { LogComponent } from "./components/log/logComponent";
 import { DataStorage } from "babylonjs/Misc/dataStorage";
 import { GUINodeTools } from "./guiNodeTools";
 import { WorkbenchComponent } from "./diagram/workbench";
-import { _TypeStore } from "babylonjs/Misc/typeStore";
 import { MessageDialogComponent } from "./sharedComponents/messageDialog";
 import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorerComponent";
 
@@ -367,12 +366,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                 label: "TextButton",
                 icon: buttonIcon,
                 onClick: () => { this.onCreate("TextButton") }
-            },
-
-            {
-                label: "ImageButton",
-                icon: buttonIcon,
-                onClick: () => { this.onCreate("ImageButton") }
             },
             {
                 label: "Checkbox",
