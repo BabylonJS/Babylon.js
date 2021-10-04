@@ -35,7 +35,6 @@ export * from "./PostProcesses/index";
 export * from "./Probes/index";
 export * from "./Rendering/index";
 export * from "./scene";
-export * from "./scene.lts";
 export * from "./sceneComponent";
 export * from "./Sprites/index";
 export * from "./States/index";

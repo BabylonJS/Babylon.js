@@ -1,4 +1,4 @@
-import { Scene } from "./scene";
+
 import { Camera } from "./Cameras/camera";
 import { Nullable } from "./types";
 import { Material } from "./Materials/material";
@@ -11,6 +11,7 @@ import { Node } from "./node";
 import { Skeleton } from "./Bones/skeleton";
 import { IParticleSystem } from "./Particles/IParticleSystem";
 import { Geometry } from "./Meshes/geometry";
+import { Scene } from "./scene";
 
 declare module './scene' {
     interface Scene {
@@ -165,86 +166,88 @@ declare module './scene' {
     }
 }
 
-Scene.prototype.setActiveCameraByID = function (id: string): Nullable<Camera> {
-    return this.setActiveCameraById(id);
-};
+export const _injectLTS = () => {
+    Scene.prototype.setActiveCameraByID = function (id: string): Nullable<Camera> {
+        return this.setActiveCameraById(id);
+    };
 
-Scene.prototype.getLastMaterialByID = function (id: string): Nullable<Material> {
-    return this.getLastMaterialById(id);
-};
+    Scene.prototype.getLastMaterialByID = function (id: string): Nullable<Material> {
+        return this.getLastMaterialById(id);
+    };
 
-Scene.prototype.getMaterialByID = function (id: string): Nullable<Material> {
-    return this.getMaterialById(id);
-};
+    Scene.prototype.getMaterialByID = function (id: string): Nullable<Material> {
+        return this.getMaterialById(id);
+    };
 
-Scene.prototype.getTextureByUniqueID = function (uniqueId: number): Nullable<BaseTexture> {
-    return this.getTextureByUniqueId(uniqueId);
-};
+    Scene.prototype.getTextureByUniqueID = function (uniqueId: number): Nullable<BaseTexture> {
+        return this.getTextureByUniqueId(uniqueId);
+    };
 
-Scene.prototype.getCameraByID = function (id: string): Nullable<Camera> {
-    return this.getCameraById(id);
-};
+    Scene.prototype.getCameraByID = function (id: string): Nullable<Camera> {
+        return this.getCameraById(id);
+    };
 
-Scene.prototype.getCameraByUniqueID = function (uniqueId: number): Nullable<Camera> {
-    return this.getCameraByUniqueId(uniqueId);
-};
+    Scene.prototype.getCameraByUniqueID = function (uniqueId: number): Nullable<Camera> {
+        return this.getCameraByUniqueId(uniqueId);
+    };
 
-Scene.prototype.getBoneByID = function (id: string): Nullable<Bone> {
-    return this.getBoneById(id);
-};
+    Scene.prototype.getBoneByID = function (id: string): Nullable<Bone> {
+        return this.getBoneById(id);
+    };
 
-Scene.prototype.getLightByID = function (id: string): Nullable<Light> {
-    return this.getLightById(id);
-};
+    Scene.prototype.getLightByID = function (id: string): Nullable<Light> {
+        return this.getLightById(id);
+    };
 
-Scene.prototype.getLightByUniqueID = function (uniqueId: number): Nullable<Light> {
-    return this.getLightByUniqueId(uniqueId);
-};
+    Scene.prototype.getLightByUniqueID = function (uniqueId: number): Nullable<Light> {
+        return this.getLightByUniqueId(uniqueId);
+    };
 
-Scene.prototype.getParticleSystemByID = function (id: string): Nullable<IParticleSystem> {
-    return this.getParticleSystemById(id);
-};
+    Scene.prototype.getParticleSystemByID = function (id: string): Nullable<IParticleSystem> {
+        return this.getParticleSystemById(id);
+    };
 
-Scene.prototype.getGeometryByID = function (id: string): Nullable<Geometry> {
-    return this.getGeometryById(id);
-};
+    Scene.prototype.getGeometryByID = function (id: string): Nullable<Geometry> {
+        return this.getGeometryById(id);
+    };
 
-Scene.prototype.getMeshByID = function (id: string): Nullable<AbstractMesh> {
-    return this.getMeshById(id);
-};
+    Scene.prototype.getMeshByID = function (id: string): Nullable<AbstractMesh> {
+        return this.getMeshById(id);
+    };
 
-Scene.prototype.getMeshesByID = function (id: string): Array<AbstractMesh> {
-    return this.getMeshesById(id);
-};
+    Scene.prototype.getMeshesByID = function (id: string): Array<AbstractMesh> {
+        return this.getMeshesById(id);
+    };
 
-Scene.prototype.getTransformNodeByID = function (id: string): Nullable<TransformNode> {
-    return this.getTransformNodeById(id);
-};
+    Scene.prototype.getTransformNodeByID = function (id: string): Nullable<TransformNode> {
+        return this.getTransformNodeById(id);
+    };
 
-Scene.prototype.getTransformNodeByUniqueID = function (uniqueId: number): Nullable<TransformNode> {
-    return this.getTransformNodeByUniqueId(uniqueId);
-};
+    Scene.prototype.getTransformNodeByUniqueID = function (uniqueId: number): Nullable<TransformNode> {
+        return this.getTransformNodeByUniqueId(uniqueId);
+    };
 
-Scene.prototype.getTransformNodesByID = function (id: string): Array<TransformNode> {
-    return this.getTransformNodesById(id);
-};
+    Scene.prototype.getTransformNodesByID = function (id: string): Array<TransformNode> {
+        return this.getTransformNodesById(id);
+    };
 
-Scene.prototype.getMeshByUniqueID = function (uniqueId: number): Nullable<AbstractMesh> {
-    return this.getMeshByUniqueId(uniqueId);
-};
+    Scene.prototype.getMeshByUniqueID = function (uniqueId: number): Nullable<AbstractMesh> {
+        return this.getMeshByUniqueId(uniqueId);
+    };
 
-Scene.prototype.getLastMeshByID = function (id: string): Nullable<AbstractMesh> {
-    return this.getLastMeshById(id);
-};
+    Scene.prototype.getLastMeshByID = function (id: string): Nullable<AbstractMesh> {
+        return this.getLastMeshById(id);
+    };
 
-Scene.prototype.getLastEntryByID = function (id: string): Nullable<Node> {
-    return this.getLastEntryById(id);
-};
+    Scene.prototype.getLastEntryByID = function (id: string): Nullable<Node> {
+        return this.getLastEntryById(id);
+    };
 
-Scene.prototype.getNodeByID = function (id: string): Nullable<Node> {
-    return this.getNodeById(id);
-};
+    Scene.prototype.getNodeByID = function (id: string): Nullable<Node> {
+        return this.getNodeById(id);
+    };
 
-Scene.prototype.getLastSkeletonByID = function (id: string): Nullable<Skeleton> {
-    return this.getLastSkeletonById(id);
+    Scene.prototype.getLastSkeletonByID = function (id: string): Nullable<Skeleton> {
+        return this.getLastSkeletonById(id);
+    };
 };

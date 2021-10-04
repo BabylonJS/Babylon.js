@@ -7,7 +7,6 @@ export * from "./trailMesh";
 export * from "./instancedMesh";
 export * from "./linesMesh";
 export * from "./mesh";
-export * from "./mesh.lts";
 export * from "./mesh.vertexData";
 export * from "./meshBuilder";
 export * from "./meshSimplification";

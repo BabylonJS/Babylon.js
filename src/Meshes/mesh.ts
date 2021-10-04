@@ -34,10 +34,6 @@ import { Plane } from "../Maths/math.plane";
 import { TransformNode } from "./transformNode";
 import { DrawWrapper } from "../Materials/drawWrapper";
 
-// This is imported here with side effects.
-// This line should be removed from here and be added during the build process of the es6-lts-module
-import "./mesh.lts";
-
 declare type InstancedMesh = import("./instancedMesh").InstancedMesh;
 declare type IPhysicsEnabledObject = import("../Physics/physicsImpostor").IPhysicsEnabledObject;
 declare type PhysicsImpostor = import("../Physics/physicsImpostor").PhysicsImpostor;
@@ -4424,3 +4420,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 }
 
 _TypeStore.RegisteredTypes["BABYLON.Mesh"] = Mesh;
+
+// LTS
+import { _injectLTS } from "./mesh.lts";
+_injectLTS();
