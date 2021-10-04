@@ -531,8 +531,8 @@ declare module "./mesh" {
 
         /**
          * Extends a mesh to a Goldberg mesh
-         * @param mesh the mesh to convert
          * Warning  the mesh to convert MUST be an import of a perviously exported Goldberg mesh
+         * @param mesh the mesh to convert
          * @deprecated Please use ExtendMeshToGoldberg instead
          */
         let ExtendToGoldberg: (mesh: Mesh) => Mesh;
