@@ -166,6 +166,7 @@ declare module './scene' {
     }
 }
 
+/** @hidden */
 export const _injectLTS = () => {
     Scene.prototype.setActiveCameraByID = function (id: string): Nullable<Camera> {
         return this.setActiveCameraById(id);
