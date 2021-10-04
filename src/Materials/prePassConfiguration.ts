@@ -71,6 +71,7 @@ export class PrePassConfiguration {
 
                 if (this.currentViewProjection.updateFlag !== scene.getTransformMatrix().updateFlag) {
                     // First update of the prepass configuration for this rendering pass
+                    this._lastUpdateFrameId = engine.frameId;
                     this.previousViewProjection.copyFrom(this.currentViewProjection);
                     this.currentViewProjection.copyFrom(scene.getTransformMatrix());
                 } else if (this._lastUpdateFrameId !== engine.frameId) {
