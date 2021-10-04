@@ -257,7 +257,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     private updateHitTestForSelection(value: boolean) {
-        if(this._forceSelecting && !value) return;
+        if (this._forceSelecting && !value) return;
         this.selectedGuiNodes.forEach((control) => {
             control.isHitTestVisible = value;
         });
@@ -421,7 +421,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         guiControl.onPointerDownObservable.add((evt) => {
             if (!this.isUp || evt.buttonIndex > 0) return;
-            if (this._forceSelecting) {
+            if (this._forceSelecting && !this._altKeyIsPressed) {
                 this.isSelected(true, guiControl);
                 this.isUp = false;
             }
@@ -429,7 +429,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         guiControl.onPointerEnterObservable.add((evt) => {
             this._isOverGUINode = true;
-            console.log("In:" + guiControl);
         });
 
         guiControl.onPointerOutObservable.add((evt) => {
@@ -439,7 +438,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         if (this.isContainer(guiControl)) {
             (guiControl as Container).children.forEach(child => {
-                this.createNewGuiNode(child);
             });
         }
         guiControl.isReadOnly = true;
@@ -640,7 +638,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._rootContainer.current?.setPointerCapture(evt.pointerId);
         console.log("Is Over Node: " + this._isOverGUINode)
         if (!this._isOverGUINode && !evt.button) {
-            if (this._forceSelecting) {
+            if (this._forceSelecting && !this._altKeyIsPressed) {
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
             }
             return;
@@ -743,7 +741,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         const zoomFnMouse = (p: PointerInfo, e: EventState) => {
             const newPos = this.getPosition(scene, camera, plane);
             const deltaVector = initialPos.subtract(newPos);
-            this.zooming(deltaVector.x > 0 ? -10 : 10, scene, camera, plane, inertialPanning);
+            this.zooming(this._altKeyIsPressed ? -10 : 10, scene, camera, plane, inertialPanning);
         };
 
         const removeObservers = () => {
@@ -754,7 +752,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         scene.onPointerObservable.add((p: PointerInfo, e: EventState) => {
             removeObservers();
             if (p.event.button !== 0 || this._forcePanning ||
-                this._altKeyIsPressed) {
+                (this._altKeyIsPressed && !this._forceZooming)) {
                 initialPos = this.getPosition(scene, camera, plane);
                 scene.onPointerObservable.add(panningFn, PointerEventTypes.POINTERMOVE);
                 this._panning = true;
@@ -779,22 +777,25 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             switch (k.event.key) {
                 case "q": //select
                 case "Q":
-                    if (!this._forceSelecting)
                         this.globalState.onSelectionButtonObservable.notifyObservers();
                     break;
-                case "w": //pan
-                case "W":
+                case "e": //pan
+                case "E":
                     if (!this._forcePanning)
                         this.globalState.onPanObservable.notifyObservers();
                     break;
-                case "e": //zoom
-                case "E":
+                case "r": //zoom
+                case "R":
                     if (!this._forceZooming)
                         this.globalState.onZoomObservable.notifyObservers();
                     break;
-                case "r": //outlines
-                case "R":
+                case "t": //outlines
+                case "T":
                     this.globalState.onOutlinesObservable.notifyObservers();
+                    break;
+                case "w": //outlines
+                case "W":
+                        this.globalState.onMoveObservable.notifyObservers();
                     break;
                 case "0": //fit to window
                     if (this._altKeyIsPressed) {
