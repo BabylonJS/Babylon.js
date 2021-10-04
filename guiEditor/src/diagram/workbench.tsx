@@ -125,7 +125,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 this._canvas.style.cursor = "move";
             }
             this.updateHitTest(this.globalState.guiTexture.getChildren()[0], this._forceSelecting);
-            this.artBoardBackground.isHitTestVisible = true;
+            //this.artBoardBackground.isHitTestVisible = true;
         });
 
 
@@ -138,7 +138,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             if (!this._forceSelecting) {
                 this.updateHitTestForSelection(true);
             }
-            this.artBoardBackground.isHitTestVisible = true;
+            //this.artBoardBackground.isHitTestVisible = true;
         });
 
         props.globalState.onSelectionButtonObservable.add(() => {
@@ -151,7 +151,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             if (this._forceMoving) {
                 this.updateHitTestForSelection(true);
             }
-            this.artBoardBackground.isHitTestVisible = true;
+            //this.artBoardBackground.isHitTestVisible = true;
         });
 
         props.globalState.onZoomObservable.add(() => {
@@ -166,7 +166,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 this._canvas.style.cursor = "zoom-in";
             }
             this.updateHitTest(this.globalState.guiTexture.getChildren()[0], this._forceSelecting);
-            this.artBoardBackground.isHitTestVisible = true;
+            //this.artBoardBackground.isHitTestVisible = true;
         });
 
         props.globalState.onFitToWindowObservable.add(() => {
@@ -259,7 +259,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     };
 
     private updateHitTest(guiControl: Control, value: boolean) {
-        guiControl.isHitTestVisible = true;
+        //guiControl.isHitTestVisible = true;
         if (this.props.globalState.workbench.isContainer(guiControl)) {
             (guiControl as Container).children.forEach(child => {
                 this.updateHitTest(child, value);
@@ -270,7 +270,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private updateHitTestForSelection(value: boolean) {
         if (this._forceSelecting && !value) return;
         this.selectedGuiNodes.forEach((control) => {
-            control.isHitTestVisible = true;
+            //control.isHitTestVisible = true;
         });
     }
 
@@ -395,7 +395,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 node.highlightLineWidth = 10;
             }
         });
-        this.updateHitTestForSelection(value);
+       // this.updateHitTestForSelection(value);
     }
 
     resizeGuiTexture(newvalue: Vector2) {
@@ -463,7 +463,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             });
         }
         guiControl.isReadOnly = true;
-        guiControl.isHitTestVisible = true;
+        //guiControl.isHitTestVisible = true;
         return guiControl;
     }
 
