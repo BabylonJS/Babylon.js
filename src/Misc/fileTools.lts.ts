@@ -2,10 +2,12 @@ import { DecodeBase64UrlToBinary, DecodeBase64UrlToString, FileToolsOptions, IsB
 import { WebRequest } from "./webRequest";
 
 /**
+ * FileTools defined as any.
+ * This should not be imported or used in future releases or in any module in the framework
  * @hidden
- * @deprecated
+ * @deprecated import the needed function from fileTools.ts
  */
-export let FileTools = {};
+export let FileTools: any;
 /** @hidden */
 export const _injectLTSFileTools = () => {
     /**

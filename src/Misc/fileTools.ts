@@ -13,7 +13,6 @@ import { ThinEngine } from '../Engines/thinEngine';
 import { EngineStore } from '../Engines/engineStore';
 import { Logger } from './logger';
 import { TimingTools } from './timingTools';
-import { _injectLTSFileTools } from './fileTools.lts';
 
 const base64DataUrlRegEx = new RegExp(/^data:([^,]+\/[^,]+)?;base64,/i);
 
@@ -593,4 +592,7 @@ const initSideEffects = () => {
 
 initSideEffects();
 
+// LTS. Export FileTools in this module for backward compatibility.
+import { _injectLTSFileTools, FileTools } from './fileTools.lts';
 _injectLTSFileTools();
+export { FileTools };
