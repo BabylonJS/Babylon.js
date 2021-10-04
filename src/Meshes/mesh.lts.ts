@@ -540,7 +540,7 @@ declare module "./mesh" {
 }
 
 /** @hidden */
-export const _injectLTS = () => {
+export const _injectLTSMesh = () => {
     Mesh.prototype.setMaterialByID = function (id: string): Mesh {
         return this.setMaterialById(id);
     };
