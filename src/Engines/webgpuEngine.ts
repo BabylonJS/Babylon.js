@@ -2851,6 +2851,7 @@ export class WebGPUEngine extends Engine {
 
         if (webgpuPipelineContext.uniformBuffer) {
             webgpuPipelineContext.uniformBuffer.update();
+            this.bindUniformBufferBase(webgpuPipelineContext.uniformBuffer.getBuffer()!, 0, WebGPUShaderProcessor.LeftOvertUBOName);
         }
 
         if (this._snapshotRenderingPlayBundles) {
@@ -2879,10 +2880,6 @@ export class WebGPUEngine extends Engine {
 
             renderPass2 = this._bundleList.getBundleEncoder(this._cacheRenderPipeline.colorFormats, this._depthTextureFormat, this.currentSampleCount); // for snapshot recording mode
             this._bundleList.numDrawCalls++;
-        }
-
-        if (webgpuPipelineContext.uniformBuffer) {
-            this.bindUniformBufferBase(webgpuPipelineContext.uniformBuffer.getBuffer()!, 0, WebGPUShaderProcessor.LeftOvertUBOName);
         }
 
         let textureState = 0;
