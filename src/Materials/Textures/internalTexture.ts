@@ -137,6 +137,10 @@ export class InternalTexture extends TextureSampler {
      */
     public onLoadedObservable = new Observable<InternalTexture>();
     /**
+     * Observable called when the texture load is raising an error
+     */
+     public onErrorObservable = new Observable<Partial<{ message: string, exception: any }>>();
+    /**
      * If this callback is defined it will be called instead of the default _rebuild function
      */
     public onRebuildCallback: Nullable<(internalTexture: InternalTexture) => {
@@ -466,6 +470,8 @@ export class InternalTexture extends TextureSampler {
      */
     public dispose(): void {
         this._references--;
+        this.onLoadedObservable.clear();
+        this.onErrorObservable.clear();
         if (this._references === 0) {
             this._engine._releaseTexture(this);
             this._hardwareTexture = null;
