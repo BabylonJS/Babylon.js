@@ -546,7 +546,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     * @returns the projected position
     */
     public getProjectedPosition(position: Vector3, worldMatrix: Matrix): Vector2 {
-        return this._getProjectPositionHelper(position, worldMatrix, false) as Vector2;
+        return this._getProjectedPositionHelper(position, worldMatrix, false) as Vector2;
     }
     
     /**
@@ -556,10 +556,10 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     * @returns the projected position with Z
     */
     public getProjectedPositionWithZ(position: Vector3, worldMatrix: Matrix): Vector3 {
-        return this._getProjectPositionHelper(position, worldMatrix, true) as Vector3;
+        return this._getProjectedPositionHelper(position, worldMatrix, true) as Vector3;
     }
 
-    private _getProjectPositionHelper(position: Vector3, worldMatrix: Matrix, withZ: boolean): Vector2 | Vector3{
+    private _getProjectedPositionHelper(position: Vector3, worldMatrix: Matrix, withZ: boolean): Vector2 | Vector3{
         var scene = this.getScene();
         if (!scene) {
             return Vector3.Zero();
