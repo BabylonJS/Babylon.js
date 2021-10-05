@@ -3522,8 +3522,10 @@ export class ThinEngine {
                     this._createTextureBase(EngineStore.FallbackTexture, noMipmap, texture.invertY, scene, samplingMode, null, onError, prepareTexture, prepareTextureProcessFunction, buffer, texture);
                 }
 
+                message = (message || "Unknown error") + (EngineStore.UseFallbackTexture ? " - Fallback texture was used" : "");
+                texture.onErrorObservable.notifyObservers({ message, exception });
                 if (onError) {
-                    onError((message || "Unknown error") + (EngineStore.UseFallbackTexture ? " - Fallback texture was used" : ""), exception);
+                    onError(message, exception);
                 }
             }
             else {
