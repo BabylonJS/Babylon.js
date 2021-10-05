@@ -42598,6 +42598,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 
 /***/ }),
 
+/***/ "../public/imgs/moveIcon.svg":
+/*!***********************************!*\
+  !*** ../public/imgs/moveIcon.svg ***!
+  \***********************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M22.64,15.2a.61.61,0,0,1-.85,0L20.6,14v3a.6.6,0,1,1-1.2,0V14L18.21,15.2a.61.61,0,0,1-.85,0,.6.6,0,0,1,0-.86l2.21-2.21a.6.6,0,0,1,.86,0l2.21,2.21A.6.6,0,0,1,22.64,15.2Z' style='fill:%23fff'/%3E%3Cpath d='M15.2,21.79a.61.61,0,0,1,0,.85.6.6,0,0,1-.86,0l-2.21-2.21a.6.6,0,0,1,0-.86l2.21-2.21a.6.6,0,0,1,.86,0,.61.61,0,0,1,0,.85L14,19.4h3a.6.6,0,1,1,0,1.2H14Z' style='fill:%23fff'/%3E%3Cpath d='M24.8,22.64a.61.61,0,0,1,0-.85L26,20.6H23a.6.6,0,1,1,0-1.2h3L24.8,18.21a.61.61,0,0,1,0-.85.6.6,0,0,1,.86,0l2.21,2.21a.6.6,0,0,1,0,.86l-2.21,2.21A.6.6,0,0,1,24.8,22.64Z' style='fill:%23fff'/%3E%3Cpath d='M22.64,24.8a.61.61,0,0,0-.85,0L20.6,26V23a.6.6,0,1,0-1.2,0v3L18.21,24.8a.61.61,0,0,0-.85,0,.6.6,0,0,0,0,.86l2.21,2.21a.6.6,0,0,0,.86,0l2.21-2.21A.6.6,0,0,0,22.64,24.8Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
 /***/ "../public/imgs/passwordFieldIcon.svg":
 /*!********************************************!*\
   !*** ../public/imgs/passwordFieldIcon.svg ***!
@@ -42822,6 +42833,7 @@ var zoomIcon = __webpack_require__(/*! ../../public/imgs/zoomIcon.svg */ "../pub
 var guidesIcon = __webpack_require__(/*! ../../public/imgs/guidesIcon.svg */ "../public/imgs/guidesIcon.svg");
 var logoIcon = __webpack_require__(/*! ../../public/imgs/babylonLogo.svg */ "../public/imgs/babylonLogo.svg");
 var canvasFitIcon = __webpack_require__(/*! ../../public/imgs/canvasFitIcon.svg */ "../public/imgs/canvasFitIcon.svg");
+var moveIcon = __webpack_require__(/*! ../../public/imgs/moveIcon.svg */ "../public/imgs/moveIcon.svg");
 __webpack_require__(/*! ../scss/commandBar.scss */ "./scss/commandBar.scss");
 var CommandBarComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CommandBarComponent, _super);
@@ -42830,22 +42842,33 @@ var CommandBarComponent = /** @class */ (function (_super) {
         _this._panning = false;
         _this._zooming = false;
         _this._selecting = true;
+        _this._moving = false;
         props.globalState.onPanObservable.add(function () {
             _this._panning = !_this._panning;
             _this._zooming = false;
             _this._selecting = false;
+            _this._moving = false;
             _this.forceUpdate();
         });
         props.globalState.onSelectionButtonObservable.add(function () {
-            _this._selecting = true;
+            _this._selecting = !_this._selecting;
             _this._panning = false;
             _this._zooming = false;
+            _this._moving = false;
             _this.forceUpdate();
         });
         props.globalState.onZoomObservable.add(function () {
             _this._zooming = !_this._zooming;
             _this._panning = false;
             _this._selecting = false;
+            _this._moving = false;
+            _this.forceUpdate();
+        });
+        props.globalState.onMoveObservable.add(function () {
+            _this._zooming = false;
+            _this._panning = false;
+            _this._selecting = false;
+            _this._moving = !_this._moving;
             _this.forceUpdate();
         });
         props.globalState.onOutlinesObservable.add(function () {
@@ -42891,14 +42914,16 @@ var CommandBarComponent = /** @class */ (function (_super) {
                             onClick: function () { window.open('https://doc.babylonjs.com/divingDeeper/gui/gui', '_blank'); }
                         },
                     ] }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Select", icon: pointerIcon, shortcut: "Q", isActive: this._selecting, onClick: function () { if (!_this._selecting)
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Select", icon: pointerIcon, shortcut: "S", isActive: this._selecting, onClick: function () { if (!_this._selecting)
                         _this.props.globalState.onSelectionButtonObservable.notifyObservers(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Pan", icon: handIcon, shortcut: "W", isActive: this._panning, onClick: function () { if (!_this._panning)
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Move", icon: moveIcon, shortcut: "M", isActive: this._moving, onClick: function () { if (!_this._moving)
+                        _this.props.globalState.onMoveObservable.notifyObservers(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Pan", icon: handIcon, shortcut: "P", isActive: this._panning, onClick: function () { if (!_this._panning)
                         _this.props.globalState.onPanObservable.notifyObservers(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Zoom", shortcut: "E", icon: zoomIcon, isActive: this._zooming, onClick: function () { if (!_this._zooming)
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Zoom", shortcut: "Z", icon: zoomIcon, isActive: this._zooming, onClick: function () { if (!_this._zooming)
                         _this.props.globalState.onZoomObservable.notifyObservers(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Fit to Window", shortcut: "Alt+F", icon: canvasFitIcon, isActive: false, onClick: function () { _this.props.globalState.onFitToWindowObservable.notifyObservers(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Toggle Guides", shortcut: "R", icon: guidesIcon, isActive: this._outlines, onClick: function () { _this.props.globalState.onOutlinesObservable.notifyObservers(); } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Fit to Window", shortcut: "F", icon: canvasFitIcon, isActive: false, onClick: function () { _this.props.globalState.onFitToWindowObservable.notifyObservers(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Toggle Guides", shortcut: "G", icon: guidesIcon, isActive: this._outlines, onClick: function () { _this.props.globalState.onOutlinesObservable.notifyObservers(); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "commands-right" })));
     };
     return CommandBarComponent;
@@ -45672,9 +45697,10 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         _this._constraintDirection = ConstraintDirection.NONE;
         _this._forcePanning = false;
         _this._forceZooming = false;
+        _this._forceMoving = false;
         _this._forceSelecting = true;
         _this._outlines = false;
-        _this._isOverGUINode = false;
+        _this._isOverGUINode = [];
         _this._clipboard = [];
         _this._selectAll = false;
         _this._cameraMaxRadiasFactor = 16384; // 2^13
@@ -45757,6 +45783,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         props.globalState.onPanObservable.add(function () {
             _this._forcePanning = !_this._forcePanning;
             _this._forceSelecting = false;
+            _this._forceMoving = false;
             _this._forceZooming = false;
             if (!_this._forcePanning) {
                 _this.globalState.onSelectionButtonObservable.notifyObservers();
@@ -45764,23 +45791,45 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             else {
                 _this._canvas.style.cursor = "move";
             }
+            _this.updateHitTest(_this.globalState.guiTexture.getChildren()[0], _this._forceSelecting);
+            _this.artBoardBackground.isHitTestVisible = true;
         });
-        props.globalState.onSelectionButtonObservable.add(function () {
-            _this._forceSelecting = true;
+        props.globalState.onMoveObservable.add(function () {
+            _this._forceMoving = !_this._forceMoving;
             _this._forcePanning = false;
             _this._forceZooming = false;
+            _this._forceSelecting = false;
+            _this.updateHitTest(_this.globalState.guiTexture.getChildren()[0], _this._forceSelecting);
+            if (!_this._forceSelecting) {
+                _this.updateHitTestForSelection(true);
+            }
+            _this.artBoardBackground.isHitTestVisible = true;
+        });
+        props.globalState.onSelectionButtonObservable.add(function () {
+            _this._forceSelecting = !_this._forceSelecting;
+            _this._forcePanning = false;
+            _this._forceZooming = false;
+            _this._forceMoving = false;
             _this._canvas.style.cursor = "default";
+            _this.updateHitTest(_this.globalState.guiTexture.getChildren()[0], _this._forceSelecting);
+            if (_this._forceMoving) {
+                _this.updateHitTestForSelection(true);
+            }
+            _this.artBoardBackground.isHitTestVisible = true;
         });
         props.globalState.onZoomObservable.add(function () {
             _this._forceZooming = !_this._forceZooming;
             _this._forcePanning = false;
             _this._forceSelecting = false;
+            _this._forceMoving = false;
             if (!_this._forceZooming) {
                 _this.globalState.onSelectionButtonObservable.notifyObservers();
             }
             else {
                 _this._canvas.style.cursor = "zoom-in";
             }
+            _this.updateHitTest(_this.globalState.guiTexture.getChildren()[0], _this._forceSelecting);
+            _this.artBoardBackground.isHitTestVisible = true;
         });
         props.globalState.onFitToWindowObservable.add(function () {
             _this.setCameraRadius();
@@ -45828,6 +45877,22 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
+    WorkbenchComponent.prototype.updateHitTest = function (guiControl, value) {
+        var _this = this;
+        guiControl.isHitTestVisible = value;
+        if (this.props.globalState.workbench.isContainer(guiControl)) {
+            guiControl.children.forEach(function (child) {
+                _this.updateHitTest(child, value);
+            });
+        }
+    };
+    WorkbenchComponent.prototype.updateHitTestForSelection = function (value) {
+        if (this._forceSelecting && !value)
+            return;
+        this.selectedGuiNodes.forEach(function (control) {
+            control.isHitTestVisible = value;
+        });
+    };
     WorkbenchComponent.prototype.setCameraRadius = function () {
         var size = this.props.globalState.guiTexture.getSize();
         this._cameraRadias = size.width > size.height ? size.width : size.height;
@@ -45937,6 +46002,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         else {
             this.props.globalState.guiTexture.getChildren()[0].children.push(this.props.globalState.workbench.artBoardBackground);
         }
+        this._isOverGUINode = [];
     };
     WorkbenchComponent.prototype.changeSelectionHighlight = function (value) {
         var _this = this;
@@ -45950,6 +46016,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                 node.highlightLineWidth = 10;
             }
         });
+        this.updateHitTestForSelection(value);
     };
     WorkbenchComponent.prototype.resizeGuiTexture = function (newvalue) {
         this._textureMesh.scaling.x = newvalue.x;
@@ -45975,6 +46042,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             case "Ellipse":
             case "Grid":
             case "ScrollViewer":
+            case "Container":
             case "VirtualKeyboard":
                 return true;
             default:
@@ -45990,14 +46058,27 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         guiControl.onPointerDownObservable.add(function (evt) {
             if (!_this.isUp || evt.buttonIndex > 0)
                 return;
-            _this.isSelected(true, guiControl);
-            _this.isUp = false;
+            if (_this._forceSelecting) {
+                _this.isSelected(true, guiControl);
+                _this.isUp = false;
+            }
         });
         guiControl.onPointerEnterObservable.add(function (evt) {
-            _this._isOverGUINode = true;
+            if (_this._isOverGUINode.indexOf(guiControl) === -1) {
+                _this._isOverGUINode.push(guiControl);
+            }
         });
         guiControl.onPointerOutObservable.add(function (evt) {
-            _this._isOverGUINode = false;
+            var index = _this._isOverGUINode.indexOf(guiControl);
+            if (index !== -1) {
+                _this._isOverGUINode.splice(index, 1);
+            }
+        });
+        guiControl.onDisposeObservable.add(function (evt) {
+            var index = _this._isOverGUINode.indexOf(guiControl);
+            if (index !== -1) {
+                _this._isOverGUINode.splice(index, 1);
+            }
         });
         if (this.isContainer(guiControl)) {
             guiControl.children.forEach(function (child) {
@@ -46005,6 +46086,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             });
         }
         guiControl.isReadOnly = true;
+        guiControl.isHitTestVisible = true;
         return guiControl;
     };
     WorkbenchComponent.prototype.parent = function (dropLocationControl) {
@@ -46174,12 +46256,20 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     WorkbenchComponent.prototype.onDown = function (evt) {
         var _a;
         (_a = this._rootContainer.current) === null || _a === void 0 ? void 0 : _a.setPointerCapture(evt.pointerId);
-        if (!this._isOverGUINode && !evt.button) {
-            this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+        if ((this._isOverGUINode.length === 0) && !evt.button) {
+            if (this._forceSelecting) {
+                this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+            }
+            return;
         }
         var pos = this.getGroundPosition();
-        this._mouseStartPointX = pos ? pos.x : this._mouseStartPointX;
-        this._mouseStartPointY = pos ? -pos.z : this._mouseStartPointY;
+        if (pos === null && this._forceSelecting) {
+            this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+        }
+        if (this._forceMoving) {
+            this._mouseStartPointX = pos ? pos.x : this._mouseStartPointX;
+            this._mouseStartPointY = pos ? -pos.z : this._mouseStartPointY;
+        }
     };
     WorkbenchComponent.prototype.onUp = function (evt) {
         var _a;
@@ -46260,9 +46350,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             _this.zooming(delta, scene, camera, plane, inertialPanning);
         };
         var zoomFnMouse = function (p, e) {
-            var newPos = _this.getPosition(scene, camera, plane);
-            var deltaVector = initialPos.subtract(newPos);
-            _this.zooming(deltaVector.x > 0 ? -10 : 10, scene, camera, plane, inertialPanning);
+            _this.zooming(_this._altKeyIsPressed ? -10 : 10, scene, camera, plane, inertialPanning);
         };
         var removeObservers = function () {
             scene.onPointerObservable.removeCallback(panningFn);
@@ -46270,8 +46358,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         };
         scene.onPointerObservable.add(function (p, e) {
             removeObservers();
-            if (p.event.button !== 0 || _this._forcePanning ||
-                _this._altKeyIsPressed) {
+            if (p.event.button !== 0 || _this._forcePanning) {
                 initialPos = _this.getPosition(scene, camera, plane);
                 scene.onPointerObservable.add(panningFn, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["PointerEventTypes"].POINTERMOVE);
                 _this._panning = true;
@@ -46291,29 +46378,33 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         }, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["PointerEventTypes"].POINTERUP);
         scene.onKeyboardObservable.add(function (k, e) {
             switch (k.event.key) {
-                case "q": //select
-                case "Q":
+                case "s": //select
+                case "S":
                     if (!_this._forceSelecting)
                         _this.globalState.onSelectionButtonObservable.notifyObservers();
                     break;
-                case "w": //pan
-                case "W":
+                case "p": //pan
+                case "P":
                     if (!_this._forcePanning)
                         _this.globalState.onPanObservable.notifyObservers();
                     break;
-                case "e": //zoom
-                case "E":
+                case "z": //zoom
+                case "Z":
                     if (!_this._forceZooming)
                         _this.globalState.onZoomObservable.notifyObservers();
                     break;
-                case "r": //outlines
-                case "R":
+                case "g": //outlines
+                case "G":
                     _this.globalState.onOutlinesObservable.notifyObservers();
                     break;
-                case "0": //fit to window
-                    if (_this._altKeyIsPressed) {
-                        _this.globalState.onFitToWindowObservable.notifyObservers();
-                    }
+                case "m": //move
+                case "M":
+                    if (!_this._forceMoving)
+                        _this.globalState.onMoveObservable.notifyObservers();
+                    break;
+                case "f": //fit to window
+                case "F":
+                    _this.globalState.onFitToWindowObservable.notifyObservers();
                     break;
                 default:
                     break;
@@ -46483,6 +46574,7 @@ var GlobalState = /** @class */ (function () {
         this.onFitToWindowObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onPanObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onSelectionButtonObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onMoveObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onLoadObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onSaveObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onSnippetLoadObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();

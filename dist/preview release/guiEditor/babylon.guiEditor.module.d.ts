@@ -67,6 +67,7 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         private _constraintDirection;
         private _forcePanning;
         private _forceZooming;
+        private _forceMoving;
         private _forceSelecting;
         private _outlines;
         private _panning;
@@ -84,6 +85,8 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         get selectedGuiNodes(): Control[];
         constructor(props: IWorkbenchComponentProps);
         keyEvent: (evt: KeyboardEvent) => void;
+        private updateHitTest;
+        private updateHitTestForSelection;
         private setCameraRadius;
         private copyToClipboard;
         private pasteFromClipboard;
@@ -188,6 +191,7 @@ declare module "babylonjs-gui-editor/globalState" {
         onFitToWindowObservable: Observable<void>;
         onPanObservable: Observable<void>;
         onSelectionButtonObservable: Observable<void>;
+        onMoveObservable: Observable<void>;
         onLoadObservable: Observable<File>;
         onSaveObservable: Observable<void>;
         onSnippetLoadObservable: Observable<void>;
@@ -1228,6 +1232,7 @@ declare module "babylonjs-gui-editor/components/commandBarComponent" {
         private _panning;
         private _zooming;
         private _selecting;
+        private _moving;
         private _outlines;
         constructor(props: ICommandBarComponentProps);
         private updateNodeOutline;
@@ -2194,6 +2199,7 @@ declare module GUIEDITOR {
         private _constraintDirection;
         private _forcePanning;
         private _forceZooming;
+        private _forceMoving;
         private _forceSelecting;
         private _outlines;
         private _panning;
@@ -2211,6 +2217,8 @@ declare module GUIEDITOR {
         get selectedGuiNodes(): Control[];
         constructor(props: IWorkbenchComponentProps);
         keyEvent: (evt: KeyboardEvent) => void;
+        private updateHitTest;
+        private updateHitTestForSelection;
         private setCameraRadius;
         private copyToClipboard;
         private pasteFromClipboard;
@@ -2304,6 +2312,7 @@ declare module GUIEDITOR {
         onFitToWindowObservable: BABYLON.Observable<void>;
         onPanObservable: BABYLON.Observable<void>;
         onSelectionButtonObservable: BABYLON.Observable<void>;
+        onMoveObservable: BABYLON.Observable<void>;
         onLoadObservable: BABYLON.Observable<File>;
         onSaveObservable: BABYLON.Observable<void>;
         onSnippetLoadObservable: BABYLON.Observable<void>;
@@ -3172,6 +3181,7 @@ declare module GUIEDITOR {
         private _panning;
         private _zooming;
         private _selecting;
+        private _moving;
         private _outlines;
         constructor(props: ICommandBarComponentProps);
         private updateNodeOutline;

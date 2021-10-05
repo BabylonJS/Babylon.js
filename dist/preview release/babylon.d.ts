@@ -2429,6 +2429,7 @@ declare module BABYLON {
     /**
      * Backwards compatibility.
      * @hidden
+     * @deprecated
      */
     export const FileTools: {
         DecodeBase64UrlToBinary: (uri: string) => ArrayBuffer;
@@ -10255,6 +10256,7 @@ declare module BABYLON {
         previousBones: {
             [index: number]: Float32Array;
         };
+        private _lastUpdateFrameId;
         /**
          * Add the required uniforms to the current list.
          * @param uniforms defines the current uniform list.
