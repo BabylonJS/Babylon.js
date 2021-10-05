@@ -1955,14 +1955,16 @@ export class ThinEngine {
     }
 
     protected _normalizeIndexData(indices: IndicesArray): Uint16Array | Uint32Array {
-        if (indices instanceof Uint16Array) {
-            return indices;
+        const bytesPerElement = (indices as any).BYTES_PER_ELEMENT;
+
+        if (bytesPerElement === 2) {
+            return indices as Uint16Array;
         }
 
         // Check 32 bit support
         if (this._caps.uintIndices) {
-            if (indices instanceof Uint32Array) {
-                return indices;
+            if (bytesPerElement === 4) {
+                return indices as Uint32Array;
             } else {
                 // number[] or Int32Array, check if 32 bit is necessary
                 for (var index = 0; index < indices.length; index++) {
