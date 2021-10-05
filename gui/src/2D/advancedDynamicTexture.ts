@@ -546,9 +546,10 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     * @returns the projected position
     */
     public getProjectedPosition(position: Vector3, worldMatrix: Matrix): Vector2 {
-        return this._getProjectedPositionHelper(position, worldMatrix, false) as Vector2;
+        const result = this._getProjectedPositionHelper(position, worldMatrix);;
+        return new Vector2(result.x, result.y);
     }
-    
+
     /**
     * Get screen coordinates for a vector3
     * @param position defines the position to project
@@ -556,17 +557,17 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     * @returns the projected position with Z
     */
     public getProjectedPositionWithZ(position: Vector3, worldMatrix: Matrix): Vector3 {
-        return this._getProjectedPositionHelper(position, worldMatrix, true) as Vector3;
+        return this._getProjectedPositionHelper(position, worldMatrix);
     }
 
-    private _getProjectedPositionHelper(position: Vector3, worldMatrix: Matrix, withZ: boolean): Vector2 | Vector3{
+    private _getProjectedPositionHelper(position: Vector3, worldMatrix: Matrix): Vector3 {
         var scene = this.getScene();
         if (!scene) {
             return Vector3.Zero();
         }
         var globalViewport = this._getGlobalViewport();
         var projectedPosition = Vector3.Project(position, worldMatrix, scene.getTransformMatrix(), globalViewport);
-        return withZ ? new Vector3(projectedPosition.x, projectedPosition.y, projectedPosition.z) : new Vector2(projectedPosition.x, projectedPosition.y);
+        return new Vector3(projectedPosition.x, projectedPosition.y, projectedPosition.z);
     }
 
     private _checkUpdate(camera: Camera): void {
@@ -944,7 +945,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._rootContainer = Control.Parse(serializedObject.root, this) as Container;
         const width = serializedObject.width;
         const height = serializedObject.height;
-        if (typeof(width) === "number" && typeof(height) === "number" && width >= 0 && height >= 0) {
+        if (typeof (width) === "number" && typeof (height) === "number" && width >= 0 && height >= 0) {
             this.scaleTo(width, height);
         }
     }
