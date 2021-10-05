@@ -81,27 +81,18 @@ interface IPropertyTabComponentProps {
 
 interface IPropertyTabComponentState {
     currentNode: Nullable<Control>;
-    textureSize: Vector2;
 }
 
 export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
     private _onBuiltObserver: Nullable<Observer<void>>;
     private _timerIntervalId: number;
-    private _lockObject : LockObject;
-    private _sizeOption: number = 2;
-    private _sizeOptions = [
-        { label: "Web (1920)", value: 0 },
-        { label: "Phone (720)", value: 1 },
-        { label: "Square (1200)", value: 2 },
-    ];
-    private _sizeValues = [
-        new Vector2(1920, 1080),
-        new Vector2(750, 1334),
-        new Vector2(1200, 1200)];
+    private _lockObject: LockObject;
+    private _sizeOption: number;
+
     constructor(props: IPropertyTabComponentProps) {
         super(props);
-       
-        this.state = { currentNode: null, textureSize: new Vector2(1200, 1200) };
+
+        this.state = { currentNode: null };
         this._lockObject = new LockObject();
         this.props.globalState.lockObject = this._lockObject;
         this.props.globalState.onSaveObservable.add(() => {
@@ -119,7 +110,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         });
 
         this.props.globalState.onLoadObservable.add((file) => this.load(file));
-        this._sizeOption = DataStorage.ReadBoolean("Responsive", true) ?  2 : this._sizeOptions.length;
 
     }
 
@@ -133,8 +123,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             }
         });
         this.props.globalState.onResizeObservable.add((newSize) => {
-            this.setState({ textureSize: newSize });
             this.props.globalState.workbench.artBoardBackground._markAsDirty(true);
+            this.forceUpdate();
         });
 
         this._onBuiltObserver = this.props.globalState.onBuiltObservable.add(() => {
@@ -385,8 +375,45 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         return adtIcon;
     }
 
-
     render() {
+
+        if(this.props.globalState.guiTexture == undefined) return null;
+        const _sizeValues = [
+            new Vector2(1920, 1080),
+            new Vector2(1366, 768),
+            new Vector2(1280, 800),
+            new Vector2(3840, 2160),
+            new Vector2(750, 1334),
+            new Vector2(1125, 2436),
+            new Vector2(1170, 2532),
+            new Vector2(1284, 2778),
+            new Vector2(1080, 2220),
+            new Vector2(1080, 2340),
+            new Vector2(1024, 1024),
+            new Vector2(2048, 2048),
+        ];
+        const _sizeOptions = [
+            { label: "Web (1920)", value: 0 },
+            { label: "Web (1366)", value: 1 },
+            { label: "Web (1280)", value: 2 },
+            { label: "Web (3840)", value: 3 },
+            { label: "iPhone 8 (750)", value: 4 },
+            { label: "iPhone X, 11 (1125)", value: 5 },
+            { label: "iPhone 12 (1170)", value: 6 },
+            { label: "iPhone Pro Max (1284)", value: 7 },
+            { label: "Google Pixel 4 (1080)", value: 8 },
+            { label: "Google Pixel 5 (1080)", value: 9 },
+            { label: "Square (1024)", value: 10 },
+            { label: "Square (2048)", value: 11 },
+        ];
+
+        const size = this.props.globalState.guiTexture.getSize();
+        let textureSize = new Vector2(size.width, size.height);
+        this._sizeOption = _sizeValues.findIndex((value) => value.x == textureSize.x && value.y == textureSize.y);
+        if(this._sizeOption < 0) {
+            this.props.globalState.onResponsiveChangeObservable.notifyObservers(false);
+            DataStorage.WriteBoolean("Responsive", false);
+        }
 
         if (this.state.currentNode && this.props.globalState.workbench.selectedGuiNodes.length === 1) {
             return (
@@ -402,22 +429,25 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         this.state.currentNode?.parent?.typeName === "Grid" &&
                         <ParentingPropertyGridComponent control={this.state.currentNode} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} lockObject={this._lockObject}></ParentingPropertyGridComponent>
                     }
-                    <hr className="ge" />
-                    <ButtonLineComponent
-                        label="DELETE ELEMENT"
-                        onClick={() => {
-                            this.state.currentNode?.dispose();
-                            this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-                        }}
-                    />
-                    <ButtonLineComponent
-                        label="COPY ELEMENT"
-                        onClick={() => {
-                            if (this.state.currentNode) {
-                                this.props.globalState.workbench.CopyGUIControl(this.state.currentNode);
-                            }
-                        }}
-                    />
+                    {this.state.currentNode !== this.props.globalState.guiTexture.getChildren()[0] &&
+                        <>
+                            <hr className="ge" />
+                            <ButtonLineComponent
+                                label="DELETE ELEMENT"
+                                onClick={() => {
+                                    this.state.currentNode?.dispose();
+                                    this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                                }}
+                            />
+                            <ButtonLineComponent
+                                label="COPY ELEMENT"
+                                onClick={() => {
+                                    if (this.state.currentNode) {
+                                        this.props.globalState.workbench.CopyGUIControl(this.state.currentNode);
+                                    }
+                                }}
+                            />
+                        </>}
                 </div>
             );
         }
@@ -444,10 +474,10 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         onSelect={(value: boolean) => {
                             this.props.globalState.onResponsiveChangeObservable.notifyObservers(value);
                             DataStorage.WriteBoolean("Responsive", value);
-                            this._sizeOption = this._sizeOptions.length;
+                            this._sizeOption = _sizeOptions.length;
                             if (value) {
                                 this._sizeOption = 0;
-                                this.props.globalState.workbench.resizeGuiTexture(this._sizeValues[this._sizeOption]);
+                                this.props.globalState.workbench.resizeGuiTexture(_sizeValues[this._sizeOption]);
                             }
                             this.forceUpdate();
                         }}
@@ -456,47 +486,48 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         <OptionsLineComponent
                             label=""
                             iconLabel="Size"
-                            options={this._sizeOptions}
+                            options={_sizeOptions}
                             icon={canvasSizeIcon}
                             target={this}
                             propertyName={"_sizeOption"}
                             noDirectUpdate={true}
                             onSelect={(value: any) => {
                                 this._sizeOption = value;
-                                if (this._sizeOption !== (this._sizeOptions.length)) {
-                                    const newSize = this._sizeValues[this._sizeOption];
+                                if (this._sizeOption !== (_sizeOptions.length)) {
+                                    const newSize = _sizeValues[this._sizeOption];
+
                                     this.props.globalState.workbench.resizeGuiTexture(newSize);
                                 }
                                 this.forceUpdate();
                             }}
                         />}
-                    {this._sizeOption == (this._sizeOptions.length) &&
+                    {!DataStorage.ReadBoolean("Responsive", true) &&
                         <div className="divider">
                             <FloatLineComponent
                                 icon={canvasSizeIcon}
                                 iconLabel="Canvas Size"
                                 label="W"
-                                target={this.state.textureSize}
+                                target={textureSize}
                                 propertyName="x"
                                 isInteger={true}
                                 min={1}
                                 max={MAX_TEXTURE_SIZE}
                                 onChange={(newvalue) => {
                                     if (!isNaN(newvalue)) {
-                                        this.props.globalState.workbench.resizeGuiTexture(new Vector2(newvalue, this.state.textureSize.y));
+                                        this.props.globalState.workbench.resizeGuiTexture(new Vector2(newvalue, textureSize.y));
                                     }
                                 }} ></FloatLineComponent>
                             <FloatLineComponent
                                 icon={canvasSizeIcon}
                                 label="H"
-                                target={this.state.textureSize}
+                                target={textureSize}
                                 propertyName="y"
                                 isInteger={true}
                                 min={1}
                                 max={MAX_TEXTURE_SIZE}
                                 onChange={(newvalue) => {
                                     if (!isNaN(newvalue)) {
-                                        this.props.globalState.workbench.resizeGuiTexture(new Vector2(this.state.textureSize.x, newvalue));
+                                        this.props.globalState.workbench.resizeGuiTexture(new Vector2(textureSize.x, newvalue));
                                     }
                                 }}
                             ></FloatLineComponent>
