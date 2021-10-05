@@ -546,15 +546,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     * @returns the projected position
     */
     public getProjectedPosition(position: Vector3, worldMatrix: Matrix): Vector2 {
-        var scene = this.getScene();
-        if (!scene) {
-            return Vector2.Zero();
-        }
-        var globalViewport = this._getGlobalViewport();
-        var projectedPosition = Vector3.Project(position, worldMatrix, scene.getTransformMatrix(), globalViewport);
-        projectedPosition.scaleInPlace(this.renderScale);
-        return new Vector2(projectedPosition.x, projectedPosition.y);
+        return this._getProjectPositionHelper(position, worldMatrix, false) as Vector2;
     }
+    
     /**
     * Get screen coordinates for a vector3
     * @param position defines the position to project
@@ -562,15 +556,19 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     * @returns the projected position with Z
     */
     public getProjectedPositionWithZ(position: Vector3, worldMatrix: Matrix): Vector3 {
+        return this._getProjectPositionHelper(position, worldMatrix, true) as Vector3;
+    }
+
+    private _getProjectPositionHelper(position: Vector3, worldMatrix: Matrix, withZ: boolean): Vector2 | Vector3{
         var scene = this.getScene();
         if (!scene) {
             return Vector3.Zero();
         }
         var globalViewport = this._getGlobalViewport();
         var projectedPosition = Vector3.Project(position, worldMatrix, scene.getTransformMatrix(), globalViewport);
-        projectedPosition.scaleInPlace(this.renderScale);
-        return new Vector3(projectedPosition.x, projectedPosition.y, projectedPosition.z);
+        return withZ ? new Vector3(projectedPosition.x, projectedPosition.y, projectedPosition.z) : new Vector2(projectedPosition.x, projectedPosition.y);
     }
+
     private _checkUpdate(camera: Camera): void {
         if (this._layerToDispose) {
             if ((camera.layerMask & this._layerToDispose.layerMask) === 0) {
