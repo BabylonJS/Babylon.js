@@ -63,7 +63,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _panning: boolean;
     private _canvas: HTMLCanvasElement;
     private _responsive: boolean;
-    private _isOverGUINode = false;
+    private _isOverGUINode: Control[] = [];
     private _clipboard: Control[] = [];
     private _selectAll: boolean = false;
     private _camera: ArcRotateCamera;
@@ -382,6 +382,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         else {
             this.props.globalState.guiTexture.getChildren()[0].children.push(this.props.globalState.workbench.artBoardBackground);
         }
+        this._isOverGUINode = [];
     }
 
     changeSelectionHighlight(value: boolean) {
@@ -449,13 +450,23 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         });
 
         guiControl.onPointerEnterObservable.add((evt) => {
-            this._isOverGUINode = true;
-            console.log("In:" + guiControl.name);
+            if (this._isOverGUINode.indexOf(guiControl) === -1) {
+                this._isOverGUINode.push(guiControl);
+            }
         });
 
         guiControl.onPointerOutObservable.add((evt) => {
-            this._isOverGUINode = false;
-            console.log("Out:" + guiControl.name);
+            const index = this._isOverGUINode.indexOf(guiControl);
+            if (index !== -1) {
+                this._isOverGUINode.splice(index, 1);
+            }
+        });
+
+        guiControl.onDisposeObservable.add((evt) => {
+            const index = this._isOverGUINode.indexOf(guiControl);
+            if (index !== -1) {
+                this._isOverGUINode.splice(index, 1);
+            }
         });
 
         if (this.isContainer(guiControl)) {
@@ -467,6 +478,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         guiControl.isHitTestVisible = true;
         return guiControl;
     }
+
+    
 
     private parent(dropLocationControl: Nullable<Control>) {
         const draggedControl = this.props.globalState.draggedControl;
@@ -660,15 +673,18 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     onDown(evt: React.PointerEvent<HTMLElement>) {
         this._rootContainer.current?.setPointerCapture(evt.pointerId);
-        console.log("Is Over Node: " + this._isOverGUINode)
-        if (!this._isOverGUINode && !evt.button) {
+        if ((this._isOverGUINode.length === 0) && !evt.button) {
             if (this._forceSelecting && !this._altKeyIsPressed) {
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
             }
             return;
         }
+
+        var pos = this.getGroundPosition();
+        if (pos === null && this._forceSelecting) {
+            this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+        }
         if (this._forceMoving) {
-            var pos = this.getGroundPosition();
             this._mouseStartPointX = pos ? pos.x : this._mouseStartPointX;
             this._mouseStartPointY = pos ? -pos.z : this._mouseStartPointY;
         }
