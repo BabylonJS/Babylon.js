@@ -12,6 +12,7 @@ const zoomIcon: string = require("../../public/imgs/zoomIcon.svg");
 const guidesIcon: string = require("../../public/imgs/guidesIcon.svg");
 const logoIcon: string = require("../../public/imgs/babylonLogo.svg");
 const canvasFitIcon: string = require("../../public/imgs/canvasFitIcon.svg");
+const moveIcon: string = require("../../public/imgs/moveIcon.svg");
 
 require("../scss/commandBar.scss");
 
@@ -25,6 +26,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
     private _panning: boolean = false;
     private _zooming: boolean = false;
     private _selecting: boolean = true;
+    private _moving: boolean = false;
     private _outlines: boolean;
     public constructor(props: ICommandBarComponentProps) {
         super(props);
@@ -33,13 +35,15 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
             this._panning = !this._panning;
             this._zooming = false;
             this._selecting = false;
+            this._moving = false;
             this.forceUpdate();
         });
 
         props.globalState.onSelectionButtonObservable.add(() => {
-            this._selecting = true;
+            this._selecting = !this._selecting;
             this._panning = false;
             this._zooming = false;
+            this._moving = false;
             this.forceUpdate();
         });
 
@@ -47,6 +51,15 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
             this._zooming = !this._zooming;
             this._panning = false;
             this._selecting = false;
+            this._moving = false;
+            this.forceUpdate();
+        });
+
+        props.globalState.onMoveObservable.add(() => {
+            this._zooming = false;
+            this._panning = false;
+            this._selecting = false;
+            this._moving = !this._moving;
             this.forceUpdate();
         });
 
@@ -94,15 +107,17 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                             onClick: () => { window.open('https://doc.babylonjs.com/divingDeeper/gui/gui', '_blank') }
                         },
                     ]} />
-                    <CommandButtonComponent tooltip="Select" icon={pointerIcon} shortcut="Q" isActive={this._selecting}
+                    <CommandButtonComponent tooltip="Select" icon={pointerIcon} shortcut="S" isActive={this._selecting}
                         onClick={() => { if (!this._selecting) this.props.globalState.onSelectionButtonObservable.notifyObservers(); }} />
-                    <CommandButtonComponent tooltip="Pan" icon={handIcon} shortcut="W" isActive={this._panning}
+                    <CommandButtonComponent tooltip="Move" icon={moveIcon} shortcut="M" isActive={this._moving}
+                        onClick={() => { if (!this._moving) this.props.globalState.onMoveObservable.notifyObservers(); }} />
+                    <CommandButtonComponent tooltip="Pan" icon={handIcon} shortcut="P" isActive={this._panning}
                         onClick={() => { if (!this._panning) this.props.globalState.onPanObservable.notifyObservers(); }} />
-                    <CommandButtonComponent tooltip="Zoom" shortcut="E" icon={zoomIcon} isActive={this._zooming}
+                    <CommandButtonComponent tooltip="Zoom" shortcut="Z" icon={zoomIcon} isActive={this._zooming}
                         onClick={() => { if (!this._zooming) this.props.globalState.onZoomObservable.notifyObservers(); }} />
-                    <CommandButtonComponent tooltip="Fit to Window" shortcut="Alt+F" icon={canvasFitIcon} isActive={false}
+                    <CommandButtonComponent tooltip="Fit to Window" shortcut="F" icon={canvasFitIcon} isActive={false}
                         onClick={() => { this.props.globalState.onFitToWindowObservable.notifyObservers(); }} />
-                    <CommandButtonComponent tooltip="Toggle Guides" shortcut="R" icon={guidesIcon} isActive={this._outlines}
+                    <CommandButtonComponent tooltip="Toggle Guides" shortcut="G" icon={guidesIcon} isActive={this._outlines}
                         onClick={() => { this.props.globalState.onOutlinesObservable.notifyObservers(); }} />
                 </div>
                 <div className="commands-right">
