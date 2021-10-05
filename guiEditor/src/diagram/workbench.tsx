@@ -443,7 +443,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         guiControl.onPointerDownObservable.add((evt) => {
             if (!this.isUp || evt.buttonIndex > 0) return;
-            if (this._forceSelecting && !this._altKeyIsPressed) {
+            if (this._forceSelecting) {
                 this.isSelected(true, guiControl);
                 this.isUp = false;
             }
@@ -674,7 +674,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     onDown(evt: React.PointerEvent<HTMLElement>) {
         this._rootContainer.current?.setPointerCapture(evt.pointerId);
         if ((this._isOverGUINode.length === 0) && !evt.button) {
-            if (this._forceSelecting && !this._altKeyIsPressed) {
+            if (this._forceSelecting) {
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
             }
             return;
