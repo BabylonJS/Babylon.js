@@ -457,7 +457,11 @@ export class Texture extends BaseTexture {
             if (this._texture.isReady) {
                 TimingTools.SetImmediate(() => load());
             } else {
-                this._texture.onLoadedObservable.add(load);
+                const loadObserver = this._texture.onLoadedObservable.add(load);
+                this._texture.onErrorObservable.add((e) => {
+                    errorHandler(e.message, e.exception);
+                    this._texture?.onLoadedObservable.remove(loadObserver);
+                });
             }
         }
     }
