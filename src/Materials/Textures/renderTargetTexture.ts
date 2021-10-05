@@ -254,7 +254,8 @@ export class RenderTargetTexture extends Texture {
     protected _renderTargetOptions: RenderTargetCreationOptions;
     private _canRescale = true;
     protected _renderTarget: Nullable<RenderTargetWrapper> = null;
-    protected _renderPassId: number;
+    /** @hidden */
+    public _renderPassId: number;
     /**
      * Gets render target creation options that were used.
      */
@@ -664,8 +665,6 @@ export class RenderTargetTexture extends Texture {
 
         var engine = scene.getEngine();
 
-        engine._currentRenderPassId = this._renderPassId;
-
         if (this.useCameraPostProcesses !== undefined) {
             useCameraPostProcess = this.useCameraPostProcesses;
         }
@@ -706,6 +705,8 @@ export class RenderTargetTexture extends Texture {
                 }
             }
         }
+
+        engine._currentRenderPassId = this._renderPassId;
 
         this.onBeforeBindObservable.notifyObservers(this);
 

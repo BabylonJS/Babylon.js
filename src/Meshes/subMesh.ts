@@ -59,16 +59,16 @@ export class SubMesh implements ICullable {
         if (passId === Constants.RENDERPASS_MAIN) {
             return this._mainDrawWrapper;
         }
-        let customEffect = this._drawWrappers[passId];
-        if (!customEffect && createIfNotExisting) {
-            this._drawWrappers[passId] = customEffect = new DrawWrapper(this._mesh.getScene().getEngine());
+        let drawWrapper = this._drawWrappers[passId];
+        if (!drawWrapper && createIfNotExisting) {
+            this._drawWrappers[passId] = drawWrapper = new DrawWrapper(this._mesh.getScene().getEngine());
         }
-        return customEffect;
+        return drawWrapper;
     }
 
     /** @hidden */
     public _removeDrawWrapper(passId: number) {
-        delete this._drawWrappers[passId];
+        this._drawWrappers[passId] = undefined as any;
     }
 
     /**
@@ -119,7 +119,8 @@ export class SubMesh implements ICullable {
         for (const drawWrapper of this._drawWrappers) {
             drawWrapper?.dispose();
         }
-        this._drawWrappers = [];
+        this._mainDrawWrapper = new DrawWrapper(this._engine, false);
+        this._drawWrappers[Constants.RENDERPASS_MAIN] = this._mainDrawWrapper;
     }
 
     /** @hidden */
