@@ -664,6 +664,10 @@ export class Material implements IAnimatable {
     public _getDrawWrapper(): DrawWrapper {
         return this._drawWrapper;
     }
+    /** @hidden */
+    public _setDrawWrapper(drawWrapper: DrawWrapper) {
+        this._drawWrapper = drawWrapper;
+    }
 
     /**
      * Specifies if uniform buffers should be used
