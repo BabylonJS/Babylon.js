@@ -248,7 +248,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
 
         virtualMeshesInfo.pivotMesh.computeWorldMatrix(true);
         virtualMeshesInfo.dragMesh.computeWorldMatrix(true);
-        
+
         const cameraToDrag = TmpVectors.Vector3[2];
         const controllerToDrag = TmpVectors.Vector3[3];
         virtualMeshesInfo.dragMesh.absolutePosition.subtractToRef(this._pointerCamera!.globalPosition, cameraToDrag);
