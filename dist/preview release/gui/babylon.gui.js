@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!*****************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \*****************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \************************************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -1153,14 +1153,8 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
     * @returns the projected position
     */
     AdvancedDynamicTexture.prototype.getProjectedPosition = function (position, worldMatrix) {
-        var scene = this.getScene();
-        if (!scene) {
-            return babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector2"].Zero();
-        }
-        var globalViewport = this._getGlobalViewport();
-        var projectedPosition = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Project(position, worldMatrix, scene.getTransformMatrix(), globalViewport);
-        projectedPosition.scaleInPlace(this.renderScale);
-        return new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector2"](projectedPosition.x, projectedPosition.y);
+        var result = this.getProjectedPositionWithZ(position, worldMatrix);
+        return new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector2"](result.x, result.y);
     };
     /**
     * Get screen coordinates for a vector3
@@ -1175,7 +1169,6 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         }
         var globalViewport = this._getGlobalViewport();
         var projectedPosition = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Project(position, worldMatrix, scene.getTransformMatrix(), globalViewport);
-        projectedPosition.scaleInPlace(this.renderScale);
         return new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector3"](projectedPosition.x, projectedPosition.y, projectedPosition.z);
     };
     AdvancedDynamicTexture.prototype._checkUpdate = function (camera) {
@@ -1208,11 +1201,8 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
                     return "continue";
                 }
                 control.notRenderable = false;
-                // Account for RenderScale.
-                projectedPosition.scaleInPlace(this_1.renderScale);
                 control._moveToProjectedPosition(projectedPosition);
             };
-            var this_1 = this;
             for (var _i = 0, _a = this._linkedControls; _i < _a.length; _i++) {
                 var control = _a[_i];
                 _loop_1(control);
