@@ -604,8 +604,9 @@ export class RuntimeAnimation {
 
         // Reset events if looping
         const events = this._events;
-        if (range > 0 && this.currentFrame > currentFrame ||
-            range < 0 && this.currentFrame < currentFrame) {
+
+        if (speedRatio > 0 && this.currentFrame > currentFrame ||
+            speedRatio < 0 && this.currentFrame < currentFrame) {
             this._onLoop();
 
             // Need to reset animation events
