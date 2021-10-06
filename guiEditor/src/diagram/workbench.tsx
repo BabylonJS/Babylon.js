@@ -442,6 +442,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
                             dropLocationControl.parent.children.splice(index, 0, draggedControl);
                             draggedControl.parent = dropLocationControl.parent;
+                            if(reversed) {
+                                this._convertToPixels(draggedControl, draggedControl.parent)
+                            }
                         }
                         else if (dropLocationControl.parent === draggedControlParent) {  //special case for grid
                             this._reorderGrid(dropLocationControl.parent as Grid, draggedControl, dropLocationControl);
@@ -467,6 +470,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }
         this.globalState.draggedControl = null;
         this.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
+    }
+
+    private _convertToPixels(draggedControl: Control, parent: Container) {
+       alert("Warning: Parenting to stack panel will convert control to pixel value");
+       
     }
 
     private _reorderGrid(grid: Grid, draggedControl: Control, dropLocationControl: Control) {
