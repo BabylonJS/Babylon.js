@@ -42102,6 +42102,13 @@ declare module BABYLON {
          */
         onLoadedObservable: Observable<InternalTexture>;
         /**
+         * Observable called when the texture load is raising an error
+         */
+        onErrorObservable: Observable<Partial<{
+            message: string;
+            exception: any;
+        }>>;
+        /**
          * If this callback is defined it will be called instead of the default _rebuild function
          */
         onRebuildCallback: Nullable<(internalTexture: InternalTexture) => {
