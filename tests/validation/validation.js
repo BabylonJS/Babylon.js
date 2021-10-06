@@ -10,6 +10,7 @@ var currentTestName;
 var numTestsOk = 0;
 var failedTests = [];
 var forceUseReverseDepthBuffer;
+var forceUseNonCompatibilityMode;
 
 // Random replacement
 var seed = 1;
@@ -108,8 +109,8 @@ async function evaluate(test, resultCanvas, result, renderImage, waitRing, done)
 
     var dontReportTestOutcome = false;
     if (config.qs && config.qs.checkresourcecreation && engine.countersLastFrame) {
-        if (BABYLON.WebGPUCacheBindGroups.NumBindGroupsCreatedLastFrame > 0 || engine.countersLastFrame.numEnableEffects > 0) {
-            console.warn(`check resource creation: numBindGroupsCreation=${BABYLON.WebGPUCacheBindGroups.NumBindGroupsCreatedLastFrame}, numEnableEffects=${engine.countersLastFrame.numEnableEffects}`);
+        if (BABYLON.WebGPUCacheBindGroups.NumBindGroupsCreatedLastFrame > 0 || engine.countersLastFrame.numEnableEffects > 0 || engine.countersLastFrame.numBundleCreationNonCompatMode > 0) {
+            console.warn(`check resource creation: numBindGroupsCreation=${BABYLON.WebGPUCacheBindGroups.NumBindGroupsCreatedLastFrame}, numEnableEffects=${engine.countersLastFrame.numEnableEffects}, numBundleCreationNonCompatMode=${engine.countersLastFrame.numBundleCreationNonCompatMode}`);
             testRes = false;
         }
         dontReportTestOutcome = true;
@@ -152,6 +153,7 @@ async function evaluate(test, resultCanvas, result, renderImage, waitRing, done)
     currentScene = null;
     engine.setHardwareScalingLevel(1);
     engine.useReverseDepthBuffer = forceUseReverseDepthBuffer;
+    engine.compatibilityMode = !forceUseNonCompatibilityMode;
     if (forceUseReverseDepthBuffer) {
         engine.setDepthFunction(BABYLON.Constants.GEQUAL);
     } else {
@@ -435,7 +437,7 @@ function GetAbsoluteUrl(url) {
     return a.href;
 }
 
-function init(_engineName, useReverseDepthBuffer) {
+function init(_engineName, useReverseDepthBuffer, useNonCompatibilityMode) {
     _engineName = _engineName ? _engineName.toLowerCase() : "webgl2";
     if (window.disableWebGL2Support) {
         _engineName = "webgl1";
@@ -483,6 +485,7 @@ function init(_engineName, useReverseDepthBuffer) {
     };
 
     forceUseReverseDepthBuffer = useReverseDepthBuffer == 1 || useReverseDepthBuffer == "true";
+    forceUseNonCompatibilityMode = useNonCompatibilityMode == 1 || useNonCompatibilityMode == "true";
 
     canvas = document.createElement("canvas");
     canvas.className = "renderCanvas";
@@ -515,7 +518,9 @@ function init(_engineName, useReverseDepthBuffer) {
         engine = new BABYLON.WebGPUEngine(canvas, options);
         engine.enableOfflineSupport = false;
         engine.useReverseDepthBuffer = forceUseReverseDepthBuffer;
+        engine.compatibilityMode = !forceUseNonCompatibilityMode;
         if (forceUseReverseDepthBuffer) console.log("Forcing reverse depth buffer in all tests");
+        if (forceUseNonCompatibilityMode) console.log("Forcing non compatibility mode");
         return new Promise((resolve) => {
             engine.initAsync(glslangOptions, twgslOptions).then(() => resolve());
         });
@@ -524,7 +529,9 @@ function init(_engineName, useReverseDepthBuffer) {
         engine.enableOfflineSupport = false;
         engine.setDitheringState(false);
         engine.useReverseDepthBuffer = forceUseReverseDepthBuffer;
+        engine.compatibilityMode = !forceUseNonCompatibilityMode;
         if (forceUseReverseDepthBuffer) console.log("Forcing reverse depth buffer in all tests");
+        if (forceUseNonCompatibilityMode) console.log("Forcing non compatibility mode");
         return Promise.resolve();
     }
 }
