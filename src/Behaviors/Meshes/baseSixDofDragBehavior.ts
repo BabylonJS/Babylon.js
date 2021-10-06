@@ -300,7 +300,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     pointerInfo.pickInfo.hit &&
                     pointerInfo.pickInfo.pickedMesh &&
                     pointerInfo.pickInfo.pickedPoint &&
-                    pointerInfo.pickInfo.ray && 
+                    pointerInfo.pickInfo.ray &&
                     (!isXRPointer || pointerInfo.pickInfo.aimTransform) &&
                     pickPredicate(pointerInfo.pickInfo.pickedMesh)
                 ) {
