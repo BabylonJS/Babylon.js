@@ -228,8 +228,6 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
 
     private _pointerUpdateXR(controllerAimTransform: TransformNode, controllerGripTransform: Nullable<TransformNode>, pointerId: number, zDragFactor: number) {
         const virtualMeshesInfo = this._virtualMeshesInfo[pointerId];
-        virtualMeshesInfo.pivotMesh.computeWorldMatrix(true);
-        virtualMeshesInfo.dragMesh.computeWorldMatrix(true);
         virtualMeshesInfo.originMesh.position.copyFrom(controllerAimTransform.position);
         if (this._dragging === this._dragType.NEAR_DRAG && controllerGripTransform) {
             virtualMeshesInfo.originMesh.rotationQuaternion!.copyFrom(controllerGripTransform.rotationQuaternion!);
@@ -248,6 +246,9 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
         const controllerDragDistance = originDragDirection.length();
         originDragDirection.normalize();
 
+        virtualMeshesInfo.pivotMesh.computeWorldMatrix(true);
+        virtualMeshesInfo.dragMesh.computeWorldMatrix(true);
+        
         const cameraToDrag = TmpVectors.Vector3[2];
         const controllerToDrag = TmpVectors.Vector3[3];
         virtualMeshesInfo.dragMesh.absolutePosition.subtractToRef(this._pointerCamera!.globalPosition, cameraToDrag);
@@ -265,8 +266,10 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
         }
         controllerToDrag.scaleInPlace(zOffsetScaling);
 
-        virtualMeshesInfo.pivotMesh.setAbsolutePosition(virtualMeshesInfo.pivotMesh.absolutePosition.add(controllerToDrag));
-        virtualMeshesInfo.dragMesh.setAbsolutePosition(virtualMeshesInfo.dragMesh.absolutePosition.add(controllerToDrag));
+        controllerToDrag.addToRef(virtualMeshesInfo.pivotMesh.absolutePosition, this._tmpVector);
+        virtualMeshesInfo.pivotMesh.setAbsolutePosition(this._tmpVector);
+        controllerToDrag.addToRef(virtualMeshesInfo.dragMesh.absolutePosition, this._tmpVector);
+        virtualMeshesInfo.dragMesh.setAbsolutePosition(this._tmpVector);
     }
 
     /**
@@ -300,7 +303,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     pointerInfo.pickInfo.hit &&
                     pointerInfo.pickInfo.pickedMesh &&
                     pointerInfo.pickInfo.pickedPoint &&
-                    pointerInfo.pickInfo.ray && 
+                    pointerInfo.pickInfo.ray &&
                     (!isXRPointer || pointerInfo.pickInfo.aimTransform) &&
                     pickPredicate(pointerInfo.pickInfo.pickedMesh)
                 ) {
