@@ -9,6 +9,7 @@ import { ButtonLineComponent } from "../../../../sharedUiComponents/lines/button
 import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
 import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { ValueAndUnit } from "babylonjs-gui/2D/valueAndUnit";
+import { Nullable } from "babylonjs/types";
 
 interface IGridPropertyGridComponentProps {
     grid: Grid,
@@ -20,6 +21,9 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
     constructor(props: IGridPropertyGridComponentProps) {
         super(props);
     }
+    private _removingColumn: boolean = false;
+    private _removingRow: boolean = false;
+    private _previousGrid: Nullable<Grid> = null;
 
     renderRows() {
         const grid = this.props.grid;
@@ -123,10 +127,10 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
 
     render() {
         const grid = this.props.grid;
-        const cols = [];
-
-        for (var index = 0; index < grid.rowCount; index++) {
-            cols.push(grid.getColumnDefinition(index));
+        if (grid !== this._previousGrid) {
+            this._removingColumn = false;
+            this._removingRow = false;
+            this._previousGrid = grid;
         }
 
         return (
@@ -137,17 +141,45 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                 <ButtonLineComponent
                     label="ADD ROW"
                     onClick={() => {
-                        grid.addRowDefinition(0.5);
+                        let total = 0;
+                        let count = 0;
+                        for (let i = 0; i < grid.rowCount; ++i) {
+                            let rd = grid.getRowDefinition(i);
+                            if (rd?.isPercentage) {
+                                total += rd?.getValue(grid.host);
+                                count++;
+                            }
+                        }
+                        grid.addRowDefinition(total / count);
+                        this.resizeColumn();
                         this.forceUpdate();
                     }}
-                />                <ButtonLineComponent
+                />  {(grid.rowCount > 1 && !this._removingRow) && <ButtonLineComponent
                     label="REMOVE ROW"
                     onClick={() => {
-                        grid.removeRowDefinition(grid.rowCount - 1);
+                        this._removingRow = true;
                         this.forceUpdate();
                     }}
-                />
-
+                />}
+                {this._removingRow &&
+                    <>
+                        <TextLineComponent tooltip="" label="REMOVE?" value=" " color="grey"></TextLineComponent>
+                        <ButtonLineComponent
+                            label="YES"
+                            onClick={() => {
+                                grid.removeRowDefinition(grid.rowCount - 1);
+                                this.resizeColumn();
+                                this.forceUpdate();
+                                this._removingRow = false;
+                            }}
+                        />
+                        <ButtonLineComponent
+                            label="NO"
+                            onClick={() => {
+                                this._removingRow = false;
+                                this.forceUpdate();
+                            }}
+                        /></>}
                 {
                     this.renderRows()
                 }
@@ -155,17 +187,46 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                 <ButtonLineComponent
                     label="ADD COLUMN"
                     onClick={() => {
-                        grid.addColumnDefinition(0.5);
+                        let total = 0;
+                        let count = 0;
+                        for (let i = 0; i < grid.columnCount; ++i) {
+                            let cd = grid.getColumnDefinition(i);
+                            if (cd?.isPercentage) {
+                                total += cd?.getValue(grid.host);
+                                count++;
+                            }
+                        }
+                        grid.addColumnDefinition(total / count);
+                        this.resizeColumn();
                         this.forceUpdate();
                     }}
-                />
-                <ButtonLineComponent
-                    label="REMOVE COLUMN"
-                    onClick={() => {
-                        grid.removeColumnDefinition(grid.columnCount - 1);
-                        this.forceUpdate();
-                    }}
-                />
+                /> {(grid.columnCount > 1 && !this._removingColumn) &&
+                    <ButtonLineComponent
+                        label="REMOVE COLUMN"
+                        onClick={() => {
+                            this._removingColumn = true;
+                            this.forceUpdate();
+                        }}
+                    />}
+                {this._removingColumn &&
+                    <>
+                        <TextLineComponent tooltip="" label="REMOVE?" value=" " color="grey"></TextLineComponent>
+                        <ButtonLineComponent
+                            label="YES"
+                            onClick={() => {
+                                grid.removeColumnDefinition(grid.columnCount - 1);
+                                this.resizeColumn();
+                                this.forceUpdate();
+                                this._removingColumn = false;
+                            }}
+                        />
+                        <ButtonLineComponent
+                            label="NO"
+                            onClick={() => {
+                                this._removingColumn = false;
+                                this.forceUpdate();
+                            }}
+                        /></>}
                 {
                     this.renderColumns()
 
