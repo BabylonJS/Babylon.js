@@ -713,6 +713,9 @@ declare module GUIEDITOR {
     }
     export class GridPropertyGridComponent extends React.Component<IGridPropertyGridComponentProps> {
         constructor(props: IGridPropertyGridComponentProps);
+        private _removingColumn;
+        private _removingRow;
+        private _previousGrid;
         renderRows(): JSX.Element[];
         renderColumns(): JSX.Element[];
         resizeColumn(): void;
