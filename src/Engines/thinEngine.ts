@@ -5119,7 +5119,6 @@ export class ThinEngine {
      * @param func - the function to be called
      * @param requester - the object that will request the next frame. Falls back to window.
      * @returns frame number
-
      */
     public static QueueNewFrame(func: () => void, requester?: any): number {
         if (!IsWindowObjectExist()) {
