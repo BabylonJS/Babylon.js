@@ -70,7 +70,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _cameraRadias: number;
     private _cameraMaxRadiasFactor = 16384; // 2^13
     private _pasted: boolean;
-    engine: Engine;
+    private _engine: Engine;
     public get globalState() {
         return this.props.globalState;
     }
@@ -218,7 +218,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         );
 
         props.globalState.onWindowResizeObservable.add(() => {
-            this.engine.resize();
+            this._engine.resize();
         });
 
         this.props.globalState.workbench = this;
@@ -720,10 +720,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         const canvas = document.getElementById("workbench-canvas") as HTMLCanvasElement;
         this._canvas = canvas;
         // Associate a Babylon Engine to it.
-        this.engine = new Engine(canvas);
+        this._engine = new Engine(canvas);
 
         // Create our first scene.
-        this._scene = new Scene(this.engine);
+        this._scene = new Scene(this._engine);
         const clearColor = 204 / 255.0;
         this._scene.clearColor = new Color4(clearColor, clearColor, clearColor, 1.0);
         const light = new HemisphericLight("light1", Axis.Y, this._scene);
@@ -752,11 +752,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         // Watch for browser/canvas resize events
         window.addEventListener("resize", () => {
-            this.engine.resize();
+            this._engine.resize();
         });
 
         this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(`Please note: This editor is still a work in progress. You may submit feedback to msDestiny14 on GitHub.`);
-        this.engine.runRenderLoop(() => { this._scene.render() });
+        this._engine.runRenderLoop(() => { this._scene.render() });
         this.globalState.onNewSceneObservable.notifyObservers(this.globalState.guiTexture.getScene());
         this.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
     };
