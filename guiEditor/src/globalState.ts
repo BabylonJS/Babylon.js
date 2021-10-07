@@ -57,6 +57,7 @@ export class GlobalState {
     onPropertyGridUpdateRequiredObservable = new Observable<void>();
     onDraggingEndObservable = new Observable<void>();
     onDraggingStartObservable = new Observable<void>();
+    onWindowResizeObservable = new Observable<void>();
     draggedControl: Nullable<Control> = null;
     draggedControlDirection: DragOverLocation;
     isSaving = false;
