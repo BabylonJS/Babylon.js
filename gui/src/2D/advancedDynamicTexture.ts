@@ -272,6 +272,20 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     public getDescendants(directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): Control[] {
         return this._rootContainer.getDescendants(directDescendantsOnly, predicate);
     }
+
+    /**
+    * Will return the first control with the given name
+    * @param name defines the name to search for
+    * @return the first control found or null
+    */
+    public getControlByName(name: string): Nullable<Control> {
+        return this._getControlByKey("name", name);
+    }
+
+    private _getControlByKey(key: string, value: any): Nullable<Control> {
+        return this._rootContainer.getDescendants().find((control) => (control as any)[key] === value) || null;
+    }
+
     /**
     * Gets or sets the current focused control
     */
@@ -532,15 +546,10 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     * @returns the projected position
     */
     public getProjectedPosition(position: Vector3, worldMatrix: Matrix): Vector2 {
-        var scene = this.getScene();
-        if (!scene) {
-            return Vector2.Zero();
-        }
-        var globalViewport = this._getGlobalViewport();
-        var projectedPosition = Vector3.Project(position, worldMatrix, scene.getTransformMatrix(), globalViewport);
-        projectedPosition.scaleInPlace(this.renderScale);
-        return new Vector2(projectedPosition.x, projectedPosition.y);
+        const result = this.getProjectedPositionWithZ(position, worldMatrix);
+        return new Vector2(result.x, result.y);
     }
+
     /**
     * Get screen coordinates for a vector3
     * @param position defines the position to project
@@ -554,9 +563,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         }
         var globalViewport = this._getGlobalViewport();
         var projectedPosition = Vector3.Project(position, worldMatrix, scene.getTransformMatrix(), globalViewport);
-        projectedPosition.scaleInPlace(this.renderScale);
         return new Vector3(projectedPosition.x, projectedPosition.y, projectedPosition.z);
     }
+
     private _checkUpdate(camera: Camera): void {
         if (this._layerToDispose) {
             if ((camera.layerMask & this._layerToDispose.layerMask) === 0) {
@@ -587,8 +596,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                     continue;
                 }
                 control.notRenderable = false;
-                // Account for RenderScale.
-                projectedPosition.scaleInPlace(this.renderScale);
+
                 control._moveToProjectedPosition(projectedPosition);
             }
         }
@@ -903,6 +911,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             Object.entries(this._lastControlDown).forEach(([key, value]) => {
                 value._onCanvasBlur();
             });
+            this.focusedControl = null;
             this._lastControlDown = {};
         });
     }
@@ -912,8 +921,11 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @returns an object with the JSON serialized data
      */
     public serializeContent(): any {
+        const size = this.getSize();
         let serializationObject = {
-            root: {}
+            root: {},
+            width: size.width,
+            height: size.height,
         };
 
         this._rootContainer.serialize(serializationObject.root);
@@ -927,6 +939,11 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      */
     public parseContent(serializedObject: any) {
         this._rootContainer = Control.Parse(serializedObject.root, this) as Container;
+        const width = serializedObject.width;
+        const height = serializedObject.height;
+        if (typeof (width) === "number" && typeof (height) === "number" && width >= 0 && height >= 0) {
+            this.scaleTo(width, height);
+        }
     }
 
     /**
@@ -958,6 +975,36 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             });
 
             request.open("GET", AdvancedDynamicTexture.SnippetUrl + "/" + snippetId.replace(/#/g, "/"));
+            request.send();
+        });
+    }
+
+    /**
+    * Recreate the content of the ADT from a url json
+    * @param url defines the url to load
+    * @returns a promise that will resolve on success
+    */
+    public parseFromURLAsync(url: string): Promise<void> {
+        if (url === "") {
+            return Promise.resolve();
+        }
+
+        return new Promise((resolve, reject) => {
+            var request = new WebRequest();
+            request.addEventListener("readystatechange", () => {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        var gui = request.responseText;
+                        let serializationObject = JSON.parse(gui);
+                        this.parseContent(serializationObject);
+
+                        resolve();
+                    } else {
+                        reject("Unable to load");
+                    }
+                }
+            });
+            request.open("GET", url);
             request.send();
         });
     }

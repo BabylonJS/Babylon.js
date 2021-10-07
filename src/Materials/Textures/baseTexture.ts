@@ -7,7 +7,7 @@ import { EngineStore } from "../../Engines/engineStore";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { Constants } from "../../Engines/constants";
 import { IAnimatable } from '../../Animations/animatable.interface';
-import { GUID } from '../../Misc/guid';
+import { RandomGUID } from '../../Misc/guid';
 
 import "../../Misc/fileTools";
 import { ThinEngine } from '../../Engines/thinEngine';
@@ -363,7 +363,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
      */
     public get uid(): string {
         if (!this._uid) {
-            this._uid = GUID.RandomId();
+            this._uid = RandomGUID();
         }
         return this._uid;
     }

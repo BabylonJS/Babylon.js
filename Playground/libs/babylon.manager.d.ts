@@ -29,7 +29,7 @@ declare module BABYLON {
         /** Returns a Promise that resolves after the specfied time */
         static WaitForSeconds: (seconds: number) => Promise<void>;
         /** Post a safe message to top parent window */
-        static PostWindowMessage(msg: any, targetOrigin: string, transfer?: Transferable[]): void;
+        static PostWindowMessage(msg: BABYLON.IWindowMessage, targetOrigin: string, transfer?: Transferable[]): void;
         /** Register handler that is triggered when then engine has been resized (engine.html) */
         static OnEngineResizeObservable: Observable<Engine>;
         /** Register handler that is triggered when the scene has been loaded (engine.html) */
@@ -1120,6 +1120,14 @@ declare module BABYLON {
         static PointerMouseInverted: boolean;
         static UseCanvasElement: boolean;
         static UseArrowKeyRotation: boolean;
+    }
+    /**
+     * Window Message Interface
+     */
+    interface IWindowMessage {
+        source: string;
+        command: string;
+        [key: string]: any;
     }
     /**
      * Unity Export Interfaces

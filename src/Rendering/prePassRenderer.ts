@@ -4,7 +4,7 @@ import { Engine } from "../Engines/engine";
 import { Constants } from "../Engines/constants";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { Effect } from "../Materials/effect";
-import { _DevTools } from "../Misc/devTools";
+import { _WarnImport } from "../Misc/devTools";
 import { Color4 } from "../Maths/math.color";
 import { Nullable } from "../types";
 import { AbstractMesh } from "../Meshes/abstractMesh";
@@ -24,7 +24,7 @@ import { GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer";
 export class PrePassRenderer {
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
-        throw _DevTools.WarnImport("PrePassRendererSceneComponent");
+        throw _WarnImport("PrePassRendererSceneComponent");
     };
 
     /**

@@ -1,7 +1,7 @@
 import { Container } from "./container";
 import { Control } from "./control";
 import { Measure } from "../measure";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 import { serialize } from 'babylonjs/Misc/decorators';
 import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
 
@@ -94,4 +94,4 @@ export class Ellipse extends Container {
         context.stroke();
     }
 }
-_TypeStore.RegisteredTypes["BABYLON.GUI.Ellipse"] = Ellipse;
+RegisterClass("BABYLON.GUI.Ellipse", Ellipse);

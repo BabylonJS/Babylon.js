@@ -1,4 +1,4 @@
-import { DomManagement } from "../../Misc/domManagement";
+import { IsWindowObjectExist } from "../../Misc/domManagement";
 import { Tools } from "../../Misc/tools";
 
 declare function importScripts(...urls: string[]): void;
@@ -44,7 +44,7 @@ export class WebGPUTintWASM {
         }
 
         if (twgslOptions.jsPath && twgslOptions.wasmPath) {
-            if (DomManagement.IsWindowObjectExist()) {
+            if (IsWindowObjectExist()) {
                 await Tools.LoadScriptAsync(twgslOptions.jsPath);
             } else {
                 importScripts(twgslOptions.jsPath);

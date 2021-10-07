@@ -3,7 +3,7 @@ import { Color3 } from "babylonjs/Maths/math.color";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
 import { Scene } from "babylonjs/scene";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 
 import "./grassProceduralTexture.fragment";
 
@@ -86,4 +86,4 @@ export class GrassProceduralTexture extends ProceduralTexture {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.GrassProceduralTexture"] = GrassProceduralTexture;
+RegisterClass("BABYLON.GrassProceduralTexture", GrassProceduralTexture);

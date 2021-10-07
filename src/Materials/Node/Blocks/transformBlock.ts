@@ -3,7 +3,7 @@ import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBloc
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
-import { _TypeStore } from '../../../Misc/typeStore';
+import { RegisterClass } from '../../../Misc/typeStore';
 import { Scene } from '../../../scene';
 import { InputBlock } from './Input/inputBlock';
 import { AbstractMesh } from '../../../Meshes/abstractMesh';
@@ -181,4 +181,4 @@ export class TransformBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.TransformBlock"] = TransformBlock;
+RegisterClass("BABYLON.TransformBlock", TransformBlock);

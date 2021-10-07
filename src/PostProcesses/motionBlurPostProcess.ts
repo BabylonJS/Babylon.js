@@ -14,7 +14,7 @@ import "../Animations/animatable";
 import '../Rendering/geometryBufferRendererSceneComponent';
 import "../Shaders/motionBlur.fragment";
 import { serialize, SerializationHelper } from '../Misc/decorators';
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 
 declare type Engine = import("../Engines/engine").Engine;
 declare type Scene = import("../scene").Scene;
@@ -304,4 +304,4 @@ export class MotionBlurPostProcess extends PostProcess {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.MotionBlurPostProcess"] = MotionBlurPostProcess;
+RegisterClass("BABYLON.MotionBlurPostProcess", MotionBlurPostProcess);
