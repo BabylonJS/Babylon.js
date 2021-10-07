@@ -188,6 +188,10 @@ export class PBRClearCoatConfiguration {
      * @returns - boolean indicating that the submesh is ready or not.
      */
     public isReadyForSubMesh(defines: IMaterialClearCoatDefines, scene: Scene, engine: Engine, disableBumpMap: boolean): boolean {
+        if (!this._isEnabled) {
+            return true;
+        }
+
         if (defines._areTexturesDirty) {
             if (scene.texturesEnabled) {
                 if (this._texture && MaterialFlags.ClearCoatTextureEnabled) {
@@ -295,6 +299,10 @@ export class PBRClearCoatConfiguration {
      * @param subMesh the submesh to bind data for
      */
     public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, disableBumpMap: boolean, isFrozen: boolean, invertNormalMapX: boolean, invertNormalMapY: boolean, subMesh?: SubMesh): void {
+        if (!this._isEnabled) {
+            return;
+        }
+
         const defines = subMesh!._materialDefines as unknown as IMaterialClearCoatDefines;
 
         const identicalTextures = defines.CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL;

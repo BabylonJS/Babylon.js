@@ -408,8 +408,8 @@ if (babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__["SceneLoader"]) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* WEBPACK VAR INJECTION */(function(global) {/* harmony import */ var _STL__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../STL */ "./STL/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "STLFileLoader", function() { return _STL__WEBPACK_IMPORTED_MODULE_0__["STLFileLoader"]; });
+/* WEBPACK VAR INJECTION */(function(global) {/* harmony import */ var _STL_index__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../STL/index */ "./STL/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "STLFileLoader", function() { return _STL_index__WEBPACK_IMPORTED_MODULE_0__["STLFileLoader"]; });
 
 
 /**
@@ -418,8 +418,8 @@ __webpack_require__.r(__webpack_exports__);
  */
 var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
 if (typeof globalObject !== "undefined") {
-    for (var key in _STL__WEBPACK_IMPORTED_MODULE_0__) {
-        globalObject.BABYLON[key] = _STL__WEBPACK_IMPORTED_MODULE_0__[key];
+    for (var key in _STL_index__WEBPACK_IMPORTED_MODULE_0__) {
+        globalObject.BABYLON[key] = _STL_index__WEBPACK_IMPORTED_MODULE_0__[key];
     }
 }
 

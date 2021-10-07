@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \***********************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \************************************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -412,8 +412,8 @@ module.exports = g;
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* WEBPACK VAR INJECTION */(function(global) {/* harmony import */ var _sky__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../sky */ "./sky/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SkyMaterial", function() { return _sky__WEBPACK_IMPORTED_MODULE_0__["SkyMaterial"]; });
+/* WEBPACK VAR INJECTION */(function(global) {/* harmony import */ var _sky_index__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../sky/index */ "./sky/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SkyMaterial", function() { return _sky_index__WEBPACK_IMPORTED_MODULE_0__["SkyMaterial"]; });
 
 
 /**
@@ -422,8 +422,8 @@ __webpack_require__.r(__webpack_exports__);
  */
 var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
 if (typeof globalObject !== "undefined") {
-    for (var key in _sky__WEBPACK_IMPORTED_MODULE_0__) {
-        globalObject.BABYLON[key] = _sky__WEBPACK_IMPORTED_MODULE_0__[key];
+    for (var key in _sky_index__WEBPACK_IMPORTED_MODULE_0__) {
+        globalObject.BABYLON[key] = _sky_index__WEBPACK_IMPORTED_MODULE_0__[key];
     }
 }
 
@@ -757,8 +757,8 @@ var SkyMaterial = /** @class */ (function (_super) {
         if (!this.useSunPosition) {
             var theta = Math.PI * (this.inclination - 0.5);
             var phi = 2 * Math.PI * (this.azimuth - 0.5);
-            this.sunPosition.x = this.distance * Math.cos(phi);
-            this.sunPosition.y = this.distance * Math.sin(phi) * Math.sin(theta);
+            this.sunPosition.x = this.distance * Math.cos(phi) * Math.cos(theta);
+            this.sunPosition.y = this.distance * Math.sin(-theta);
             this.sunPosition.z = this.distance * Math.sin(phi) * Math.cos(theta);
             babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Quaternion"].FromUnitVectorsToRef(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector3"].UpReadOnly, this.up, this._skyOrientation);
             this.sunPosition.rotateByQuaternionToRef(this._skyOrientation, this.sunPosition);
@@ -855,7 +855,7 @@ var SkyMaterial = /** @class */ (function (_super) {
     return SkyMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.SkyMaterial"] = SkyMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.SkyMaterial", SkyMaterial);
 
 
 /***/ }),

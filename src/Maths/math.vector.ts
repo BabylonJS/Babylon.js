@@ -4,7 +4,7 @@ import { Viewport } from './math.viewport';
 import { DeepImmutable, Nullable, FloatArray, float } from "../types";
 import { ArrayTools } from '../Misc/arrayTools';
 import { IPlaneLike } from './math.like';
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 import { Plane } from './math.plane';
 import { PerformanceConfigurator } from '../Engines/performanceConfigurator';
 
@@ -4211,9 +4211,7 @@ export class Matrix {
         this._isIdentity3x2Dirty = true;
     }
 
-    /** @hidden */
     private _updateIdentityStatus(isIdentity: boolean, isIdentityDirty: boolean = false, isIdentity3x2: boolean = false, isIdentity3x2Dirty: boolean = true) {
-        this.updateFlag = Matrix._updateFlagSeed++;
         this._isIdentity = isIdentity;
         this._isIdentity3x2 = isIdentity || isIdentity3x2;
         this._isIdentityDirty = this._isIdentity ? false : isIdentityDirty;
@@ -4229,7 +4227,8 @@ export class Matrix {
         }
 
         this._m = new PerformanceConfigurator.MatrixCurrentType(16);
-        this._updateIdentityStatus(false);
+
+        this._markAsUpdated();
     }
 
     // Properties
@@ -4593,6 +4592,7 @@ export class Matrix {
     public copyFrom(other: DeepImmutable<Matrix>): Matrix {
         other.copyToArray(this._m);
         const o = (other as Matrix);
+        this.updateFlag = o.updateFlag;
         this._updateIdentityStatus(o._isIdentity, o._isIdentityDirty, o._isIdentity3x2, o._isIdentity3x2Dirty);
         return this;
     }
@@ -6217,6 +6217,9 @@ export class Matrix {
         rm[13] = mm[7];
         rm[14] = mm[11];
         rm[15] = mm[15];
+
+        result._markAsUpdated();
+
         // identity-ness does not change when transposing
         result._updateIdentityStatus((matrix as Matrix)._isIdentity, (matrix as Matrix)._isIdentityDirty);
     }
@@ -6332,10 +6335,10 @@ export class TmpVectors {
     public static Matrix = ArrayTools.BuildTuple(8, Matrix.Identity); // 8 temp Matrices at once should be enough
 }
 
-_TypeStore.RegisteredTypes["BABYLON.Vector2"] = Vector2;
-_TypeStore.RegisteredTypes["BABYLON.Vector3"] = Vector3;
-_TypeStore.RegisteredTypes["BABYLON.Vector4"] = Vector4;
-_TypeStore.RegisteredTypes["BABYLON.Matrix"] = Matrix;
+RegisterClass("BABYLON.Vector2", Vector2);
+RegisterClass("BABYLON.Vector3", Vector3);
+RegisterClass("BABYLON.Vector4", Vector4);
+RegisterClass("BABYLON.Matrix", Matrix);
 
 const mtxConvertNDCToHalfZRange = Matrix.FromValues(
     1, 0, 0, 0,

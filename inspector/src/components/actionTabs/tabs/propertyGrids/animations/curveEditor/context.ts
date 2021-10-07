@@ -32,6 +32,7 @@ export class Context {
     onActiveAnimationChanged = new Observable<void>();
     onActiveKeyPointChanged = new Observable<void>();
     onHostWindowResized = new Observable<void>();
+    onSelectAllKeys = new Observable<void>();
 
     onActiveKeyFrameChanged = new Observable<number>();
 

@@ -50,7 +50,6 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
 
     constructor(props: ISceneExplorerComponentProps) {
         super(props);
-
         this.state = { filter: null, selectedEntity: null, scene: this.props.scene ? this.props.scene : null };
         this._onNewSceneObserver = this.props.globalState.onNewSceneObservable.add((scene: Nullable<Scene>) => {
             this.setState({
@@ -178,8 +177,10 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 return;
                 break;
             case "Delete":
-                this.state.selectedEntity.dispose();
-                this.forceUpdate();
+                if (this.state.selectedEntity !== this.props.globalState.guiTexture.getChildren()[0]) {
+                    this.state.selectedEntity.dispose();
+                    this.forceUpdate();
+                }
                 break;
             default:
                 break;

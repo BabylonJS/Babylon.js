@@ -26,10 +26,10 @@ import { CannonJSPlugin } from "../../Physics/Plugins/cannonJSPlugin";
 import { OimoJSPlugin } from "../../Physics/Plugins/oimoJSPlugin";
 import { AmmoJSPlugin } from "../../Physics/Plugins/ammoJSPlugin";
 import { ReflectionProbe } from "../../Probes/reflectionProbe";
-import { _TypeStore } from '../../Misc/typeStore';
+import { GetClass } from '../../Misc/typeStore';
 import { Tools } from '../../Misc/tools';
-import { StringTools } from '../../Misc/stringTools';
 import { PostProcess } from '../../PostProcesses/postProcess';
+import { EndsWith } from "../../Misc/stringTools";
 
 /** @hidden */
 export var _BabylonLoaderRegistered = true;
@@ -138,7 +138,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
                 }
                 scene.environmentTexture = hdrTexture;
             } else {
-                if (StringTools.EndsWith(parsedData.environmentTexture, ".env")) {
+                if (EndsWith(parsedData.environmentTexture, ".env")) {
                     var compressedTexture = new CubeTexture((parsedData.environmentTexture.match(/https?:\/\//g) ? "" : rootUrl) + parsedData.environmentTexture, scene);
                     if (parsedData.environmentTextureRotationY) {
                         compressedTexture.rotationY = parsedData.environmentTextureRotationY;
@@ -197,7 +197,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
         if (parsedData.animations !== undefined && parsedData.animations !== null) {
             for (index = 0, cache = parsedData.animations.length; index < cache; index++) {
                 var parsedAnimation = parsedData.animations[index];
-                const internalClass = _TypeStore.GetClass("BABYLON.Animation");
+                const internalClass = GetClass("BABYLON.Animation");
                 if (internalClass) {
                     let animation = internalClass.Parse(parsedAnimation);
                     scene.animations.push(animation);

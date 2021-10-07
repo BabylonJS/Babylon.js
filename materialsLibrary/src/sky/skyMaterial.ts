@@ -11,7 +11,7 @@ import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SubMesh } from "babylonjs/Meshes/subMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 
 import "./sky.fragment";
 import "./sky.vertex";
@@ -308,8 +308,8 @@ export class SkyMaterial extends PushMaterial {
             var theta = Math.PI * (this.inclination - 0.5);
             var phi = 2 * Math.PI * (this.azimuth - 0.5);
 
-            this.sunPosition.x = this.distance * Math.cos(phi);
-            this.sunPosition.y = this.distance * Math.sin(phi) * Math.sin(theta);
+            this.sunPosition.x = this.distance * Math.cos(phi) * Math.cos(theta);
+            this.sunPosition.y = this.distance * Math.sin(-theta);
             this.sunPosition.z = this.distance * Math.sin(phi) * Math.cos(theta);
 
             Quaternion.FromUnitVectorsToRef(Vector3.UpReadOnly, this.up, this._skyOrientation);
@@ -377,4 +377,4 @@ export class SkyMaterial extends PushMaterial {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.SkyMaterial"] = SkyMaterial;
+RegisterClass("BABYLON.SkyMaterial", SkyMaterial);

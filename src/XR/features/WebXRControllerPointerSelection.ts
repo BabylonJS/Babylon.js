@@ -391,6 +391,11 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 controllerData.pick = originalScenePick;
             }
 
+            if (controllerData.pick && controllerData.xrController) {
+                controllerData.pick.aimTransform = controllerData.xrController.pointer;
+                controllerData.pick.gripTransform = controllerData.xrController.grip || null;
+            }
+
             const pick = controllerData.pick;
 
             if (pick && pick.pickedPoint && pick.hit) {
