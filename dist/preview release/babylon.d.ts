@@ -11681,17 +11681,22 @@ declare module BABYLON {
         /** If we are picking a mesh with thin instance, this will give you the picked thin instance */
         thinInstanceIndex: number;
         /**
+         * The ray that was used to perform the picking.
+         */
+        ray: Nullable<Ray>;
+        /**
          * If a mesh was used to do the picking (eg. 6dof controller) as a "near interaction", this will be populated.
          */
         originMesh: Nullable<AbstractMesh>;
         /**
-         * The mesh used for picking (eg. 6dof controller), if one exists.
+         * The aim-space transform of the input used for picking, if it is an XR input source.
          */
-        originTransform: Nullable<AbstractMesh>;
+        aimTransform: Nullable<TransformNode>;
         /**
-         * The ray that was used to perform the picking.
+         * The grip-space transform of the input used for picking, if it is an XR input source.
+         * Some XR sources, such as input coming from head mounted displays, do not have this.
          */
-        ray: Nullable<Ray>;
+        gripTransform: Nullable<TransformNode>;
         /**
          * Gets the normal corresponding to the face the pick collided with
          * @param useWorldCoordinates If the resulting normal should be relative to the world (default: false)
