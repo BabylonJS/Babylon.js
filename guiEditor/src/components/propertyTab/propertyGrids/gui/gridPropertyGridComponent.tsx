@@ -10,6 +10,7 @@ import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLi
 import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { ValueAndUnit } from "babylonjs-gui/2D/valueAndUnit";
 import { Nullable } from "babylonjs/types";
+import { TextInputLineComponent } from "../../../../sharedUiComponents/lines/textInputLineComponent";
 
 interface IGridPropertyGridComponentProps {
     grid: Grid,
@@ -24,6 +25,8 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
     private _removingColumn: boolean = false;
     private _removingRow: boolean = false;
     private _previousGrid: Nullable<Grid> = null;
+    private _rowDefinitions: string[] = [];
+    private _columnDefinitions: string[] = [];
 
     renderRows() {
         const grid = this.props.grid;
@@ -52,6 +55,18 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
         );
     }
 
+    setValues() {
+        const grid = this.props.grid;
+        this._rowDefinitions = [];
+        this._columnDefinitions = [];
+        for (var index = 0; index < grid.columnCount; index++) {
+            const value = grid.getColumnDefinition(index);
+            if (value) {
+                this._columnDefinitions.push(value.toString(grid._host));
+            }
+        }
+    }
+
     renderColumns() {
         const grid = this.props.grid;
         const cols = [];
@@ -61,19 +76,14 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
         }
 
         return (
-            cols.map((cd, i) => {
-                let newcd = new ValueAndUnit(cd.getValue(grid.host), cd.unit);
+            this._columnDefinitions.map((cd, i) => {
+                //let newcd = new ValueAndUnit(cd.getValue(grid.host), cd.unit);
                 return (
                     <div className="divider">
-                        <FloatLineComponent lockObject={this.props.lockObject} key={`c${i}`} label={`Column ${i}`} target={newcd} propertyName={"_value"} digits={cd.unit == 1 ? 0 : 2}
+                        <TextInputLineComponent lockObject={this.props.lockObject} key={`c${i}`} label={`Column ${i}`} target={cd} propertyName={""}
                             onChange={(newValue) => {
-                                grid.setColumnDefinition(i, newValue, newcd.unit == 1 ? true : false);
-                                this.forceUpdate();
-                            }} />
-                        <CheckBoxLineComponent label="" target={newcd} propertyName={"unit"} onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                            onValueChanged={() => {
-                                grid.setColumnDefinition(i, newcd.getValue(grid.host), newcd.unit == 1 ? true : false);
-                                this.forceUpdate();
+                               // grid.setColumnDefinition(i, newValue, newcd.unit == 1 ? true : false);
+                                //this.forceUpdate();
                             }} />
                     </div>
                 )
@@ -131,6 +141,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
             this._removingColumn = false;
             this._removingRow = false;
             this._previousGrid = grid;
+            this.setValues();
         }
 
         return (
@@ -198,6 +209,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                         }
                         grid.addColumnDefinition(total / count);
                         this.resizeColumn();
+                        this.setValues();
                         this.forceUpdate();
                     }}
                 /> {(grid.columnCount > 1 && !this._removingColumn) &&
