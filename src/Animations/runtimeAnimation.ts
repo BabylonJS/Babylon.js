@@ -599,7 +599,7 @@ export class RuntimeAnimation {
             const hostNormalizedFrame = (syncRoot.masterFrame - syncRoot.fromFrame) / (syncRoot.toFrame - syncRoot.fromFrame);
             currentFrame = from + (to - from) * hostNormalizedFrame;
         } else {
-            if (ratio > 0 && from > to) {
+            if (ratio > 0 && from > to || ratio < 0 && from < to) {
                 currentFrame = (returnValue && range !== 0) ? to + ratio % range : from;
             } else {
                 currentFrame = (returnValue && range !== 0) ? from + ratio % range : to;
