@@ -124,7 +124,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             xrController,
             laserPointer,
             selectionMesh,
-            xrControllerTransform: null,
             meshUnderPointer: null,
             pick: null,
             tmpRay: new Ray(new Vector3(), new Vector3()),
@@ -158,7 +157,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
     private _controllers: {
         [controllerUniqueId: string]: {
             xrController?: WebXRInputSource;
-            xrControllerTransform: Nullable<AbstractMesh>;
             webXRCamera?: WebXRCamera;
             selectionComponent?: WebXRControllerComponent;
             onButtonChangedObserver?: Nullable<Observer<WebXRControllerComponent>>;
@@ -267,7 +265,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 webXRCamera,
                 laserPointer,
                 selectionMesh,
-                xrControllerTransform: null,
                 meshUnderPointer: null,
                 pick: null,
                 tmpRay: new Ray(new Vector3(), new Vector3()),
@@ -351,7 +348,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             if (controllerData.xrController) {
                 controllerGlobalPosition = controllerData.xrController.pointer.position;
                 controllerData.xrController.getWorldPointerRayToRef(controllerData.tmpRay);
-                controllerData.xrControllerTransform = controllerData.xrController.grip || null;
             } else if (controllerData.webXRCamera) {
                 controllerGlobalPosition = controllerData.webXRCamera.position;
                 controllerData.webXRCamera.getForwardRayToRef(controllerData.tmpRay);
@@ -395,8 +391,9 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 controllerData.pick = originalScenePick;
             }
 
-            if (controllerData.pick) {
-                controllerData.pick.originTransform = controllerData.xrControllerTransform;
+            if (controllerData.pick && controllerData.xrController) {
+                controllerData.pick.aimTransform = controllerData.xrController.pointer;
+                controllerData.pick.gripTransform = controllerData.xrController.grip || null;
             }
 
             const pick = controllerData.pick;
