@@ -8,7 +8,7 @@ import { Logger } from "../../Misc/logger";
 import { _PrimaryIsoTriangle, GeodesicData, PolyhedronData } from "../geodesicMesh";
 import { VertexBuffer } from "../../Buffers/buffer";
 
-VertexData.CreateGoldberg = function(options: { size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, sideOrientation?: number }, goldbergData: PolyhedronData): VertexData {
+VertexData.CreateGoldberg = function (options: { size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, sideOrientation?: number }, goldbergData: PolyhedronData): VertexData {
 
     const size = options.size;
     const sizeX: number = options.sizeX || size || 1;
@@ -67,7 +67,7 @@ VertexData.CreateGoldberg = function(options: { size?: number, sizeX?: number, s
 /**
  * Class containing static functions to help procedurally build a Goldberg mesh
  */
- export class GoldbergBuilder {
+export class GoldbergBuilder {
     /**
      * Creates the Mesh for a Goldberg Polyhedron which is made from 12 pentagonal and the rest hexagonal faces
      * @see https://en.wikipedia.org/wiki/Goldberg_polyhedron
@@ -211,12 +211,12 @@ function GoldbergCreate<TBase extends isMesh>(Base: TBase) {
             this.adjacentFaces = this.metadata.adjacentFaces;
             this.nbFaces = this.metadata.nbFaces;
             this.faceCenters = this.metadata.faceCenters,
-            this.faceXaxis = this.metadata.faceXaxis,
-            this.faceYaxis = this.metadata.faceYaxis,
-            this.faceZaxis = this.metadata.faceZaxis;
+                this.faceXaxis = this.metadata.faceXaxis,
+                this.faceYaxis = this.metadata.faceYaxis,
+                this.faceZaxis = this.metadata.faceZaxis;
         }
 
-        public changeFaceColors(colorRange : (number | Color4)[][]): number[] {
+        public changeFaceColors(colorRange: (number | Color4)[][]): number[] {
             for (let i = 0; i < colorRange.length; i++) {
                 const min: number = <number>colorRange[i][0];
                 const max: number = <number>colorRange[i][1];
@@ -239,17 +239,17 @@ function GoldbergCreate<TBase extends isMesh>(Base: TBase) {
             return newCols;
         }
 
-        public setFaceColors(colorRange : (number | Color4)[][]) {
+        public setFaceColors(colorRange: (number | Color4)[][]) {
             const newCols = this.changeFaceColors(colorRange);
             this.setVerticesData(VertexBuffer.ColorKind, newCols);
         }
 
-        public updateFaceColors(colorRange : (number | Color4)[][]) {
+        public updateFaceColors(colorRange: (number | Color4)[][]) {
             const newCols = this.changeFaceColors(colorRange);
             this.updateVerticesData(VertexBuffer.ColorKind, newCols);
         }
 
-        private changeFaceUVs(uvRange : (number | Vector2)[][]): FloatArray {
+        private changeFaceUVs(uvRange: (number | Vector2)[][]): FloatArray {
             const uvs: FloatArray = this.getVerticesData(VertexBuffer.UVKind)!!;
             for (let i = 0; i < uvRange.length; i++) {
                 const min: number = <number>uvRange[i][0];
@@ -300,12 +300,12 @@ function GoldbergCreate<TBase extends isMesh>(Base: TBase) {
             return uvs;
         }
 
-        public setFaceUVs(uvRange : (number | Vector2)[][]) {
+        public setFaceUVs(uvRange: (number | Vector2)[][]) {
             const newUVs: FloatArray = this.changeFaceUVs(uvRange);
             this.setVerticesData(VertexBuffer.UVKind, newUVs);
         }
 
-        public updateFaceUVs(uvRange : (number | Vector2)[][]) {
+        public updateFaceUVs(uvRange: (number | Vector2)[][]) {
             const newUVs = this.changeFaceUVs(uvRange);
             this.updateVerticesData(VertexBuffer.UVKind, newUVs);
         }
@@ -322,8 +322,11 @@ function GoldbergCreate<TBase extends isMesh>(Base: TBase) {
  * Function to use when extending the mesh class to a Goldberg class
  */
 const GoldbergMesh = GoldbergCreate(Mesh);
+/**
+ * Function to use when extending the mesh class to a Goldberg class
+ */
 
-Mesh.ExtendToGoldberg =  (mesh: Mesh) : Mesh => {
+export const ExtendMeshToGoldberg = (mesh: Mesh): Mesh => {
     const metadata = mesh.metadata;
     metadata.faceCenters = metadata.faceCenters.map((el: Vector3) => new Vector3(el._x, el._y, el._z));
     metadata.faceZaxis = metadata.faceZaxis.map((el: Vector3) => new Vector3(el._x, el._y, el._z));

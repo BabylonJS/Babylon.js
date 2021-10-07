@@ -27,7 +27,7 @@ import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
 import { ParticleHelper } from "babylonjs/Particles/particleHelper";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { ParticleTextureBlock } from "babylonjs/Materials/Node/Blocks/Particle/particleTextureBlock";
-import { FileTools } from "babylonjs/Misc/fileTools";
+import { ReadFile } from "babylonjs/Misc/fileTools";
 import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
 import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
 import { Layer } from "babylonjs/Layers/layer";
@@ -237,7 +237,7 @@ export class PreviewManager {
             case NodeMaterialModes.Particle: {
                 this._camera.radius = this._globalState.previewType === PreviewType.Explosion ? 50 : this._globalState.previewType === PreviewType.DefaultParticleSystem ? 6 : 20;
                 this._camera.upperRadiusLimit = 5000;
-                this._globalState.particleSystemBlendMode = this._particleSystem?.blendMode ?? ParticleSystem.BLENDMODE_STANDARD;;
+                this._globalState.particleSystemBlendMode = this._particleSystem?.blendMode ?? ParticleSystem.BLENDMODE_STANDARD;
                 break;
             }
         }
@@ -355,7 +355,7 @@ export class PreviewManager {
                         this._loadParticleSystem(this._globalState.previewType);
                         return;
                     case PreviewType.Custom:
-                        FileTools.ReadFile(
+                        ReadFile(
                             this._globalState.previewFile,
                             (json) => {
                                 this._particleSystem = ParticleSystem.Parse(JSON.parse(json), this._scene, "");
