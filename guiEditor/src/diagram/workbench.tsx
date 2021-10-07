@@ -269,7 +269,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this._pasted = false;
         }
 
-        if(this._forceZooming) {
+        if (this._forceZooming) {
             this._canvas.style.cursor = this._altKeyIsPressed ? "zoom-out" : "zoom-in";
         }
     };
@@ -360,17 +360,18 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.props.globalState.hostDocument!.removeEventListener("keyup", this.keyEvent);
         this.props.globalState.hostDocument!.removeEventListener("keydown", this.keyEvent);
         this.props.globalState.hostDocument!.defaultView!.removeEventListener("blur", this.blurEvent);
+        this._engine.dispose();
     }
 
     loadFromJson(serializationObject: any) {
         this.globalState.onSelectionChangedObservable.notifyObservers(null);
-        this.globalState.guiTexture.parseContent(serializationObject);
+        this.globalState.guiTexture.parseContent(serializationObject, true);
         this.loadToEditor();
     }
 
     async loadFromSnippet(snippedId: string) {
         this.globalState.onSelectionChangedObservable.notifyObservers(null);
-        await this.globalState.guiTexture.parseFromSnippetAsync(snippedId);
+        await this.globalState.guiTexture.parseFromSnippetAsync(snippedId, true);
         this.loadToEditor();
         if (this.props.globalState.customLoad) {
             this.props.globalState.customLoad.action(this.globalState.guiTexture.snippetId).catch((err) => {
@@ -494,8 +495,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         guiControl.isHitTestVisible = true;
         return guiControl;
     }
-
-    
 
     private parent(dropLocationControl: Nullable<Control>) {
         const draggedControl = this.props.globalState.draggedControl;
