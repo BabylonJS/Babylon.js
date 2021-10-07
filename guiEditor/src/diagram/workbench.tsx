@@ -70,6 +70,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _cameraRadias: number;
     private _cameraMaxRadiasFactor = 16384; // 2^13
     private _pasted: boolean;
+    private _engine: Engine;
     public get globalState() {
         return this.props.globalState;
     }
@@ -122,7 +123,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 this.globalState.onSelectionButtonObservable.notifyObservers();
             }
             else {
-                this._canvas.style.cursor = "move";
+                this._canvas.style.cursor = "grab";
             }
             this.updateHitTest(this.globalState.guiTexture.getChildren()[0], this._forceSelecting);
             this.artBoardBackground.isHitTestVisible = true;
@@ -137,6 +138,13 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this.updateHitTest(this.globalState.guiTexture.getChildren()[0], this._forceSelecting);
             if (!this._forceSelecting) {
                 this.updateHitTestForSelection(true);
+            }
+
+            if (!this._forceMoving) {
+                this.globalState.onSelectionButtonObservable.notifyObservers();
+            }
+            else {
+                this._canvas.style.cursor = "move";
             }
             this.artBoardBackground.isHitTestVisible = true;
         });
@@ -209,6 +217,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             false
         );
 
+        props.globalState.onWindowResizeObservable.add(() => {
+            this._engine.resize();
+        });
+
         this.props.globalState.workbench = this;
 
     }
@@ -255,6 +267,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }
         else if (!this._ctrlKeyIsPressed) {
             this._pasted = false;
+        }
+
+        if (this._forceZooming) {
+            this._canvas.style.cursor = this._altKeyIsPressed ? "zoom-out" : "zoom-in";
         }
     };
 
@@ -344,17 +360,18 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.props.globalState.hostDocument!.removeEventListener("keyup", this.keyEvent);
         this.props.globalState.hostDocument!.removeEventListener("keydown", this.keyEvent);
         this.props.globalState.hostDocument!.defaultView!.removeEventListener("blur", this.blurEvent);
+        this._engine.dispose();
     }
 
     loadFromJson(serializationObject: any) {
         this.globalState.onSelectionChangedObservable.notifyObservers(null);
-        this.globalState.guiTexture.parseContent(serializationObject);
+        this.globalState.guiTexture.parseContent(serializationObject, true);
         this.loadToEditor();
     }
 
     async loadFromSnippet(snippedId: string) {
         this.globalState.onSelectionChangedObservable.notifyObservers(null);
-        await this.globalState.guiTexture.parseFromSnippetAsync(snippedId);
+        await this.globalState.guiTexture.parseFromSnippetAsync(snippedId, true);
         this.loadToEditor();
         if (this.props.globalState.customLoad) {
             this.props.globalState.customLoad.action(this.globalState.guiTexture.snippetId).catch((err) => {
@@ -478,8 +495,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         guiControl.isHitTestVisible = true;
         return guiControl;
     }
-
-    
 
     private parent(dropLocationControl: Nullable<Control>) {
         const draggedControl = this.props.globalState.draggedControl;
@@ -681,7 +696,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }
 
         var pos = this.getGroundPosition();
-        if (pos === null && this._forceSelecting) {
+        if (pos === null && this._forceSelecting && !evt.button) {
             this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         }
         if (this._forceMoving) {
@@ -704,10 +719,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         const canvas = document.getElementById("workbench-canvas") as HTMLCanvasElement;
         this._canvas = canvas;
         // Associate a Babylon Engine to it.
-        const engine = new Engine(canvas);
+        this._engine = new Engine(canvas);
 
         // Create our first scene.
-        this._scene = new Scene(engine);
+        this._scene = new Scene(this._engine);
         const clearColor = 204 / 255.0;
         this._scene.clearColor = new Color4(clearColor, clearColor, clearColor, 1.0);
         const light = new HemisphericLight("light1", Axis.Y, this._scene);
@@ -732,14 +747,15 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.addControls(this._scene, this._camera);
 
         this._scene.getEngine().onCanvasPointerOutObservable.clear();
+        this._scene.doNotHandleCursors = true;
 
         // Watch for browser/canvas resize events
-        window.addEventListener("resize", function () {
-            engine.resize();
+        window.addEventListener("resize", () => {
+            this._engine.resize();
         });
 
         this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(`Please note: This editor is still a work in progress. You may submit feedback to msDestiny14 on GitHub.`);
-        engine.runRenderLoop(() => { this._scene.render() });
+        this._engine.runRenderLoop(() => { this._scene.render() });
         this.globalState.onNewSceneObservable.notifyObservers(this.globalState.guiTexture.getScene());
         this.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
     };
