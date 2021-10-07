@@ -848,7 +848,7 @@ export class NativeEngine extends Engine {
         super(null, false, undefined, options.adaptToDeviceRatio);
 
         if (_native.Engine.ProtocolVersion !== NativeEngine.ProtocolVersion) {
-            throw new Error(`Protocal version mismatch: ${_native.Engine.ProtocolVersion} !== ${NativeEngine.ProtocolVersion}`);
+            throw new Error(`Protocol version mismatch: ${_native.Engine.ProtocolVersion} (JS) !== ${NativeEngine.ProtocolVersion} (Native)`);
         }
 
         this._webGLVersion = 2;

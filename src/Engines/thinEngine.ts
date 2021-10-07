@@ -1955,7 +1955,7 @@ export class ThinEngine {
     }
 
     protected _normalizeIndexData(indices: IndicesArray): Uint16Array | Uint32Array {
-        const bytesPerElement = (indices as any).BYTES_PER_ELEMENT;
+        const bytesPerElement = (indices as Exclude<IndicesArray, number[]>).BYTES_PER_ELEMENT;
 
         if (bytesPerElement === 2) {
             return indices as Uint16Array;
@@ -1963,8 +1963,8 @@ export class ThinEngine {
 
         // Check 32 bit support
         if (this._caps.uintIndices) {
-            if (bytesPerElement === 4) {
-                return indices as Uint32Array;
+            if (indices instanceof Uint32Array) {
+                return indices;
             } else {
                 // number[] or Int32Array, check if 32 bit is necessary
                 for (var index = 0; index < indices.length; index++) {
@@ -5119,7 +5119,7 @@ export class ThinEngine {
      * Queue a new function into the requested animation frame pool (ie. this function will be executed byt the browser for the next frame)
      * @param func - the function to be called
      * @param requester - the object that will request the next frame. Falls back to window.
-     * @returns frame number
+norali     * @returns frame number
      */
     public static QueueNewFrame(func: () => void, requester?: any): number {
         if (!IsWindowObjectExist()) {
