@@ -182,14 +182,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-alpha.49";
+        return "babylonjs@5.0.0-alpha.50";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-alpha.49";
+        return "5.0.0-alpha.50";
     }
 
     /**
@@ -1955,8 +1955,9 @@ export class ThinEngine {
     }
 
     protected _normalizeIndexData(indices: IndicesArray): Uint16Array | Uint32Array {
-        if (indices instanceof Uint16Array) {
-            return indices;
+        const bytesPerElement = (indices as Exclude<IndicesArray, number[]>).BYTES_PER_ELEMENT;
+        if (bytesPerElement === 2) {
+            return indices as Uint16Array;
         }
 
         // Check 32 bit support

@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!*****************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \*****************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \************************************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -7514,8 +7514,8 @@ var GLTFLoader = /** @class */ (function () {
         if (!GLTFLoader._ValidateUri(uri)) {
             throw new Error(context + ": '" + uri + "' is invalid");
         }
-        if (babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["FileTools"].IsBase64DataUrl(uri)) {
-            var data = new Uint8Array(babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["FileTools"].DecodeBase64UrlToBinary(uri));
+        if (Object(babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["IsBase64DataUrl"])(uri)) {
+            var data = new Uint8Array(Object(babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["DecodeBase64UrlToBinary"])(uri));
             this.log(context + ": Decoded " + uri.substr(0, 64) + "... (" + data.length + " bytes)");
             return Promise.resolve(data);
         }
@@ -8520,7 +8520,7 @@ var GLTFFileLoader = /** @class */ (function () {
             babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["StringTools"].StartsWith(data, ";base64," + GLTFFileLoader.magicBase64Encoded) ||
             babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["StringTools"].StartsWith(data, "application/octet-stream;base64," + GLTFFileLoader.magicBase64Encoded) ||
             babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["StringTools"].StartsWith(data, "model/gltf-binary;base64," + GLTFFileLoader.magicBase64Encoded)) {
-            var arrayBuffer_1 = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["FileTools"].DecodeBase64UrlToBinary(data);
+            var arrayBuffer_1 = Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DecodeBase64UrlToBinary"])(data);
             this._validate(scene, arrayBuffer_1);
             return this._unpackBinaryAsync(new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataReader"]({
                 readAsync: function (byteOffset, byteLength) { return readAsync(arrayBuffer_1, byteOffset, byteLength); },
