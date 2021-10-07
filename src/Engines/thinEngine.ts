@@ -5118,7 +5118,8 @@ export class ThinEngine {
      * Queue a new function into the requested animation frame pool (ie. this function will be executed byt the browser for the next frame)
      * @param func - the function to be called
      * @param requester - the object that will request the next frame. Falls back to window.
-norali     * @returns frame number
+     * @returns frame number
+
      */
     public static QueueNewFrame(func: () => void, requester?: any): number {
         if (!IsWindowObjectExist()) {
