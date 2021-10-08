@@ -93,11 +93,11 @@ export const DiscBuilder = {
 VertexData.CreateDisc = CreateDiscVertexData;
 
 Mesh.CreateDisc = (name: string, radius: number, tessellation: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number): Mesh => {
-    var options = {
-        radius: radius,
-        tessellation: tessellation,
-        sideOrientation: sideOrientation,
-        updatable: updatable
+    const options = {
+        radius,
+        tessellation,
+        sideOrientation,
+        updatable
     };
 
     return CreateDisc(name, options, scene);

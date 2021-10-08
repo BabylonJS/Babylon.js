@@ -327,14 +327,14 @@ Mesh.CreateCylinder = (name: string, height: number, diameterTop: number, diamet
         subdivisions = 1;
     }
 
-    var options = {
-        height: height,
-        diameterTop: diameterTop,
-        diameterBottom: diameterBottom,
-        tessellation: tessellation,
-        subdivisions: subdivisions,
-        sideOrientation: sideOrientation,
-        updatable: updatable
+    const options = {
+        height,
+        diameterTop,
+        diameterBottom,
+        tessellation,
+        subdivisions,
+        sideOrientation,
+        updatable
     };
 
     return CreateCylinder(name, options, scene);

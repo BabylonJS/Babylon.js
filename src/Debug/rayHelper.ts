@@ -4,7 +4,6 @@ import { Vector3 } from "../Maths/math.vector";
 import { Color3 } from '../Maths/math.color';
 import { Scene } from "../scene";
 import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Mesh } from "../Meshes/mesh";
 import { LinesMesh } from "../Meshes/linesMesh";
 
 import "../Meshes/Builders/linesBuilder";
