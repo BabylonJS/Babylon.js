@@ -132,10 +132,14 @@
 			ground.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
 			ground.setEnabled(false);
 			
-			var knot = BABYLON.Mesh.CreateTorusKnot("knot", 10, 3, 128, 64, 2, 3, scene);
+			var knot = BABYLON.MeshBuilder.CreateTorusKnot("knot", {
+				radius: 10, tube: 3, radialSegments: 128, tubularSegments: 64, p: 2, q: 3
+			}, scene);
 			knot.setEnabled(false);
 			
-			var heightMap = BABYLON.Mesh.CreateGroundFromHeightMap("heightMap", "/Playground/textures/heightMap.png", 100, 100, 100, 0, 10, scene, false);
+			var heightMap = BABYLON.MeshBuilder.CreateGroundFromHeightMap("heightMap", "/Playground/textures/heightMap.png", {
+				width: 100, height: 100, subdivisions: 100, minHeight: 0, maxHeight: 10
+			}, scene, false);
 			heightMap.setEnabled(false);
 			
 			// Skybox
@@ -161,15 +165,21 @@
 				scene.beginAnimation(skeletons[0], 0, 100, true, 0.8);
 
 				// Shadow caster
-				var shadowCaster = BABYLON.Mesh.CreateTorus("torus", 4, 2, 30, scene, false);
+				var shadowCaster = BABYLON.MeshBuilder.CreateTorus("torus", {
+					diameter: 4, thickness: 2, tessellation: 30
+				}, scene, false);
 				shadowCaster.setEnabled(false);
 				shadowCaster.position = new BABYLON.Vector3(0, 30, 0);
 				
-				var shadowCaster2 = BABYLON.Mesh.CreateTorus("torus", 4, 2, 30, scene, false);
+				var shadowCaster2 = BABYLON.MeshBuilder.CreateTorus("torus", {
+					diameter: 4, thickness: 2, tessellation: 30
+				}, scene, false);
 				shadowCaster2.setEnabled(false);
 				shadowCaster2.position = new BABYLON.Vector3(0, -30, 0);
 				
-				var shadowCaster3 = BABYLON.Mesh.CreateTorus("torus", 4, 2, 30, scene, false);
+				var shadowCaster3 = BABYLON.MeshBuilder.CreateTorus("torus", {
+					diameter: 4, thickness: 2, tessellation: 30
+				}, scene, false);
 				shadowCaster3.setEnabled(false);
 				shadowCaster3.position = new BABYLON.Vector3(20, 20, 10);
 

@@ -21,7 +21,7 @@ Math.random = function () {
     seed %= maximum;
 
     return seed / maximum;
-}
+};
 
 function compare(renderData, referenceCanvas) {
     var width = referenceCanvas.width;
@@ -34,9 +34,11 @@ function compare(renderData, referenceCanvas) {
 
     var differencesCount = 0;
     for (var index = 0; index < size; index += 4) {
-        if (Math.abs(renderData[index] - referenceData.data[index]) < threshold &&
+        if (
+            Math.abs(renderData[index] - referenceData.data[index]) < threshold &&
             Math.abs(renderData[index + 1] - referenceData.data[index + 1]) < threshold &&
-            Math.abs(renderData[index + 2] - referenceData.data[index + 2]) < threshold) {
+            Math.abs(renderData[index + 2] - referenceData.data[index + 2]) < threshold
+        ) {
             continue;
         }
 
@@ -88,10 +90,10 @@ async function getRenderData(canvas, engine) {
 function saveRenderImage(data, canvas) {
     var width = canvas.width;
     var height = canvas.height;
-    var screenshotCanvas = document.createElement('canvas');
+    var screenshotCanvas = document.createElement("canvas");
     screenshotCanvas.width = width;
     screenshotCanvas.height = height;
-    var context = screenshotCanvas.getContext('2d');
+    var context = screenshotCanvas.getContext("2d");
 
     var imageData = context.createImageData(width, height);
     var castData = imageData.data;
@@ -102,7 +104,6 @@ function saveRenderImage(data, canvas) {
 }
 
 function downloadDataUrlFromJavascript(filename, dataUrl) {
-
     // Construct the 'a' element
     var link = document.createElement("a");
     link.download = filename;
@@ -129,20 +130,19 @@ async function evaluate(test, resultCanvas, result, renderImage, index, waitRing
         result.classList.add("failed");
         result.innerHTML = "×";
         testRes = false;
-        console.log('%c failed (gl error: ' + err + ')', 'color: red');
+        console.log("%c failed (gl error: " + err + ")", "color: red");
     } else {
-
         // Visual check
         if (!test.onlyVisual) {
             if (compare(renderData, resultCanvas)) {
                 result.classList.add("failed");
                 result.innerHTML = "×";
                 testRes = false;
-                console.log('%c failed', 'color: red');
+                console.log("%c failed", "color: red");
             } else {
                 result.innerHTML = "✔";
                 testRes = true;
-                console.log('%c validated', 'color: green');
+                console.log("%c validated", "color: green");
             }
         }
     }
@@ -161,7 +161,6 @@ function runTest(index, done) {
     if (index >= config.tests.length) {
         done(false);
     }
-
 
     var test = Object.assign({}, config.tests[index]);
 
@@ -201,7 +200,7 @@ function runTest(index, done) {
         resultCanvas.width = img.width;
         resultCanvas.height = img.height;
         resultContext.drawImage(img, 0, 0);
-    }
+    };
 
     img.src = "/tests/validation/ReferenceImages/" + test.referenceImage;
 
@@ -231,7 +230,7 @@ function runTest(index, done) {
     if (!test.enableEnvironment) {
         configuration.environmentMap = false;
     } else {
-        console.log(configuration.environmentMap)
+        console.log(configuration.environmentMap);
     }
 
     //model config
@@ -246,18 +245,21 @@ function runTest(index, done) {
     setTimeout(() => {
         currentViewer = null;
         currentScene = null;
-        viewerElement.innerHTML = '';
+        viewerElement.innerHTML = "";
         currentViewer = new BabylonViewer.DefaultViewer(viewerElement, configuration);
 
         currentViewer.onInitDoneObservable.add(() => {
-
             var currentFrame = 0;
             var waitForFrame = test.waitForFrame || 0;
 
             currentViewer.onModelLoadedObservable.add((model) => {
                 console.log("model loaded");
                 currentViewer.onFrameRenderedObservable.add(() => {
-                    console.log("frame rendered", currentFrame, model.meshes.every(m => m.isReady()));
+                    console.log(
+                        "frame rendered",
+                        currentFrame,
+                        model.meshes.every((m) => m.isReady())
+                    );
                     if (test.animationTest && !currentFrame) {
                         model.playAnimation(model.getAnimationNames()[0]);
                     }
@@ -283,7 +285,7 @@ function runTest(index, done) {
 function prepareMeshForViewer(viewer, configuration, test) {
     let meshModel = new BabylonViewer.ViewerModel(viewer, configuration.model || {});
 
-    let sphereMesh = BABYLON.Mesh.CreateSphere('sphere-' + test.title, 20, 1.0, viewer.sceneManager.scene);
+    let sphereMesh = BABYLON.MeshBuilder.CreateSphere("sphere-" + test.title, { segments: 20, diameter: 1.0 }, viewer.sceneManager.scene);
     if (test.createMaterial) {
         let material = new BABYLON.PBRMaterial("sphereMat", viewer.sceneManager.scene);
         sphereMesh.material = material;
@@ -306,13 +308,13 @@ function init() {
     BABYLON.DracoCompression.Configuration.decoder = {
         wasmUrl: GetAbsoluteUrl("../../dist/preview%20release/draco_wasm_wrapper_gltf.js"),
         wasmBinaryUrl: GetAbsoluteUrl("../../dist/preview%20release/draco_decoder_gltf.wasm"),
-        fallbackUrl: GetAbsoluteUrl("../../dist/preview%20release/draco_decoder_gltf.js")
+        fallbackUrl: GetAbsoluteUrl("../../dist/preview%20release/draco_decoder_gltf.js"),
     };
     BABYLON.MeshoptCompression.Configuration.decoder = {
-        url: GetAbsoluteUrl("../../dist/preview%20release/meshopt_decoder.js")
+        url: GetAbsoluteUrl("../../dist/preview%20release/meshopt_decoder.js"),
     };
     BABYLON.GLTFValidation.Configuration = {
-        url: GetAbsoluteUrl("../../dist/preview%20release/gltf_validator.js")
+        url: GetAbsoluteUrl("../../dist/preview%20release/gltf_validator.js"),
     };
     BABYLON.KhronosTextureContainer2.URLConfig = {
         jsDecoderModule: GetAbsoluteUrl("../../dist/preview%20release/babylon.ktx2Decoder.js"),
@@ -344,4 +346,3 @@ function init() {
 }
 
 init();
-

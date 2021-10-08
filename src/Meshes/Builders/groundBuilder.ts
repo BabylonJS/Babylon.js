@@ -410,15 +410,15 @@ Mesh.CreateTiledGround = (name: string, xmin: number, zmin: number, xmax: number
 };
 
 Mesh.CreateGroundFromHeightMap = (name: string, url: string, width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, scene: Scene, updatable?: boolean, onReady?: (mesh: GroundMesh) => void, alphaFilter?: number): GroundMesh => {
-    var options = {
-        width: width,
-        height: height,
-        subdivisions: subdivisions,
-        minHeight: minHeight,
-        maxHeight: maxHeight,
-        updatable: updatable,
-        onReady: onReady,
-        alphaFilter: alphaFilter
+    const options = {
+        width,
+        height,
+        subdivisions,
+        minHeight,
+        maxHeight,
+        updatable,
+        onReady,
+        alphaFilter
     };
 
     return CreateGroundFromHeightMap(name, url, options, scene);
