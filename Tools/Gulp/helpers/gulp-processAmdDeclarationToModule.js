@@ -7,8 +7,13 @@ var processData = function(data, options) {
 
     var str = "" + data;
 
+    console.log(data, options);
+
     // Start process by extracting all lines.
     let lines = str.split('\n');
+    const input = `export {.*} from ".*${options.namedExportPathsToExclude}"`;
+    console.log('regex input:', input);
+    const namedExportPathsToExcludeRegExp = options.namedExportPathsToExclude !== undefined ? new RegExp(input) : undefined;
 
     // Let's go line by line and check if we have special folder replacements
     // Replaces declare module '...'; by declare module 'babylonjs/...'; for instance
@@ -37,6 +42,11 @@ var processData = function(data, options) {
         }
         // If not Append Module Name
         if (!externalModule) {
+            // SKIP known named exports that are for backwards compatibility
+            if (namedExportPathsToExcludeRegExp && namedExportPathsToExcludeRegExp.test(line)) {
+                line = (line.startsWith('    ')) ? '    //' + line.substr(3) : "// " + line
+            }
+
             // Declaration
             line = line.replace(/declare module "/g, `declare module "${moduleName}/`);
             // From
@@ -60,7 +70,7 @@ var processData = function(data, options) {
                 line = `${spaces}readonly ${name}: boolean;`;
             }
             else if (value.startsWith('"')) {
-                line = `${spaces}readonly ${name}: string;`;    
+                line = `${spaces}readonly ${name}: string;`;
             }
             else {
                 line = `${spaces}readonly ${name}: number;`;
