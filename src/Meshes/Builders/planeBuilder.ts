@@ -100,12 +100,12 @@ export const PlaneBuilder = {
 
 VertexData.CreatePlane = CreatePlaneVertexData;
 Mesh.CreatePlane = (name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh => {
-    var options = {
-        size: size,
+    const options = {
+        size,
         width: size,
         height: size,
-        sideOrientation: sideOrientation,
-        updatable: updatable
+        sideOrientation,
+        updatable
     };
 
     return CreatePlane(name, options, scene);
