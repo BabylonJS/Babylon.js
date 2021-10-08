@@ -212,7 +212,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
     }
 
     checkValue(value: string, percent: boolean): string {
-        let newValue = value.match(/([\d\.\,]+)/g)?.[0];
+        let newValue = value.match(/([0-9.,]+)/g)?.[0];
         if (!newValue) {
             newValue = '0';
         }
@@ -221,10 +221,8 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
     }
 
     checkPercentage(value: string): boolean {
-        if (value.charAt(value.length - 1) === 'x' && value.charAt(value.length - 2) === 'p') {
-            return false;
-        }
-        return true;
+        const toSearch = 'px';
+        return value.substring(value.length - toSearch.length, value.length) !== toSearch;
     }
 
     render() {
@@ -263,7 +261,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                     onClick={() => {
                         let hasChild = false;
                         for (let i = 0; i < grid.columnCount; ++i) {
-                            let child = grid.cells[(grid.rowCount - 1).toString() + ":" + i.toString()];
+                            const child = grid.cells[(grid.rowCount - 1) + ":" + i];
                             if (child?.children.length) {
                                 hasChild = true;
                                 break;
@@ -334,7 +332,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                         onClick={() => {
                             let hasChild = false;
                             for (let i = 0; i < grid.rowCount; ++i) {
-                                let child = grid.cells[i.toString() + ":" + (grid.columnCount - 1).toString()];
+                                const child = grid.cells[i + ":" + (grid.columnCount - 1)];
                                 if (child?.children.length) {
                                     hasChild = true;
                                     break;
