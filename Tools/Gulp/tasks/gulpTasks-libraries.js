@@ -148,7 +148,8 @@ var processDTSFiles = function(libraries, settings, cb) {
             moduleName: commandLineOptions.moduleName || settings.build.umd.packageName,
             entryPoint: library.entry,
             externals: settings.build.umd.processDeclaration.classMap,
-            hiddenConsts: settings.build.umd.processDeclaration.hiddenConsts
+            hiddenConsts: settings.build.umd.processDeclaration.hiddenConsts,
+            namedExportPathsToExclude: settings.build.umd.processDeclaration.namedExportPathsToExclude
         });
 
         // Convert Module to Namespace for globals
