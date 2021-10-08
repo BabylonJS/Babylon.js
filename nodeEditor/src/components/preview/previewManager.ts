@@ -296,7 +296,7 @@ export class PreviewManager {
                         break;
                     case PreviewType.Torus:
                         this._meshes.push(CreateTorus("dummy-torus", {
-                            diamter: 2, thickness: 0.5, tessellation: 32
+                            diameter: 2, thickness: 0.5, tessellation: 32
                         }, this._scene));
                         break;
                     case PreviewType.Cylinder:
