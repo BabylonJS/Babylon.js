@@ -936,22 +936,26 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     /**
      * Recreate the content of the ADT from a JSON object
      * @param serializedObject define the JSON serialized object to restore from
+     * @param scaleToSize defines whether to scale to texture to the saved size
      */
-    public parseContent(serializedObject: any) {
+    public parseContent(serializedObject: any, scaleToSize?: boolean) {
         this._rootContainer = Control.Parse(serializedObject.root, this) as Container;
-        const width = serializedObject.width;
-        const height = serializedObject.height;
-        if (typeof (width) === "number" && typeof (height) === "number" && width >= 0 && height >= 0) {
-            this.scaleTo(width, height);
+        if (scaleToSize) {
+            const width = serializedObject.width;
+            const height = serializedObject.height;
+            if (typeof (width) === "number" && typeof (height) === "number" && width >= 0 && height >= 0) {
+                this.scaleTo(width, height);
+            }
         }
     }
 
     /**
      * Recreate the content of the ADT from a snippet saved by the GUI editor
      * @param snippetId defines the snippet to load
+     * @param scaleToSize defines whether to scale to texture to the saved size
      * @returns a promise that will resolve on success
      */
-    public parseFromSnippetAsync(snippetId: string): Promise<void> {
+    public parseFromSnippetAsync(snippetId: string, scaleToSize?: boolean): Promise<void> {
         if (snippetId === "_BLANK") {
             return Promise.resolve();
         }
@@ -964,7 +968,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                         var snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
                         let serializationObject = JSON.parse(snippet.gui);
 
-                        this.parseContent(serializationObject);
+                        this.parseContent(serializationObject, scaleToSize);
                         this.snippetId = snippetId;
 
                         resolve();
@@ -982,9 +986,10 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     /**
     * Recreate the content of the ADT from a url json
     * @param url defines the url to load
+    * @param scaleToSize defines whether to scale to texture to the saved size
     * @returns a promise that will resolve on success
     */
-    public parseFromURLAsync(url: string): Promise<void> {
+    public parseFromURLAsync(url: string, scaleToSize?: boolean): Promise<void> {
         if (url === "") {
             return Promise.resolve();
         }
@@ -996,7 +1001,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                     if (request.status == 200) {
                         var gui = request.responseText;
                         let serializationObject = JSON.parse(gui);
-                        this.parseContent(serializationObject);
+                        this.parseContent(serializationObject, scaleToSize);
 
                         resolve();
                     } else {
