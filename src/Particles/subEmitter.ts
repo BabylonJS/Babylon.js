@@ -87,13 +87,13 @@ export class SubEmitter {
      * Serialize current object to a JSON object
      * @returns the serialized object
      */
-    public serialize(): any {
+    public serialize(serializeTexture: boolean = false): any {
         let serializationObject: any = {};
 
         serializationObject.type = this.type;
         serializationObject.inheritDirection = this.inheritDirection;
         serializationObject.inheritedVelocityAmount = this.inheritedVelocityAmount;
-        serializationObject.particleSystem = this.particleSystem.serialize();
+        serializationObject.particleSystem = this.particleSystem.serialize(serializeTexture);
 
         return serializationObject;
     }
