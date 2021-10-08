@@ -6,9 +6,6 @@ import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lo
 import { Grid } from "babylonjs-gui/2D/controls/grid";
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
 import { ButtonLineComponent } from "../../../../sharedUiComponents/lines/buttonLineComponent";
-import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
-import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
-import { ValueAndUnit } from "babylonjs-gui/2D/valueAndUnit";
 import { Nullable } from "babylonjs/types";
 import { TextInputLineComponent } from "../../../../sharedUiComponents/lines/textInputLineComponent";
 
@@ -31,25 +28,14 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
     private _columnDefinitions: string[] = [];
 
     renderRows() {
-        const grid = this.props.grid;
-        const rows = [];
-
-        for (var index = 0; index < grid.rowCount; index++) {
-            rows.push(grid.getRowDefinition(index)!);
-        }
-
         return (
-            rows.map((rd, i) => {
-                let newrd = new ValueAndUnit(rd.getValue(grid.host), rd.unit);
+            this._rowDefinitions.map((rd, i) => {
                 return (
-                    <div className="divider" key={`r${i}`}>
-                        <FloatLineComponent lockObject={this.props.lockObject} label={`Row ${i}`} target={newrd} propertyName={"_value"} digits={rd.unit == 1 ? 0 : 2}
+                    <div className="divider">
+                        <TextInputLineComponent lockObject={this.props.lockObject} key={`r${i}`} label={`Row ${i}`} value={rd} numbersOnly={true}
                             onChange={(newValue) => {
-                                grid.setRowDefinition(i, newValue, newrd.unit == 1 ? true : false);
-                            }} />
-                        <CheckBoxLineComponent label="" target={newrd} propertyName={"unit"} onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                            onValueChanged={() => {
-                                grid.setRowDefinition(i, newrd.getValue(grid.host), newrd.unit == 1 ? true : false);
+                                this._rowDefinitions[i] = newValue;
+                                this._rowEditFlags[i] = true;
                             }} />
                     </div>
                 )
@@ -70,15 +56,16 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                 this._columnEditFlags.push(false);
             }
         }
+        for (var index = 0; index < grid.rowCount; index++) {
+            const value = grid.getRowDefinition(index);
+            if (value) {
+                this._rowDefinitions.push(value.toString(grid._host, 2));
+                this._rowEditFlags.push(false);
+            }
+        }
     }
 
     renderColumns() {
-        const grid = this.props.grid;
-        const cols = [];
-
-        for (var index = 0; index < grid.columnCount; index++) {
-            cols.push(grid.getColumnDefinition(index)!);
-        }
         return (
             this._columnDefinitions.map((cd, i) => {
                 return (
@@ -97,24 +84,66 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
     resizeRow() {
         const grid = this.props.grid;
         let total = 0;
-        for (let i = 0; i < grid.rowCount; ++i) {
-            let rd = grid.getRowDefinition(i);
-            if (rd?.isPercentage) {
-                total += rd?.getValue(grid.host);
+        let editCount = 0;
+        let percentCount = 0;
+        let rowValues: number[] = [];
+        for (let i = 0; i < this._rowDefinitions.length; ++i) {
+            let value = this._rowDefinitions[i];
+            let percent = this.checkPercentage(value);
+            if (this._rowEditFlags[i]) {
+                value = this.checkValue(value, percent);
+                if (percent) {
+                    editCount++;
+                }
+            }
+
+            if (percent) {
+                percentCount++;
+                let valueAsInt = parseInt(value.substring(0, value.length - 1));
+                total += valueAsInt / 100;
+                rowValues.push(valueAsInt / 100);
+            }
+            else {
+                let valueAsInt = parseInt(value.substring(0, value.length - 2));
+                rowValues.push(valueAsInt);
             }
         }
-        if (total != 1.0) {
+
+        let allEdited = editCount === percentCount;
+
+        if (total > 1.0 || allEdited) {
             let difference = total - 1.0;
             let diff = Math.abs(difference);
             for (let i = 0; i < grid.rowCount; ++i) {
-                let rd = grid.getRowDefinition(i);
-                if (rd?.isPercentage) {
-                    let value = rd?.getValue(grid.host);
+                if (this.checkPercentage(this._rowDefinitions[i])) {
+                    let value = rowValues[i];
                     let weighted = diff * (value / total);
-                    grid.setRowDefinition(i, difference > 0 ? value - weighted : value + weighted);
+                    rowValues[i] = difference > 0 ? value - weighted : value + weighted;
+                }
+            }
+        } else if (total < 1.0) {
+            let difference = 1.0 - total;
+            for (let i = 0; i < grid.rowCount; ++i) {
+                if (this.checkPercentage(this._rowDefinitions[i]) && this._rowEditFlags[i]) {
+                    let value = rowValues[i];
+                    total -= value;
+                }
+            }
+            for (let i = 0; i < grid.rowCount; ++i) {
+                if (this.checkPercentage(this._rowDefinitions[i]) && !this._rowEditFlags[i]) {
+                    let value = rowValues[i];
+                    let weighted = difference * (value / total);
+                    rowValues[i] = value + weighted;
                 }
             }
         }
+
+        for (let i = 0; i < this._rowDefinitions.length; ++i) {
+            grid.setRowDefinition(i, rowValues[i], !this.checkPercentage(this._rowDefinitions[i]));
+        }
+
+        this.setValues();
+        this.forceUpdate();
     }
 
     resizeColumn() {
@@ -128,8 +157,8 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
             let percent = this.checkPercentage(value);
             if (this._columnEditFlags[i]) {
                 value = this.checkValue(value, percent);
-                if (percent) { 
-                    editCount++; 
+                if (percent) {
+                    editCount++;
                 }
             }
 
@@ -224,8 +253,9 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                 count++;
                             }
                         }
-                        grid.addRowDefinition(total / count);
-                        this.resizeColumn();
+                        grid.addRowDefinition(total / count, false);
+                        this.setValues();
+                        this.resizeRow();
                         this.forceUpdate();
                     }}
                 />  {(grid.rowCount > 1 && !this._removingRow) && <ButtonLineComponent
@@ -245,7 +275,8 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                         }
                         else {
                             grid.removeRowDefinition(grid.rowCount - 1);
-                            this.resizeColumn();
+                            this.setValues();
+                            this.resizeRow();
                         }
                         this.forceUpdate();
                     }}
@@ -257,7 +288,8 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                             label="REMOVE"
                             onClick={() => {
                                 grid.removeRowDefinition(grid.rowCount - 1);
-                                this.resizeColumn();
+                                this.setValues();
+                                this.resizeRow();
                                 this.forceUpdate();
                                 this._removingRow = false;
                             }}
@@ -272,6 +304,12 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                 {
                     this.renderRows()
                 }
+                <ButtonLineComponent
+                    label="SAVE ROW CHANGES"
+                    onClick={() => {
+                        this.resizeRow();
+                    }}
+                />
                 <hr className="ge" />
                 <ButtonLineComponent
                     label="ADD COLUMN"
@@ -308,6 +346,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                             }
                             else {
                                 grid.removeColumnDefinition(grid.columnCount - 1);
+                                this.setValues();
                                 this.resizeColumn();
                             }
                             this.forceUpdate();
@@ -320,6 +359,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                             label="REMOVE"
                             onClick={() => {
                                 grid.removeColumnDefinition(grid.columnCount - 1);
+                                this.setValues();
                                 this.resizeColumn();
                                 this.forceUpdate();
                                 this._removingColumn = false;
