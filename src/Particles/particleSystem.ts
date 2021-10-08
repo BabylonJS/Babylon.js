@@ -2189,7 +2189,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             for (var subs of this._subEmitters) {
                 let cell = [];
                 for (var sub of subs) {
-                    cell.push(sub.serialize());
+                    cell.push(sub.serialize(serializeTexture));
                 }
 
                 serializationObject.subEmitters.push(cell);

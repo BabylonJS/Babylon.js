@@ -678,6 +678,10 @@ Scene.prototype.beginDirectAnimation = function (target: any, animations: Animat
 
     if (from > to && speedRatio > 0) {
         speedRatio *= -1;
+    } else if (to > from && speedRatio < 0) {
+        var temp = to;
+        to = from;
+        from = temp;
     }
 
     var animatable = new Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd, animations, onAnimationLoop, isAdditive);
