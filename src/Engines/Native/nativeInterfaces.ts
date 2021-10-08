@@ -10,15 +10,15 @@ export interface INativeEngine {
 
     requestAnimationFrame(callback: () => void): void;
 
-    createVertexArray(): any;
+    createVertexArray(): NativeData;
 
-    createIndexBuffer(bytes: ArrayBuffer, byteOffset: number, byteLength: number, is32Bits: boolean, dynamic: boolean): any;
-    recordIndexBuffer(vertexArray: any, buffer: any): void;
-    updateDynamicIndexBuffer(buffer: any, bytes: ArrayBuffer, byteOffset: number, byteLength: number, startIndex: number): void;
+    createIndexBuffer(bytes: ArrayBuffer, byteOffset: number, byteLength: number, is32Bits: boolean, dynamic: boolean): NativeData;
+    recordIndexBuffer(vertexArray: NativeData, indexBuffer: NativeData): void;
+    updateDynamicIndexBuffer(buffer: NativeData, bytes: ArrayBuffer, byteOffset: number, byteLength: number, startIndex: number): void;
 
-    createVertexBuffer(bytes: ArrayBuffer, byteOffset: number, byteLength: number, dynamic: boolean): any;
-    recordVertexBuffer(vertexArray: any, buffer: any, location: number, byteOffset: number, byteStride: number, numElements: number, type: number, normalized: boolean): void;
-    updateDynamicVertexBuffer(buffer: any, bytes: ArrayBuffer, byteOffset: number, byteLength: number): void;
+    createVertexBuffer(bytes: ArrayBuffer, byteOffset: number, byteLength: number, dynamic: boolean): NativeData;
+    recordVertexBuffer(vertexArray: NativeData, vertexBuffer: NativeData, location: number, byteOffset: number, byteStride: number, numElements: number, type: number, normalized: boolean): void;
+    updateDynamicVertexBuffer(vertexBuffer: NativeData, bytes: ArrayBuffer, byteOffset: number, byteLength: number): void;
 
     createProgram(vertexShader: string, fragmentShader: string): any;
     getUniforms(shaderProgram: any, uniformsNames: string[]): WebGLUniformLocation[];
