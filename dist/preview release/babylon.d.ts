@@ -13782,9 +13782,10 @@ declare module BABYLON {
         clone(): SubEmitter;
         /**
          * Serialize current object to a JSON object
+         * @param serializeTexture defines if the texture must be serialized as well
          * @returns the serialized object
          */
-        serialize(): any;
+        serialize(serializeTexture?: boolean): any;
         /** @hidden */
         static _ParseParticleSystem(system: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart?: boolean): ParticleSystem;
         /**
@@ -16449,7 +16450,6 @@ declare module BABYLON {
         private _storageBuffers;
         private _cachedWorldViewMatrix;
         private _cachedWorldViewProjectionMatrix;
-        private _renderId;
         private _multiview;
         private _cachedDefines;
         /** Define the Url to load snippets */
@@ -16664,7 +16664,6 @@ declare module BABYLON {
          * @return the material itself allowing "fluent" like uniform updates
          */
         setStorageBuffer(name: string, buffer: StorageBuffer): ShaderMaterial;
-        private _checkCache;
         /**
          * Specifies that the submesh is ready to be used
          * @param mesh defines the mesh to check
