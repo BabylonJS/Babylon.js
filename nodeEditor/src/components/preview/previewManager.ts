@@ -34,6 +34,7 @@ import { Layer } from "babylonjs/Layers/layer";
 import { DataStorage } from "babylonjs/Misc/dataStorage";
 import { NodeMaterialBlock } from "babylonjs/Materials/Node/nodeMaterialBlock";
 import { CreateGround } from "babylonjs/Meshes/Builders/groundBuilder";
+import { CreateSphere } from "babylonjs/Meshes/Builders/sphereBuilder";
 
 export class PreviewManager {
     private _nodeMaterial: NodeMaterial;
@@ -291,7 +292,7 @@ export class PreviewManager {
                         });
                         return;
                     case PreviewType.Sphere:
-                        this._meshes.push(Mesh.CreateSphere("dummy-sphere", 32, 2, this._scene));
+                        this._meshes.push(CreateSphere("dummy-sphere", { segments: 32, diameter: 2 }, this._scene));
                         break;
                     case PreviewType.Torus:
                         this._meshes.push(Mesh.CreateTorus("dummy-torus", 2, 0.5, 32, this._scene));
