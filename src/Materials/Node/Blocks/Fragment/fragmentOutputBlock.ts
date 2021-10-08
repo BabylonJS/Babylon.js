@@ -3,7 +3,7 @@ import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialB
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
-import { _TypeStore } from '../../../../Misc/typeStore';
+import { RegisterClass } from '../../../../Misc/typeStore';
 import { Scene } from '../../../../scene';
 import { AbstractMesh } from '../../../../Meshes/abstractMesh';
 import { NodeMaterialDefines } from '../../nodeMaterial';
@@ -149,4 +149,4 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.FragmentOutputBlock"] = FragmentOutputBlock;
+RegisterClass("BABYLON.FragmentOutputBlock", FragmentOutputBlock);

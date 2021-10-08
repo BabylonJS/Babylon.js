@@ -11,7 +11,7 @@ import { Effect } from "../Materials/effect";
 import { DataBuffer } from '../Buffers/dataBuffer';
 import { Tools } from "../Misc/tools";
 import { Observer } from "../Misc/observable";
-import { EnvironmentTextureTools, EnvironmentTextureSpecularInfoV1 } from "../Misc/environmentTextureTools";
+import { EnvironmentTextureSpecularInfoV1, CreateImageDataArrayBufferViews, GetEnvInfo, UploadEnvSpherical } from "../Misc/environmentTextureTools";
 import { Scene } from "../scene";
 import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
 import { IPipelineContext } from './IPipelineContext';
@@ -38,7 +38,6 @@ interface INativeCamera {
 }
 
 interface INativeEngine {
-
     readonly TEXTURE_NEAREST_NEAREST: number;
     readonly TEXTURE_LINEAR_LINEAR: number;
     readonly TEXTURE_LINEAR_LINEAR_MIPLINEAR: number;
@@ -173,13 +172,13 @@ interface INativeEngine {
 
     createVertexArray(): any;
 
-    createIndexBuffer(data: ArrayBufferView, dynamic: boolean): any;
+    createIndexBuffer(bytes: ArrayBuffer, byteOffset: number, byteLength: number, is32Bits: boolean, dynamic: boolean): any;
     recordIndexBuffer(vertexArray: any, buffer: any): void;
-    updateDynamicIndexBuffer(buffer: any, data: ArrayBufferView, startingIndex: number): void;
+    updateDynamicIndexBuffer(buffer: any, bytes: ArrayBuffer, byteOffset: number, byteLength: number, startIndex: number): void;
 
-    createVertexBuffer(data: ArrayBufferView, dynamic: boolean): any;
+    createVertexBuffer(bytes: ArrayBuffer, byteOffset: number, byteLength: number, dynamic: boolean): any;
     recordVertexBuffer(vertexArray: any, buffer: any, location: number, byteOffset: number, byteStride: number, numElements: number, type: number, normalized: boolean): void;
-    updateDynamicVertexBuffer(buffer: any, data: ArrayBufferView, byteOffset: number, byteLength: number): void;
+    updateDynamicVertexBuffer(buffer: any, bytes: ArrayBuffer, byteOffset: number, byteLength: number): void;
 
     createProgram(vertexShader: string, fragmentShader: string): any;
     getUniforms(shaderProgram: any, uniformsNames: string[]): WebGLUniformLocation[];
@@ -897,13 +896,14 @@ class CommandBufferEncoder {
 
 /** @hidden */
 export class NativeEngine extends Engine {
+    // This must match the protocol version in NativeEngine.cpp
+    private static readonly ProtocolVersion = 1;
+
     private readonly _native: INativeEngine = new _native.Engine();
-    private _nativeCamera: INativeCamera = _native.NativeCamera ? new _native.NativeCamera() : null;
+    private readonly _nativeCamera: Nullable<INativeCamera> = _native.NativeCamera ? new _native.NativeCamera() : null;
 
     private readonly _commandBufferEncoder = new CommandBufferEncoder(this._native);
 
-    /** Defines the invalid handle returned by bgfx when resource creation goes wrong */
-    private readonly INVALID_HANDLE = 65535;
     private _boundBuffersVertexArray: any = null;
     private _currentDepthTest: number = this._native.DEPTH_TEST_LEQUAL;
     private _stencilTest = false;
@@ -928,6 +928,10 @@ export class NativeEngine extends Engine {
 
     public constructor(options: NativeEngineOptions = {}) {
         super(null, false, undefined, options.adaptToDeviceRatio);
+
+        if (_native.Engine.ProtocolVersion !== NativeEngine.ProtocolVersion) {
+            throw new Error(`Protocol version mismatch: ${_native.Engine.ProtocolVersion} (Native) !== ${NativeEngine.ProtocolVersion} (JS)`);
+        }
 
         this._webGLVersion = 2;
         this.disableUniformBuffers = true;
@@ -1137,23 +1141,18 @@ export class NativeEngine extends Engine {
         const buffer = new NativeDataBuffer();
         buffer.references = 1;
         buffer.is32Bits = (data.BYTES_PER_ELEMENT === 4);
-        if (data.length) {
-            buffer.nativeIndexBuffer = this._native.createIndexBuffer(data, updateable ?? false);
-            if (buffer.nativeVertexBuffer === this.INVALID_HANDLE) {
-                throw new Error("Could not create a native index buffer.");
-            }
-        } else {
-            buffer.nativeVertexBuffer = this.INVALID_HANDLE;
+        if (data.byteLength) {
+            buffer.nativeIndexBuffer = this._native.createIndexBuffer(data.buffer, data.byteOffset, data.byteLength, buffer.is32Bits, updateable ?? false);
         }
         return buffer;
     }
 
-    public createVertexBuffer(data: DataArray, updateable?: boolean): NativeDataBuffer {
+    public createVertexBuffer(vertices: DataArray, updateable?: boolean): NativeDataBuffer {
+        const data = ArrayBuffer.isView(vertices) ? vertices : new Float32Array(vertices);
         const buffer = new NativeDataBuffer();
         buffer.references = 1;
-        buffer.nativeVertexBuffer = this._native.createVertexBuffer(ArrayBuffer.isView(data) ? data : new Float32Array(data), updateable ?? false);
-        if (buffer.nativeVertexBuffer === this.INVALID_HANDLE) {
-            throw new Error("Could not create a native vertex buffer.");
+        if (data.byteLength) {
+            buffer.nativeVertexBuffer = this._native.createVertexBuffer(data.buffer, data.byteOffset, data.byteLength, updateable ?? false);
         }
         return buffer;
     }
@@ -2448,11 +2447,11 @@ export class NativeEngine extends Engine {
         // TODO: use texture loader to load env files?
         if (extension === ".env") {
             const onloaddata = (data: ArrayBufferView) => {
-                var info = EnvironmentTextureTools.GetEnvInfo(data)!;
+                var info = GetEnvInfo(data)!;
                 texture.width = info.width;
                 texture.height = info.width;
 
-                EnvironmentTextureTools.UploadEnvSpherical(texture, info);
+                UploadEnvSpherical(texture, info);
 
                 let specularInfo = info.specular as EnvironmentTextureSpecularInfoV1;
                 if (!specularInfo) {
@@ -2460,7 +2459,7 @@ export class NativeEngine extends Engine {
                 }
 
                 texture._lodGenerationScale = specularInfo.lodGenerationScale;
-                const imageData = EnvironmentTextureTools.CreateImageDataArrayBufferViews(data, info);
+                const imageData = CreateImageDataArrayBufferViews(data, info);
 
                 texture.format = Constants.TEXTUREFORMAT_RGBA;
                 texture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
@@ -2644,24 +2643,17 @@ export class NativeEngine extends Engine {
         const buffer = indexBuffer as NativeDataBuffer;
         const data = this._normalizeIndexData(indices);
         buffer.is32Bits = (data.BYTES_PER_ELEMENT === 4);
-        this._native.updateDynamicIndexBuffer(buffer.nativeIndexBuffer, data, offset);
+        this._native.updateDynamicIndexBuffer(buffer.nativeIndexBuffer, data.buffer, data.byteOffset, data.byteLength, offset);
     }
 
-    /**
-     * Updates a dynamic vertex buffer.
-     * @param vertexBuffer the vertex buffer to update
-     * @param data the data used to update the vertex buffer
-     * @param byteOffset the byte offset of the data (optional)
-     * @param byteLength the byte length of the data (optional)
-     */
-    public updateDynamicVertexBuffer(vertexBuffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void {
+    public updateDynamicVertexBuffer(vertexBuffer: DataBuffer, verticies: DataArray, byteOffset?: number, byteLength?: number): void {
         const buffer = vertexBuffer as NativeDataBuffer;
-        const dataView = ArrayBuffer.isView(data) ? data : new Float32Array(data);
+        const data = ArrayBuffer.isView(verticies) ? verticies : new Float32Array(verticies);
         this._native.updateDynamicVertexBuffer(
             buffer.nativeVertexBuffer,
-            dataView,
-            byteOffset ?? 0,
-            byteLength ?? dataView.byteLength);
+            data.buffer,
+            data.byteOffset + (byteOffset ?? 0),
+            byteLength ?? data.byteLength);
     }
 
     // TODO: Refactor to share more logic with base Engine implementation.

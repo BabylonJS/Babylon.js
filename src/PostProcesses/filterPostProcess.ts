@@ -6,7 +6,7 @@ import { PostProcess, PostProcessOptions } from "./postProcess";
 import { Engine } from "../Engines/engine";
 
 import "../Shaders/filter.fragment";
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 import { serializeAsMatrix, SerializationHelper } from '../Misc/decorators';
 
 declare type Scene = import("../scene").Scene;
@@ -65,4 +65,4 @@ export class FilterPostProcess extends PostProcess {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.FilterPostProcess"] = FilterPostProcess;
+RegisterClass("BABYLON.FilterPostProcess", FilterPostProcess);

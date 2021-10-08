@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \***********************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \************************************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -772,7 +772,7 @@ var CellMaterial = /** @class */ (function (_super) {
     return CellMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.CellMaterial"] = CellMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.CellMaterial", CellMaterial);
 
 
 /***/ }),
@@ -1021,7 +1021,7 @@ var CustomMaterial = /** @class */ (function (_super) {
     return CustomMaterial;
 }(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["StandardMaterial"]));
 
-babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.CustomMaterial"] = CustomMaterial;
+Object(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.CustomMaterial", CustomMaterial);
 
 
 /***/ }),
@@ -1304,7 +1304,7 @@ var PBRCustomMaterial = /** @class */ (function (_super) {
     return PBRCustomMaterial;
 }(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["PBRMaterial"]));
 
-babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.PBRCustomMaterial"] = PBRCustomMaterial;
+Object(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.PBRCustomMaterial", PBRCustomMaterial);
 
 
 /***/ }),
@@ -1706,7 +1706,7 @@ var FireMaterial = /** @class */ (function (_super) {
     return FireMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.FireMaterial"] = FireMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.FireMaterial", FireMaterial);
 
 
 /***/ }),
@@ -2287,7 +2287,7 @@ var FurMaterial = /** @class */ (function (_super) {
     return FurMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.FurMaterial"] = FurMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.FurMaterial", FurMaterial);
 
 
 /***/ }),
@@ -2647,7 +2647,7 @@ var GradientMaterial = /** @class */ (function (_super) {
     return GradientMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.GradientMaterial"] = GradientMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.GradientMaterial", GradientMaterial);
 
 
 /***/ }),
@@ -2982,7 +2982,7 @@ var GridMaterial = /** @class */ (function (_super) {
     return GridMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.GridMaterial"] = GridMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.GridMaterial", GridMaterial);
 
 
 /***/ }),
@@ -3013,58 +3013,58 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _cell__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./cell */ "./cell/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CellMaterial", function() { return _cell__WEBPACK_IMPORTED_MODULE_0__["CellMaterial"]; });
+/* harmony import */ var _cell_index__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./cell/index */ "./cell/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CellMaterial", function() { return _cell_index__WEBPACK_IMPORTED_MODULE_0__["CellMaterial"]; });
 
-/* harmony import */ var _custom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./custom */ "./custom/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CustomShaderStructure", function() { return _custom__WEBPACK_IMPORTED_MODULE_1__["CustomShaderStructure"]; });
+/* harmony import */ var _custom_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./custom/index */ "./custom/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CustomShaderStructure", function() { return _custom_index__WEBPACK_IMPORTED_MODULE_1__["CustomShaderStructure"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ShaderSpecialParts", function() { return _custom__WEBPACK_IMPORTED_MODULE_1__["ShaderSpecialParts"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ShaderSpecialParts", function() { return _custom_index__WEBPACK_IMPORTED_MODULE_1__["ShaderSpecialParts"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CustomMaterial", function() { return _custom__WEBPACK_IMPORTED_MODULE_1__["CustomMaterial"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CustomMaterial", function() { return _custom_index__WEBPACK_IMPORTED_MODULE_1__["CustomMaterial"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ShaderAlebdoParts", function() { return _custom__WEBPACK_IMPORTED_MODULE_1__["ShaderAlebdoParts"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ShaderAlebdoParts", function() { return _custom_index__WEBPACK_IMPORTED_MODULE_1__["ShaderAlebdoParts"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "PBRCustomMaterial", function() { return _custom__WEBPACK_IMPORTED_MODULE_1__["PBRCustomMaterial"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "PBRCustomMaterial", function() { return _custom_index__WEBPACK_IMPORTED_MODULE_1__["PBRCustomMaterial"]; });
 
-/* harmony import */ var _fire__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./fire */ "./fire/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FireMaterial", function() { return _fire__WEBPACK_IMPORTED_MODULE_2__["FireMaterial"]; });
+/* harmony import */ var _fire_index__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./fire/index */ "./fire/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FireMaterial", function() { return _fire_index__WEBPACK_IMPORTED_MODULE_2__["FireMaterial"]; });
 
-/* harmony import */ var _fur__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./fur */ "./fur/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FurMaterial", function() { return _fur__WEBPACK_IMPORTED_MODULE_3__["FurMaterial"]; });
+/* harmony import */ var _fur_index__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./fur/index */ "./fur/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FurMaterial", function() { return _fur_index__WEBPACK_IMPORTED_MODULE_3__["FurMaterial"]; });
 
-/* harmony import */ var _gradient__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./gradient */ "./gradient/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GradientMaterial", function() { return _gradient__WEBPACK_IMPORTED_MODULE_4__["GradientMaterial"]; });
+/* harmony import */ var _gradient_index__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./gradient/index */ "./gradient/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GradientMaterial", function() { return _gradient_index__WEBPACK_IMPORTED_MODULE_4__["GradientMaterial"]; });
 
-/* harmony import */ var _grid__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./grid */ "./grid/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GridMaterial", function() { return _grid__WEBPACK_IMPORTED_MODULE_5__["GridMaterial"]; });
+/* harmony import */ var _grid_index__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./grid/index */ "./grid/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GridMaterial", function() { return _grid_index__WEBPACK_IMPORTED_MODULE_5__["GridMaterial"]; });
 
-/* harmony import */ var _lava__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./lava */ "./lava/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "LavaMaterial", function() { return _lava__WEBPACK_IMPORTED_MODULE_6__["LavaMaterial"]; });
+/* harmony import */ var _lava_index__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./lava/index */ "./lava/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "LavaMaterial", function() { return _lava_index__WEBPACK_IMPORTED_MODULE_6__["LavaMaterial"]; });
 
-/* harmony import */ var _mix__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./mix */ "./mix/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MixMaterial", function() { return _mix__WEBPACK_IMPORTED_MODULE_7__["MixMaterial"]; });
+/* harmony import */ var _mix_index__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./mix/index */ "./mix/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MixMaterial", function() { return _mix_index__WEBPACK_IMPORTED_MODULE_7__["MixMaterial"]; });
 
-/* harmony import */ var _normal__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./normal */ "./normal/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "NormalMaterial", function() { return _normal__WEBPACK_IMPORTED_MODULE_8__["NormalMaterial"]; });
+/* harmony import */ var _normal_index__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./normal/index */ "./normal/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "NormalMaterial", function() { return _normal_index__WEBPACK_IMPORTED_MODULE_8__["NormalMaterial"]; });
 
-/* harmony import */ var _shadowOnly__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./shadowOnly */ "./shadowOnly/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ShadowOnlyMaterial", function() { return _shadowOnly__WEBPACK_IMPORTED_MODULE_9__["ShadowOnlyMaterial"]; });
+/* harmony import */ var _shadowOnly_index__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./shadowOnly/index */ "./shadowOnly/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ShadowOnlyMaterial", function() { return _shadowOnly_index__WEBPACK_IMPORTED_MODULE_9__["ShadowOnlyMaterial"]; });
 
-/* harmony import */ var _simple__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./simple */ "./simple/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SimpleMaterial", function() { return _simple__WEBPACK_IMPORTED_MODULE_10__["SimpleMaterial"]; });
+/* harmony import */ var _simple_index__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./simple/index */ "./simple/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SimpleMaterial", function() { return _simple_index__WEBPACK_IMPORTED_MODULE_10__["SimpleMaterial"]; });
 
-/* harmony import */ var _sky__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./sky */ "./sky/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SkyMaterial", function() { return _sky__WEBPACK_IMPORTED_MODULE_11__["SkyMaterial"]; });
+/* harmony import */ var _sky_index__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./sky/index */ "./sky/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SkyMaterial", function() { return _sky_index__WEBPACK_IMPORTED_MODULE_11__["SkyMaterial"]; });
 
-/* harmony import */ var _terrain__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./terrain */ "./terrain/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TerrainMaterial", function() { return _terrain__WEBPACK_IMPORTED_MODULE_12__["TerrainMaterial"]; });
+/* harmony import */ var _terrain_index__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./terrain/index */ "./terrain/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TerrainMaterial", function() { return _terrain_index__WEBPACK_IMPORTED_MODULE_12__["TerrainMaterial"]; });
 
-/* harmony import */ var _triPlanar__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./triPlanar */ "./triPlanar/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TriPlanarMaterial", function() { return _triPlanar__WEBPACK_IMPORTED_MODULE_13__["TriPlanarMaterial"]; });
+/* harmony import */ var _triPlanar_index__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./triPlanar/index */ "./triPlanar/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TriPlanarMaterial", function() { return _triPlanar_index__WEBPACK_IMPORTED_MODULE_13__["TriPlanarMaterial"]; });
 
-/* harmony import */ var _water__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./water */ "./water/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "WaterMaterial", function() { return _water__WEBPACK_IMPORTED_MODULE_14__["WaterMaterial"]; });
+/* harmony import */ var _water_index__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./water/index */ "./water/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "WaterMaterial", function() { return _water_index__WEBPACK_IMPORTED_MODULE_14__["WaterMaterial"]; });
 
 
 
@@ -3559,7 +3559,7 @@ var LavaMaterial = /** @class */ (function (_super) {
     return LavaMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.LavaMaterial"] = LavaMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.LavaMaterial", LavaMaterial);
 
 
 /***/ }),
@@ -4211,7 +4211,7 @@ var MixMaterial = /** @class */ (function (_super) {
     return MixMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.MixMaterial"] = MixMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.MixMaterial", MixMaterial);
 
 
 /***/ }),
@@ -4635,7 +4635,7 @@ var NormalMaterial = /** @class */ (function (_super) {
     return NormalMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.NormalMaterial"] = NormalMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.NormalMaterial", NormalMaterial);
 
 
 /***/ }),
@@ -4976,7 +4976,7 @@ var ShadowOnlyMaterial = /** @class */ (function (_super) {
     return ShadowOnlyMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.ShadowOnlyMaterial"] = ShadowOnlyMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.ShadowOnlyMaterial", ShadowOnlyMaterial);
 
 
 /***/ }),
@@ -5358,7 +5358,7 @@ var SimpleMaterial = /** @class */ (function (_super) {
     return SimpleMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.SimpleMaterial"] = SimpleMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.SimpleMaterial", SimpleMaterial);
 
 
 /***/ }),
@@ -5688,8 +5688,8 @@ var SkyMaterial = /** @class */ (function (_super) {
         if (!this.useSunPosition) {
             var theta = Math.PI * (this.inclination - 0.5);
             var phi = 2 * Math.PI * (this.azimuth - 0.5);
-            this.sunPosition.x = this.distance * Math.cos(phi);
-            this.sunPosition.y = this.distance * Math.sin(phi) * Math.sin(theta);
+            this.sunPosition.x = this.distance * Math.cos(phi) * Math.cos(theta);
+            this.sunPosition.y = this.distance * Math.sin(-theta);
             this.sunPosition.z = this.distance * Math.sin(phi) * Math.cos(theta);
             babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Quaternion"].FromUnitVectorsToRef(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector3"].UpReadOnly, this.up, this._skyOrientation);
             this.sunPosition.rotateByQuaternionToRef(this._skyOrientation, this.sunPosition);
@@ -5786,7 +5786,7 @@ var SkyMaterial = /** @class */ (function (_super) {
     return SkyMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.SkyMaterial"] = SkyMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.SkyMaterial", SkyMaterial);
 
 
 /***/ }),
@@ -6298,7 +6298,7 @@ var TerrainMaterial = /** @class */ (function (_super) {
     return TerrainMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.TerrainMaterial"] = TerrainMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.TerrainMaterial", TerrainMaterial);
 
 
 /***/ }),
@@ -6723,7 +6723,7 @@ var TriPlanarMaterial = /** @class */ (function (_super) {
     return TriPlanarMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.TriPlanarMaterial"] = TriPlanarMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.TriPlanarMaterial", TriPlanarMaterial);
 
 
 /***/ }),
@@ -7600,7 +7600,7 @@ var WaterMaterial = /** @class */ (function (_super) {
     return WaterMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.WaterMaterial"] = WaterMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.WaterMaterial", WaterMaterial);
 
 
 /***/ }),

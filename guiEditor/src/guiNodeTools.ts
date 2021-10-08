@@ -114,8 +114,8 @@ export class GUINodeTools {
             case "Grid":
                 element = new Grid("Grid");
                 element.isHighlighted = true;
-                element.addColumnDefinition(0.5);
-                element.addRowDefinition(0.5);
+                element.addColumnDefinition(1.0);
+                element.addRowDefinition(1.0);
                 element.isPointerBlocker = true;
                 return element;
             case "DisplayGrid":
@@ -124,7 +124,7 @@ export class GUINodeTools {
             case "StackPanel":
                 element = new StackPanel("StackPanel");
                 element.isHighlighted = true;
-                element.width = "160%";
+                element.width = "100%";
                 element.height = "100%";
                 return element;
             case "ScrollViewer":

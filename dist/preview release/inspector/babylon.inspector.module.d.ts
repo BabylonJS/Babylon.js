@@ -563,6 +563,7 @@ declare module "babylonjs-inspector/components/popupComponent" {
         onClose: (window: Window) => void;
         onResize?: () => void;
         onKeyUp?: (evt: KeyboardEvent) => void;
+        onKeyDown?: (evt: KeyboardEvent) => void;
     }
     export class PopupComponent extends React.Component<IPopupComponentProps, {
         isComponentMounted: boolean;
@@ -840,6 +841,7 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/sliderLineComponent
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-inspector/sharedUiComponents/propertyChangedEvent";
+    import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
     interface ISliderLineComponentProps {
         label: string;
         target?: any;
@@ -856,6 +858,7 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/sliderLineComponent
         margin?: boolean;
         icon?: string;
         iconLabel?: string;
+        lockObject?: LockObject;
     }
     export class SliderLineComponent extends React.Component<ISliderLineComponentProps, {
         value: number;
@@ -1184,6 +1187,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         private _onLinearTangentRequiredObserver;
         private _onBreakTangentRequiredObserver;
         private _onUnifyTangentRequiredObserver;
+        private _onSelectAllKeysObserver;
         private _pointerIsDown;
         private _sourcePointerX;
         private _sourcePointerY;
@@ -1248,6 +1252,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         onActiveAnimationChanged: Observable<void>;
         onActiveKeyPointChanged: Observable<void>;
         onHostWindowResized: Observable<void>;
+        onSelectAllKeys: Observable<void>;
         onActiveKeyFrameChanged: Observable<number>;
         onFrameSet: Observable<number>;
         onFrameManuallyEntered: Observable<number>;
@@ -1847,7 +1852,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         constructor(props: IAnimationCurveEditorComponentProps);
         onCloseAnimationCurveEditor(window: Window | null): void;
         shouldComponentUpdate(newProps: IAnimationCurveEditorComponentProps, newState: IAnimationCurveEditorComponentState): boolean;
-        private _onKeyUp;
+        private _onKeyDown;
         render(): JSX.Element;
     }
 }
@@ -4172,6 +4177,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/toolsTabComponent
         private _reflectorHostname;
         private _reflectorPort;
         private _reflector;
+        private _envOptions;
         constructor(props: IPaneComponentProps);
         componentDidMount(): void;
         componentWillUnmount(): void;
@@ -5413,6 +5419,7 @@ declare module INSPECTOR {
         onClose: (window: Window) => void;
         onResize?: () => void;
         onKeyUp?: (evt: KeyboardEvent) => void;
+        onKeyDown?: (evt: KeyboardEvent) => void;
     }
     export class PopupComponent extends React.Component<IPopupComponentProps, {
         isComponentMounted: boolean;
@@ -5679,6 +5686,7 @@ declare module INSPECTOR {
         margin?: boolean;
         icon?: string;
         iconLabel?: string;
+        lockObject?: LockObject;
     }
     export class SliderLineComponent extends React.Component<ISliderLineComponentProps, {
         value: number;
@@ -5973,6 +5981,7 @@ declare module INSPECTOR {
         private _onLinearTangentRequiredObserver;
         private _onBreakTangentRequiredObserver;
         private _onUnifyTangentRequiredObserver;
+        private _onSelectAllKeysObserver;
         private _pointerIsDown;
         private _sourcePointerX;
         private _sourcePointerY;
@@ -6030,6 +6039,7 @@ declare module INSPECTOR {
         onActiveAnimationChanged: BABYLON.Observable<void>;
         onActiveKeyPointChanged: BABYLON.Observable<void>;
         onHostWindowResized: BABYLON.Observable<void>;
+        onSelectAllKeys: BABYLON.Observable<void>;
         onActiveKeyFrameChanged: BABYLON.Observable<number>;
         onFrameSet: BABYLON.Observable<number>;
         onFrameManuallyEntered: BABYLON.Observable<number>;
@@ -6559,7 +6569,7 @@ declare module INSPECTOR {
         constructor(props: IAnimationCurveEditorComponentProps);
         onCloseAnimationCurveEditor(window: Window | null): void;
         shouldComponentUpdate(newProps: IAnimationCurveEditorComponentProps, newState: IAnimationCurveEditorComponentState): boolean;
-        private _onKeyUp;
+        private _onKeyDown;
         render(): JSX.Element;
     }
 }
@@ -8382,6 +8392,7 @@ declare module INSPECTOR {
         private _reflectorHostname;
         private _reflectorPort;
         private _reflector;
+        private _envOptions;
         constructor(props: IPaneComponentProps);
         componentDidMount(): void;
         componentWillUnmount(): void;

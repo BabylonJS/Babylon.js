@@ -660,6 +660,8 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                     pickingInfo.hit = result.hit;
                     pickingInfo.pickedMesh = mesh;
                     pickingInfo.pickedPoint = result.pickedPoint;
+                    pickingInfo.aimTransform = controllerData.xrController.pointer;
+                    pickingInfo.gripTransform = controllerData.xrController.grip || null;
                     pickingInfo.originMesh = controllerData.pickIndexMeshTip;
                     pickingInfo.distance = result.distance;
                 }

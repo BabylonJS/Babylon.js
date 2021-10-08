@@ -3,7 +3,7 @@ import { ThinEngine } from "../Engines/thinEngine";
 import { Scene } from "../scene";
 import { Nullable } from "../types";
 import { SerializationHelper, serialize } from "../Misc/decorators";
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 import { ComputeEffect, IComputeEffectCreationOptions } from "./computeEffect";
 import { ComputeBindingList, ComputeBindingMapping, ComputeBindingType } from "../Engines/Extensions/engine.computeShader";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
@@ -415,4 +415,4 @@ export class ComputeShader {
 
 }
 
-_TypeStore.RegisteredTypes["BABYLON.ComputeShader"] = ComputeShader;
+RegisterClass("BABYLON.ComputeShader", ComputeShader);

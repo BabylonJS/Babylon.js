@@ -13,8 +13,8 @@ export class TextureCanvasComponent extends React.Component<ITextureCanvasCompon
     render() {
         return <div>
             <canvas id="canvas-ui" ref={this.props.canvasUI} tabIndex={1}></canvas>
-            <canvas id="canvas-2D" ref={this.props.canvas2D} width={this.props.texture.getSize().width} height={this.props.texture.getSize().height} hidden={true}></canvas>
-            <canvas id="canvas-3D" ref={this.props.canvas3D} width={this.props.texture.getSize().width} height={this.props.texture.getSize().height} hidden={true}></canvas>
+            <canvas id="canvas-2D" ref={this.props.canvas2D} hidden={true}></canvas>
+            <canvas id="canvas-3D" ref={this.props.canvas3D} hidden={true}></canvas>
         </div>
     }
 }

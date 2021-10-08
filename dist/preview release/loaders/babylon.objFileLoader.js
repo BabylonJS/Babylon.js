@@ -1447,12 +1447,12 @@ var SolidParser = /** @class */ (function () {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* WEBPACK VAR INJECTION */(function(global) {/* harmony import */ var _OBJ__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../OBJ */ "./OBJ/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MTLFileLoader", function() { return _OBJ__WEBPACK_IMPORTED_MODULE_0__["MTLFileLoader"]; });
+/* WEBPACK VAR INJECTION */(function(global) {/* harmony import */ var _OBJ_index__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../OBJ/index */ "./OBJ/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MTLFileLoader", function() { return _OBJ_index__WEBPACK_IMPORTED_MODULE_0__["MTLFileLoader"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SolidParser", function() { return _OBJ__WEBPACK_IMPORTED_MODULE_0__["SolidParser"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SolidParser", function() { return _OBJ_index__WEBPACK_IMPORTED_MODULE_0__["SolidParser"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "OBJFileLoader", function() { return _OBJ__WEBPACK_IMPORTED_MODULE_0__["OBJFileLoader"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "OBJFileLoader", function() { return _OBJ_index__WEBPACK_IMPORTED_MODULE_0__["OBJFileLoader"]; });
 
 
 /**
@@ -1461,8 +1461,8 @@ __webpack_require__.r(__webpack_exports__);
  */
 var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
 if (typeof globalObject !== "undefined") {
-    for (var key in _OBJ__WEBPACK_IMPORTED_MODULE_0__) {
-        globalObject.BABYLON[key] = _OBJ__WEBPACK_IMPORTED_MODULE_0__[key];
+    for (var key in _OBJ_index__WEBPACK_IMPORTED_MODULE_0__) {
+        globalObject.BABYLON[key] = _OBJ_index__WEBPACK_IMPORTED_MODULE_0__[key];
     }
 }
 

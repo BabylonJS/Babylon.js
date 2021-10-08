@@ -3,7 +3,7 @@ import { Vector2 } from "babylonjs/Maths/math.vector";
 
 import { Button } from "./button";
 import { Control } from "./control";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
 import { IFocusableControl } from "./focusableControl";
 import { Observable } from 'babylonjs/Misc/observable';
@@ -105,4 +105,4 @@ export class FocusableButton extends Button implements IFocusableControl {
         this.onKeyboardEventProcessedObservable.clear();
     }
 }
-_TypeStore.RegisteredTypes["BABYLON.GUI.FocusableButton"] = FocusableButton;
+RegisterClass("BABYLON.GUI.FocusableButton", FocusableButton);
