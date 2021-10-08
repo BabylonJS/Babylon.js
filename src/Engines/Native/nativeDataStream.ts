@@ -14,7 +14,7 @@ export class NativeDataStream {
     private _position: number;
     private _nativeDataStream: INativeDataStream;
 
-    private static readonly DEFAULT_BUFFER_SIZE = 1024;
+    private static readonly DEFAULT_BUFFER_SIZE = 65536;
 
     constructor () {
         const buffer = new ArrayBuffer(NativeDataStream.DEFAULT_BUFFER_SIZE);
