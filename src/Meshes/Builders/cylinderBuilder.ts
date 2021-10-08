@@ -6,6 +6,25 @@ import { Scene } from "../../scene";
 import { Nullable } from "../../types";
 import { Axis } from '../../Maths/math.axis';
 
+/**
+ * Creates the VertexData for a cylinder, cone or prism
+ * @param options an object used to set the following optional parameters for the box, required but can be empty
+  * * height sets the height (y direction) of the cylinder, optional, default 2
+  * * diameterTop sets the diameter of the top of the cone, overwrites diameter,  optional, default diameter
+  * * diameterBottom sets the diameter of the bottom of the cone, overwrites diameter,  optional, default diameter
+  * * diameter sets the diameter of the top and bottom of the cone, optional default 1
+  * * tessellation the number of prism sides, 3 for a triangular prism, optional, default 24
+  * * subdivisions` the number of rings along the cylinder height, optional, default 1
+  * * arc a number from 0 to 1, to create an unclosed cylinder based on the fraction of the circumference given by the arc value, optional, default 1
+  * * faceColors an array of Color3 elements used to set different colors to the top, rings and bottom respectively
+  * * faceUV an array of Vector4 elements used to set different images to the top, rings and bottom respectively
+  * * hasRings when true makes each subdivision independantly treated as a face for faceUV and faceColors, optional, default false
+  * * enclose when true closes an open cylinder by adding extra flat faces between the height axis and vertical edges, think cut cake
+  * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+  * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+  * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+ * @returns the VertexData of the cylinder, cone or prism
+ */
 export function CreateCylinderVertexData(options: { height?: number, diameterTop?: number, diameterBottom?: number, diameter?: number, tessellation?: number, subdivisions?: number, arc?: number, faceColors?: Color4[], faceUV?: Vector4[], hasRings?: boolean, enclose?: boolean, cap?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
     var height: number = options.height || 2;
     var diameterTop: number = (options.diameterTop === 0) ? 0 : options.diameterTop || options.diameter || 1;

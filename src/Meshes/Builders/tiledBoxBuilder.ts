@@ -6,6 +6,15 @@ import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { CreateTiledPlaneVertexData } from "./tiledPlaneBuilder";
 
+/**
+ * Creates the VertexData for a tiled box
+ * @param options an object used to set the following optional parameters for the box, required but can be empty
+  * * faceTiles sets the pattern, tile size and number of tiles for a face
+  * * faceUV an array of 6 Vector4 elements used to set different images to each box side
+  * * faceColors an array of 6 Color3 elements used to set different colors to each box side
+  * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+ * @returns the VertexData of the box
+ */
 export function CreateTiledBoxVertexData(options: { pattern?: number, size?: number, width?: number, height?: number, depth?: number, tileSize?: number, tileWidth?: number, tileHeight?: number, faceUV?: Vector4[], faceColors?: Color4[], alignHorizontal?: number, alignVertical?: number, sideOrientation?: number }): VertexData {
     var nbFaces = 6;
 
