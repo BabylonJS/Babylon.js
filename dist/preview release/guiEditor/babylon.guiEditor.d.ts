@@ -64,6 +64,7 @@ declare module GUIEDITOR {
         private _cameraRadias;
         private _cameraMaxRadiasFactor;
         private _pasted;
+        private _engine;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
@@ -175,6 +176,7 @@ declare module GUIEDITOR {
         onPropertyGridUpdateRequiredObservable: BABYLON.Observable<void>;
         onDraggingEndObservable: BABYLON.Observable<void>;
         onDraggingStartObservable: BABYLON.Observable<void>;
+        onWindowResizeObservable: BABYLON.Observable<void>;
         draggedControl: BABYLON.Nullable<Control>;
         draggedControlDirection: DragOverLocation;
         isSaving: boolean;
