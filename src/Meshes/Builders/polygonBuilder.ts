@@ -10,7 +10,7 @@ import { EngineStore } from '../../Engines/engineStore';
 
 declare var earcut: any;
 
-VertexData.CreatePolygon = function (polygon: Mesh, sideOrientation: number, fUV?: Vector4[], fColors?: Color4[], frontUVs?: Vector4, backUVs?: Vector4, wrp?: boolean) {
+export function CreatePolygonVertexData(polygon: Mesh, sideOrientation: number, fUV?: Vector4[], fColors?: Color4[], frontUVs?: Vector4, backUVs?: Vector4, wrp?: boolean) {
     var faceUV: Vector4[] = fUV || new Array<Vector4>(3);
     var faceColors = fColors;
     var colors = [];
@@ -113,8 +113,78 @@ VertexData.CreatePolygon = function (polygon: Mesh, sideOrientation: number, fUV
     }
 
     return vertexData;
+}
+
+/**
+ * Creates a polygon mesh
+ * The polygon's shape will depend on the input parameters and is constructed parallel to a ground mesh
+ * * The parameter `shape` is a required array of successive Vector3 representing the corners of the polygon in th XoZ plane, that is y = 0 for all vectors
+ * * You can set the mesh side orientation with the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+ * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+ * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4)
+ * * Remember you can only change the shape positions, not their number when updating a polygon
+ * @param name defines the name of the mesh
+ * @param options defines the options used to create the mesh
+ * @param scene defines the hosting scene
+ * @param earcutInjection can be used to inject your own earcut reference
+ * @returns the polygon mesh
+ */
+export function CreatePolygon(name: string, options: { shape: Vector3[], holes?: Vector3[][], depth?: number, smoothingThreshold?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, wrap?: boolean }, scene: Nullable<Scene> = null, earcutInjection = earcut): Mesh {
+    options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
+    var shape = options.shape;
+    var holes = options.holes || [];
+    var depth = options.depth || 0;
+    var smoothingThreshold = options.smoothingThreshold || 2;
+    var contours: Array<Vector2> = [];
+    var hole: Array<Vector2> = [];
+
+    for (var i = 0; i < shape.length; i++) {
+        contours[i] = new Vector2(shape[i].x, shape[i].z);
+    }
+    var epsilon = 0.00000001;
+    if (contours[0].equalsWithEpsilon(contours[contours.length - 1], epsilon)) {
+        contours.pop();
+    }
+
+    var polygonTriangulation = new PolygonMeshBuilder(name, contours, scene || EngineStore.LastCreatedScene!, earcutInjection);
+    for (var hNb = 0; hNb < holes.length; hNb++) {
+        hole = [];
+        for (var hPoint = 0; hPoint < holes[hNb].length; hPoint++) {
+            hole.push(new Vector2(holes[hNb][hPoint].x, holes[hNb][hPoint].z));
+        }
+        polygonTriangulation.addHole(hole);
+    }
+    var polygon = polygonTriangulation.build(options.updatable, depth, smoothingThreshold);
+    polygon._originalBuilderSideOrientation = options.sideOrientation;
+    var vertexData = CreatePolygonVertexData(polygon, options.sideOrientation, options.faceUV, options.faceColors, options.frontUVs, options.backUVs, options.wrap);
+    vertexData.applyToMesh(polygon, options.updatable);
+
+    return polygon;
+}
+
+/**
+ * Creates an extruded polygon mesh, with depth in the Y direction.
+ * * You can set different colors and different images to the top, bottom and extruded side by using the parameters `faceColors` (an array of 3 Color3 elements) and `faceUV` (an array of 3 Vector4 elements)
+ * @see https://doc.babylonjs.com/how_to/createbox_per_face_textures_and_colors
+ * @param name defines the name of the mesh
+ * @param options defines the options used to create the mesh
+ * @param scene defines the hosting scene
+ * @param earcutInjection can be used to inject your own earcut reference
+ * @returns the polygon mesh
+ */
+export function ExtrudePolygon(name: string, options: { shape: Vector3[], holes?: Vector3[][], depth?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, wrap?: boolean }, scene: Nullable<Scene> = null, earcutInjection = earcut): Mesh {
+    return CreatePolygon(name, options, scene, earcutInjection);
+}
+/**
+ * Class containing static functions to help procedurally build meshes
+ * @deprecated use the functions directly from the module
+ */
+export const PolygonBuilder = {
+    ExtrudePolygon,
+    CreatePolygon,
 };
 
+VertexData.CreatePolygon = CreatePolygonVertexData;
 Mesh.CreatePolygon = (name: string, shape: Vector3[], scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number, earcutInjection = earcut): Mesh => {
     var options = {
         shape: shape,
@@ -122,7 +192,7 @@ Mesh.CreatePolygon = (name: string, shape: Vector3[], scene: Scene, holes?: Vect
         updatable: updatable,
         sideOrientation: sideOrientation
     };
-    return PolygonBuilder.CreatePolygon(name, options, scene, earcutInjection);
+    return CreatePolygon(name, options, scene, earcutInjection);
 };
 
 Mesh.ExtrudePolygon = (name: string, shape: Vector3[], depth: number, scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number, earcutInjection = earcut): Mesh => {
@@ -133,71 +203,5 @@ Mesh.ExtrudePolygon = (name: string, shape: Vector3[], depth: number, scene: Sce
         updatable: updatable,
         sideOrientation: sideOrientation
     };
-    return PolygonBuilder.ExtrudePolygon(name, options, scene, earcutInjection);
+    return ExtrudePolygon(name, options, scene, earcutInjection);
 };
-
-/**
- * Class containing static functions to help procedurally build meshes
- */
-export class PolygonBuilder {
-    /**
-     * Creates a polygon mesh
-     * The polygon's shape will depend on the input parameters and is constructed parallel to a ground mesh
-     * * The parameter `shape` is a required array of successive Vector3 representing the corners of the polygon in th XoZ plane, that is y = 0 for all vectors
-     * * You can set the mesh side orientation with the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
-     * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
-     * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4)
-     * * Remember you can only change the shape positions, not their number when updating a polygon
-     * @param name defines the name of the mesh
-     * @param options defines the options used to create the mesh
-     * @param scene defines the hosting scene
-     * @param earcutInjection can be used to inject your own earcut reference
-     * @returns the polygon mesh
-     */
-    public static CreatePolygon(name: string, options: { shape: Vector3[], holes?: Vector3[][], depth?: number, smoothingThreshold?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, wrap?: boolean }, scene: Nullable<Scene> = null, earcutInjection = earcut): Mesh {
-        options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
-        var shape = options.shape;
-        var holes = options.holes || [];
-        var depth = options.depth || 0;
-        var smoothingThreshold = options.smoothingThreshold || 2;
-        var contours: Array<Vector2> = [];
-        var hole: Array<Vector2> = [];
-
-        for (var i = 0; i < shape.length; i++) {
-            contours[i] = new Vector2(shape[i].x, shape[i].z);
-        }
-        var epsilon = 0.00000001;
-        if (contours[0].equalsWithEpsilon(contours[contours.length - 1], epsilon)) {
-            contours.pop();
-        }
-
-        var polygonTriangulation = new PolygonMeshBuilder(name, contours, scene || EngineStore.LastCreatedScene!, earcutInjection);
-        for (var hNb = 0; hNb < holes.length; hNb++) {
-            hole = [];
-            for (var hPoint = 0; hPoint < holes[hNb].length; hPoint++) {
-                hole.push(new Vector2(holes[hNb][hPoint].x, holes[hNb][hPoint].z));
-            }
-            polygonTriangulation.addHole(hole);
-        }
-        var polygon = polygonTriangulation.build(options.updatable, depth, smoothingThreshold);
-        polygon._originalBuilderSideOrientation = options.sideOrientation;
-        var vertexData = VertexData.CreatePolygon(polygon, options.sideOrientation, options.faceUV, options.faceColors, options.frontUVs, options.backUVs, options.wrap);
-        vertexData.applyToMesh(polygon, options.updatable);
-
-        return polygon;
-    }
-
-    /**
-     * Creates an extruded polygon mesh, with depth in the Y direction.
-     * * You can set different colors and different images to the top, bottom and extruded side by using the parameters `faceColors` (an array of 3 Color3 elements) and `faceUV` (an array of 3 Vector4 elements)
-     * @see https://doc.babylonjs.com/how_to/createbox_per_face_textures_and_colors
-     * @param name defines the name of the mesh
-     * @param options defines the options used to create the mesh
-     * @param scene defines the hosting scene
-     * @param earcutInjection can be used to inject your own earcut reference
-     * @returns the polygon mesh
-     */
-    public static ExtrudePolygon(name: string, options: { shape: Vector3[], holes?: Vector3[][], depth?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, wrap?: boolean }, scene: Nullable<Scene> = null, earcutInjection = earcut): Mesh {
-        return PolygonBuilder.CreatePolygon(name, options, scene, earcutInjection);
-    }
-}

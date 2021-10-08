@@ -4,7 +4,7 @@ import { VertexData } from "../mesh.vertexData";
 import { Scene } from "../../scene";
 import { Nullable } from '../../types';
 
-VertexData.CreateSphere = function (options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, arc?: number, slice?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, dedupTopBottomIndices?: boolean }): VertexData {
+export function CreateSphereVertexData(options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, arc?: number, slice?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, dedupTopBottomIndices?: boolean }): VertexData {
     var segments: number = options.segments || 32;
     var diameterX: number = options.diameterX || options.diameter || 1;
     var diameterY: number = options.diameterY || options.diameter || 1;
@@ -86,7 +86,46 @@ VertexData.CreateSphere = function (options: { segments?: number, diameter?: num
     vertexData.uvs = uvs;
 
     return vertexData;
+}
+
+/**
+ * Creates a sphere mesh
+ * * The parameter `diameter` sets the diameter size (float) of the sphere (default 1)
+ * * You can set some different sphere dimensions, for instance to build an ellipsoid, by using the parameters `diameterX`, `diameterY` and `diameterZ` (all by default have the same value of `diameter`)
+ * * The parameter `segments` sets the sphere number of horizontal stripes (positive integer, default 32)
+ * * You can create an unclosed sphere with the parameter `arc` (positive float, default 1), valued between 0 and 1, what is the ratio of the circumference (latitude) : 2 x PI x ratio
+ * * You can create an unclosed sphere on its height with the parameter `slice` (positive float, default1), valued between 0 and 1, what is the height ratio (longitude)
+ * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+ * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
+ * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+ * @param name defines the name of the mesh
+ * @param options defines the options used to create the mesh
+ * @param scene defines the hosting scene
+ * @returns the sphere mesh
+ * @see https://doc.babylonjs.com/how_to/set_shapes#sphere
+ */
+export function CreateSphere(name: string, options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, arc?: number, slice?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean }, scene: Nullable<Scene> = null): Mesh {
+    var sphere = new Mesh(name, scene);
+
+    options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
+    sphere._originalBuilderSideOrientation = options.sideOrientation;
+
+    var vertexData = CreateSphereVertexData(options);
+
+    vertexData.applyToMesh(sphere, options.updatable);
+
+    return sphere;
+}
+
+/**
+ * Class containing static functions to help procedurally build meshes
+ * @deprecated use CreateSphere directly
+ */
+export const SphereBuilder = {
+    CreateSphere
 };
+
+VertexData.CreateSphere = CreateSphereVertexData;
 
 Mesh.CreateSphere = (name: string, segments: number, diameter: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh => {
     var options = {
@@ -98,39 +137,5 @@ Mesh.CreateSphere = (name: string, segments: number, diameter: number, scene?: S
         updatable: updatable
     };
 
-    return SphereBuilder.CreateSphere(name, options, scene);
+    return CreateSphere(name, options, scene);
 };
-
-/**
- * Class containing static functions to help procedurally build meshes
- */
-export class SphereBuilder {
-    /**
-     * Creates a sphere mesh
-     * * The parameter `diameter` sets the diameter size (float) of the sphere (default 1)
-     * * You can set some different sphere dimensions, for instance to build an ellipsoid, by using the parameters `diameterX`, `diameterY` and `diameterZ` (all by default have the same value of `diameter`)
-     * * The parameter `segments` sets the sphere number of horizontal stripes (positive integer, default 32)
-     * * You can create an unclosed sphere with the parameter `arc` (positive float, default 1), valued between 0 and 1, what is the ratio of the circumference (latitude) : 2 x PI x ratio
-     * * You can create an unclosed sphere on its height with the parameter `slice` (positive float, default1), valued between 0 and 1, what is the height ratio (longitude)
-     * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
-     * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
-     * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
-     * @param name defines the name of the mesh
-     * @param options defines the options used to create the mesh
-     * @param scene defines the hosting scene
-     * @returns the sphere mesh
-     * @see https://doc.babylonjs.com/how_to/set_shapes#sphere
-     */
-    public static CreateSphere(name: string, options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, arc?: number, slice?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean }, scene: Nullable<Scene> = null): Mesh {
-        var sphere = new Mesh(name, scene);
-
-        options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
-        sphere._originalBuilderSideOrientation = options.sideOrientation;
-
-        var vertexData = VertexData.CreateSphere(options);
-
-        vertexData.applyToMesh(sphere, options.updatable);
-
-        return sphere;
-    }
-}

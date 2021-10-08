@@ -809,6 +809,7 @@ export class VertexData {
       * * uvs a linear array, of length 2 * number of vertices, of custom UV values, optional
       * * colors a linear array, of length 4 * number of vertices, of custom color values, optional
      * @returns the VertexData of the ribbon
+     * @deprecated use CreateRibbonVertexData instead
      */
     public static CreateRibbon(options: { pathArray: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, invertUV?: boolean, uvs?: Vector2[], colors?: Color4[] }): VertexData {
         throw _WarnImport("ribbonBuilder");
@@ -827,6 +828,7 @@ export class VertexData {
       * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
       * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
      * @returns the VertexData of the box
+     * @deprecated Please use CreateBoxVertexData from the BoxBuilder file instead
      */
     public static CreateBox(options: { size?: number, width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
         throw _WarnImport("boxBuilder");
@@ -840,6 +842,7 @@ export class VertexData {
       * * faceColors an array of 6 Color3 elements used to set different colors to each box side
       * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
      * @returns the VertexData of the box
+     * @deprecated Please use CreateTiledBoxVertexData instead
      */
     public static CreateTiledBox(options: { pattern?: number, width?: number, height?: number, depth?: number, tileSize?: number, tileWidth?: number, tileHeight?: number, alignHorizontal?: number, alignVertical?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number }): VertexData {
         throw _WarnImport("tiledBoxBuilder");
@@ -856,6 +859,7 @@ export class VertexData {
       * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
       * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
      * @returns the VertexData of the tiled plane
+     * @deprecated use CreateTiledPlaneVertexData instead
      */
     public static CreateTiledPlane(options: { pattern?: number, tileSize?: number, tileWidth?: number, tileHeight?: number, size?: number, width?: number, height?: number, alignHorizontal?: number, alignVertical?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
         throw _WarnImport("tiledPlaneBuilder");
@@ -875,6 +879,7 @@ export class VertexData {
       * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
       * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
      * @returns the VertexData of the ellipsoid
+     * @deprecated use CreateSphereVertexData instead
      */
     public static CreateSphere(options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, arc?: number, slice?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
         throw _WarnImport("sphereBuilder");
@@ -898,6 +903,7 @@ export class VertexData {
       * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
       * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
      * @returns the VertexData of the cylinder, cone or prism
+     * @deprecated please use CreateCylinderVertexData instead
      */
     public static CreateCylinder(options: { height?: number, diameterTop?: number, diameterBottom?: number, diameter?: number, tessellation?: number, subdivisions?: number, arc?: number, faceColors?: Color4[], faceUV?: Vector4[], hasRings?: boolean, enclose?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
         throw _WarnImport("cylinderBuilder");
@@ -913,6 +919,7 @@ export class VertexData {
       * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
       * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
      * @returns the VertexData of the torus
+     * @deprecated use CreateTorusVertexData instead
      */
     public static CreateTorus(options: { diameter?: number, thickness?: number, tessellation?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
         throw _WarnImport("torusBuilder");
@@ -924,6 +931,7 @@ export class VertexData {
      *  - lines an array of lines, each line being an array of successive Vector3
      *  - colors an array of line colors, each of the line colors being an array of successive Color4, one per line point
      * @returns the VertexData of the LineSystem
+     * @deprecated use CreateLineSystemVertexData instead
      */
     public static CreateLineSystem(options: { lines: Vector3[][], colors?: Nullable<Color4[][]> }): VertexData {
         throw _WarnImport("linesBuilder");
@@ -937,6 +945,7 @@ export class VertexData {
      *  - gapSize the size of the gap between two successive dashes relative to the dash number, optional, default 1
      *  - dashNb the intended total number of dashes, optional, default 200
      * @returns the VertexData for the DashedLines
+     * @deprecated use CreateDashedLinesVertexData instead
      */
     public static CreateDashedLines(options: { points: Vector3[], dashSize?: number, gapSize?: number, dashNb?: number }): VertexData {
         throw _WarnImport("linesBuilder");
@@ -949,6 +958,7 @@ export class VertexData {
      *  - height the height (z direction) of the ground, optional, default 1
      *  - subdivisions the number of subdivisions per side, optional, default 1
      * @returns the VertexData of the Ground
+     * @deprecated Please use CreateGroundVertexData instead
      */
     public static CreateGround(options: { width?: number, height?: number, subdivisions?: number, subdivisionsX?: number, subdivisionsY?: number }): VertexData {
         throw _WarnImport("groundBuilder");
@@ -964,6 +974,7 @@ export class VertexData {
       * * subdivisions a javascript object {w: positive integer, h: positive integer}, `w` and `h` are the numbers of subdivisions on the ground width and height creating 'tiles', default {w: 6, h: 6}
       * * precision a javascript object {w: positive integer, h: positive integer}, `w` and `h` are the numbers of subdivisions on the tile width and height, default {w: 2, h: 2}
      * @returns the VertexData of the TiledGround
+     * @deprecated use CreateTiledGroundVertexData instead
      */
     public static CreateTiledGround(options: { xmin: number, zmin: number, xmax: number, zmax: number, subdivisions?: { w: number; h: number; }, precision?: { w: number; h: number; } }): VertexData {
         throw _WarnImport("groundBuilder");
@@ -983,6 +994,7 @@ export class VertexData {
       * * bufferHeight the height of image
       * * alphaFilter Remove any data where the alpha channel is below this value, defaults 0 (all data visible)
      * @returns the VertexData of the Ground designed from a heightmap
+     * @deprecated use CreateGroundFromHeightMapVertexData instead
      */
     public static CreateGroundFromHeightMap(options: { width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, colorFilter: Color3, buffer: Uint8Array, bufferWidth: number, bufferHeight: number, alphaFilter: number }): VertexData {
         throw _WarnImport("groundBuilder");
@@ -998,6 +1010,7 @@ export class VertexData {
       * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
       * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
      * @returns the VertexData of the box
+     * @deprecated use CreatePlaneVertexData instead
      */
     public static CreatePlane(options: { size?: number, width?: number, height?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
         throw _WarnImport("planeBuilder");
@@ -1029,6 +1042,7 @@ export class VertexData {
      * @param backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
      * @param wrap a boolean, default false, when true and fUVs used texture is wrapped around all sides, when false texture is applied side
      * @returns the VertexData of the Polygon
+     * @deprecated use CreatePolygonVertexData instead
      */
     public static CreatePolygon(polygon: Mesh, sideOrientation: number, fUV?: Vector4[], fColors?: Color4[], frontUVs?: Vector4, backUVs?: Vector4, wrap?: boolean): VertexData {
         throw _WarnImport("polygonBuilder");
@@ -1047,6 +1061,7 @@ export class VertexData {
       * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
       * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
      * @returns the VertexData of the IcoSphere
+     * @deprecated use CreateIcoSphereVertexData instead
      */
     public static CreateIcoSphere(options: { radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
         throw _WarnImport("icoSphereBuilder");
@@ -1072,6 +1087,7 @@ export class VertexData {
      * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
      * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
      * @returns the VertexData of the Polyhedron
+     * @deprecated use CreatePolyhedronVertexData instead
      */
     public static CreatePolyhedron(options: { type?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
         throw _WarnImport("polyhedronBuilder");
@@ -1139,6 +1155,7 @@ export class VertexData {
      * Creates the VertexData for a Capsule, inspired from https://github.com/maximeq/three-js-capsule-geometry/blob/master/src/CapsuleBufferGeometry.js
      * @param options an object used to set the following optional parameters for the capsule, required but can be empty
      * @returns the VertexData of the Capsule
+     * @deprecated Please use CreateCapsuleVertexData from the capsuleBuilder file instead
      */
     public static CreateCapsule(options: ICreateCapsuleOptions = {
         orientation: Vector3.Up(),
@@ -1165,6 +1182,7 @@ export class VertexData {
       * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
       * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
      * @returns the VertexData of the Torus Knot
+     * @deprecated use CreateTorusKnotVertexData instead
      */
     public static CreateTorusKnot(options: { radius?: number, tube?: number, radialSegments?: number, tubularSegments?: number, p?: number, q?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
         throw _WarnImport("torusKnotBuilder");

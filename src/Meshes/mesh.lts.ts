@@ -548,7 +548,6 @@ export const _injectLTSMesh = () => {
 
     Mesh.CreateDisc = Mesh.CreateDisc || (() => { throw _WarnImport("MeshBuilder"); });
     Mesh.CreateBox = Mesh.CreateBox || (() => { throw _WarnImport("MeshBuilder"); });
-    Mesh.CreateTorus = Mesh.CreateTorus || (() => { throw _WarnImport("MeshBuilder"); });
     Mesh.CreateSphere = Mesh.CreateSphere || (() => { throw _WarnImport("MeshBuilder"); });
     Mesh.CreateCylinder = Mesh.CreateCylinder || (() => { throw _WarnImport("MeshBuilder"); });
     Mesh.CreateTorusKnot = Mesh.CreateTorusKnot || (() => { throw _WarnImport("MeshBuilder"); });
