@@ -4,7 +4,7 @@ import { Vector4 } from "../../Maths/math.vector";
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 
-VertexData.CreateDisc = function (options: { radius?: number, tessellation?: number, arc?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
+function CreateDiscVertexData(options: { radius?: number, tessellation?: number, arc?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
     var positions = new Array<number>();
     var indices = new Array<number>();
     var normals = new Array<number>();
@@ -54,7 +54,43 @@ VertexData.CreateDisc = function (options: { radius?: number, tessellation?: num
     vertexData.uvs = uvs;
 
     return vertexData;
+}
+
+/**
+ * Creates a plane polygonal mesh.  By default, this is a disc
+ * * The parameter `radius` sets the radius size (float) of the polygon (default 0.5)
+ * * The parameter `tessellation` sets the number of polygon sides (positive integer, default 64). So a tessellation valued to 3 will build a triangle, to 4 a square, etc
+ * * You can create an unclosed polygon with the parameter `arc` (positive float, default 1), valued between 0 and 1, what is the ratio of the circumference : 2 x PI x ratio
+ * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+ * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
+ * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+ * @param name defines the name of the mesh
+ * @param options defines the options used to create the mesh
+ * @param scene defines the hosting scene
+ * @returns the plane polygonal mesh
+ * @see https://doc.babylonjs.com/how_to/set_shapes#disc-or-regular-polygon
+ */
+export function CreateDisc(name: string, options: { radius?: number, tessellation?: number, arc?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Nullable<Scene> = null): Mesh {
+    var disc = new Mesh(name, scene);
+
+    options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
+    disc._originalBuilderSideOrientation = options.sideOrientation;
+
+    var vertexData = CreateDiscVertexData(options);
+
+    vertexData.applyToMesh(disc, options.updatable);
+
+    return disc;
+}
+/**
+ * Class containing static functions to help procedurally build meshes
+ * @deprecated please use CreateDisc directly
+ */
+export const DiscBuilder = {
+    CreateDisc
 };
+
+VertexData.CreateDisc = CreateDiscVertexData;
 
 Mesh.CreateDisc = (name: string, radius: number, tessellation: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number): Mesh => {
     var options = {
@@ -64,37 +100,5 @@ Mesh.CreateDisc = (name: string, radius: number, tessellation: number, scene: Nu
         updatable: updatable
     };
 
-    return DiscBuilder.CreateDisc(name, options, scene);
+    return CreateDisc(name, options, scene);
 };
-
-/**
- * Class containing static functions to help procedurally build meshes
- */
-export class DiscBuilder {
-    /**
-     * Creates a plane polygonal mesh.  By default, this is a disc
-     * * The parameter `radius` sets the radius size (float) of the polygon (default 0.5)
-     * * The parameter `tessellation` sets the number of polygon sides (positive integer, default 64). So a tessellation valued to 3 will build a triangle, to 4 a square, etc
-     * * You can create an unclosed polygon with the parameter `arc` (positive float, default 1), valued between 0 and 1, what is the ratio of the circumference : 2 x PI x ratio
-     * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
-     * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
-     * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
-     * @param name defines the name of the mesh
-     * @param options defines the options used to create the mesh
-     * @param scene defines the hosting scene
-     * @returns the plane polygonal mesh
-     * @see https://doc.babylonjs.com/how_to/set_shapes#disc-or-regular-polygon
-     */
-    public static CreateDisc(name: string, options: { radius?: number, tessellation?: number, arc?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Nullable<Scene> = null): Mesh {
-        var disc = new Mesh(name, scene);
-
-        options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
-        disc._originalBuilderSideOrientation = options.sideOrientation;
-
-        var vertexData = VertexData.CreateDisc(options);
-
-        vertexData.applyToMesh(disc, options.updatable);
-
-        return disc;
-    }
-}

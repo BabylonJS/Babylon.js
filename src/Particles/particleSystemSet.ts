@@ -1,7 +1,7 @@
 import { Nullable } from "../types";
 import { Color3 } from '../Maths/math.color';
 import { AbstractMesh } from "../Meshes/abstractMesh";
-import { SphereBuilder } from "../Meshes/Builders/sphereBuilder";
+import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
 import { IParticleSystem } from "./IParticleSystem";
 import { GPUParticleSystem } from "./gpuParticleSystem";
 import { EngineStore } from "../Engines/engineStore";
@@ -78,7 +78,7 @@ export class ParticleSystemSet implements IDisposable {
             renderingGroupId: renderingGroupId
         };
 
-        let emitterMesh = SphereBuilder.CreateSphere("emitterSphere", { diameter: options.diameter, segments: options.segments }, scene);
+        let emitterMesh = CreateSphere("emitterSphere", { diameter: options.diameter, segments: options.segments }, scene);
         emitterMesh.renderingGroupId = renderingGroupId;
 
         var material = new StandardMaterial("emitterSphereMaterial", scene);

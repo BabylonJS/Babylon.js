@@ -4,8 +4,9 @@ import { Matrix, Vector3, Vector4 } from "../../Maths/math.vector";
 import { Color4 } from '../../Maths/math.color';
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
+import { CreateTiledPlaneVertexData } from "./tiledPlaneBuilder";
 
-VertexData.CreateTiledBox = function (options: { pattern?: number, size?: number, width?: number, height?: number, depth: number, tileSize?: number, tileWidth?: number, tileHeight?: number, faceUV?: Vector4[], faceColors?: Color4[], alignHorizontal?: number, alignVertical?: number, sideOrientation?: number }): VertexData {
+export function CreateTiledBoxVertexData(options: { pattern?: number, size?: number, width?: number, height?: number, depth?: number, tileSize?: number, tileWidth?: number, tileHeight?: number, faceUV?: Vector4[], faceColors?: Color4[], alignHorizontal?: number, alignVertical?: number, sideOrientation?: number }): VertexData {
     var nbFaces = 6;
 
     var faceUV: Vector4[] = options.faceUV || new Array<Vector4>(6);
@@ -40,7 +41,7 @@ VertexData.CreateTiledBox = function (options: { pattern?: number, size?: number
     var faceVertexData: Array<VertexData> = [];
 
     for (var f = 0; f < 2; f++) { //front and back
-        faceVertexData[f] = VertexData.CreateTiledPlane({
+        faceVertexData[f] = CreateTiledPlaneVertexData({
             pattern: flipTile,
             tileWidth: tileWidth,
             tileHeight: tileHeight,
@@ -53,7 +54,7 @@ VertexData.CreateTiledBox = function (options: { pattern?: number, size?: number
     }
 
     for (var f = 2; f < 4; f++) { //sides
-        faceVertexData[f] = VertexData.CreateTiledPlane({
+        faceVertexData[f] = CreateTiledPlaneVertexData({
             pattern: flipTile,
             tileWidth: tileWidth,
             tileHeight: tileHeight,
@@ -74,7 +75,7 @@ VertexData.CreateTiledBox = function (options: { pattern?: number, size?: number
     }
 
     for (var f = 4; f < 6; f++) { //top and bottom
-        faceVertexData[f] = VertexData.CreateTiledPlane({
+        faceVertexData[f] = CreateTiledPlaneVertexData({
             pattern: flipTile,
             tileWidth: tileWidth,
             tileHeight: tileHeight,
@@ -201,34 +202,39 @@ VertexData.CreateTiledBox = function (options: { pattern?: number, size?: number
     }
 
     return vertexData;
-};
+}
+
+/**
+ * Creates a box mesh
+ * faceTiles sets the pattern, tile size and number of tiles for a face     * * You can set different colors and different images to each box side by using the parameters `faceColors` (an array of 6 Color3 elements) and `faceUV` (an array of 6 Vector4 elements)
+ * * Please read this tutorial : https://doc.babylonjs.com/how_to/createbox_per_face_textures_and_colors
+ * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+ * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
+ * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+ * @param name defines the name of the mesh
+ * @param options defines the options used to create the mesh
+ * @param scene defines the hosting scene
+ * @returns the box mesh
+ */
+export function CreateTiledBox(name: string, options: { pattern?: number, width?: number, height?: number, depth?: number, tileSize?: number, tileWidth?: number, tileHeight?: number, alignHorizontal?: number, alignVertical?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number, updatable?: boolean }, scene: Nullable<Scene> = null): Mesh {
+    var box = new Mesh(name, scene);
+
+    options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
+    box._originalBuilderSideOrientation = options.sideOrientation;
+
+    var vertexData = CreateTiledBoxVertexData(options);
+
+    vertexData.applyToMesh(box, options.updatable);
+
+    return box;
+}
 
 /**
  * Class containing static functions to help procedurally build meshes
+ * @deprecated use CreateTildeBox instead
  */
-export class TiledBoxBuilder {
-    /**
-     * Creates a box mesh
-     * faceTiles sets the pattern, tile size and number of tiles for a face     * * You can set different colors and different images to each box side by using the parameters `faceColors` (an array of 6 Color3 elements) and `faceUV` (an array of 6 Vector4 elements)
-     * * Please read this tutorial : https://doc.babylonjs.com/how_to/createbox_per_face_textures_and_colors
-     * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
-     * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
-     * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
-     * @param name defines the name of the mesh
-     * @param options defines the options used to create the mesh
-     * @param scene defines the hosting scene
-     * @returns the box mesh
-     */
-    public static CreateTiledBox(name: string, options: { pattern?: number, width?: number, height?: number, depth?: number, tileSize?: number, tileWidth?: number, tileHeight?: number, alignHorizontal?: number, alignVertical?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number, updatable?: boolean }, scene: Nullable<Scene> = null): Mesh {
-        var box = new Mesh(name, scene);
+export const TiledBoxBuilder = {
+    CreateTiledBox
+};
 
-        options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
-        box._originalBuilderSideOrientation = options.sideOrientation;
-
-        var vertexData = VertexData.CreateTiledBox(options);
-
-        vertexData.applyToMesh(box, options.updatable);
-
-        return box;
-    }
-}
+VertexData.CreateTiledBox = CreateTiledBoxVertexData;

@@ -6,8 +6,8 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Node } from "../node";
 import { Mesh } from "../Meshes/mesh";
 import { LinesMesh } from "../Meshes/linesMesh";
-import { BoxBuilder } from "../Meshes/Builders/boxBuilder";
-import { CylinderBuilder } from "../Meshes/Builders/cylinderBuilder";
+import { CreateBox } from "../Meshes/Builders/boxBuilder";
+import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
 import { Gizmo, GizmoAxisCache } from "./gizmo";
@@ -208,8 +208,8 @@ export class AxisScaleGizmo extends Gizmo {
 
     /** Create Geometry for Gizmo */
     private _createGizmoMesh(parentMesh: AbstractMesh, thickness: number, isCollider = false) {
-        var arrowMesh = BoxBuilder.CreateBox("yPosMesh", { size: 0.4 * (1 + (thickness - 1) / 4) }, this.gizmoLayer.utilityLayerScene);
-        var arrowTail = CylinderBuilder.CreateCylinder("cylinder", { diameterTop: 0.005 * thickness, height: 0.275, diameterBottom: 0.005 * thickness, tessellation: 96 }, this.gizmoLayer.utilityLayerScene);
+        var arrowMesh = CreateBox("yPosMesh", { size: 0.4 * (1 + (thickness - 1) / 4) }, this.gizmoLayer.utilityLayerScene);
+        var arrowTail = CreateCylinder("cylinder", { diameterTop: 0.005 * thickness, height: 0.275, diameterBottom: 0.005 * thickness, tessellation: 96 }, this.gizmoLayer.utilityLayerScene);
 
         // Position arrow pointing in its drag axis
         arrowMesh.scaling.scaleInPlace(0.1);

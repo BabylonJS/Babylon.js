@@ -3,7 +3,7 @@ import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { Scene } from "../../scene";
 
-VertexData.CreateTorus = function (options: { diameter?: number, thickness?: number, tessellation?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }) {
+export function CreateTorusVertexData(options: { diameter?: number, thickness?: number, tessellation?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }) {
     var indices = [];
     var positions = [];
     var normals = [];
@@ -68,48 +68,53 @@ VertexData.CreateTorus = function (options: { diameter?: number, thickness?: num
     vertexData.uvs = uvs;
 
     return vertexData;
-};
+}
 
-Mesh.CreateTorus = (name: string, diameter: number, thickness: number, tessellation: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh => {
-    var options = {
-        diameter: diameter,
-        thickness: thickness,
-        tessellation: tessellation,
-        sideOrientation: sideOrientation,
-        updatable: updatable
-    };
+/**
+ * Creates a torus mesh
+ * * The parameter `diameter` sets the diameter size (float) of the torus (default 1)
+ * * The parameter `thickness` sets the diameter size of the tube of the torus (float, default 0.5)
+ * * The parameter `tessellation` sets the number of torus sides (positive integer, default 16)
+ * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+ * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
+ * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+ * @param name defines the name of the mesh
+ * @param options defines the options used to create the mesh
+ * @param scene defines the hosting scene
+ * @returns the torus mesh
+ * @see https://doc.babylonjs.com/how_to/set_shapes#torus
+ */
+export function CreateTorus(name: string, options: { diameter?: number, thickness?: number, tessellation?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: any): Mesh {
+    var torus = new Mesh(name, scene);
 
-    return TorusBuilder.CreateTorus(name, options, scene);
-};
+    options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
+    torus._originalBuilderSideOrientation = options.sideOrientation;
+
+    var vertexData = CreateTorusVertexData(options);
+
+    vertexData.applyToMesh(torus, options.updatable);
+
+    return torus;
+}
 
 /**
  * Class containing static functions to help procedurally build meshes
+ * @deprecated use CreateTorus instead
  */
-export class TorusBuilder {
-    /**
-     * Creates a torus mesh
-     * * The parameter `diameter` sets the diameter size (float) of the torus (default 1)
-     * * The parameter `thickness` sets the diameter size of the tube of the torus (float, default 0.5)
-     * * The parameter `tessellation` sets the number of torus sides (positive integer, default 16)
-     * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
-     * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
-     * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
-     * @param name defines the name of the mesh
-     * @param options defines the options used to create the mesh
-     * @param scene defines the hosting scene
-     * @returns the torus mesh
-     * @see https://doc.babylonjs.com/how_to/set_shapes#torus
-     */
-    public static CreateTorus(name: string, options: { diameter?: number, thickness?: number, tessellation?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: any): Mesh {
-        var torus = new Mesh(name, scene);
+export const TorusBuilder = {
+    CreateTorus
+};
 
-        options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
-        torus._originalBuilderSideOrientation = options.sideOrientation;
+VertexData.CreateTorus = CreateTorusVertexData;
 
-        var vertexData = VertexData.CreateTorus(options);
+Mesh.CreateTorus = (name: string, diameter: number, thickness: number, tessellation: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh => {
+    const options = {
+        diameter,
+        thickness,
+        tessellation,
+        sideOrientation,
+        updatable
+    };
 
-        vertexData.applyToMesh(torus, options.updatable);
-
-        return torus;
-    }
-}
+    return CreateTorus(name, options, scene);
+};

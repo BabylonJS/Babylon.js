@@ -10,16 +10,16 @@ import { Vector3, Quaternion } from "../../Maths/math.vector";
 import { Ray } from "../../Culling/ray";
 import { Material } from "../../Materials/material";
 import { DynamicTexture } from "../../Materials/Textures/dynamicTexture";
-import { CylinderBuilder } from "../../Meshes/Builders/cylinderBuilder";
+import { CreateCylinder } from "../../Meshes/Builders/cylinderBuilder";
 import { SineEase, EasingFunction } from "../../Animations/easing";
 import { Animation } from "../../Animations/animation";
 import { Axis } from "../../Maths/math.axis";
 import { StandardMaterial } from "../../Materials/standardMaterial";
-import { GroundBuilder } from "../../Meshes/Builders/groundBuilder";
-import { TorusBuilder } from "../../Meshes/Builders/torusBuilder";
+import { CreateGround } from "../../Meshes/Builders/groundBuilder";
+import { CreateTorus } from "../../Meshes/Builders/torusBuilder";
 import { PickingInfo } from "../../Collisions/pickingInfo";
 import { Curve3 } from "../../Maths/math.path";
-import { LinesBuilder } from "../../Meshes/Builders/linesBuilder";
+import { CreateLines } from "../../Meshes/Builders/linesBuilder";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { Color3 } from "../../Maths/math.color";
 import { Scene } from "../../scene";
@@ -692,7 +692,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         const sceneToRenderTo = this._options.useUtilityLayer
             ? this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene
             : this._xrSessionManager.scene;
-        const teleportationTarget = GroundBuilder.CreateGround("teleportationTarget", { width: 2, height: 2, subdivisions: 2 }, sceneToRenderTo);
+        const teleportationTarget = CreateGround("teleportationTarget", { width: 2, height: 2, subdivisions: 2 }, sceneToRenderTo);
         teleportationTarget.isPickable = false;
         const length = 512;
         const dynamicTexture = new DynamicTexture("teleportationPlaneDynamicTexture", length, sceneToRenderTo, true);
@@ -713,7 +713,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         const teleportationCircleMaterial = new StandardMaterial("teleportationPlaneMaterial", sceneToRenderTo);
         teleportationCircleMaterial.diffuseTexture = dynamicTexture;
         teleportationTarget.material = teleportationCircleMaterial;
-        const torus = TorusBuilder.CreateTorus(
+        const torus = CreateTorus(
             "torusTeleportation",
             {
                 diameter: 0.75,
@@ -748,7 +748,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
             sceneToRenderTo.beginAnimation(torus, 0, 60, true);
         }
 
-        const cone = CylinderBuilder.CreateCylinder("rotationCone", { diameterTop: 0, tessellation: 4 }, sceneToRenderTo);
+        const cone = CreateCylinder("rotationCone", { diameterTop: 0, tessellation: 4 }, sceneToRenderTo);
         cone.isPickable = false;
         cone.scaling.set(0.5, 0.12, 0.2);
 
@@ -873,7 +873,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
 
         const quadraticBezierVectors = Curve3.CreateQuadraticBezier(controllerData.xrController.pointer.absolutePosition, pickInfo.ray!.origin, pickInfo.pickedPoint, 25);
         if (!this._options.generateRayPathMesh) {
-            this._quadraticBezierCurve = LinesBuilder.CreateLines(
+            this._quadraticBezierCurve = CreateLines(
                 "teleportation path line",
                 { points: quadraticBezierVectors.getPoints(), instance: this._quadraticBezierCurve as LinesMesh, updatable: true },
                 sceneToRenderTo

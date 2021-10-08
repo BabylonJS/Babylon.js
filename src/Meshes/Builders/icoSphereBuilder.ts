@@ -4,7 +4,7 @@ import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { Nullable } from '../../types';
 
-VertexData.CreateIcoSphere = function (options: { radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
+export function CreateIcoSphereVertexData(options: { radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
     var sideOrientation = options.sideOrientation || VertexData.DEFAULTSIDE;
     var radius = options.radius || 1;
     var flat = (options.flat === undefined) ? true : options.flat;
@@ -259,41 +259,45 @@ VertexData.CreateIcoSphere = function (options: { radius?: number, radiusX?: num
     vertexData.normals = normals;
     vertexData.uvs = uvs;
     return vertexData;
-};
-
-Mesh.CreateIcoSphere = (name: string, options: { radius?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number, updatable?: boolean }, scene: Scene): Mesh => {
-    return IcoSphereBuilder.CreateIcoSphere(name, options, scene);
-};
+}
 
 /**
- * Class containing static functions to help procedurally build meshes
+ * Creates a sphere based upon an icosahedron with 20 triangular faces which can be subdivided
+ * * The parameter `radius` sets the radius size (float) of the icosphere (default 1)
+ * * You can set some different icosphere dimensions, for instance to build an ellipsoid, by using the parameters `radiusX`, `radiusY` and `radiusZ` (all by default have the same value of `radius`)
+ * * The parameter `subdivisions` sets the number of subdivisions (positive integer, default 4). The more subdivisions, the more faces on the icosphere whatever its size
+ * * The parameter `flat` (boolean, default true) gives each side its own normals. Set it to false to get a smooth continuous light reflection on the surface
+ * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+ * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
+ * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+ * @param name defines the name of the mesh
+ * @param options defines the options used to create the mesh
+ * @param scene defines the hosting scene
+ * @returns the icosahedron mesh
+ * @see https://doc.babylonjs.com/how_to/polyhedra_shapes#icosphere
  */
-export class IcoSphereBuilder {
-    /**
-     * Creates a sphere based upon an icosahedron with 20 triangular faces which can be subdivided
-     * * The parameter `radius` sets the radius size (float) of the icosphere (default 1)
-     * * You can set some different icosphere dimensions, for instance to build an ellipsoid, by using the parameters `radiusX`, `radiusY` and `radiusZ` (all by default have the same value of `radius`)
-     * * The parameter `subdivisions` sets the number of subdivisions (positive integer, default 4). The more subdivisions, the more faces on the icosphere whatever its size
-     * * The parameter `flat` (boolean, default true) gives each side its own normals. Set it to false to get a smooth continuous light reflection on the surface
-     * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
-     * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
-     * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
-     * @param name defines the name of the mesh
-     * @param options defines the options used to create the mesh
-     * @param scene defines the hosting scene
-     * @returns the icosahedron mesh
-     * @see https://doc.babylonjs.com/how_to/polyhedra_shapes#icosphere
-     */
-    public static CreateIcoSphere(name: string, options: { radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean }, scene: Nullable<Scene> = null): Mesh {
-        var sphere = new Mesh(name, scene);
+export function CreateIcoSphere(name: string, options: { radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean }, scene: Nullable<Scene> = null): Mesh {
+    var sphere = new Mesh(name, scene);
 
-        options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
-        sphere._originalBuilderSideOrientation = options.sideOrientation;
+    options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
+    sphere._originalBuilderSideOrientation = options.sideOrientation;
 
-        var vertexData = VertexData.CreateIcoSphere(options);
+    var vertexData = CreateIcoSphereVertexData(options);
 
-        vertexData.applyToMesh(sphere, options.updatable);
+    vertexData.applyToMesh(sphere, options.updatable);
 
-        return sphere;
-    }
+    return sphere;
 }
+/**
+ * Class containing static functions to help procedurally build meshes
+ * @deprecated use the function directly from the module
+ */
+export const IcoSphereBuilder = {
+    CreateIcoSphere
+};
+
+VertexData.CreateIcoSphere = CreateIcoSphereVertexData;
+
+Mesh.CreateIcoSphere = (name: string, options: { radius?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number, updatable?: boolean }, scene: Scene): Mesh => {
+    return CreateIcoSphere(name, options, scene);
+};

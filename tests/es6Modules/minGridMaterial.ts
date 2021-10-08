@@ -36,7 +36,7 @@ var sphere = Mesh.CreateSphere("sphere1", 16, 2, scene);
 sphere.position.y = 2;
 
 // Our built-in 'ground' shape. Params: name, width, depth, subdivs, scene
-var ground = Mesh.CreateGround("ground1", 6, 6, 2, scene);
+var ground = MeshBuilder.CreateGround("ground1", { width: 6, height: 6, subdivisions: 2 }, this._scene);
 ground.material = new GridMaterial("", scene);
 sphere.material = new GridMaterial("", scene);
 

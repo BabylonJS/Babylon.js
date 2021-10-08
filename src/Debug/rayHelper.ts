@@ -9,6 +9,7 @@ import { LinesMesh } from "../Meshes/linesMesh";
 
 import "../Meshes/Builders/linesBuilder";
 import { Observer } from '../Misc/observable';
+import { CreateLines } from "../Meshes/Builders/linesBuilder";
 
 /**
  * As raycast might be hard to debug, the RayHelper can help rendering the different rays
@@ -73,7 +74,7 @@ export class RayHelper {
             this._renderFunction = this._render.bind(this);
             this._scene = scene;
             this._renderPoints = [ray.origin, ray.origin.add(ray.direction.scale(ray.length))];
-            this._renderLine = Mesh.CreateLines("ray", this._renderPoints, scene, true);
+            this._renderLine = CreateLines("ray", { points: this._renderPoints, updatable: true }, scene);
             this._renderLine.isPickable = false;
 
             if (this._renderFunction) {
@@ -123,7 +124,7 @@ export class RayHelper {
 
         this._renderPoints[0].copyFrom(ray.origin);
 
-        Mesh.CreateLines("ray", this._renderPoints, this._scene, true, this._renderLine);
+        CreateLines("ray", { points: this._renderPoints, updatable: true, instance: this._renderLine }, this._scene);
 
         this._renderLine?.refreshBoundingInfo();
     }

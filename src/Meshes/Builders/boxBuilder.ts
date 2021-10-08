@@ -5,7 +5,7 @@ import { Color4 } from '../../Maths/math.color';
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 
-VertexData.CreateBox = function (options: { size?: number, width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, wrap?: boolean, topBaseAt?: number, bottomBaseAt?: number }): VertexData {
+export function CreateBoxVertexData(options: { size?: number, width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, wrap?: boolean, topBaseAt?: number, bottomBaseAt?: number }): VertexData {
     var nbFaces = 6;
     var indices = [0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7, 8, 9, 10, 8, 10, 11, 12, 13, 14, 12, 14, 15, 16, 17, 18, 16, 18, 19, 20, 21, 22, 20, 22, 23];
     var normals = [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0];
@@ -99,7 +99,46 @@ VertexData.CreateBox = function (options: { size?: number, width?: number, heigh
     }
 
     return vertexData;
+}
+
+/**
+ * Creates a box mesh
+ * * The parameter `size` sets the size (float) of each box side (default 1)
+ * * You can set some different box dimensions by using the parameters `width`, `height` and `depth` (all by default have the same value of `size`)
+ * * You can set different colors and different images to each box side by using the parameters `faceColors` (an array of 6 Color3 elements) and `faceUV` (an array of 6 Vector4 elements)
+ * * Please read this tutorial : https://doc.babylonjs.com/how_to/createbox_per_face_textures_and_colors
+ * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+ * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
+ * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+ * @see https://doc.babylonjs.com/how_to/set_shapes#box
+ * @param name defines the name of the mesh
+ * @param options defines the options used to create the mesh
+ * @param scene defines the hosting scene
+ * @returns the box mesh
+ */
+export function CreateBox(name: string, options: { size?: number, width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, wrap?: boolean, topBaseAt?: number, bottomBaseAt?: number, updatable?: boolean }, scene: Nullable<Scene> = null): Mesh {
+    var box = new Mesh(name, scene);
+
+    options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
+    box._originalBuilderSideOrientation = options.sideOrientation;
+
+    var vertexData = CreateBoxVertexData(options);
+
+    vertexData.applyToMesh(box, options.updatable);
+
+    return box;
+}
+
+/**
+ * Class containing static functions to help procedurally build meshes
+ * @deprecated please use CreateBox directly
+ */
+export const BoxBuilder = {
+    CreateBox
 };
+
+// Side effects
+VertexData.CreateBox = CreateBoxVertexData;
 
 Mesh.CreateBox = (name: string, size: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number): Mesh => {
     var options = {
@@ -108,38 +147,5 @@ Mesh.CreateBox = (name: string, size: number, scene: Nullable<Scene> = null, upd
         updatable: updatable
     };
 
-    return BoxBuilder.CreateBox(name, options, scene);
+    return CreateBox(name, options, scene);
 };
-
-/**
- * Class containing static functions to help procedurally build meshes
- */
-export class BoxBuilder {
-    /**
-     * Creates a box mesh
-     * * The parameter `size` sets the size (float) of each box side (default 1)
-     * * You can set some different box dimensions by using the parameters `width`, `height` and `depth` (all by default have the same value of `size`)
-     * * You can set different colors and different images to each box side by using the parameters `faceColors` (an array of 6 Color3 elements) and `faceUV` (an array of 6 Vector4 elements)
-     * * Please read this tutorial : https://doc.babylonjs.com/how_to/createbox_per_face_textures_and_colors
-     * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
-     * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
-     * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
-     * @see https://doc.babylonjs.com/how_to/set_shapes#box
-     * @param name defines the name of the mesh
-     * @param options defines the options used to create the mesh
-     * @param scene defines the hosting scene
-     * @returns the box mesh
-     */
-    public static CreateBox(name: string, options: { size?: number, width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, wrap?: boolean, topBaseAt?: number, bottomBaseAt?: number, updatable?: boolean }, scene: Nullable<Scene> = null): Mesh {
-        var box = new Mesh(name, scene);
-
-        options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
-        box._originalBuilderSideOrientation = options.sideOrientation;
-
-        var vertexData = VertexData.CreateBox(options);
-
-        vertexData.applyToMesh(box, options.updatable);
-
-        return box;
-    }
-}

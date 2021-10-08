@@ -9,7 +9,7 @@ import { Nullable } from '../../types';
 import { EngineStore } from '../../Engines/engineStore';
 import { Epsilon } from '../../Maths/math.constants';
 
-VertexData.CreateGround = function (options: { width?: number, height?: number, subdivisions?: number, subdivisionsX?: number, subdivisionsY?: number }): VertexData {
+export function CreateGroundVertexData(options: { width?: number, height?: number, subdivisions?: number, subdivisionsX?: number, subdivisionsY?: number }): VertexData {
     var indices = [];
     var positions = [];
     var normals = [];
@@ -53,9 +53,9 @@ VertexData.CreateGround = function (options: { width?: number, height?: number, 
     vertexData.uvs = uvs;
 
     return vertexData;
-};
+}
 
-VertexData.CreateTiledGround = function (options: { xmin: number, zmin: number, xmax: number, zmax: number, subdivisions?: { w: number; h: number; }, precision?: { w: number; h: number; } }): VertexData {
+export function CreateTiledGroundVertexData(options: { xmin: number, zmin: number, xmax: number, zmax: number, subdivisions?: { w: number; h: number; }, precision?: { w: number; h: number; } }): VertexData {
     var xmin = (options.xmin !== undefined && options.xmin !== null) ? options.xmin : -1.0;
     var zmin = (options.zmin !== undefined && options.zmin !== null) ? options.zmin : -1.0;
     var xmax = (options.xmax !== undefined && options.xmax !== null) ? options.xmax : 1.0;
@@ -137,9 +137,9 @@ VertexData.CreateTiledGround = function (options: { xmin: number, zmin: number, 
     vertexData.uvs = uvs;
 
     return vertexData;
-};
+}
 
-VertexData.CreateGroundFromHeightMap = function (options: { width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, colorFilter: Color3, buffer: Uint8Array, bufferWidth: number, bufferHeight: number, alphaFilter: number }): VertexData {
+export function CreateGroundFromHeightMapVertexData(options: { width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, colorFilter: Color3, buffer: Uint8Array, bufferWidth: number, bufferHeight: number, alphaFilter: number }): VertexData {
     var indices = [];
     var positions = [];
     var normals = [];
@@ -237,7 +237,152 @@ VertexData.CreateGroundFromHeightMap = function (options: { width: number, heigh
     vertexData.uvs = uvs;
 
     return vertexData;
+}
+
+/**
+ * Creates a ground mesh
+ * * The parameters `width` and `height` (floats, default 1) set the width and height sizes of the ground
+ * * The parameter `subdivisions` (positive integer) sets the number of subdivisions per side
+ * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+ * @param name defines the name of the mesh
+ * @param options defines the options used to create the mesh
+ * @param scene defines the hosting scene
+ * @returns the ground mesh
+ * @see https://doc.babylonjs.com/how_to/set_shapes#ground
+ */
+export function CreateGround(name: string, options: { width?: number, height?: number, subdivisions?: number, subdivisionsX?: number, subdivisionsY?: number, updatable?: boolean }, scene: any): Mesh {
+    var ground = new GroundMesh(name, scene);
+    ground._setReady(false);
+    ground._subdivisionsX = options.subdivisionsX || options.subdivisions || 1;
+    ground._subdivisionsY = options.subdivisionsY || options.subdivisions || 1;
+    ground._width = options.width || 1;
+    ground._height = options.height || 1;
+    ground._maxX = ground._width / 2;
+    ground._maxZ = ground._height / 2;
+    ground._minX = -ground._maxX;
+    ground._minZ = -ground._maxZ;
+
+    var vertexData = CreateGroundVertexData(options);
+
+    vertexData.applyToMesh(ground, options.updatable);
+
+    ground._setReady(true);
+
+    return ground;
+}
+
+/**
+ * Creates a tiled ground mesh
+ * * The parameters `xmin` and `xmax` (floats, default -1 and 1) set the ground minimum and maximum X coordinates
+ * * The parameters `zmin` and `zmax` (floats, default -1 and 1) set the ground minimum and maximum Z coordinates
+ * * The parameter `subdivisions` is a javascript object `{w: positive integer, h: positive integer}` (default `{w: 6, h: 6}`). `w` and `h` are the numbers of subdivisions on the ground width and height. Each subdivision is called a tile
+ * * The parameter `precision` is a javascript object `{w: positive integer, h: positive integer}` (default `{w: 2, h: 2}`). `w` and `h` are the numbers of subdivisions on the ground width and height of each tile
+ * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+ * @param name defines the name of the mesh
+ * @param options defines the options used to create the mesh
+ * @param scene defines the hosting scene
+ * @returns the tiled ground mesh
+ * @see https://doc.babylonjs.com/how_to/set_shapes#tiled-ground
+ */
+export function CreateTiledGround(name: string, options: { xmin: number, zmin: number, xmax: number, zmax: number, subdivisions?: { w: number; h: number; }, precision?: { w: number; h: number; }, updatable?: boolean }, scene: Nullable<Scene> = null): Mesh {
+    var tiledGround = new Mesh(name, scene);
+
+    var vertexData = CreateTiledGroundVertexData(options);
+
+    vertexData.applyToMesh(tiledGround, options.updatable);
+
+    return tiledGround;
+}
+
+/**
+ * Creates a ground mesh from a height map
+ * * The parameter `url` sets the URL of the height map image resource.
+ * * The parameters `width` and `height` (positive floats, default 10) set the ground width and height sizes.
+ * * The parameter `subdivisions` (positive integer, default 1) sets the number of subdivision per side.
+ * * The parameter `minHeight` (float, default 0) is the minimum altitude on the ground.
+ * * The parameter `maxHeight` (float, default 1) is the maximum altitude on the ground.
+ * * The parameter `colorFilter` (optional Color3, default (0.3, 0.59, 0.11) ) is the filter to apply to the image pixel colors to compute the height.
+ * * The parameter `onReady` is a javascript callback function that will be called  once the mesh is just built (the height map download can last some time).
+ * * The parameter `alphaFilter` will filter any data where the alpha channel is below this value, defaults 0 (all data visible)
+ * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+ * @param name defines the name of the mesh
+ * @param url defines the url to the height map
+ * @param options defines the options used to create the mesh
+ * @param scene defines the hosting scene
+ * @returns the ground mesh
+ * @see https://doc.babylonjs.com/babylon101/height_map
+ * @see https://doc.babylonjs.com/how_to/set_shapes#ground-from-a-height-map
+ */
+export function CreateGroundFromHeightMap(name: string, url: string, options: { width?: number, height?: number, subdivisions?: number, minHeight?: number, maxHeight?: number, colorFilter?: Color3, alphaFilter?: number, updatable?: boolean, onReady?: (mesh: GroundMesh) => void }, scene: Nullable<Scene> = null): GroundMesh {
+    var width = options.width || 10.0;
+    var height = options.height || 10.0;
+    var subdivisions = options.subdivisions || 1 | 0;
+    var minHeight = options.minHeight || 0.0;
+    var maxHeight = options.maxHeight || 1.0;
+    var filter = options.colorFilter || new Color3(0.3, 0.59, 0.11);
+    var alphaFilter = options.alphaFilter || 0.0;
+    var updatable = options.updatable;
+    var onReady = options.onReady;
+
+    scene = scene || EngineStore.LastCreatedScene!;
+
+    var ground = new GroundMesh(name, scene);
+    ground._subdivisionsX = subdivisions;
+    ground._subdivisionsY = subdivisions;
+    ground._width = width;
+    ground._height = height;
+    ground._maxX = ground._width / 2.0;
+    ground._maxZ = ground._height / 2.0;
+    ground._minX = -ground._maxX;
+    ground._minZ = -ground._maxZ;
+
+    ground._setReady(false);
+
+    var onload = (img: HTMLImageElement | ImageBitmap) => {
+        var bufferWidth = img.width;
+        var bufferHeight = img.height;
+
+        if (scene!.isDisposed) {
+            return;
+        }
+
+        var buffer = <Uint8Array>(scene?.getEngine().resizeImageBitmap(img, bufferWidth, bufferHeight));
+
+        var vertexData = CreateGroundFromHeightMapVertexData({
+            width: width, height: height,
+            subdivisions: subdivisions,
+            minHeight: minHeight, maxHeight: maxHeight, colorFilter: filter,
+            buffer: buffer, bufferWidth: bufferWidth, bufferHeight: bufferHeight,
+            alphaFilter: alphaFilter
+        });
+
+        vertexData.applyToMesh(ground, updatable);
+
+        //execute ready callback, if set
+        if (onReady) {
+            onReady(ground);
+        }
+
+        ground._setReady(true);
+    };
+
+    Tools.LoadImage(url, onload, () => { }, scene.offlineProvider);
+
+    return ground;
+}
+/**
+ * Class containing static functions to help procedurally build meshes
+ * @deprecated use the functions directly from the module
+ */
+export const GroundBuilder = {
+    CreateGround,
+    CreateGroundFromHeightMap,
+    CreateTiledGround
 };
+
+VertexData.CreateGround = CreateGroundVertexData;
+VertexData.CreateTiledGround = CreateTiledGroundVertexData;
+VertexData.CreateGroundFromHeightMap = CreateGroundFromHeightMapVertexData;
 
 Mesh.CreateGround = (name: string, width: number, height: number, subdivisions: number, scene?: Scene, updatable?: boolean): Mesh => {
     var options = {
@@ -247,7 +392,7 @@ Mesh.CreateGround = (name: string, width: number, height: number, subdivisions: 
         updatable: updatable
     };
 
-    return GroundBuilder.CreateGround(name, options, scene);
+    return CreateGround(name, options, scene);
 };
 
 Mesh.CreateTiledGround = (name: string, xmin: number, zmin: number, xmax: number, zmax: number, subdivisions: { w: number; h: number; }, precision: { w: number; h: number; }, scene: Scene, updatable?: boolean): Mesh => {
@@ -261,7 +406,7 @@ Mesh.CreateTiledGround = (name: string, xmin: number, zmin: number, xmax: number
         updatable: updatable
     };
 
-    return GroundBuilder.CreateTiledGround(name, options, scene);
+    return CreateTiledGround(name, options, scene);
 };
 
 Mesh.CreateGroundFromHeightMap = (name: string, url: string, width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, scene: Scene, updatable?: boolean, onReady?: (mesh: GroundMesh) => void, alphaFilter?: number): GroundMesh => {
@@ -276,142 +421,5 @@ Mesh.CreateGroundFromHeightMap = (name: string, url: string, width: number, heig
         alphaFilter: alphaFilter
     };
 
-    return GroundBuilder.CreateGroundFromHeightMap(name, url, options, scene);
+    return CreateGroundFromHeightMap(name, url, options, scene);
 };
-
-/**
- * Class containing static functions to help procedurally build meshes
- */
-export class GroundBuilder {
-    /**
-     * Creates a ground mesh
-     * * The parameters `width` and `height` (floats, default 1) set the width and height sizes of the ground
-     * * The parameter `subdivisions` (positive integer) sets the number of subdivisions per side
-     * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
-     * @param name defines the name of the mesh
-     * @param options defines the options used to create the mesh
-     * @param scene defines the hosting scene
-     * @returns the ground mesh
-     * @see https://doc.babylonjs.com/how_to/set_shapes#ground
-     */
-    public static CreateGround(name: string, options: { width?: number, height?: number, subdivisions?: number, subdivisionsX?: number, subdivisionsY?: number, updatable?: boolean }, scene: any): Mesh {
-        var ground = new GroundMesh(name, scene);
-        ground._setReady(false);
-        ground._subdivisionsX = options.subdivisionsX || options.subdivisions || 1;
-        ground._subdivisionsY = options.subdivisionsY || options.subdivisions || 1;
-        ground._width = options.width || 1;
-        ground._height = options.height || 1;
-        ground._maxX = ground._width / 2;
-        ground._maxZ = ground._height / 2;
-        ground._minX = -ground._maxX;
-        ground._minZ = -ground._maxZ;
-
-        var vertexData = VertexData.CreateGround(options);
-
-        vertexData.applyToMesh(ground, options.updatable);
-
-        ground._setReady(true);
-
-        return ground;
-    }
-
-    /**
-     * Creates a tiled ground mesh
-     * * The parameters `xmin` and `xmax` (floats, default -1 and 1) set the ground minimum and maximum X coordinates
-     * * The parameters `zmin` and `zmax` (floats, default -1 and 1) set the ground minimum and maximum Z coordinates
-     * * The parameter `subdivisions` is a javascript object `{w: positive integer, h: positive integer}` (default `{w: 6, h: 6}`). `w` and `h` are the numbers of subdivisions on the ground width and height. Each subdivision is called a tile
-     * * The parameter `precision` is a javascript object `{w: positive integer, h: positive integer}` (default `{w: 2, h: 2}`). `w` and `h` are the numbers of subdivisions on the ground width and height of each tile
-     * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
-     * @param name defines the name of the mesh
-     * @param options defines the options used to create the mesh
-     * @param scene defines the hosting scene
-     * @returns the tiled ground mesh
-     * @see https://doc.babylonjs.com/how_to/set_shapes#tiled-ground
-     */
-    public static CreateTiledGround(name: string, options: { xmin: number, zmin: number, xmax: number, zmax: number, subdivisions?: { w: number; h: number; }, precision?: { w: number; h: number; }, updatable?: boolean }, scene: Nullable<Scene> = null): Mesh {
-        var tiledGround = new Mesh(name, scene);
-
-        var vertexData = VertexData.CreateTiledGround(options);
-
-        vertexData.applyToMesh(tiledGround, options.updatable);
-
-        return tiledGround;
-    }
-
-    /**
-     * Creates a ground mesh from a height map
-     * * The parameter `url` sets the URL of the height map image resource.
-     * * The parameters `width` and `height` (positive floats, default 10) set the ground width and height sizes.
-     * * The parameter `subdivisions` (positive integer, default 1) sets the number of subdivision per side.
-     * * The parameter `minHeight` (float, default 0) is the minimum altitude on the ground.
-     * * The parameter `maxHeight` (float, default 1) is the maximum altitude on the ground.
-     * * The parameter `colorFilter` (optional Color3, default (0.3, 0.59, 0.11) ) is the filter to apply to the image pixel colors to compute the height.
-     * * The parameter `onReady` is a javascript callback function that will be called  once the mesh is just built (the height map download can last some time).
-     * * The parameter `alphaFilter` will filter any data where the alpha channel is below this value, defaults 0 (all data visible)
-     * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
-     * @param name defines the name of the mesh
-     * @param url defines the url to the height map
-     * @param options defines the options used to create the mesh
-     * @param scene defines the hosting scene
-     * @returns the ground mesh
-     * @see https://doc.babylonjs.com/babylon101/height_map
-     * @see https://doc.babylonjs.com/how_to/set_shapes#ground-from-a-height-map
-     */
-    public static CreateGroundFromHeightMap(name: string, url: string, options: { width?: number, height?: number, subdivisions?: number, minHeight?: number, maxHeight?: number, colorFilter?: Color3, alphaFilter?: number, updatable?: boolean, onReady?: (mesh: GroundMesh) => void }, scene: Nullable<Scene> = null): GroundMesh {
-        var width = options.width || 10.0;
-        var height = options.height || 10.0;
-        var subdivisions = options.subdivisions || 1 | 0;
-        var minHeight = options.minHeight || 0.0;
-        var maxHeight = options.maxHeight || 1.0;
-        var filter = options.colorFilter || new Color3(0.3, 0.59, 0.11);
-        var alphaFilter = options.alphaFilter || 0.0;
-        var updatable = options.updatable;
-        var onReady = options.onReady;
-
-        scene = scene || EngineStore.LastCreatedScene!;
-
-        var ground = new GroundMesh(name, scene);
-        ground._subdivisionsX = subdivisions;
-        ground._subdivisionsY = subdivisions;
-        ground._width = width;
-        ground._height = height;
-        ground._maxX = ground._width / 2.0;
-        ground._maxZ = ground._height / 2.0;
-        ground._minX = -ground._maxX;
-        ground._minZ = -ground._maxZ;
-
-        ground._setReady(false);
-
-        var onload = (img: HTMLImageElement | ImageBitmap) => {
-            var bufferWidth = img.width;
-            var bufferHeight = img.height;
-
-            if (scene!.isDisposed) {
-                return;
-            }
-
-            var buffer = <Uint8Array>(scene?.getEngine().resizeImageBitmap(img, bufferWidth, bufferHeight));
-
-            var vertexData = VertexData.CreateGroundFromHeightMap({
-                width: width, height: height,
-                subdivisions: subdivisions,
-                minHeight: minHeight, maxHeight: maxHeight, colorFilter: filter,
-                buffer: buffer, bufferWidth: bufferWidth, bufferHeight: bufferHeight,
-                alphaFilter: alphaFilter
-            });
-
-            vertexData.applyToMesh(ground, updatable);
-
-            //execute ready callback, if set
-            if (onReady) {
-                onReady(ground);
-            }
-
-            ground._setReady(true);
-        };
-
-        Tools.LoadImage(url, onload, () => { }, scene.offlineProvider);
-
-        return ground;
-    }
-}
