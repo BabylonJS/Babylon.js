@@ -981,7 +981,7 @@ export class NativeEngine extends Engine {
 
     protected _recordVertexArrayObject(vertexArray: any, vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): void {
         if (indexBuffer) {
-            this._engine.recordIndexBuffer(vertexArray, indexBuffer.nativeIndexBuffer);
+            this._engine.recordIndexBuffer(vertexArray, indexBuffer.nativeIndexBuffer!);
         }
 
         const attributes = effect.getAttributesNames();
@@ -995,7 +995,7 @@ export class NativeEngine extends Engine {
                     if (buffer) {
                         this._engine.recordVertexBuffer(
                             vertexArray,
-                            buffer.nativeVertexBuffer,
+                            buffer.nativeVertexBuffer!,
                             location,
                             vertexBuffer.byteOffset,
                             vertexBuffer.byteStride,
@@ -2465,14 +2465,14 @@ export class NativeEngine extends Engine {
         const buffer = indexBuffer as NativeDataBuffer;
         const data = this._normalizeIndexData(indices);
         buffer.is32Bits = (data.BYTES_PER_ELEMENT === 4);
-        this._engine.updateDynamicIndexBuffer(buffer.nativeIndexBuffer, data.buffer, data.byteOffset, data.byteLength, offset);
+        this._engine.updateDynamicIndexBuffer(buffer.nativeIndexBuffer!, data.buffer, data.byteOffset, data.byteLength, offset);
     }
 
     public updateDynamicVertexBuffer(vertexBuffer: DataBuffer, verticies: DataArray, byteOffset?: number, byteLength?: number): void {
         const buffer = vertexBuffer as NativeDataBuffer;
         const data = ArrayBuffer.isView(verticies) ? verticies : new Float32Array(verticies);
         this._engine.updateDynamicVertexBuffer(
-            buffer.nativeVertexBuffer,
+            buffer.nativeVertexBuffer!,
             data.buffer,
             data.byteOffset + (byteOffset ?? 0),
             byteLength ?? data.byteLength);
