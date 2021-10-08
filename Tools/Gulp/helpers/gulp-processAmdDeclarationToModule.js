@@ -7,13 +7,11 @@ var processData = function(data, options) {
 
     var str = "" + data;
 
-    console.log(data, options);
-
     // Start process by extracting all lines.
     let lines = str.split('\n');
-    const input = `export {.*} from ".*${options.namedExportPathsToExclude}"`;
-    console.log('regex input:', input);
-    const namedExportPathsToExcludeRegExp = options.namedExportPathsToExclude !== undefined ? new RegExp(input) : undefined;
+    const namedExportPathsToExcludeRegExp = options.namedExportPathsToExclude !== undefined
+        ? new RegExp(`export {.*} from ".*${options.namedExportPathsToExclude}"`)
+        : undefined;
 
     // Let's go line by line and check if we have special folder replacements
     // Replaces declare module '...'; by declare module 'babylonjs/...'; for instance
