@@ -638,7 +638,7 @@ export class BoundingBoxGizmo extends Gizmo {
      * Enables a pointer drag behavior on the bounding box of the gizmo
      */
     public enableDragBehavior() {
-        this._dragMesh = Mesh.CreateBox("dummy", 1, this.gizmoLayer.utilityLayerScene);
+        this._dragMesh = CreateBox("dummy", { size: 1 }, this.gizmoLayer.utilityLayerScene);
         this._dragMesh.visibility = 0;
         this._dragMesh.rotationQuaternion = new Quaternion();
         this.pointerDragBehavior.useObjectOrientationForDragging = false;
