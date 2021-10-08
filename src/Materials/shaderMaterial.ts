@@ -125,7 +125,6 @@ export class ShaderMaterial extends Material {
     private _storageBuffers: { [name: string]: StorageBuffer } = {};
     private _cachedWorldViewMatrix = new Matrix();
     private _cachedWorldViewProjectionMatrix = new Matrix();
-    private _renderId: number;
     private _multiview: boolean = false;
     private _cachedDefines: string;
 
@@ -817,7 +816,6 @@ export class ShaderMaterial extends Material {
             scene.resetCachedMaterial();
         }
 
-        this._renderId = scene.getRenderId();
         effect._wasPreviouslyReady = true;
 
         return true;
