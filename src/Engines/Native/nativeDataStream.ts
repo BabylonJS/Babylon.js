@@ -1,11 +1,11 @@
+import { INative, INativeDataStream } from "./nativeInterfaces";
+
+declare const _native: INative;
+
+/** @hidden */
 export type NativeData = Uint32Array;
 
-interface INativeDataStream {
-    writeBytes(buffer: ArrayBuffer, byteLength: number): void;
-}
-
-declare var _native: any;
-
+/** @hidden */
 export class NativeDataStream {
     private readonly _data: DataView;
     private readonly _uint32s: Uint32Array;
