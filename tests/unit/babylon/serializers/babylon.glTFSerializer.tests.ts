@@ -73,7 +73,7 @@ describe('Babylon glTF Serializer', () => {
         });
         it('should serialize sphere geometry in scene to glTF', () => {
             const scene = new BABYLON.Scene(subject);
-            BABYLON.Mesh.CreateSphere('sphere', 16, 2, scene);
+            BABYLON.MeshBuilder.CreateSphere("sphere", { segments: 16, diameter: 2 }, scene);
 
             return BABYLON.GLTF2Export.GLTFAsync(scene, 'test')
                 .then(glTFData => {
@@ -105,7 +105,7 @@ describe('Babylon glTF Serializer', () => {
         });
         it('should serialize single component translation animation to glTF', () => {
             const scene = new BABYLON.Scene(subject);
-            const box = BABYLON.Mesh.CreateBox('box', 1, scene);
+            const box = BABYLON.MeshBuilder.CreateBox("box", { size: 1 }, scene);
             let keys: BABYLON.IAnimationKey[] = [];
             keys.push({
                 frame: 0,
@@ -150,7 +150,7 @@ describe('Babylon glTF Serializer', () => {
         });
         it('should serialize translation animation to glTF', () => {
             const scene = new BABYLON.Scene(subject);
-            const box = BABYLON.Mesh.CreateBox('box', 1, scene);
+            const box = BABYLON.MeshBuilder.CreateBox("box", { size: 1 }, scene);
             let keys: BABYLON.IAnimationKey[] = [];
             keys.push({
                 frame: 0,
@@ -199,7 +199,7 @@ describe('Babylon glTF Serializer', () => {
         });
         it('should serialize scale animation to glTF', () => {
             const scene = new BABYLON.Scene(subject);
-            const box = BABYLON.Mesh.CreateBox('box', 1, scene);
+            const box = BABYLON.MeshBuilder.CreateBox("box", { size: 1 }, scene);
             let keys: BABYLON.IAnimationKey[] = [];
             keys.push({
                 frame: 0,
@@ -248,7 +248,7 @@ describe('Babylon glTF Serializer', () => {
         });
         it('should serialize rotation quaternion animation to glTF', () => {
             const scene = new BABYLON.Scene(subject);
-            const box = BABYLON.Mesh.CreateBox('box', 1, scene);
+            const box = BABYLON.MeshBuilder.CreateBox("box", { size: 1 }, scene);
             let keys: BABYLON.IAnimationKey[] = [];
             keys.push({
                 frame: 0,
@@ -297,7 +297,7 @@ describe('Babylon glTF Serializer', () => {
         });
         it('should serialize combined animations to glTF', () => {
             const scene = new BABYLON.Scene(subject);
-            const box = BABYLON.Mesh.CreateBox('box', 1, scene);
+            const box = BABYLON.MeshBuilder.CreateBox("box", { size: 1 }, scene);
             const rotationKeyFrames: BABYLON.IAnimationKey[] = [];
             rotationKeyFrames.push({
                 frame: 0,

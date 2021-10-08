@@ -17,6 +17,7 @@ import "../Meshes/Builders/planeBuilder";
 import "../Meshes/Builders/boxBuilder";
 import { Plane } from '../Maths/math.plane';
 import { CreatePlane } from "../Meshes/Builders/planeBuilder";
+import { CreateBox } from "../Meshes/Builders/boxBuilder";
 
 /**
  * Represents the different options available during the creation of
@@ -643,7 +644,7 @@ export class EnvironmentHelper {
      */
     private _setupSkybox(sceneSize: ISceneSize): void {
         if (!this._skybox || this._skybox.isDisposed()) {
-            this._skybox = Mesh.CreateBox("BackgroundSkybox", sceneSize.skyboxSize, this._scene, undefined, Mesh.BACKSIDE);
+            this._skybox = CreateBox("BackgroundSkybox", { size: sceneSize.skyboxSize, sideOrientation: Mesh.BACKSIDE }, this._scene);
             this._skybox.onDisposeObservable.add(() => { this._skybox = null; });
         }
         this._skybox.parent = this._rootMesh;

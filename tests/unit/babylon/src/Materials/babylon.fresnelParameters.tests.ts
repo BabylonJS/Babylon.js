@@ -77,7 +77,7 @@ describe('Babylon Material FresnelParameters', () => {
             });
 
             const scene = new BABYLON.Scene(engine);
-            const mesh = BABYLON.Mesh.CreateBox("mesh", 1, scene);
+            const mesh = BABYLON.MeshBuilder.CreateBox("mesh", { size: 1 }, scene);
             const material = new BABYLON.StandardMaterial("material", scene);
             mesh.material = material;
 

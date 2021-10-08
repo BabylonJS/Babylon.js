@@ -6,7 +6,7 @@ import { FilesInputStore } from "./filesInputStore";
 import { Nullable } from "../types";
 
 /**
- * Class used to help managing file picking and drag'n'drop
+ * Class used to help managing file picking and drag-n-drop
  */
 export class FilesInput {
     /**

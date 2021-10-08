@@ -385,25 +385,25 @@ VertexData.CreateTiledGround = CreateTiledGroundVertexData;
 VertexData.CreateGroundFromHeightMap = CreateGroundFromHeightMapVertexData;
 
 Mesh.CreateGround = (name: string, width: number, height: number, subdivisions: number, scene?: Scene, updatable?: boolean): Mesh => {
-    var options = {
-        width: width,
-        height: height,
-        subdivisions: subdivisions,
-        updatable: updatable
+    const options = {
+        width,
+        height,
+        subdivisions,
+        updatable
     };
 
     return CreateGround(name, options, scene);
 };
 
 Mesh.CreateTiledGround = (name: string, xmin: number, zmin: number, xmax: number, zmax: number, subdivisions: { w: number; h: number; }, precision: { w: number; h: number; }, scene: Scene, updatable?: boolean): Mesh => {
-    var options = {
-        xmin: xmin,
-        zmin: zmin,
-        xmax: xmax,
-        zmax: zmax,
-        subdivisions: subdivisions,
-        precision: precision,
-        updatable: updatable
+    const options = {
+        xmin,
+        zmin,
+        xmax,
+        zmax,
+        subdivisions,
+        precision,
+        updatable
     };
 
     return CreateTiledGround(name, options, scene);
