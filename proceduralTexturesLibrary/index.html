@@ -79,7 +79,7 @@
 			var plane = BABYLON.MeshBuilder.CreateBox("plane", { width: 30, height: 1, depth:30 }, scene);
 			plane.setEnabled(false);
 			
-			var ground = BABYLON.Mesh.CreateGround("ground", 512, 512, 32, scene, false);
+			var ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 512, height: 512, subdivisions: 32, updatable: false }, scene);
 			ground.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
 			ground.setEnabled(false);
 			
