@@ -86,6 +86,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                         <TextInputLineComponent lockObject={this.props.lockObject} key={`c${i}`} label={`Column ${i}`} value={cd} numbersOnly={true}
                             onChange={(newValue) => {
                                 this._columnDefinitions[i] = newValue;
+                                this._columnEditFlags[i] = true;
                             }} />
                     </div>
                 )
@@ -119,27 +120,34 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
     resizeColumn() {
         const grid = this.props.grid;
         let total = 0;
-
+        let editCount = 0;
+        let percentCount = 0;
         let columnValues: number[] = [];
         for (let i = 0; i < this._columnDefinitions.length; ++i) {
             let value = this._columnDefinitions[i];
             let percent = this.checkPercentage(value);
             if (this._columnEditFlags[i]) {
                 value = this.checkValue(value, percent);
+                if (percent) { 
+                    editCount++; 
+                }
             }
 
-            let valueAsInt = parseInt(value.substring(0, value.length - 1));
             if (percent) {
+                percentCount++;
+                let valueAsInt = parseInt(value.substring(0, value.length - 1));
                 total += valueAsInt / 100;
                 columnValues.push(valueAsInt / 100);
             }
             else {
+                let valueAsInt = parseInt(value.substring(0, value.length - 2));
                 columnValues.push(valueAsInt);
             }
-
         }
 
-        if (total != 1.0) {
+        let allEdited = editCount === percentCount;
+
+        if (total > 1.0 || allEdited) {
             let difference = total - 1.0;
             let diff = Math.abs(difference);
             for (let i = 0; i < grid.columnCount; ++i) {
@@ -149,13 +157,25 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                     columnValues[i] = difference > 0 ? value - weighted : value + weighted;
                 }
             }
-        } else {
-
+        } else if (total < 1.0) {
+            let difference = 1.0 - total;
+            for (let i = 0; i < grid.columnCount; ++i) {
+                if (this.checkPercentage(this._columnDefinitions[i]) && this._columnEditFlags[i]) {
+                    let value = columnValues[i];
+                    total -= value;
+                }
+            }
+            for (let i = 0; i < grid.columnCount; ++i) {
+                if (this.checkPercentage(this._columnDefinitions[i]) && !this._columnEditFlags[i]) {
+                    let value = columnValues[i];
+                    let weighted = difference * (value / total);
+                    columnValues[i] = value + weighted;
+                }
+            }
         }
 
         for (let i = 0; i < this._columnDefinitions.length; ++i) {
-            grid.setColumnDefinition(i, columnValues[i], !
-                this.checkPercentage(this._columnDefinitions[i]));
+            grid.setColumnDefinition(i, columnValues[i], !this.checkPercentage(this._columnDefinitions[i]));
         }
 
         this.setValues();
@@ -213,8 +233,8 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                     onClick={() => {
                         let hasChild = false;
                         for (let i = 0; i < grid.columnCount; ++i) {
-                            let child = grid.cells[(grid.rowCount-1).toString() + ":" + i.toString()];
-                            if(child?.children.length) {
+                            let child = grid.cells[(grid.rowCount - 1).toString() + ":" + i.toString()];
+                            if (child?.children.length) {
                                 hasChild = true;
                                 break;
                             }
@@ -276,8 +296,8 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                         onClick={() => {
                             let hasChild = false;
                             for (let i = 0; i < grid.rowCount; ++i) {
-                                let child = grid.cells[i.toString() + ":" + (grid.columnCount-1).toString()];
-                                if(child?.children.length) {
+                                let child = grid.cells[i.toString() + ":" + (grid.columnCount - 1).toString()];
+                                if (child?.children.length) {
                                     hasChild = true;
                                     break;
                                 }
