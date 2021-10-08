@@ -4,8 +4,8 @@ import { Vector3 } from "babylonjs/Maths/math.vector";
 import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { Mesh } from "babylonjs/Meshes/mesh";
-import { PlaneBuilder } from "babylonjs/Meshes/Builders/planeBuilder";
-import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
+import { CreatePlane } from "babylonjs/Meshes/Builders/planeBuilder";
+import { CreateBox } from "babylonjs/Meshes/Builders/boxBuilder";
 import { FadeInOutBehavior } from "babylonjs/Behaviors/Meshes/fadeInOutBehavior";
 import { Scene } from "babylonjs/scene";
 import { FluentButtonMaterial } from "../materials/fluentButton/fluentButtonMaterial";
@@ -99,8 +99,8 @@ export class TouchHolographicButton extends TouchButton3D {
         }
         if (!this._tooltipFade) {
             // Create tooltip with mesh and text
-            this._tooltipMesh = PlaneBuilder.CreatePlane("", { size: 1 }, this._backPlate._scene);
-            var tooltipBackground = PlaneBuilder.CreatePlane("", { size: 1, sideOrientation: Mesh.DOUBLESIDE }, this._backPlate._scene);
+            this._tooltipMesh = CreatePlane("", { size: 1 }, this._backPlate._scene);
+            var tooltipBackground = CreatePlane("", { size: 1, sideOrientation: Mesh.DOUBLESIDE }, this._backPlate._scene);
             var mat = new StandardMaterial("", this._backPlate._scene);
             mat.diffuseColor = Color3.FromHexString("#212121");
             tooltipBackground.material = mat;
@@ -314,7 +314,7 @@ export class TouchHolographicButton extends TouchButton3D {
     // Mesh association
     protected _createNode(scene: Scene): TransformNode {
         this.name = this.name ?? "TouchHolographicButton";
-        const collisionMesh = BoxBuilder.CreateBox(`${this.name}_collisionMesh`, {
+        const collisionMesh = CreateBox(`${this.name}_collisionMesh`, {
             width: 1.0,
             height: 1.0,
             depth: this._frontPlateDepth,
@@ -341,7 +341,7 @@ export class TouchHolographicButton extends TouchButton3D {
                 this._frontPlate = importedFrontPlate;
             });
 
-        this._backPlate = BoxBuilder.CreateBox(
+        this._backPlate = CreateBox(
             `${this.name}_backPlate`,
             {
                 width: 1.0,

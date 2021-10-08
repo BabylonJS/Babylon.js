@@ -982,7 +982,7 @@ export class VertexData {
 
     /**
      * Creates the VertexData of the Ground designed from a heightmap
-     * @param options an object used to set the following parameters for the Ground, required and provided by MeshBuilder.CreateGroundFromHeightMap
+     * @param options an object used to set the following parameters for the Ground, required and provided by CreateGroundFromHeightMap
       * * width the width (x direction) of the ground
       * * height the height (z direction) of the ground
       * * subdivisions the number of subdivisions per side
@@ -1033,7 +1033,7 @@ export class VertexData {
 
     /**
      * Creates the VertexData for an irregular Polygon in the XoZ plane using a mesh built by polygonTriangulation.build()
-     * All parameters are provided by MeshBuilder.CreatePolygon as needed
+     * All parameters are provided by CreatePolygon as needed
      * @param polygon a mesh built from polygonTriangulation.build()
      * @param sideOrientation takes the values Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
      * @param fUV an array of Vector4 elements used to set different images to the top, rings and bottom respectively

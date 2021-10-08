@@ -34,9 +34,9 @@ import { Axis } from '../../Maths/math.axis';
 import { WebXRSessionManager } from '../../XR/webXRSessionManager';
 import { WebXRDefaultExperience } from '../../XR/webXRDefaultExperience';
 import { WebXRState } from '../../XR/webXRTypes';
-import { MeshBuilder } from "../../Meshes/meshBuilder";
 import { CreateCylinder } from "../../Meshes/Builders/cylinderBuilder";
 import { CreateTorus } from "../../Meshes/Builders/torusBuilder";
+import { CreateGround } from "../../Meshes/Builders/groundBuilder";
 
 /**
  * Options to modify the vr teleportation behavior.
@@ -1771,7 +1771,7 @@ export class VRExperienceHelper {
     }
 
     private _createTeleportationCircles() {
-        this._teleportationTarget = MeshBuilder.CreateGround("teleportationTarget", { width: 2, height: 2, subdivisions: 2 }, this._scene);
+        this._teleportationTarget = CreateGround("teleportationTarget", { width: 2, height: 2, subdivisions: 2 }, this._scene);
         this._teleportationTarget.isPickable = false;
 
         var length = 512;
