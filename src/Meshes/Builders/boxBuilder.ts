@@ -141,10 +141,10 @@ export const BoxBuilder = {
 VertexData.CreateBox = CreateBoxVertexData;
 
 Mesh.CreateBox = (name: string, size: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number): Mesh => {
-    var options = {
-        size: size,
-        sideOrientation: sideOrientation,
-        updatable: updatable
+    const options = {
+        size,
+        sideOrientation,
+        updatable
     };
 
     return CreateBox(name, options, scene);
