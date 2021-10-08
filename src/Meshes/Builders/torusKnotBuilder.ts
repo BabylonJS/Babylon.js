@@ -132,15 +132,15 @@ export const TorusKnotBuilder = {
 VertexData.CreateTorusKnot = CreateTorusKnotVertexData;
 
 Mesh.CreateTorusKnot = (name: string, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh => {
-    var options = {
-        radius: radius,
-        tube: tube,
-        radialSegments: radialSegments,
-        tubularSegments: tubularSegments,
-        p: p,
-        q: q,
-        sideOrientation: sideOrientation,
-        updatable: updatable
+    const options = {
+        radius,
+        tube,
+        radialSegments,
+        tubularSegments,
+        p,
+        q,
+        sideOrientation,
+        updatable
     };
 
     return CreateTorusKnot(name, options, scene);
