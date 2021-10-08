@@ -1,7 +1,8 @@
 import { NativeEngine } from "../nativeEngine";
 import { NativeDataStream, NativeData } from "./nativeDataStream";
+import { INative } from "./nativeInterfaces";
 
-declare var _native: any;
+declare const _native: INative;
 
 NativeEngine._createNativeDataStream = function () {
     if (_native.NativeDataStream.VALIDATION_ENABLED) {
