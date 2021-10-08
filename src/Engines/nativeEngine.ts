@@ -618,12 +618,12 @@ class NativeDataBuffer extends DataBuffer {
     /**
      * Accessor value used to identify/retrieve a natively-stored index buffer.
      */
-    public nativeIndexBuffer?: any;
+    public nativeIndexBuffer?: NativeData;
 
     /**
      * Accessor value used to identify/retrieve a natively-stored vertex buffer.
      */
-    public nativeVertexBuffer?: any;
+    public nativeVertexBuffer?: NativeData;
 }
 
 /**
