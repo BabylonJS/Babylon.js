@@ -125,7 +125,6 @@ export class ShaderMaterial extends Material {
     private _storageBuffers: { [name: string]: StorageBuffer } = {};
     private _cachedWorldViewMatrix = new Matrix();
     private _cachedWorldViewProjectionMatrix = new Matrix();
-    private _renderId: number;
     private _multiview: boolean = false;
     private _cachedDefines: string;
 
@@ -551,19 +550,6 @@ export class ShaderMaterial extends Material {
         return this;
     }
 
-    private _checkCache(mesh?: AbstractMesh, useInstances?: boolean): boolean {
-        if (!mesh) {
-            return true;
-        }
-
-        const effect = this.getEffect();
-        if (effect && (effect.defines.indexOf("#define INSTANCES") !== -1) !== useInstances) {
-            return false;
-        }
-
-        return true;
-    }
-
     /**
      * Specifies that the submesh is ready to be used
      * @param mesh defines the mesh to check
@@ -592,14 +578,6 @@ export class ShaderMaterial extends Material {
 
         var scene = this.getScene();
         var engine = scene.getEngine();
-
-        if (!this.checkReadyOnEveryCall) {
-            if (this._renderId === scene.getRenderId()) {
-                if (this._checkCache(mesh, useInstances)) {
-                    return true;
-                }
-            }
-        }
 
         // Instances
         var defines = [];
@@ -838,7 +816,6 @@ export class ShaderMaterial extends Material {
             scene.resetCachedMaterial();
         }
 
-        this._renderId = scene.getRenderId();
         effect._wasPreviouslyReady = true;
 
         return true;
