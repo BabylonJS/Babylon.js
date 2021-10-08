@@ -45,7 +45,7 @@ export class RenderGridPropertyGridComponent extends React.Component<IRenderGrid
             var width = (extend.max.x - extend.min.x) * 5.0;
             var depth = (extend.max.z - extend.min.z) * 5.0;
 
-            this._gridMesh = CreateGround("grid", { width: 1.0, height: 1.0, subdivisions: 1 }, this._scene);
+            this._gridMesh = CreateGround("grid", { width: 1.0, height: 1.0, subdivisions: 1 }, scene);
             if (!this._gridMesh.reservedDataStore) {
                 this._gridMesh.reservedDataStore = {};
             }

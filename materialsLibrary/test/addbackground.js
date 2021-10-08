@@ -10,7 +10,7 @@ window.prepareBackgroundMaterial = function() {
 	back.diffuseTexture.hasAlpha = true;
 
     // Skybox
-    backgroundSkybox = BABYLON.Mesh.CreateBox("hdrSkyBox", 1000.0, scene);
+    backgroundSkybox = BABYLON.MeshBuilder.CreateBox("hdrSkyBox", { size: 1000.0 }, scene);
 	backgroundSkybox.material = backSky;
 	backgroundSkybox.setEnabled(false);
 
