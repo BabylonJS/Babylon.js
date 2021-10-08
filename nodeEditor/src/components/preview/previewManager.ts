@@ -33,6 +33,7 @@ import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
 import { Layer } from "babylonjs/Layers/layer";
 import { DataStorage } from "babylonjs/Misc/dataStorage";
 import { NodeMaterialBlock } from "babylonjs/Materials/Node/nodeMaterialBlock";
+import { CreateGround } from "babylonjs/Meshes/Builders/groundBuilder";
 
 export class PreviewManager {
     private _nodeMaterial: NodeMaterial;
@@ -302,7 +303,7 @@ export class PreviewManager {
                         });
                         return;
                     case PreviewType.Plane:
-                        let plane = Mesh.CreateGround("dummy-plane", 2, 2, 128, this._scene);
+                        let plane = CreateGround("dummy-plane", { width: 2, height: 2, subdivisions: 128 }, this._scene);
                         plane.scaling.y = -1;
                         plane.rotation.x = Math.PI;
                         this._meshes.push(plane);
