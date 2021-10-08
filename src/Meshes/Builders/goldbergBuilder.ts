@@ -8,6 +8,25 @@ import { Logger } from "../../Misc/logger";
 import { _PrimaryIsoTriangle, GeodesicData, PolyhedronData } from "../geodesicMesh";
 import { VertexBuffer } from "../../Buffers/buffer";
 
+/**
+ * Creates the Mesh for a Goldberg Polyhedron
+ * @param name defines the name of the mesh
+ * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty
+ * * m number of horizontal steps along an isogrid
+ * * n number of angled steps along an isogrid
+ * * size the size of the Goldberg, optional default 1
+ * * sizeX allows stretching in the x direction, optional, default size
+ * * sizeY allows stretching in the y direction, optional, default size
+ * * sizeZ allows stretching in the z direction, optional, default size
+ * * faceUV an array of Vector4 elements used to set different images to the top, rings and bottom respectively
+ * * faceColors an array of Color3 elements used to set different colors to the top, rings and bottom respectively
+ * * subdivisions increasing the subdivisions increases the number of faces, optional, default 4
+ * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+ * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+ * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+ * @param goldBergData polyhedronData defining the Goldberg polyhedron
+ * @returns GoldbergSphere mesh
+ */
 export function CreateGoldbergVertexData(options: { size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, sideOrientation?: number }, goldbergData: PolyhedronData): VertexData {
 
     const size = options.size;

@@ -5,6 +5,20 @@ import { Color4 } from '../../Maths/math.color';
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 
+/**
+ * Creates the VertexData for a box
+ * @param options an object used to set the following optional parameters for the box, required but can be empty
+  * * size sets the width, height and depth of the box to the value of size, optional default 1
+  * * width sets the width (x direction) of the box, overwrites the width set by size, optional, default size
+  * * height sets the height (y direction) of the box, overwrites the height set by size, optional, default size
+  * * depth sets the depth (z direction) of the box, overwrites the depth set by size, optional, default size
+  * * faceUV an array of 6 Vector4 elements used to set different images to each box side
+  * * faceColors an array of 6 Color3 elements used to set different colors to each box side
+  * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+  * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+  * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+ * @returns the VertexData of the box
+ */
 export function CreateBoxVertexData(options: { size?: number, width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, wrap?: boolean, topBaseAt?: number, bottomBaseAt?: number }): VertexData {
     var nbFaces = 6;
     var indices = [0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7, 8, 9, 10, 8, 10, 11, 12, 13, 14, 12, 14, 15, 16, 17, 18, 16, 18, 19, 20, 21, 22, 20, 22, 23];

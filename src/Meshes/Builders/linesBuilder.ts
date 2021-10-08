@@ -9,6 +9,13 @@ import { VertexBuffer } from "../../Buffers/buffer";
 
 declare type Material = import("../../Materials/material").Material;
 
+/**
+ * Creates the VertexData of the LineSystem
+ * @param options an object used to set the following optional parameters for the LineSystem, required but can be empty
+ *  - lines an array of lines, each line being an array of successive Vector3
+ *  - colors an array of line colors, each of the line colors being an array of successive Color4, one per line point
+ * @returns the VertexData of the LineSystem
+ */
 export function CreateLineSystemVertexData(options: { lines: Vector3[][], colors?: Nullable<Color4[][]> }): VertexData {
     var indices = [];
     var positions = [];
@@ -41,6 +48,15 @@ export function CreateLineSystemVertexData(options: { lines: Vector3[][], colors
     return vertexData;
 }
 
+/**
+ * Create the VertexData for a DashedLines
+ * @param options an object used to set the following optional parameters for the DashedLines, required but can be empty
+ *  - points an array successive Vector3
+ *  - dashSize the size of the dashes relative to the dash number, optional, default 3
+ *  - gapSize the size of the gap between two successive dashes relative to the dash number, optional, default 1
+ *  - dashNb the intended total number of dashes, optional, default 200
+ * @returns the VertexData for the DashedLines
+ */
 export function CreateDashedLinesVertexData(options: { points: Vector3[], dashSize?: number, gapSize?: number, dashNb?: number }): VertexData {
     var dashSize = options.dashSize || 3;
     var gapSize = options.gapSize || 1;

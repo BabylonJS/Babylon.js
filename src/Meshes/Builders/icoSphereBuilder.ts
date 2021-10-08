@@ -4,6 +4,20 @@ import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { Nullable } from '../../types';
 
+/**
+ * Creates the VertexData of the IcoSphere
+ * @param options an object used to set the following optional parameters for the IcoSphere, required but can be empty
+  * * radius the radius of the IcoSphere, optional default 1
+  * * radiusX allows stretching in the x direction, optional, default radius
+  * * radiusY allows stretching in the y direction, optional, default radius
+  * * radiusZ allows stretching in the z direction, optional, default radius
+  * * flat when true creates a flat shaded mesh, optional, default true
+  * * subdivisions increasing the subdivisions increases the number of faces, optional, default 4
+  * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+  * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+  * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+ * @returns the VertexData of the IcoSphere
+ */
 export function CreateIcoSphereVertexData(options: { radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
     var sideOrientation = options.sideOrientation || VertexData.DEFAULTSIDE;
     var radius = options.radius || 1;

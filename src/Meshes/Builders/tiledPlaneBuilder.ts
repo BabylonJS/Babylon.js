@@ -4,6 +4,18 @@ import { Vector4 } from "../../Maths/math.vector";
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 
+/**
+ * Creates the VertexData for a tiled plane
+ * @param options an object used to set the following optional parameters for the box, required but can be empty
+  * * pattern a limited pattern arrangement depending on the number
+  * * tileSize sets the width, height and depth of the tile to the value of size, optional default 1
+  * * tileWidth sets the width (x direction) of the tile, overwrites the width set by size, optional, default size
+  * * tileHeight sets the height (y direction) of the tile, overwrites the height set by size, optional, default size
+  * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+  * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+  * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+ * @returns the VertexData of the tiled plane
+ */
 export function CreateTiledPlaneVertexData(options: { pattern?: number, tileSize?: number, tileWidth?: number, tileHeight?: number, size?: number, width?: number, height?: number, alignHorizontal?: number, alignVertical?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
 
     var flipTile = options.pattern || Mesh.NO_FLIP;

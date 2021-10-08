@@ -4,6 +4,17 @@ import { Vector4 } from "../../Maths/math.vector";
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 
+/**
+ * Creates the VertexData of the Disc or regular Polygon
+ * @param options an object used to set the following optional parameters for the disc, required but can be empty
+  * * radius the radius of the disc, optional default 0.5
+  * * tessellation the number of polygon sides, optional, default 64
+  * * arc a number from 0 to 1, to create an unclosed polygon based on the fraction of the circumference given by the arc value, optional, default 1
+  * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+  * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+  * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+ * @returns the VertexData of the box
+ */
 function CreateDiscVertexData(options: { radius?: number, tessellation?: number, arc?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
     var positions = new Array<number>();
     var indices = new Array<number>();
