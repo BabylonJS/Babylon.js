@@ -1,5 +1,5 @@
 import { Control } from "./control";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 import { Nullable } from 'babylonjs/types';
 import { Measure } from '../measure';
 import { serialize } from 'babylonjs/Misc/decorators';
@@ -234,4 +234,4 @@ export class DisplayGrid extends Control {
         return "DisplayGrid";
     }
 }
-_TypeStore.RegisteredTypes["BABYLON.GUI.DisplayGrid"] = DisplayGrid;
+RegisterClass("BABYLON.GUI.DisplayGrid", DisplayGrid);

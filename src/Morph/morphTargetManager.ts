@@ -64,7 +64,7 @@ export class MorphTargetManager implements IDisposable {
     public enableUVMorphing = true;
 
     /**
-     * Sets a boolean indicating that adding new target will or will not update the underlying data buffers
+     * Sets a boolean indicating that adding new target or updating an existing target will not update the underlying data buffers
      */
     public set areUpdatesFrozen(block: boolean) {
         if (block) {
@@ -210,9 +210,7 @@ export class MorphTargetManager implements IDisposable {
         this._targetDataLayoutChangedObservers.push(target._onDataLayoutChanged.add(() => {
             this._syncActiveTargets(true);
         }));
-        if (!this.areUpdatesFrozen) {
-            this._syncActiveTargets(true);
-        }
+        this._syncActiveTargets(true);
     }
 
     /**
@@ -273,6 +271,10 @@ export class MorphTargetManager implements IDisposable {
     }
 
     private _syncActiveTargets(needUpdate: boolean): void {
+        if (this.areUpdatesFrozen) {
+            return;
+        }
+
         let influenceCount = 0;
         this._activeTargets.reset();
         this._supportsNormals = true;
@@ -329,7 +331,7 @@ export class MorphTargetManager implements IDisposable {
      * Synchronize the targets with all the meshes using this morph target manager
      */
     public synchronize(): void {
-        if (!this._scene) {
+        if (!this._scene || this.areUpdatesFrozen) {
             return;
         }
 

@@ -85,7 +85,11 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                 isActive: activeEngineVersion === "WebGL2",
                 onClick: () => {
                     Utilities.StoreStringToStore("engineVersion", "WebGL2");
-                    window.location.reload();
+                    if (location.search.indexOf("webgpu") !== -1) {
+                        location.search = location.search.replace("webgpu", "");
+                    } else {
+                        window.location.reload();
+                    }
                 },
             },
             {
@@ -94,8 +98,15 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                 storeKey: "engineVersion",
                 isActive: activeEngineVersion === "WebGL",
                 onClick: () => {
+                    if (location.search.indexOf("webgpu") !== -1) {
+                        location.search = location.search.replace("webgpu", "");
+                    }
                     Utilities.StoreStringToStore("engineVersion", "WebGL");
-                    window.location.reload();
+                    if (location.search.indexOf("webgpu") !== -1) {
+                        location.search = location.search.replace("webgpu", "");
+                    } else {
+                        window.location.reload();
+                    }
                 },
             },
         ];
@@ -232,8 +243,22 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                     />
                 </div>
                 <div className="commands-right">
-                    <CommandDropdownComponent globalState={this.props.globalState} defaultValue={activeEngineVersion} tooltip="Engine" toRight={true} items={engineOptions} />
-                    <CommandDropdownComponent globalState={this.props.globalState} defaultValue={activeVersion} tooltip="Versions" toRight={true} items={versionOptions} />
+                    <CommandDropdownComponent
+                        globalState={this.props.globalState}
+                        storeKey={"engineVersion"}
+                        defaultValue={activeEngineVersion}
+                        tooltip="Engine"
+                        toRight={true}
+                        items={engineOptions}
+                    />
+                    <CommandDropdownComponent
+                        globalState={this.props.globalState}
+                        storeKey={"version"}
+                        defaultValue={activeVersion}
+                        tooltip="Versions"
+                        toRight={true}
+                        items={versionOptions}
+                    />
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Examples" icon="examples" onClick={() => this.onExamples()} isActive={false} />
                 </div>
             </div>

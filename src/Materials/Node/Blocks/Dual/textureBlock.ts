@@ -9,7 +9,7 @@ import { InputBlock } from '../Input/inputBlock';
 import { Effect } from '../../../effect';
 import { Mesh } from '../../../../Meshes/mesh';
 import { Nullable } from '../../../../types';
-import { _TypeStore } from '../../../../Misc/typeStore';
+import { RegisterClass } from '../../../../Misc/typeStore';
 import { Texture } from '../../../Textures/texture';
 import { Scene } from '../../../../scene';
 import { NodeMaterialModes } from '../../Enums/nodeMaterialModes';
@@ -567,4 +567,4 @@ export class TextureBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.TextureBlock"] = TextureBlock;
+RegisterClass("BABYLON.TextureBlock", TextureBlock);

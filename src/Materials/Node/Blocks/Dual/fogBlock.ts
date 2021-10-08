@@ -10,7 +10,7 @@ import { AbstractMesh } from '../../../../Meshes/abstractMesh';
 import { MaterialHelper } from '../../../materialHelper';
 import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
 import { InputBlock } from '../Input/inputBlock';
-import { _TypeStore } from '../../../../Misc/typeStore';
+import { RegisterClass } from '../../../../Misc/typeStore';
 
 import "../../../../Shaders/ShadersInclude/fogFragmentDeclaration";
 
@@ -159,4 +159,4 @@ export class FogBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.FogBlock"] = FogBlock;
+RegisterClass("BABYLON.FogBlock", FogBlock);

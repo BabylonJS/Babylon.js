@@ -4,15 +4,15 @@ import { Nullable } from "../../types";
 import { Matrix, TmpVectors, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Constants } from "../../Engines/constants";
-import { _TypeStore } from '../../Misc/typeStore';
-import { _DevTools } from '../../Misc/devTools';
+import { GetClass, RegisterClass } from '../../Misc/typeStore';
+import { _WarnImport } from '../../Misc/devTools';
 import { IInspectable } from '../../Misc/iInspectable';
 import { ThinEngine } from '../../Engines/thinEngine';
 import { TimingTools } from '../../Misc/timingTools';
 import { InstantiationTools } from '../../Misc/instantiationTools';
 import { Plane } from '../../Maths/math.plane';
-import { StringTools } from '../../Misc/stringTools';
-import { CopyTools } from '../../Misc/copyTools';
+import { EncodeArrayBufferToBase64, StartsWith } from '../../Misc/stringTools';
+import { GenerateBase64StringFromTexture, GenerateBase64StringFromTextureAsync } from '../../Misc/copyTools';
 
 declare type CubeTexture = import("../../Materials/Textures/cubeTexture").CubeTexture;
 declare type MirrorTexture = import("../../Materials/Textures/mirrorTexture").MirrorTexture;
@@ -83,15 +83,15 @@ export class Texture extends BaseTexture {
 
     /** @hidden */
     public static _CubeTextureParser = (jsonTexture: any, scene: Scene, rootUrl: string): CubeTexture => {
-        throw _DevTools.WarnImport("CubeTexture");
+        throw _WarnImport("CubeTexture");
     }
     /** @hidden */
     public static _CreateMirror = (name: string, renderTargetSize: number, scene: Scene, generateMipMaps: boolean): MirrorTexture => {
-        throw _DevTools.WarnImport("MirrorTexture");
+        throw _WarnImport("MirrorTexture");
     }
     /** @hidden */
     public static _CreateRenderTargetTexture = (name: string, renderTargetSize: number, scene: Scene, generateMipMaps: boolean, creationFlags?: number): RenderTargetTexture => {
-        throw _DevTools.WarnImport("RenderTargetTexture");
+        throw _WarnImport("RenderTargetTexture");
     }
 
     /** nearest is mag = nearest and min = nearest and mip = linear */
@@ -457,7 +457,11 @@ export class Texture extends BaseTexture {
             if (this._texture.isReady) {
                 TimingTools.SetImmediate(() => load());
             } else {
-                this._texture.onLoadedObservable.add(load);
+                const loadObserver = this._texture.onLoadedObservable.add(load);
+                this._texture.onErrorObservable.add((e) => {
+                    errorHandler(e.message, e.exception);
+                    this._texture?.onLoadedObservable.remove(loadObserver);
+                });
             }
         }
     }
@@ -474,7 +478,7 @@ export class Texture extends BaseTexture {
             this.getScene()!.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
         }
 
-        if (!this.name || StringTools.StartsWith(this.name, "data:")) {
+        if (!this.name || StartsWith(this.name, "data:")) {
             this.name = url;
         }
         this.url = url;
@@ -745,12 +749,12 @@ export class Texture extends BaseTexture {
         let savedName = this.name;
 
         if (!Texture.SerializeBuffers) {
-            if (StringTools.StartsWith(this.name, "data:")) {
+            if (StartsWith(this.name, "data:")) {
                 this.name = "";
             }
         }
 
-        if (StringTools.StartsWith(this.name, "data:") && this.url === this.name) {
+        if (StartsWith(this.name, "data:") && this.url === this.name) {
             this.url = "";
         }
 
@@ -764,10 +768,10 @@ export class Texture extends BaseTexture {
             if (typeof this._buffer === "string" && (this._buffer as string).substr(0, 5) === "data:") {
                 serializationObject.base64String = this._buffer;
                 serializationObject.name = serializationObject.name.replace("data:", "");
-            } else if (this.url && StringTools.StartsWith(this.url, "data:") && this._buffer instanceof Uint8Array) {
-                serializationObject.base64String = "data:image/png;base64," + StringTools.EncodeArrayBufferToBase64(this._buffer);
-            } else if (Texture.ForceSerializeBuffers) {
-                serializationObject.base64String = !this._engine || this._engine._features.supportSyncTextureRead ? CopyTools.GenerateBase64StringFromTexture(this) : CopyTools.GenerateBase64StringFromTextureAsync(this);
+            } else if (this.url && StartsWith(this.url, "data:") && this._buffer instanceof Uint8Array) {
+                serializationObject.base64String = "data:image/png;base64," + EncodeArrayBufferToBase64(this._buffer);
+            } else if (Texture.ForceSerializeBuffers || (this.url && StartsWith(this.url, "blob:"))) {
+                serializationObject.base64String = !this._engine || this._engine._features.supportSyncTextureRead ? GenerateBase64StringFromTexture(this) : GenerateBase64StringFromTextureAsync(this);
             }
         }
 
@@ -848,7 +852,7 @@ export class Texture extends BaseTexture {
             if (texture && parsedTexture.animations) {
                 for (var animationIndex = 0; animationIndex < parsedTexture.animations.length; animationIndex++) {
                     var parsedAnimation = parsedTexture.animations[animationIndex];
-                    const internalClass = _TypeStore.GetClass("BABYLON.Animation");
+                    const internalClass = GetClass("BABYLON.Animation");
                     if (internalClass) {
                         texture.animations.push(internalClass.Parse(parsedAnimation));
                     }
@@ -898,7 +902,7 @@ export class Texture extends BaseTexture {
                         url = rootUrl + parsedTexture.name;
                     }
 
-                    if (StringTools.StartsWith(parsedTexture.url, "data:") || (Texture.UseSerializedUrlIfAny && parsedTexture.url)) {
+                    if (StartsWith(parsedTexture.url, "data:") || (Texture.UseSerializedUrlIfAny && parsedTexture.url)) {
                         url = parsedTexture.url;
                     }
                     texture = new Texture(url, scene, !generateMipMaps, parsedTexture.invertY, parsedTexture.samplingMode, onLoaded);
@@ -957,5 +961,5 @@ export class Texture extends BaseTexture {
 }
 
 // References the dependencies.
-_TypeStore.RegisteredTypes["BABYLON.Texture"] = Texture;
+RegisterClass("BABYLON.Texture", Texture);
 SerializationHelper._TextureParser = Texture.Parse;

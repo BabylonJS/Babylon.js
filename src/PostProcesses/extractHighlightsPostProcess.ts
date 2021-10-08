@@ -8,7 +8,7 @@ import { Constants } from "../Engines/constants";
 
 import "../Shaders/extractHighlights.fragment";
 import { serialize } from '../Misc/decorators';
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 
 /**
  * The extract highlights post process sets all pixels to black except pixels above the specified luminance threshold. Used as the first step for a bloom effect.
@@ -49,4 +49,4 @@ export class ExtractHighlightsPostProcess extends PostProcess {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.ExtractHighlightsPostProcess"] = ExtractHighlightsPostProcess;
+RegisterClass("BABYLON.ExtractHighlightsPostProcess", ExtractHighlightsPostProcess);

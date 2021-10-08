@@ -44,6 +44,7 @@ export * from "./retryStrategy";
 export * from "./interfaces/screenshotSize";
 export * from "./interfaces/iPerfViewer";
 export * from "./fileTools";
+export * from "./fileTools.lts";
 export * from "./stringTools";
 export * from "./dataReader";
 export * from "./minMaxReducer";

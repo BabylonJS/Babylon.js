@@ -24,7 +24,6 @@ import { DataBuffer } from "../Buffers/dataBuffer";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEffectCommonAccessor";
 import { IGPUParticleSystemPlatform } from "./IGPUParticleSystemPlatform";
-import { _TypeStore } from "../Misc/typeStore";
 
 declare type Scene = import("../scene").Scene;
 declare type Engine = import("../Engines/engine").Engine;
@@ -32,6 +31,7 @@ declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 
 import "../Shaders/gpuRenderParticles.fragment";
 import "../Shaders/gpuRenderParticles.vertex";
+import { GetClass } from "../Misc/typeStore";
 
 /**
  * This represents a GPU particle system in Babylon
@@ -762,15 +762,15 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
 
         if (this._engine.getCaps().supportComputeShaders) {
-            if (_TypeStore.RegisteredTypes["BABYLON.ComputeShaderParticleSystem"] === undefined) {
+            if (!GetClass("BABYLON.ComputeShaderParticleSystem")) {
                 throw new Error("The ComputeShaderParticleSystem class is not available! Make sure you have imported it.");
             }
-            this._platform = new (_TypeStore.RegisteredTypes["BABYLON.ComputeShaderParticleSystem"] as any)(this, this._engine);
+            this._platform = new (GetClass("BABYLON.ComputeShaderParticleSystem") as any)(this, this._engine);
         } else {
-            if (_TypeStore.RegisteredTypes["BABYLON.WebGL2ParticleSystem"] === undefined) {
+            if (!GetClass("BABYLON.WebGL2ParticleSystem")) {
                 throw new Error("The WebGL2ParticleSystem class is not available! Make sure you have imported it.");
             }
-            this._platform = new (_TypeStore.RegisteredTypes["BABYLON.WebGL2ParticleSystem"] as any)(this, this._engine);
+            this._platform = new (GetClass("BABYLON.WebGL2ParticleSystem") as any)(this, this._engine);
         }
 
         this._customWrappers = { 0: new DrawWrapper(this._engine) };
