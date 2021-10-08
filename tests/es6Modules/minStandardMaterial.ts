@@ -5,7 +5,7 @@ import { FreeCamera } from "@babylonjs/core/Cameras/freeCamera";
 import { HemisphericLight } from "@babylonjs/core/Lights/hemisphericLight";
 
 import "@babylonjs/core/Materials/standardMaterial";
-import { CreateGround } "@babylonjs/core/Meshes/Builders/groundBuilder";
+import { CreateGround } from "@babylonjs/core/Meshes/Builders/groundBuilder";
 import { CreateSphere } from "@babylonjs/core/Meshes/Builders/sphereBuilder";
 
 const canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
