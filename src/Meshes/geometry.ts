@@ -275,6 +275,10 @@ export class Geometry implements IGetSetVerticesData {
             this._vertexBuffers[kind].dispose();
         }
 
+        if (buffer._buffer) {
+            buffer._buffer._increaseReferences();
+        }
+
         this._vertexBuffers[kind] = buffer;
         var meshes = this._meshes;
         var numOfMeshes = meshes.length;
@@ -695,10 +699,6 @@ export class Geometry implements IGetSetVerticesData {
             if (numOfMeshes === 1) {
                 this._vertexBuffers[kind].create();
             }
-            var buffer = this._vertexBuffers[kind].getBuffer();
-            if (buffer) {
-                buffer.references = numOfMeshes;
-            }
 
             if (kind === VertexBuffer.PositionKind) {
                 if (!this._extend) {
@@ -716,9 +716,6 @@ export class Geometry implements IGetSetVerticesData {
         // indexBuffer
         if (numOfMeshes === 1 && this._indices && this._indices.length > 0) {
             this._indexBuffer = this._engine.createIndexBuffer(this._indices, this._updatable);
-        }
-        if (this._indexBuffer) {
-            this._indexBuffer.references = numOfMeshes;
         }
 
         // morphTargets
