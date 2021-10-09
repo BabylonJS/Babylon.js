@@ -1,4 +1,7 @@
 ﻿#ifdef FOG
 	float fog = CalcFogFactor();
-	color.rgb = fog * color.rgb + (1.0 - fog) * vFogColor;
+	#ifdef PBR
+		fog = toLinearSpace(fog);
+	#endif
+	color.rgb = mix(vFogColor, color.rgb, fog);
 #endif
