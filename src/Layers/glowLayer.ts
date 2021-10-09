@@ -19,6 +19,7 @@ import { Constants } from "../Engines/constants";
 import { RegisterClass } from '../Misc/typeStore';
 import { Engine } from '../Engines/engine';
 import { Color4 } from '../Maths/math.color';
+import { PBRMaterial } from "../Materials/PBR/pbrMaterial";
 
 import "../Shaders/glowMapMerge.fragment";
 import "../Shaders/glowMapMerge.vertex";
@@ -414,6 +415,8 @@ export class GlowLayer extends EffectLayer {
             this.customEmissiveColorSelector(mesh, subMesh, material, this._emissiveTextureAndColor.color);
         } else {
             if ((<any>material).emissiveColor) {
+                const emissiveIntensity = (<PBRMaterial>material).emissiveIntensity ?? 1;
+                textureLevel *= emissiveIntensity;
                 this._emissiveTextureAndColor.color.set(
                     (<any>material).emissiveColor.r * textureLevel,
                     (<any>material).emissiveColor.g * textureLevel,
