@@ -543,6 +543,7 @@ export class ArcRotateCamera extends TargetCamera {
      * Defines the allowed panning axis.
      */
     public panningAxis: Vector3 = new Vector3(1, 1, 0);
+    public mapPanning: Boolean = false;
     protected _transformedDirection: Vector3 = new Vector3();
 
     // Behaviors
@@ -933,6 +934,10 @@ export class ArcRotateCamera extends TargetCamera {
             this._viewMatrix.invertToRef(this._cameraTransformMatrix);
             localDirection.multiplyInPlace(this.panningAxis);
             Vector3.TransformNormalToRef(localDirection, this._cameraTransformMatrix, this._transformedDirection);
+            // Eliminate y if mapPanning is enabled
+            if (this.mapPanning) {
+                this._transformedDirection.y = 0;
+            }
 
             if (!this._targetHost) {
                 if (this.panningDistanceLimit) {
