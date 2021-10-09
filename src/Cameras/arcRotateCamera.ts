@@ -543,8 +543,12 @@ export class ArcRotateCamera extends TargetCamera {
      * Defines the allowed panning axis.
      */
     public panningAxis: Vector3 = new Vector3(1, 1, 0);
-    public mapPanning: boolean = false;
     protected _transformedDirection: Vector3 = new Vector3();
+
+    /**
+     * Defines if camera will eliminate transform on y axis.
+     */
+    public mapPanning: boolean = false;
 
     // Behaviors
     private _bouncingBehavior: Nullable<BouncingBehavior>;
