@@ -80,6 +80,7 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         private _cameraRadias;
         private _cameraMaxRadiasFactor;
         private _pasted;
+        private _engine;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
@@ -202,6 +203,7 @@ declare module "babylonjs-gui-editor/globalState" {
         onPropertyGridUpdateRequiredObservable: Observable<void>;
         onDraggingEndObservable: Observable<void>;
         onDraggingStartObservable: Observable<void>;
+        onWindowResizeObservable: Observable<void>;
         draggedControl: Nullable<Control>;
         draggedControlDirection: DragOverLocation;
         isSaving: boolean;
@@ -2215,6 +2217,7 @@ declare module GUIEDITOR {
         private _cameraRadias;
         private _cameraMaxRadiasFactor;
         private _pasted;
+        private _engine;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
@@ -2326,6 +2329,7 @@ declare module GUIEDITOR {
         onPropertyGridUpdateRequiredObservable: BABYLON.Observable<void>;
         onDraggingEndObservable: BABYLON.Observable<void>;
         onDraggingStartObservable: BABYLON.Observable<void>;
+        onWindowResizeObservable: BABYLON.Observable<void>;
         draggedControl: BABYLON.Nullable<Control>;
         draggedControlDirection: DragOverLocation;
         isSaving: boolean;
