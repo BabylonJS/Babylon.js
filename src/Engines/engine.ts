@@ -1643,6 +1643,9 @@ export class Engine extends ThinEngine {
 
         this.bindArrayBuffer(result);
         this._gl.bufferData(this._gl.ARRAY_BUFFER, capacity, this._gl.DYNAMIC_DRAW);
+
+        result.references = 1;
+
         return result;
     }
 
