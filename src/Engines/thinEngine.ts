@@ -1905,9 +1905,9 @@ export class ThinEngine {
         this.bindArrayBuffer(dataBuffer);
 
         if (data instanceof Array) {
-            this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(data), this._gl.STATIC_DRAW);
+            this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(data), usage);
         } else {
-            this._gl.bufferData(this._gl.ARRAY_BUFFER, <ArrayBuffer>data, this._gl.STATIC_DRAW);
+            this._gl.bufferData(this._gl.ARRAY_BUFFER, <ArrayBuffer>data, usage);
         }
 
         this._resetVertexBufferBinding();
