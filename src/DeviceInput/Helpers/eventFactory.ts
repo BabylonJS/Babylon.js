@@ -54,8 +54,7 @@ export class DeviceEventFactory {
             inputIndex === PointerInput.Horizontal ||
             inputIndex === PointerInput.Vertical ||
             inputIndex === PointerInput.DeltaHorizontal ||
-            inputIndex === PointerInput.DeltaVertical ||
-            inputIndex === PointerInput.FakeMove
+            inputIndex === PointerInput.DeltaVertical
         ) {
             evt.type = "pointermove";
         }

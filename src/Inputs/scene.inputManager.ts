@@ -881,8 +881,7 @@ export class InputManager {
                         eventData.inputIndex === PointerInput.Horizontal ||
                         eventData.inputIndex === PointerInput.Vertical ||
                         eventData.inputIndex === PointerInput.DeltaHorizontal ||
-                        eventData.inputIndex === PointerInput.DeltaVertical ||
-                        eventData.inputIndex === PointerInput.FakeMove
+                        eventData.inputIndex === PointerInput.DeltaVertical
                     ) {
                         this._onPointerMove(evt as IPointerEvent);
                     } else if (eventData.inputIndex === PointerInput.MouseWheelX || eventData.inputIndex === PointerInput.MouseWheelY || eventData.inputIndex === PointerInput.MouseWheelZ) {
