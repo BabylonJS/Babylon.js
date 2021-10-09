@@ -4,7 +4,6 @@ import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
 import { Engine } from "babylonjs/Engines/engine";
 import { Scene } from "babylonjs/scene";
-import { Mesh } from "babylonjs/Meshes/mesh";
 import { Vector3 } from "babylonjs/Maths/math.vector";
 import { HemisphericLight } from "babylonjs/Lights/hemisphericLight";
 import { ArcRotateCamera } from "babylonjs/Cameras/arcRotateCamera";
@@ -33,6 +32,9 @@ import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
 import { Layer } from "babylonjs/Layers/layer";
 import { DataStorage } from "babylonjs/Misc/dataStorage";
 import { NodeMaterialBlock } from "babylonjs/Materials/Node/nodeMaterialBlock";
+import { CreateGround } from "babylonjs/Meshes/Builders/groundBuilder";
+import { CreateSphere } from "babylonjs/Meshes/Builders/sphereBuilder";
+import { CreateTorus } from "babylonjs/Meshes/Builders/torusBuilder";
 
 export class PreviewManager {
     private _nodeMaterial: NodeMaterial;
@@ -290,10 +292,12 @@ export class PreviewManager {
                         });
                         return;
                     case PreviewType.Sphere:
-                        this._meshes.push(Mesh.CreateSphere("dummy-sphere", 32, 2, this._scene));
+                        this._meshes.push(CreateSphere("dummy-sphere", { segments: 32, diameter: 2 }, this._scene));
                         break;
                     case PreviewType.Torus:
-                        this._meshes.push(Mesh.CreateTorus("dummy-torus", 2, 0.5, 32, this._scene));
+                        this._meshes.push(CreateTorus("dummy-torus", {
+                            diameter: 2, thickness: 0.5, tessellation: 32
+                        }, this._scene));
                         break;
                     case PreviewType.Cylinder:
                         SceneLoader.AppendAsync("https://models.babylonjs.com/", "roundedCylinder.glb", this._scene).then(() => {
@@ -302,7 +306,7 @@ export class PreviewManager {
                         });
                         return;
                     case PreviewType.Plane:
-                        let plane = Mesh.CreateGround("dummy-plane", 2, 2, 128, this._scene);
+                        let plane = CreateGround("dummy-plane", { width: 2, height: 2, subdivisions: 128 }, this._scene);
                         plane.scaling.y = -1;
                         plane.rotation.x = Math.PI;
                         this._meshes.push(plane);

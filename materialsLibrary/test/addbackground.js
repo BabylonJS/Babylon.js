@@ -10,11 +10,13 @@ window.prepareBackgroundMaterial = function() {
 	back.diffuseTexture.hasAlpha = true;
 
     // Skybox
-    backgroundSkybox = BABYLON.Mesh.CreateBox("hdrSkyBox", 1000.0, scene);
+    backgroundSkybox = BABYLON.MeshBuilder.CreateBox("hdrSkyBox", { size: 1000.0 }, scene);
 	backgroundSkybox.material = backSky;
 	backgroundSkybox.setEnabled(false);
 
-	var mirrorMesh = BABYLON.Mesh.CreateTorus("torus", 4, 2, 30, scene, false);
+	var mirrorMesh = BABYLON.MeshBuilder.CreateTorus("torus", {
+		diameter: 4, thickness: 2, tessellation: 30
+	}, scene, false);
 	mirrorMesh.setEnabled(false);
 	mirrorMesh.position = new BABYLON.Vector3(0, 3, 0);
 	mirrorMesh.material = new BABYLON.StandardMaterial("", scene);

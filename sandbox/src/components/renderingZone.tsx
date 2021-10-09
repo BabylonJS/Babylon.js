@@ -14,7 +14,7 @@ import { Tools } from "babylonjs/Misc/tools";
 import { FilesInput } from "babylonjs/Misc/filesInput";
 import { Animation } from "babylonjs/Animations/animation";
 import { PBRBaseMaterial, PBRMaterial, StringTools, Texture } from "babylonjs";
-import { Mesh } from "babylonjs/Meshes/mesh";
+import { CreatePlane } from "babylonjs/Meshes/Builders/planeBuilder";
 
 require("../scss/renderingZone.scss");
 
@@ -64,9 +64,10 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                         "pipeline-statistics-query",
                         "depth-clamping",
                         "depth24unorm-stencil8",
-                        "depth32float-stencil8"
-                    ]
-            }});
+                        "depth32float-stencil8",
+                    ],
+                },
+            });
             await (this._engine as WebGPUEngine).initAsync();
         } else {
             this._engine = new Engine(this._canvas, true, { premultipliedAlpha: false, preserveDrawingBuffer: true });
@@ -276,26 +277,34 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
 
     loadTextureAsset(url: string): Scene {
         const scene = new Scene(this._engine);
-        const plane = Mesh.CreatePlane("plane", 1, scene);
+        const plane = CreatePlane("plane", { size: 1 }, scene);
 
-        const texture = new Texture(url, scene, undefined, undefined, Texture.NEAREST_LINEAR, () => {
-            const size = texture.getBaseSize();
-            if (size.width > size.height) {
-                plane.scaling.y = size.height / size.width;
-            } else {
-                plane.scaling.x = size.width / size.height;
+        const texture = new Texture(
+            url,
+            scene,
+            undefined,
+            undefined,
+            Texture.NEAREST_LINEAR,
+            () => {
+                const size = texture.getBaseSize();
+                if (size.width > size.height) {
+                    plane.scaling.y = size.height / size.width;
+                } else {
+                    plane.scaling.x = size.width / size.height;
+                }
+
+                texture.gammaSpace = true;
+                texture.hasAlpha = true;
+                texture.wrapU = Texture.CLAMP_ADDRESSMODE;
+                texture.wrapV = Texture.CLAMP_ADDRESSMODE;
+
+                scene.debugLayer.show();
+                scene.debugLayer.select(texture, "PREVIEW");
+            },
+            (message, exception) => {
+                this.props.globalState.onError.notifyObservers({ scene: scene, message: message || exception.message || "Failed to load texture" });
             }
-
-            texture.gammaSpace = true;
-            texture.hasAlpha = true;
-            texture.wrapU = Texture.CLAMP_ADDRESSMODE;
-            texture.wrapV = Texture.CLAMP_ADDRESSMODE;
-
-            scene.debugLayer.show();
-            scene.debugLayer.select(texture, "PREVIEW");
-        }, (message, exception) => {
-            this.props.globalState.onError.notifyObservers({ scene: scene, message: message || exception.message || "Failed to load texture" });
-        });
+        );
 
         const material = new PBRMaterial("unlit", scene);
         material.unlit = true;
@@ -313,9 +322,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
 
         this._engine.clearInternalTexturesCache();
 
-        const promise = isTextureAsset(assetUrl)
-            ? Promise.resolve(this.loadTextureAsset(assetUrl))
-            : SceneLoader.LoadAsync(rootUrl, fileName, this._engine);
+        const promise = isTextureAsset(assetUrl) ? Promise.resolve(this.loadTextureAsset(assetUrl)) : SceneLoader.LoadAsync(rootUrl, fileName, this._engine);
 
         promise
             .then((scene) => {
@@ -365,7 +372,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
 
                 loader.validate = true;
 
-                loader.onExtensionLoadedObservable.add((extension: import("babylonjs-loaders/glTF/index").IGLTFLoaderExtension) => {       
+                loader.onExtensionLoadedObservable.add((extension: import("babylonjs-loaders/glTF/index").IGLTFLoaderExtension) => {
                     this.props.globalState.glTFLoaderExtensions[extension.name] = extension;
                 });
 
