@@ -23,6 +23,7 @@ import { Line } from "babylonjs-gui/2D/controls/line";
 import { DataStorage } from "babylonjs/Misc/dataStorage";
 import { Grid } from "babylonjs-gui/2D/controls/grid";
 import { Tools } from "../tools";
+import { CreateGround } from "babylonjs/Meshes/Builders/groundBuilder";
 require("./workbenchCanvas.scss");
 
 export interface IWorkbenchComponentProps {
@@ -729,7 +730,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         light.intensity = 0.9;
 
         let textureSize = 1024;
-        this._textureMesh = Mesh.CreateGround("GuiCanvas", 1, 1, 1, this._scene);
+        this._textureMesh = CreateGround("GuiCanvas", {width: 1, height: 1, subdivisions: 1}, this._scene);
         this._textureMesh.scaling.x = textureSize;
         this._textureMesh.scaling.z = textureSize;
         this.globalState.guiTexture = AdvancedDynamicTexture.CreateForMesh(this._textureMesh, textureSize, textureSize, true);

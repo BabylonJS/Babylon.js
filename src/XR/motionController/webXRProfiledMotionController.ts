@@ -6,7 +6,7 @@ import { Mesh } from "../../Meshes/mesh";
 import { Axis, Space } from "../../Maths/math.axis";
 import { Color3 } from "../../Maths/math.color";
 import { WebXRControllerComponent } from "./webXRControllerComponent";
-import { SphereBuilder } from "../../Meshes/Builders/sphereBuilder";
+import { CreateSphere } from "../../Meshes/Builders/sphereBuilder";
 import { StandardMaterial } from "../../Materials/standardMaterial";
 import { Logger } from "../../Misc/logger";
 
@@ -86,7 +86,7 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
                         valueMesh: this._getChildByName(this.rootMesh!, nameOfMesh),
                     };
                     if (componentInLayout.type === WebXRControllerComponent.TOUCHPAD_TYPE && !this._touchDots[visualResponseKey]) {
-                        const dot = SphereBuilder.CreateSphere(
+                        const dot = CreateSphere(
                             visualResponseKey + "dot",
                             {
                                 diameter: 0.0015,
