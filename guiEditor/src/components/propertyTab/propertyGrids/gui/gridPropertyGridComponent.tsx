@@ -26,15 +26,15 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
     private _rowEditFlags: boolean[] = [];
     private _columnEditFlags: boolean[] = [];
     private _columnDefinitions: string[] = [];
-    private _editedRow :boolean = false;
-    private _editedColumn :boolean = false;
+    private _editedRow: boolean = false;
+    private _editedColumn: boolean = false;
 
     renderRows() {
         return (
             this._rowDefinitions.map((rd, i) => {
                 return (
-                    <div className="divider">
-                        <TextInputLineComponent lockObject={this.props.lockObject} key={`r${i}`} label={`Row ${i}`} value={rd} numbersOnly={true}
+                    <div key={`r${i}`} className="divider">
+                        <TextInputLineComponent lockObject={this.props.lockObject} key={`rText${i}`} label={`Row ${i}`} value={rd} numbersOnly={true}
                             onChange={(newValue) => {
                                 this._rowDefinitions[i] = newValue;
                                 this._rowEditFlags[i] = true;
@@ -80,8 +80,8 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
         return (
             this._columnDefinitions.map((cd, i) => {
                 return (
-                    <div className="divider">
-                        <TextInputLineComponent lockObject={this.props.lockObject} key={`c${i}`} label={`Column ${i}`} value={cd} numbersOnly={true}
+                    <div key={`c${i}`} className="divider">
+                        <TextInputLineComponent lockObject={this.props.lockObject} key={`ctext${i}`} label={`Column ${i}`} value={cd} numbersOnly={true}
                             onChange={(newValue) => {
                                 this._columnDefinitions[i] = newValue;
                                 this._columnEditFlags[i] = true;
@@ -156,7 +156,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
         }
 
         this.setRowValues();
-        this.forceUpdate();
+        //this.forceUpdate();
     }
 
     resizeColumn() {
@@ -221,7 +221,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
         }
 
         this.setColumnValues();
-        this.forceUpdate();
+        //this.forceUpdate();
     }
 
     checkValue(value: string, percent: boolean): string {
@@ -246,6 +246,8 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
             this._previousGrid = grid;
             this.setRowValues();
             this.setColumnValues();
+            this.resizeColumn();
+            this.resizeRow();
         }
 
         return (
@@ -317,9 +319,10 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                     this.renderRows()
                 }
                 {this._editedRow && <ButtonLineComponent
-                    label="SAVE ROW CHANGES"
+                    label="RECALCULATE ROW CHANGES"
                     onClick={() => {
                         this.resizeRow();
+                        this.forceUpdate();
                     }}
                 />}
                 <hr className="ge" />
@@ -389,9 +392,10 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
 
                 }
                 {this._editedColumn && <ButtonLineComponent
-                    label="SAVE COLUMN CHANGES"
+                    label="RECALCULATE COLUMN CHANGES"
                     onClick={() => {
                         this.resizeColumn();
+                        this.forceUpdate();
                     }}
                 />}
             </div>
