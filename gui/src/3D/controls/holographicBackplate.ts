@@ -1,6 +1,6 @@
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { Mesh } from "babylonjs/Meshes/mesh";
-import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
+import { CreateBox } from "babylonjs/Meshes/Builders/boxBuilder";
 import { Scene } from "babylonjs/scene";
 import { FluentBackplateMaterial } from "../materials/fluentBackplate/fluentBackplateMaterial";
 import { Control3D } from "./control3D";
@@ -62,7 +62,7 @@ export class HolographicBackplate extends Control3D {
 
     // Mesh association
     protected _createNode(scene: Scene): TransformNode {
-        const collisionMesh = BoxBuilder.CreateBox((this.name ?? "HolographicBackplate") + "_CollisionMesh", {
+        const collisionMesh = CreateBox((this.name ?? "HolographicBackplate") + "_CollisionMesh", {
             width: 1.0,
             height: 1.0,
             depth: 1.0,

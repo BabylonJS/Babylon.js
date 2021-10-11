@@ -11,8 +11,8 @@ import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { Color3 } from "../../Maths/math.color";
 import { Axis } from "../../Maths/math.axis";
 import { StandardMaterial } from "../../Materials/standardMaterial";
-import { CylinderBuilder } from "../../Meshes/Builders/cylinderBuilder";
-import { TorusBuilder } from "../../Meshes/Builders/torusBuilder";
+import { CreateCylinder } from "../../Meshes/Builders/cylinderBuilder";
+import { CreateTorus } from "../../Meshes/Builders/torusBuilder";
 import { Ray } from "../../Culling/ray";
 import { PickingInfo } from "../../Collisions/pickingInfo";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
@@ -438,7 +438,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         const timeToSelect = this._options.timeToSelect || 3000;
         const sceneToRenderTo = this._options.useUtilityLayer ? this._utilityLayerScene : this._scene;
         let oldPick = new PickingInfo();
-        let discMesh = TorusBuilder.CreateTorus(
+        let discMesh = CreateTorus(
             "selection",
             {
                 diameter: 0.0035 * 15,
@@ -682,7 +682,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
     private _generateNewMeshPair(meshParent: Node) {
         const sceneToRenderTo = this._options.useUtilityLayer ? this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene : this._scene;
-        const laserPointer = CylinderBuilder.CreateCylinder(
+        const laserPointer = CreateCylinder(
             "laserPointer",
             {
                 height: 1,
@@ -703,7 +703,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         laserPointer.isPickable = false;
 
         // Create a gaze tracker for the  XR controller
-        const selectionMesh = TorusBuilder.CreateTorus(
+        const selectionMesh = CreateTorus(
             "gazeTracker",
             {
                 diameter: 0.0035 * 3,

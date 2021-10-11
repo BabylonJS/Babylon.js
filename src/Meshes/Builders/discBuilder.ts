@@ -4,7 +4,18 @@ import { Vector4 } from "../../Maths/math.vector";
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 
-VertexData.CreateDisc = function (options: { radius?: number, tessellation?: number, arc?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
+/**
+ * Creates the VertexData of the Disc or regular Polygon
+ * @param options an object used to set the following optional parameters for the disc, required but can be empty
+  * * radius the radius of the disc, optional default 0.5
+  * * tessellation the number of polygon sides, optional, default 64
+  * * arc a number from 0 to 1, to create an unclosed polygon based on the fraction of the circumference given by the arc value, optional, default 1
+  * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+  * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+  * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+ * @returns the VertexData of the box
+ */
+function CreateDiscVertexData(options: { radius?: number, tessellation?: number, arc?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
     var positions = new Array<number>();
     var indices = new Array<number>();
     var normals = new Array<number>();
@@ -54,47 +65,51 @@ VertexData.CreateDisc = function (options: { radius?: number, tessellation?: num
     vertexData.uvs = uvs;
 
     return vertexData;
-};
-
-Mesh.CreateDisc = (name: string, radius: number, tessellation: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number): Mesh => {
-    var options = {
-        radius: radius,
-        tessellation: tessellation,
-        sideOrientation: sideOrientation,
-        updatable: updatable
-    };
-
-    return DiscBuilder.CreateDisc(name, options, scene);
-};
+}
 
 /**
- * Class containing static functions to help procedurally build meshes
+ * Creates a plane polygonal mesh.  By default, this is a disc
+ * * The parameter `radius` sets the radius size (float) of the polygon (default 0.5)
+ * * The parameter `tessellation` sets the number of polygon sides (positive integer, default 64). So a tessellation valued to 3 will build a triangle, to 4 a square, etc
+ * * You can create an unclosed polygon with the parameter `arc` (positive float, default 1), valued between 0 and 1, what is the ratio of the circumference : 2 x PI x ratio
+ * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+ * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
+ * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+ * @param name defines the name of the mesh
+ * @param options defines the options used to create the mesh
+ * @param scene defines the hosting scene
+ * @returns the plane polygonal mesh
+ * @see https://doc.babylonjs.com/how_to/set_shapes#disc-or-regular-polygon
  */
-export class DiscBuilder {
-    /**
-     * Creates a plane polygonal mesh.  By default, this is a disc
-     * * The parameter `radius` sets the radius size (float) of the polygon (default 0.5)
-     * * The parameter `tessellation` sets the number of polygon sides (positive integer, default 64). So a tessellation valued to 3 will build a triangle, to 4 a square, etc
-     * * You can create an unclosed polygon with the parameter `arc` (positive float, default 1), valued between 0 and 1, what is the ratio of the circumference : 2 x PI x ratio
-     * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
-     * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
-     * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
-     * @param name defines the name of the mesh
-     * @param options defines the options used to create the mesh
-     * @param scene defines the hosting scene
-     * @returns the plane polygonal mesh
-     * @see https://doc.babylonjs.com/how_to/set_shapes#disc-or-regular-polygon
-     */
-    public static CreateDisc(name: string, options: { radius?: number, tessellation?: number, arc?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Nullable<Scene> = null): Mesh {
-        var disc = new Mesh(name, scene);
+export function CreateDisc(name: string, options: { radius?: number, tessellation?: number, arc?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Nullable<Scene> = null): Mesh {
+    var disc = new Mesh(name, scene);
 
-        options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
-        disc._originalBuilderSideOrientation = options.sideOrientation;
+    options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
+    disc._originalBuilderSideOrientation = options.sideOrientation;
 
-        var vertexData = VertexData.CreateDisc(options);
+    var vertexData = CreateDiscVertexData(options);
 
-        vertexData.applyToMesh(disc, options.updatable);
+    vertexData.applyToMesh(disc, options.updatable);
 
-        return disc;
-    }
+    return disc;
 }
+/**
+ * Class containing static functions to help procedurally build meshes
+ * @deprecated please use CreateDisc directly
+ */
+export const DiscBuilder = {
+    CreateDisc
+};
+
+VertexData.CreateDisc = CreateDiscVertexData;
+
+Mesh.CreateDisc = (name: string, radius: number, tessellation: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number): Mesh => {
+    const options = {
+        radius,
+        tessellation,
+        sideOrientation,
+        updatable
+    };
+
+    return CreateDisc(name, options, scene);
+};

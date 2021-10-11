@@ -114,8 +114,8 @@ export class GUINodeTools {
             case "Grid":
                 element = new Grid("Grid");
                 element.isHighlighted = true;
-                element.addColumnDefinition(1.0);
-                element.addRowDefinition(1.0);
+                element.addColumnDefinition(1.0, false);
+                element.addRowDefinition(1.0, false);
                 element.isPointerBlocker = true;
                 return element;
             case "DisplayGrid":

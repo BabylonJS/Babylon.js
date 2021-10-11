@@ -661,8 +661,8 @@ describe('Babylon Scene Loader', function () {
             var scene = new BABYLON.Scene(subject);
             var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
             var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), scene);
-            var sphere = BABYLON.Mesh.CreateSphere("sphere1", 16, 2, scene);
-            var ground = BABYLON.Mesh.CreateGround("ground1", 6, 6, 2, scene);
+            var sphere = BABYLON.MeshBuilder.CreateSphere("sphere1", { segments: 16, diameter: 2 }, scene);
+            var ground = BABYLON.MeshBuilder.CreateGround("ground1", { width: 6, height: 6, subdivisions: 2 }, scene);
 
             // Move all the assets from the scene into a container
             var container = new BABYLON.AssetContainer(scene);

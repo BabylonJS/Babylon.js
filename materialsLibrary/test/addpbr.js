@@ -23,7 +23,7 @@ window.preparePBR = function() {
 	pbr.microSurface = 0.9;
     
     // Skybox
-    var hdrSkybox = BABYLON.Mesh.CreateBox("hdrSkyBox", 1000.0, scene);
+    var hdrSkybox = BABYLON.MeshBuilder.CreateBox("hdrSkyBox", { size: 1000.0 }, scene);
     var hdrSkyboxMaterial = new BABYLON.PBRMaterial("skyBox", scene);
     hdrSkyboxMaterial.backFaceCulling = false;
     hdrSkyboxMaterial.reflectionTexture = hdrTexture.clone();
