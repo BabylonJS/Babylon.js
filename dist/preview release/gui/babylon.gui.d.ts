@@ -3535,16 +3535,6 @@ declare module BABYLON.GUI {
          * Gets or sets a boolean indicating that the toggle button will let internal controls handle picking instead of doing it directly using its bounding info
          */
         delegatePickingToChildren: boolean;
-        private _image;
-        /**
-         * Returns the ToggleButton's image control if it exists
-         */
-        get image(): BABYLON.Nullable<Image>;
-        private _textBlock;
-        /**
-         * Returns the ToggleButton's child TextBlock control if it exists
-         */
-        get textBlock(): BABYLON.Nullable<TextBlock>;
         private _group;
         /** Gets or sets group name this toggle button belongs to */
         get group(): string;

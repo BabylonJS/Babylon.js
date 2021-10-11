@@ -105,6 +105,7 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         isContainer(guiControl: Control): boolean;
         createNewGuiNode(guiControl: Control): Control;
         private parent;
+        private _convertToPixels;
         private _reorderGrid;
         private _isNotChildInsert;
         private _adjustParentingIndex;
@@ -2253,6 +2254,7 @@ declare module GUIEDITOR {
         isContainer(guiControl: Control): boolean;
         createNewGuiNode(guiControl: Control): Control;
         private parent;
+        private _convertToPixels;
         private _reorderGrid;
         private _isNotChildInsert;
         private _adjustParentingIndex;
