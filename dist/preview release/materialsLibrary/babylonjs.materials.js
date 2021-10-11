@@ -7510,7 +7510,7 @@ var WaterMaterial = /** @class */ (function (_super) {
         return mat;
     };
     WaterMaterial.CreateDefaultMesh = function (name, scene) {
-        var mesh = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Mesh"].CreateGround(name, 512, 512, 32, scene, false);
+        var mesh = Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["CreateGround"])(name, { width: 512, height: 512, subdivisions: 32, updatable: false }, scene);
         return mesh;
     };
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([

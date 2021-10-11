@@ -840,9 +840,20 @@ declare module "babylonjs-gui-editor/components/propertyTab/propertyGrids/gui/gr
         private _removingColumn;
         private _removingRow;
         private _previousGrid;
+        private _rowDefinitions;
+        private _rowEditFlags;
+        private _columnEditFlags;
+        private _columnDefinitions;
+        private _editedRow;
+        private _editedColumn;
         renderRows(): JSX.Element[];
+        setRowValues(): void;
+        setColumnValues(): void;
         renderColumns(): JSX.Element[];
+        resizeRow(): void;
         resizeColumn(): void;
+        checkValue(value: string, percent: boolean): string;
+        checkPercentage(value: string): boolean;
         render(): JSX.Element;
     }
 }
@@ -2871,9 +2882,20 @@ declare module GUIEDITOR {
         private _removingColumn;
         private _removingRow;
         private _previousGrid;
+        private _rowDefinitions;
+        private _rowEditFlags;
+        private _columnEditFlags;
+        private _columnDefinitions;
+        private _editedRow;
+        private _editedColumn;
         renderRows(): JSX.Element[];
+        setRowValues(): void;
+        setColumnValues(): void;
         renderColumns(): JSX.Element[];
+        resizeRow(): void;
         resizeColumn(): void;
+        checkValue(value: string, percent: boolean): string;
+        checkPercentage(value: string): boolean;
         render(): JSX.Element;
     }
 }
