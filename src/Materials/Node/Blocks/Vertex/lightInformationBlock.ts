@@ -19,6 +19,7 @@ export class LightInformationBlock extends NodeMaterialBlock {
     private _lightDataUniformName: string;
     private _lightColorUniformName: string;
     private _lightTypeDefineName: string;
+    private _forcePrepareDefines: boolean;
 
     /**
      * Gets or sets the light associated with this block
@@ -87,7 +88,8 @@ export class LightInformationBlock extends NodeMaterialBlock {
         let scene = nodeMaterial.getScene();
 
         if (!light && scene.lights.length) {
-            light = scene.lights[0];
+            light = this.light = scene.lights[0];
+            this._forcePrepareDefines = true;
         }
 
         if (!light || !light.isEnabled) {
@@ -102,12 +104,14 @@ export class LightInformationBlock extends NodeMaterialBlock {
     }
 
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
-        if (!defines._areLightsDirty) {
+        if (!defines._areLightsDirty && !this._forcePrepareDefines) {
             return;
         }
 
+        this._forcePrepareDefines = false;
+
         let light = this.light;
-        defines.setValue(this._lightTypeDefineName, light && light instanceof PointLight ? true : false);
+        defines.setValue(this._lightTypeDefineName, light && light instanceof PointLight ? true : false, true);
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
