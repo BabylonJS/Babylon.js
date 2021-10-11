@@ -16425,7 +16425,7 @@ var Button3D = /** @class */ (function (_super) {
             faceUV[i] = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector4"](0, 0, 0, 0);
         }
         faceUV[1] = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector4"](0, 0, 1, 1);
-        var mesh = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["BoxBuilder"].CreateBox(this.name + "_rootMesh", {
+        var mesh = Object(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["CreateBox"])(this.name + "_rootMesh", {
             width: 1.0,
             height: 1.0,
             depth: 0.08,
@@ -17360,7 +17360,7 @@ var HolographicBackplate = /** @class */ (function (_super) {
     HolographicBackplate.prototype._createNode = function (scene) {
         var _this = this;
         var _a;
-        var collisionMesh = babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["BoxBuilder"].CreateBox(((_a = this.name) !== null && _a !== void 0 ? _a : "HolographicBackplate") + "_CollisionMesh", {
+        var collisionMesh = Object(babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["CreateBox"])(((_a = this.name) !== null && _a !== void 0 ? _a : "HolographicBackplate") + "_CollisionMesh", {
             width: 1.0,
             height: 1.0,
             depth: 1.0,
@@ -17535,8 +17535,8 @@ var HolographicButton = /** @class */ (function (_super) {
             }
             if (!this._tooltipFade) {
                 // Create tooltip with mesh and text
-                this._tooltipMesh = babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["PlaneBuilder"].CreatePlane("", { size: 1 }, this._backPlate._scene);
-                var tooltipBackground = babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["PlaneBuilder"].CreatePlane("", { size: 1, sideOrientation: babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["Mesh"].DOUBLESIDE }, this._backPlate._scene);
+                this._tooltipMesh = Object(babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["CreatePlane"])("", { size: 1 }, this._backPlate._scene);
+                var tooltipBackground = Object(babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["CreatePlane"])("", { size: 1, sideOrientation: babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["Mesh"].DOUBLESIDE }, this._backPlate._scene);
                 var mat = new babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["StandardMaterial"]("", this._backPlate._scene);
                 mat.diffuseColor = babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromHexString("#212121");
                 tooltipBackground.material = mat;
@@ -17683,12 +17683,12 @@ var HolographicButton = /** @class */ (function (_super) {
     };
     // Mesh association
     HolographicButton.prototype._createNode = function (scene) {
-        this._backPlate = babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["BoxBuilder"].CreateBox(this.name + "BackMesh", {
+        this._backPlate = Object(babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["CreateBox"])(this.name + "BackMesh", {
             width: 1.0,
             height: 1.0,
             depth: 0.08
         }, scene);
-        this._frontPlate = babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["BoxBuilder"].CreateBox(this.name + "FrontMesh", {
+        this._frontPlate = Object(babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["CreateBox"])(this.name + "FrontMesh", {
             width: 1.0,
             height: 1.0,
             depth: 0.08
@@ -18005,8 +18005,8 @@ var HolographicSlate = /** @class */ (function (_super) {
     HolographicSlate.prototype._createNode = function (scene) {
         var _this = this;
         var node = new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Mesh"]("slate" + this.name, scene);
-        this._backPlate = babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["BoxBuilder"].CreateBox("backPlate" + this.name, { size: 1 }, scene);
-        this._contentPlate = babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["BoxBuilder"].CreateBox("contentPlate" + this.name, { size: 1 }, scene);
+        this._backPlate = Object(babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["CreateBox"])("backPlate" + this.name, { size: 1 }, scene);
+        this._contentPlate = Object(babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["CreateBox"])("contentPlate" + this.name, { size: 1 }, scene);
         this._backPlate.parent = node;
         this._backPlate.isNearGrabbable = true;
         this._contentPlate.parent = node;
@@ -18833,7 +18833,7 @@ var Slider3D = /** @class */ (function (_super) {
     // Mesh association
     Slider3D.prototype._createNode = function (scene) {
         var _this = this;
-        var sliderBackplate = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["BoxBuilder"].CreateBox(this.name + "_sliderbackplate", {
+        var sliderBackplate = Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["CreateBox"])(this.name + "_sliderbackplate", {
             width: 1.0,
             height: 1.0,
             depth: 1.0,
@@ -19446,8 +19446,8 @@ var TouchHolographicButton = /** @class */ (function (_super) {
             }
             if (!this._tooltipFade) {
                 // Create tooltip with mesh and text
-                this._tooltipMesh = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["PlaneBuilder"].CreatePlane("", { size: 1 }, this._backPlate._scene);
-                var tooltipBackground = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["PlaneBuilder"].CreatePlane("", { size: 1, sideOrientation: babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Mesh"].DOUBLESIDE }, this._backPlate._scene);
+                this._tooltipMesh = Object(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["CreatePlane"])("", { size: 1 }, this._backPlate._scene);
+                var tooltipBackground = Object(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["CreatePlane"])("", { size: 1, sideOrientation: babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Mesh"].DOUBLESIDE }, this._backPlate._scene);
                 var mat = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["StandardMaterial"]("", this._backPlate._scene);
                 mat.diffuseColor = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Color3"].FromHexString("#212121");
                 tooltipBackground.material = mat;
@@ -19613,7 +19613,7 @@ var TouchHolographicButton = /** @class */ (function (_super) {
         var _this = this;
         var _a;
         this.name = (_a = this.name) !== null && _a !== void 0 ? _a : "TouchHolographicButton";
-        var collisionMesh = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["BoxBuilder"].CreateBox(this.name + "_collisionMesh", {
+        var collisionMesh = Object(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["CreateBox"])(this.name + "_collisionMesh", {
             width: 1.0,
             height: 1.0,
             depth: this._frontPlateDepth,
@@ -19634,7 +19634,7 @@ var TouchHolographicButton = /** @class */ (function (_super) {
             }
             _this._frontPlate = importedFrontPlate;
         });
-        this._backPlate = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["BoxBuilder"].CreateBox(this.name + "_backPlate", {
+        this._backPlate = Object(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["CreateBox"])(this.name + "_backPlate", {
             width: 1.0,
             height: 1.0,
             depth: this._backPlateDepth,
@@ -19792,7 +19792,7 @@ var TouchHolographicMenu = /** @class */ (function (_super) {
     });
     TouchHolographicMenu.prototype._createNode = function (scene) {
         var node = new babylonjs_Meshes_mesh__WEBPACK_IMPORTED_MODULE_2__["Mesh"]("menu_" + this.name, scene);
-        this._backPlate = babylonjs_Meshes_mesh__WEBPACK_IMPORTED_MODULE_2__["BoxBuilder"].CreateBox("backPlate" + this.name, { size: 1 }, scene);
+        this._backPlate = Object(babylonjs_Meshes_mesh__WEBPACK_IMPORTED_MODULE_2__["CreateBox"])("backPlate" + this.name, { size: 1 }, scene);
         this._backPlate.parent = node;
         return node;
     };
@@ -20429,7 +20429,7 @@ var SideHandle = /** @class */ (function (_super) {
      */
     SideHandle.prototype.createNode = function () {
         // Create a simple vertical rectangle
-        var verticalBox = babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["BoxBuilder"].CreateBox("sideVert", { width: 1, height: 10, depth: 0.1 }, this._scene);
+        var verticalBox = Object(babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["CreateBox"])("sideVert", { width: 1, height: 10, depth: 0.1 }, this._scene);
         var sideNode = new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["TransformNode"]("side", this._scene);
         verticalBox.parent = sideNode;
         var mat = this._createMaterial();
@@ -20455,8 +20455,8 @@ var CornerHandle = /** @class */ (function (_super) {
      */
     CornerHandle.prototype.createNode = function () {
         // Create 2 boxes making a bottom left corner
-        var horizontalBox = babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["BoxBuilder"].CreateBox("angleHor", { width: 3, height: 1, depth: 0.1 }, this._scene);
-        var verticalBox = babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["BoxBuilder"].CreateBox("angleVert", { width: 1, height: 3, depth: 0.1 }, this._scene);
+        var horizontalBox = Object(babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["CreateBox"])("angleHor", { width: 3, height: 1, depth: 0.1 }, this._scene);
+        var verticalBox = Object(babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["CreateBox"])("angleVert", { width: 1, height: 3, depth: 0.1 }, this._scene);
         var angleNode = new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["TransformNode"]("angle", this._scene);
         horizontalBox.parent = angleNode;
         verticalBox.parent = angleNode;

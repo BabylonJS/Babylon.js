@@ -80,12 +80,12 @@ var createScene = function(){
     camera.attachControl(canvas, false);
     // Create a basic light, aiming 0, 1, 0 - meaning, to the sky
     var light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 1, 0), scene);
-    // Create a built-in "sphere" shape; its constructor takes 6 params: name, segment, diameter, scene, updatable, sideOrientation
-    var sphere = BABYLON.Mesh.CreateSphere('sphere1', 16, 2, scene, false, BABYLON.Mesh.FRONTSIDE);
+    // Create a built-in "sphere" shape using the SphereBuilder
+    var sphere = BABYLON.MeshBuilder.CreateSphere('sphere1', {segments: 16, diameter: 2, sideOrientation: BABYLON.Mesh.FRONTSIDE}, scene);
     // Move the sphere upward 1/2 of its height
     sphere.position.y = 1;
-    // Create a built-in "ground" shape; its constructor takes 6 params : name, width, height, subdivision, scene, updatable
-    var ground = BABYLON.Mesh.CreateGround('ground1', 6, 6, 2, scene, false);
+    // Create a built-in "ground" shape;
+    var ground = BABYLON.MeshBuilder.CreateGround("ground1", { width: 6, height: 6, subdivisions: 2, updatable: false }, scene);
     // Return the created scene
     return scene;
 }
