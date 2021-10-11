@@ -552,7 +552,7 @@ var NormalMapProceduralTexture = /** @class */ (function (_super) {
     return NormalMapProceduralTexture;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["ProceduralTexture"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.NormalMapProceduralTexture"] = NormalMapProceduralTexture;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.NormalMapProceduralTexture", NormalMapProceduralTexture);
 
 
 /***/ }),

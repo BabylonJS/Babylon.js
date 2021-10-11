@@ -1,7 +1,7 @@
 import { IWebXRFeature, WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
 import { WebXRSessionManager } from "../webXRSessionManager";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { SphereBuilder } from "../../Meshes/Builders/sphereBuilder";
+import { CreateSphere } from "../../Meshes/Builders/sphereBuilder";
 import { Observer } from "../../Misc/observable";
 import { WebXRInput } from "../webXRInput";
 import { WebXRInputSource } from "../webXRInputSource";
@@ -441,7 +441,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
 
     private _generateVisualCue() {
         const sceneToRenderTo = this._options.useUtilityLayer ? this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene : this._scene;
-        const selectionMesh = SphereBuilder.CreateSphere(
+        const selectionMesh = CreateSphere(
             "nearInteraction",
             {
                 diameter: 0.0035 * 3,
@@ -630,7 +630,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
 
         let createSphereMesh = (name: string, scale: number, sceneToUse: Scene): Nullable<AbstractMesh> => {
             let resultMesh = null;
-            resultMesh = SphereBuilder.CreateSphere(name, { diameter: 1 }, sceneToUse);
+            resultMesh = CreateSphere(name, { diameter: 1 }, sceneToUse);
             resultMesh.scaling.set(scale, scale, scale);
             resultMesh.isVisible = false;
 
@@ -660,6 +660,8 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                     pickingInfo.hit = result.hit;
                     pickingInfo.pickedMesh = mesh;
                     pickingInfo.pickedPoint = result.pickedPoint;
+                    pickingInfo.aimTransform = controllerData.xrController.pointer;
+                    pickingInfo.gripTransform = controllerData.xrController.grip || null;
                     pickingInfo.originMesh = controllerData.pickIndexMeshTip;
                     pickingInfo.distance = result.distance;
                 }

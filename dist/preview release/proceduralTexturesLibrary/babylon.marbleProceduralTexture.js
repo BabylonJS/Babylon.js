@@ -587,7 +587,7 @@ var MarbleProceduralTexture = /** @class */ (function (_super) {
     return MarbleProceduralTexture;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["ProceduralTexture"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.MarbleProceduralTexture"] = MarbleProceduralTexture;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.MarbleProceduralTexture", MarbleProceduralTexture);
 
 
 /***/ }),

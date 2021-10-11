@@ -6,7 +6,7 @@ import { IBehaviorAware, Behavior } from "./Behaviors/behavior";
 import { serialize } from "./Misc/decorators";
 import { Observable, Observer } from "./Misc/observable";
 import { EngineStore } from "./Engines/engineStore";
-import { _DevTools } from './Misc/devTools';
+import { _WarnImport } from './Misc/devTools';
 import { AbstractActionManager } from './Actions/abstractActionManager';
 import { IInspectable } from './Misc/iInspectable';
 import { AbstractScene } from "./abstractScene";
@@ -40,7 +40,7 @@ class _InternalNodeDataInfo {
 export class Node implements IBehaviorAware<Node> {
     /** @hidden */
     public static _AnimationRangeFactory = (name: string, from: number, to: number): AnimationRange => {
-        throw _DevTools.WarnImport("AnimationRange");
+        throw _WarnImport("AnimationRange");
     }
 
     private static _NodeConstructors: { [key: string]: any } = {};

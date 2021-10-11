@@ -13,7 +13,7 @@ import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SubMesh } from "babylonjs/Meshes/subMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
-import { _TypeStore } from "babylonjs/Misc/typeStore";
+import { RegisterClass } from "babylonjs/Misc/typeStore";
 import { Color4 } from "babylonjs/Maths/math.color";
 import { EffectFallbacks } from "babylonjs/Materials/effectFallbacks";
 import { Constants } from "babylonjs/Engines/constants";
@@ -798,4 +798,4 @@ export class MRDLSliderThumbMaterial extends PushMaterial {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.GUI.MRDLSliderThumbMaterial"] = MRDLSliderThumbMaterial;
+RegisterClass("BABYLON.GUI.MRDLSliderThumbMaterial", MRDLSliderThumbMaterial);

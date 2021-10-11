@@ -9,7 +9,7 @@ import { Scene } from "../../scene";
  * @returns the capsule VertexData
  * @see https://doc.babylonjs.com/how_to/capsule_shape
  */
-VertexData.CreateCapsule = function (
+export function CreateCapsuleVertexData(
     options: ICreateCapsuleOptions = {
         subdivisions: 2,
         tessellation: 16,
@@ -213,7 +213,7 @@ VertexData.CreateCapsule = function (
     vDat.indices = indices;
 
     return vDat;
-};
+}
 
 /**
  * The options Interface for creating a Capsule Mesh
@@ -255,6 +255,40 @@ export interface ICreateCapsuleOptions {
 
 /**
  * Creates a capsule or a pill mesh
+ * @param name defines the name of the mesh
+ * @param options The constructors options.
+ * @param scene The scene the mesh is scoped to.
+ * @returns Capsule Mesh
+ */
+export function CreateCapsule(
+    name: string,
+    options: ICreateCapsuleOptions = {
+        orientation: Vector3.Up(),
+        subdivisions: 2,
+        tessellation: 16,
+        height: 1,
+        radius: 0.25,
+        capSubdivisions: 6,
+        updatable: false,
+    },
+    scene: Nullable<Scene> = null
+): Mesh {
+    var capsule = new Mesh(name, scene);
+    var vertexData = CreateCapsuleVertexData(options);
+    vertexData.applyToMesh(capsule, options.updatable);
+    return capsule;
+}
+
+/**
+ * Class containing static functions to help procedurally build meshes
+ * @deprecated please use CreateCapsule directly
+ */
+export const CapsuleBuilder = {
+    CreateCapsule
+};
+
+/**
+ * Creates a capsule or a pill mesh
  * @param name defines the name of the mesh.
  * @param options the constructors options used to shape the mesh.
  * @param scene defines the scene the mesh is scoped to.
@@ -262,36 +296,7 @@ export interface ICreateCapsuleOptions {
  * @see https://doc.babylonjs.com/how_to/capsule_shape
  */
 Mesh.CreateCapsule = (name: string, options: ICreateCapsuleOptions, scene): Mesh => {
-    return CapsuleBuilder.CreateCapsule(name, options, scene);
+    return CreateCapsule(name, options, scene);
 };
 
-/**
- * Class containing static functions to help procedurally build meshes
- */
-export class CapsuleBuilder {
-    /**
-     * Creates a capsule or a pill mesh
-     * @param name defines the name of the mesh
-     * @param options The constructors options.
-     * @param scene The scene the mesh is scoped to.
-     * @returns Capsule Mesh
-     */
-    public static CreateCapsule(
-        name: string,
-        options: ICreateCapsuleOptions = {
-            orientation: Vector3.Up(),
-            subdivisions: 2,
-            tessellation: 16,
-            height: 1,
-            radius: 0.25,
-            capSubdivisions: 6,
-            updatable: false,
-        },
-        scene: Nullable<Scene> = null
-    ): Mesh {
-        var capsule = new Mesh(name, scene);
-        var vertexData = VertexData.CreateCapsule(options);
-        vertexData.applyToMesh(capsule, options.updatable);
-        return capsule;
-    }
-}
+VertexData.CreateCapsule = CreateCapsuleVertexData;

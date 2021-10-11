@@ -524,6 +524,13 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
         */
         getDescendants(directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): Control[];
         /**
+        * Will return the first control with the given name
+        * @param name defines the name to search for
+        * @return the first control found or null
+        */
+        getControlByName(name: string): Nullable<Control>;
+        private _getControlByKey;
+        /**
         * Gets or sets the current focused control
         */
         get focusedControl(): Nullable<IFocusableControl>;
@@ -670,20 +677,23 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
         /**
          * Recreate the content of the ADT from a JSON object
          * @param serializedObject define the JSON serialized object to restore from
+         * @param scaleToSize defines whether to scale to texture to the saved size
          */
-        parseContent(serializedObject: any): void;
+        parseContent(serializedObject: any, scaleToSize?: boolean): void;
         /**
          * Recreate the content of the ADT from a snippet saved by the GUI editor
          * @param snippetId defines the snippet to load
+         * @param scaleToSize defines whether to scale to texture to the saved size
          * @returns a promise that will resolve on success
          */
-        parseFromSnippetAsync(snippetId: string): Promise<void>;
+        parseFromSnippetAsync(snippetId: string, scaleToSize?: boolean): Promise<void>;
         /**
         * Recreate the content of the ADT from a url json
         * @param url defines the url to load
+        * @param scaleToSize defines whether to scale to texture to the saved size
         * @returns a promise that will resolve on success
         */
-        parseFromURLAsync(url: string): Promise<void>;
+        parseFromURLAsync(url: string, scaleToSize?: boolean): Promise<void>;
         /**
          * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh)
          * @param mesh defines the mesh which will receive the texture
@@ -7540,6 +7550,13 @@ declare module BABYLON.GUI {
         */
         getDescendants(directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): Control[];
         /**
+        * Will return the first control with the given name
+        * @param name defines the name to search for
+        * @return the first control found or null
+        */
+        getControlByName(name: string): BABYLON.Nullable<Control>;
+        private _getControlByKey;
+        /**
         * Gets or sets the current focused control
         */
         get focusedControl(): BABYLON.Nullable<IFocusableControl>;
@@ -7686,20 +7703,23 @@ declare module BABYLON.GUI {
         /**
          * Recreate the content of the ADT from a JSON object
          * @param serializedObject define the JSON serialized object to restore from
+         * @param scaleToSize defines whether to scale to texture to the saved size
          */
-        parseContent(serializedObject: any): void;
+        parseContent(serializedObject: any, scaleToSize?: boolean): void;
         /**
          * Recreate the content of the ADT from a snippet saved by the GUI editor
          * @param snippetId defines the snippet to load
+         * @param scaleToSize defines whether to scale to texture to the saved size
          * @returns a promise that will resolve on success
          */
-        parseFromSnippetAsync(snippetId: string): Promise<void>;
+        parseFromSnippetAsync(snippetId: string, scaleToSize?: boolean): Promise<void>;
         /**
         * Recreate the content of the ADT from a url json
         * @param url defines the url to load
+        * @param scaleToSize defines whether to scale to texture to the saved size
         * @returns a promise that will resolve on success
         */
-        parseFromURLAsync(url: string): Promise<void>;
+        parseFromURLAsync(url: string, scaleToSize?: boolean): Promise<void>;
         /**
          * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh)
          * @param mesh defines the mesh which will receive the texture

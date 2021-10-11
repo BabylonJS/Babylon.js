@@ -24,7 +24,7 @@ declare module "babylonjs-gui-editor/tools" {
     import { Grid } from "babylonjs-gui/2D/controls/grid";
     import { Vector2 } from "babylonjs/Maths/math";
     export class Tools {
-        static LookForItem(item: any, selectedEntity: any): boolean;
+        static LookForItem(item: any, selectedEntity: any, firstIteration?: boolean): boolean;
         private static _RecursiveRemoveHiddenMeshesAndHoistChildren;
         static SortAndFilter(parent: any, items: any[]): any[];
         static getCellInfo(grid: Grid, control: Control): Vector2;
@@ -67,6 +67,7 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         private _constraintDirection;
         private _forcePanning;
         private _forceZooming;
+        private _forceMoving;
         private _forceSelecting;
         private _outlines;
         private _panning;
@@ -77,11 +78,17 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         private _selectAll;
         private _camera;
         private _cameraRadias;
+        private _cameraMaxRadiasFactor;
+        private _pasted;
+        private _engine;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
         constructor(props: IWorkbenchComponentProps);
         keyEvent: (evt: KeyboardEvent) => void;
+        private updateHitTest;
+        private updateHitTestForSelection;
+        private setCameraRadius;
         private copyToClipboard;
         private pasteFromClipboard;
         CopyGUIControl(original: Control): void;
@@ -185,6 +192,7 @@ declare module "babylonjs-gui-editor/globalState" {
         onFitToWindowObservable: Observable<void>;
         onPanObservable: Observable<void>;
         onSelectionButtonObservable: Observable<void>;
+        onMoveObservable: Observable<void>;
         onLoadObservable: Observable<File>;
         onSaveObservable: Observable<void>;
         onSnippetLoadObservable: Observable<void>;
@@ -195,6 +203,7 @@ declare module "babylonjs-gui-editor/globalState" {
         onPropertyGridUpdateRequiredObservable: Observable<void>;
         onDraggingEndObservable: Observable<void>;
         onDraggingStartObservable: Observable<void>;
+        onWindowResizeObservable: Observable<void>;
         draggedControl: Nullable<Control>;
         draggedControlDirection: DragOverLocation;
         isSaving: boolean;
@@ -828,9 +837,23 @@ declare module "babylonjs-gui-editor/components/propertyTab/propertyGrids/gui/gr
     }
     export class GridPropertyGridComponent extends React.Component<IGridPropertyGridComponentProps> {
         constructor(props: IGridPropertyGridComponentProps);
+        private _removingColumn;
+        private _removingRow;
+        private _previousGrid;
+        private _rowDefinitions;
+        private _rowEditFlags;
+        private _columnEditFlags;
+        private _columnDefinitions;
+        private _editedRow;
+        private _editedColumn;
         renderRows(): JSX.Element[];
+        setRowValues(): void;
+        setColumnValues(): void;
         renderColumns(): JSX.Element[];
+        resizeRow(): void;
         resizeColumn(): void;
+        checkValue(value: string, percent: boolean): string;
+        checkPercentage(value: string): boolean;
         render(): JSX.Element;
     }
 }
@@ -941,21 +964,17 @@ declare module "babylonjs-gui-editor/components/propertyTab/propertyTabComponent
     import { Nullable } from "babylonjs/types";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
-    import { Vector2 } from "babylonjs/Maths/math.vector";
     interface IPropertyTabComponentProps {
         globalState: GlobalState;
     }
     interface IPropertyTabComponentState {
         currentNode: Nullable<Control>;
-        textureSize: Vector2;
     }
     export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
         private _onBuiltObserver;
         private _timerIntervalId;
         private _lockObject;
         private _sizeOption;
-        private _sizeOptions;
-        private _sizeValues;
         constructor(props: IPropertyTabComponentProps);
         componentDidMount(): void;
         componentWillUnmount(): void;
@@ -967,7 +986,7 @@ declare module "babylonjs-gui-editor/components/propertyTab/propertyTabComponent
         loadFromSnippet(): void;
         renderProperties(): JSX.Element | null;
         renderControlIcon(): string;
-        render(): JSX.Element;
+        render(): JSX.Element | null;
     }
 }
 declare module "babylonjs-gui-editor/portal" {
@@ -1084,7 +1103,6 @@ declare module "babylonjs-gui-editor/components/sceneExplorer/treeItemSelectable
         filter: Nullable<string>;
     }
     export class TreeItemSelectableComponent extends React.Component<ITreeItemSelectableComponentProps, {
-        isExpanded: boolean;
         isSelected: boolean;
         isHovered: boolean;
         dragOverLocation: DragOverLocation;
@@ -1096,13 +1114,12 @@ declare module "babylonjs-gui-editor/components/sceneExplorer/treeItemSelectable
         constructor(props: ITreeItemSelectableComponentProps);
         switchExpandedState(): void;
         shouldComponentUpdate(nextProps: ITreeItemSelectableComponentProps, nextState: {
-            isExpanded: boolean;
             isSelected: boolean;
         }): boolean;
         scrollIntoView(): void;
         componentWillUnmount(): void;
         onSelect(): void;
-        renderChildren(): (JSX.Element | null)[] | null;
+        renderChildren(isExpanded: boolean): (JSX.Element | null)[] | null;
         render(): JSX.Element | null;
         dragOver(event: React.DragEvent<HTMLDivElement>): void;
         drop(): void;
@@ -1231,6 +1248,7 @@ declare module "babylonjs-gui-editor/components/commandBarComponent" {
         private _panning;
         private _zooming;
         private _selecting;
+        private _moving;
         private _outlines;
         constructor(props: ICommandBarComponentProps);
         private updateNodeOutline;
@@ -2165,7 +2183,7 @@ declare module GUIEDITOR {
 }
 declare module GUIEDITOR {
     export class Tools {
-        static LookForItem(item: any, selectedEntity: any): boolean;
+        static LookForItem(item: any, selectedEntity: any, firstIteration?: boolean): boolean;
         private static _RecursiveRemoveHiddenMeshesAndHoistChildren;
         static SortAndFilter(parent: any, items: any[]): any[];
         static getCellInfo(grid: Grid, control: Control): BABYLON.Vector2;
@@ -2197,6 +2215,7 @@ declare module GUIEDITOR {
         private _constraintDirection;
         private _forcePanning;
         private _forceZooming;
+        private _forceMoving;
         private _forceSelecting;
         private _outlines;
         private _panning;
@@ -2207,11 +2226,17 @@ declare module GUIEDITOR {
         private _selectAll;
         private _camera;
         private _cameraRadias;
+        private _cameraMaxRadiasFactor;
+        private _pasted;
+        private _engine;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
         constructor(props: IWorkbenchComponentProps);
         keyEvent: (evt: KeyboardEvent) => void;
+        private updateHitTest;
+        private updateHitTestForSelection;
+        private setCameraRadius;
         private copyToClipboard;
         private pasteFromClipboard;
         CopyGUIControl(original: Control): void;
@@ -2304,6 +2329,7 @@ declare module GUIEDITOR {
         onFitToWindowObservable: BABYLON.Observable<void>;
         onPanObservable: BABYLON.Observable<void>;
         onSelectionButtonObservable: BABYLON.Observable<void>;
+        onMoveObservable: BABYLON.Observable<void>;
         onLoadObservable: BABYLON.Observable<File>;
         onSaveObservable: BABYLON.Observable<void>;
         onSnippetLoadObservable: BABYLON.Observable<void>;
@@ -2314,6 +2340,7 @@ declare module GUIEDITOR {
         onPropertyGridUpdateRequiredObservable: BABYLON.Observable<void>;
         onDraggingEndObservable: BABYLON.Observable<void>;
         onDraggingStartObservable: BABYLON.Observable<void>;
+        onWindowResizeObservable: BABYLON.Observable<void>;
         draggedControl: BABYLON.Nullable<Control>;
         draggedControlDirection: DragOverLocation;
         isSaving: boolean;
@@ -2852,9 +2879,23 @@ declare module GUIEDITOR {
     }
     export class GridPropertyGridComponent extends React.Component<IGridPropertyGridComponentProps> {
         constructor(props: IGridPropertyGridComponentProps);
+        private _removingColumn;
+        private _removingRow;
+        private _previousGrid;
+        private _rowDefinitions;
+        private _rowEditFlags;
+        private _columnEditFlags;
+        private _columnDefinitions;
+        private _editedRow;
+        private _editedColumn;
         renderRows(): JSX.Element[];
+        setRowValues(): void;
+        setColumnValues(): void;
         renderColumns(): JSX.Element[];
+        resizeRow(): void;
         resizeColumn(): void;
+        checkValue(value: string, percent: boolean): string;
+        checkPercentage(value: string): boolean;
         render(): JSX.Element;
     }
 }
@@ -2935,15 +2976,12 @@ declare module GUIEDITOR {
     }
     interface IPropertyTabComponentState {
         currentNode: BABYLON.Nullable<Control>;
-        textureSize: BABYLON.Vector2;
     }
     export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
         private _onBuiltObserver;
         private _timerIntervalId;
         private _lockObject;
         private _sizeOption;
-        private _sizeOptions;
-        private _sizeValues;
         constructor(props: IPropertyTabComponentProps);
         componentDidMount(): void;
         componentWillUnmount(): void;
@@ -2955,7 +2993,7 @@ declare module GUIEDITOR {
         loadFromSnippet(): void;
         renderProperties(): JSX.Element | null;
         renderControlIcon(): string;
-        render(): JSX.Element;
+        render(): JSX.Element | null;
     }
 }
 declare module GUIEDITOR {
@@ -3043,7 +3081,6 @@ declare module GUIEDITOR {
         filter: BABYLON.Nullable<string>;
     }
     export class TreeItemSelectableComponent extends React.Component<ITreeItemSelectableComponentProps, {
-        isExpanded: boolean;
         isSelected: boolean;
         isHovered: boolean;
         dragOverLocation: DragOverLocation;
@@ -3055,13 +3092,12 @@ declare module GUIEDITOR {
         constructor(props: ITreeItemSelectableComponentProps);
         switchExpandedState(): void;
         shouldComponentUpdate(nextProps: ITreeItemSelectableComponentProps, nextState: {
-            isExpanded: boolean;
             isSelected: boolean;
         }): boolean;
         scrollIntoView(): void;
         componentWillUnmount(): void;
         onSelect(): void;
-        renderChildren(): (JSX.Element | null)[] | null;
+        renderChildren(isExpanded: boolean): (JSX.Element | null)[] | null;
         render(): JSX.Element | null;
         dragOver(event: React.DragEvent<HTMLDivElement>): void;
         drop(): void;
@@ -3177,6 +3213,7 @@ declare module GUIEDITOR {
         private _panning;
         private _zooming;
         private _selecting;
+        private _moving;
         private _outlines;
         constructor(props: ICommandBarComponentProps);
         private updateNodeOutline;

@@ -541,7 +541,7 @@ var CloudProceduralTexture = /** @class */ (function (_super) {
     return CloudProceduralTexture;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["ProceduralTexture"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.CloudProceduralTexture"] = CloudProceduralTexture;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.CloudProceduralTexture", CloudProceduralTexture);
 
 
 /***/ }),

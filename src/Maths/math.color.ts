@@ -2,7 +2,7 @@ import { DeepImmutable, FloatArray } from '../types';
 import { Scalar } from './math.scalar';
 import { ToLinearSpace, ToGammaSpace } from './math.constants';
 import { ArrayTools } from '../Misc/arrayTools';
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 
 /**
  * Class used to hold a RGB color
@@ -1114,5 +1114,5 @@ export class TmpColors {
     public static Color4: Color4[] = ArrayTools.BuildArray(3, () => new Color4(0, 0, 0, 0));
 }
 
-_TypeStore.RegisteredTypes["BABYLON.Color3"] = Color3;
-_TypeStore.RegisteredTypes["BABYLON.Color4"] = Color4;
+RegisterClass("BABYLON.Color3", Color3);
+RegisterClass("BABYLON.Color4", Color4);

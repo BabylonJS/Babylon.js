@@ -13,7 +13,7 @@ import { ValueAndUnit } from "../valueAndUnit";
 import { Measure } from "../measure";
 import { Style } from "../style";
 import { Matrix2D, Vector2WithInfo } from "../math2D";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 import { SerializationHelper, serialize } from 'babylonjs/Misc/decorators';
 import { ICanvasRenderingContext } from 'babylonjs/Engines/ICanvas';
 import { Engine } from "babylonjs/Engines/engine";
@@ -2231,4 +2231,4 @@ export class Control {
         context.translate(-x, -y);
     }
 }
-_TypeStore.RegisteredTypes["BABYLON.GUI.Control"] = Control;
+RegisterClass("BABYLON.GUI.Control", Control);

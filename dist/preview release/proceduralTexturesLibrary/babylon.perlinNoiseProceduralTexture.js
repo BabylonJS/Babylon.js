@@ -552,7 +552,7 @@ var PerlinNoiseProceduralTexture = /** @class */ (function (_super) {
     return PerlinNoiseProceduralTexture;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["ProceduralTexture"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.PerlinNoiseProceduralTexture"] = PerlinNoiseProceduralTexture;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.PerlinNoiseProceduralTexture", PerlinNoiseProceduralTexture);
 
 
 /***/ }),

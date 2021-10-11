@@ -35,7 +35,7 @@ describe('Babylon Mesh', () => {
     describe('#Mesh dictionary mode threshold', () => {
         it('No more than 128 own properties on a mesh', () => {
             const scene = new BABYLON.Scene(subject);
-            const mesh = BABYLON.Mesh.CreateGround("ground1", 6, 6, 2, scene);
+            const mesh = BABYLON.MeshBuilder.CreateGround("ground1", { width: 6, height: 6, subdivisions: 2 }, scene);
 
             var count = 0;
             for (var prop in mesh) {

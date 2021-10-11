@@ -1,7 +1,7 @@
 import { EngineStore } from './engineStore';
 import { IInternalTextureLoader } from '../Materials/Textures/internalTextureLoader';
 import { Effect, IEffectCreationOptions } from '../Materials/effect';
-import { _DevTools } from '../Misc/devTools';
+import { _WarnImport } from '../Misc/devTools';
 import { IShaderProcessor } from './Processors/iShaderProcessor';
 import { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import { UniformBuffer } from '../Materials/uniformBuffer';
@@ -17,7 +17,7 @@ import { IViewportLike, IColor4Like } from '../Maths/math.like';
 import { DataBuffer } from '../Buffers/dataBuffer';
 import { IFileRequest } from '../Misc/fileRequest';
 import { Logger } from '../Misc/logger';
-import { DomManagement } from '../Misc/domManagement';
+import { IsWindowObjectExist } from '../Misc/domManagement';
 import { WebGLShaderProcessor } from './WebGL/webGLShaderProcessors';
 import { WebGL2ShaderProcessor } from './WebGL/webGL2ShaderProcessors';
 import { WebGLDataBuffer } from '../Meshes/WebGL/webGLDataBuffer';
@@ -182,14 +182,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-alpha.48";
+        return "babylonjs@5.0.0-alpha.51";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-alpha.48";
+        return "5.0.0-alpha.51";
     }
 
     /**
@@ -762,7 +762,7 @@ export class ThinEngine {
                 this._checkForMobile();
 
                 // Set up event listener to check when window is resized (used to get emulator activation to work properly)
-                if (DomManagement.IsWindowObjectExist()) {
+                if (IsWindowObjectExist()) {
                     window.addEventListener("resize", this._checkForMobile);
                 }
 
@@ -887,7 +887,7 @@ export class ThinEngine {
         }
 
         // Viewport
-        const devicePixelRatio = DomManagement.IsWindowObjectExist() ? (window.devicePixelRatio || 1.0) : 1.0;
+        const devicePixelRatio = IsWindowObjectExist() ? (window.devicePixelRatio || 1.0) : 1.0;
 
         var limitDeviceRatio = options.limitDeviceRatio || devicePixelRatio;
         this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, devicePixelRatio) : 1.0;
@@ -1463,7 +1463,7 @@ export class ThinEngine {
      * @returns the host window object
      */
     public getHostWindow(): Nullable<Window> {
-        if (!DomManagement.IsWindowObjectExist()) {
+        if (!IsWindowObjectExist()) {
             return null;
         }
 
@@ -1622,7 +1622,7 @@ export class ThinEngine {
         let width: number;
         let height: number;
 
-        if (DomManagement.IsWindowObjectExist()) {
+        if (IsWindowObjectExist()) {
             width = this._renderingCanvas ? (this._renderingCanvas.clientWidth || this._renderingCanvas.width) : window.innerWidth;
             height = this._renderingCanvas ? (this._renderingCanvas.clientHeight || this._renderingCanvas.height) : window.innerHeight;
         } else {
@@ -1905,9 +1905,9 @@ export class ThinEngine {
         this.bindArrayBuffer(dataBuffer);
 
         if (data instanceof Array) {
-            this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(data), this._gl.STATIC_DRAW);
+            this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(data), usage);
         } else {
-            this._gl.bufferData(this._gl.ARRAY_BUFFER, <ArrayBuffer>data, this._gl.STATIC_DRAW);
+            this._gl.bufferData(this._gl.ARRAY_BUFFER, <ArrayBuffer>data, usage);
         }
 
         this._resetVertexBufferBinding();
@@ -1955,8 +1955,9 @@ export class ThinEngine {
     }
 
     protected _normalizeIndexData(indices: IndicesArray): Uint16Array | Uint32Array {
-        if (indices instanceof Uint16Array) {
-            return indices;
+        const bytesPerElement = (indices as Exclude<IndicesArray, number[]>).BYTES_PER_ELEMENT;
+        if (bytesPerElement === 2) {
+            return indices as Uint16Array;
         }
 
         // Check 32 bit support
@@ -3522,8 +3523,10 @@ export class ThinEngine {
                     this._createTextureBase(EngineStore.FallbackTexture, noMipmap, texture.invertY, scene, samplingMode, null, onError, prepareTexture, prepareTextureProcessFunction, buffer, texture);
                 }
 
+                message = (message || "Unknown error") + (EngineStore.UseFallbackTexture ? " - Fallback texture was used" : "");
+                texture.onErrorObservable.notifyObservers({ message, exception });
                 if (onError) {
-                    onError((message || "Unknown error") + (EngineStore.UseFallbackTexture ? " - Fallback texture was used" : ""), exception);
+                    onError(message, exception);
                 }
             }
             else {
@@ -3695,7 +3698,7 @@ export class ThinEngine {
      * @hidden
      */
     public static _FileToolsLoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string, imageBitmapOptions?: ImageBitmapOptions): Nullable<HTMLImageElement> {
-        throw _DevTools.WarnImport("FileTools");
+        throw _WarnImport("FileTools");
     }
 
     /**
@@ -3718,7 +3721,7 @@ export class ThinEngine {
      * @returns the raw texture inside an InternalTexture
      */
     public createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
-        throw _DevTools.WarnImport("Engine.RawTexture");
+        throw _WarnImport("Engine.RawTexture");
     }
 
     /**
@@ -3736,7 +3739,7 @@ export class ThinEngine {
     public createRawCubeTexture(data: Nullable<ArrayBufferView[]>, size: number, format: number, type: number,
         generateMipMaps: boolean, invertY: boolean, samplingMode: number,
         compression: Nullable<string> = null): InternalTexture {
-        throw _DevTools.WarnImport("Engine.RawTexture");
+        throw _WarnImport("Engine.RawTexture");
     }
 
     /**
@@ -3754,7 +3757,7 @@ export class ThinEngine {
      * @returns a new raw 3D texture (stored in an InternalTexture)
      */
     public createRawTexture3D(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, textureType = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
-        throw _DevTools.WarnImport("Engine.RawTexture");
+        throw _WarnImport("Engine.RawTexture");
     }
 
     /**
@@ -3772,7 +3775,7 @@ export class ThinEngine {
      * @returns a new raw 2D array texture (stored in an InternalTexture)
      */
     public createRawTexture2DArray(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, textureType = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
-        throw _DevTools.WarnImport("Engine.RawTexture");
+        throw _WarnImport("Engine.RawTexture");
     }
 
     private _unpackFlipYCached: Nullable<boolean> = null;
@@ -4528,7 +4531,7 @@ export class ThinEngine {
         this._boundUniforms = [];
 
         // Events
-        if (DomManagement.IsWindowObjectExist()) {
+        if (IsWindowObjectExist()) {
             if (this._renderingCanvas) {
                 if (!this._doNotHandleContextLost) {
                     this._renderingCanvas.removeEventListener("webglcontextlost", this._onContextLost);
@@ -4959,7 +4962,7 @@ export class ThinEngine {
      * @hidden
      */
     public static _FileToolsLoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void): IFileRequest {
-        throw _DevTools.WarnImport("FileTools");
+        throw _WarnImport("FileTools");
     }
 
     /**
@@ -5118,7 +5121,7 @@ export class ThinEngine {
      * @returns frame number
      */
     public static QueueNewFrame(func: () => void, requester?: any): number {
-        if (!DomManagement.IsWindowObjectExist()) {
+        if (!IsWindowObjectExist()) {
             if (typeof requestAnimationFrame !== "undefined") {
                 return requestAnimationFrame(func);
             }

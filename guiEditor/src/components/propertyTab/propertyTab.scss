@@ -901,9 +901,9 @@ hr.ge {
     
     .textLine {
         padding-left: $line-padding-left;
-        padding-bottom: $line-padding-bottom;
-        padding-top: $line-padding-top;
-        height: var(--spacingHeight);
+        padding-bottom: 5px;
+        padding-top: 5px;
+        height: auto;
         display: grid;
         grid-template-columns: 1fr auto;
 

@@ -539,7 +539,7 @@ var RoadProceduralTexture = /** @class */ (function (_super) {
     return RoadProceduralTexture;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["ProceduralTexture"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.RoadProceduralTexture"] = RoadProceduralTexture;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.RoadProceduralTexture", RoadProceduralTexture);
 
 
 /***/ }),

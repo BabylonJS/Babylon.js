@@ -8,8 +8,8 @@ import { VertexData } from "../../Meshes/mesh.vertexData";
 import { Nullable } from "../../types";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Mesh } from "../../Meshes/mesh";
-import { ShapeBuilder } from "../../Meshes/Builders/shapeBuilder";
-import { LinesBuilder } from "../../Meshes/Builders/linesBuilder";
+import { ExtrudeShape } from "../../Meshes/Builders/shapeBuilder";
+import { CreateLines } from "../../Meshes/Builders/linesBuilder";
 import { LinesMesh } from '../../Meshes/linesMesh';
 import { PhysicsRaycastResult } from "../physicsRaycastResult";
 import { Scalar } from "../../Maths/math.scalar";
@@ -275,10 +275,10 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         var object = impostor.object;
         var shape = impostor.getParam("shape");
         if (impostor._isFromLine) {
-            impostor.object = LinesBuilder.CreateLines("lines", { points: path, instance: <LinesMesh>object });
+            impostor.object = CreateLines("lines", { points: path, instance: <LinesMesh>object });
         }
         else {
-            impostor.object = ShapeBuilder.ExtrudeShape("ext", { shape: shape, path: path, instance: <Mesh>object });
+            impostor.object = ExtrudeShape("ext", { shape: shape, path: path, instance: <Mesh>object });
         }
 
     }
@@ -572,22 +572,29 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 vertexPositions = [];
             }
 
-            // top level matrix used for shape transform doesn't take scale into account.
-            // Moreover, every children vertex position must be in that space.
-            // So, each vertex position here is transform by (mesh world matrix * toplevelMatrix -1)
-            var topLevelQuaternion;
-            if (topLevelObject.rotationQuaternion) {
-                topLevelQuaternion = topLevelObject.rotationQuaternion;
-            } else if (topLevelObject.rotation) {
-                topLevelQuaternion = Quaternion.FromEulerAngles(topLevelObject.rotation.x, topLevelObject.rotation.y, topLevelObject.rotation.z);
-            } else {
-                topLevelQuaternion = Quaternion.Identity();
-            }
-            const topLevelMatrix = Matrix.Compose(Vector3.One(), topLevelQuaternion, topLevelObject.position);
-            topLevelMatrix.invertToRef(this._tmpMatrix);
-            const wm = object.computeWorldMatrix(false);
-            const localMatrix = wm.multiply(this._tmpMatrix);
+            let localMatrix;
 
+            if (topLevelObject && topLevelObject !== object) {
+                // top level matrix used for shape transform doesn't take scale into account.
+                // Moreover, every children vertex position must be in that space.
+                // So, each vertex position here is transform by (mesh world matrix * toplevelMatrix -1)
+                let topLevelQuaternion;
+                if (topLevelObject.rotationQuaternion) {
+                    topLevelQuaternion = topLevelObject.rotationQuaternion;
+                } else if (topLevelObject.rotation) {
+                    topLevelQuaternion = Quaternion.FromEulerAngles(topLevelObject.rotation.x, topLevelObject.rotation.y, topLevelObject.rotation.z);
+                } else {
+                    topLevelQuaternion = Quaternion.Identity();
+                }
+                const topLevelMatrix = Matrix.Compose(Vector3.One(), topLevelQuaternion, topLevelObject.position);
+                topLevelMatrix.invertToRef(this._tmpMatrix);
+                const wm = object.computeWorldMatrix(false);
+                localMatrix = wm.multiply(this._tmpMatrix);
+            } else {
+                // current top level is same as object level -> only use local scaling
+                Matrix.ScalingToRef(object.scaling.x, object.scaling.y, object.scaling.z, this._tmpMatrix);
+                localMatrix = this._tmpMatrix;
+            }
             var faceCount = indices.length / 3;
             for (var i = 0; i < faceCount; i++) {
                 var triPoints = [];

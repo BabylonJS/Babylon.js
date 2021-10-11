@@ -851,7 +851,7 @@ var NormalMaterial = /** @class */ (function (_super) {
     return NormalMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.NormalMaterial"] = NormalMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.NormalMaterial", NormalMaterial);
 
 
 /***/ }),

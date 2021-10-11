@@ -541,7 +541,7 @@ var BrickProceduralTexture = /** @class */ (function (_super) {
     return BrickProceduralTexture;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["ProceduralTexture"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.BrickProceduralTexture"] = BrickProceduralTexture;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.BrickProceduralTexture", BrickProceduralTexture);
 
 
 /***/ }),

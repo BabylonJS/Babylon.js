@@ -716,7 +716,7 @@ var GridMaterial = /** @class */ (function (_super) {
     return GridMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.GridMaterial"] = GridMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.GridMaterial", GridMaterial);
 
 
 /***/ }),

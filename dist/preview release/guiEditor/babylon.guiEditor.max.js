@@ -10076,7 +10076,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, ":root {\n  --backgroundGrey: #aaaaaa;\n  --spacingHeight: 30px; }\n\nhr.ge {\n  border: 1px solid #d0cece; }\n\n#ge-propertyTab {\n  user-select: none;\n  color: black;\n  background: #e2e2e2;\n  font-family: \"acumin-pro-condensed\"; }\n  #ge-propertyTab #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: white;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #ge-propertyTab #header #logo {\n      position: relative;\n      background: white;\n      grid-column: 1;\n      width: 32px;\n      height: 32px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #ge-propertyTab #header #title {\n      background: white;\n      color: black;\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n  #ge-propertyTab .range {\n    -webkit-appearance: none;\n    width: 120px;\n    height: 2px;\n    background: black;\n    border-radius: 5px;\n    outline: none;\n    opacity: 0.7;\n    -webkit-transition: .2s;\n    transition: opacity .2s; }\n  #ge-propertyTab .range:hover {\n    opacity: 1; }\n  #ge-propertyTab .range::-webkit-slider-thumb {\n    -webkit-appearance: none;\n    appearance: none;\n    width: 14px;\n    height: 14px;\n    border-radius: 50%;\n    background: #e2e2e2;\n    border: solid;\n    border-width: thin;\n    cursor: pointer; }\n  #ge-propertyTab .range::-moz-range-thumb {\n    width: 14px;\n    height: 14px;\n    border-radius: 50%;\n    background: black;\n    cursor: pointer; }\n  #ge-propertyTab input[type=\"color\"] {\n    -webkit-appearance: none;\n    border: 1px solid rgba(255, 255, 255, 0.5);\n    padding: 0;\n    width: 30px;\n    height: 20px; }\n  #ge-propertyTab input[type=\"color\"]::-webkit-color-swatch-wrapper {\n    padding: 0; }\n  #ge-propertyTab input[type=\"color\"]::-webkit-color-swatch {\n    border: none; }\n  #ge-propertyTab .sliderLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: auto auto auto 1fr; }\n    #ge-propertyTab .sliderLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      min-width: 15px; }\n    #ge-propertyTab .sliderLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .sliderLine .slider {\n      grid-column: 4;\n      grid-row: 1;\n      margin-right: 5px;\n      width: 90%;\n      display: flex;\n      align-items: center;\n      padding-left: 5px; }\n    #ge-propertyTab .sliderLine .floatLine {\n      grid-column: 3;\n      padding-left: 15px; }\n      #ge-propertyTab .sliderLine .floatLine .label {\n        grid-column: 1;\n        display: none;\n        align-items: center; }\n      #ge-propertyTab .sliderLine .floatLine .short {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n        #ge-propertyTab .sliderLine .floatLine .short input {\n          width: 40px;\n          background-color: transparent;\n          outline-color: transparent;\n          border-left: transparent;\n          border-right: transparent;\n          border-top: transparent;\n          outline-width: 0px; }\n        #ge-propertyTab .sliderLine .floatLine .short input::-webkit-outer-spin-button,\n        #ge-propertyTab .sliderLine .floatLine .short input::-webkit-inner-spin-button {\n          -webkit-appearance: none;\n          margin: 0; }\n        #ge-propertyTab .sliderLine .floatLine .short input[type=number] {\n          -moz-appearance: textfield; }\n  #ge-propertyTab .divider {\n    display: grid;\n    grid-template-columns: auto auto auto auto auto auto; }\n  #ge-propertyTab .textInputLine {\n    user-select: none;\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: auto auto 2fr 1fr; }\n    #ge-propertyTab .textInputLine .label {\n      grid-column: 2;\n      padding-left: 5px;\n      display: flex;\n      align-items: center;\n      min-width: 15px; }\n    #ge-propertyTab .textInputLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .textInputLine .value {\n      display: flex;\n      align-items: center;\n      padding-left: 15px;\n      grid-column: 3;\n      background: transparent; }\n      #ge-propertyTab .textInputLine .value input {\n        width: calc(100% - 5px);\n        background-color: transparent;\n        outline-color: transparent;\n        border-left: transparent;\n        border-right: transparent;\n        border-top: transparent;\n        outline-width: 0px; }\n    #ge-propertyTab .textInputLine .noUnderline input {\n      border-bottom: transparent; }\n  #ge-propertyTab .textInputArea {\n    padding-left: 5px;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 1fr 120px; }\n    #ge-propertyTab .textInputArea .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .textInputArea .value {\n      display: flex;\n      align-items: center;\n      grid-column: 2; }\n      #ge-propertyTab .textInputArea .value textarea {\n        width: calc(150% - 5px);\n        margin-left: -50%;\n        height: 40px; }\n  #ge-propertyTab .paneContainer {\n    margin-top: 3px;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #ge-propertyTab .paneContainer .paneList {\n      border-left: 3px solid transparent; }\n    #ge-propertyTab .paneContainer:hover .paneList {\n      border-left: 3px solid rgba(51, 122, 183, 0.8); }\n    #ge-propertyTab .paneContainer:hover .paneContainer-content .header .title {\n      border-left: 3px solid #337ab7; }\n    #ge-propertyTab .paneContainer .paneContainer-highlight-border {\n      grid-row: 1;\n      grid-column: 1;\n      opacity: 1;\n      border: 3px solid red;\n      transition: opacity 250ms;\n      pointer-events: none; }\n      #ge-propertyTab .paneContainer .paneContainer-highlight-border.transparent {\n        opacity: 0; }\n    #ge-propertyTab .paneContainer .paneContainer-content {\n      grid-row: 1;\n      grid-column: 1; }\n      #ge-propertyTab .paneContainer .paneContainer-content .header {\n        display: grid;\n        grid-template-columns: 1fr auto;\n        background: #cccccc;\n        height: var(--spacingHeight);\n        padding-bottom: 0px;\n        padding-top: 0px;\n        padding-right: 5px;\n        cursor: pointer; }\n        #ge-propertyTab .paneContainer .paneContainer-content .header .title {\n          border-left: 3px solid transparent;\n          padding-left: 5px;\n          grid-column: 1;\n          display: flex;\n          align-items: center; }\n        #ge-propertyTab .paneContainer .paneContainer-content .header .collapse {\n          grid-column: 2;\n          display: flex;\n          align-items: center;\n          justify-items: center;\n          transform-origin: center; }\n          #ge-propertyTab .paneContainer .paneContainer-content .header .collapse.closed {\n            transform: rotate(180deg); }\n      #ge-propertyTab .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n      #ge-propertyTab .paneContainer .paneContainer-content .fragment > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n  #ge-propertyTab .color-picker {\n    height: 150px;\n    width: 15px; }\n    #ge-propertyTab .color-picker .color-rect {\n      height: 15px;\n      border: 1px black solid;\n      cursor: pointer; }\n    #ge-propertyTab .color-picker .color-picker-cover {\n      position: fixed;\n      top: 0px;\n      right: 0px;\n      bottom: 0px;\n      left: 0px; }\n    #ge-propertyTab .color-picker .color-picker-float {\n      z-index: 2;\n      position: absolute; }\n  #ge-propertyTab .gradient-step {\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 20px 30px 40px auto 20px 30px;\n    padding-top: 5px;\n    padding-left: 5px;\n    padding-bottom: 5px; }\n    #ge-propertyTab .gradient-step .step {\n      grid-row: 1;\n      grid-column: 1; }\n    #ge-propertyTab .gradient-step .color {\n      grid-row: 1;\n      grid-column: 2;\n      cursor: pointer; }\n    #ge-propertyTab .gradient-step .step-value {\n      margin-left: 5px;\n      grid-row: 1;\n      grid-column: 3;\n      text-align: right;\n      margin-right: 5px; }\n    #ge-propertyTab .gradient-step .step-slider {\n      grid-row: 1;\n      grid-column: 4;\n      display: grid;\n      justify-content: stretch;\n      align-content: center;\n      margin-right: -5px;\n      padding-left: 12px; }\n      #ge-propertyTab .gradient-step .step-slider input {\n        width: 90%; }\n    #ge-propertyTab .gradient-step .gradient-copy {\n      grid-row: 1;\n      grid-column: 5;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n      #ge-propertyTab .gradient-step .gradient-copy .img {\n        height: 20px;\n        width: 20px; }\n      #ge-propertyTab .gradient-step .gradient-copy .img:hover {\n        cursor: pointer; }\n    #ge-propertyTab .gradient-step .gradient-delete {\n      grid-row: 1;\n      grid-column: 6;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n      #ge-propertyTab .gradient-step .gradient-delete .img {\n        height: 20px;\n        width: 20px; }\n      #ge-propertyTab .gradient-step .gradient-delete .img:hover {\n        cursor: pointer; }\n  #ge-propertyTab .command-button {\n    cursor: pointer;\n    width: auto; }\n    #ge-propertyTab .command-button .command-label {\n      display: none; }\n    #ge-propertyTab .command-button .command-button-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      color: white;\n      align-content: center;\n      justify-content: center; }\n    #ge-propertyTab .command-button:hover {\n      background-color: white; }\n    #ge-propertyTab .command-button .active {\n      transform-origin: center;\n      background-color: white; }\n    #ge-propertyTab .command-button img.active {\n      background-color: white; }\n  #ge-propertyTab .floatLine {\n    user-select: none;\n    padding-left: 5px;\n    height: var(--spacingHeight);\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid;\n    grid-template-columns: auto auto 2fr 1fr; }\n    #ge-propertyTab .floatLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      min-width: 15px; }\n    #ge-propertyTab .floatLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .floatLine .value {\n      display: flex;\n      padding-left: 15px;\n      align-items: center;\n      grid-column: 3;\n      background: transparent; }\n      #ge-propertyTab .floatLine .value input {\n        width: calc(100% - 5px);\n        background-color: transparent;\n        outline-color: transparent;\n        border-left: transparent;\n        border-right: transparent;\n        border-top: transparent;\n        outline-width: 0px; }\n    #ge-propertyTab .floatLine .short {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n      #ge-propertyTab .floatLine .short input {\n        width: 27px; }\n      #ge-propertyTab .floatLine .short input::-webkit-outer-spin-button,\n      #ge-propertyTab .floatLine .short input::-webkit-inner-spin-button {\n        -webkit-appearance: none;\n        margin: 0; }\n      #ge-propertyTab .floatLine .short input[type=number] {\n        -moz-appearance: textfield; }\n  #ge-propertyTab .vector3Line {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid; }\n    #ge-propertyTab .vector3Line .firstLine {\n      display: grid;\n      grid-template-columns: 1fr auto 20px;\n      height: var(--spacingHeight); }\n      #ge-propertyTab .vector3Line .firstLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #ge-propertyTab .vector3Line .firstLine .vector {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        text-align: right;\n        opacity: 0.8; }\n      #ge-propertyTab .vector3Line .firstLine .expand {\n        grid-column: 3;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n    #ge-propertyTab .vector3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #ge-propertyTab .vector3Line .secondLine .no-right-margin {\n        margin-right: 0; }\n      #ge-propertyTab .vector3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #ge-propertyTab .vector3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #ge-propertyTab .vector3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #ge-propertyTab .buttonLine {\n    height: var(--spacingHeight);\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid;\n    align-items: center;\n    justify-items: stretch;\n    padding-bottom: 5px; }\n    #ge-propertyTab .buttonLine input[type=\"file\"] {\n      display: none; }\n    #ge-propertyTab .buttonLine .file-upload {\n      background: var(--backgroundGrey);\n      border: 1px solid #424242;\n      margin: 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      padding-top: 0px;\n      opacity: 0.9;\n      cursor: pointer;\n      text-align: center;\n      border-radius: 4px; }\n    #ge-propertyTab .buttonLine .file-upload:hover {\n      opacity: 1.0; }\n    #ge-propertyTab .buttonLine .file-upload:active {\n      transform: scale(0.98);\n      transform-origin: 0.5 0.5; }\n    #ge-propertyTab .buttonLine button {\n      background: var(--backgroundGrey);\n      border: 1px solid #424242;\n      margin: 5px 10px 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9;\n      border-radius: 4px; }\n    #ge-propertyTab .buttonLine button:hover {\n      opacity: 1.0; }\n    #ge-propertyTab .buttonLine button:active {\n      background: #282828; }\n    #ge-propertyTab .buttonLine button:focus {\n      border: 1px solid #424242;\n      outline: 0px; }\n  #ge-propertyTab .numeric {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: 1fr 120px auto; }\n    #ge-propertyTab .numeric .numeric-label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .numeric .number {\n      display: flex;\n      align-items: center;\n      grid-column: 2;\n      height: 10px; }\n      #ge-propertyTab .numeric .number .input {\n        width: calc(100% - 5px);\n        height: 10px; }\n  #ge-propertyTab .checkBoxLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: auto auto 1fr; }\n    #ge-propertyTab .checkBoxLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .checkBoxLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .checkBoxLine .checkBox {\n      grid-column: 3;\n      display: flex;\n      align-items: center;\n      padding-left: 15px; }\n      #ge-propertyTab .checkBoxLine .checkBox .lbl {\n        position: relative;\n        display: block;\n        height: 14px;\n        width: 34px;\n        margin-right: 5px;\n        border-radius: 100px;\n        cursor: pointer;\n        transition: all 0.3s ease;\n        border: solid;\n        border-width: thin; }\n      #ge-propertyTab .checkBoxLine .checkBox .lbl:after {\n        position: absolute;\n        left: 3px;\n        top: 1px;\n        display: block;\n        width: 10px;\n        height: 10px;\n        border-radius: 100px;\n        background: #e2e2e2;\n        box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);\n        content: '';\n        transition: all 0.15s ease;\n        border: solid;\n        border-width: thin; }\n      #ge-propertyTab .checkBoxLine .checkBox .lbl:active:after {\n        transform: scale(1.15, 0.85); }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label {\n        background: transparent; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label:after {\n        left: 20px;\n        background: black;\n        border: solid;\n        border-width: thin; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label.disabled {\n        background: black;\n        cursor: pointer; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label.disabled:after {\n        left: 20px;\n        background: #555555;\n        cursor: pointer; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx ~ label.disabled {\n        background: #555555;\n        cursor: pointer; }\n      #ge-propertyTab .checkBoxLine .checkBox .hidden {\n        display: none; }\n  #ge-propertyTab .listLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: auto 1fr auto; }\n    #ge-propertyTab .listLine .label {\n      grid-column: 2;\n      display: none;\n      align-items: center; }\n    #ge-propertyTab .listLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .listLine .options {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      margin-right: 5px; }\n      #ge-propertyTab .listLine .options select {\n        width: 120px;\n        height: 25px;\n        border: transparent;\n        border-radius: 4px; }\n  #ge-propertyTab .color3Line {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid; }\n    #ge-propertyTab .color3Line .firstLine {\n      height: var(--spacingHeight);\n      display: grid;\n      grid-template-columns: auto auto 1fr; }\n      #ge-propertyTab .color3Line .firstLine .label {\n        grid-column: 2;\n        padding-left: 5px;\n        display: none;\n        align-items: center;\n        min-width: 15px; }\n      #ge-propertyTab .color3Line .firstLine .img {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #ge-propertyTab .color3Line .firstLine .textInputLine {\n        grid-column: 3;\n        margin-top: 5px; }\n      #ge-propertyTab .color3Line .firstLine .color3 {\n        grid-column: 2;\n        margin-top: 12px;\n        display: flex;\n        align-items: center; }\n        #ge-propertyTab .color3Line .firstLine .color3 input {\n          margin-right: 5px; }\n      #ge-propertyTab .color3Line .firstLine .copy {\n        grid-column: 4;\n        display: none;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer;\n        color: black; }\n        #ge-propertyTab .color3Line .firstLine .copy img {\n          height: 100%;\n          width: 20px; }\n      #ge-propertyTab .color3Line .firstLine .expand {\n        grid-column: 4;\n        display: none;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n        #ge-propertyTab .color3Line .firstLine .expand img {\n          height: 100%;\n          width: 20px; }\n    #ge-propertyTab .color3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #ge-propertyTab .color3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #ge-propertyTab .color3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #ge-propertyTab .color3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #ge-propertyTab .textLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    #ge-propertyTab .textLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .textLine .link-value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 140px;\n      text-decoration: underline;\n      cursor: pointer; }\n    #ge-propertyTab .textLine .value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 200px;\n      -webkit-user-select: text;\n      -moz-user-select: text;\n      -ms-user-select: text;\n      user-select: text; }\n      #ge-propertyTab .textLine .value.check {\n        color: green; }\n      #ge-propertyTab .textLine .value.uncheck {\n        color: red; }\n", ""]);
+exports.push([module.i, ":root {\n  --backgroundGrey: #aaaaaa;\n  --spacingHeight: 30px; }\n\nhr.ge {\n  border: 1px solid #d0cece; }\n\n#ge-propertyTab {\n  user-select: none;\n  color: black;\n  background: #e2e2e2;\n  font-family: \"acumin-pro-condensed\"; }\n  #ge-propertyTab #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: white;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #ge-propertyTab #header #logo {\n      position: relative;\n      background: white;\n      grid-column: 1;\n      width: 32px;\n      height: 32px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #ge-propertyTab #header #title {\n      background: white;\n      color: black;\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n  #ge-propertyTab .range {\n    -webkit-appearance: none;\n    width: 120px;\n    height: 2px;\n    background: black;\n    border-radius: 5px;\n    outline: none;\n    opacity: 0.7;\n    -webkit-transition: .2s;\n    transition: opacity .2s; }\n  #ge-propertyTab .range:hover {\n    opacity: 1; }\n  #ge-propertyTab .range::-webkit-slider-thumb {\n    -webkit-appearance: none;\n    appearance: none;\n    width: 14px;\n    height: 14px;\n    border-radius: 50%;\n    background: #e2e2e2;\n    border: solid;\n    border-width: thin;\n    cursor: pointer; }\n  #ge-propertyTab .range::-moz-range-thumb {\n    width: 14px;\n    height: 14px;\n    border-radius: 50%;\n    background: black;\n    cursor: pointer; }\n  #ge-propertyTab input[type=\"color\"] {\n    -webkit-appearance: none;\n    border: 1px solid rgba(255, 255, 255, 0.5);\n    padding: 0;\n    width: 30px;\n    height: 20px; }\n  #ge-propertyTab input[type=\"color\"]::-webkit-color-swatch-wrapper {\n    padding: 0; }\n  #ge-propertyTab input[type=\"color\"]::-webkit-color-swatch {\n    border: none; }\n  #ge-propertyTab .sliderLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: auto auto auto 1fr; }\n    #ge-propertyTab .sliderLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      min-width: 15px; }\n    #ge-propertyTab .sliderLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .sliderLine .slider {\n      grid-column: 4;\n      grid-row: 1;\n      margin-right: 5px;\n      width: 90%;\n      display: flex;\n      align-items: center;\n      padding-left: 5px; }\n    #ge-propertyTab .sliderLine .floatLine {\n      grid-column: 3;\n      padding-left: 15px; }\n      #ge-propertyTab .sliderLine .floatLine .label {\n        grid-column: 1;\n        display: none;\n        align-items: center; }\n      #ge-propertyTab .sliderLine .floatLine .short {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n        #ge-propertyTab .sliderLine .floatLine .short input {\n          width: 40px;\n          background-color: transparent;\n          outline-color: transparent;\n          border-left: transparent;\n          border-right: transparent;\n          border-top: transparent;\n          outline-width: 0px; }\n        #ge-propertyTab .sliderLine .floatLine .short input::-webkit-outer-spin-button,\n        #ge-propertyTab .sliderLine .floatLine .short input::-webkit-inner-spin-button {\n          -webkit-appearance: none;\n          margin: 0; }\n        #ge-propertyTab .sliderLine .floatLine .short input[type=number] {\n          -moz-appearance: textfield; }\n  #ge-propertyTab .divider {\n    display: grid;\n    grid-template-columns: auto auto auto auto auto auto; }\n  #ge-propertyTab .textInputLine {\n    user-select: none;\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: auto auto 2fr 1fr; }\n    #ge-propertyTab .textInputLine .label {\n      grid-column: 2;\n      padding-left: 5px;\n      display: flex;\n      align-items: center;\n      min-width: 15px; }\n    #ge-propertyTab .textInputLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .textInputLine .value {\n      display: flex;\n      align-items: center;\n      padding-left: 15px;\n      grid-column: 3;\n      background: transparent; }\n      #ge-propertyTab .textInputLine .value input {\n        width: calc(100% - 5px);\n        background-color: transparent;\n        outline-color: transparent;\n        border-left: transparent;\n        border-right: transparent;\n        border-top: transparent;\n        outline-width: 0px; }\n    #ge-propertyTab .textInputLine .noUnderline input {\n      border-bottom: transparent; }\n  #ge-propertyTab .textInputArea {\n    padding-left: 5px;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 1fr 120px; }\n    #ge-propertyTab .textInputArea .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .textInputArea .value {\n      display: flex;\n      align-items: center;\n      grid-column: 2; }\n      #ge-propertyTab .textInputArea .value textarea {\n        width: calc(150% - 5px);\n        margin-left: -50%;\n        height: 40px; }\n  #ge-propertyTab .paneContainer {\n    margin-top: 3px;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #ge-propertyTab .paneContainer .paneList {\n      border-left: 3px solid transparent; }\n    #ge-propertyTab .paneContainer:hover .paneList {\n      border-left: 3px solid rgba(51, 122, 183, 0.8); }\n    #ge-propertyTab .paneContainer:hover .paneContainer-content .header .title {\n      border-left: 3px solid #337ab7; }\n    #ge-propertyTab .paneContainer .paneContainer-highlight-border {\n      grid-row: 1;\n      grid-column: 1;\n      opacity: 1;\n      border: 3px solid red;\n      transition: opacity 250ms;\n      pointer-events: none; }\n      #ge-propertyTab .paneContainer .paneContainer-highlight-border.transparent {\n        opacity: 0; }\n    #ge-propertyTab .paneContainer .paneContainer-content {\n      grid-row: 1;\n      grid-column: 1; }\n      #ge-propertyTab .paneContainer .paneContainer-content .header {\n        display: grid;\n        grid-template-columns: 1fr auto;\n        background: #cccccc;\n        height: var(--spacingHeight);\n        padding-bottom: 0px;\n        padding-top: 0px;\n        padding-right: 5px;\n        cursor: pointer; }\n        #ge-propertyTab .paneContainer .paneContainer-content .header .title {\n          border-left: 3px solid transparent;\n          padding-left: 5px;\n          grid-column: 1;\n          display: flex;\n          align-items: center; }\n        #ge-propertyTab .paneContainer .paneContainer-content .header .collapse {\n          grid-column: 2;\n          display: flex;\n          align-items: center;\n          justify-items: center;\n          transform-origin: center; }\n          #ge-propertyTab .paneContainer .paneContainer-content .header .collapse.closed {\n            transform: rotate(180deg); }\n      #ge-propertyTab .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n      #ge-propertyTab .paneContainer .paneContainer-content .fragment > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n  #ge-propertyTab .color-picker {\n    height: 150px;\n    width: 15px; }\n    #ge-propertyTab .color-picker .color-rect {\n      height: 15px;\n      border: 1px black solid;\n      cursor: pointer; }\n    #ge-propertyTab .color-picker .color-picker-cover {\n      position: fixed;\n      top: 0px;\n      right: 0px;\n      bottom: 0px;\n      left: 0px; }\n    #ge-propertyTab .color-picker .color-picker-float {\n      z-index: 2;\n      position: absolute; }\n  #ge-propertyTab .gradient-step {\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 20px 30px 40px auto 20px 30px;\n    padding-top: 5px;\n    padding-left: 5px;\n    padding-bottom: 5px; }\n    #ge-propertyTab .gradient-step .step {\n      grid-row: 1;\n      grid-column: 1; }\n    #ge-propertyTab .gradient-step .color {\n      grid-row: 1;\n      grid-column: 2;\n      cursor: pointer; }\n    #ge-propertyTab .gradient-step .step-value {\n      margin-left: 5px;\n      grid-row: 1;\n      grid-column: 3;\n      text-align: right;\n      margin-right: 5px; }\n    #ge-propertyTab .gradient-step .step-slider {\n      grid-row: 1;\n      grid-column: 4;\n      display: grid;\n      justify-content: stretch;\n      align-content: center;\n      margin-right: -5px;\n      padding-left: 12px; }\n      #ge-propertyTab .gradient-step .step-slider input {\n        width: 90%; }\n    #ge-propertyTab .gradient-step .gradient-copy {\n      grid-row: 1;\n      grid-column: 5;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n      #ge-propertyTab .gradient-step .gradient-copy .img {\n        height: 20px;\n        width: 20px; }\n      #ge-propertyTab .gradient-step .gradient-copy .img:hover {\n        cursor: pointer; }\n    #ge-propertyTab .gradient-step .gradient-delete {\n      grid-row: 1;\n      grid-column: 6;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n      #ge-propertyTab .gradient-step .gradient-delete .img {\n        height: 20px;\n        width: 20px; }\n      #ge-propertyTab .gradient-step .gradient-delete .img:hover {\n        cursor: pointer; }\n  #ge-propertyTab .command-button {\n    cursor: pointer;\n    width: auto; }\n    #ge-propertyTab .command-button .command-label {\n      display: none; }\n    #ge-propertyTab .command-button .command-button-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      color: white;\n      align-content: center;\n      justify-content: center; }\n    #ge-propertyTab .command-button:hover {\n      background-color: white; }\n    #ge-propertyTab .command-button .active {\n      transform-origin: center;\n      background-color: white; }\n    #ge-propertyTab .command-button img.active {\n      background-color: white; }\n  #ge-propertyTab .floatLine {\n    user-select: none;\n    padding-left: 5px;\n    height: var(--spacingHeight);\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid;\n    grid-template-columns: auto auto 2fr 1fr; }\n    #ge-propertyTab .floatLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      min-width: 15px; }\n    #ge-propertyTab .floatLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .floatLine .value {\n      display: flex;\n      padding-left: 15px;\n      align-items: center;\n      grid-column: 3;\n      background: transparent; }\n      #ge-propertyTab .floatLine .value input {\n        width: calc(100% - 5px);\n        background-color: transparent;\n        outline-color: transparent;\n        border-left: transparent;\n        border-right: transparent;\n        border-top: transparent;\n        outline-width: 0px; }\n    #ge-propertyTab .floatLine .short {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n      #ge-propertyTab .floatLine .short input {\n        width: 27px; }\n      #ge-propertyTab .floatLine .short input::-webkit-outer-spin-button,\n      #ge-propertyTab .floatLine .short input::-webkit-inner-spin-button {\n        -webkit-appearance: none;\n        margin: 0; }\n      #ge-propertyTab .floatLine .short input[type=number] {\n        -moz-appearance: textfield; }\n  #ge-propertyTab .vector3Line {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid; }\n    #ge-propertyTab .vector3Line .firstLine {\n      display: grid;\n      grid-template-columns: 1fr auto 20px;\n      height: var(--spacingHeight); }\n      #ge-propertyTab .vector3Line .firstLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #ge-propertyTab .vector3Line .firstLine .vector {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        text-align: right;\n        opacity: 0.8; }\n      #ge-propertyTab .vector3Line .firstLine .expand {\n        grid-column: 3;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n    #ge-propertyTab .vector3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #ge-propertyTab .vector3Line .secondLine .no-right-margin {\n        margin-right: 0; }\n      #ge-propertyTab .vector3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #ge-propertyTab .vector3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #ge-propertyTab .vector3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #ge-propertyTab .buttonLine {\n    height: var(--spacingHeight);\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid;\n    align-items: center;\n    justify-items: stretch;\n    padding-bottom: 5px; }\n    #ge-propertyTab .buttonLine input[type=\"file\"] {\n      display: none; }\n    #ge-propertyTab .buttonLine .file-upload {\n      background: var(--backgroundGrey);\n      border: 1px solid #424242;\n      margin: 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      padding-top: 0px;\n      opacity: 0.9;\n      cursor: pointer;\n      text-align: center;\n      border-radius: 4px; }\n    #ge-propertyTab .buttonLine .file-upload:hover {\n      opacity: 1.0; }\n    #ge-propertyTab .buttonLine .file-upload:active {\n      transform: scale(0.98);\n      transform-origin: 0.5 0.5; }\n    #ge-propertyTab .buttonLine button {\n      background: var(--backgroundGrey);\n      border: 1px solid #424242;\n      margin: 5px 10px 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9;\n      border-radius: 4px; }\n    #ge-propertyTab .buttonLine button:hover {\n      opacity: 1.0; }\n    #ge-propertyTab .buttonLine button:active {\n      background: #282828; }\n    #ge-propertyTab .buttonLine button:focus {\n      border: 1px solid #424242;\n      outline: 0px; }\n  #ge-propertyTab .numeric {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: 1fr 120px auto; }\n    #ge-propertyTab .numeric .numeric-label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .numeric .number {\n      display: flex;\n      align-items: center;\n      grid-column: 2;\n      height: 10px; }\n      #ge-propertyTab .numeric .number .input {\n        width: calc(100% - 5px);\n        height: 10px; }\n  #ge-propertyTab .checkBoxLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: auto auto 1fr; }\n    #ge-propertyTab .checkBoxLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .checkBoxLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .checkBoxLine .checkBox {\n      grid-column: 3;\n      display: flex;\n      align-items: center;\n      padding-left: 15px; }\n      #ge-propertyTab .checkBoxLine .checkBox .lbl {\n        position: relative;\n        display: block;\n        height: 14px;\n        width: 34px;\n        margin-right: 5px;\n        border-radius: 100px;\n        cursor: pointer;\n        transition: all 0.3s ease;\n        border: solid;\n        border-width: thin; }\n      #ge-propertyTab .checkBoxLine .checkBox .lbl:after {\n        position: absolute;\n        left: 3px;\n        top: 1px;\n        display: block;\n        width: 10px;\n        height: 10px;\n        border-radius: 100px;\n        background: #e2e2e2;\n        box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);\n        content: '';\n        transition: all 0.15s ease;\n        border: solid;\n        border-width: thin; }\n      #ge-propertyTab .checkBoxLine .checkBox .lbl:active:after {\n        transform: scale(1.15, 0.85); }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label {\n        background: transparent; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label:after {\n        left: 20px;\n        background: black;\n        border: solid;\n        border-width: thin; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label.disabled {\n        background: black;\n        cursor: pointer; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label.disabled:after {\n        left: 20px;\n        background: #555555;\n        cursor: pointer; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx ~ label.disabled {\n        background: #555555;\n        cursor: pointer; }\n      #ge-propertyTab .checkBoxLine .checkBox .hidden {\n        display: none; }\n  #ge-propertyTab .listLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: auto 1fr auto; }\n    #ge-propertyTab .listLine .label {\n      grid-column: 2;\n      display: none;\n      align-items: center; }\n    #ge-propertyTab .listLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .listLine .options {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      margin-right: 5px; }\n      #ge-propertyTab .listLine .options select {\n        width: 120px;\n        height: 25px;\n        border: transparent;\n        border-radius: 4px; }\n  #ge-propertyTab .color3Line {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid; }\n    #ge-propertyTab .color3Line .firstLine {\n      height: var(--spacingHeight);\n      display: grid;\n      grid-template-columns: auto auto 1fr; }\n      #ge-propertyTab .color3Line .firstLine .label {\n        grid-column: 2;\n        padding-left: 5px;\n        display: none;\n        align-items: center;\n        min-width: 15px; }\n      #ge-propertyTab .color3Line .firstLine .img {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #ge-propertyTab .color3Line .firstLine .textInputLine {\n        grid-column: 3;\n        margin-top: 5px; }\n      #ge-propertyTab .color3Line .firstLine .color3 {\n        grid-column: 2;\n        margin-top: 12px;\n        display: flex;\n        align-items: center; }\n        #ge-propertyTab .color3Line .firstLine .color3 input {\n          margin-right: 5px; }\n      #ge-propertyTab .color3Line .firstLine .copy {\n        grid-column: 4;\n        display: none;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer;\n        color: black; }\n        #ge-propertyTab .color3Line .firstLine .copy img {\n          height: 100%;\n          width: 20px; }\n      #ge-propertyTab .color3Line .firstLine .expand {\n        grid-column: 4;\n        display: none;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n        #ge-propertyTab .color3Line .firstLine .expand img {\n          height: 100%;\n          width: 20px; }\n    #ge-propertyTab .color3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #ge-propertyTab .color3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #ge-propertyTab .color3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #ge-propertyTab .color3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #ge-propertyTab .textLine {\n    padding-left: 5px;\n    padding-bottom: 5px;\n    padding-top: 5px;\n    height: auto;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    #ge-propertyTab .textLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .textLine .link-value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 140px;\n      text-decoration: underline;\n      cursor: pointer; }\n    #ge-propertyTab .textLine .value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 200px;\n      -webkit-user-select: text;\n      -moz-user-select: text;\n      -ms-user-select: text;\n      user-select: text; }\n      #ge-propertyTab .textLine .value.check {\n        color: green; }\n      #ge-propertyTab .textLine .value.uncheck {\n        color: red; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -10094,7 +10094,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#ge-scene-explorer-host {\n  position: absolute;\n  left: 0px;\n  top: 0px;\n  bottom: 0px;\n  font-family: \"acumin-pro-condensed\"; }\n  #ge-scene-explorer-host:focus {\n    outline: none; }\n\n#ge-__resizable_base__ {\n  display: none; }\n\n.ge-context-menu {\n  background: #e2e2e2; }\n  .ge-context-menu .react-contextmenu-item {\n    padding: 10px;\n    cursor: pointer; }\n    .ge-context-menu .react-contextmenu-item:hover {\n      background: #e2e2e2; }\n\n.ge-eact-contextmenu.context-menu.react-contextmenu--visible {\n  z-index: 99;\n  transform: scale(1); }\n\n#ge-sceneExplorer {\n  background: #e2e2e2;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 16px \"acumin-pro-condensed\"; }\n  #ge-sceneExplorer:focus {\n    outline: none; }\n  #ge-sceneExplorer #header {\n    height: 30px;\n    font-size: 16px;\n    color: black;\n    background: #e2e2e2;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #ge-sceneExplorer #header #logo {\n      position: relative;\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #ge-sceneExplorer #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #ge-sceneExplorer #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #ge-sceneExplorer #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #ge-sceneExplorer #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #ge-sceneExplorer #tree {\n    grid-row: 2;\n    overflow-x: hidden;\n    overflow-y: auto; }\n  #ge-sceneExplorer .filter {\n    display: flex;\n    align-items: stretch; }\n    #ge-sceneExplorer .filter input {\n      width: 100%;\n      margin: 10px 40px 5px 40px;\n      display: block;\n      border: none;\n      padding: 0;\n      border-bottom: solid 1px #337ab7;\n      background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n      background-position: -1000px 0;\n      background-size: 1000px 100%;\n      background-repeat: no-repeat;\n      color: black; }\n    #ge-sceneExplorer .filter input::placeholder {\n      color: lightgray; }\n    #ge-sceneExplorer .filter input:focus {\n      box-shadow: none;\n      outline: none;\n      background-position: 0 0; }\n  #ge-sceneExplorer .groupContainer {\n    margin-left: 0px;\n    color: black;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    align-self: center;\n    display: grid;\n    align-items: center; }\n    #ge-sceneExplorer .groupContainer:hover {\n      background: #bbbbbb; }\n    #ge-sceneExplorer .groupContainer .expandableHeader {\n      display: grid;\n      grid-template-columns: 1fr 20px; }\n      #ge-sceneExplorer .groupContainer .expandableHeader .text {\n        grid-column: 1;\n        display: grid;\n        grid-template-columns: 20px 1fr; }\n        #ge-sceneExplorer .groupContainer .expandableHeader .text .arrow {\n          grid-column: 1;\n          margin-left: 0px;\n          color: black;\n          cursor: pointer;\n          display: inline-block;\n          margin-right: 6px;\n          opacity: 0.5; }\n        #ge-sceneExplorer .groupContainer .expandableHeader .text .text-value {\n          grid-column: 2;\n          display: flex;\n          align-items: center; }\n      #ge-sceneExplorer .groupContainer .expandableHeader .expandAll {\n        opacity: 0.5;\n        grid-column: 2;\n        margin-right: 10px; }\n  #ge-sceneExplorer .icon {\n    display: grid;\n    align-items: center;\n    justify-items: center;\n    cursor: pointer; }\n  #ge-sceneExplorer .makeChild {\n    grid-column: 3; }\n  #ge-sceneExplorer .itemContainer {\n    margin-left: 0px;\n    color: black;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 32px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    display: grid;\n    grid-template-columns: 20px 1fr;\n    border: 2px solid transparent; }\n    #ge-sceneExplorer .itemContainer.hover {\n      border: 2px solid #527089;\n      cursor: pointer; }\n    #ge-sceneExplorer .itemContainer.seAbove {\n      border-top: 2px solid #527089;\n      cursor: pointer; }\n    #ge-sceneExplorer .itemContainer.seBelow {\n      border-bottom: 2px solid #527089;\n      cursor: pointer; }\n    #ge-sceneExplorer .itemContainer.selected {\n      background: #bfbebe;\n      color: black; }\n    #ge-sceneExplorer .itemContainer.dragged {\n      background: transparent;\n      color: black; }\n    #ge-sceneExplorer .itemContainer.parent {\n      background: #ffffff;\n      color: black; }\n    #ge-sceneExplorer .itemContainer .isNotActive {\n      opacity: 0.3; }\n    #ge-sceneExplorer .itemContainer .arrow {\n      grid-column: 1;\n      color: black;\n      opacity: 0.6; }\n    #ge-sceneExplorer .itemContainer .popup {\n      width: 200px;\n      visibility: hidden;\n      background-color: #bbbbbb;\n      color: #fff;\n      border: 1px solid rgba(255, 255, 255, 0.5);\n      position: absolute;\n      z-index: 1;\n      margin-left: -180px;\n      box-sizing: border-box; }\n      #ge-sceneExplorer .itemContainer .popup.show {\n        visibility: visible; }\n      #ge-sceneExplorer .itemContainer .popup:focus {\n        outline: none; }\n      #ge-sceneExplorer .itemContainer .popup .popupMenu {\n        padding: 6px 5px 5px 10px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        height: 18px; }\n        #ge-sceneExplorer .itemContainer .popup .popupMenu:hover {\n          background: white;\n          color: #333333; }\n    #ge-sceneExplorer .itemContainer .sceneNode {\n      grid-column: 2;\n      margin-left: -10px;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px 20px 20px 10px 20px 20px auto 5px;\n      align-items: center;\n      cursor: pointer; }\n      #ge-sceneExplorer .itemContainer .sceneNode .sceneTitle {\n        grid-column: 1;\n        margin-right: 5px;\n        display: flex;\n        align-items: center;\n        height: 24px; }\n      #ge-sceneExplorer .itemContainer .sceneNode .translation {\n        grid-column: 2;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .translation.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .rotation {\n        grid-column: 3;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .rotation.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .scaling {\n        grid-column: 4;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .scaling.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .bounding {\n        grid-column: 5;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .bounding.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .separator {\n        grid-column: 6;\n        margin-left: 5px;\n        width: 5px;\n        display: flex;\n        align-items: center;\n        height: 18px;\n        border-left: solid 1px #337ab7; }\n      #ge-sceneExplorer .itemContainer .sceneNode .pickingMode {\n        grid-column: 7;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .pickingMode.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .refresh {\n        grid-column: 8; }\n      #ge-sceneExplorer .itemContainer .sceneNode .extensions {\n        width: 20px;\n        grid-column: 9; }\n    #ge-sceneExplorer .itemContainer .adtextureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #ge-sceneExplorer .itemContainer .adtextureTools .pickingMode {\n        grid-column: 2;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .adtextureTools .pickingMode.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .adtextureTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #ge-sceneExplorer .itemContainer .controlTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 30px 30px auto 5px;\n      align-items: center; }\n      #ge-sceneExplorer .itemContainer .controlTools .highlight {\n        grid-column: 2; }\n      #ge-sceneExplorer .itemContainer .controlTools .visibility {\n        grid-column: 3; }\n      #ge-sceneExplorer .itemContainer .controlTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #ge-sceneExplorer .itemContainer .title {\n      grid-column: 1;\n      background: transparent;\n      white-space: nowrap;\n      overflow: hidden;\n      min-width: 0;\n      margin-right: 5px;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr;\n      height: 24px;\n      cursor: pointer; }\n      #ge-sceneExplorer .itemContainer .title .titleText {\n        grid-column: 1;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        overflow: hidden; }\n", ""]);
+exports.push([module.i, "#ge-scene-explorer-host {\n  position: absolute;\n  left: 0px;\n  top: 0px;\n  bottom: 0px;\n  font-family: \"acumin-pro-condensed\"; }\n  #ge-scene-explorer-host:focus {\n    outline: none; }\n\n#ge-__resizable_base__ {\n  display: none; }\n\n.ge-context-menu {\n  background: #e2e2e2; }\n  .ge-context-menu .react-contextmenu-item {\n    padding: 10px;\n    cursor: pointer; }\n    .ge-context-menu .react-contextmenu-item:hover {\n      background: #e2e2e2; }\n\n.ge-eact-contextmenu.context-menu.react-contextmenu--visible {\n  z-index: 99;\n  transform: scale(1); }\n\n#ge-sceneExplorer {\n  background: #e2e2e2;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 16px \"acumin-pro-condensed\"; }\n  #ge-sceneExplorer:focus {\n    outline: none; }\n  #ge-sceneExplorer #header {\n    height: 30px;\n    font-size: 16px;\n    color: black;\n    background: #e2e2e2;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #ge-sceneExplorer #header #logo {\n      position: relative;\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #ge-sceneExplorer #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #ge-sceneExplorer #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #ge-sceneExplorer #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #ge-sceneExplorer #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #ge-sceneExplorer #tree {\n    grid-row: 2;\n    overflow-x: hidden;\n    overflow-y: auto; }\n  #ge-sceneExplorer .filter {\n    display: flex;\n    align-items: stretch; }\n    #ge-sceneExplorer .filter input {\n      width: 100%;\n      margin: 10px 40px 5px 40px;\n      display: block;\n      border: none;\n      padding: 0;\n      border-bottom: solid 1px #337ab7;\n      background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n      background-position: -1000px 0;\n      background-size: 1000px 100%;\n      background-repeat: no-repeat;\n      color: black; }\n    #ge-sceneExplorer .filter input::placeholder {\n      color: lightgray; }\n    #ge-sceneExplorer .filter input:focus {\n      box-shadow: none;\n      outline: none;\n      background-position: 0 0; }\n  #ge-sceneExplorer .groupContainer {\n    margin-left: 0px;\n    color: black;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    align-self: center;\n    display: grid;\n    align-items: center; }\n    #ge-sceneExplorer .groupContainer:hover {\n      background: #bbbbbb; }\n    #ge-sceneExplorer .groupContainer .expandableHeader {\n      display: grid;\n      grid-template-columns: 1fr 20px; }\n      #ge-sceneExplorer .groupContainer .expandableHeader .text {\n        grid-column: 1;\n        display: grid;\n        grid-template-columns: 20px 1fr; }\n        #ge-sceneExplorer .groupContainer .expandableHeader .text .arrow {\n          grid-column: 1;\n          margin-left: 0px;\n          color: black;\n          cursor: pointer;\n          display: inline-block;\n          margin-right: 6px;\n          opacity: 0.5; }\n        #ge-sceneExplorer .groupContainer .expandableHeader .text .text-value {\n          grid-column: 2;\n          display: flex;\n          align-items: center; }\n      #ge-sceneExplorer .groupContainer .expandableHeader .expandAll {\n        opacity: 0.5;\n        grid-column: 2;\n        margin-right: 10px; }\n  #ge-sceneExplorer .icon {\n    display: grid;\n    align-items: center;\n    justify-items: center;\n    cursor: pointer; }\n  #ge-sceneExplorer .addComponent {\n    display: none; }\n  #ge-sceneExplorer .makeChild {\n    grid-column: 3; }\n  #ge-sceneExplorer .itemContainer {\n    margin-left: 0px;\n    color: black;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 32px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    display: grid;\n    grid-template-columns: 20px 1fr;\n    border: 2px solid transparent; }\n    #ge-sceneExplorer .itemContainer.hover {\n      border: 2px solid #527089;\n      cursor: pointer; }\n    #ge-sceneExplorer .itemContainer.seAbove {\n      border-top: 2px solid #527089;\n      cursor: pointer; }\n    #ge-sceneExplorer .itemContainer.seBelow {\n      border-bottom: 2px solid #527089;\n      cursor: pointer; }\n    #ge-sceneExplorer .itemContainer.selected {\n      background: #bfbebe;\n      color: black; }\n    #ge-sceneExplorer .itemContainer.dragged {\n      background: transparent;\n      color: black; }\n    #ge-sceneExplorer .itemContainer.parent {\n      background: #ffffff;\n      color: black; }\n    #ge-sceneExplorer .itemContainer .isNotActive {\n      opacity: 0.3; }\n    #ge-sceneExplorer .itemContainer .arrow {\n      grid-column: 1;\n      color: black;\n      opacity: 0.6; }\n    #ge-sceneExplorer .itemContainer .popup {\n      width: 200px;\n      visibility: hidden;\n      background-color: #bbbbbb;\n      color: #fff;\n      border: 1px solid rgba(255, 255, 255, 0.5);\n      position: absolute;\n      z-index: 1;\n      margin-left: -180px;\n      box-sizing: border-box; }\n      #ge-sceneExplorer .itemContainer .popup.show {\n        visibility: visible; }\n      #ge-sceneExplorer .itemContainer .popup:focus {\n        outline: none; }\n      #ge-sceneExplorer .itemContainer .popup .popupMenu {\n        padding: 6px 5px 5px 10px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        height: 18px; }\n        #ge-sceneExplorer .itemContainer .popup .popupMenu:hover {\n          background: white;\n          color: #333333; }\n    #ge-sceneExplorer .itemContainer .sceneNode {\n      grid-column: 2;\n      margin-left: -10px;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px 20px 20px 10px 20px 20px auto 5px;\n      align-items: center;\n      cursor: pointer; }\n      #ge-sceneExplorer .itemContainer .sceneNode .sceneTitle {\n        grid-column: 1;\n        margin-right: 5px;\n        display: flex;\n        align-items: center;\n        height: 24px; }\n      #ge-sceneExplorer .itemContainer .sceneNode .translation {\n        grid-column: 2;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .translation.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .rotation {\n        grid-column: 3;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .rotation.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .scaling {\n        grid-column: 4;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .scaling.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .bounding {\n        grid-column: 5;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .bounding.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .separator {\n        grid-column: 6;\n        margin-left: 5px;\n        width: 5px;\n        display: flex;\n        align-items: center;\n        height: 18px;\n        border-left: solid 1px #337ab7; }\n      #ge-sceneExplorer .itemContainer .sceneNode .pickingMode {\n        grid-column: 7;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .pickingMode.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .refresh {\n        grid-column: 8; }\n      #ge-sceneExplorer .itemContainer .sceneNode .extensions {\n        width: 20px;\n        grid-column: 9; }\n    #ge-sceneExplorer .itemContainer .adtextureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #ge-sceneExplorer .itemContainer .adtextureTools .pickingMode {\n        grid-column: 2;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .adtextureTools .pickingMode.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .adtextureTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #ge-sceneExplorer .itemContainer .controlTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 30px 30px auto 5px;\n      align-items: center; }\n      #ge-sceneExplorer .itemContainer .controlTools .highlight {\n        grid-column: 2; }\n      #ge-sceneExplorer .itemContainer .controlTools .visibility {\n        grid-column: 3; }\n      #ge-sceneExplorer .itemContainer .controlTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #ge-sceneExplorer .itemContainer .title {\n      grid-column: 1;\n      background: transparent;\n      white-space: nowrap;\n      overflow: hidden;\n      min-width: 0;\n      margin-right: 5px;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr;\n      height: 24px;\n      cursor: pointer; }\n      #ge-sceneExplorer .itemContainer .title .titleText {\n        grid-column: 1;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        overflow: hidden; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -42598,6 +42598,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 
 /***/ }),
 
+/***/ "../public/imgs/moveIcon.svg":
+/*!***********************************!*\
+  !*** ../public/imgs/moveIcon.svg ***!
+  \***********************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M22.64,15.2a.61.61,0,0,1-.85,0L20.6,14v3a.6.6,0,1,1-1.2,0V14L18.21,15.2a.61.61,0,0,1-.85,0,.6.6,0,0,1,0-.86l2.21-2.21a.6.6,0,0,1,.86,0l2.21,2.21A.6.6,0,0,1,22.64,15.2Z' style='fill:%23fff'/%3E%3Cpath d='M15.2,21.79a.61.61,0,0,1,0,.85.6.6,0,0,1-.86,0l-2.21-2.21a.6.6,0,0,1,0-.86l2.21-2.21a.6.6,0,0,1,.86,0,.61.61,0,0,1,0,.85L14,19.4h3a.6.6,0,1,1,0,1.2H14Z' style='fill:%23fff'/%3E%3Cpath d='M24.8,22.64a.61.61,0,0,1,0-.85L26,20.6H23a.6.6,0,1,1,0-1.2h3L24.8,18.21a.61.61,0,0,1,0-.85.6.6,0,0,1,.86,0l2.21,2.21a.6.6,0,0,1,0,.86l-2.21,2.21A.6.6,0,0,1,24.8,22.64Z' style='fill:%23fff'/%3E%3Cpath d='M22.64,24.8a.61.61,0,0,0-.85,0L20.6,26V23a.6.6,0,1,0-1.2,0v3L18.21,24.8a.61.61,0,0,0-.85,0,.6.6,0,0,0,0,.86l2.21,2.21a.6.6,0,0,0,.86,0l2.21-2.21A.6.6,0,0,0,22.64,24.8Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
 /***/ "../public/imgs/passwordFieldIcon.svg":
 /*!********************************************!*\
   !*** ../public/imgs/passwordFieldIcon.svg ***!
@@ -42822,6 +42833,7 @@ var zoomIcon = __webpack_require__(/*! ../../public/imgs/zoomIcon.svg */ "../pub
 var guidesIcon = __webpack_require__(/*! ../../public/imgs/guidesIcon.svg */ "../public/imgs/guidesIcon.svg");
 var logoIcon = __webpack_require__(/*! ../../public/imgs/babylonLogo.svg */ "../public/imgs/babylonLogo.svg");
 var canvasFitIcon = __webpack_require__(/*! ../../public/imgs/canvasFitIcon.svg */ "../public/imgs/canvasFitIcon.svg");
+var moveIcon = __webpack_require__(/*! ../../public/imgs/moveIcon.svg */ "../public/imgs/moveIcon.svg");
 __webpack_require__(/*! ../scss/commandBar.scss */ "./scss/commandBar.scss");
 var CommandBarComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CommandBarComponent, _super);
@@ -42830,22 +42842,33 @@ var CommandBarComponent = /** @class */ (function (_super) {
         _this._panning = false;
         _this._zooming = false;
         _this._selecting = true;
+        _this._moving = false;
         props.globalState.onPanObservable.add(function () {
             _this._panning = !_this._panning;
             _this._zooming = false;
             _this._selecting = false;
+            _this._moving = false;
             _this.forceUpdate();
         });
         props.globalState.onSelectionButtonObservable.add(function () {
-            _this._selecting = true;
+            _this._selecting = !_this._selecting;
             _this._panning = false;
             _this._zooming = false;
+            _this._moving = false;
             _this.forceUpdate();
         });
         props.globalState.onZoomObservable.add(function () {
             _this._zooming = !_this._zooming;
             _this._panning = false;
             _this._selecting = false;
+            _this._moving = false;
+            _this.forceUpdate();
+        });
+        props.globalState.onMoveObservable.add(function () {
+            _this._zooming = false;
+            _this._panning = false;
+            _this._selecting = false;
+            _this._moving = !_this._moving;
             _this.forceUpdate();
         });
         props.globalState.onOutlinesObservable.add(function () {
@@ -42891,14 +42914,16 @@ var CommandBarComponent = /** @class */ (function (_super) {
                             onClick: function () { window.open('https://doc.babylonjs.com/divingDeeper/gui/gui', '_blank'); }
                         },
                     ] }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Select", icon: pointerIcon, shortcut: "Q", isActive: this._selecting, onClick: function () { if (!_this._selecting)
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Select", icon: pointerIcon, shortcut: "S", isActive: this._selecting, onClick: function () { if (!_this._selecting)
                         _this.props.globalState.onSelectionButtonObservable.notifyObservers(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Pan", icon: handIcon, shortcut: "W", isActive: this._panning, onClick: function () { if (!_this._panning)
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Move", icon: moveIcon, shortcut: "M", isActive: this._moving, onClick: function () { if (!_this._moving)
+                        _this.props.globalState.onMoveObservable.notifyObservers(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Pan", icon: handIcon, shortcut: "P", isActive: this._panning, onClick: function () { if (!_this._panning)
                         _this.props.globalState.onPanObservable.notifyObservers(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Zoom", shortcut: "E", icon: zoomIcon, isActive: this._zooming, onClick: function () { if (!_this._zooming)
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Zoom", shortcut: "Z", icon: zoomIcon, isActive: this._zooming, onClick: function () { if (!_this._zooming)
                         _this.props.globalState.onZoomObservable.notifyObservers(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Fit to Window", shortcut: "Alt+F", icon: canvasFitIcon, isActive: false, onClick: function () { _this.props.globalState.onFitToWindowObservable.notifyObservers(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Toggle Guides", shortcut: "R", icon: guidesIcon, isActive: this._outlines, onClick: function () { _this.props.globalState.onOutlinesObservable.notifyObservers(); } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Fit to Window", shortcut: "F", icon: canvasFitIcon, isActive: false, onClick: function () { _this.props.globalState.onFitToWindowObservable.notifyObservers(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Toggle Guides", shortcut: "G", icon: guidesIcon, isActive: this._outlines, onClick: function () { _this.props.globalState.onOutlinesObservable.notifyObservers(); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "commands-right" })));
     };
     return CommandBarComponent;
@@ -43181,10 +43206,10 @@ var ParentingPropertyGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_2__["TextLineComponent"], { tooltip: "", label: "GRID PARENTING", value: " ", color: "grey" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { label: "Row #", target: this, propertyName: "_rowNumber", isInteger: true, min: 0, onPropertyChangedObservable: this.props.onPropertyChangedObservable, onChange: function (newValue) {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Row #", target: this, propertyName: "_rowNumber", isInteger: true, min: 0, onPropertyChangedObservable: this.props.onPropertyChangedObservable, onChange: function (newValue) {
                         _this.updateGridPosition();
                     } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { label: "Column #", target: this, propertyName: "_columnNumber", isInteger: true, min: 0, onPropertyChangedObservable: this.props.onPropertyChangedObservable, onChange: function (newValue) {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Column #", target: this, propertyName: "_columnNumber", isInteger: true, min: 0, onPropertyChangedObservable: this.props.onPropertyChangedObservable, onChange: function (newValue) {
                         _this.updateGridPosition();
                     } }))));
     };
@@ -43617,12 +43642,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../gui/commonControlPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_valueAndUnit__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! babylonjs-gui/2D/valueAndUnit */ "babylonjs-gui/2D/controls/button");
-/* harmony import */ var babylonjs_gui_2D_valueAndUnit__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_valueAndUnit__WEBPACK_IMPORTED_MODULE_7__);
-
-
+/* harmony import */ var _sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
 
 
 
@@ -43632,121 +43652,321 @@ __webpack_require__.r(__webpack_exports__);
 var GridPropertyGridComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GridPropertyGridComponent, _super);
     function GridPropertyGridComponent(props) {
-        return _super.call(this, props) || this;
+        var _this = _super.call(this, props) || this;
+        _this._removingColumn = false;
+        _this._removingRow = false;
+        _this._previousGrid = null;
+        _this._rowDefinitions = [];
+        _this._rowEditFlags = [];
+        _this._columnEditFlags = [];
+        _this._columnDefinitions = [];
+        _this._editedRow = false;
+        _this._editedColumn = false;
+        return _this;
     }
     GridPropertyGridComponent.prototype.renderRows = function () {
         var _this = this;
-        var grid = this.props.grid;
-        var rows = [];
-        for (var index = 0; index < grid.rowCount; index++) {
-            rows.push(grid.getRowDefinition(index));
-        }
-        return (rows.map(function (rd, i) {
-            var newrd = new babylonjs_gui_2D_valueAndUnit__WEBPACK_IMPORTED_MODULE_7__["ValueAndUnit"](rd.getValue(grid.host), rd.unit);
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "divider", key: "r" + i },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: _this.props.lockObject, label: "Row " + i, target: newrd, propertyName: "_value", digits: rd.unit == 1 ? 0 : 2, onChange: function (newValue) {
-                        grid.setRowDefinition(i, newValue, newrd.unit == 1 ? true : false);
-                    } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "", target: newrd, propertyName: "unit", onPropertyChangedObservable: _this.props.onPropertyChangedObservable, onValueChanged: function () {
-                        grid.setRowDefinition(i, newrd.getValue(grid.host), newrd.unit == 1 ? true : false);
+        return (this._rowDefinitions.map(function (rd, i) {
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "divider" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { lockObject: _this.props.lockObject, key: "r" + i, label: "Row " + i, value: rd, numbersOnly: true, onChange: function (newValue) {
+                        _this._rowDefinitions[i] = newValue;
+                        _this._rowEditFlags[i] = true;
+                        _this._editedRow = true;
+                        _this.forceUpdate();
                     } })));
         }));
     };
+    GridPropertyGridComponent.prototype.setRowValues = function () {
+        var grid = this.props.grid;
+        this._rowDefinitions = [];
+        this._rowEditFlags = [];
+        this._editedRow = false;
+        for (var index = 0; index < grid.rowCount; index++) {
+            var value = grid.getRowDefinition(index);
+            if (value) {
+                this._rowDefinitions.push(value.toString(grid._host, 2));
+                this._rowEditFlags.push(false);
+            }
+        }
+    };
+    GridPropertyGridComponent.prototype.setColumnValues = function () {
+        var grid = this.props.grid;
+        this._columnDefinitions = [];
+        this._columnEditFlags = [];
+        this._editedColumn = false;
+        for (var index = 0; index < grid.columnCount; index++) {
+            var value = grid.getColumnDefinition(index);
+            if (value) {
+                this._columnDefinitions.push(value.toString(grid._host, 2));
+                this._columnEditFlags.push(false);
+            }
+        }
+    };
     GridPropertyGridComponent.prototype.renderColumns = function () {
         var _this = this;
-        var grid = this.props.grid;
-        var cols = [];
-        for (var index = 0; index < grid.columnCount; index++) {
-            cols.push(grid.getColumnDefinition(index));
-        }
-        return (cols.map(function (cd, i) {
-            var newcd = new babylonjs_gui_2D_valueAndUnit__WEBPACK_IMPORTED_MODULE_7__["ValueAndUnit"](cd.getValue(grid.host), cd.unit);
+        return (this._columnDefinitions.map(function (cd, i) {
             return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { key: "c" + i, label: "Column " + i, target: newcd, propertyName: "_value", digits: cd.unit == 1 ? 0 : 2, onChange: function (newValue) {
-                        grid.setColumnDefinition(i, newValue, newcd.unit == 1 ? true : false);
-                        _this.forceUpdate();
-                    } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "", target: newcd, propertyName: "unit", onPropertyChangedObservable: _this.props.onPropertyChangedObservable, onValueChanged: function () {
-                        grid.setColumnDefinition(i, newcd.getValue(grid.host), newcd.unit == 1 ? true : false);
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { lockObject: _this.props.lockObject, key: "c" + i, label: "Column " + i, value: cd, numbersOnly: true, onChange: function (newValue) {
+                        _this._columnDefinitions[i] = newValue;
+                        _this._columnEditFlags[i] = true;
+                        _this._editedColumn = true;
                         _this.forceUpdate();
                     } })));
         }));
+    };
+    GridPropertyGridComponent.prototype.resizeRow = function () {
+        var grid = this.props.grid;
+        var total = 0;
+        var editCount = 0;
+        var percentCount = 0;
+        var rowValues = [];
+        for (var i = 0; i < this._rowDefinitions.length; ++i) {
+            var value = this._rowDefinitions[i];
+            var percent = this.checkPercentage(value);
+            if (this._rowEditFlags[i]) {
+                value = this.checkValue(value, percent);
+                if (percent) {
+                    editCount++;
+                }
+            }
+            if (percent) {
+                percentCount++;
+                var valueAsInt = parseInt(value.substring(0, value.length - 1));
+                total += valueAsInt / 100;
+                rowValues.push(valueAsInt / 100);
+            }
+            else {
+                var valueAsInt = parseInt(value.substring(0, value.length - 2));
+                rowValues.push(valueAsInt);
+            }
+        }
+        var allEdited = editCount === percentCount;
+        if (total > 1.0 || allEdited) {
+            var difference = total - 1.0;
+            var diff = Math.abs(difference);
+            for (var i = 0; i < grid.rowCount; ++i) {
+                if (this.checkPercentage(this._rowDefinitions[i])) {
+                    var value = rowValues[i];
+                    var weighted = diff * (value / total);
+                    rowValues[i] = difference > 0 ? value - weighted : value + weighted;
+                }
+            }
+        }
+        else if (total < 1.0) {
+            var difference = 1.0 - total;
+            for (var i = 0; i < grid.rowCount; ++i) {
+                if (this.checkPercentage(this._rowDefinitions[i]) && this._rowEditFlags[i]) {
+                    var value = rowValues[i];
+                    total -= value;
+                }
+            }
+            for (var i = 0; i < grid.rowCount; ++i) {
+                if (this.checkPercentage(this._rowDefinitions[i]) && !this._rowEditFlags[i]) {
+                    var value = rowValues[i];
+                    var weighted = difference * (value / total);
+                    rowValues[i] = value + weighted;
+                }
+            }
+        }
+        for (var i = 0; i < this._rowDefinitions.length; ++i) {
+            grid.setRowDefinition(i, rowValues[i], !this.checkPercentage(this._rowDefinitions[i]));
+        }
+        this.setRowValues();
+        this.forceUpdate();
     };
     GridPropertyGridComponent.prototype.resizeColumn = function () {
         var grid = this.props.grid;
         var total = 0;
-        for (var i = 0; i < grid.columnCount; ++i) {
-            var cd = grid.getColumnDefinition(i);
-            if (cd === null || cd === void 0 ? void 0 : cd.isPercentage) {
-                total += cd === null || cd === void 0 ? void 0 : cd.getValue(grid.host);
+        var editCount = 0;
+        var percentCount = 0;
+        var columnValues = [];
+        for (var i = 0; i < this._columnDefinitions.length; ++i) {
+            var value = this._columnDefinitions[i];
+            var percent = this.checkPercentage(value);
+            if (this._columnEditFlags[i]) {
+                value = this.checkValue(value, percent);
+                if (percent) {
+                    editCount++;
+                }
+            }
+            if (percent) {
+                percentCount++;
+                var valueAsInt = parseInt(value.substring(0, value.length - 1));
+                total += valueAsInt / 100;
+                columnValues.push(valueAsInt / 100);
+            }
+            else {
+                var valueAsInt = parseInt(value.substring(0, value.length - 2));
+                columnValues.push(valueAsInt);
             }
         }
-        if (total != 1.0) {
+        var allEdited = editCount === percentCount;
+        if (total > 1.0 || allEdited) {
             var difference = total - 1.0;
             var diff = Math.abs(difference);
             for (var i = 0; i < grid.columnCount; ++i) {
-                var cd = grid.getColumnDefinition(i);
-                if (cd === null || cd === void 0 ? void 0 : cd.isPercentage) {
-                    var value = cd === null || cd === void 0 ? void 0 : cd.getValue(grid.host);
+                if (this.checkPercentage(this._columnDefinitions[i])) {
+                    var value = columnValues[i];
                     var weighted = diff * (value / total);
-                    grid.setColumnDefinition(i, difference > 0 ? value - weighted : value + weighted);
+                    columnValues[i] = difference > 0 ? value - weighted : value + weighted;
                 }
             }
         }
-        total = 0;
-        for (var i = 0; i < grid.rowCount; ++i) {
-            var rd = grid.getRowDefinition(i);
-            if (rd === null || rd === void 0 ? void 0 : rd.isPercentage) {
-                total += rd === null || rd === void 0 ? void 0 : rd.getValue(grid.host);
+        else if (total < 1.0) {
+            var difference = 1.0 - total;
+            for (var i = 0; i < grid.columnCount; ++i) {
+                if (this.checkPercentage(this._columnDefinitions[i]) && this._columnEditFlags[i]) {
+                    var value = columnValues[i];
+                    total -= value;
+                }
             }
-        }
-        if (total != 1.0) {
-            var difference = total - 1.0;
-            var diff = Math.abs(difference);
-            for (var i = 0; i < grid.rowCount; ++i) {
-                var rd = grid.getRowDefinition(i);
-                if (rd === null || rd === void 0 ? void 0 : rd.isPercentage) {
-                    var value = rd === null || rd === void 0 ? void 0 : rd.getValue(grid.host);
-                    var weighted = diff * (value / total);
-                    grid.setRowDefinition(i, difference > 0 ? value - weighted : value + weighted);
+            for (var i = 0; i < grid.columnCount; ++i) {
+                if (this.checkPercentage(this._columnDefinitions[i]) && !this._columnEditFlags[i]) {
+                    var value = columnValues[i];
+                    var weighted = difference * (value / total);
+                    columnValues[i] = value + weighted;
                 }
             }
         }
+        for (var i = 0; i < this._columnDefinitions.length; ++i) {
+            grid.setColumnDefinition(i, columnValues[i], !this.checkPercentage(this._columnDefinitions[i]));
+        }
+        this.setColumnValues();
         this.forceUpdate();
+    };
+    GridPropertyGridComponent.prototype.checkValue = function (value, percent) {
+        var _a;
+        var newValue = (_a = value.match(/([0-9.,]+)/g)) === null || _a === void 0 ? void 0 : _a[0];
+        if (!newValue) {
+            newValue = '0';
+        }
+        newValue += percent ? '%' : 'px';
+        return newValue;
+    };
+    GridPropertyGridComponent.prototype.checkPercentage = function (value) {
+        var toSearch = 'px';
+        return value.substring(value.length - toSearch.length, value.length) !== toSearch;
     };
     GridPropertyGridComponent.prototype.render = function () {
         var _this = this;
         var grid = this.props.grid;
-        var cols = [];
-        for (var index = 0; index < grid.rowCount; index++) {
-            cols.push(grid.getColumnDefinition(index));
+        if (grid !== this._previousGrid) {
+            this._removingColumn = false;
+            this._removingRow = false;
+            this._previousGrid = grid;
+            this.setRowValues();
+            this.setColumnValues();
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: grid, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { tooltip: "", label: "GRID", value: " ", color: "grey" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "ADD ROW", onClick: function () {
-                    grid.addRowDefinition(0.5);
+                    var total = 0;
+                    var count = 0;
+                    for (var i = 0; i < grid.rowCount; ++i) {
+                        var rd = grid.getRowDefinition(i);
+                        if (rd === null || rd === void 0 ? void 0 : rd.isPercentage) {
+                            total += rd === null || rd === void 0 ? void 0 : rd.getValue(grid.host);
+                            count++;
+                        }
+                    }
+                    grid.addRowDefinition(total / count, false);
+                    _this.setRowValues();
+                    _this.resizeRow();
                     _this.forceUpdate();
                 } }),
-            "                ",
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "REMOVE ROW", onClick: function () {
-                    grid.removeRowDefinition(grid.rowCount - 1);
+            "  ",
+            (grid.rowCount > 1 && !this._removingRow) && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "REMOVE ROW", onClick: function () {
+                    var hasChild = false;
+                    for (var i = 0; i < grid.columnCount; ++i) {
+                        var child = grid.cells[(grid.rowCount - 1) + ":" + i];
+                        if (child === null || child === void 0 ? void 0 : child.children.length) {
+                            hasChild = true;
+                            break;
+                        }
+                    }
+                    if (hasChild) {
+                        _this._removingRow = true;
+                    }
+                    else {
+                        grid.removeRowDefinition(grid.rowCount - 1);
+                        _this.setRowValues();
+                        _this.resizeRow();
+                    }
                     _this.forceUpdate();
                 } }),
+            this._removingRow &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { tooltip: "", label: "This row is not empty. Removing it will delete all contained controls. Do you want to remove this row and delete all controls within?", value: " ", color: "grey" }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "REMOVE", onClick: function () {
+                            grid.removeRowDefinition(grid.rowCount - 1);
+                            _this.setRowValues();
+                            _this.resizeRow();
+                            _this.forceUpdate();
+                            _this._removingRow = false;
+                        } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "CANCEL", onClick: function () {
+                            _this._removingRow = false;
+                            _this.forceUpdate();
+                        } })),
             this.renderRows(),
+            this._editedRow && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "SAVE ROW CHANGES", onClick: function () {
+                    _this.resizeRow();
+                } }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "ADD COLUMN", onClick: function () {
-                    grid.addColumnDefinition(0.5);
+                    var total = 0;
+                    var count = 0;
+                    for (var i = 0; i < grid.columnCount; ++i) {
+                        var cd = grid.getColumnDefinition(i);
+                        if (cd === null || cd === void 0 ? void 0 : cd.isPercentage) {
+                            total += cd === null || cd === void 0 ? void 0 : cd.getValue(grid.host);
+                            count++;
+                        }
+                    }
+                    grid.addColumnDefinition(total / count, false);
+                    _this.setColumnValues();
+                    _this.resizeColumn();
                     _this.forceUpdate();
                 } }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "REMOVE COLUMN", onClick: function () {
-                    grid.removeColumnDefinition(grid.columnCount - 1);
-                    _this.forceUpdate();
-                } }),
+            " ",
+            (grid.columnCount > 1 && !this._removingColumn) &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "REMOVE COLUMN", onClick: function () {
+                        var hasChild = false;
+                        for (var i = 0; i < grid.rowCount; ++i) {
+                            var child = grid.cells[i + ":" + (grid.columnCount - 1)];
+                            if (child === null || child === void 0 ? void 0 : child.children.length) {
+                                hasChild = true;
+                                break;
+                            }
+                        }
+                        if (hasChild) {
+                            _this._removingColumn = true;
+                        }
+                        else {
+                            grid.removeColumnDefinition(grid.columnCount - 1);
+                            _this.setColumnValues();
+                            _this.resizeColumn();
+                        }
+                        _this.forceUpdate();
+                    } }),
+            this._removingColumn &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { tooltip: "", label: "This column is not empty. Removing it will delete all contained controls. Do you want to remove this column and delete all controls within?", value: " ", color: "grey" }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "REMOVE", onClick: function () {
+                            grid.removeColumnDefinition(grid.columnCount - 1);
+                            _this.setColumnValues();
+                            _this.resizeColumn();
+                            _this.forceUpdate();
+                            _this._removingColumn = false;
+                        } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "CANCEL", onClick: function () {
+                            _this._removingColumn = false;
+                            _this.forceUpdate();
+                        } })),
             this.renderColumns(),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "RESIZE COLUMNS/ROWS", onClick: function () {
+            this._editedColumn && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "SAVE COLUMN CHANGES", onClick: function () {
                     _this.resizeColumn();
                 } })));
     };
@@ -44030,7 +44250,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var strokeWeightIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/strokeWeightIcon.svg */ "./sharedUiComponents/imgs/strokeWeightIcon.svg");
-var checkboxIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/checkboxIcon.svg */ "./sharedUiComponents/imgs/checkboxIcon.svg");
+var checkboxIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/checkboxIconDark.svg */ "./sharedUiComponents/imgs/checkboxIconDark.svg");
 var scaleIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/scaleIcon.svg */ "./sharedUiComponents/imgs/scaleIcon.svg");
 var RadioButtonPropertyGridComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(RadioButtonPropertyGridComponent, _super);
@@ -44447,17 +44667,6 @@ var PropertyTabComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(PropertyTabComponent, _super);
     function PropertyTabComponent(props) {
         var _this = _super.call(this, props) || this;
-        _this._sizeOption = 2;
-        _this._sizeOptions = [
-            { label: "Web (1920)", value: 0 },
-            { label: "Phone (720)", value: 1 },
-            { label: "Square (1200)", value: 2 },
-        ];
-        _this._sizeValues = [
-            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1920, 1080),
-            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](750, 1334),
-            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1200, 1200)
-        ];
         _this.saveLocally = function () {
             try {
                 var json = JSON.stringify(_this.props.globalState.guiTexture.serializeContent());
@@ -44528,7 +44737,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 return [2 /*return*/];
             });
         }); };
-        _this.state = { currentNode: null, textureSize: new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1200, 1200) };
+        _this.state = { currentNode: null };
         _this._lockObject = new _sharedUiComponents_tabs_propertyGrids_lockObject__WEBPACK_IMPORTED_MODULE_8__["LockObject"]();
         _this.props.globalState.lockObject = _this._lockObject;
         _this.props.globalState.onSaveObservable.add(function () {
@@ -44544,7 +44753,6 @@ var PropertyTabComponent = /** @class */ (function (_super) {
             _this.forceUpdate();
         });
         _this.props.globalState.onLoadObservable.add(function (file) { return _this.load(file); });
-        _this._sizeOption = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].ReadBoolean("Responsive", true) ? 2 : _this._sizeOptions.length;
         return _this;
     }
     PropertyTabComponent.prototype.componentDidMount = function () {
@@ -44558,8 +44766,8 @@ var PropertyTabComponent = /** @class */ (function (_super) {
             }
         });
         this.props.globalState.onResizeObservable.add(function (newSize) {
-            _this.setState({ textureSize: newSize });
             _this.props.globalState.workbench.artBoardBackground._markAsDirty(true);
+            _this.forceUpdate();
         });
         this._onBuiltObserver = this.props.globalState.onBuiltObservable.add(function () {
             _this.forceUpdate();
@@ -44732,6 +44940,43 @@ var PropertyTabComponent = /** @class */ (function (_super) {
     PropertyTabComponent.prototype.render = function () {
         var _this = this;
         var _a, _b;
+        if (this.props.globalState.guiTexture == undefined)
+            return null;
+        var _sizeValues = [
+            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1920, 1080),
+            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1366, 768),
+            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1280, 800),
+            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](3840, 2160),
+            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](750, 1334),
+            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1125, 2436),
+            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1170, 2532),
+            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1284, 2778),
+            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1080, 2220),
+            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1080, 2340),
+            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1024, 1024),
+            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](2048, 2048),
+        ];
+        var _sizeOptions = [
+            { label: "Web (1920)", value: 0 },
+            { label: "Web (1366)", value: 1 },
+            { label: "Web (1280)", value: 2 },
+            { label: "Web (3840)", value: 3 },
+            { label: "iPhone 8 (750)", value: 4 },
+            { label: "iPhone X, 11 (1125)", value: 5 },
+            { label: "iPhone 12 (1170)", value: 6 },
+            { label: "iPhone Pro Max (1284)", value: 7 },
+            { label: "Google Pixel 4 (1080)", value: 8 },
+            { label: "Google Pixel 5 (1080)", value: 9 },
+            { label: "Square (1024)", value: 10 },
+            { label: "Square (2048)", value: 11 },
+        ];
+        var size = this.props.globalState.guiTexture.getSize();
+        var textureSize = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](size.width, size.height);
+        this._sizeOption = _sizeValues.findIndex(function (value) { return value.x == textureSize.x && value.y == textureSize.y; });
+        if (this._sizeOption < 0) {
+            this.props.globalState.onResponsiveChangeObservable.notifyObservers(false);
+            babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].WriteBoolean("Responsive", false);
+        }
         if (this.state.currentNode && this.props.globalState.workbench.selectedGuiNodes.length === 1) {
             return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "ge-propertyTab" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "header" },
@@ -44741,17 +44986,19 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 this.renderProperties(),
                 ((_b = (_a = this.state.currentNode) === null || _a === void 0 ? void 0 : _a.parent) === null || _b === void 0 ? void 0 : _b.typeName) === "Grid" &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_parentingPropertyGridComponent__WEBPACK_IMPORTED_MODULE_29__["ParentingPropertyGridComponent"], { control: this.state.currentNode, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable, lockObject: this._lockObject }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "DELETE ELEMENT", onClick: function () {
-                        var _a;
-                        (_a = _this.state.currentNode) === null || _a === void 0 ? void 0 : _a.dispose();
-                        _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-                    } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "COPY ELEMENT", onClick: function () {
-                        if (_this.state.currentNode) {
-                            _this.props.globalState.workbench.CopyGUIControl(_this.state.currentNode);
-                        }
-                    } })));
+                this.state.currentNode !== this.props.globalState.guiTexture.getChildren()[0] &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "DELETE ELEMENT", onClick: function () {
+                                var _a;
+                                (_a = _this.state.currentNode) === null || _a === void 0 ? void 0 : _a.dispose();
+                                _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                            } }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "COPY ELEMENT", onClick: function () {
+                                if (_this.state.currentNode) {
+                                    _this.props.globalState.workbench.CopyGUIControl(_this.state.currentNode);
+                                }
+                            } }))));
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "ge-propertyTab" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "header" },
@@ -44766,32 +45013,32 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "RESPONSIVE", iconLabel: "A responsive layout for the AdvancedDynamicTexture will resize the UI layout and reflow controls to accommodate different device screen sizes", icon: responsiveIcon, isSelected: function () { return babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].ReadBoolean("Responsive", true); }, onSelect: function (value) {
                         _this.props.globalState.onResponsiveChangeObservable.notifyObservers(value);
                         babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].WriteBoolean("Responsive", value);
-                        _this._sizeOption = _this._sizeOptions.length;
+                        _this._sizeOption = _sizeOptions.length;
                         if (value) {
                             _this._sizeOption = 0;
-                            _this.props.globalState.workbench.resizeGuiTexture(_this._sizeValues[_this._sizeOption]);
+                            _this.props.globalState.workbench.resizeGuiTexture(_sizeValues[_this._sizeOption]);
                         }
                         _this.forceUpdate();
                     } }),
                 babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].ReadBoolean("Responsive", true) &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_25__["OptionsLineComponent"], { label: "", iconLabel: "Size", options: this._sizeOptions, icon: canvasSizeIcon, target: this, propertyName: "_sizeOption", noDirectUpdate: true, onSelect: function (value) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_25__["OptionsLineComponent"], { label: "", iconLabel: "Size", options: _sizeOptions, icon: canvasSizeIcon, target: this, propertyName: "_sizeOption", noDirectUpdate: true, onSelect: function (value) {
                             _this._sizeOption = value;
-                            if (_this._sizeOption !== (_this._sizeOptions.length)) {
-                                var newSize = _this._sizeValues[_this._sizeOption];
+                            if (_this._sizeOption !== (_sizeOptions.length)) {
+                                var newSize = _sizeValues[_this._sizeOption];
                                 _this.props.globalState.workbench.resizeGuiTexture(newSize);
                             }
                             _this.forceUpdate();
                         } }),
-                this._sizeOption == (this._sizeOptions.length) &&
+                !babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].ReadBoolean("Responsive", true) &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "divider" },
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_26__["FloatLineComponent"], { icon: canvasSizeIcon, iconLabel: "Canvas Size", label: "W", target: this.state.textureSize, propertyName: "x", isInteger: true, min: 1, max: MAX_TEXTURE_SIZE, onChange: function (newvalue) {
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_26__["FloatLineComponent"], { icon: canvasSizeIcon, iconLabel: "Canvas Size", label: "W", target: textureSize, propertyName: "x", isInteger: true, min: 1, max: MAX_TEXTURE_SIZE, onChange: function (newvalue) {
                                 if (!isNaN(newvalue)) {
-                                    _this.props.globalState.workbench.resizeGuiTexture(new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](newvalue, _this.state.textureSize.y));
+                                    _this.props.globalState.workbench.resizeGuiTexture(new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](newvalue, textureSize.y));
                                 }
                             } }),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_26__["FloatLineComponent"], { icon: canvasSizeIcon, label: "H", target: this.state.textureSize, propertyName: "y", isInteger: true, min: 1, max: MAX_TEXTURE_SIZE, onChange: function (newvalue) {
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_26__["FloatLineComponent"], { icon: canvasSizeIcon, label: "H", target: textureSize, propertyName: "y", isInteger: true, min: 1, max: MAX_TEXTURE_SIZE, onChange: function (newvalue) {
                                 if (!isNaN(newvalue)) {
-                                    _this.props.globalState.workbench.resizeGuiTexture(new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](_this.state.textureSize.x, newvalue));
+                                    _this.props.globalState.workbench.resizeGuiTexture(new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](textureSize.x, newvalue));
                                 }
                             } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
@@ -45136,8 +45383,10 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
                 return;
                 break;
             case "Delete":
-                this.state.selectedEntity.dispose();
-                this.forceUpdate();
+                if (this.state.selectedEntity !== this.props.globalState.guiTexture.getChildren()[0]) {
+                    this.state.selectedEntity.dispose();
+                    this.forceUpdate();
+                }
                 break;
             default:
                 break;
@@ -45407,7 +45656,7 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TreeItemSelectableComponent, _super);
     function TreeItemSelectableComponent(props) {
         var _this = _super.call(this, props) || this;
-        _this.state = { dragOverLocation: _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].NONE, isHovered: false, isSelected: _this.props.entity === _this.props.selectedEntity, isExpanded: _this.props.mustExpand || _tools__WEBPACK_IMPORTED_MODULE_1__["Tools"].LookForItem(_this.props.entity, _this.props.selectedEntity) };
+        _this.state = { dragOverLocation: _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].NONE, isHovered: false, isSelected: _this.props.entity === _this.props.selectedEntity };
         _this._onSelectionChangedObservable = props.globalState.onSelectionChangedObservable.add(function (selection) {
             _this.setState({ isSelected: selection === _this.props.entity });
         });
@@ -45420,12 +45669,9 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
         return _this;
     }
     TreeItemSelectableComponent.prototype.switchExpandedState = function () {
-        this.setState({ isExpanded: !this.state.isExpanded });
+        this.props.entity.reservedDataStore.isExpanded = !this.props.entity.reservedDataStore.isExpanded;
     };
     TreeItemSelectableComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
-        if (!nextState.isExpanded && this.state.isExpanded) {
-            return true;
-        }
         //if the next entity is going to be selected then we want to highlight it so update
         if (nextProps.entity === nextProps.selectedEntity) {
             nextState.isSelected = true;
@@ -45436,7 +45682,6 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
         }
         if (nextProps.selectedEntity) {
             if (_tools__WEBPACK_IMPORTED_MODULE_1__["Tools"].LookForItem(nextProps.entity, nextProps.selectedEntity)) {
-                nextState.isExpanded = true;
                 return true;
             }
         }
@@ -45461,14 +45706,14 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
         this.props.globalState.onSelectionChangedObservable.notifyObservers(entity);
         this.props.globalState.selectionLock = true;
     };
-    TreeItemSelectableComponent.prototype.renderChildren = function () {
+    TreeItemSelectableComponent.prototype.renderChildren = function (isExpanded) {
         var _this = this;
         var entity = this.props.entity;
-        if (!entity.getChildren && !entity.children || !this.state.isExpanded) {
+        if (!entity.getChildren && !entity.children || !isExpanded) {
             return null;
         }
         var children = _tools__WEBPACK_IMPORTED_MODULE_1__["Tools"].SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
-        if (entity.typeName === "StackPanel") {
+        if (entity.typeName === "StackPanel" || entity.typeName === "VirtualKeyboard") {
             children.reverse();
         }
         return (children.map(function (item, i) {
@@ -45484,16 +45729,15 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
             paddingLeft: (10 * (this.props.offset + 0.5)) - 20 + "px"
         };
         var entity = this.props.entity;
-        var chevron = this.state.isExpanded ? react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("img", { src: expandedIcon, className: "icon" }) : react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("img", { src: collapsedIcon, className: "icon" });
-        var children = entity.getClassName() === "MultiMaterial" ? [] : _tools__WEBPACK_IMPORTED_MODULE_1__["Tools"].SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
-        var hasChildren = children.length > 0;
         if (!entity.reservedDataStore) {
             entity.reservedDataStore = {};
+            entity.reservedDataStore.isExpanded = true;
         }
-        entity.reservedDataStore.setExpandedState = function (value) {
-            _this.setState({ isExpanded: value });
-        };
-        entity.reservedDataStore.isExpanded = this.state.isExpanded;
+        var isExpanded = entity.reservedDataStore.isExpanded || _tools__WEBPACK_IMPORTED_MODULE_1__["Tools"].LookForItem(this.props.entity, this.props.selectedEntity);
+        entity.reservedDataStore.isExpanded = isExpanded;
+        var chevron = isExpanded ? react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("img", { src: expandedIcon, className: "icon" }) : react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("img", { src: collapsedIcon, className: "icon" });
+        var children = entity.getClassName() === "MultiMaterial" ? [] : _tools__WEBPACK_IMPORTED_MODULE_1__["Tools"].SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
+        var hasChildren = children.length > 0;
         if (this.props.filter) {
             var lowerCaseFilter_1 = this.props.filter.toLowerCase();
             if (!entity.name || entity.name.toLowerCase().indexOf(lowerCaseFilter_1) === -1) {
@@ -45533,7 +45777,7 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
                 hasChildren &&
                     react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "arrow icon", onClick: function () { return _this.switchExpandedState(); } }, chevron),
                 react__WEBPACK_IMPORTED_MODULE_3__["createElement"](_entities_gui_controlTreeItemComponent__WEBPACK_IMPORTED_MODULE_5__["ControlTreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, control: entity, onClick: function () { }, isHovered: this.state.isHovered, dragOverHover: this.dragOverHover, dragOverLocation: this.state.dragOverLocation })),
-            this.renderChildren()));
+            this.renderChildren(isExpanded)));
     };
     TreeItemSelectableComponent.prototype.dragOver = function (event) {
         //check the positiions of the mouse cursor.
@@ -45648,12 +45892,13 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         _this._constraintDirection = ConstraintDirection.NONE;
         _this._forcePanning = false;
         _this._forceZooming = false;
+        _this._forceMoving = false;
         _this._forceSelecting = true;
         _this._outlines = false;
-        _this._isOverGUINode = false;
+        _this._isOverGUINode = [];
         _this._clipboard = [];
         _this._selectAll = false;
-        _this._cameraRadias = 1500;
+        _this._cameraMaxRadiasFactor = 16384; // 2^13
         _this.keyEvent = function (evt) {
             _this._ctrlKeyIsPressed = evt.ctrlKey;
             _this._altKeyIsPressed = evt.altKey;
@@ -45667,7 +45912,9 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             if (evt.key === "Delete") {
                 if (!_this.props.globalState.lockObject.lock) {
                     _this._selectedGuiNodes.forEach(function (guiNode) {
-                        guiNode.dispose();
+                        if (guiNode !== _this.globalState.guiTexture.getChildren()[0]) {
+                            guiNode.dispose();
+                        }
                     });
                     _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                 }
@@ -45685,10 +45932,17 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                 else if (evt.key === "c") {
                     _this.copyToClipboard();
                 }
-                else if (evt.key === "v") {
+                else if (evt.key === "v" && !_this._pasted) {
                     _this.globalState.onSelectionChangedObservable.notifyObservers(null);
                     _this.pasteFromClipboard();
+                    _this._pasted = true;
                 }
+            }
+            else if (!_this._ctrlKeyIsPressed) {
+                _this._pasted = false;
+            }
+            if (_this._forceZooming) {
+                _this._canvas.style.cursor = _this._altKeyIsPressed ? "zoom-out" : "zoom-in";
             }
         };
         _this.blurEvent = function () {
@@ -45727,32 +45981,62 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         props.globalState.onPanObservable.add(function () {
             _this._forcePanning = !_this._forcePanning;
             _this._forceSelecting = false;
+            _this._forceMoving = false;
             _this._forceZooming = false;
             if (!_this._forcePanning) {
                 _this.globalState.onSelectionButtonObservable.notifyObservers();
             }
             else {
-                _this._canvas.style.cursor = "move";
+                _this._canvas.style.cursor = "grab";
             }
+            _this.updateHitTest(_this.globalState.guiTexture.getChildren()[0], _this._forceSelecting);
+            _this.artBoardBackground.isHitTestVisible = true;
         });
-        props.globalState.onSelectionButtonObservable.add(function () {
-            _this._forceSelecting = true;
+        props.globalState.onMoveObservable.add(function () {
+            _this._forceMoving = !_this._forceMoving;
             _this._forcePanning = false;
             _this._forceZooming = false;
+            _this._forceSelecting = false;
+            _this.updateHitTest(_this.globalState.guiTexture.getChildren()[0], _this._forceSelecting);
+            if (!_this._forceSelecting) {
+                _this.updateHitTestForSelection(true);
+            }
+            if (!_this._forceMoving) {
+                _this.globalState.onSelectionButtonObservable.notifyObservers();
+            }
+            else {
+                _this._canvas.style.cursor = "move";
+            }
+            _this.artBoardBackground.isHitTestVisible = true;
+        });
+        props.globalState.onSelectionButtonObservable.add(function () {
+            _this._forceSelecting = !_this._forceSelecting;
+            _this._forcePanning = false;
+            _this._forceZooming = false;
+            _this._forceMoving = false;
             _this._canvas.style.cursor = "default";
+            _this.updateHitTest(_this.globalState.guiTexture.getChildren()[0], _this._forceSelecting);
+            if (_this._forceMoving) {
+                _this.updateHitTestForSelection(true);
+            }
+            _this.artBoardBackground.isHitTestVisible = true;
         });
         props.globalState.onZoomObservable.add(function () {
             _this._forceZooming = !_this._forceZooming;
             _this._forcePanning = false;
             _this._forceSelecting = false;
+            _this._forceMoving = false;
             if (!_this._forceZooming) {
                 _this.globalState.onSelectionButtonObservable.notifyObservers();
             }
             else {
                 _this._canvas.style.cursor = "zoom-in";
             }
+            _this.updateHitTest(_this.globalState.guiTexture.getChildren()[0], _this._forceSelecting);
+            _this.artBoardBackground.isHitTestVisible = true;
         });
         props.globalState.onFitToWindowObservable.add(function () {
+            _this.setCameraRadius();
             for (var i = 0; i < 2; ++i) {
                 _this._camera.alpha = -Math.PI / 2;
                 _this._camera.beta = 0;
@@ -45773,6 +46057,9 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         // Hotkey shortcuts
         _this.props.globalState.hostDocument.addEventListener("keydown", _this.keyEvent, false);
         _this.props.globalState.hostDocument.defaultView.addEventListener("blur", _this.blurEvent, false);
+        props.globalState.onWindowResizeObservable.add(function () {
+            _this._engine.resize();
+        });
         _this.props.globalState.workbench = _this;
         return _this;
     }
@@ -45797,6 +46084,27 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
+    WorkbenchComponent.prototype.updateHitTest = function (guiControl, value) {
+        var _this = this;
+        guiControl.isHitTestVisible = value;
+        if (this.props.globalState.workbench.isContainer(guiControl)) {
+            guiControl.children.forEach(function (child) {
+                _this.updateHitTest(child, value);
+            });
+        }
+    };
+    WorkbenchComponent.prototype.updateHitTestForSelection = function (value) {
+        if (this._forceSelecting && !value)
+            return;
+        this.selectedGuiNodes.forEach(function (control) {
+            control.isHitTestVisible = value;
+        });
+    };
+    WorkbenchComponent.prototype.setCameraRadius = function () {
+        var size = this.props.globalState.guiTexture.getSize();
+        this._cameraRadias = size.width > size.height ? size.width : size.height;
+        this._cameraRadias += this._cameraRadias - (this._cameraRadias / 1.5);
+    };
     WorkbenchComponent.prototype.copyToClipboard = function () {
         var _this = this;
         if (this._selectAll) {
@@ -45856,10 +46164,11 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         this.props.globalState.hostDocument.removeEventListener("keyup", this.keyEvent);
         this.props.globalState.hostDocument.removeEventListener("keydown", this.keyEvent);
         this.props.globalState.hostDocument.defaultView.removeEventListener("blur", this.blurEvent);
+        this._engine.dispose();
     };
     WorkbenchComponent.prototype.loadFromJson = function (serializationObject) {
         this.globalState.onSelectionChangedObservable.notifyObservers(null);
-        this.globalState.guiTexture.parseContent(serializationObject);
+        this.globalState.guiTexture.parseContent(serializationObject, true);
         this.loadToEditor();
     };
     WorkbenchComponent.prototype.loadFromSnippet = function (snippedId) {
@@ -45868,7 +46177,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                 switch (_a.label) {
                     case 0:
                         this.globalState.onSelectionChangedObservable.notifyObservers(null);
-                        return [4 /*yield*/, this.globalState.guiTexture.parseFromSnippetAsync(snippedId)];
+                        return [4 /*yield*/, this.globalState.guiTexture.parseFromSnippetAsync(snippedId, true)];
                     case 1:
                         _a.sent();
                         this.loadToEditor();
@@ -45885,6 +46194,8 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     };
     WorkbenchComponent.prototype.loadToEditor = function () {
         var _this = this;
+        var size = this.globalState.guiTexture.getSize();
+        this.resizeGuiTexture(new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector2"](size.width, size.height));
         var children = this.globalState.guiTexture.getChildren();
         children[0].children.forEach(function (guiElement) {
             if (guiElement.name === "Art-Board-Background" && guiElement.typeName === "Rectangle") {
@@ -45899,6 +46210,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         else {
             this.props.globalState.guiTexture.getChildren()[0].children.push(this.props.globalState.workbench.artBoardBackground);
         }
+        this._isOverGUINode = [];
     };
     WorkbenchComponent.prototype.changeSelectionHighlight = function (value) {
         var _this = this;
@@ -45912,6 +46224,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                 node.highlightLineWidth = 10;
             }
         });
+        this.updateHitTestForSelection(value);
     };
     WorkbenchComponent.prototype.resizeGuiTexture = function (newvalue) {
         this._textureMesh.scaling.x = newvalue.x;
@@ -45919,6 +46232,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         this.globalState.guiTexture.scaleTo(newvalue.x, newvalue.y);
         this.globalState.guiTexture.markAsDirty();
         this.globalState.onResizeObservable.notifyObservers(newvalue);
+        this.globalState.onFitToWindowObservable.notifyObservers();
     };
     WorkbenchComponent.prototype.findNodeFromGuiElement = function (guiControl) {
         return this.nodes.filter(function (n) { return n === guiControl; })[0];
@@ -45936,6 +46250,8 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             case "Ellipse":
             case "Grid":
             case "ScrollViewer":
+            case "Container":
+            case "VirtualKeyboard":
                 return true;
             default:
                 return false;
@@ -45950,14 +46266,27 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         guiControl.onPointerDownObservable.add(function (evt) {
             if (!_this.isUp || evt.buttonIndex > 0)
                 return;
-            _this.isSelected(true, guiControl);
-            _this.isUp = false;
+            if (_this._forceSelecting) {
+                _this.isSelected(true, guiControl);
+                _this.isUp = false;
+            }
         });
         guiControl.onPointerEnterObservable.add(function (evt) {
-            _this._isOverGUINode = true;
+            if (_this._isOverGUINode.indexOf(guiControl) === -1) {
+                _this._isOverGUINode.push(guiControl);
+            }
         });
         guiControl.onPointerOutObservable.add(function (evt) {
-            _this._isOverGUINode = false;
+            var index = _this._isOverGUINode.indexOf(guiControl);
+            if (index !== -1) {
+                _this._isOverGUINode.splice(index, 1);
+            }
+        });
+        guiControl.onDisposeObservable.add(function (evt) {
+            var index = _this._isOverGUINode.indexOf(guiControl);
+            if (index !== -1) {
+                _this._isOverGUINode.splice(index, 1);
+            }
         });
         if (this.isContainer(guiControl)) {
             guiControl.children.forEach(function (child) {
@@ -45965,6 +46294,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             });
         }
         guiControl.isReadOnly = true;
+        guiControl.isHitTestVisible = true;
         return guiControl;
     };
     WorkbenchComponent.prototype.parent = function (dropLocationControl) {
@@ -45982,7 +46312,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                         if (dropLocationControl.parent.typeName != "Grid") {
                             draggedControlParent.removeControl(draggedControl);
                             var index = dropLocationControl.parent.children.indexOf(dropLocationControl);
-                            var reversed = dropLocationControl.parent.typeName == "StackPanel";
+                            var reversed = dropLocationControl.parent.typeName === "StackPanel" || dropLocationControl.parent.typeName === "VirtualKeyboard";
                             index = this._adjustParentingIndex(index, reversed); //adjusting index to be before or after based on where the control is over
                             dropLocationControl.parent.children.splice(index, 0, draggedControl);
                             draggedControl.parent = dropLocationControl.parent;
@@ -46134,12 +46464,20 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     WorkbenchComponent.prototype.onDown = function (evt) {
         var _a;
         (_a = this._rootContainer.current) === null || _a === void 0 ? void 0 : _a.setPointerCapture(evt.pointerId);
-        if (!this._isOverGUINode && !evt.button) {
-            this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+        if ((this._isOverGUINode.length === 0) && !evt.button) {
+            if (this._forceSelecting) {
+                this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+            }
+            return;
         }
         var pos = this.getGroundPosition();
-        this._mouseStartPointX = pos ? pos.x : this._mouseStartPointX;
-        this._mouseStartPointY = pos ? -pos.z : this._mouseStartPointY;
+        if (pos === null && this._forceSelecting && !evt.button) {
+            this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+        }
+        if (this._forceMoving) {
+            this._mouseStartPointX = pos ? pos.x : this._mouseStartPointX;
+            this._mouseStartPointY = pos ? -pos.z : this._mouseStartPointY;
+        }
     };
     WorkbenchComponent.prototype.onUp = function (evt) {
         var _a;
@@ -46155,16 +46493,15 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         var canvas = document.getElementById("workbench-canvas");
         this._canvas = canvas;
         // Associate a Babylon Engine to it.
-        var engine = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Engine"](canvas);
+        this._engine = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Engine"](canvas);
         // Create our first scene.
-        this._scene = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Scene"](engine);
+        this._scene = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Scene"](this._engine);
         var clearColor = 204 / 255.0;
         this._scene.clearColor = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Color4"](clearColor, clearColor, clearColor, 1.0);
-        this._camera = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["ArcRotateCamera"]("Camera", -Math.PI / 2, 0, this._cameraRadias, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector3"].Zero(), this._scene);
         var light = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["HemisphericLight"]("light1", babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Axis"].Y, this._scene);
         light.intensity = 0.9;
         var textureSize = 1024;
-        this._textureMesh = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Mesh"].CreateGround("GuiCanvas", 1, 1, 1, this._scene);
+        this._textureMesh = Object(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["CreateGround"])("GuiCanvas", { width: 1, height: 1, subdivisions: 1 }, this._scene);
         this._textureMesh.scaling.x = textureSize;
         this._textureMesh.scaling.z = textureSize;
         this.globalState.guiTexture = babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["AdvancedDynamicTexture"].CreateForMesh(this._textureMesh, textureSize, textureSize, true);
@@ -46175,14 +46512,18 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         this.artBoardBackground.background = "white";
         this.artBoardBackground.thickness = 0;
         this.globalState.guiTexture.addControl(this.artBoardBackground);
+        this.setCameraRadius();
+        this._camera = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["ArcRotateCamera"]("Camera", -Math.PI / 2, 0, this._cameraRadias, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector3"].Zero(), this._scene);
+        this._camera.maxZ = this._cameraMaxRadiasFactor * 2;
         this.addControls(this._scene, this._camera);
         this._scene.getEngine().onCanvasPointerOutObservable.clear();
+        this._scene.doNotHandleCursors = true;
         // Watch for browser/canvas resize events
         window.addEventListener("resize", function () {
-            engine.resize();
+            _this._engine.resize();
         });
         this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("Please note: This editor is still a work in progress. You may submit feedback to msDestiny14 on GitHub.");
-        engine.runRenderLoop(function () { _this._scene.render(); });
+        this._engine.runRenderLoop(function () { _this._scene.render(); });
         this.globalState.onNewSceneObservable.notifyObservers(this.globalState.guiTexture.getScene());
         this.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
     };
@@ -46193,7 +46534,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         var _a;
         camera.inertia = 0.7;
         camera.lowerRadiusLimit = 10;
-        camera.upperRadiusLimit = 2500;
+        camera.upperRadiusLimit = this._cameraMaxRadiasFactor;
         camera.upperBetaLimit = Math.PI / 2 - 0.1;
         camera.angularSensibilityX = camera.angularSensibilityY = 500;
         var plane = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Plane"].FromPositionAndNormal(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector3"].Zero(), babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Axis"].Y);
@@ -46218,9 +46559,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             _this.zooming(delta, scene, camera, plane, inertialPanning);
         };
         var zoomFnMouse = function (p, e) {
-            var newPos = _this.getPosition(scene, camera, plane);
-            var deltaVector = initialPos.subtract(newPos);
-            _this.zooming(deltaVector.x > 0 ? -10 : 10, scene, camera, plane, inertialPanning);
+            _this.zooming(_this._altKeyIsPressed ? -10 : 10, scene, camera, plane, inertialPanning);
         };
         var removeObservers = function () {
             scene.onPointerObservable.removeCallback(panningFn);
@@ -46228,8 +46567,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         };
         scene.onPointerObservable.add(function (p, e) {
             removeObservers();
-            if (p.event.button !== 0 || _this._forcePanning ||
-                _this._altKeyIsPressed) {
+            if (p.event.button !== 0 || _this._forcePanning) {
                 initialPos = _this.getPosition(scene, camera, plane);
                 scene.onPointerObservable.add(panningFn, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["PointerEventTypes"].POINTERMOVE);
                 _this._panning = true;
@@ -46249,29 +46587,33 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         }, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["PointerEventTypes"].POINTERUP);
         scene.onKeyboardObservable.add(function (k, e) {
             switch (k.event.key) {
-                case "q": //select
-                case "Q":
+                case "s": //select
+                case "S":
                     if (!_this._forceSelecting)
                         _this.globalState.onSelectionButtonObservable.notifyObservers();
                     break;
-                case "w": //pan
-                case "W":
+                case "p": //pan
+                case "P":
                     if (!_this._forcePanning)
                         _this.globalState.onPanObservable.notifyObservers();
                     break;
-                case "e": //zoom
-                case "E":
+                case "z": //zoom
+                case "Z":
                     if (!_this._forceZooming)
                         _this.globalState.onZoomObservable.notifyObservers();
                     break;
-                case "r": //outlines
-                case "R":
+                case "g": //outlines
+                case "G":
                     _this.globalState.onOutlinesObservable.notifyObservers();
                     break;
-                case "0": //fit to window
-                    if (_this._altKeyIsPressed) {
-                        _this.globalState.onFitToWindowObservable.notifyObservers();
-                    }
+                case "m": //move
+                case "M":
+                    if (!_this._forceMoving)
+                        _this.globalState.onMoveObservable.notifyObservers();
+                    break;
+                case "f": //fit to window
+                case "F":
+                    _this.globalState.onFitToWindowObservable.notifyObservers();
                     break;
                 default:
                     break;
@@ -46441,6 +46783,7 @@ var GlobalState = /** @class */ (function () {
         this.onFitToWindowObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onPanObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onSelectionButtonObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onMoveObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onLoadObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onSaveObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onSnippetLoadObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
@@ -46451,6 +46794,7 @@ var GlobalState = /** @class */ (function () {
         this.onPropertyGridUpdateRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onDraggingEndObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onDraggingStartObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onWindowResizeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.draggedControl = null;
         this.isSaving = false;
         this.lockObject = new _sharedUiComponents_tabs_propertyGrids_lockObject__WEBPACK_IMPORTED_MODULE_1__["LockObject"]();
@@ -46696,8 +47040,8 @@ var GUINodeTools = /** @class */ (function () {
             case "Grid":
                 element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["Grid"]("Grid");
                 element.isHighlighted = true;
-                element.addColumnDefinition(0.5);
-                element.addRowDefinition(0.5);
+                element.addColumnDefinition(1.0, false);
+                element.addRowDefinition(1.0, false);
                 element.isPointerBlocker = true;
                 return element;
             case "DisplayGrid":
@@ -47269,14 +47613,14 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 
 /***/ }),
 
-/***/ "./sharedUiComponents/imgs/checkboxIcon.svg":
-/*!**************************************************!*\
-  !*** ./sharedUiComponents/imgs/checkboxIcon.svg ***!
-  \**************************************************/
+/***/ "./sharedUiComponents/imgs/checkboxIconDark.svg":
+/*!******************************************************!*\
+  !*** ./sharedUiComponents/imgs/checkboxIconDark.svg ***!
+  \******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M25,12.76A2.21,2.21,0,0,1,27.24,15V25A2.21,2.21,0,0,1,25,27.24H15A2.21,2.21,0,0,1,12.76,25V15A2.21,2.21,0,0,1,15,12.76ZM25,14H15a1,1,0,0,0-1,1V25a1,1,0,0,0,1,1H25a1,1,0,0,0,1-1V15A1,1,0,0,0,25,14Zm-6.64,8,5.21-5.2a.59.59,0,0,1,.85,0,.61.61,0,0,1,.06.78l-.06.07-5.63,5.63a.6.6,0,0,1-.79.06L18,23.24l-2.41-2.41a.61.61,0,0,1,0-.85.6.6,0,0,1,.79-.06l.06.06,2,2,5.21-5.2Z' style='fill:%23fff'/%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M25,12.76A2.21,2.21,0,0,1,27.24,15V25A2.21,2.21,0,0,1,25,27.24H15A2.21,2.21,0,0,1,12.76,25V15A2.21,2.21,0,0,1,15,12.76ZM25,14H15a1,1,0,0,0-1,1V25a1,1,0,0,0,1,1H25a1,1,0,0,0,1-1V15A1,1,0,0,0,25,14Zm-6.64,8,5.21-5.2a.59.59,0,0,1,.85,0,.61.61,0,0,1,.06.78l-.06.07-5.63,5.63a.6.6,0,0,1-.79.06L18,23.24l-2.41-2.41a.61.61,0,0,1,0-.85.6.6,0,0,1,.79-.06l.06.06,2,2,5.21-5.2Z' style='fill:%23333'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -48756,15 +49100,16 @@ __webpack_require__.r(__webpack_exports__);
 var Tools = /** @class */ (function () {
     function Tools() {
     }
-    Tools.LookForItem = function (item, selectedEntity) {
-        if (item === selectedEntity) {
+    Tools.LookForItem = function (item, selectedEntity, firstIteration) {
+        if (firstIteration === void 0) { firstIteration = true; }
+        if (!firstIteration && item === selectedEntity) {
             return true;
         }
         var children = item.getChildren ? item.getChildren() : item.children;
-        if (children && item.getClassName() !== "MultiMaterial") {
+        if (children) {
             for (var _i = 0, children_1 = children; _i < children_1.length; _i++) {
                 var child = children_1[_i];
-                if (Tools.LookForItem(child, selectedEntity)) {
+                if (Tools.LookForItem(child, selectedEntity, false)) {
                     return true;
                 }
             }
@@ -49033,6 +49378,7 @@ var WorkbenchEditor = /** @class */ (function (_super) {
         }
         rootElement.style.gridTemplateColumns = this.buildColumnLayout();
         this._startX = evt.clientX;
+        this.props.globalState.onWindowResizeObservable.notifyObservers();
     };
     WorkbenchEditor.prototype.buildColumnLayout = function () {
         return this._leftWidth + "px 4px " + this._toolBarIconSize + "px calc(100% - " + (this._leftWidth + this._toolBarIconSize + 8 + this._rightWidth) + "px) 4px " + this._rightWidth + "px";
@@ -49134,11 +49480,6 @@ var WorkbenchEditor = /** @class */ (function (_super) {
                 label: "TextButton",
                 icon: buttonIcon,
                 onClick: function () { _this.onCreate("TextButton"); }
-            },
-            {
-                label: "ImageButton",
-                icon: buttonIcon,
-                onClick: function () { _this.onCreate("ImageButton"); }
             },
             {
                 label: "Checkbox",

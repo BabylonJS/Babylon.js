@@ -3,7 +3,7 @@ import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
 import { NodeMaterial } from '../../nodeMaterial';
-import { _TypeStore } from '../../../../Misc/typeStore';
+import { RegisterClass } from '../../../../Misc/typeStore';
 import { InputBlock } from '../Input/inputBlock';
 import { NodeMaterialSystemValues } from '../../Enums/nodeMaterialSystemValues';
 import { ReflectionTextureBaseBlock } from './reflectionTextureBaseBlock';
@@ -172,4 +172,4 @@ export class ReflectionTextureBlock extends ReflectionTextureBaseBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.ReflectionTextureBlock"] = ReflectionTextureBlock;
+RegisterClass("BABYLON.ReflectionTextureBlock", ReflectionTextureBlock);

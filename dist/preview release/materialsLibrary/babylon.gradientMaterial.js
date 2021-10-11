@@ -741,7 +741,7 @@ var GradientMaterial = /** @class */ (function (_super) {
     return GradientMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.GradientMaterial"] = GradientMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.GradientMaterial", GradientMaterial);
 
 
 /***/ }),

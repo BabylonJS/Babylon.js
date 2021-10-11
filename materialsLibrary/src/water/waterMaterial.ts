@@ -21,11 +21,12 @@ import { SubMesh } from "babylonjs/Meshes/subMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Camera } from "babylonjs/Cameras/camera";
 import { Scene } from "babylonjs/scene";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 
 import "./water.fragment";
 import "./water.vertex";
 import { EffectFallbacks } from 'babylonjs/Materials/effectFallbacks';
+import { CreateGround } from "babylonjs/Meshes/Builders/groundBuilder";
 
 class WaterMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
     public BUMP = false;
@@ -773,9 +774,9 @@ export class WaterMaterial extends PushMaterial {
     }
 
     public static CreateDefaultMesh(name: string, scene: Scene): Mesh {
-        var mesh = Mesh.CreateGround(name, 512, 512, 32, scene, false);
+        var mesh = CreateGround(name, { width: 512, height: 512, subdivisions: 32, updatable: false }, scene);
         return mesh;
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.WaterMaterial"] = WaterMaterial;
+RegisterClass("BABYLON.WaterMaterial", WaterMaterial);

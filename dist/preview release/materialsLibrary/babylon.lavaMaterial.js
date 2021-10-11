@@ -877,7 +877,7 @@ var LavaMaterial = /** @class */ (function (_super) {
     return LavaMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.LavaMaterial"] = LavaMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.LavaMaterial", LavaMaterial);
 
 
 /***/ }),

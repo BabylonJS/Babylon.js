@@ -772,7 +772,7 @@ var CellMaterial = /** @class */ (function (_super) {
     return CellMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.CellMaterial"] = CellMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.CellMaterial", CellMaterial);
 
 
 /***/ }),
@@ -1021,7 +1021,7 @@ var CustomMaterial = /** @class */ (function (_super) {
     return CustomMaterial;
 }(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["StandardMaterial"]));
 
-babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.CustomMaterial"] = CustomMaterial;
+Object(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.CustomMaterial", CustomMaterial);
 
 
 /***/ }),
@@ -1304,7 +1304,7 @@ var PBRCustomMaterial = /** @class */ (function (_super) {
     return PBRCustomMaterial;
 }(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["PBRMaterial"]));
 
-babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.PBRCustomMaterial"] = PBRCustomMaterial;
+Object(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.PBRCustomMaterial", PBRCustomMaterial);
 
 
 /***/ }),
@@ -1706,7 +1706,7 @@ var FireMaterial = /** @class */ (function (_super) {
     return FireMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.FireMaterial"] = FireMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.FireMaterial", FireMaterial);
 
 
 /***/ }),
@@ -2287,7 +2287,7 @@ var FurMaterial = /** @class */ (function (_super) {
     return FurMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.FurMaterial"] = FurMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.FurMaterial", FurMaterial);
 
 
 /***/ }),
@@ -2647,7 +2647,7 @@ var GradientMaterial = /** @class */ (function (_super) {
     return GradientMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.GradientMaterial"] = GradientMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.GradientMaterial", GradientMaterial);
 
 
 /***/ }),
@@ -2982,7 +2982,7 @@ var GridMaterial = /** @class */ (function (_super) {
     return GridMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.GridMaterial"] = GridMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.GridMaterial", GridMaterial);
 
 
 /***/ }),
@@ -3559,7 +3559,7 @@ var LavaMaterial = /** @class */ (function (_super) {
     return LavaMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.LavaMaterial"] = LavaMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.LavaMaterial", LavaMaterial);
 
 
 /***/ }),
@@ -4211,7 +4211,7 @@ var MixMaterial = /** @class */ (function (_super) {
     return MixMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.MixMaterial"] = MixMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.MixMaterial", MixMaterial);
 
 
 /***/ }),
@@ -4635,7 +4635,7 @@ var NormalMaterial = /** @class */ (function (_super) {
     return NormalMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.NormalMaterial"] = NormalMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.NormalMaterial", NormalMaterial);
 
 
 /***/ }),
@@ -4976,7 +4976,7 @@ var ShadowOnlyMaterial = /** @class */ (function (_super) {
     return ShadowOnlyMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.ShadowOnlyMaterial"] = ShadowOnlyMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.ShadowOnlyMaterial", ShadowOnlyMaterial);
 
 
 /***/ }),
@@ -5358,7 +5358,7 @@ var SimpleMaterial = /** @class */ (function (_super) {
     return SimpleMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.SimpleMaterial"] = SimpleMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.SimpleMaterial", SimpleMaterial);
 
 
 /***/ }),
@@ -5786,7 +5786,7 @@ var SkyMaterial = /** @class */ (function (_super) {
     return SkyMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.SkyMaterial"] = SkyMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.SkyMaterial", SkyMaterial);
 
 
 /***/ }),
@@ -6298,7 +6298,7 @@ var TerrainMaterial = /** @class */ (function (_super) {
     return TerrainMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.TerrainMaterial"] = TerrainMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.TerrainMaterial", TerrainMaterial);
 
 
 /***/ }),
@@ -6723,7 +6723,7 @@ var TriPlanarMaterial = /** @class */ (function (_super) {
     return TriPlanarMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.TriPlanarMaterial"] = TriPlanarMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.TriPlanarMaterial", TriPlanarMaterial);
 
 
 /***/ }),
@@ -7510,7 +7510,7 @@ var WaterMaterial = /** @class */ (function (_super) {
         return mat;
     };
     WaterMaterial.CreateDefaultMesh = function (name, scene) {
-        var mesh = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Mesh"].CreateGround(name, 512, 512, 32, scene, false);
+        var mesh = Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["CreateGround"])(name, { width: 512, height: 512, subdivisions: 32, updatable: false }, scene);
         return mesh;
     };
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
@@ -7600,7 +7600,7 @@ var WaterMaterial = /** @class */ (function (_super) {
     return WaterMaterial;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["PushMaterial"]));
 
-babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.WaterMaterial"] = WaterMaterial;
+Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["RegisterClass"])("BABYLON.WaterMaterial", WaterMaterial);
 
 
 /***/ }),

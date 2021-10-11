@@ -56089,6 +56089,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
 var PreviewManager = /** @class */ (function () {
     function PreviewManager(targetCanvas, globalState) {
         var _this = this;
@@ -56240,7 +56242,6 @@ var PreviewManager = /** @class */ (function () {
                 this._camera.radius = this._globalState.previewType === _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].Explosion ? 50 : this._globalState.previewType === _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].DefaultParticleSystem ? 6 : 20;
                 this._camera.upperRadiusLimit = 5000;
                 this._globalState.particleSystemBlendMode = (_b = (_a = this._particleSystem) === null || _a === void 0 ? void 0 : _a.blendMode) !== null && _b !== void 0 ? _b : babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["ParticleSystem"].BLENDMODE_STANDARD;
-                ;
                 break;
             }
         }
@@ -56288,10 +56289,12 @@ var PreviewManager = /** @class */ (function () {
                         });
                         return;
                     case _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].Sphere:
-                        this._meshes.push(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateSphere("dummy-sphere", 32, 2, this._scene));
+                        this._meshes.push(Object(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["CreateSphere"])("dummy-sphere", { segments: 32, diameter: 2 }, this._scene));
                         break;
                     case _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].Torus:
-                        this._meshes.push(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateTorus("dummy-torus", 2, 0.5, 32, this._scene));
+                        this._meshes.push(Object(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["CreateTorus"])("dummy-torus", {
+                            diameter: 2, thickness: 0.5, tessellation: 32
+                        }, this._scene));
                         break;
                     case _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].Cylinder:
                         babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["SceneLoader"].AppendAsync("https://models.babylonjs.com/", "roundedCylinder.glb", this._scene).then(function () {
@@ -56301,7 +56304,7 @@ var PreviewManager = /** @class */ (function () {
                         });
                         return;
                     case _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].Plane:
-                        var plane = babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateGround("dummy-plane", 2, 2, 128, this._scene);
+                        var plane = Object(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["CreateGround"])("dummy-plane", { width: 2, height: 2, subdivisions: 128 }, this._scene);
                         plane.scaling.y = -1;
                         plane.rotation.x = Math.PI;
                         this._meshes.push(plane);
@@ -56358,7 +56361,7 @@ var PreviewManager = /** @class */ (function () {
                         this._loadParticleSystem(this._globalState.previewType);
                         return;
                     case _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].Custom:
-                        babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["FileTools"].ReadFile(this._globalState.previewFile, function (json) {
+                        Object(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["ReadFile"])(this._globalState.previewFile, function (json) {
                             _this._particleSystem = babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["ParticleSystem"].Parse(JSON.parse(json), _this._scene, "");
                             _this._particleSystem.start();
                             _this._prepareScene();
