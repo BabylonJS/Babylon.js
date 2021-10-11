@@ -30,7 +30,7 @@ import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData, GLTFLoad
 import { IAnimationKey, AnimationKeyInterpolation } from 'babylonjs/Animations/animationKey';
 import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 import { IDataBuffer } from 'babylonjs/Misc/dataReader';
-import { FileTools, LoadFileError } from 'babylonjs/Misc/fileTools';
+import { DecodeBase64UrlToBinary, IsBase64DataUrl, LoadFileError } from 'babylonjs/Misc/fileTools';
 import { Logger } from 'babylonjs/Misc/logger';
 import { Light } from 'babylonjs/Lights/light';
 import { TmpVectors } from 'babylonjs/Maths/math.vector';
@@ -2118,8 +2118,8 @@ export class GLTFLoader implements IGLTFLoader {
             throw new Error(`${context}: '${uri}' is invalid`);
         }
 
-        if (FileTools.IsBase64DataUrl(uri)) {
-            const data = new Uint8Array(FileTools.DecodeBase64UrlToBinary(uri));
+        if (IsBase64DataUrl(uri)) {
+            const data = new Uint8Array(DecodeBase64UrlToBinary(uri));
             this.log(`${context}: Decoded ${uri.substr(0, 64)}... (${data.length} bytes)`);
             return Promise.resolve(data);
         }

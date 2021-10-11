@@ -1,6 +1,7 @@
 import { Nullable, FloatArray } from "../types";
 import { Vector3, Vector2, TmpVectors } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
+import { TransformNode } from "../Meshes/transformNode";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Sprite } from "../Sprites/sprite";
 
@@ -42,17 +43,25 @@ export class PickingInfo {
     public subMeshId = 0;
     /** If a sprite was picked, this will be the sprite the pick collided with */
     public pickedSprite: Nullable<Sprite> = null;
-
     /** If we are picking a mesh with thin instance, this will give you the picked thin instance */
     public thinInstanceIndex = -1;
+    /**
+     * The ray that was used to perform the picking.
+     */
+    public ray: Nullable<Ray> = null;
     /**
      * If a mesh was used to do the picking (eg. 6dof controller) as a "near interaction", this will be populated.
      */
     public originMesh: Nullable<AbstractMesh> = null;
     /**
-     * The ray that was used to perform the picking.
+     * The aim-space transform of the input used for picking, if it is an XR input source.
      */
-    public ray: Nullable<Ray> = null;
+    public aimTransform: Nullable<TransformNode> = null;
+    /**
+     * The grip-space transform of the input used for picking, if it is an XR input source.
+     * Some XR sources, such as input coming from head mounted displays, do not have this.
+     */
+    public gripTransform: Nullable<TransformNode> = null;
 
     /**
      * Gets the normal corresponding to the face the pick collided with

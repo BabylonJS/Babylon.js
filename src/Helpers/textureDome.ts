@@ -8,7 +8,7 @@ import { Nullable } from "../types";
 import { Observer, Observable } from "../Misc/observable";
 import { Vector3 } from "../Maths/math.vector";
 import { Axis } from "../Maths/math";
-import { SphereBuilder } from "../Meshes/Builders/sphereBuilder";
+import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
 
 declare type Camera = import("../Cameras/camera").Camera;
 
@@ -224,7 +224,7 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
 
         this._setReady(false);
         if (!options.mesh) {
-            this._mesh = Mesh.CreateSphere(name + "_mesh", options.resolution, options.size, scene, false, Mesh.BACKSIDE);
+            this._mesh = CreateSphere(name + "_mesh", { segments: options.resolution, diameter: options.size, updatable: false, sideOrientation: Mesh.BACKSIDE }, scene);
         } else {
             this._mesh = options.mesh;
         }
@@ -242,7 +242,7 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
         this._mesh.parent = this;
 
         // create a (disabled until needed) mask to cover unneeded segments of 180 texture.
-        this._halfDomeMask = SphereBuilder.CreateSphere("", { slice: 0.5, diameter: options.size * 0.98, segments: options.resolution * 2, sideOrientation: Mesh.BACKSIDE }, scene);
+        this._halfDomeMask = CreateSphere("", { slice: 0.5, diameter: options.size * 0.98, segments: options.resolution * 2, sideOrientation: Mesh.BACKSIDE }, scene);
         this._halfDomeMask.rotate(Axis.X, -Math.PI / 2);
         // set the parent, so it will always be positioned correctly AND will be disposed when the main sphere is disposed
         this._halfDomeMask.parent = this._mesh;

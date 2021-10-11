@@ -363,16 +363,6 @@ export class AnimationGroup implements IDisposable {
 
         this._speedRatio = speedRatio;
 
-        if (from !== undefined && to !== undefined) {
-            if (from < to && this._speedRatio < 0) {
-                let temp = to;
-                to = from;
-                from = temp;
-            } else if (from > to && this._speedRatio > 0) {
-                this._speedRatio = -speedRatio;
-            }
-        }
-
         this._isStarted = true;
         this._isPaused = false;
 

@@ -3,8 +3,8 @@ import { Logger } from "../Misc/logger";
 import { Vector3 } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
-import { SphereBuilder } from "../Meshes/Builders/sphereBuilder";
-import { CylinderBuilder } from "../Meshes/Builders/cylinderBuilder";
+import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
+import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder";
 import { Ray } from "../Culling/ray";
 import { Scene } from "../scene";
 import { IPhysicsEngine } from "./IPhysicsEngine";
@@ -339,7 +339,7 @@ class PhysicsRadialExplosionEvent {
 
     private _prepareSphere(): void {
         if (!this._sphere) {
-            this._sphere = SphereBuilder.CreateSphere("radialExplosionEventSphere", this._options.sphere, this._scene);
+            this._sphere = CreateSphere("radialExplosionEventSphere", this._options.sphere, this._scene);
             this._sphere.isVisible = false;
         }
     }
@@ -562,7 +562,7 @@ class PhysicsUpdraftEvent {
 
     private _prepareCylinder(): void {
         if (!this._cylinder) {
-            this._cylinder = CylinderBuilder.CreateCylinder("updraftEventCylinder", {
+            this._cylinder = CreateCylinder("updraftEventCylinder", {
                 height: this._options.height,
                 diameter: this._options.radius * 2,
             }, this._scene);
@@ -716,7 +716,7 @@ class PhysicsVortexEvent {
 
     private _prepareCylinder(): void {
         if (!this._cylinder) {
-            this._cylinder = CylinderBuilder.CreateCylinder("vortexEventCylinder", {
+            this._cylinder = CreateCylinder("vortexEventCylinder", {
                 height: this._options.height,
                 diameter: this._options.radius * 2,
             }, this._scene);
