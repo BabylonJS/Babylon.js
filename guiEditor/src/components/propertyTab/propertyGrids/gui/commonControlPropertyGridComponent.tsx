@@ -74,6 +74,10 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
             percentage = false;
         }
 
+        if(this.props.control.parent?.typeName === "StackPanel") {
+            percentage = false;
+        }
+
         let newValue = value.match(/([\d\.\,]+)/g)?.[0];
         if (!newValue) {
             newValue = '0';
