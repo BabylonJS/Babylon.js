@@ -13,6 +13,7 @@ import { Effect } from "../Materials/effect";
 import "../Meshes/Builders/planeBuilder";
 import "../Shaders/spriteMap.fragment";
 import "../Shaders/spriteMap.vertex";
+import { CreatePlane } from "../Meshes/Builders/planeBuilder";
 
 /**
  * Defines the basic options interface of a SpriteMap
@@ -299,7 +300,7 @@ export class SpriteMap implements ISpriteMap {
         this._material.setTexture("animationMap", this._animationMap);
         this._material.setFloat("time", this._time);
 
-        this._output = Mesh.CreatePlane(name + ":output", 1, scene, true);
+        this._output = CreatePlane(name + ":output", { size: 1, updatable: true }, scene);
         this._output.scaling.x = options.outputSize.x;
         this._output.scaling.y = options.outputSize.y;
         this.position = options.outputPosition;

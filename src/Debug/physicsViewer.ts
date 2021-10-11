@@ -2,8 +2,8 @@ import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
-import { BoxBuilder } from "../Meshes/Builders/boxBuilder";
-import { SphereBuilder } from "../Meshes/Builders/sphereBuilder";
+import { CreateBox } from "../Meshes/Builders/boxBuilder";
+import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
 import { Quaternion, Vector3 } from "../Maths/math.vector";
 import { Color3 } from '../Maths/math.color';
 import { Material } from "../Materials/material";
@@ -12,8 +12,8 @@ import { StandardMaterial } from "../Materials/standardMaterial";
 import { IPhysicsEnginePlugin } from "../Physics/IPhysicsEngine";
 import { PhysicsImpostor } from "../Physics/physicsImpostor";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
-import { CylinderBuilder } from '../Meshes/Builders/cylinderBuilder';
-import { CapsuleBuilder, ICreateCapsuleOptions } from '../Meshes/Builders/capsuleBuilder';
+import { CreateCylinder } from '../Meshes/Builders/cylinderBuilder';
+import { CreateCapsule, ICreateCapsuleOptions } from '../Meshes/Builders/capsuleBuilder';
 
 /**
      * Used to show the physics impostor around the specific mesh
@@ -181,7 +181,7 @@ export class PhysicsViewer {
 
     private _getDebugBoxMesh(scene: Scene): AbstractMesh {
         if (!this._debugBoxMesh) {
-            this._debugBoxMesh = BoxBuilder.CreateBox('physicsBodyBoxViewMesh', { size: 1 }, scene);
+            this._debugBoxMesh = CreateBox('physicsBodyBoxViewMesh', { size: 1 }, scene);
             this._debugBoxMesh.rotationQuaternion = Quaternion.Identity();
             this._debugBoxMesh.material = this._getDebugMaterial(scene);
             this._debugBoxMesh.setEnabled(false);
@@ -192,7 +192,7 @@ export class PhysicsViewer {
 
     private _getDebugSphereMesh(scene: Scene): AbstractMesh {
         if (!this._debugSphereMesh) {
-            this._debugSphereMesh = SphereBuilder.CreateSphere('physicsBodySphereViewMesh', { diameter: 1 }, scene);
+            this._debugSphereMesh = CreateSphere('physicsBodySphereViewMesh', { diameter: 1 }, scene);
             this._debugSphereMesh.rotationQuaternion = Quaternion.Identity();
             this._debugSphereMesh.material = this._getDebugMaterial(scene);
             this._debugSphereMesh.setEnabled(false);
@@ -203,7 +203,7 @@ export class PhysicsViewer {
 
     private _getDebugCapsuleMesh(scene: Scene): AbstractMesh {
         if (!this._debugCapsuleMesh) {
-            this._debugCapsuleMesh = CapsuleBuilder.CreateCapsule('physicsBodyCapsuleViewMesh', { height: 1 } as ICreateCapsuleOptions, scene);
+            this._debugCapsuleMesh = CreateCapsule('physicsBodyCapsuleViewMesh', { height: 1 } as ICreateCapsuleOptions, scene);
             this._debugCapsuleMesh.rotationQuaternion = Quaternion.Identity();
             this._debugCapsuleMesh.material = this._getDebugMaterial(scene);
             this._debugCapsuleMesh.setEnabled(false);
@@ -214,7 +214,7 @@ export class PhysicsViewer {
 
     private _getDebugCylinderMesh(scene: Scene): AbstractMesh {
         if (!this._debugCylinderMesh) {
-            this._debugCylinderMesh = CylinderBuilder.CreateCylinder('physicsBodyCylinderViewMesh', { diameterTop: 1, diameterBottom: 1, height: 1 }, scene);
+            this._debugCylinderMesh = CreateCylinder('physicsBodyCylinderViewMesh', { diameterTop: 1, diameterBottom: 1, height: 1 }, scene);
             this._debugCylinderMesh.rotationQuaternion = Quaternion.Identity();
             this._debugCylinderMesh.material = this._getDebugMaterial(scene);
             this._debugCylinderMesh.setEnabled(false);

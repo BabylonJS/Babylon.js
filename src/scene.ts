@@ -3868,6 +3868,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             this._renderTargets.concatWithNoDuplicate(rigParent.customRenderTargets);
         }
 
+        if (this.environmentTexture && this.environmentTexture.isRenderTarget) {
+            this._renderTargets.pushNoDuplicate(this.environmentTexture as RenderTargetTexture);
+        }
+
         // Collects render targets from external components.
         for (let step of this._gatherActiveCameraRenderTargetsStage) {
             step.action(this._renderTargets);

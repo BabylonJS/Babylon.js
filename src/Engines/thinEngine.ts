@@ -182,14 +182,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-alpha.50";
+        return "babylonjs@5.0.0-alpha.51";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-alpha.50";
+        return "5.0.0-alpha.51";
     }
 
     /**
@@ -1905,9 +1905,9 @@ export class ThinEngine {
         this.bindArrayBuffer(dataBuffer);
 
         if (data instanceof Array) {
-            this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(data), this._gl.STATIC_DRAW);
+            this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(data), usage);
         } else {
-            this._gl.bufferData(this._gl.ARRAY_BUFFER, <ArrayBuffer>data, this._gl.STATIC_DRAW);
+            this._gl.bufferData(this._gl.ARRAY_BUFFER, <ArrayBuffer>data, usage);
         }
 
         this._resetVertexBufferBinding();
