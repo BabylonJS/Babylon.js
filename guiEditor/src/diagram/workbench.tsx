@@ -431,6 +431,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                         this.props.globalState.draggedControlDirection === DragOverLocation.CENTER) {
                         draggedControlParent.removeControl(draggedControl);
                         (dropLocationControl as Container).addControl(draggedControl);
+                        const stackPanel = dropLocationControl.typeName === "StackPanel" || dropLocationControl.typeName === "VirtualKeyboard";
+                        if (stackPanel) {
+                            this._convertToPixels(draggedControl, dropLocationControl as Container);
+                        }
                     }
                     else if (dropLocationControl.parent) { //dropping inside the controls parent container
                         if (dropLocationControl.parent.typeName != "Grid") {
@@ -442,8 +446,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
                             dropLocationControl.parent.children.splice(index, 0, draggedControl);
                             draggedControl.parent = dropLocationControl.parent;
-                            if(reversed) {
-                                this._convertToPixels(draggedControl, draggedControl.parent)
+                            if (reversed) {
+                                this._convertToPixels(draggedControl, draggedControl.parent);
                             }
                         }
                         else if (dropLocationControl.parent === draggedControlParent) {  //special case for grid
@@ -473,8 +477,13 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     private _convertToPixels(draggedControl: Control, parent: Container) {
-       alert("Warning: Parenting to stack panel will convert control to pixel value");
-       
+        const width = draggedControl.widthInPixels + "px";
+        const height = draggedControl.heightInPixels + "px";
+        if (draggedControl.width !== width || draggedControl.height !== height) {
+            draggedControl.width = width + "px";
+            draggedControl.height = height + "px";
+            alert("Warning: Parenting to stack panel will convert control to pixel value");
+        }
     }
 
     private _reorderGrid(grid: Grid, draggedControl: Control, dropLocationControl: Control) {
