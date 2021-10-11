@@ -156,7 +156,6 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
         }
 
         this.setRowValues();
-        //this.forceUpdate();
     }
 
     resizeColumn() {
@@ -221,7 +220,6 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
         }
 
         this.setColumnValues();
-        //this.forceUpdate();
     }
 
     checkValue(value: string, percent: boolean): string {
