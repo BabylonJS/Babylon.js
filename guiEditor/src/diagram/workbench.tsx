@@ -480,8 +480,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         const width = draggedControl.widthInPixels + "px";
         const height = draggedControl.heightInPixels + "px";
         if (draggedControl.width !== width || draggedControl.height !== height) {
-            draggedControl.width = width + "px";
-            draggedControl.height = height + "px";
+            draggedControl.width = width;
+            draggedControl.height = height;
             alert("Warning: Parenting to stack panel will convert control to pixel value");
         }
     }
