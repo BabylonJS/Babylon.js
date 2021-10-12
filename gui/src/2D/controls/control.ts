@@ -1388,7 +1388,7 @@ export class Control {
 
         return true;
     }
-    
+
     /** @hidden */
     protected _computeAdditionnalOffsetX() {
         return 0;
