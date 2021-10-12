@@ -17,11 +17,6 @@ class ValidatedNativeDataStream extends NativeDataStream {
         super();
     }
 
-    public override writeUint8(value: number): void {
-        super.writeUint32(_native.NativeDataStream.VALIDATION_UINT_8);
-        super.writeUint8(value);
-    }
-
     public override writeUint32(value: number): void {
         super.writeUint32(_native.NativeDataStream.VALIDATION_UINT_32);
         super.writeUint32(value);

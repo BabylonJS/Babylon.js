@@ -220,7 +220,7 @@ interface IDeviceInputSystemConstructor {
 
 /** @hidden */
 export interface INativeDataStream {
-    writeBytes(buffer: ArrayBuffer, byteLength: number): void;
+    writeBuffer(buffer: ArrayBuffer, length: number): void;
 }
 
 /** @hidden */
@@ -229,7 +229,6 @@ interface INativeDataStreamConstructor {
     new(requestFlushCallback: () => void): INativeDataStream;
 
     readonly VALIDATION_ENABLED: boolean;
-    readonly VALIDATION_UINT_8: number;
     readonly VALIDATION_UINT_32: number;
     readonly VALIDATION_INT_32: number;
     readonly VALIDATION_FLOAT_32: number;
