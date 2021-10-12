@@ -1390,12 +1390,12 @@ export class Control {
     }
     
     /** @hidden */
-    protected computeAdditionnalOffsetX() {
+    protected _computeAdditionnalOffsetX() {
         return 0;
     }
 
     /** @hidden */
-    protected computeAdditionnalOffsetY() {
+    protected _computeAdditionnalOffsetY() {
         return 0;
     }
 
@@ -1419,8 +1419,8 @@ export class Control {
             var topShadowOffset = Math.min(Math.min(shadowOffsetY, 0) - shadowBlur * 2, 0);
             var bottomShadowOffset = Math.max(Math.max(shadowOffsetY, 0) + shadowBlur * 2, 0);
 
-            let offsetX = this.computeAdditionnalOffsetX();
-            let offsetY = this.computeAdditionnalOffsetY();
+            const offsetX = this._computeAdditionnalOffsetX();
+            const offsetY = this._computeAdditionnalOffsetY();
 
             this.host.invalidateRect(
                 Math.floor(this._tmpMeasureA.left + leftShadowOffset - offsetX),
