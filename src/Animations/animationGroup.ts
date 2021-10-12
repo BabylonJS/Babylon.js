@@ -569,7 +569,7 @@ export class AnimationGroup implements IDisposable {
      * Clone the current animation group and returns a copy
      * @param newName defines the name of the new group
      * @param targetConverter defines an optional function used to convert current animation targets to new ones
-     * @param cloneAnimations defines if the targeted animations should be cloned or referenced
+     * @param cloneAnimations defines if the animations should be cloned or referenced
      * @returns the new animation group
      */
     public clone(newName: string, targetConverter?: (oldTarget: any) => any, cloneAnimations = false): AnimationGroup {
