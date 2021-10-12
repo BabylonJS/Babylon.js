@@ -61,6 +61,7 @@ export class _CreationDataStorage {
 class _InstanceDataStorage {
     public visibleInstances: any = {};
     public batchCache = new _InstancesBatch();
+    public batchCacheReplacementModeInFrozenMode = new _InstancesBatch();
     public instancesBufferSize = 32 * 16 * 4; // let's start with a maximum of 32 instances
     public instancesBuffer: Nullable<Buffer>;
     public instancesPreviousBuffer: Nullable<Buffer>;
@@ -1750,8 +1751,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /** @hidden */
     public _getInstancesRenderList(subMeshId: number, isReplacementMode: boolean = false): _InstancesBatch {
-        if (this._instanceDataStorage.isFrozen && this._instanceDataStorage.previousBatch) {
-            return this._instanceDataStorage.previousBatch;
+        if (this._instanceDataStorage.isFrozen) {
+            if (isReplacementMode) {
+                this._instanceDataStorage.batchCacheReplacementModeInFrozenMode.hardwareInstancedRendering[subMeshId] = false;
+                this._instanceDataStorage.batchCacheReplacementModeInFrozenMode.renderSelf[subMeshId] = true;
+                return this._instanceDataStorage.batchCacheReplacementModeInFrozenMode;
+            }
+            if (this._instanceDataStorage.previousBatch) {
+                return this._instanceDataStorage.previousBatch;
+            }
         }
         var scene = this.getScene();
         const isInIntermediateRendering = scene._isInIntermediateRendering();
