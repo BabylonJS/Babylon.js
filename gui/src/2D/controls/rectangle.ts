@@ -55,6 +55,24 @@ export class Rectangle extends Container {
         return "Rectangle";
     }
 
+    /** @hidden */
+    protected _computeAdditionnalOffsetX() {
+        if (this._cornerRadius) {
+            // Take in account the aliasing
+            return 1;
+        }
+        return 0;
+    }
+
+    /** @hidden */
+    protected _computeAdditionnalOffsetY() {
+        if (this._cornerRadius) {
+            // Take in account the aliasing
+            return 1;
+        }
+        return 0;
+    }
+
     protected _localDraw(context: ICanvasRenderingContext): void {
         context.save();
 
