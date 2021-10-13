@@ -152,7 +152,7 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
         }
         // const timestamp = this.xrSessionManager.currentTimestamp;
 
-        const detectedPlanes = frame.detectedPlanes || frame.worldInformation?.detectedPlanes;
+        const detectedPlanes = frame.detectedPlanes;
         if (detectedPlanes) {
             const toRemove = this._detectedPlanes
                 .filter((plane) => !detectedPlanes.has(plane.xrPlane))

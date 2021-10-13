@@ -153,7 +153,7 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
                 return;
             }
 
-            const detectedMeshes = frame.worldInformation?.detectedMeshes;
+            const detectedMeshes = frame.detectedMeshes;
             if (!!detectedMeshes) {
                 let toRemove = new Set<XRMesh>();
                 this._detectedMeshes.forEach((vertexData, xrMesh) => {

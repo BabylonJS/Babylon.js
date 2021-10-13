@@ -160,10 +160,6 @@ interface XRPose {
     readonly angularVelocity?: DOMPointReadOnly;
 }
 
-interface XRWorldInformation {
-    detectedPlanes?: XRPlaneSet;
-}
-
 interface XRFrame {
     readonly session: XRSession;
     getPose(space: XRSpace, baseSpace: XRSpace): XRPose | undefined;
@@ -176,8 +172,6 @@ interface XRFrame {
     // Anchors
     trackedAnchors?: XRAnchorSet;
     createAnchor?(pose: XRRigidTransform, space: XRSpace): Promise<XRAnchor>;
-    // World geometries. DEPRECATED
-    worldInformation?: XRWorldInformation;
     detectedPlanes?: XRPlaneSet;
     // Hand tracking
     getJointPose?(joint: XRJointSpace, baseSpace: XRSpace): XRJointPose;
