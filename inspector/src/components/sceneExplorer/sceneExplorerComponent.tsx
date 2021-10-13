@@ -418,7 +418,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             });
         }
 
-        const rootNodes = scene.rootNodes;
+        const rootNodes = scene.rootNodes.slice(0);
 
         // Adding nodes parented to a bone
         for (const mesh of scene.meshes) {
