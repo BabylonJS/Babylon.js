@@ -30,187 +30,10 @@ import { IDrawContext } from "./IDrawContext";
 import { ICanvas, IImage } from "./ICanvas";
 import { IStencilState } from "../States/IStencilState";
 import { RenderTargetWrapper } from "./renderTargetWrapper";
+import { NativeData, NativeDataStream } from "./Native/nativeDataStream";
+import { INative, INativeCamera, INativeEngine } from "./Native/nativeInterfaces";
 
-interface INativeCamera {
-    createVideo(constraints: MediaTrackConstraints): any;
-    updateVideoTexture(texture: Nullable<InternalTexture>, video: HTMLVideoElement, invertY: boolean): void;
-}
-
-interface INativeEngine {
-
-    readonly TEXTURE_NEAREST_NEAREST: number;
-    readonly TEXTURE_LINEAR_LINEAR: number;
-    readonly TEXTURE_LINEAR_LINEAR_MIPLINEAR: number;
-    readonly TEXTURE_NEAREST_NEAREST_MIPNEAREST: number;
-    readonly TEXTURE_NEAREST_LINEAR_MIPNEAREST: number;
-    readonly TEXTURE_NEAREST_LINEAR_MIPLINEAR: number;
-    readonly TEXTURE_NEAREST_LINEAR: number;
-    readonly TEXTURE_NEAREST_NEAREST_MIPLINEAR: number;
-    readonly TEXTURE_LINEAR_NEAREST_MIPNEAREST: number;
-    readonly TEXTURE_LINEAR_NEAREST_MIPLINEAR: number;
-    readonly TEXTURE_LINEAR_LINEAR_MIPNEAREST: number;
-    readonly TEXTURE_LINEAR_NEAREST: number;
-
-    readonly DEPTH_TEST_LESS: number;
-    readonly DEPTH_TEST_LEQUAL: number;
-    readonly DEPTH_TEST_EQUAL: number;
-    readonly DEPTH_TEST_GEQUAL: number;
-    readonly DEPTH_TEST_GREATER: number;
-    readonly DEPTH_TEST_NOTEQUAL: number;
-    readonly DEPTH_TEST_NEVER: number;
-    readonly DEPTH_TEST_ALWAYS: number;
-
-    readonly ADDRESS_MODE_WRAP: number;
-    readonly ADDRESS_MODE_MIRROR: number;
-    readonly ADDRESS_MODE_CLAMP: number;
-    readonly ADDRESS_MODE_BORDER: number;
-    readonly ADDRESS_MODE_MIRROR_ONCE: number;
-
-    readonly TEXTURE_FORMAT_RGB8: number;
-    readonly TEXTURE_FORMAT_RGBA8: number;
-    readonly TEXTURE_FORMAT_RGBA32F: number;
-
-    readonly ATTRIB_TYPE_INT8: number;
-    readonly ATTRIB_TYPE_UINT8: number;
-    readonly ATTRIB_TYPE_INT16: number;
-    readonly ATTRIB_TYPE_UINT16: number;
-    readonly ATTRIB_TYPE_FLOAT: number;
-
-    readonly ALPHA_DISABLE: number;
-    readonly ALPHA_ADD: number;
-    readonly ALPHA_COMBINE: number;
-    readonly ALPHA_SUBTRACT: number;
-    readonly ALPHA_MULTIPLY: number;
-    readonly ALPHA_MAXIMIZED: number;
-    readonly ALPHA_ONEONE: number;
-    readonly ALPHA_PREMULTIPLIED: number;
-    readonly ALPHA_PREMULTIPLIED_PORTERDUFF: number;
-    readonly ALPHA_INTERPOLATE: number;
-    readonly ALPHA_SCREENMODE: number;
-
-    readonly STENCIL_TEST_LESS: number;
-    readonly STENCIL_TEST_LEQUAL: number;
-    readonly STENCIL_TEST_EQUAL: number;
-    readonly STENCIL_TEST_GEQUAL: number;
-    readonly STENCIL_TEST_GREATER: number;
-    readonly STENCIL_TEST_NOTEQUAL: number;
-    readonly STENCIL_TEST_NEVER: number;
-    readonly STENCIL_TEST_ALWAYS: number;
-
-    readonly STENCIL_OP_FAIL_S_ZERO: number;
-    readonly STENCIL_OP_FAIL_S_KEEP: number;
-    readonly STENCIL_OP_FAIL_S_REPLACE: number;
-    readonly STENCIL_OP_FAIL_S_INCR: number;
-    readonly STENCIL_OP_FAIL_S_INCRSAT: number;
-    readonly STENCIL_OP_FAIL_S_DECR: number;
-    readonly STENCIL_OP_FAIL_S_DECRSAT: number;
-    readonly STENCIL_OP_FAIL_S_INVERT: number;
-
-    readonly STENCIL_OP_FAIL_Z_ZERO: number;
-    readonly STENCIL_OP_FAIL_Z_KEEP: number;
-    readonly STENCIL_OP_FAIL_Z_REPLACE: number;
-    readonly STENCIL_OP_FAIL_Z_INCR: number;
-    readonly STENCIL_OP_FAIL_Z_INCRSAT: number;
-    readonly STENCIL_OP_FAIL_Z_DECR: number;
-    readonly STENCIL_OP_FAIL_Z_DECRSAT: number;
-    readonly STENCIL_OP_FAIL_Z_INVERT: number;
-
-    readonly STENCIL_OP_PASS_Z_ZERO: number;
-    readonly STENCIL_OP_PASS_Z_KEEP: number;
-    readonly STENCIL_OP_PASS_Z_REPLACE: number;
-    readonly STENCIL_OP_PASS_Z_INCR: number;
-    readonly STENCIL_OP_PASS_Z_INCRSAT: number;
-    readonly STENCIL_OP_PASS_Z_DECR: number;
-    readonly STENCIL_OP_PASS_Z_DECRSAT: number;
-    readonly STENCIL_OP_PASS_Z_INVERT: number;
-
-    dispose(): void;
-
-    requestAnimationFrame(callback: () => void): void;
-
-    createVertexArray(): any;
-    deleteVertexArray(vertexArray: any): void;
-    bindVertexArray(vertexArray: any): void;
-
-    createIndexBuffer(bytes: ArrayBuffer, byteOffset: number, byteLength: number, is32Bits: boolean, dynamic: boolean): any;
-    deleteIndexBuffer(buffer: any): void;
-    recordIndexBuffer(vertexArray: any, buffer: any): void;
-    updateDynamicIndexBuffer(buffer: any, bytes: ArrayBuffer, byteOffset: number, byteLength: number, startIndex: number): void;
-
-    createVertexBuffer(bytes: ArrayBuffer, byteOffset: number, byteLength: number, dynamic: boolean): any;
-    deleteVertexBuffer(buffer: any): void;
-    recordVertexBuffer(vertexArray: any, buffer: any, location: number, byteOffset: number, byteStride: number, numElements: number, type: number, normalized: boolean): void;
-    updateDynamicVertexBuffer(buffer: any, bytes: ArrayBuffer, byteOffset: number, byteLength: number): void;
-
-    createProgram(vertexShader: string, fragmentShader: string): any;
-    getUniforms(shaderProgram: any, uniformsNames: string[]): WebGLUniformLocation[];
-    getAttributes(shaderProgram: any, attributeNames: string[]): number[];
-    setProgram(program: any): void;
-
-    setState(culling: boolean, zOffset: number, cullBackFaces: boolean, reverseSide: boolean): void;
-    setZOffset(zOffset: number): void;
-    getZOffset(): number;
-    setDepthTest(enable: number): void;
-    getDepthWrite(): boolean;
-    setDepthWrite(enable: boolean): void;
-    setColorWrite(enable: boolean): void;
-    setBlendMode(blendMode: number): void;
-
-    setMatrix(uniform: WebGLUniformLocation, matrix: Float32Array): void;
-    setInt(uniform: WebGLUniformLocation, int: number): void;
-    setInt2(uniform: WebGLUniformLocation, int1: number, int2: number): void;
-    setInt3(uniform: WebGLUniformLocation, int1: number, int2: number, int3: number): void;
-    setInt4(uniform: WebGLUniformLocation, int1: number, int2: number, int3: number, int4: number): void;
-    setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void;
-    setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): void;
-    setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): void;
-    setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): void;
-    setFloatArray(uniform: WebGLUniformLocation, array: Float32Array | number[]): void;
-    setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array | number[]): void;
-    setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array | number[]): void;
-    setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array | number[]): void;
-    setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): void;
-    setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): void;
-    setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): void;
-    setFloat(uniform: WebGLUniformLocation, value: number): void;
-    setFloat2(uniform: WebGLUniformLocation, x: number, y: number): void;
-    setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): void;
-    setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
-
-    createTexture(): WebGLTexture;
-    loadTexture(texture: WebGLTexture, data: ArrayBufferView, generateMips: boolean, invertY: boolean, srgb: boolean, onSuccess: () => void, onError: () => void): void;
-    loadRawTexture(texture: WebGLTexture, data: ArrayBufferView, width: number, height: number, format: number, generateMips: boolean, invertY: boolean): void;
-    loadCubeTexture(texture: WebGLTexture, data: Array<ArrayBufferView>, generateMips: boolean, invertY: boolean, srgb: boolean, onSuccess: () => void, onError: () => void): void;
-    loadCubeTextureWithMips(texture: WebGLTexture, data: Array<Array<ArrayBufferView>>, invertY: boolean, srgb: boolean, onSuccess: () => void, onError: () => void): void;
-    getTextureWidth(texture: WebGLTexture): number;
-    getTextureHeight(texture: WebGLTexture): number;
-    setTextureSampling(texture: WebGLTexture, filter: number): void; // filter is a NativeFilter.XXXX value.
-    setTextureWrapMode(texture: WebGLTexture, addressModeU: number, addressModeV: number, addressModeW: number): void; // addressModes are NativeAddressMode.XXXX values.
-    setTextureAnisotropicLevel(texture: WebGLTexture, value: number): void;
-    setTexture(uniform: WebGLUniformLocation, texture: Nullable<WebGLTexture>): void;
-    copyTexture(desination: Nullable<WebGLTexture>, source: Nullable<WebGLTexture>): void;
-    deleteTexture(texture: Nullable<WebGLTexture>): void;
-    createImageBitmap(data: ArrayBufferView): ImageBitmap;
-    resizeImageBitmap(image: ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array;
-
-    createFrameBuffer(texture: WebGLTexture, width: number, height: number, format: number, generateStencilBuffer: boolean, generateDepthBuffer: boolean, generateMips: boolean): WebGLFramebuffer;
-    deleteFrameBuffer(framebuffer: WebGLFramebuffer): void;
-    bindFrameBuffer(framebuffer: WebGLFramebuffer): void;
-    unbindFrameBuffer(framebuffer: WebGLFramebuffer): void;
-
-    drawIndexed(fillMode: number, indexStart: number, indexCount: number): void;
-    draw(fillMode: number, vertexStart: number, vertexCount: number): void;
-
-    clear(color: IColor4Like | undefined, depth: number | undefined, stencil: number | undefined): void;
-
-    getRenderWidth(): number;
-    getRenderHeight(): number;
-    getHardwareScalingLevel(): number;
-    setHardwareScalingLevel(level: number): void;
-
-    setViewPort(x: number, y: number, width: number, height: number): void;
-    setStencil(mask: number, stencilOpFail: number, depthOpFail: number, depthOpPass: number, func: number, ref: number): void;
-}
+declare const _native: INative;
 
 class NativePipelineContext implements IPipelineContext {
     // TODO: async should be true?
@@ -764,23 +587,23 @@ class NativePipelineContext implements IPipelineContext {
 }
 
 class NativeRenderTargetWrapper extends RenderTargetWrapper {
-    private readonly _native: INativeEngine;
+    public override readonly _engine: NativeEngine;
 
     public _framebuffer: Nullable<WebGLFramebuffer> = null;
     public _framebufferDepthStencil: Nullable<WebGLFramebuffer> = null;
 
-    constructor(isMulti: boolean, isCube: boolean, size: RenderTargetTextureSize, engine: NativeEngine, native: INativeEngine) {
+    constructor(isMulti: boolean, isCube: boolean, size: RenderTargetTextureSize, engine: NativeEngine) {
         super(isMulti, isCube, size, engine);
-        this._native = native;
+        this._engine = engine;
     }
 
     public dispose(disposeOnlyFramebuffers = false): void {
         if (this._framebuffer) {
-            this._native.deleteFrameBuffer(this._framebuffer);
+            this._engine._releaseFramebufferObjects(this._framebuffer);
             this._framebuffer = null;
         }
         if (this._framebufferDepthStencil) {
-            this._native.deleteFrameBuffer(this._framebufferDepthStencil);
+            this._engine._releaseFramebufferObjects(this._framebufferDepthStencil);
             this._framebufferDepthStencil = null;
         }
 
@@ -795,16 +618,13 @@ class NativeDataBuffer extends DataBuffer {
     /**
      * Accessor value used to identify/retrieve a natively-stored index buffer.
      */
-    public nativeIndexBuffer?: any;
+    public nativeIndexBuffer?: NativeData;
 
     /**
      * Accessor value used to identify/retrieve a natively-stored vertex buffer.
      */
-    public nativeVertexBuffer?: any;
+    public nativeVertexBuffer?: NativeData;
 }
-
-/** @hidden */
-declare var _native: any;
 
 /**
  * Options to create the Native engine
@@ -818,15 +638,83 @@ export interface NativeEngineOptions {
 }
 
 /** @hidden */
+class CommandBufferEncoder {
+    private readonly _commandStream: NativeDataStream;
+    private _isCommandBufferScopeActive = false;
+
+    public constructor(private readonly _engine: INativeEngine) {
+        this._commandStream = NativeEngine._createNativeDataStream();
+        this._engine.setCommandDataStream(this._commandStream);
+    }
+
+    public beginCommandScope() {
+        if (this._isCommandBufferScopeActive) {
+            throw new Error("Command scope already active.");
+        }
+
+        this._isCommandBufferScopeActive = true;
+    }
+
+    public endCommandScope() {
+        if (!this._isCommandBufferScopeActive) {
+            throw new Error("Command scope is not active.");
+        }
+
+        this._isCommandBufferScopeActive = false;
+        this._engine.submitCommands();
+    }
+
+    public startEncodingCommand(command: NativeData) {
+        this._commandStream.writeNativeData(command);
+    }
+
+    public encodeCommandArgAsUInt32(commandArg: unknown) {
+        this._commandStream.writeUint32(commandArg as number);
+    }
+
+    public encodeCommandArgAsUInt32s(commandArg: Uint32Array) {
+        this._commandStream.writeUint32Array(commandArg);
+    }
+
+    public encodeCommandArgAsInt32(commandArg: unknown) {
+        this._commandStream.writeInt32(commandArg as number);
+    }
+
+    public encodeCommandArgAsInt32s(commandArg: Int32Array) {
+        this._commandStream.writeInt32Array(commandArg);
+    }
+
+    public encodeCommandArgAsFloat32(commandArg: unknown) {
+        this._commandStream.writeFloat32(commandArg as number);
+    }
+
+    public encodeCommandArgAsFloat32s(commandArg: Float32Array) {
+        this._commandStream.writeFloat32Array(commandArg);
+    }
+
+    public encodeCommandArgAsNativeData(commandArg: NativeData) {
+        this._commandStream.writeNativeData(commandArg);
+    }
+
+    public finishEncodingCommand() {
+        if (!this._isCommandBufferScopeActive) {
+            this._engine.submitCommands();
+        }
+    }
+}
+
+/** @hidden */
 export class NativeEngine extends Engine {
     // This must match the protocol version in NativeEngine.cpp
-    private static readonly ProtocolVersion = 1;
+    private static readonly PROTOCOL_VERSION = 2;
 
-    private readonly _native: INativeEngine = new _native.Engine();
-    private readonly _nativeCamera: Nullable<INativeCamera> = _native.NativeCamera ? new _native.NativeCamera() : null;
+    private readonly _engine: INativeEngine = new _native.Engine();
+    private readonly _camera: Nullable<INativeCamera> = _native.Camera ? new _native.Camera() : null;
+
+    private readonly _commandBufferEncoder = new CommandBufferEncoder(this._engine);
 
     private _boundBuffersVertexArray: any = null;
-    private _currentDepthTest: number = this._native.DEPTH_TEST_LEQUAL;
+    private _currentDepthTest: number = _native.Engine.DEPTH_TEST_LEQUAL;
     private _stencilTest = false;
     private _stencilMask: number = 255;
     private _stencilFunc: number = Constants.ALWAYS;
@@ -835,20 +723,23 @@ export class NativeEngine extends Engine {
     private _stencilOpStencilFail: number = Constants.KEEP;
     private _stencilOpDepthFail: number = Constants.KEEP;
     private _stencilOpStencilDepthPass: number = Constants.REPLACE;
+    private _zOffset: number = 0;
+    private _zOffsetUnits: number = 0;
+    private _depthWrite: boolean = true;
 
     public getHardwareScalingLevel(): number {
-        return this._native.getHardwareScalingLevel();
+        return this._engine.getHardwareScalingLevel();
     }
 
     public setHardwareScalingLevel(level: number): void {
-        this._native.setHardwareScalingLevel(level);
+        this._engine.setHardwareScalingLevel(level);
     }
 
     public constructor(options: NativeEngineOptions = {}) {
         super(null, false, undefined, options.adaptToDeviceRatio);
 
-        if (_native.Engine.ProtocolVersion !== NativeEngine.ProtocolVersion) {
-            throw new Error(`Protocol version mismatch: ${_native.Engine.ProtocolVersion} (Native) !== ${NativeEngine.ProtocolVersion} (JS)`);
+        if (_native.Engine.PROTOCOL_VERSION !== NativeEngine.PROTOCOL_VERSION) {
+            throw new Error(`Protocol version mismatch: ${_native.Engine.PROTOCOL_VERSION} (Native) !== ${NativeEngine.PROTOCOL_VERSION} (JS)`);
         }
 
         this._webGLVersion = 2;
@@ -965,14 +856,28 @@ export class NativeEngine extends Engine {
 
         // Shader processor
         this._shaderProcessor = new WebGL2ShaderProcessor();
+
+        this.onNewSceneAddedObservable.add((scene) => {
+            const originalRender = scene.render;
+            scene.render = (...args: Parameters<typeof originalRender>) => {
+                this._commandBufferEncoder.beginCommandScope();
+                originalRender.apply(scene, args);
+                this._commandBufferEncoder.endCommandScope();
+            };
+        });
     }
 
     public dispose(): void {
         super.dispose();
         if (this._boundBuffersVertexArray) {
-            this._native.deleteVertexArray(this._boundBuffersVertexArray);
+            this._deleteVertexArray(this._boundBuffersVertexArray);
         }
-        this._native.dispose();
+        this._engine.dispose();
+    }
+
+    /** @hidden */
+    public static _createNativeDataStream(): NativeDataStream {
+        return new NativeDataStream();
     }
 
     /**
@@ -984,7 +889,7 @@ export class NativeEngine extends Engine {
         if (requester.requestAnimationFrame && requester !== window) {
             requester.requestAnimationFrame(bindedRenderFunction);
         } else {
-            this._native.requestAnimationFrame(bindedRenderFunction);
+            this._engine.requestAnimationFrame(bindedRenderFunction);
         }
         return 0;
     }
@@ -999,11 +904,15 @@ export class NativeEngine extends Engine {
     public _bindUnboundFramebuffer(framebuffer: Nullable<WebGLFramebuffer>) {
         if (this._currentFramebuffer !== framebuffer) {
             if (this._currentFramebuffer) {
-                this._native.unbindFrameBuffer(this._currentFramebuffer!);
+                this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_UNBINDFRAMEBUFFER);
+                this._commandBufferEncoder.encodeCommandArgAsNativeData(this._currentFramebuffer as NativeData);
+                this._commandBufferEncoder.finishEncodingCommand();
             }
 
             if (framebuffer) {
-                this._native.bindFrameBuffer(framebuffer);
+                this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_BINDFRAMEBUFFER);
+                this._commandBufferEncoder.encodeCommandArgAsNativeData(framebuffer as NativeData);
+                this._commandBufferEncoder.finishEncodingCommand();
             }
 
             this._currentFramebuffer = framebuffer;
@@ -1023,7 +932,17 @@ export class NativeEngine extends Engine {
             throw new Error("reverse depth buffer is not currently implemented");
         }
 
-        this._native.clear(backBuffer && color ? color : undefined, depth ? 1.0 : undefined, stencil ? 0 : undefined);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_CLEAR);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(Boolean(backBuffer && color));
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(color?.r);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(color?.g);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(color?.b);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(color?.a ?? 1);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(depth);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(1);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(stencil);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(0);
+        this._commandBufferEncoder.finishEncodingCommand();
     }
 
     public createIndexBuffer(indices: IndicesArray, updateable?: boolean): NativeDataBuffer {
@@ -1032,7 +951,7 @@ export class NativeEngine extends Engine {
         buffer.references = 1;
         buffer.is32Bits = (data.BYTES_PER_ELEMENT === 4);
         if (data.byteLength) {
-            buffer.nativeIndexBuffer = this._native.createIndexBuffer(data.buffer, data.byteOffset, data.byteLength, buffer.is32Bits, updateable ?? false);
+            buffer.nativeIndexBuffer = this._engine.createIndexBuffer(data.buffer, data.byteOffset, data.byteLength, buffer.is32Bits, updateable ?? false);
         }
         return buffer;
     }
@@ -1042,14 +961,14 @@ export class NativeEngine extends Engine {
         const buffer = new NativeDataBuffer();
         buffer.references = 1;
         if (data.byteLength) {
-            buffer.nativeVertexBuffer = this._native.createVertexBuffer(data.buffer, data.byteOffset, data.byteLength, updateable ?? false);
+            buffer.nativeVertexBuffer = this._engine.createVertexBuffer(data.buffer, data.byteOffset, data.byteLength, updateable ?? false);
         }
         return buffer;
     }
 
     protected _recordVertexArrayObject(vertexArray: any, vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): void {
         if (indexBuffer) {
-            this._native.recordIndexBuffer(vertexArray, indexBuffer.nativeIndexBuffer);
+            this._engine.recordIndexBuffer(vertexArray, indexBuffer.nativeIndexBuffer!);
         }
 
         const attributes = effect.getAttributesNames();
@@ -1061,9 +980,9 @@ export class NativeEngine extends Engine {
                 if (vertexBuffer) {
                     const buffer = vertexBuffer.getBuffer() as Nullable<NativeDataBuffer>;
                     if (buffer) {
-                        this._native.recordVertexBuffer(
+                        this._engine.recordVertexBuffer(
                             vertexArray,
-                            buffer.nativeVertexBuffer,
+                            buffer.nativeVertexBuffer!,
                             location,
                             vertexBuffer.byteOffset,
                             vertexBuffer.byteStride,
@@ -1078,30 +997,38 @@ export class NativeEngine extends Engine {
 
     public bindBuffers(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): void {
         if (this._boundBuffersVertexArray) {
-            this._native.deleteVertexArray(this._boundBuffersVertexArray);
+            this._deleteVertexArray(this._boundBuffersVertexArray);
         }
-        this._boundBuffersVertexArray = this._native.createVertexArray();
+        this._boundBuffersVertexArray = this._engine.createVertexArray();
         this._recordVertexArrayObject(this._boundBuffersVertexArray, vertexBuffers, indexBuffer, effect);
-        this._native.bindVertexArray(this._boundBuffersVertexArray);
+        this.bindVertexArrayObject(this._boundBuffersVertexArray);
     }
 
     public recordVertexArrayObject(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): WebGLVertexArrayObject {
-        const vertexArray = this._native.createVertexArray();
+        const vertexArray = this._engine.createVertexArray();
         this._recordVertexArrayObject(vertexArray, vertexBuffers, indexBuffer, effect);
         return vertexArray;
     }
 
+    private _deleteVertexArray(vertexArray: unknown) {
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DELETEVERTEXARRAY);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(vertexArray as NativeData);
+        this._commandBufferEncoder.finishEncodingCommand();
+    }
+
     public bindVertexArrayObject(vertexArray: WebGLVertexArrayObject): void {
-        this._native.bindVertexArray(vertexArray);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_BINDVERTEXARRAY);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(vertexArray as NativeData);
+        this._commandBufferEncoder.finishEncodingCommand();
     }
 
     public releaseVertexArrayObject(vertexArray: WebGLVertexArrayObject) {
-        this._native.deleteVertexArray(vertexArray);
+        this._deleteVertexArray(vertexArray);
     }
 
     public getAttributes(pipelineContext: IPipelineContext, attributesNames: string[]): number[] {
         const nativePipelineContext = pipelineContext as NativePipelineContext;
-        return this._native.getAttributes(nativePipelineContext.nativeProgram, attributesNames);
+        return this._engine.getAttributes(nativePipelineContext.nativeProgram, attributesNames);
     }
 
     /**
@@ -1124,7 +1051,11 @@ export class NativeEngine extends Engine {
         // if (instancesCount) {
         //     this._gl.drawElementsInstanced(drawMode, indexCount, indexFormat, indexStart * mult, instancesCount);
         // } else {
-        this._native.drawIndexed(fillMode, indexStart, indexCount);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DRAWINDEXED);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(indexStart);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(indexCount);
+        this._commandBufferEncoder.finishEncodingCommand();
         // }
     }
 
@@ -1144,7 +1075,11 @@ export class NativeEngine extends Engine {
         // if (instancesCount) {
         //     this._gl.drawArraysInstanced(drawMode, verticesStart, verticesCount, instancesCount);
         // } else {
-        this._native.draw(fillMode, verticesStart, verticesCount);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DRAW);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesStart);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesCount);
+        this._commandBufferEncoder.finishEncodingCommand();
         // }
     }
 
@@ -1201,7 +1136,7 @@ export class NativeEngine extends Engine {
         vertexCode = ThinEngine._ConcatenateShader(vertexCode, defines);
         fragmentCode = ThinEngine._ConcatenateShader(fragmentCode, defines);
 
-        const program = this._native.createProgram(vertexCode, fragmentCode);
+        const program = this._engine.createProgram(vertexCode, fragmentCode);
         this.onAfterShaderCompilationObservable.notifyObservers(this);
         return program;
     }
@@ -1220,22 +1155,25 @@ export class NativeEngine extends Engine {
 
     protected _setProgram(program: WebGLProgram): void {
         if (this._currentProgram !== program) {
-            this._native.setProgram(program);
+            this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETPROGRAM);
+            this._commandBufferEncoder.encodeCommandArgAsNativeData(program as NativeData);
+            this._commandBufferEncoder.finishEncodingCommand();
             this._currentProgram = program;
         }
     }
 
-    public _releaseEffect(effect: Effect): void {
-        // TODO
-    }
-
     public _deletePipelineContext(pipelineContext: IPipelineContext): void {
-        // TODO
+        const nativePipelineContext = pipelineContext as NativePipelineContext;
+        if (nativePipelineContext && nativePipelineContext.nativeProgram) {
+            this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DELETEPROGRAM);
+            this._commandBufferEncoder.encodeCommandArgAsNativeData(nativePipelineContext.nativeProgram);
+            this._commandBufferEncoder.finishEncodingCommand();
+        }
     }
 
     public getUniforms(pipelineContext: IPipelineContext, uniformsNames: string[]): WebGLUniformLocation[] {
         const nativePipelineContext = pipelineContext as NativePipelineContext;
-        return this._native.getUniforms(nativePipelineContext.nativeProgram, uniformsNames);
+        return this._engine.getUniforms(nativePipelineContext.nativeProgram, uniformsNames);
     }
 
     public bindUniformBlock(pipelineContext: IPipelineContext, blockName: string, index: number): void {
@@ -1264,7 +1202,11 @@ export class NativeEngine extends Engine {
             return;
         }
 
-        this._native.setMatrix(uniform, matrix.toArray() as Float32Array);
+        const matrixArray = matrix.toArray() as Float32Array;
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETMATRIX);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32s(matrixArray);
+        this._commandBufferEncoder.finishEncodingCommand();
     }
 
     public getRenderWidth(useScreen = false): number {
@@ -1272,7 +1214,7 @@ export class NativeEngine extends Engine {
             return this._currentRenderTarget.width;
         }
 
-        return this._native.getRenderWidth();
+        return this._engine.getRenderWidth();
     }
 
     public getRenderHeight(useScreen = false): number {
@@ -1280,17 +1222,25 @@ export class NativeEngine extends Engine {
             return this._currentRenderTarget.height;
         }
 
-        return this._native.getRenderHeight();
+        return this._engine.getRenderHeight();
     }
 
     public setViewport(viewport: IViewportLike, requiredWidth?: number, requiredHeight?: number): void {
         this._cachedViewport = viewport;
-        this._native.setViewPort(viewport.x, viewport.y, viewport.width, viewport.height);
+        this._engine.setViewPort(viewport.x, viewport.y, viewport.width, viewport.height);
     }
 
     public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false, cullBackFaces?: boolean, stencil?: IStencilState, zOffsetUnits: number = 0): void {
-        // TODO. zOffsetUnits
-        this._native.setState(culling, zOffset, this.cullBackFaces ?? cullBackFaces ?? true, reverseSide);
+        this._zOffset = zOffset;
+        this._zOffsetUnits = zOffsetUnits;
+
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETSTATE);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(culling);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(zOffset);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(zOffsetUnits);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(this.cullBackFaces ?? cullBackFaces ?? true);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(reverseSide);
+        this._commandBufferEncoder.finishEncodingCommand();
     }
 
     /**
@@ -1317,7 +1267,12 @@ export class NativeEngine extends Engine {
      * @param value defines the offset to apply
      */
     public setZOffset(value: number): void {
-        this._native.setZOffset(this.useReverseDepthBuffer ? -value : value);
+        if (value !== this._zOffset) {
+            this._zOffset = value;
+            this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETZOFFSET);
+            this._commandBufferEncoder.encodeCommandArgAsFloat32(this.useReverseDepthBuffer ? -value : value);
+            this._commandBufferEncoder.finishEncodingCommand();
+        }
     }
 
     /**
@@ -1325,8 +1280,7 @@ export class NativeEngine extends Engine {
      * @returns the current zOffset Factor state
      */
     public getZOffset(): number {
-        const zOffset = this._native.getZOffset();
-        return this.useReverseDepthBuffer ? -zOffset : zOffset;
+        return this._zOffset;
     }
 
     /**
@@ -1334,8 +1288,12 @@ export class NativeEngine extends Engine {
      * @param value defines the offset to apply
      */
     public setZOffsetUnits(value: number): void {
-        // TODO.
-        this._depthCullingState.zOffsetUnits = this.useReverseDepthBuffer ? -value : value;
+        if (value !== this._zOffsetUnits) {
+            this._zOffsetUnits = value;
+            this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETZOFFSETUNITS);
+            this._commandBufferEncoder.encodeCommandArgAsFloat32(this.useReverseDepthBuffer ? -value : value);
+            this._commandBufferEncoder.finishEncodingCommand();
+        }
     }
 
     /**
@@ -1343,9 +1301,7 @@ export class NativeEngine extends Engine {
      * @returns the current zOffset Units state
      */
     public getZOffsetUnits(): number {
-        // TODO.
-        const zOffsetUnits = this._depthCullingState.zOffsetUnits;
-        return this.useReverseDepthBuffer ? -zOffsetUnits : zOffsetUnits;
+        return this._zOffsetUnits;
     }
 
     /**
@@ -1353,7 +1309,9 @@ export class NativeEngine extends Engine {
      * @param enable defines the state to set
      */
     public setDepthBuffer(enable: boolean): void {
-        this._native.setDepthTest(enable ? this._currentDepthTest : this._native.DEPTH_TEST_ALWAYS);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETDEPTHTEST);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(enable ? this._currentDepthTest : _native.Engine.DEPTH_TEST_ALWAYS);
+        this._commandBufferEncoder.finishEncodingCommand();
     }
 
     /**
@@ -1361,26 +1319,26 @@ export class NativeEngine extends Engine {
      * @returns the current depth writing state
      */
     public getDepthWrite(): boolean {
-        return this._native.getDepthWrite();
+        return this._depthWrite;
     }
 
     public getDepthFunction(): Nullable<number> {
         switch (this._currentDepthTest) {
-            case this._native.DEPTH_TEST_NEVER:
+            case _native.Engine.DEPTH_TEST_NEVER:
                 return Constants.NEVER;
-            case this._native.DEPTH_TEST_ALWAYS:
+            case _native.Engine.DEPTH_TEST_ALWAYS:
                 return Constants.ALWAYS;
-            case this._native.DEPTH_TEST_GREATER:
+            case _native.Engine.DEPTH_TEST_GREATER:
                 return Constants.GREATER;
-            case this._native.DEPTH_TEST_GEQUAL:
+            case _native.Engine.DEPTH_TEST_GEQUAL:
                 return Constants.GEQUAL;
-            case this._native.DEPTH_TEST_NOTEQUAL:
+            case _native.Engine.DEPTH_TEST_NOTEQUAL:
                 return Constants.NOTEQUAL;
-            case this._native.DEPTH_TEST_EQUAL:
+            case _native.Engine.DEPTH_TEST_EQUAL:
                 return Constants.EQUAL;
-            case this._native.DEPTH_TEST_LESS:
+            case _native.Engine.DEPTH_TEST_LESS:
                 return Constants.LESS;
-            case this._native.DEPTH_TEST_LEQUAL:
+            case _native.Engine.DEPTH_TEST_LEQUAL:
                 return Constants.LEQUAL;
         }
         return null;
@@ -1390,33 +1348,36 @@ export class NativeEngine extends Engine {
         let nativeDepthFunc = 0;
         switch (depthFunc) {
             case Constants.NEVER:
-                nativeDepthFunc = this._native.DEPTH_TEST_NEVER;
+                nativeDepthFunc = _native.Engine.DEPTH_TEST_NEVER;
                 break;
             case Constants.ALWAYS:
-                nativeDepthFunc = this._native.DEPTH_TEST_ALWAYS;
+                nativeDepthFunc = _native.Engine.DEPTH_TEST_ALWAYS;
                 break;
             case Constants.GREATER:
-                nativeDepthFunc = this._native.DEPTH_TEST_GREATER;
+                nativeDepthFunc = _native.Engine.DEPTH_TEST_GREATER;
                 break;
             case Constants.GEQUAL:
-                nativeDepthFunc = this._native.DEPTH_TEST_GEQUAL;
+                nativeDepthFunc = _native.Engine.DEPTH_TEST_GEQUAL;
                 break;
             case Constants.NOTEQUAL:
-                nativeDepthFunc = this._native.DEPTH_TEST_NOTEQUAL;
+                nativeDepthFunc = _native.Engine.DEPTH_TEST_NOTEQUAL;
                 break;
             case Constants.EQUAL:
-                nativeDepthFunc = this._native.DEPTH_TEST_EQUAL;
+                nativeDepthFunc = _native.Engine.DEPTH_TEST_EQUAL;
                 break;
             case Constants.LESS:
-                nativeDepthFunc = this._native.DEPTH_TEST_LESS;
+                nativeDepthFunc = _native.Engine.DEPTH_TEST_LESS;
                 break;
             case Constants.LEQUAL:
-                nativeDepthFunc = this._native.DEPTH_TEST_LEQUAL;
+                nativeDepthFunc = _native.Engine.DEPTH_TEST_LEQUAL;
                 break;
         }
 
         this._currentDepthTest = nativeDepthFunc;
-        this._native.setDepthTest(this._currentDepthTest);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETDEPTHTEST);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(this._currentDepthTest);
+        this._commandBufferEncoder.finishEncodingCommand();
+
     }
 
     /**
@@ -1424,7 +1385,10 @@ export class NativeEngine extends Engine {
      * @param enable defines the state to set
      */
     public setDepthWrite(enable: boolean): void {
-        this._native.setDepthWrite(enable);
+        this._depthWrite = enable;
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETDEPTHWRITE);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(Number(enable));
+        this._commandBufferEncoder.finishEncodingCommand();
     }
 
     /**
@@ -1432,8 +1396,10 @@ export class NativeEngine extends Engine {
      * @param enable defines the state to set
      */
     public setColorWrite(enable: boolean): void {
-        this._native.setColorWrite(enable);
         this._colorWrite = enable;
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETCOLORWRITE);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(Number(enable));
+        this._commandBufferEncoder.finishEncodingCommand();
     }
 
     /**
@@ -1445,12 +1411,23 @@ export class NativeEngine extends Engine {
     }
 
     private applyStencil(): void {
-        this._native.setStencil(this._stencilMask,
+        this._setStencil(this._stencilMask,
             this._getStencilOpFail(this._stencilOpStencilFail),
             this._getStencilDepthFail(this._stencilOpDepthFail),
             this._getStencilDepthPass(this._stencilOpStencilDepthPass),
             this._getStencilFunc(this._stencilFunc),
             this._stencilFuncRef);
+    }
+
+    private _setStencil(mask: number, stencilOpFail: number, depthOpFail: number, depthOpPass: number, func: number, ref: number) {
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETSTENCIL);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(mask);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(stencilOpFail);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(depthOpFail);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(depthOpPass);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(func);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(ref);
+        this._commandBufferEncoder.finishEncodingCommand();
     }
 
     /**
@@ -1462,11 +1439,11 @@ export class NativeEngine extends Engine {
         if (enable) {
             this.applyStencil();
         } else {
-            this._native.setStencil(255,
-                this._native.STENCIL_OP_FAIL_S_KEEP,
-                this._native.STENCIL_OP_FAIL_Z_KEEP,
-                this._native.STENCIL_OP_PASS_Z_KEEP,
-                this._native.STENCIL_TEST_ALWAYS,
+            this._setStencil(255,
+                _native.Engine.STENCIL_OP_FAIL_S_KEEP,
+                _native.Engine.STENCIL_OP_FAIL_Z_KEEP,
+                _native.Engine.STENCIL_OP_PASS_Z_KEEP,
+                _native.Engine.STENCIL_TEST_ALWAYS,
                 0);
         }
     }
@@ -1621,7 +1598,9 @@ export class NativeEngine extends Engine {
 
         mode = this._getNativeAlphaMode(mode);
 
-        this._native.setBlendMode(mode);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETBLENDMODE);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(mode);
+        this._commandBufferEncoder.finishEncodingCommand();
 
         if (!noDepthWriteChange) {
             this.setDepthWrite(mode === Constants.ALPHA_DISABLE);
@@ -1644,7 +1623,10 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setInt(uniform, int);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETINT);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsInt32(int);
+        this._commandBufferEncoder.finishEncodingCommand();
         return true;
     }
 
@@ -1653,7 +1635,10 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setIntArray(uniform, array);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETINTARRAY);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsInt32s(array);
+        this._commandBufferEncoder.finishEncodingCommand();
         return true;
     }
 
@@ -1662,7 +1647,10 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setIntArray2(uniform, array);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETINTARRAY2);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsInt32s(array);
+        this._commandBufferEncoder.finishEncodingCommand();
         return true;
     }
 
@@ -1671,7 +1659,10 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setIntArray3(uniform, array);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETINTARRAY3);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsInt32s(array);
+        this._commandBufferEncoder.finishEncodingCommand();
         return true;
     }
 
@@ -1680,7 +1671,10 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setIntArray4(uniform, array);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETINTARRAY4);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsInt32s(array);
+        this._commandBufferEncoder.finishEncodingCommand();
         return true;
     }
 
@@ -1689,7 +1683,10 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setFloatArray(uniform, array);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETFLOATARRAY);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32s(array);
+        this._commandBufferEncoder.finishEncodingCommand();
         return true;
     }
 
@@ -1698,7 +1695,10 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setFloatArray2(uniform, array);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETFLOATARRAY2);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32s(array);
+        this._commandBufferEncoder.finishEncodingCommand();
         return true;
     }
 
@@ -1707,7 +1707,10 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setFloatArray3(uniform, array);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETFLOATARRAY3);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32s(array);
+        this._commandBufferEncoder.finishEncodingCommand();
         return true;
     }
 
@@ -1716,7 +1719,10 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setFloatArray4(uniform, array);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETFLOATARRAY4);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32s(array);
+        this._commandBufferEncoder.finishEncodingCommand();
         return true;
     }
 
@@ -1725,7 +1731,7 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setFloatArray(uniform, array);
+        return this.setFloatArray(uniform, new Float32Array(array));
         return true;
     }
 
@@ -1734,7 +1740,7 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setFloatArray2(uniform, array);
+        this.setFloatArray2(uniform, new Float32Array(array));
         return true;
     }
 
@@ -1743,7 +1749,7 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setFloatArray3(uniform, array);
+        this.setFloatArray3(uniform, new Float32Array(array));
         return true;
     }
 
@@ -1752,7 +1758,7 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setFloatArray4(uniform, array);
+        this.setFloatArray4(uniform, new Float32Array(array));
         return true;
     }
 
@@ -1761,7 +1767,11 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setMatrices(uniform, matrices);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETMATRICES);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32s(matrices);
+        this._commandBufferEncoder.finishEncodingCommand();
+
         return true;
     }
 
@@ -1770,7 +1780,10 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setMatrix3x3(uniform, matrix);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETMATRIX3X3);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32s(matrix);
+        this._commandBufferEncoder.finishEncodingCommand();
         return true;
     }
 
@@ -1779,7 +1792,10 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setMatrix2x2(uniform, matrix);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETMATRIX2X2);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32s(matrix);
+        this._commandBufferEncoder.finishEncodingCommand();
         return true;
     }
 
@@ -1788,7 +1804,10 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setFloat(uniform, value);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETFLOAT);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(value);
+        this._commandBufferEncoder.finishEncodingCommand();
         return true;
     }
 
@@ -1797,7 +1816,11 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setFloat2(uniform, x, y);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETFLOAT2);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(x);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(y);
+        this._commandBufferEncoder.finishEncodingCommand();
         return true;
     }
 
@@ -1806,7 +1829,12 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setFloat3(uniform, x, y, z);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETFLOAT3);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(x);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(y);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(z);
+        this._commandBufferEncoder.finishEncodingCommand();
         return true;
     }
 
@@ -1815,7 +1843,13 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setFloat4(uniform, x, y, z, w);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETFLOAT4);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(x);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(y);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(z);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(w);
+        this._commandBufferEncoder.finishEncodingCommand();
         return true;
     }
 
@@ -1824,7 +1858,7 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setFloat3(uniform, color3.r, color3.g, color3.b);
+        this.setFloat3(uniform, color3.r, color3.g, color3.b);
         return true;
     }
 
@@ -1833,7 +1867,7 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setFloat4(uniform, color3.r, color3.g, color3.b, alpha);
+        this.setFloat4(uniform, color3.r, color3.g, color3.b, alpha);
         return true;
     }
 
@@ -1858,12 +1892,12 @@ export class NativeEngine extends Engine {
     }
 
     protected _createTexture(): WebGLTexture {
-        return this._native.createTexture();
+        return this._engine.createTexture();
     }
 
     protected _deleteTexture(texture: Nullable<WebGLTexture>): void {
         if (texture) {
-            this._native.deleteTexture(texture);
+            this._engine.deleteTexture(texture);
         }
     }
 
@@ -1885,7 +1919,7 @@ export class NativeEngine extends Engine {
             !!texture._hardwareTexture) {
             const source = canvas.getCanvasTexture();
             const destination = texture._hardwareTexture.underlyingResource;
-            this._native.copyTexture(destination, source);
+            this._engine.copyTexture(destination, source);
             texture.isReady = true;
         }
     }
@@ -1900,16 +1934,16 @@ export class NativeEngine extends Engine {
 
     public createVideoElement(constraints: MediaTrackConstraints): any {
         // create native object depending on stream. Only NativeCamera is supported for now.
-        if (this._nativeCamera) {
-            return this._nativeCamera.createVideo(constraints);
+        if (this._camera) {
+            return this._camera.createVideo(constraints);
         }
         return null;
     }
 
     public updateVideoTexture(texture: Nullable<InternalTexture>, video: HTMLVideoElement, invertY: boolean): void {
-        if (texture && texture._hardwareTexture && this._nativeCamera) {
+        if (texture && texture._hardwareTexture && this._camera) {
             var webGLTexture = texture._hardwareTexture.underlyingResource;
-            this._nativeCamera.updateVideoTexture(webGLTexture, video, invertY);
+            this._camera.updateVideoTexture(webGLTexture, video, invertY);
         }
     }
 
@@ -1932,7 +1966,7 @@ export class NativeEngine extends Engine {
         if (texture._hardwareTexture) {
             var webGLTexture = texture._hardwareTexture.underlyingResource;
             var filter = this._getNativeSamplingMode(samplingMode);
-            this._native.setTextureSampling(webGLTexture, filter);
+            this._setTextureSampling(webGLTexture, filter);
         }
 
         this._internalTexturesCache.push(texture);
@@ -1946,7 +1980,7 @@ export class NativeEngine extends Engine {
 
         if (bufferView && texture._hardwareTexture) {
             const underlyingResource = texture._hardwareTexture.underlyingResource;
-            this._native.loadRawTexture(underlyingResource, bufferView, texture.width, texture.height, this._getNativeTextureFormat(format, type), texture.generateMipMaps, texture.invertY);
+            this._engine.loadRawTexture(underlyingResource, bufferView, texture.width, texture.height, this._getNativeTextureFormat(format, type), texture.generateMipMaps, texture.invertY);
         }
 
         texture.isReady = true;
@@ -2063,15 +2097,15 @@ export class NativeEngine extends Engine {
 
                 const underlyingResource = texture._hardwareTexture.underlyingResource;
 
-                this._native.loadTexture(underlyingResource, data, !noMipmap, invertY, useSRGBBuffer, () => {
-                    texture.baseWidth = this._native.getTextureWidth(underlyingResource);
-                    texture.baseHeight = this._native.getTextureHeight(underlyingResource);
+                this._engine.loadTexture(underlyingResource, data, !noMipmap, invertY, useSRGBBuffer, () => {
+                    texture.baseWidth = this._engine.getTextureWidth(underlyingResource);
+                    texture.baseHeight = this._engine.getTextureHeight(underlyingResource);
                     texture.width = texture.baseWidth;
                     texture.height = texture.baseHeight;
                     texture.isReady = true;
 
                     var filter = this._getNativeSamplingMode(samplingMode);
-                    this._native.setTextureSampling(underlyingResource, filter);
+                    this._setTextureSampling(underlyingResource, filter);
 
                     if (scene) {
                         scene._removePendingData(texture);
@@ -2117,16 +2151,25 @@ export class NativeEngine extends Engine {
         const width = (<{ width: number, height: number, layers?: number }>size).width || <number>size;
         const height = (<{ width: number, height: number, layers?: number }>size).height || <number>size;
 
-        const framebuffer = this._native.createFrameBuffer(
+        const framebuffer = this._engine.createFrameBuffer(
             texture._hardwareTexture!.underlyingResource,
             width,
             height,
-            this._native.TEXTURE_FORMAT_RGBA8,
+            _native.Engine.TEXTURE_FORMAT_RGBA8,
             false,
             true,
             false);
         nativeRTWrapper._framebufferDepthStencil = framebuffer;
         return texture;
+    }
+
+    /** @hidden */
+    public _releaseFramebufferObjects(framebuffer: Nullable<WebGLFramebuffer>): void {
+        if (framebuffer) {
+            this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DELETEFRAMEBUFFER);
+            this._commandBufferEncoder.encodeCommandArgAsNativeData(framebuffer as NativeData);
+            this._commandBufferEncoder.finishEncodingCommand();
+        }
     }
 
     /**
@@ -2140,7 +2183,7 @@ export class NativeEngine extends Engine {
             if (Array.isArray(image)) {
                 const arr = <Array<ArrayBufferView>>image;
                 if (arr.length) {
-                    const image = this._native.createImageBitmap(arr[0]);
+                    const image = this._engine.createImageBitmap(arr[0]);
                     if (image) {
                         resolve(image);
                         return;
@@ -2159,7 +2202,7 @@ export class NativeEngine extends Engine {
      * @returns an uint8array containing RGBA values of bufferWidth * bufferHeight size
      */
     public resizeImageBitmap(image: ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array {
-        return this._native.resizeImageBitmap(image, bufferWidth, bufferHeight);
+        return this._engine.resizeImageBitmap(image, bufferWidth, bufferHeight);
     }
 
     /**
@@ -2234,7 +2277,7 @@ export class NativeEngine extends Engine {
                 texture._isRGBD = true;
                 texture.invertY = true;
 
-                this._native.loadCubeTextureWithMips(texture._hardwareTexture!.underlyingResource, imageData, false, useSRGBBuffer, () => {
+                this._engine.loadCubeTextureWithMips(texture._hardwareTexture!.underlyingResource, imageData, false, useSRGBBuffer, () => {
                     texture.isReady = true;
                     if (onLoad) {
                         onLoad();
@@ -2266,7 +2309,7 @@ export class NativeEngine extends Engine {
             const reorderedFiles = [files[0], files[3], files[1], files[4], files[2], files[5]];
             Promise.all(reorderedFiles.map((file) => Tools.LoadFileAsync(file).then((data) => new Uint8Array(data as ArrayBuffer)))).then((data) => {
                 return new Promise<void>((resolve, reject) => {
-                    this._native.loadCubeTexture(texture._hardwareTexture!.underlyingResource, data, !noMipmap, true, useSRGBBuffer, resolve, reject);
+                    this._engine.loadCubeTexture(texture._hardwareTexture!.underlyingResource, data, !noMipmap, true, useSRGBBuffer, resolve, reject);
                 });
             }).then(() => {
                 texture.isReady = true;
@@ -2287,7 +2330,7 @@ export class NativeEngine extends Engine {
 
     /** @hidden */
     public _createHardwareRenderTargetWrapper(isMulti: boolean, isCube: boolean, size: RenderTargetTextureSize): RenderTargetWrapper {
-        const rtWrapper = new NativeRenderTargetWrapper(isMulti, isCube, size, this, this._native);
+        const rtWrapper = new NativeRenderTargetWrapper(isMulti, isCube, size, this);
         this._renderTargetWrapperCache.push(rtWrapper);
         return rtWrapper;
     }
@@ -2331,7 +2374,7 @@ export class NativeEngine extends Engine {
             Logger.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
         }
 
-        const framebuffer = this._native.createFrameBuffer(
+        const framebuffer = this._engine.createFrameBuffer(
             texture._hardwareTexture!.underlyingResource,
             width,
             height,
@@ -2364,7 +2407,7 @@ export class NativeEngine extends Engine {
     public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
         if (texture._hardwareTexture) {
             var filter = this._getNativeSamplingMode(samplingMode);
-            this._native.setTextureSampling(texture._hardwareTexture.underlyingResource, filter);
+            this._setTextureSampling(texture._hardwareTexture.underlyingResource, filter);
         }
         texture.samplingMode = samplingMode;
     }
@@ -2409,14 +2452,14 @@ export class NativeEngine extends Engine {
         const buffer = indexBuffer as NativeDataBuffer;
         const data = this._normalizeIndexData(indices);
         buffer.is32Bits = (data.BYTES_PER_ELEMENT === 4);
-        this._native.updateDynamicIndexBuffer(buffer.nativeIndexBuffer, data.buffer, data.byteOffset, data.byteLength, offset);
+        this._engine.updateDynamicIndexBuffer(buffer.nativeIndexBuffer!, data.buffer, data.byteOffset, data.byteLength, offset);
     }
 
     public updateDynamicVertexBuffer(vertexBuffer: DataBuffer, verticies: DataArray, byteOffset?: number, byteLength?: number): void {
         const buffer = vertexBuffer as NativeDataBuffer;
         const data = ArrayBuffer.isView(verticies) ? verticies : new Float32Array(verticies);
-        this._native.updateDynamicVertexBuffer(
-            buffer.nativeVertexBuffer,
+        this._engine.updateDynamicVertexBuffer(
+            buffer.nativeVertexBuffer!,
             data.buffer,
             data.byteOffset + (byteOffset ?? 0),
             byteLength ?? data.byteLength);
@@ -2433,7 +2476,7 @@ export class NativeEngine extends Engine {
         if (!texture) {
             if (this._boundTexturesCache[channel] != null) {
                 this._activeChannel = channel;
-                this._native.setTexture(uniform, null);
+                this._setTextureCore(uniform, null);
             }
             return false;
         }
@@ -2469,16 +2512,41 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this._native.setTextureWrapMode(
+        this._setTextureWrapMode(
             internalTexture._hardwareTexture.underlyingResource,
             this._getAddressMode(texture.wrapU),
             this._getAddressMode(texture.wrapV),
             this._getAddressMode(texture.wrapR));
         this._updateAnisotropicLevel(texture);
 
-        this._native.setTexture(uniform, internalTexture._hardwareTexture.underlyingResource);
+        this._setTextureCore(uniform, internalTexture._hardwareTexture.underlyingResource);
 
         return true;
+    }
+
+    // filter is a NativeFilter.XXXX value.
+    private _setTextureSampling(texture: WebGLTexture, filter: number) {
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETTEXTURESAMPLING);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(texture as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(filter);
+        this._commandBufferEncoder.finishEncodingCommand();
+    }
+
+    // addressModes are NativeAddressMode.XXXX values.
+    private _setTextureWrapMode(texture: WebGLTexture, addressModeU: number, addressModeV: number, addressModeW: number) {
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETTEXTUREWRAPMODE);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(texture as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(addressModeU);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(addressModeV);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(addressModeW);
+        this._commandBufferEncoder.finishEncodingCommand();
+    }
+
+    private _setTextureCore(uniform: WebGLUniformLocation, texture: Nullable<WebGLTexture>) {
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETTEXTURE);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(texture as NativeData);
+        this._commandBufferEncoder.finishEncodingCommand();
     }
 
     // TODO: Share more of this logic with the base implementation.
@@ -2492,7 +2560,10 @@ export class NativeEngine extends Engine {
         }
 
         if (internalTexture._cachedAnisotropicFilteringLevel !== value) {
-            this._native.setTextureAnisotropicLevel(internalTexture._hardwareTexture.underlyingResource, value);
+            this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETTEXTUREANISOTROPICLEVEL);
+            this._commandBufferEncoder.encodeCommandArgAsNativeData(internalTexture._hardwareTexture.underlyingResource);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(value);
+            this._commandBufferEncoder.finishEncodingCommand();
             internalTexture._cachedAnisotropicFilteringLevel = value;
         }
     }
@@ -2501,11 +2572,11 @@ export class NativeEngine extends Engine {
     private _getAddressMode(wrapMode: number): number {
         switch (wrapMode) {
             case Constants.TEXTURE_WRAP_ADDRESSMODE:
-                return this._native.ADDRESS_MODE_WRAP;
+                return _native.Engine.ADDRESS_MODE_WRAP;
             case Constants.TEXTURE_CLAMP_ADDRESSMODE:
-                return this._native.ADDRESS_MODE_CLAMP;
+                return _native.Engine.ADDRESS_MODE_CLAMP;
             case Constants.TEXTURE_MIRROR_ADDRESSMODE:
-                return this._native.ADDRESS_MODE_MIRROR;
+                return _native.Engine.ADDRESS_MODE_MIRROR;
             default:
                 throw new Error("Unexpected wrap mode: " + wrapMode + ".");
         }
@@ -2519,24 +2590,24 @@ export class NativeEngine extends Engine {
         }
         if (texture && texture._hardwareTexture) {
             const underlyingResource = texture._hardwareTexture.underlyingResource;
-            this._native.setTexture(uniform, underlyingResource);
+            this._setTextureCore(uniform, underlyingResource);
         }
     }
 
     protected _deleteBuffer(buffer: NativeDataBuffer): void {
         if (buffer.nativeIndexBuffer) {
-            this._native.deleteIndexBuffer(buffer.nativeIndexBuffer);
+            this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DELETEINDEXBUFFER);
+            this._commandBufferEncoder.encodeCommandArgAsNativeData(buffer.nativeIndexBuffer);
+            this._commandBufferEncoder.finishEncodingCommand();
             delete buffer.nativeIndexBuffer;
         }
 
         if (buffer.nativeVertexBuffer) {
-            this._native.deleteVertexBuffer(buffer.nativeVertexBuffer);
+            this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DELETEVERTEXBUFFER);
+            this._commandBufferEncoder.encodeCommandArgAsNativeData(buffer.nativeVertexBuffer);
+            this._commandBufferEncoder.finishEncodingCommand();
             delete buffer.nativeVertexBuffer;
         }
-    }
-
-    public releaseEffects() {
-        // TODO
     }
 
     /**
@@ -2546,10 +2617,10 @@ export class NativeEngine extends Engine {
      * @return ICanvas interface
      */
     public createCanvas(width: number, height: number): ICanvas {
-        if (!_native.NativeCanvas) {
+        if (!_native.Canvas) {
             throw new Error("Native Canvas plugin not available.");
         }
-        const canvas = new _native.NativeCanvas();
+        const canvas = new _native.Canvas();
         canvas.width = width;
         canvas.height = height;
         return canvas;
@@ -2560,10 +2631,10 @@ export class NativeEngine extends Engine {
      * @return IImage interface
      */
     public createCanvasImage(): IImage {
-        if (!_native.NativeCanvas) {
+        if (!_native.Canvas) {
             throw new Error("Native Canvas plugin not available.");
         }
-        const image = new _native.NativeCanvasImage();
+        const image = new _native.Image();
         return image;
     }
 
@@ -2592,29 +2663,29 @@ export class NativeEngine extends Engine {
     private _getNativeSamplingMode(samplingMode: number): number {
         switch (samplingMode) {
             case Constants.TEXTURE_NEAREST_NEAREST:
-                return this._native.TEXTURE_NEAREST_NEAREST;
+                return _native.Engine.TEXTURE_NEAREST_NEAREST;
             case Constants.TEXTURE_LINEAR_LINEAR:
-                return this._native.TEXTURE_LINEAR_LINEAR;
+                return _native.Engine.TEXTURE_LINEAR_LINEAR;
             case Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR:
-                return this._native.TEXTURE_LINEAR_LINEAR_MIPLINEAR;
+                return _native.Engine.TEXTURE_LINEAR_LINEAR_MIPLINEAR;
             case Constants.TEXTURE_NEAREST_NEAREST_MIPNEAREST:
-                return this._native.TEXTURE_NEAREST_NEAREST_MIPNEAREST;
+                return _native.Engine.TEXTURE_NEAREST_NEAREST_MIPNEAREST;
             case Constants.TEXTURE_NEAREST_LINEAR_MIPNEAREST:
-                return this._native.TEXTURE_NEAREST_LINEAR_MIPNEAREST;
+                return _native.Engine.TEXTURE_NEAREST_LINEAR_MIPNEAREST;
             case Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR:
-                return this._native.TEXTURE_NEAREST_LINEAR_MIPLINEAR;
+                return _native.Engine.TEXTURE_NEAREST_LINEAR_MIPLINEAR;
             case Constants.TEXTURE_NEAREST_LINEAR:
-                return this._native.TEXTURE_NEAREST_LINEAR;
+                return _native.Engine.TEXTURE_NEAREST_LINEAR;
             case Constants.TEXTURE_NEAREST_NEAREST_MIPLINEAR:
-                return this._native.TEXTURE_NEAREST_NEAREST_MIPLINEAR;
+                return _native.Engine.TEXTURE_NEAREST_NEAREST_MIPLINEAR;
             case Constants.TEXTURE_LINEAR_NEAREST_MIPNEAREST:
-                return this._native.TEXTURE_LINEAR_NEAREST_MIPNEAREST;
+                return _native.Engine.TEXTURE_LINEAR_NEAREST_MIPNEAREST;
             case Constants.TEXTURE_LINEAR_NEAREST_MIPLINEAR:
-                return this._native.TEXTURE_LINEAR_NEAREST_MIPLINEAR;
+                return _native.Engine.TEXTURE_LINEAR_NEAREST_MIPLINEAR;
             case Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST:
-                return this._native.TEXTURE_LINEAR_LINEAR_MIPNEAREST;
+                return _native.Engine.TEXTURE_LINEAR_LINEAR_MIPNEAREST;
             case Constants.TEXTURE_LINEAR_NEAREST:
-                return this._native.TEXTURE_LINEAR_NEAREST;
+                return _native.Engine.TEXTURE_LINEAR_NEAREST;
             default:
                 throw new Error(`Unsupported sampling mode: ${samplingMode}.`);
         }
@@ -2623,21 +2694,21 @@ export class NativeEngine extends Engine {
     private _getStencilFunc(func: number): number {
         switch (func) {
             case Constants.LESS:
-                return this._native.STENCIL_TEST_LESS;
+                return _native.Engine.STENCIL_TEST_LESS;
             case Constants.LEQUAL:
-                return this._native.STENCIL_TEST_LEQUAL;
+                return _native.Engine.STENCIL_TEST_LEQUAL;
             case Constants.EQUAL:
-                return this._native.STENCIL_TEST_EQUAL;
+                return _native.Engine.STENCIL_TEST_EQUAL;
             case Constants.GEQUAL:
-                return this._native.STENCIL_TEST_GEQUAL;
+                return _native.Engine.STENCIL_TEST_GEQUAL;
             case Constants.GREATER:
-                return this._native.STENCIL_TEST_GREATER;
+                return _native.Engine.STENCIL_TEST_GREATER;
             case Constants.NOTEQUAL:
-                return this._native.STENCIL_TEST_NOTEQUAL;
+                return _native.Engine.STENCIL_TEST_NOTEQUAL;
             case Constants.NEVER:
-                return this._native.STENCIL_TEST_NEVER;
+                return _native.Engine.STENCIL_TEST_NEVER;
             case Constants.ALWAYS:
-                return this._native.STENCIL_TEST_ALWAYS;
+                return _native.Engine.STENCIL_TEST_ALWAYS;
             default:
                 throw new Error(`Unsupported stencil func mode: ${func}.`);
         }
@@ -2646,21 +2717,21 @@ export class NativeEngine extends Engine {
     private _getStencilOpFail(opFail: number): number {
         switch (opFail) {
             case Constants.KEEP:
-                return this._native.STENCIL_OP_FAIL_S_KEEP;
+                return _native.Engine.STENCIL_OP_FAIL_S_KEEP;
             case Constants.ZERO:
-                return this._native.STENCIL_OP_FAIL_S_ZERO;
+                return _native.Engine.STENCIL_OP_FAIL_S_ZERO;
             case Constants.REPLACE:
-                return this._native.STENCIL_OP_FAIL_S_REPLACE;
+                return _native.Engine.STENCIL_OP_FAIL_S_REPLACE;
             case Constants.INCR:
-                return this._native.STENCIL_OP_FAIL_S_INCR;
+                return _native.Engine.STENCIL_OP_FAIL_S_INCR;
             case Constants.DECR:
-                return this._native.STENCIL_OP_FAIL_S_DECR;
+                return _native.Engine.STENCIL_OP_FAIL_S_DECR;
             case Constants.INVERT:
-                return this._native.STENCIL_OP_FAIL_S_INVERT;
+                return _native.Engine.STENCIL_OP_FAIL_S_INVERT;
             case Constants.INCR_WRAP:
-                return this._native.STENCIL_OP_FAIL_S_INCRSAT;
+                return _native.Engine.STENCIL_OP_FAIL_S_INCRSAT;
             case Constants.DECR_WRAP:
-                return this._native.STENCIL_OP_FAIL_S_DECRSAT;
+                return _native.Engine.STENCIL_OP_FAIL_S_DECRSAT;
             default:
                 throw new Error(`Unsupported stencil OpFail mode: ${opFail}.`);
         }
@@ -2669,21 +2740,21 @@ export class NativeEngine extends Engine {
     private _getStencilDepthFail(depthFail: number): number {
         switch (depthFail) {
             case Constants.KEEP:
-                return this._native.STENCIL_OP_FAIL_Z_KEEP;
+                return _native.Engine.STENCIL_OP_FAIL_Z_KEEP;
             case Constants.ZERO:
-                return this._native.STENCIL_OP_FAIL_Z_ZERO;
+                return _native.Engine.STENCIL_OP_FAIL_Z_ZERO;
             case Constants.REPLACE:
-                return this._native.STENCIL_OP_FAIL_Z_REPLACE;
+                return _native.Engine.STENCIL_OP_FAIL_Z_REPLACE;
             case Constants.INCR:
-                return this._native.STENCIL_OP_FAIL_Z_INCR;
+                return _native.Engine.STENCIL_OP_FAIL_Z_INCR;
             case Constants.DECR:
-                return this._native.STENCIL_OP_FAIL_Z_DECR;
+                return _native.Engine.STENCIL_OP_FAIL_Z_DECR;
             case Constants.INVERT:
-                return this._native.STENCIL_OP_FAIL_Z_INVERT;
+                return _native.Engine.STENCIL_OP_FAIL_Z_INVERT;
             case Constants.INCR_WRAP:
-                return this._native.STENCIL_OP_FAIL_Z_INCRSAT;
+                return _native.Engine.STENCIL_OP_FAIL_Z_INCRSAT;
             case Constants.DECR_WRAP:
-                return this._native.STENCIL_OP_FAIL_Z_DECRSAT;
+                return _native.Engine.STENCIL_OP_FAIL_Z_DECRSAT;
             default:
                 throw new Error(`Unsupported stencil depthFail mode: ${depthFail}.`);
         }
@@ -2692,21 +2763,21 @@ export class NativeEngine extends Engine {
     private _getStencilDepthPass(opPass: number): number {
         switch (opPass) {
             case Constants.KEEP:
-                return this._native.STENCIL_OP_PASS_Z_KEEP;
+                return _native.Engine.STENCIL_OP_PASS_Z_KEEP;
             case Constants.ZERO:
-                return this._native.STENCIL_OP_PASS_Z_ZERO;
+                return _native.Engine.STENCIL_OP_PASS_Z_ZERO;
             case Constants.REPLACE:
-                return this._native.STENCIL_OP_PASS_Z_REPLACE;
+                return _native.Engine.STENCIL_OP_PASS_Z_REPLACE;
             case Constants.INCR:
-                return this._native.STENCIL_OP_PASS_Z_INCR;
+                return _native.Engine.STENCIL_OP_PASS_Z_INCR;
             case Constants.DECR:
-                return this._native.STENCIL_OP_PASS_Z_DECR;
+                return _native.Engine.STENCIL_OP_PASS_Z_DECR;
             case Constants.INVERT:
-                return this._native.STENCIL_OP_PASS_Z_INVERT;
+                return _native.Engine.STENCIL_OP_PASS_Z_INVERT;
             case Constants.INCR_WRAP:
-                return this._native.STENCIL_OP_PASS_Z_INCRSAT;
+                return _native.Engine.STENCIL_OP_PASS_Z_INCRSAT;
             case Constants.DECR_WRAP:
-                return this._native.STENCIL_OP_PASS_Z_DECRSAT;
+                return _native.Engine.STENCIL_OP_PASS_Z_DECRSAT;
             default:
                 throw new Error(`Unsupported stencil opPass mode: ${opPass}.`);
         }
@@ -2714,13 +2785,13 @@ export class NativeEngine extends Engine {
 
     private _getNativeTextureFormat(format: number, type: number): number {
         if (format == Constants.TEXTUREFORMAT_RGB && type == Constants.TEXTURETYPE_UNSIGNED_INT) {
-            return this._native.TEXTURE_FORMAT_RGB8;
+            return _native.Engine.TEXTURE_FORMAT_RGB8;
         }
         else if (format == Constants.TEXTUREFORMAT_RGBA && type == Constants.TEXTURETYPE_UNSIGNED_INT) {
-            return this._native.TEXTURE_FORMAT_RGBA8;
+            return _native.Engine.TEXTURE_FORMAT_RGBA8;
         }
         else if (format == Constants.TEXTUREFORMAT_RGBA && type == Constants.TEXTURETYPE_FLOAT) {
-            return this._native.TEXTURE_FORMAT_RGBA32F;
+            return _native.Engine.TEXTURE_FORMAT_RGBA32F;
         }
         else {
             throw new Error(`Unsupported texture format or type: format ${format}, type ${type}.`);
@@ -2730,27 +2801,27 @@ export class NativeEngine extends Engine {
     private _getNativeAlphaMode(mode: number): number {
         switch (mode) {
             case Constants.ALPHA_DISABLE:
-                return this._native.ALPHA_DISABLE;
+                return _native.Engine.ALPHA_DISABLE;
             case Constants.ALPHA_ADD:
-                return this._native.ALPHA_ADD;
+                return _native.Engine.ALPHA_ADD;
             case Constants.ALPHA_COMBINE:
-                return this._native.ALPHA_COMBINE;
+                return _native.Engine.ALPHA_COMBINE;
             case Constants.ALPHA_SUBTRACT:
-                return this._native.ALPHA_SUBTRACT;
+                return _native.Engine.ALPHA_SUBTRACT;
             case Constants.ALPHA_MULTIPLY:
-                return this._native.ALPHA_MULTIPLY;
+                return _native.Engine.ALPHA_MULTIPLY;
             case Constants.ALPHA_MAXIMIZED:
-                return this._native.ALPHA_MAXIMIZED;
+                return _native.Engine.ALPHA_MAXIMIZED;
             case Constants.ALPHA_ONEONE:
-                return this._native.ALPHA_ONEONE;
+                return _native.Engine.ALPHA_ONEONE;
             case Constants.ALPHA_PREMULTIPLIED:
-                return this._native.ALPHA_PREMULTIPLIED;
+                return _native.Engine.ALPHA_PREMULTIPLIED;
             case Constants.ALPHA_PREMULTIPLIED_PORTERDUFF:
-                return this._native.ALPHA_PREMULTIPLIED_PORTERDUFF;
+                return _native.Engine.ALPHA_PREMULTIPLIED_PORTERDUFF;
             case Constants.ALPHA_INTERPOLATE:
-                return this._native.ALPHA_INTERPOLATE;
+                return _native.Engine.ALPHA_INTERPOLATE;
             case Constants.ALPHA_SCREENMODE:
-                return this._native.ALPHA_SCREENMODE;
+                return _native.Engine.ALPHA_SCREENMODE;
             default:
                 throw new Error(`Unsupported alpha mode: ${mode}.`);
         }
@@ -2759,15 +2830,15 @@ export class NativeEngine extends Engine {
     private _getNativeAttribType(type: number): number {
         switch (type) {
             case VertexBuffer.BYTE:
-                return this._native.ATTRIB_TYPE_INT8;
+                return _native.Engine.ATTRIB_TYPE_INT8;
             case VertexBuffer.UNSIGNED_BYTE:
-                return this._native.ATTRIB_TYPE_UINT8;
+                return _native.Engine.ATTRIB_TYPE_UINT8;
             case VertexBuffer.SHORT:
-                return this._native.ATTRIB_TYPE_INT16;
+                return _native.Engine.ATTRIB_TYPE_INT16;
             case VertexBuffer.UNSIGNED_SHORT:
-                return this._native.ATTRIB_TYPE_UINT16;
+                return _native.Engine.ATTRIB_TYPE_UINT16;
             case VertexBuffer.FLOAT:
-                return this._native.ATTRIB_TYPE_FLOAT;
+                return _native.Engine.ATTRIB_TYPE_FLOAT;
             default:
                 throw new Error(`Unsupported attribute type: ${type}.`);
         }
