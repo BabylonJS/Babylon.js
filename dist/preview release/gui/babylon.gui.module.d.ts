@@ -1304,6 +1304,10 @@ declare module "babylonjs-gui/2D/controls/control" {
         /** @hidden */
         _intersectsRect(rect: Measure): boolean;
         /** @hidden */
+        protected _computeAdditionnalOffsetX(): number;
+        /** @hidden */
+        protected _computeAdditionnalOffsetY(): number;
+        /** @hidden */
         protected invalidateRect(): void;
         /** @hidden */
         _markAsDirty(force?: boolean): void;
@@ -1581,6 +1585,10 @@ declare module "babylonjs-gui/2D/controls/rectangle" {
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
+        /** @hidden */
+        protected _computeAdditionnalOffsetX(): 1 | 0;
+        /** @hidden */
+        protected _computeAdditionnalOffsetY(): 1 | 0;
         protected _localDraw(context: ICanvasRenderingContext): void;
         protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void;
         private _drawRoundedRect;
@@ -8304,6 +8312,10 @@ declare module BABYLON.GUI {
         /** @hidden */
         _intersectsRect(rect: Measure): boolean;
         /** @hidden */
+        protected _computeAdditionnalOffsetX(): number;
+        /** @hidden */
+        protected _computeAdditionnalOffsetY(): number;
+        /** @hidden */
         protected invalidateRect(): void;
         /** @hidden */
         _markAsDirty(force?: boolean): void;
@@ -8571,6 +8583,10 @@ declare module BABYLON.GUI {
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
+        /** @hidden */
+        protected _computeAdditionnalOffsetX(): 1 | 0;
+        /** @hidden */
+        protected _computeAdditionnalOffsetY(): 1 | 0;
         protected _localDraw(context: BABYLON.ICanvasRenderingContext): void;
         protected _additionalProcessing(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         private _drawRoundedRect;

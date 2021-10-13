@@ -24,4 +24,5 @@ export * from "./renderTargetTexture";
 export * from "./textureSampler";
 export * from "./texture";
 export * from "./thinTexture";
+export * from "./thinRenderTargetTexture";
 export * from "./videoTexture";
