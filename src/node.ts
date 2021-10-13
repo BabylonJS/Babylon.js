@@ -197,7 +197,7 @@ export class Node implements IBehaviorAware<Node> {
                 this._parentNode._children.splice(index, 1);
             }
 
-            if ((!parent || parent.getClassName() === "Bone") && !this._nodeDataStorage._isDisposed) {
+            if (!parent && !this._nodeDataStorage._isDisposed) {
                 this._addToSceneRootNodes();
             }
         }
@@ -212,7 +212,7 @@ export class Node implements IBehaviorAware<Node> {
             }
             this._parentNode._children.push(this);
 
-            if ((!previousParentNode || previousParentNode.getClassName() === "Bone") && (!parent || parent.getClassName() !== "Bone")) {
+            if (!previousParentNode) {
                 this._removeFromSceneRootNodes();
             }
         }
