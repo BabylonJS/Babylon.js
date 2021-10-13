@@ -2502,7 +2502,6 @@ export class ThinEngine {
 
     /** @hidden */
     public _releaseEffect(effect: Effect): void {
-        console.log("RELEASE EFFECT");
         if (this._compiledEffects[effect._key]) {
             delete this._compiledEffects[effect._key];
 
