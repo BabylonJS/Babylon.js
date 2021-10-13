@@ -2750,8 +2750,9 @@ declare module BABYLON {
          * Base class of all the textures in babylon.
          * This can be used as an internal texture wrapper in ThinEngine to benefit from the cache
          * @param internalTexture Define the internalTexture to wrap
+         * @param createTexture Defines wether the internal texture should be created
          */
-        constructor(internalTexture: Nullable<InternalTexture>);
+        constructor(internalTexture: Nullable<InternalTexture>, createTexture?: boolean);
         /**
          * Get if the texture is ready to be used (downloaded, converted, mip mapped...).
          * @returns true if fully ready
@@ -6103,6 +6104,15 @@ declare module BABYLON {
         }
 }
 declare module BABYLON {
+    /**
+     * An interface enforcing the renderTarget accessor to used by render target textures.
+     */
+    export interface IRenderTargetTexture {
+        /**
+         * Entry point to access the wrapper on a texture.
+         */
+        renderTarget: Nullable<RenderTargetWrapper>;
+    }
     /**
      * Wrapper around a render target (either single or multi textures)
      */
@@ -38805,7 +38815,7 @@ declare module BABYLON {
      * It is basically a dynamic texture that could be used to create special effects for instance.
      * Actually, It is the base of lot of effects in the framework like post process, shadows, effect layers and rendering pipelines...
      */
-    export class RenderTargetTexture extends Texture {
+    export class RenderTargetTexture extends Texture implements IRenderTargetTexture {
         /**
          * The texture will only be rendered once which can be useful to improve performance if everything in your render is static for instance.
          */
@@ -72664,7 +72674,7 @@ declare module BABYLON {
          * @param effectWrapper the effect to renderer
          * @param outputTexture texture to draw to, if null it will render to the screen.
          */
-        render(effectWrapper: EffectWrapper, outputTexture?: Nullable<RenderTargetWrapper | RenderTargetTexture>): void;
+        render(effectWrapper: EffectWrapper, outputTexture?: Nullable<RenderTargetWrapper | IRenderTargetTexture>): void;
         /**
          * Disposes of the effect renderer
          */
@@ -74801,6 +74811,52 @@ declare module BABYLON {
          * @returns the serialized JSON representation
          */
         serialize(): any;
+    }
+}
+declare module BABYLON {
+    /**
+     * This is a tiny helper class to wrap a RenderTargetWrapper in a texture
+     * usable as the input of an effect.
+     */
+    export class ThinRenderTargetTexture extends ThinTexture implements IRenderTargetTexture {
+        private readonly _renderTargetOptions;
+        private _renderTarget;
+        private _size;
+        /**
+         * Gets the render target wrapper associated with this render target
+         */
+        get renderTarget(): Nullable<RenderTargetWrapper>;
+        /**
+         * Instantiates a new ThinTexture.
+         * Base class of all the textures in babylon.
+         * This can be used as an internal texture wrapper in ThinEngine to benefit from the cache
+         * @param engine Define the internalTexture to wrap
+         * @param size Define the size of the RTT to create
+         * @param options Define rendertarget options
+         */
+        constructor(engine: ThinEngine, size: RenderTargetTextureSize, options: RenderTargetCreationOptions);
+        /**
+         * Resize the texture to a new desired size.
+         * Be careful as it will recreate all the data in the new texture.
+         * @param size Define the new size. It can be:
+         *   - a number for squared texture,
+         *   - an object containing { width: number, height: number }
+         */
+        resize(size: RenderTargetTextureSize): void;
+        /**
+         * Get the underlying lower level texture from Babylon.
+         * @returns the internal texture
+         */
+        getInternalTexture(): Nullable<InternalTexture>;
+        /**
+         * Get the class name of the texture.
+         * @returns "ThinRenderTargetTexture"
+         */
+        getClassName(): string;
+        /**
+         * Dispose the texture and release its associated resources.
+         */
+        dispose(disposeOnlyFramebuffers?: boolean): void;
     }
 }
 declare module BABYLON {

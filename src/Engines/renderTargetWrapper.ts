@@ -6,6 +6,16 @@ import { RenderTargetTextureSize } from "./Extensions/engine.renderTarget";
 import { ThinEngine } from "./thinEngine";
 
 /**
+ * An interface enforcing the renderTarget accessor to used by render target textures.
+ */
+export interface IRenderTargetTexture {
+    /**
+     * Entry point to access the wrapper on a texture.
+     */
+    renderTarget: Nullable<RenderTargetWrapper>;
+}
+
+/**
  * Wrapper around a render target (either single or multi textures)
  */
 export class RenderTargetWrapper {

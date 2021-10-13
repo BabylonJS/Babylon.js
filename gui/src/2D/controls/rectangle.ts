@@ -55,7 +55,6 @@ export class Rectangle extends Container {
         return "Rectangle";
     }
 
-        
     /** @hidden */
     protected _computeAdditionnalOffsetX() {
         if (this._cornerRadius) {

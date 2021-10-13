@@ -5410,6 +5410,14 @@ var Control = /** @class */ (function () {
         return true;
     };
     /** @hidden */
+    Control.prototype._computeAdditionnalOffsetX = function () {
+        return 0;
+    };
+    /** @hidden */
+    Control.prototype._computeAdditionnalOffsetY = function () {
+        return 0;
+    };
+    /** @hidden */
     Control.prototype.invalidateRect = function () {
         this._transform();
         if (this.host && this.host.useInvalidateRectOptimization) {
@@ -5426,7 +5434,9 @@ var Control = /** @class */ (function () {
             var rightShadowOffset = Math.max(Math.max(shadowOffsetX, 0) + shadowBlur * 2, 0);
             var topShadowOffset = Math.min(Math.min(shadowOffsetY, 0) - shadowBlur * 2, 0);
             var bottomShadowOffset = Math.max(Math.max(shadowOffsetY, 0) + shadowBlur * 2, 0);
-            this.host.invalidateRect(Math.floor(this._tmpMeasureA.left + leftShadowOffset), Math.floor(this._tmpMeasureA.top + topShadowOffset), Math.ceil(this._tmpMeasureA.left + this._tmpMeasureA.width + rightShadowOffset), Math.ceil(this._tmpMeasureA.top + this._tmpMeasureA.height + bottomShadowOffset));
+            var offsetX = this._computeAdditionnalOffsetX();
+            var offsetY = this._computeAdditionnalOffsetY();
+            this.host.invalidateRect(Math.floor(this._tmpMeasureA.left + leftShadowOffset - offsetX), Math.floor(this._tmpMeasureA.top + topShadowOffset - offsetY), Math.ceil(this._tmpMeasureA.left + this._tmpMeasureA.width + rightShadowOffset + offsetX), Math.ceil(this._tmpMeasureA.top + this._tmpMeasureA.height + bottomShadowOffset + offsetY));
         }
     };
     /** @hidden */
@@ -10305,6 +10315,22 @@ var Rectangle = /** @class */ (function (_super) {
     });
     Rectangle.prototype._getTypeName = function () {
         return "Rectangle";
+    };
+    /** @hidden */
+    Rectangle.prototype._computeAdditionnalOffsetX = function () {
+        if (this._cornerRadius) {
+            // Take in account the aliasing
+            return 1;
+        }
+        return 0;
+    };
+    /** @hidden */
+    Rectangle.prototype._computeAdditionnalOffsetY = function () {
+        if (this._cornerRadius) {
+            // Take in account the aliasing
+            return 1;
+        }
+        return 0;
     };
     Rectangle.prototype._localDraw = function (context) {
         context.save();
