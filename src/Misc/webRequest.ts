@@ -1,8 +1,8 @@
 import { IWebRequest } from './interfaces/iWebRequest';
 import { Nullable } from '../types';
+import { INative } from '../Engines/Native/nativeInterfaces';
 
-/** @hidden */
-declare const _native: any;
+declare const _native: INative;
 
 /** @hidden */
 function createXMLHttpRequest(): XMLHttpRequest {
