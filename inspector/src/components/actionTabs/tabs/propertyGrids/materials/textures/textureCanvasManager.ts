@@ -79,6 +79,8 @@ export class TextureCanvasManager {
     private _target: HtmlElementTexture | RawCubeTexture;
     /** The internal texture representation of the original texture */
     private _originalInternalTexture: Nullable<InternalTexture> = null;
+    /** The original URL of the texture (we'll delete this if they edit the texture, but restore it if they reset) */
+    private _originalTextureURL : Nullable<string>;
     /** Keeps track of whether we have modified the texture */
     private _didEdit: boolean = false;
 
@@ -155,6 +157,7 @@ export class TextureCanvasManager {
 
         this._originalTexture = texture;
         this._originalInternalTexture = this._originalTexture._texture;
+        this._originalTextureURL = (this._originalTexture as Texture).url;
         this._engine = new Engine(this._UICanvas, true);
         this._scene = new Scene(this._engine, { virtual: true });
         this._scene.clearColor = new Color4(0.11, 0.11, 0.11, 1.0);
@@ -357,6 +360,7 @@ export class TextureCanvasManager {
             this.pushTexture();
         }
         this._originalTexture._texture = this._target._texture;
+        (this._originalTexture as Texture).url = null;
         this._channelsTexture.element = element;
         this.updateDisplay();
         this._onUpdate();
@@ -592,6 +596,7 @@ export class TextureCanvasManager {
             this._tool.instance.onReset();
         }
         this._originalTexture._texture = this._originalInternalTexture;
+        (this._originalTexture as Texture).url = this._originalTextureURL;
         this.grabOriginalTexture();
         this.makePlane();
         this._didEdit = false;
