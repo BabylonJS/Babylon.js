@@ -642,9 +642,9 @@ class CommandBufferEncoder {
     private readonly _commandStream: NativeDataStream;
     private _isCommandBufferScopeActive = false;
 
-    public constructor(private readonly _nativeEngine: INativeEngine) {
+    public constructor(private readonly _engine: INativeEngine) {
         this._commandStream = NativeEngine._createNativeDataStream();
-        this._nativeEngine.setCommandDataStream(this._commandStream);
+        this._engine.setCommandDataStream(this._commandStream);
     }
 
     public beginCommandScope() {
@@ -652,7 +652,6 @@ class CommandBufferEncoder {
             throw new Error("Command scope already active.");
         }
 
-        // console.log("COMMAND BUFFER: Begin scope");
         this._isCommandBufferScopeActive = true;
     }
 
@@ -662,42 +661,34 @@ class CommandBufferEncoder {
         }
 
         this._isCommandBufferScopeActive = false;
-        // console.log("COMMAND BUFFER: End scope");
-        this._submitCommandBuffer();
+        this._engine.submitCommands();
     }
 
     public startEncodingCommand(command: NativeData) {
-        // console.log(`COMMAND BUFFER: Encode command: ${command}`);
         this._commandStream.writeNativeData(command);
     }
 
     public encodeCommandArgAsUInt32(commandArg: unknown) {
-        // console.log(`COMMAND BUFFER:   Encode uint32: ${commandArg}`);
         this._commandStream.writeUint32(commandArg as number);
     }
 
     public encodeCommandArgAsUInt32s(commandArg: Uint32Array) {
-        // console.log(`COMMAND BUFFER:   Encode uint32s: ${commandArg}`);
         this._commandStream.writeUint32Array(commandArg);
     }
 
     public encodeCommandArgAsInt32(commandArg: unknown) {
-        // console.log(`COMMAND BUFFER:   Encode uint32: ${commandArg}`);
         this._commandStream.writeInt32(commandArg as number);
     }
 
     public encodeCommandArgAsInt32s(commandArg: Int32Array) {
-        // console.log(`COMMAND BUFFER:   Encode uint32s: ${commandArg}`);
         this._commandStream.writeInt32Array(commandArg);
     }
 
     public encodeCommandArgAsFloat32(commandArg: unknown) {
-        // console.log(`COMMAND BUFFER:   Encode float32: ${commandArg}`);
         this._commandStream.writeFloat32(commandArg as number);
     }
 
     public encodeCommandArgAsFloat32s(commandArg: Float32Array) {
-        // console.log(`COMMAND BUFFER:   Encode float32s: ${commandArg}`);
         this._commandStream.writeFloat32Array(commandArg);
     }
 
@@ -707,12 +698,8 @@ class CommandBufferEncoder {
 
     public finishEncodingCommand() {
         if (!this._isCommandBufferScopeActive) {
-            this._submitCommandBuffer();
+            this._engine.submitCommands();
         }
-    }
-
-    private _submitCommandBuffer() {
-        this._nativeEngine.submitCommands();
     }
 }
 
