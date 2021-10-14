@@ -42911,7 +42911,7 @@ var CommandBarComponent = /** @class */ (function (_super) {
                             onClick: function () { _this.props.globalState.onSnippetLoadObservable.notifyObservers(); }
                         }, {
                             label: "Help",
-                            onClick: function () { window.open('https://doc.babylonjs.com/divingDeeper/gui/gui', '_blank'); }
+                            onClick: function () { window.open('https://doc.babylonjs.com/toolsAndResources/tools/guiEditor', '_blank'); }
                         },
                     ] }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Select", icon: pointerIcon, shortcut: "S", isActive: this._selecting, onClick: function () { if (!_this._selecting)
@@ -43379,7 +43379,7 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
         this.forceUpdate();
     };
     CommonControlPropertyGridComponent.prototype._checkAndUpdateValues = function (propertyName, value) {
-        var _a;
+        var _a, _b;
         //check if it contains either a px or a % sign
         var percentage = this._responsive;
         var negative = value.charAt(0) === '-';
@@ -43389,7 +43389,10 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
         else if (value.charAt(value.length - 1) === 'x' && value.charAt(value.length - 2) === 'p') {
             percentage = false;
         }
-        var newValue = (_a = value.match(/([\d\.\,]+)/g)) === null || _a === void 0 ? void 0 : _a[0];
+        if (((_a = this.props.control.parent) === null || _a === void 0 ? void 0 : _a.typeName) === "StackPanel") {
+            percentage = false;
+        }
+        var newValue = (_b = value.match(/([\d\.\,]+)/g)) === null || _b === void 0 ? void 0 : _b[0];
         if (!newValue) {
             newValue = '0';
         }
@@ -43667,8 +43670,8 @@ var GridPropertyGridComponent = /** @class */ (function (_super) {
     GridPropertyGridComponent.prototype.renderRows = function () {
         var _this = this;
         return (this._rowDefinitions.map(function (rd, i) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { lockObject: _this.props.lockObject, key: "r" + i, label: "Row " + i, value: rd, numbersOnly: true, onChange: function (newValue) {
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: "r" + i, className: "divider" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { lockObject: _this.props.lockObject, key: "rText" + i, label: "Row " + i, value: rd, numbersOnly: true, onChange: function (newValue) {
                         _this._rowDefinitions[i] = newValue;
                         _this._rowEditFlags[i] = true;
                         _this._editedRow = true;
@@ -43705,8 +43708,8 @@ var GridPropertyGridComponent = /** @class */ (function (_super) {
     GridPropertyGridComponent.prototype.renderColumns = function () {
         var _this = this;
         return (this._columnDefinitions.map(function (cd, i) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { lockObject: _this.props.lockObject, key: "c" + i, label: "Column " + i, value: cd, numbersOnly: true, onChange: function (newValue) {
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: "c" + i, className: "divider" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { lockObject: _this.props.lockObject, key: "ctext" + i, label: "Column " + i, value: cd, numbersOnly: true, onChange: function (newValue) {
                         _this._columnDefinitions[i] = newValue;
                         _this._columnEditFlags[i] = true;
                         _this._editedColumn = true;
@@ -43772,7 +43775,6 @@ var GridPropertyGridComponent = /** @class */ (function (_super) {
             grid.setRowDefinition(i, rowValues[i], !this.checkPercentage(this._rowDefinitions[i]));
         }
         this.setRowValues();
-        this.forceUpdate();
     };
     GridPropertyGridComponent.prototype.resizeColumn = function () {
         var grid = this.props.grid;
@@ -43832,7 +43834,6 @@ var GridPropertyGridComponent = /** @class */ (function (_super) {
             grid.setColumnDefinition(i, columnValues[i], !this.checkPercentage(this._columnDefinitions[i]));
         }
         this.setColumnValues();
-        this.forceUpdate();
     };
     GridPropertyGridComponent.prototype.checkValue = function (value, percent) {
         var _a;
@@ -43856,6 +43857,8 @@ var GridPropertyGridComponent = /** @class */ (function (_super) {
             this._previousGrid = grid;
             this.setRowValues();
             this.setColumnValues();
+            this.resizeColumn();
+            this.resizeRow();
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: grid, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -43911,8 +43914,9 @@ var GridPropertyGridComponent = /** @class */ (function (_super) {
                             _this.forceUpdate();
                         } })),
             this.renderRows(),
-            this._editedRow && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "SAVE ROW CHANGES", onClick: function () {
+            this._editedRow && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "RECALCULATE ROW CHANGES", onClick: function () {
                     _this.resizeRow();
+                    _this.forceUpdate();
                 } }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "ADD COLUMN", onClick: function () {
@@ -43966,8 +43970,9 @@ var GridPropertyGridComponent = /** @class */ (function (_super) {
                             _this.forceUpdate();
                         } })),
             this.renderColumns(),
-            this._editedColumn && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "SAVE COLUMN CHANGES", onClick: function () {
+            this._editedColumn && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "RECALCULATE COLUMN CHANGES", onClick: function () {
                     _this.resizeColumn();
+                    _this.forceUpdate();
                 } })));
     };
     return GridPropertyGridComponent;
@@ -46307,6 +46312,10 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                         this.props.globalState.draggedControlDirection === _globalState__WEBPACK_IMPORTED_MODULE_2__["DragOverLocation"].CENTER) {
                         draggedControlParent.removeControl(draggedControl);
                         dropLocationControl.addControl(draggedControl);
+                        var stackPanel = dropLocationControl.typeName === "StackPanel" || dropLocationControl.typeName === "VirtualKeyboard";
+                        if (stackPanel) {
+                            this._convertToPixels(draggedControl, dropLocationControl);
+                        }
                     }
                     else if (dropLocationControl.parent) { //dropping inside the controls parent container
                         if (dropLocationControl.parent.typeName != "Grid") {
@@ -46316,6 +46325,9 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                             index = this._adjustParentingIndex(index, reversed); //adjusting index to be before or after based on where the control is over
                             dropLocationControl.parent.children.splice(index, 0, draggedControl);
                             draggedControl.parent = dropLocationControl.parent;
+                            if (reversed) {
+                                this._convertToPixels(draggedControl, draggedControl.parent);
+                            }
                         }
                         else if (dropLocationControl.parent === draggedControlParent) { //special case for grid
                             this._reorderGrid(dropLocationControl.parent, draggedControl, dropLocationControl);
@@ -46341,6 +46353,15 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         }
         this.globalState.draggedControl = null;
         this.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
+    };
+    WorkbenchComponent.prototype._convertToPixels = function (draggedControl, parent) {
+        var width = draggedControl.widthInPixels + "px";
+        var height = draggedControl.heightInPixels + "px";
+        if (draggedControl.width !== width || draggedControl.height !== height) {
+            draggedControl.width = width;
+            draggedControl.height = height;
+            alert("Warning: Parenting to stack panel will convert control to pixel value");
+        }
     };
     WorkbenchComponent.prototype._reorderGrid = function (grid, draggedControl, dropLocationControl) {
         var cellInfo = _tools__WEBPACK_IMPORTED_MODULE_5__["Tools"].getCellInfo(grid, draggedControl);

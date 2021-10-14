@@ -1390,6 +1390,16 @@ export class Control {
     }
 
     /** @hidden */
+    protected _computeAdditionnalOffsetX() {
+        return 0;
+    }
+
+    /** @hidden */
+    protected _computeAdditionnalOffsetY() {
+        return 0;
+    }
+
+    /** @hidden */
     protected invalidateRect() {
         this._transform();
         if (this.host && this.host.useInvalidateRectOptimization) {
@@ -1409,11 +1419,14 @@ export class Control {
             var topShadowOffset = Math.min(Math.min(shadowOffsetY, 0) - shadowBlur * 2, 0);
             var bottomShadowOffset = Math.max(Math.max(shadowOffsetY, 0) + shadowBlur * 2, 0);
 
+            const offsetX = this._computeAdditionnalOffsetX();
+            const offsetY = this._computeAdditionnalOffsetY();
+
             this.host.invalidateRect(
-                Math.floor(this._tmpMeasureA.left + leftShadowOffset),
-                Math.floor(this._tmpMeasureA.top + topShadowOffset),
-                Math.ceil(this._tmpMeasureA.left + this._tmpMeasureA.width + rightShadowOffset),
-                Math.ceil(this._tmpMeasureA.top + this._tmpMeasureA.height + bottomShadowOffset),
+                Math.floor(this._tmpMeasureA.left + leftShadowOffset - offsetX),
+                Math.floor(this._tmpMeasureA.top + topShadowOffset - offsetY),
+                Math.ceil(this._tmpMeasureA.left + this._tmpMeasureA.width + rightShadowOffset + offsetX),
+                Math.ceil(this._tmpMeasureA.top + this._tmpMeasureA.height + bottomShadowOffset + offsetY),
             );
         }
     }

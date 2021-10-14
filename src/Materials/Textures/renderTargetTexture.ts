@@ -15,7 +15,7 @@ import { PostProcessManager } from "../../PostProcesses/postProcessManager";
 import { PostProcess } from "../../PostProcesses/postProcess";
 import { RenderingManager } from "../../Rendering/renderingManager";
 import { Constants } from "../../Engines/constants";
-import { RenderTargetWrapper } from "../../Engines/renderTargetWrapper";
+import { IRenderTargetTexture, RenderTargetWrapper } from "../../Engines/renderTargetWrapper";
 import { RenderTargetTextureSize } from "../../Engines/Extensions/engine.renderTarget";
 
 import "../../Engines/Extensions/engine.renderTarget";
@@ -27,7 +27,7 @@ import { Engine } from '../../Engines/engine';
  * It is basically a dynamic texture that could be used to create special effects for instance.
  * Actually, It is the base of lot of effects in the framework like post process, shadows, effect layers and rendering pipelines...
  */
-export class RenderTargetTexture extends Texture {
+export class RenderTargetTexture extends Texture implements IRenderTargetTexture {
     /**
      * The texture will only be rendered once which can be useful to improve performance if everything in your render is static for instance.
      */

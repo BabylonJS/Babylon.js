@@ -518,107 +518,533 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Extended version of XMLHttpRequest with support for customizations (headers, ...)
+     * Event Types
      */
-    export class WebRequest implements IWebRequest {
-        private readonly _xhr;
+    export enum DeviceInputEventType {
+        /** PointerMove */
+        PointerMove = 0,
+        /** PointerDown */
+        PointerDown = 1,
+        /** PointerUp */
+        PointerUp = 2
+    }
+    /**
+     * Native friendly interface for Event Object
+     */
+    export interface IEvent {
         /**
-         * Custom HTTP Request Headers to be sent with XMLHttpRequests
-         * i.e. when loading files, where the server/service expects an Authorization header
+         * Current target for an event
          */
-        static CustomRequestHeaders: {
-            [key: string]: string;
-        };
+        currentTarget?: any;
         /**
-         * Add callback functions in this array to update all the requests before they get sent to the network
+         * Alias for target
+         * @deprecated
          */
-        static CustomRequestModifiers: ((request: XMLHttpRequest, url: string) => void)[];
-        private _injectCustomRequestHeaders;
+        srcElement?: any;
         /**
-         * Gets or sets a function to be called when loading progress changes
+         * Type of event
          */
-        get onprogress(): ((this: XMLHttpRequest, ev: ProgressEvent) => any) | null;
-        set onprogress(value: ((this: XMLHttpRequest, ev: ProgressEvent) => any) | null);
+        type: string;
         /**
-         * Returns client's state
+         * Reference to object where object was dispatched
          */
-        get readyState(): number;
+        target: any;
         /**
-         * Returns client's status
+         * Tells user agent what to do when not explicitly handled
          */
-        get status(): number;
+        preventDefault: () => void;
+    }
+    /**
+     * Native friendly interface for UIEvent Object
+     */
+    export interface IUIEvent extends IEvent {
         /**
-         * Returns client's status as a text
+         * Provides current click count
          */
-        get statusText(): string;
+        detail: number;
         /**
-         * Returns client's response
+         * Horizontal coordinate of event
          */
-        get response(): any;
+        pageX: number;
         /**
-         * Returns client's response url
+         * Vertical coordinate of event
          */
-        get responseURL(): string;
+        pageY: number;
+    }
+    /**
+     * Native friendly interface for KeyboardEvent Object
+     */
+    export interface IKeyboardEvent extends IUIEvent {
         /**
-         * Returns client's response as text
+         * Status of Alt key being pressed
          */
-        get responseText(): string;
+        altKey: boolean;
         /**
-         * Gets or sets the expected response type
+         * Unicode value of character pressed
+         * @deprecated
          */
-        get responseType(): XMLHttpRequestResponseType;
-        set responseType(value: XMLHttpRequestResponseType);
+        charCode?: number;
         /**
-         * Gets or sets the timeout value in milliseconds
+         * Code for key based on layout
          */
-        get timeout(): number;
-        set timeout(value: number);
-        /** @hidden */
-        addEventListener<K extends keyof XMLHttpRequestEventMap>(type: K, listener: (this: XMLHttpRequest, ev: XMLHttpRequestEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
-        /** @hidden */
-        removeEventListener<K extends keyof XMLHttpRequestEventMap>(type: K, listener: (this: XMLHttpRequest, ev: XMLHttpRequestEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        code: string;
         /**
-         * Cancels any network activity
+         * Status of Ctrl key being pressed
          */
-        abort(): void;
+        ctrlKey: boolean;
         /**
-         * Initiates the request. The optional argument provides the request body. The argument is ignored if request method is GET or HEAD
-         * @param body defines an optional request body
+         * String representation of key
          */
-        send(body?: Document | XMLHttpRequestBodyInit | null): void;
+        key: string;
         /**
-         * Sets the request method, request URL
-         * @param method defines the method to use (GET, POST, etc..)
-         * @param url defines the url to connect with
+         * ASCII value of key
+         * @deprecated
          */
-        open(method: string, url: string): void;
+        keyCode: number;
         /**
-         * Sets the value of a request header.
-         * @param name The name of the header whose value is to be set
-         * @param value The value to set as the body of the header
+         * Status of Meta key (eg. Windows key) being pressed
          */
-        setRequestHeader(name: string, value: string): void;
+        metaKey: boolean;
         /**
-         * Get the string containing the text of a particular header's value.
-         * @param name The name of the header
-         * @returns The string containing the text of the given header name
+         * Status of Shift key being pressed
          */
-        getResponseHeader(name: string): Nullable<string>;
+        shiftKey: boolean;
+    }
+    /**
+     * Native friendly interface for MouseEvent Object
+     */
+    export interface IMouseEvent extends IUIEvent {
+        /**
+         * Status of Alt key being pressed
+         */
+        altKey: boolean;
+        /**
+         * Value of single mouse button pressed
+         */
+        button: number;
+        /**
+         * Value of all mouse buttons pressed
+         */
+        buttons: number;
+        /**
+         * Current X coordinate
+         */
+        clientX: number;
+        /**
+         * Current Y coordinate
+         */
+        clientY: number;
+        /**
+         * Status of Ctrl key being pressed
+         */
+        ctrlKey: boolean;
+        /**
+         * Status of Meta key (eg. Windows key) being pressed
+         */
+        metaKey: boolean;
+        /**
+         * Delta of movement on X axis
+         */
+        movementX: number;
+        /**
+         * Delta of movement on Y axis
+         */
+        movementY: number;
+        /**
+         * Delta of movement on X axis
+         */
+        mozMovementX?: number;
+        /**
+         * Delta of movement on Y axis
+         */
+        mozMovementY?: number;
+        /**
+         * Delta of movement on X axis
+         */
+        msMovementX?: any;
+        /**
+         * Delta of movement on Y axis
+         */
+        msMovementY?: any;
+        /**
+         * Current coordinate of X within container
+         */
+        offsetX: number;
+        /**
+         * Current coordinate of Y within container
+         */
+        offsetY: number;
+        /**
+         * Status of Shift key being pressed
+         */
+        shiftKey: boolean;
+        /**
+         * Delta of movement on X axis
+         */
+        webkitMovementX?: any;
+        /**
+         * Delta of movement on Y axis
+         */
+        webkitMovementY?: any;
+        /**
+         * Alias of clientX
+         */
+        x: number;
+        /**
+         * Alias of clientY
+         */
+        y: number;
+    }
+    /**
+     * Native friendly interface for PointerEvent Object
+     */
+    export interface IPointerEvent extends IMouseEvent {
+        /**
+         * Pointer Event ID
+         */
+        pointerId: number;
+        /**
+         * Type of pointer
+         */
+        pointerType: string;
+    }
+    /**
+     * Native friendly interface for WheelEvent Object
+     */
+    export interface IWheelEvent extends IMouseEvent {
+        /**
+         * Units for delta value
+         */
+        deltaMode: number;
+        /**
+         * Horizontal scroll delta
+         */
+        deltaX: number;
+        /**
+         * Vertical scroll delta
+         */
+        deltaY: number;
+        /**
+         * Z-Axis scroll delta
+         */
+        deltaZ: number;
+        /**
+         * WheelDelta (From MouseWheel Event)
+         */
+        wheelDelta?: number;
+    }
+    /**
+     * Constants used for Events
+     */
+    export class EventConstants {
+        /**
+         * Pixel delta for Wheel Events (Default)
+         */
+        static DOM_DELTA_PIXEL: number;
+        /**
+         * Line delta for Wheel Events
+         */
+        static DOM_DELTA_LINE: number;
+        /**
+         * Page delta for Wheel Events
+         */
+        static DOM_DELTA_PAGE: number;
     }
 }
 declare module BABYLON {
     /**
-     * File request interface
+     * Enum for Device Types
      */
-    export interface IFileRequest {
+    export enum DeviceType {
+        /** Generic */
+        Generic = 0,
+        /** Keyboard */
+        Keyboard = 1,
+        /** Mouse */
+        Mouse = 2,
+        /** Touch Pointers */
+        Touch = 3,
+        /** PS4 Dual Shock */
+        DualShock = 4,
+        /** Xbox */
+        Xbox = 5,
+        /** Switch Controller */
+        Switch = 6
+    }
+    /**
+     * Enum for All Pointers (Touch/Mouse)
+     */
+    export enum PointerInput {
+        /** Horizontal Axis */
+        Horizontal = 0,
+        /** Vertical Axis */
+        Vertical = 1,
+        /** Left Click or Touch */
+        LeftClick = 2,
+        /** Middle Click */
+        MiddleClick = 3,
+        /** Right Click */
+        RightClick = 4,
+        /** Browser Back */
+        BrowserBack = 5,
+        /** Browser Forward */
+        BrowserForward = 6,
+        /** Mouse Wheel X */
+        MouseWheelX = 7,
+        /** Mouse Wheel Y */
+        MouseWheelY = 8,
+        /** Mouse Wheel Z */
+        MouseWheelZ = 9,
+        /** Delta X */
+        DeltaHorizontal = 10,
+        /** Delta Y */
+        DeltaVertical = 11,
+        /** MoveBeing Hijack for simultaneous buttons pressed for instance */
+        FakeMove = 12
+    }
+    /**
+     * Enum for Dual Shock Gamepad
+     */
+    export enum DualShockInput {
+        /** Cross */
+        Cross = 0,
+        /** Circle */
+        Circle = 1,
+        /** Square */
+        Square = 2,
+        /** Triangle */
+        Triangle = 3,
+        /** L1 */
+        L1 = 4,
+        /** R1 */
+        R1 = 5,
+        /** L2 */
+        L2 = 6,
+        /** R2 */
+        R2 = 7,
+        /** Share */
+        Share = 8,
+        /** Options */
+        Options = 9,
+        /** L3 */
+        L3 = 10,
+        /** R3 */
+        R3 = 11,
+        /** DPadUp */
+        DPadUp = 12,
+        /** DPadDown */
+        DPadDown = 13,
+        /** DPadLeft */
+        DPadLeft = 14,
+        /** DRight */
+        DPadRight = 15,
+        /** Home */
+        Home = 16,
+        /** TouchPad */
+        TouchPad = 17,
+        /** LStickXAxis */
+        LStickXAxis = 18,
+        /** LStickYAxis */
+        LStickYAxis = 19,
+        /** RStickXAxis */
+        RStickXAxis = 20,
+        /** RStickYAxis */
+        RStickYAxis = 21
+    }
+    /**
+     * Enum for Xbox Gamepad
+     */
+    export enum XboxInput {
+        /** A */
+        A = 0,
+        /** B */
+        B = 1,
+        /** X */
+        X = 2,
+        /** Y */
+        Y = 3,
+        /** LB */
+        LB = 4,
+        /** RB */
+        RB = 5,
+        /** LT */
+        LT = 6,
+        /** RT */
+        RT = 7,
+        /** Back */
+        Back = 8,
+        /** Start */
+        Start = 9,
+        /** LS */
+        LS = 10,
+        /** RS */
+        RS = 11,
+        /** DPadUp */
+        DPadUp = 12,
+        /** DPadDown */
+        DPadDown = 13,
+        /** DPadLeft */
+        DPadLeft = 14,
+        /** DRight */
+        DPadRight = 15,
+        /** Home */
+        Home = 16,
+        /** LStickXAxis */
+        LStickXAxis = 17,
+        /** LStickYAxis */
+        LStickYAxis = 18,
+        /** RStickXAxis */
+        RStickXAxis = 19,
+        /** RStickYAxis */
+        RStickYAxis = 20
+    }
+    /**
+     * Enum for Switch (Pro/JoyCon L+R) Gamepad
+     */
+    export enum SwitchInput {
+        /** B */
+        B = 0,
+        /** A */
+        A = 1,
+        /** Y */
+        Y = 2,
+        /** X */
+        X = 3,
+        /** L */
+        L = 4,
+        /** R */
+        R = 5,
+        /** ZL */
+        ZL = 6,
+        /** ZR */
+        ZR = 7,
+        /** Minus */
+        Minus = 8,
+        /** Plus */
+        Plus = 9,
+        /** LS */
+        LS = 10,
+        /** RS */
+        RS = 11,
+        /** DPadUp */
+        DPadUp = 12,
+        /** DPadDown */
+        DPadDown = 13,
+        /** DPadLeft */
+        DPadLeft = 14,
+        /** DRight */
+        DPadRight = 15,
+        /** Home */
+        Home = 16,
+        /** Capture */
+        Capture = 17,
+        /** LStickXAxis */
+        LStickXAxis = 18,
+        /** LStickYAxis */
+        LStickYAxis = 19,
+        /** RStickXAxis */
+        RStickXAxis = 20,
+        /** RStickYAxis */
+        RStickYAxis = 21
+    }
+}
+declare module BABYLON {
+    /**
+     * Interface for Observables in DeviceInputSystem
+     */
+    export interface IDeviceEvent extends IEvent {
         /**
-         * Raised when the request is complete (success or error).
+         * Device type
          */
-        onCompleteObservable: Observable<IFileRequest>;
+        deviceType: DeviceType;
         /**
-         * Aborts the request for a file.
+         * Device slot
          */
-        abort: () => void;
+        deviceSlot: number;
+        /**
+         * Input array index
+         */
+        inputIndex: number;
+        /**
+         * Previous state of given input
+         */
+        previousState: Nullable<number>;
+        /**
+         * Current state of given input
+         */
+        currentState: Nullable<number>;
+    }
+    /**
+     * Interface for NativeInput object
+     */
+    export interface INativeInput extends IDisposable {
+        /**
+         * Callback for when a device is connected
+         */
+        onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void;
+        /**
+         * Callback for when a device is disconnected
+         */
+        onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
+        /**
+         * Callback for when input is changed on a device
+         */
+        onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number>, eventData?: any) => void;
+        /**
+         * Checks for current device input value, given an id and input index.
+         * @param deviceType Type of device
+         * @param deviceSlot "Slot" or index that device is referenced in
+         * @param inputIndex Id of input to be checked
+         * @returns Current value of input
+         */
+        pollInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number): number;
+        /**
+         * Check for a specific device in the DeviceInputSystem
+         * @param deviceType Type of device to check for
+         * @returns bool with status of device's existence
+         */
+        isDeviceAvailable(deviceType: DeviceType): boolean;
+    }
+    /**
+     * Interface for DeviceInputSystem implementations (JS and Native)
+     */
+    export interface IDeviceInputSystem extends IDisposable {
+        /**
+         * Observable for devices being connected
+         */
+        readonly onDeviceConnectedObservable: Observable<{
+            deviceType: DeviceType;
+            deviceSlot: number;
+        }>;
+        /**
+         * Observable for devices being disconnected
+         */
+        readonly onDeviceDisconnectedObservable: Observable<{
+            deviceType: DeviceType;
+            deviceSlot: number;
+        }>;
+        /**
+         * Observable for changes to device input
+         */
+        readonly onInputChangedObservable: Observable<IDeviceEvent>;
+        /**
+         * Configures events to work with an engine's active element
+         */
+        configureEvents(): void;
+        /**
+         * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
+         * @param deviceType Enum specifiying device type
+         * @param deviceSlot "Slot" or index that device is referenced in
+         * @param inputIndex Id of input to be checked
+         * @returns Current value of input
+         */
+        pollInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number): number;
+        /**
+         * Check for a specific device in the DeviceInputSystem
+         * @param deviceType Type of device to check for
+         * @returns bool with status of device's existence
+         */
+        isDeviceAvailable(deviceType: DeviceType): boolean;
     }
 }
 declare module BABYLON {
@@ -1717,307 +2143,105 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * This represents the required contract to create a new type of texture loader.
+     * Class used to enable access to offline support
+     * @see https://doc.babylonjs.com/how_to/caching_resources_in_indexeddb
      */
-    export interface IInternalTextureLoader {
+    export interface IOfflineProvider {
         /**
-         * Defines whether the loader supports cascade loading the different faces.
+         * Gets a boolean indicating if scene must be saved in the database
          */
-        supportCascades: boolean;
+        enableSceneOffline: boolean;
         /**
-         * This returns if the loader support the current file information.
-         * @param extension defines the file extension of the file being loaded
-         * @param mimeType defines the optional mime type of the file being loaded
-         * @returns true if the loader can load the specified file
+         * Gets a boolean indicating if textures must be saved in the database
          */
-        canLoad(extension: string, mimeType?: string): boolean;
+        enableTexturesOffline: boolean;
         /**
-         * Uploads the cube texture data to the WebGL texture. It has already been bound.
-         * @param data contains the texture data
-         * @param texture defines the BabylonJS internal texture
-         * @param createPolynomials will be true if polynomials have been requested
-         * @param onLoad defines the callback to trigger once the texture is ready
-         * @param onError defines the callback to trigger in case of error
-         * @param options options to be passed to the loader
+         * Open the offline support and make it available
+         * @param successCallback defines the callback to call on success
+         * @param errorCallback defines the callback to call on error
          */
-        loadCubeData(data: ArrayBufferView | ArrayBufferView[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>, options?: any): void;
+        open(successCallback: () => void, errorCallback: () => void): void;
         /**
-         * Uploads the 2D texture data to the WebGL texture. It has already been bound once in the callback.
-         * @param data contains the texture data
-         * @param texture defines the BabylonJS internal texture
-         * @param callback defines the method to call once ready to upload
-         * @param options options to be passed to the loader
+         * Loads an image from the offline support
+         * @param url defines the url to load from
+         * @param image defines the target DOM image
          */
-        loadData(data: ArrayBufferView, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed?: boolean) => void, options?: any): void;
+        loadImage(url: string, image: HTMLImageElement): void;
+        /**
+         * Loads a file from offline support
+         * @param url defines the URL to load from
+         * @param sceneLoaded defines a callback to call on success
+         * @param progressCallBack defines a callback to call when progress changed
+         * @param errorCallback defines a callback to call on error
+         * @param useArrayBuffer defines a boolean to use array buffer instead of text string
+         */
+        loadFile(url: string, sceneLoaded: (data: any) => void, progressCallBack?: (data: any) => void, errorCallback?: () => void, useArrayBuffer?: boolean): void;
     }
 }
 declare module BABYLON {
     /**
-     * @hidden
+     * Interface used to present a loading screen while loading a scene
+     * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
      */
-    export interface IColor4Like {
-        r: float;
-        g: float;
-        b: float;
-        a: float;
+    export interface ILoadingScreen {
+        /**
+         * Function called to display the loading screen
+         */
+        displayLoadingUI: () => void;
+        /**
+         * Function called to hide the loading screen
+         */
+        hideLoadingUI: () => void;
+        /**
+         * Gets or sets the color to use for the background
+         */
+        loadingUIBackgroundColor: string;
+        /**
+         * Gets or sets the text to display while loading
+         */
+        loadingUIText: string;
     }
     /**
-     * @hidden
+     * Class used for the default loading screen
+     * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
      */
-    export interface IColor3Like {
-        r: float;
-        g: float;
-        b: float;
-    }
-    /**
-     * @hidden
-     */
-    export interface IVector4Like {
-        x: float;
-        y: float;
-        z: float;
-        w: float;
-    }
-    /**
-     * @hidden
-     */
-    export interface IVector3Like {
-        x: float;
-        y: float;
-        z: float;
-    }
-    /**
-     * @hidden
-     */
-    export interface IVector2Like {
-        x: float;
-        y: float;
-    }
-    /**
-     * @hidden
-     */
-    export interface IMatrixLike {
-        toArray(): DeepImmutable<Float32Array | Array<number>>;
-        updateFlag: int;
-    }
-    /**
-     * @hidden
-     */
-    export interface IViewportLike {
-        x: float;
-        y: float;
-        width: float;
-        height: float;
-    }
-    /**
-     * @hidden
-     */
-    export interface IPlaneLike {
-        normal: IVector3Like;
-        d: float;
-        normalize(): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Class used to store and describe the pipeline context associated with an effect
-     */
-    export interface IPipelineContext {
+    export class DefaultLoadingScreen implements ILoadingScreen {
+        private _renderingCanvas;
+        private _loadingText;
+        private _loadingDivBackgroundColor;
+        private _loadingDiv;
+        private _loadingTextDiv;
+        private _style;
+        /** Gets or sets the logo url to use for the default loading screen */
+        static DefaultLogoUrl: string;
+        /** Gets or sets the spinner url to use for the default loading screen */
+        static DefaultSpinnerUrl: string;
         /**
-         * Gets a boolean indicating that this pipeline context is supporting asynchronous creating
+         * Creates a new default loading screen
+         * @param _renderingCanvas defines the canvas used to render the scene
+         * @param _loadingText defines the default text to display
+         * @param _loadingDivBackgroundColor defines the default background color
          */
-        isAsync: boolean;
+        constructor(_renderingCanvas: HTMLCanvasElement, _loadingText?: string, _loadingDivBackgroundColor?: string);
         /**
-         * Gets a boolean indicating that the context is ready to be used (like shaders / pipelines are compiled and ready for instance)
+         * Function called to display the loading screen
          */
-        isReady: boolean;
-        /** @hidden */
-        _name?: string;
-        /** @hidden */
-        _getVertexShaderCode(): string | null;
-        /** @hidden */
-        _getFragmentShaderCode(): string | null;
-        /** @hidden */
-        _handlesSpectorRebuildCallback(onCompiled: (compiledObject: any) => void): void;
-        /** @hidden */
-        _fillEffectInformation(effect: Effect, uniformBuffersNames: {
-            [key: string]: number;
-        }, uniformsNames: string[], uniforms: {
-            [key: string]: Nullable<WebGLUniformLocation>;
-        }, samplerList: string[], samplers: {
-            [key: string]: number;
-        }, attributesNames: string[], attributes: number[]): void;
-        /** Releases the resources associated with the pipeline. */
-        dispose(): void;
+        displayLoadingUI(): void;
         /**
-         * Sets an integer value on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param value Value to be set.
+         * Function called to hide the loading screen
          */
-        setInt(uniformName: string, value: number): void;
+        hideLoadingUI(): void;
         /**
-         * Sets an int2 value on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param x First int in int2.
-         * @param y Second int in int2.
+         * Gets or sets the text to display while loading
          */
-        setInt2(uniformName: string, x: number, y: number): void;
+        set loadingUIText(text: string);
+        get loadingUIText(): string;
         /**
-         * Sets an int3 value on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param x First int in int3.
-         * @param y Second int in int3.
-         * @param z Third int in int3.
+         * Gets or sets the color to use for the background
          */
-        setInt3(uniformName: string, x: number, y: number, z: number): void;
-        /**
-         * Sets an int4 value on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param x First int in int4.
-         * @param y Second int in int4.
-         * @param z Third int in int4.
-         * @param w Fourth int in int4.
-         */
-        setInt4(uniformName: string, x: number, y: number, z: number, w: number): void;
-        /**
-         * Sets an int array on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param array array to be set.
-         */
-        setIntArray(uniformName: string, array: Int32Array): void;
-        /**
-         * Sets an int array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
-         * @param uniformName Name of the variable.
-         * @param array array to be set.
-         */
-        setIntArray2(uniformName: string, array: Int32Array): void;
-        /**
-         * Sets an int array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
-         * @param uniformName Name of the variable.
-         * @param array array to be set.
-         */
-        setIntArray3(uniformName: string, array: Int32Array): void;
-        /**
-         * Sets an int array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
-         * @param uniformName Name of the variable.
-         * @param array array to be set.
-         */
-        setIntArray4(uniformName: string, array: Int32Array): void;
-        /**
-         * Sets an array on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param array array to be set.
-         */
-        setArray(uniformName: string, array: number[] | Float32Array): void;
-        /**
-         * Sets an array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
-         * @param uniformName Name of the variable.
-         * @param array array to be set.
-         */
-        setArray2(uniformName: string, array: number[] | Float32Array): void;
-        /**
-         * Sets an array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
-         * @param uniformName Name of the variable.
-         * @param array array to be set.
-         */
-        setArray3(uniformName: string, array: number[] | Float32Array): void;
-        /**
-         * Sets an array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
-         * @param uniformName Name of the variable.
-         * @param array array to be set.
-         */
-        setArray4(uniformName: string, array: number[] | Float32Array): void;
-        /**
-         * Sets matrices on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param matrices matrices to be set.
-         */
-        setMatrices(uniformName: string, matrices: Float32Array): void;
-        /**
-         * Sets matrix on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param matrix matrix to be set.
-         */
-        setMatrix(uniformName: string, matrix: IMatrixLike): void;
-        /**
-         * Sets a 3x3 matrix on a uniform variable. (Specified as [1,2,3,4,5,6,7,8,9] will result in [1,2,3][4,5,6][7,8,9] matrix)
-         * @param uniformName Name of the variable.
-         * @param matrix matrix to be set.
-         */
-        setMatrix3x3(uniformName: string, matrix: Float32Array): void;
-        /**
-         * Sets a 2x2 matrix on a uniform variable. (Specified as [1,2,3,4] will result in [1,2][3,4] matrix)
-         * @param uniformName Name of the variable.
-         * @param matrix matrix to be set.
-         */
-        setMatrix2x2(uniformName: string, matrix: Float32Array): void;
-        /**
-         * Sets a float on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param value value to be set.
-         */
-        setFloat(uniformName: string, value: number): void;
-        /**
-         * Sets a Vector2 on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param vector2 vector2 to be set.
-         */
-        setVector2(uniformName: string, vector2: IVector2Like): void;
-        /**
-         * Sets a float2 on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param x First float in float2.
-         * @param y Second float in float2.
-         */
-        setFloat2(uniformName: string, x: number, y: number): void;
-        /**
-         * Sets a Vector3 on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param vector3 Value to be set.
-         */
-        setVector3(uniformName: string, vector3: IVector3Like): void;
-        /**
-         * Sets a float3 on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param x First float in float3.
-         * @param y Second float in float3.
-         * @param z Third float in float3.
-         */
-        setFloat3(uniformName: string, x: number, y: number, z: number): void;
-        /**
-         * Sets a Vector4 on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param vector4 Value to be set.
-         */
-        setVector4(uniformName: string, vector4: IVector4Like): void;
-        /**
-         * Sets a float4 on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param x First float in float4.
-         * @param y Second float in float4.
-         * @param z Third float in float4.
-         * @param w Fourth float in float4.
-         */
-        setFloat4(uniformName: string, x: number, y: number, z: number, w: number): void;
-        /**
-         * Sets a Color3 on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param color3 Value to be set.
-         */
-        setColor3(uniformName: string, color3: IColor3Like): void;
-        /**
-         * Sets a Color4 on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param color3 Value to be set.
-         * @param alpha Alpha value to be set.
-         */
-        setColor4(uniformName: string, color3: IColor3Like, alpha: number): void;
-        /**
-         * Sets a Color4 on a uniform variable
-         * @param uniformName defines the name of the variable
-         * @param color4 defines the value to be set
-         */
-        setDirectColor4(uniformName: string, color4: IColor4Like): void;
+        get loadingUIBackgroundColor(): string;
+        set loadingUIBackgroundColor(color: string);
+        private _resizeLoadingUI;
     }
 }
 declare module BABYLON {
@@ -2217,39 +2441,17 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Class used to enable access to offline support
-     * @see https://doc.babylonjs.com/how_to/caching_resources_in_indexeddb
+     * File request interface
      */
-    export interface IOfflineProvider {
+    export interface IFileRequest {
         /**
-         * Gets a boolean indicating if scene must be saved in the database
+         * Raised when the request is complete (success or error).
          */
-        enableSceneOffline: boolean;
+        onCompleteObservable: Observable<IFileRequest>;
         /**
-         * Gets a boolean indicating if textures must be saved in the database
+         * Aborts the request for a file.
          */
-        enableTexturesOffline: boolean;
-        /**
-         * Open the offline support and make it available
-         * @param successCallback defines the callback to call on success
-         * @param errorCallback defines the callback to call on error
-         */
-        open(successCallback: () => void, errorCallback: () => void): void;
-        /**
-         * Loads an image from the offline support
-         * @param url defines the url to load from
-         * @param image defines the target DOM image
-         */
-        loadImage(url: string, image: HTMLImageElement): void;
-        /**
-         * Loads a file from offline support
-         * @param url defines the URL to load from
-         * @param sceneLoaded defines a callback to call on success
-         * @param progressCallBack defines a callback to call when progress changed
-         * @param errorCallback defines a callback to call on error
-         * @param useArrayBuffer defines a boolean to use array buffer instead of text string
-         */
-        loadFile(url: string, sceneLoaded: (data: any) => void, progressCallBack?: (data: any) => void, errorCallback?: () => void, useArrayBuffer?: boolean): void;
+        abort: () => void;
     }
 }
 declare module BABYLON {
@@ -2471,6 +2673,73 @@ declare module BABYLON {
          * @hidden
          */
         static _FileToolsLoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void): IFileRequest;
+    }
+}
+declare module BABYLON {
+    /**
+     * @hidden
+     */
+    export interface IColor4Like {
+        r: float;
+        g: float;
+        b: float;
+        a: float;
+    }
+    /**
+     * @hidden
+     */
+    export interface IColor3Like {
+        r: float;
+        g: float;
+        b: float;
+    }
+    /**
+     * @hidden
+     */
+    export interface IVector4Like {
+        x: float;
+        y: float;
+        z: float;
+        w: float;
+    }
+    /**
+     * @hidden
+     */
+    export interface IVector3Like {
+        x: float;
+        y: float;
+        z: float;
+    }
+    /**
+     * @hidden
+     */
+    export interface IVector2Like {
+        x: float;
+        y: float;
+    }
+    /**
+     * @hidden
+     */
+    export interface IMatrixLike {
+        toArray(): DeepImmutable<Float32Array | Array<number>>;
+        updateFlag: int;
+    }
+    /**
+     * @hidden
+     */
+    export interface IViewportLike {
+        x: float;
+        y: float;
+        width: float;
+        height: float;
+    }
+    /**
+     * @hidden
+     */
+    export interface IPlaneLike {
+        normal: IVector3Like;
+        d: float;
+        normalize(): void;
     }
 }
 declare module BABYLON {
@@ -2750,8 +3019,9 @@ declare module BABYLON {
          * Base class of all the textures in babylon.
          * This can be used as an internal texture wrapper in ThinEngine to benefit from the cache
          * @param internalTexture Define the internalTexture to wrap
+         * @param createTexture Defines wether the internal texture should be created
          */
-        constructor(internalTexture: Nullable<InternalTexture>);
+        constructor(internalTexture: Nullable<InternalTexture>, createTexture?: boolean);
         /**
          * Get if the texture is ready to be used (downloaded, converted, mip mapped...).
          * @returns true if fully ready
@@ -5987,6 +6257,42 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * This represents the required contract to create a new type of texture loader.
+     */
+    export interface IInternalTextureLoader {
+        /**
+         * Defines whether the loader supports cascade loading the different faces.
+         */
+        supportCascades: boolean;
+        /**
+         * This returns if the loader support the current file information.
+         * @param extension defines the file extension of the file being loaded
+         * @param mimeType defines the optional mime type of the file being loaded
+         * @returns true if the loader can load the specified file
+         */
+        canLoad(extension: string, mimeType?: string): boolean;
+        /**
+         * Uploads the cube texture data to the WebGL texture. It has already been bound.
+         * @param data contains the texture data
+         * @param texture defines the BabylonJS internal texture
+         * @param createPolynomials will be true if polynomials have been requested
+         * @param onLoad defines the callback to trigger once the texture is ready
+         * @param onError defines the callback to trigger in case of error
+         * @param options options to be passed to the loader
+         */
+        loadCubeData(data: ArrayBufferView | ArrayBufferView[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>, options?: any): void;
+        /**
+         * Uploads the 2D texture data to the WebGL texture. It has already been bound once in the callback.
+         * @param data contains the texture data
+         * @param texture defines the BabylonJS internal texture
+         * @param callback defines the method to call once ready to upload
+         * @param options options to be passed to the loader
+         */
+        loadData(data: ArrayBufferView, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed?: boolean) => void, options?: any): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Define options used to create a depth texture
      */
     export class DepthTextureCreationOptions {
@@ -6103,6 +6409,15 @@ declare module BABYLON {
         }
 }
 declare module BABYLON {
+    /**
+     * An interface enforcing the renderTarget accessor to used by render target textures.
+     */
+    export interface IRenderTargetTexture {
+        /**
+         * Entry point to access the wrapper on a texture.
+         */
+        renderTarget: Nullable<RenderTargetWrapper>;
+    }
     /**
      * Wrapper around a render target (either single or multi textures)
      */
@@ -8867,221 +9182,6 @@ declare module BABYLON {
         private _buffer;
         constructor(resource: WebGLBuffer);
         get underlyingResource(): any;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export class WebGLPipelineContext implements IPipelineContext {
-        private _valueCache;
-        private _uniforms;
-        engine: ThinEngine;
-        program: Nullable<WebGLProgram>;
-        context?: WebGLRenderingContext;
-        vertexShader?: WebGLShader;
-        fragmentShader?: WebGLShader;
-        isParallelCompiled: boolean;
-        onCompiled?: () => void;
-        transformFeedback?: WebGLTransformFeedback | null;
-        vertexCompilationError: Nullable<string>;
-        fragmentCompilationError: Nullable<string>;
-        programLinkError: Nullable<string>;
-        programValidationError: Nullable<string>;
-        get isAsync(): boolean;
-        get isReady(): boolean;
-        _handlesSpectorRebuildCallback(onCompiled: (program: WebGLProgram) => void): void;
-        _fillEffectInformation(effect: Effect, uniformBuffersNames: {
-            [key: string]: number;
-        }, uniformsNames: string[], uniforms: {
-            [key: string]: Nullable<WebGLUniformLocation>;
-        }, samplerList: string[], samplers: {
-            [key: string]: number;
-        }, attributesNames: string[], attributes: number[]): void;
-        /**
-         * Release all associated resources.
-         **/
-        dispose(): void;
-        /** @hidden */
-        _cacheMatrix(uniformName: string, matrix: IMatrixLike): boolean;
-        /** @hidden */
-        _cacheFloat2(uniformName: string, x: number, y: number): boolean;
-        /** @hidden */
-        _cacheFloat3(uniformName: string, x: number, y: number, z: number): boolean;
-        /** @hidden */
-        _cacheFloat4(uniformName: string, x: number, y: number, z: number, w: number): boolean;
-        /**
-         * Sets an integer value on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param value Value to be set.
-         */
-        setInt(uniformName: string, value: number): void;
-        /**
-         * Sets a int2 on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param x First int in int2.
-         * @param y Second int in int2.
-         */
-        setInt2(uniformName: string, x: number, y: number): void;
-        /**
-         * Sets a int3 on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param x First int in int3.
-         * @param y Second int in int3.
-         * @param y Third int in int3.
-         */
-        setInt3(uniformName: string, x: number, y: number, z: number): void;
-        /**
-         * Sets a int4 on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param x First int in int4.
-         * @param y Second int in int4.
-         * @param y Third int in int4.
-         * @param w Fourth int in int4.
-         */
-        setInt4(uniformName: string, x: number, y: number, z: number, w: number): void;
-        /**
-         * Sets an int array on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param array array to be set.
-         */
-        setIntArray(uniformName: string, array: Int32Array): void;
-        /**
-         * Sets an int array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
-         * @param uniformName Name of the variable.
-         * @param array array to be set.
-         */
-        setIntArray2(uniformName: string, array: Int32Array): void;
-        /**
-         * Sets an int array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
-         * @param uniformName Name of the variable.
-         * @param array array to be set.
-         */
-        setIntArray3(uniformName: string, array: Int32Array): void;
-        /**
-         * Sets an int array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
-         * @param uniformName Name of the variable.
-         * @param array array to be set.
-         */
-        setIntArray4(uniformName: string, array: Int32Array): void;
-        /**
-         * Sets an array on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param array array to be set.
-         */
-        setArray(uniformName: string, array: number[]): void;
-        /**
-         * Sets an array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
-         * @param uniformName Name of the variable.
-         * @param array array to be set.
-         */
-        setArray2(uniformName: string, array: number[]): void;
-        /**
-         * Sets an array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
-         * @param uniformName Name of the variable.
-         * @param array array to be set.
-         * @returns this effect.
-         */
-        setArray3(uniformName: string, array: number[]): void;
-        /**
-         * Sets an array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
-         * @param uniformName Name of the variable.
-         * @param array array to be set.
-         */
-        setArray4(uniformName: string, array: number[]): void;
-        /**
-         * Sets matrices on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param matrices matrices to be set.
-         */
-        setMatrices(uniformName: string, matrices: Float32Array): void;
-        /**
-         * Sets matrix on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param matrix matrix to be set.
-         */
-        setMatrix(uniformName: string, matrix: IMatrixLike): void;
-        /**
-         * Sets a 3x3 matrix on a uniform variable. (Specified as [1,2,3,4,5,6,7,8,9] will result in [1,2,3][4,5,6][7,8,9] matrix)
-         * @param uniformName Name of the variable.
-         * @param matrix matrix to be set.
-         */
-        setMatrix3x3(uniformName: string, matrix: Float32Array): void;
-        /**
-         * Sets a 2x2 matrix on a uniform variable. (Specified as [1,2,3,4] will result in [1,2][3,4] matrix)
-         * @param uniformName Name of the variable.
-         * @param matrix matrix to be set.
-         */
-        setMatrix2x2(uniformName: string, matrix: Float32Array): void;
-        /**
-         * Sets a float on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param value value to be set.
-         * @returns this effect.
-         */
-        setFloat(uniformName: string, value: number): void;
-        /**
-         * Sets a Vector2 on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param vector2 vector2 to be set.
-         */
-        setVector2(uniformName: string, vector2: IVector2Like): void;
-        /**
-         * Sets a float2 on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param x First float in float2.
-         * @param y Second float in float2.
-         */
-        setFloat2(uniformName: string, x: number, y: number): void;
-        /**
-         * Sets a Vector3 on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param vector3 Value to be set.
-         */
-        setVector3(uniformName: string, vector3: IVector3Like): void;
-        /**
-         * Sets a float3 on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param x First float in float3.
-         * @param y Second float in float3.
-         * @param z Third float in float3.
-         */
-        setFloat3(uniformName: string, x: number, y: number, z: number): void;
-        /**
-         * Sets a Vector4 on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param vector4 Value to be set.
-         */
-        setVector4(uniformName: string, vector4: IVector4Like): void;
-        /**
-         * Sets a float4 on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param x First float in float4.
-         * @param y Second float in float4.
-         * @param z Third float in float4.
-         * @param w Fourth float in float4.
-         * @returns this effect.
-         */
-        setFloat4(uniformName: string, x: number, y: number, z: number, w: number): void;
-        /**
-         * Sets a Color3 on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param color3 Value to be set.
-         */
-        setColor3(uniformName: string, color3: IColor3Like): void;
-        /**
-         * Sets a Color4 on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param color3 Value to be set.
-         * @param alpha Alpha value to be set.
-         */
-        setColor4(uniformName: string, color3: IColor3Like, alpha: number): void;
-        /**
-         * Sets a Color4 on a uniform variable
-         * @param uniformName defines the name of the variable
-         * @param color4 defines the value to be set
-         */
-        setDirectColor4(uniformName: string, color4: IColor4Like): void;
-        _getVertexShaderCode(): string | null;
-        _getFragmentShaderCode(): string | null;
     }
 }
 declare module BABYLON {
@@ -11887,241 +11987,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Event Types
-     */
-    export enum DeviceInputEventType {
-        /** PointerMove */
-        PointerMove = 0,
-        /** PointerDown */
-        PointerDown = 1,
-        /** PointerUp */
-        PointerUp = 2
-    }
-    /**
-     * Native friendly interface for Event Object
-     */
-    export interface IEvent {
-        /**
-         * Current target for an event
-         */
-        currentTarget?: any;
-        /**
-         * Alias for target
-         * @deprecated
-         */
-        srcElement?: any;
-        /**
-         * Type of event
-         */
-        type: string;
-        /**
-         * Reference to object where object was dispatched
-         */
-        target: any;
-        /**
-         * Tells user agent what to do when not explicitly handled
-         */
-        preventDefault: () => void;
-    }
-    /**
-     * Native friendly interface for UIEvent Object
-     */
-    export interface IUIEvent extends IEvent {
-        /**
-         * Provides current click count
-         */
-        detail: number;
-        /**
-         * Horizontal coordinate of event
-         */
-        pageX: number;
-        /**
-         * Vertical coordinate of event
-         */
-        pageY: number;
-    }
-    /**
-     * Native friendly interface for KeyboardEvent Object
-     */
-    export interface IKeyboardEvent extends IUIEvent {
-        /**
-         * Status of Alt key being pressed
-         */
-        altKey: boolean;
-        /**
-         * Unicode value of character pressed
-         * @deprecated
-         */
-        charCode?: number;
-        /**
-         * Code for key based on layout
-         */
-        code: string;
-        /**
-         * Status of Ctrl key being pressed
-         */
-        ctrlKey: boolean;
-        /**
-         * String representation of key
-         */
-        key: string;
-        /**
-         * ASCII value of key
-         * @deprecated
-         */
-        keyCode: number;
-        /**
-         * Status of Meta key (eg. Windows key) being pressed
-         */
-        metaKey: boolean;
-        /**
-         * Status of Shift key being pressed
-         */
-        shiftKey: boolean;
-    }
-    /**
-     * Native friendly interface for MouseEvent Object
-     */
-    export interface IMouseEvent extends IUIEvent {
-        /**
-         * Status of Alt key being pressed
-         */
-        altKey: boolean;
-        /**
-         * Value of single mouse button pressed
-         */
-        button: number;
-        /**
-         * Value of all mouse buttons pressed
-         */
-        buttons: number;
-        /**
-         * Current X coordinate
-         */
-        clientX: number;
-        /**
-         * Current Y coordinate
-         */
-        clientY: number;
-        /**
-         * Status of Ctrl key being pressed
-         */
-        ctrlKey: boolean;
-        /**
-         * Status of Meta key (eg. Windows key) being pressed
-         */
-        metaKey: boolean;
-        /**
-         * Delta of movement on X axis
-         */
-        movementX: number;
-        /**
-         * Delta of movement on Y axis
-         */
-        movementY: number;
-        /**
-         * Delta of movement on X axis
-         */
-        mozMovementX?: number;
-        /**
-         * Delta of movement on Y axis
-         */
-        mozMovementY?: number;
-        /**
-         * Delta of movement on X axis
-         */
-        msMovementX?: any;
-        /**
-         * Delta of movement on Y axis
-         */
-        msMovementY?: any;
-        /**
-         * Current coordinate of X within container
-         */
-        offsetX: number;
-        /**
-         * Current coordinate of Y within container
-         */
-        offsetY: number;
-        /**
-         * Status of Shift key being pressed
-         */
-        shiftKey: boolean;
-        /**
-         * Delta of movement on X axis
-         */
-        webkitMovementX?: any;
-        /**
-         * Delta of movement on Y axis
-         */
-        webkitMovementY?: any;
-        /**
-         * Alias of clientX
-         */
-        x: number;
-        /**
-         * Alias of clientY
-         */
-        y: number;
-    }
-    /**
-     * Native friendly interface for PointerEvent Object
-     */
-    export interface IPointerEvent extends IMouseEvent {
-        /**
-         * Pointer Event ID
-         */
-        pointerId: number;
-        /**
-         * Type of pointer
-         */
-        pointerType: string;
-    }
-    /**
-     * Native friendly interface for WheelEvent Object
-     */
-    export interface IWheelEvent extends IMouseEvent {
-        /**
-         * Units for delta value
-         */
-        deltaMode: number;
-        /**
-         * Horizontal scroll delta
-         */
-        deltaX: number;
-        /**
-         * Vertical scroll delta
-         */
-        deltaY: number;
-        /**
-         * Z-Axis scroll delta
-         */
-        deltaZ: number;
-        /**
-         * WheelDelta (From MouseWheel Event)
-         */
-        wheelDelta?: number;
-    }
-    /**
-     * Constants used for Events
-     */
-    export class EventConstants {
-        /**
-         * Pixel delta for Wheel Events (Default)
-         */
-        static DOM_DELTA_PIXEL: number;
-        /**
-         * Line delta for Wheel Events
-         */
-        static DOM_DELTA_LINE: number;
-        /**
-         * Page delta for Wheel Events
-         */
-        static DOM_DELTA_PAGE: number;
-    }
-}
-declare module BABYLON {
-    /**
      * Groups all the scene component constants in one place to ease maintenance.
      * @hidden
      */
@@ -13883,6 +13748,7 @@ declare module BABYLON {
          */
         updateFunction: (particles: Particle[]) => void;
         private _emitterWorldMatrix;
+        private _emitterInverseWorldMatrix;
         /**
          * This function can be defined to specify initial direction for every new particle.
          * It by default use the emitterType defined function
@@ -14328,9 +14194,10 @@ declare module BABYLON {
          * @param sceneOrEngine The scene or the engine to create the particle system in
          * @param rootUrl The root url to use to load external dependencies like texture
          * @param doNotStart Ignore the preventAutoStart attribute and does not start
+         * @param capacity defines the system capacity (if null or undefined the sotred capacity will be used)
          * @returns the Parsed particle system
          */
-        static Parse(parsedParticleSystem: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart?: boolean): ParticleSystem;
+        static Parse(parsedParticleSystem: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart?: boolean, capacity?: number): ParticleSystem;
     }
 }
 declare module BABYLON {
@@ -14516,8 +14383,9 @@ declare module BABYLON {
          * @param directionToUpdate is the direction vector to update with the result
          * @param particle is the particle we are computed the direction for
          * @param isLocal defines if the direction should be set in local space
+         * @param inverseWorldMatrix defines the inverted world matrix to use if isLocal is false
          */
-        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
+        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean, inverseWorldMatrix: Matrix): void;
         /**
          * Called by the particle System when the position is computed for the created particle.
          * @param worldMatrix is the world matrix of the particle system
@@ -14762,6 +14630,7 @@ declare module BABYLON {
          * How much to randomize the particle direction [0-1].
          */
         directionRandomizer: number;
+        private _tempVector;
         /**
         * Creates a new instance CylinderParticleEmitter
         * @param radius the radius of the emission cylinder (1 by default)
@@ -14792,8 +14661,9 @@ declare module BABYLON {
          * @param directionToUpdate is the direction vector to update with the result
          * @param particle is the particle we are computed the direction for
          * @param isLocal defines if the direction should be set in local space
+         * @param inverseWorldMatrix defines the inverted world matrix to use if isLocal is false
          */
-        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
+        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean, inverseWorldMatrix: Matrix): void;
         /**
          * Called by the particle System when the position is computed for the created particle.
          * @param worldMatrix is the world matrix of the particle system
@@ -28846,6 +28716,7 @@ declare module BABYLON {
     class _InstanceDataStorage {
         visibleInstances: any;
         batchCache: _InstancesBatch;
+        batchCacheReplacementModeInFrozenMode: _InstancesBatch;
         instancesBufferSize: number;
         instancesBuffer: Nullable<Buffer>;
         instancesPreviousBuffer: Nullable<Buffer>;
@@ -38804,7 +38675,7 @@ declare module BABYLON {
      * It is basically a dynamic texture that could be used to create special effects for instance.
      * Actually, It is the base of lot of effects in the framework like post process, shadows, effect layers and rendering pipelines...
      */
-    export class RenderTargetTexture extends Texture {
+    export class RenderTargetTexture extends Texture implements IRenderTargetTexture {
         /**
          * The texture will only be rendered once which can be useful to improve performance if everything in your render is static for instance.
          */
@@ -39800,6 +39671,1697 @@ declare module BABYLON {
          * Resets the cache of effects.
          */
         static ResetCache(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to store and describe the pipeline context associated with an effect
+     */
+    export interface IPipelineContext {
+        /**
+         * Gets a boolean indicating that this pipeline context is supporting asynchronous creating
+         */
+        isAsync: boolean;
+        /**
+         * Gets a boolean indicating that the context is ready to be used (like shaders / pipelines are compiled and ready for instance)
+         */
+        isReady: boolean;
+        /** @hidden */
+        _name?: string;
+        /** @hidden */
+        _getVertexShaderCode(): string | null;
+        /** @hidden */
+        _getFragmentShaderCode(): string | null;
+        /** @hidden */
+        _handlesSpectorRebuildCallback(onCompiled: (compiledObject: any) => void): void;
+        /** @hidden */
+        _fillEffectInformation(effect: Effect, uniformBuffersNames: {
+            [key: string]: number;
+        }, uniformsNames: string[], uniforms: {
+            [key: string]: Nullable<WebGLUniformLocation>;
+        }, samplerList: string[], samplers: {
+            [key: string]: number;
+        }, attributesNames: string[], attributes: number[]): void;
+        /** Releases the resources associated with the pipeline. */
+        dispose(): void;
+        /**
+         * Sets an integer value on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param value Value to be set.
+         */
+        setInt(uniformName: string, value: number): void;
+        /**
+         * Sets an int2 value on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param x First int in int2.
+         * @param y Second int in int2.
+         */
+        setInt2(uniformName: string, x: number, y: number): void;
+        /**
+         * Sets an int3 value on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param x First int in int3.
+         * @param y Second int in int3.
+         * @param z Third int in int3.
+         */
+        setInt3(uniformName: string, x: number, y: number, z: number): void;
+        /**
+         * Sets an int4 value on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param x First int in int4.
+         * @param y Second int in int4.
+         * @param z Third int in int4.
+         * @param w Fourth int in int4.
+         */
+        setInt4(uniformName: string, x: number, y: number, z: number, w: number): void;
+        /**
+         * Sets an int array on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setIntArray(uniformName: string, array: Int32Array): void;
+        /**
+         * Sets an int array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setIntArray2(uniformName: string, array: Int32Array): void;
+        /**
+         * Sets an int array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setIntArray3(uniformName: string, array: Int32Array): void;
+        /**
+         * Sets an int array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setIntArray4(uniformName: string, array: Int32Array): void;
+        /**
+         * Sets an array on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setArray(uniformName: string, array: number[] | Float32Array): void;
+        /**
+         * Sets an array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setArray2(uniformName: string, array: number[] | Float32Array): void;
+        /**
+         * Sets an array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setArray3(uniformName: string, array: number[] | Float32Array): void;
+        /**
+         * Sets an array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setArray4(uniformName: string, array: number[] | Float32Array): void;
+        /**
+         * Sets matrices on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param matrices matrices to be set.
+         */
+        setMatrices(uniformName: string, matrices: Float32Array): void;
+        /**
+         * Sets matrix on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param matrix matrix to be set.
+         */
+        setMatrix(uniformName: string, matrix: IMatrixLike): void;
+        /**
+         * Sets a 3x3 matrix on a uniform variable. (Specified as [1,2,3,4,5,6,7,8,9] will result in [1,2,3][4,5,6][7,8,9] matrix)
+         * @param uniformName Name of the variable.
+         * @param matrix matrix to be set.
+         */
+        setMatrix3x3(uniformName: string, matrix: Float32Array): void;
+        /**
+         * Sets a 2x2 matrix on a uniform variable. (Specified as [1,2,3,4] will result in [1,2][3,4] matrix)
+         * @param uniformName Name of the variable.
+         * @param matrix matrix to be set.
+         */
+        setMatrix2x2(uniformName: string, matrix: Float32Array): void;
+        /**
+         * Sets a float on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param value value to be set.
+         */
+        setFloat(uniformName: string, value: number): void;
+        /**
+         * Sets a Vector2 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param vector2 vector2 to be set.
+         */
+        setVector2(uniformName: string, vector2: IVector2Like): void;
+        /**
+         * Sets a float2 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param x First float in float2.
+         * @param y Second float in float2.
+         */
+        setFloat2(uniformName: string, x: number, y: number): void;
+        /**
+         * Sets a Vector3 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param vector3 Value to be set.
+         */
+        setVector3(uniformName: string, vector3: IVector3Like): void;
+        /**
+         * Sets a float3 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param x First float in float3.
+         * @param y Second float in float3.
+         * @param z Third float in float3.
+         */
+        setFloat3(uniformName: string, x: number, y: number, z: number): void;
+        /**
+         * Sets a Vector4 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param vector4 Value to be set.
+         */
+        setVector4(uniformName: string, vector4: IVector4Like): void;
+        /**
+         * Sets a float4 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param x First float in float4.
+         * @param y Second float in float4.
+         * @param z Third float in float4.
+         * @param w Fourth float in float4.
+         */
+        setFloat4(uniformName: string, x: number, y: number, z: number, w: number): void;
+        /**
+         * Sets a Color3 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param color3 Value to be set.
+         */
+        setColor3(uniformName: string, color3: IColor3Like): void;
+        /**
+         * Sets a Color4 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param color3 Value to be set.
+         * @param alpha Alpha value to be set.
+         */
+        setColor4(uniformName: string, color3: IColor3Like, alpha: number): void;
+        /**
+         * Sets a Color4 on a uniform variable
+         * @param uniformName defines the name of the variable
+         * @param color4 defines the value to be set
+         */
+        setDirectColor4(uniformName: string, color4: IColor4Like): void;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class WebGLPipelineContext implements IPipelineContext {
+        private _valueCache;
+        private _uniforms;
+        engine: ThinEngine;
+        program: Nullable<WebGLProgram>;
+        context?: WebGLRenderingContext;
+        vertexShader?: WebGLShader;
+        fragmentShader?: WebGLShader;
+        isParallelCompiled: boolean;
+        onCompiled?: () => void;
+        transformFeedback?: WebGLTransformFeedback | null;
+        vertexCompilationError: Nullable<string>;
+        fragmentCompilationError: Nullable<string>;
+        programLinkError: Nullable<string>;
+        programValidationError: Nullable<string>;
+        get isAsync(): boolean;
+        get isReady(): boolean;
+        _handlesSpectorRebuildCallback(onCompiled: (program: WebGLProgram) => void): void;
+        _fillEffectInformation(effect: Effect, uniformBuffersNames: {
+            [key: string]: number;
+        }, uniformsNames: string[], uniforms: {
+            [key: string]: Nullable<WebGLUniformLocation>;
+        }, samplerList: string[], samplers: {
+            [key: string]: number;
+        }, attributesNames: string[], attributes: number[]): void;
+        /**
+         * Release all associated resources.
+         **/
+        dispose(): void;
+        /** @hidden */
+        _cacheMatrix(uniformName: string, matrix: IMatrixLike): boolean;
+        /** @hidden */
+        _cacheFloat2(uniformName: string, x: number, y: number): boolean;
+        /** @hidden */
+        _cacheFloat3(uniformName: string, x: number, y: number, z: number): boolean;
+        /** @hidden */
+        _cacheFloat4(uniformName: string, x: number, y: number, z: number, w: number): boolean;
+        /**
+         * Sets an integer value on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param value Value to be set.
+         */
+        setInt(uniformName: string, value: number): void;
+        /**
+         * Sets a int2 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param x First int in int2.
+         * @param y Second int in int2.
+         */
+        setInt2(uniformName: string, x: number, y: number): void;
+        /**
+         * Sets a int3 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param x First int in int3.
+         * @param y Second int in int3.
+         * @param y Third int in int3.
+         */
+        setInt3(uniformName: string, x: number, y: number, z: number): void;
+        /**
+         * Sets a int4 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param x First int in int4.
+         * @param y Second int in int4.
+         * @param y Third int in int4.
+         * @param w Fourth int in int4.
+         */
+        setInt4(uniformName: string, x: number, y: number, z: number, w: number): void;
+        /**
+         * Sets an int array on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setIntArray(uniformName: string, array: Int32Array): void;
+        /**
+         * Sets an int array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setIntArray2(uniformName: string, array: Int32Array): void;
+        /**
+         * Sets an int array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setIntArray3(uniformName: string, array: Int32Array): void;
+        /**
+         * Sets an int array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setIntArray4(uniformName: string, array: Int32Array): void;
+        /**
+         * Sets an array on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setArray(uniformName: string, array: number[]): void;
+        /**
+         * Sets an array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setArray2(uniformName: string, array: number[]): void;
+        /**
+         * Sets an array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         * @returns this effect.
+         */
+        setArray3(uniformName: string, array: number[]): void;
+        /**
+         * Sets an array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setArray4(uniformName: string, array: number[]): void;
+        /**
+         * Sets matrices on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param matrices matrices to be set.
+         */
+        setMatrices(uniformName: string, matrices: Float32Array): void;
+        /**
+         * Sets matrix on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param matrix matrix to be set.
+         */
+        setMatrix(uniformName: string, matrix: IMatrixLike): void;
+        /**
+         * Sets a 3x3 matrix on a uniform variable. (Specified as [1,2,3,4,5,6,7,8,9] will result in [1,2,3][4,5,6][7,8,9] matrix)
+         * @param uniformName Name of the variable.
+         * @param matrix matrix to be set.
+         */
+        setMatrix3x3(uniformName: string, matrix: Float32Array): void;
+        /**
+         * Sets a 2x2 matrix on a uniform variable. (Specified as [1,2,3,4] will result in [1,2][3,4] matrix)
+         * @param uniformName Name of the variable.
+         * @param matrix matrix to be set.
+         */
+        setMatrix2x2(uniformName: string, matrix: Float32Array): void;
+        /**
+         * Sets a float on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param value value to be set.
+         * @returns this effect.
+         */
+        setFloat(uniformName: string, value: number): void;
+        /**
+         * Sets a Vector2 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param vector2 vector2 to be set.
+         */
+        setVector2(uniformName: string, vector2: IVector2Like): void;
+        /**
+         * Sets a float2 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param x First float in float2.
+         * @param y Second float in float2.
+         */
+        setFloat2(uniformName: string, x: number, y: number): void;
+        /**
+         * Sets a Vector3 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param vector3 Value to be set.
+         */
+        setVector3(uniformName: string, vector3: IVector3Like): void;
+        /**
+         * Sets a float3 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param x First float in float3.
+         * @param y Second float in float3.
+         * @param z Third float in float3.
+         */
+        setFloat3(uniformName: string, x: number, y: number, z: number): void;
+        /**
+         * Sets a Vector4 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param vector4 Value to be set.
+         */
+        setVector4(uniformName: string, vector4: IVector4Like): void;
+        /**
+         * Sets a float4 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param x First float in float4.
+         * @param y Second float in float4.
+         * @param z Third float in float4.
+         * @param w Fourth float in float4.
+         * @returns this effect.
+         */
+        setFloat4(uniformName: string, x: number, y: number, z: number, w: number): void;
+        /**
+         * Sets a Color3 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param color3 Value to be set.
+         */
+        setColor3(uniformName: string, color3: IColor3Like): void;
+        /**
+         * Sets a Color4 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param color3 Value to be set.
+         * @param alpha Alpha value to be set.
+         */
+        setColor4(uniformName: string, color3: IColor3Like, alpha: number): void;
+        /**
+         * Sets a Color4 on a uniform variable
+         * @param uniformName defines the name of the variable
+         * @param color4 defines the value to be set
+         */
+        setDirectColor4(uniformName: string, color4: IColor4Like): void;
+        _getVertexShaderCode(): string | null;
+        _getFragmentShaderCode(): string | null;
+    }
+}
+declare module BABYLON {
+    /**
+     * Interface for any object that can request an animation frame
+     */
+    export interface ICustomAnimationFrameRequester {
+        /**
+         * This function will be called when the render loop is ready. If this is not populated, the engine's renderloop function will be called
+         */
+        renderFunction?: Function;
+        /**
+         * Called to request the next frame to render to
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame
+         */
+        requestAnimationFrame: Function;
+        /**
+         * You can pass this value to cancelAnimationFrame() to cancel the refresh callback request
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame#Return_value
+         */
+        requestID?: number;
+    }
+}
+declare module BABYLON {
+    /**
+     * Performance monitor tracks rolling average frame-time and frame-time variance over a user defined sliding-window
+     */
+    export class PerformanceMonitor {
+        private _enabled;
+        private _rollingFrameTime;
+        private _lastFrameTimeMs;
+        /**
+         * constructor
+         * @param frameSampleSize The number of samples required to saturate the sliding window
+         */
+        constructor(frameSampleSize?: number);
+        /**
+         * Samples current frame
+         * @param timeMs A timestamp in milliseconds of the current frame to compare with other frames
+         */
+        sampleFrame(timeMs?: number): void;
+        /**
+         * Returns the average frame time in milliseconds over the sliding window (or the subset of frames sampled so far)
+         */
+        get averageFrameTime(): number;
+        /**
+         * Returns the variance frame time in milliseconds over the sliding window (or the subset of frames sampled so far)
+         */
+        get averageFrameTimeVariance(): number;
+        /**
+         * Returns the frame time of the most recent frame
+         */
+        get instantaneousFrameTime(): number;
+        /**
+         * Returns the average framerate in frames per second over the sliding window (or the subset of frames sampled so far)
+         */
+        get averageFPS(): number;
+        /**
+         * Returns the average framerate in frames per second using the most recent frame time
+         */
+        get instantaneousFPS(): number;
+        /**
+         * Returns true if enough samples have been taken to completely fill the sliding window
+         */
+        get isSaturated(): boolean;
+        /**
+         * Enables contributions to the sliding window sample set
+         */
+        enable(): void;
+        /**
+         * Disables contributions to the sliding window sample set
+         * Samples will not be interpolated over the disabled period
+         */
+        disable(): void;
+        /**
+         * Returns true if sampling is enabled
+         */
+        get isEnabled(): boolean;
+        /**
+         * Resets performance monitor
+         */
+        reset(): void;
+    }
+    /**
+     * RollingAverage
+     *
+     * Utility to efficiently compute the rolling average and variance over a sliding window of samples
+     */
+    export class RollingAverage {
+        /**
+         * Current average
+         */
+        average: number;
+        /**
+         * Current variance
+         */
+        variance: number;
+        protected _samples: Array<number>;
+        protected _sampleCount: number;
+        protected _pos: number;
+        protected _m2: number;
+        /**
+         * constructor
+         * @param length The number of samples required to saturate the sliding window
+         */
+        constructor(length: number);
+        /**
+         * Adds a sample to the sample set
+         * @param v The sample value
+         */
+        add(v: number): void;
+        /**
+         * Returns previously added values or null if outside of history or outside the sliding window domain
+         * @param i Index in history. For example, pass 0 for the most recent value and 1 for the value before that
+         * @return Value previously recorded with add() or null if outside of range
+         */
+        history(i: number): number;
+        /**
+         * Returns true if enough samples have been taken to completely fill the sliding window
+         * @return true if sample-set saturated
+         */
+        isSaturated(): boolean;
+        /**
+         * Resets the rolling average (equivalent to 0 samples taken so far)
+         */
+        reset(): void;
+        /**
+         * Wraps a value around the sample range boundaries
+         * @param i Position in sample range, for example if the sample length is 5, and i is -3, then 2 will be returned.
+         * @return Wrapped position in sample range
+         */
+        protected _wrapPosition(i: number): number;
+    }
+}
+declare module BABYLON {
+    /**
+     * This class is used to track a performance counter which is number based.
+     * The user has access to many properties which give statistics of different nature.
+     *
+     * The implementer can track two kinds of Performance Counter: time and count.
+     * For time you can optionally call fetchNewFrame() to notify the start of a new frame to monitor, then call beginMonitoring() to start and endMonitoring() to record the lapsed time. endMonitoring takes a newFrame parameter for you to specify if the monitored time should be set for a new frame or accumulated to the current frame being monitored.
+     * For count you first have to call fetchNewFrame() to notify the start of a new frame to monitor, then call addCount() how many time required to increment the count value you monitor.
+     */
+    export class PerfCounter {
+        /**
+         * Gets or sets a global boolean to turn on and off all the counters
+         */
+        static Enabled: boolean;
+        /**
+         * Returns the smallest value ever
+         */
+        get min(): number;
+        /**
+         * Returns the biggest value ever
+         */
+        get max(): number;
+        /**
+         * Returns the average value since the performance counter is running
+         */
+        get average(): number;
+        /**
+         * Returns the average value of the last second the counter was monitored
+         */
+        get lastSecAverage(): number;
+        /**
+         * Returns the current value
+         */
+        get current(): number;
+        /**
+         * Gets the accumulated total
+         */
+        get total(): number;
+        /**
+         * Gets the total value count
+         */
+        get count(): number;
+        /**
+         * Creates a new counter
+         */
+        constructor();
+        /**
+         * Call this method to start monitoring a new frame.
+         * This scenario is typically used when you accumulate monitoring time many times for a single frame, you call this method at the start of the frame, then beginMonitoring to start recording and endMonitoring(false) to accumulated the recorded time to the PerfCounter or addCount() to accumulate a monitored count.
+         */
+        fetchNewFrame(): void;
+        /**
+         * Call this method to monitor a count of something (e.g. mesh drawn in viewport count)
+         * @param newCount the count value to add to the monitored count
+         * @param fetchResult true when it's the last time in the frame you add to the counter and you wish to update the statistics properties (min/max/average), false if you only want to update statistics.
+         */
+        addCount(newCount: number, fetchResult: boolean): void;
+        /**
+         * Start monitoring this performance counter
+         */
+        beginMonitoring(): void;
+        /**
+         * Compute the time lapsed since the previous beginMonitoring() call.
+         * @param newFrame true by default to fetch the result and monitor a new frame, if false the time monitored will be added to the current frame counter
+         */
+        endMonitoring(newFrame?: boolean): void;
+        private _fetchResult;
+        private _startMonitoringTime;
+        private _min;
+        private _max;
+        private _average;
+        private _current;
+        private _totalValueCount;
+        private _totalAccumulated;
+        private _lastSecAverage;
+        private _lastSecAccumulated;
+        private _lastSecTime;
+        private _lastSecValueCount;
+    }
+}
+declare module BABYLON {
+        interface ThinEngine {
+            /** @hidden */
+            _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean, noDataConversion?: boolean): Promise<ArrayBufferView>;
+            /** @hidden */
+            _readTexturePixelsSync(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean, noDataConversion?: boolean): ArrayBufferView;
+        }
+    /**
+     * Allocate a typed array depending on a texture type. Optionally can copy existing data in the buffer.
+     * @param type type of the texture
+     * @param sizeOrDstBuffer size of the array OR an existing buffer that will be used as the destination of the copy (if copyBuffer is provided)
+     * @param sizeInBytes true if the size of the array is given in bytes, false if it is the number of elements of the array
+     * @param copyBuffer if provided, buffer to copy into the destination buffer (either a newly allocated buffer if sizeOrDstBuffer is a number or use sizeOrDstBuffer as the destination buffer otherwise)
+     * @returns the allocated buffer or sizeOrDstBuffer if the latter is an ArrayBuffer
+     */
+    export function allocateAndCopyTypedBuffer(type: number, sizeOrDstBuffer: number | ArrayBuffer, sizeInBytes?: boolean, copyBuffer?: ArrayBuffer): ArrayBufferView;
+}
+declare module BABYLON {
+    /**
+     * Class used to work with sound analyzer using fast fourier transform (FFT)
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
+     */
+    export class Analyser {
+        /**
+         * Gets or sets the smoothing
+         * @ignorenaming
+         */
+        SMOOTHING: number;
+        /**
+         * Gets or sets the FFT table size
+         * @ignorenaming
+         */
+        FFT_SIZE: number;
+        /**
+         * Gets or sets the bar graph amplitude
+         * @ignorenaming
+         */
+        BARGRAPHAMPLITUDE: number;
+        /**
+         * Gets or sets the position of the debug canvas
+         * @ignorenaming
+         */
+        DEBUGCANVASPOS: {
+            x: number;
+            y: number;
+        };
+        /**
+         * Gets or sets the debug canvas size
+         * @ignorenaming
+         */
+        DEBUGCANVASSIZE: {
+            width: number;
+            height: number;
+        };
+        private _byteFreqs;
+        private _byteTime;
+        private _floatFreqs;
+        private _webAudioAnalyser;
+        private _debugCanvas;
+        private _debugCanvasContext;
+        private _scene;
+        private _registerFunc;
+        private _audioEngine;
+        /**
+         * Creates a new analyser
+         * @param scene defines hosting scene
+         */
+        constructor(scene: Scene);
+        /**
+         * Get the number of data values you will have to play with for the visualization
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/frequencyBinCount
+         * @returns a number
+         */
+        getFrequencyBinCount(): number;
+        /**
+         * Gets the current frequency data as a byte array
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteFrequencyData
+         * @returns a Uint8Array
+         */
+        getByteFrequencyData(): Uint8Array;
+        /**
+         * Gets the current waveform as a byte array
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteTimeDomainData
+         * @returns a Uint8Array
+         */
+        getByteTimeDomainData(): Uint8Array;
+        /**
+         * Gets the current frequency data as a float array
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteFrequencyData
+         * @returns a Float32Array
+         */
+        getFloatFrequencyData(): Float32Array;
+        /**
+         * Renders the debug canvas
+         */
+        drawDebugCanvas(): void;
+        /**
+         * Stops rendering the debug canvas and removes it
+         */
+        stopDebugCanvas(): void;
+        /**
+         * Connects two audio nodes
+         * @param inputAudioNode defines first node to connect
+         * @param outputAudioNode defines second node to connect
+         */
+        connectAudioNodes(inputAudioNode: AudioNode, outputAudioNode: AudioNode): void;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * This represents an audio engine and it is responsible
+     * to play, synchronize and analyse sounds throughout the application.
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
+     */
+    export interface IAudioEngine extends IDisposable {
+        /**
+         * Gets whether the current host supports Web Audio and thus could create AudioContexts.
+         */
+        readonly canUseWebAudio: boolean;
+        /**
+         * Gets the current AudioContext if available.
+         */
+        readonly audioContext: Nullable<AudioContext>;
+        /**
+         * The master gain node defines the global audio volume of your audio engine.
+         */
+        readonly masterGain: GainNode;
+        /**
+         * Gets whether or not mp3 are supported by your browser.
+         */
+        readonly isMP3supported: boolean;
+        /**
+         * Gets whether or not ogg are supported by your browser.
+         */
+        readonly isOGGsupported: boolean;
+        /**
+         * Defines if Babylon should emit a warning if WebAudio is not supported.
+         * @ignoreNaming
+         */
+        WarnedWebAudioUnsupported: boolean;
+        /**
+         * Defines if the audio engine relies on a custom unlocked button.
+         * In this case, the embedded button will not be displayed.
+         */
+        useCustomUnlockedButton: boolean;
+        /**
+         * Gets whether or not the audio engine is unlocked (require first a user gesture on some browser).
+         */
+        readonly unlocked: boolean;
+        /**
+         * Event raised when audio has been unlocked on the browser.
+         */
+        onAudioUnlockedObservable: Observable<IAudioEngine>;
+        /**
+         * Event raised when audio has been locked on the browser.
+         */
+        onAudioLockedObservable: Observable<IAudioEngine>;
+        /**
+         * Flags the audio engine in Locked state.
+         * This happens due to new browser policies preventing audio to autoplay.
+         */
+        lock(): void;
+        /**
+         * Unlocks the audio engine once a user action has been done on the dom.
+         * This is helpful to resume play once browser policies have been satisfied.
+         */
+        unlock(): void;
+        /**
+         * Gets the global volume sets on the master gain.
+         * @returns the global volume if set or -1 otherwise
+         */
+        getGlobalVolume(): number;
+        /**
+         * Sets the global volume of your experience (sets on the master gain).
+         * @param newVolume Defines the new global volume of the application
+         */
+        setGlobalVolume(newVolume: number): void;
+        /**
+         * Connect the audio engine to an audio analyser allowing some amazing
+         * synchronization between the sounds/music and your visualization (VuMeter for instance).
+         * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#using-the-analyser
+         * @param analyser The analyser to connect to the engine
+         */
+        connectToAnalyser(analyser: Analyser): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Defines the interface used by display changed events
+     */
+    export interface IDisplayChangedEventArgs {
+        /** Gets the vrDisplay object (if any) */
+        vrDisplay: Nullable<any>;
+        /** Gets a boolean indicating if webVR is supported */
+        vrSupported: boolean;
+    }
+    /**
+     * Defines the interface used by objects containing a viewport (like a camera)
+     */
+    interface IViewportOwnerLike {
+        /**
+         * Gets or sets the viewport
+         */
+        viewport: IViewportLike;
+    }
+    /**
+     * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio
+     */
+    export class Engine extends ThinEngine {
+        /** Defines that alpha blending is disabled */
+        static readonly ALPHA_DISABLE: number;
+        /** Defines that alpha blending to SRC ALPHA * SRC + DEST */
+        static readonly ALPHA_ADD: number;
+        /** Defines that alpha blending to SRC ALPHA * SRC + (1 - SRC ALPHA) * DEST */
+        static readonly ALPHA_COMBINE: number;
+        /** Defines that alpha blending to DEST - SRC * DEST */
+        static readonly ALPHA_SUBTRACT: number;
+        /** Defines that alpha blending to SRC * DEST */
+        static readonly ALPHA_MULTIPLY: number;
+        /** Defines that alpha blending to SRC ALPHA * SRC + (1 - SRC) * DEST */
+        static readonly ALPHA_MAXIMIZED: number;
+        /** Defines that alpha blending to SRC + DEST */
+        static readonly ALPHA_ONEONE: number;
+        /** Defines that alpha blending to SRC + (1 - SRC ALPHA) * DEST */
+        static readonly ALPHA_PREMULTIPLIED: number;
+        /**
+         * Defines that alpha blending to SRC + (1 - SRC ALPHA) * DEST
+         * Alpha will be set to (1 - SRC ALPHA) * DEST ALPHA
+         */
+        static readonly ALPHA_PREMULTIPLIED_PORTERDUFF: number;
+        /** Defines that alpha blending to CST * SRC + (1 - CST) * DEST */
+        static readonly ALPHA_INTERPOLATE: number;
+        /**
+         * Defines that alpha blending to SRC + (1 - SRC) * DEST
+         * Alpha will be set to SRC ALPHA + (1 - SRC ALPHA) * DEST ALPHA
+         */
+        static readonly ALPHA_SCREENMODE: number;
+        /** Defines that the resource is not delayed*/
+        static readonly DELAYLOADSTATE_NONE: number;
+        /** Defines that the resource was successfully delay loaded */
+        static readonly DELAYLOADSTATE_LOADED: number;
+        /** Defines that the resource is currently delay loading */
+        static readonly DELAYLOADSTATE_LOADING: number;
+        /** Defines that the resource is delayed and has not started loading */
+        static readonly DELAYLOADSTATE_NOTLOADED: number;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will never pass. i.e. Nothing will be drawn */
+        static readonly NEVER: number;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn */
+        static readonly ALWAYS: number;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than the stored value */
+        static readonly LESS: number;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is equals to the stored value */
+        static readonly EQUAL: number;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than or equal to the stored value */
+        static readonly LEQUAL: number;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than the stored value */
+        static readonly GREATER: number;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than or equal to the stored value */
+        static readonly GEQUAL: number;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is not equal to the stored value */
+        static readonly NOTEQUAL: number;
+        /** Passed to stencilOperation to specify that stencil value must be kept */
+        static readonly KEEP: number;
+        /** Passed to stencilOperation to specify that stencil value must be replaced */
+        static readonly REPLACE: number;
+        /** Passed to stencilOperation to specify that stencil value must be incremented */
+        static readonly INCR: number;
+        /** Passed to stencilOperation to specify that stencil value must be decremented */
+        static readonly DECR: number;
+        /** Passed to stencilOperation to specify that stencil value must be inverted */
+        static readonly INVERT: number;
+        /** Passed to stencilOperation to specify that stencil value must be incremented with wrapping */
+        static readonly INCR_WRAP: number;
+        /** Passed to stencilOperation to specify that stencil value must be decremented with wrapping */
+        static readonly DECR_WRAP: number;
+        /** Texture is not repeating outside of 0..1 UVs */
+        static readonly TEXTURE_CLAMP_ADDRESSMODE: number;
+        /** Texture is repeating outside of 0..1 UVs */
+        static readonly TEXTURE_WRAP_ADDRESSMODE: number;
+        /** Texture is repeating and mirrored */
+        static readonly TEXTURE_MIRROR_ADDRESSMODE: number;
+        /** ALPHA */
+        static readonly TEXTUREFORMAT_ALPHA: number;
+        /** LUMINANCE */
+        static readonly TEXTUREFORMAT_LUMINANCE: number;
+        /** LUMINANCE_ALPHA */
+        static readonly TEXTUREFORMAT_LUMINANCE_ALPHA: number;
+        /** RGB */
+        static readonly TEXTUREFORMAT_RGB: number;
+        /** RGBA */
+        static readonly TEXTUREFORMAT_RGBA: number;
+        /** RED */
+        static readonly TEXTUREFORMAT_RED: number;
+        /** RED (2nd reference) */
+        static readonly TEXTUREFORMAT_R: number;
+        /** RG */
+        static readonly TEXTUREFORMAT_RG: number;
+        /** RED_INTEGER */
+        static readonly TEXTUREFORMAT_RED_INTEGER: number;
+        /** RED_INTEGER (2nd reference) */
+        static readonly TEXTUREFORMAT_R_INTEGER: number;
+        /** RG_INTEGER */
+        static readonly TEXTUREFORMAT_RG_INTEGER: number;
+        /** RGB_INTEGER */
+        static readonly TEXTUREFORMAT_RGB_INTEGER: number;
+        /** RGBA_INTEGER */
+        static readonly TEXTUREFORMAT_RGBA_INTEGER: number;
+        /** UNSIGNED_BYTE */
+        static readonly TEXTURETYPE_UNSIGNED_BYTE: number;
+        /** UNSIGNED_BYTE (2nd reference) */
+        static readonly TEXTURETYPE_UNSIGNED_INT: number;
+        /** FLOAT */
+        static readonly TEXTURETYPE_FLOAT: number;
+        /** HALF_FLOAT */
+        static readonly TEXTURETYPE_HALF_FLOAT: number;
+        /** BYTE */
+        static readonly TEXTURETYPE_BYTE: number;
+        /** SHORT */
+        static readonly TEXTURETYPE_SHORT: number;
+        /** UNSIGNED_SHORT */
+        static readonly TEXTURETYPE_UNSIGNED_SHORT: number;
+        /** INT */
+        static readonly TEXTURETYPE_INT: number;
+        /** UNSIGNED_INT */
+        static readonly TEXTURETYPE_UNSIGNED_INTEGER: number;
+        /** UNSIGNED_SHORT_4_4_4_4 */
+        static readonly TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4: number;
+        /** UNSIGNED_SHORT_5_5_5_1 */
+        static readonly TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1: number;
+        /** UNSIGNED_SHORT_5_6_5 */
+        static readonly TEXTURETYPE_UNSIGNED_SHORT_5_6_5: number;
+        /** UNSIGNED_INT_2_10_10_10_REV */
+        static readonly TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV: number;
+        /** UNSIGNED_INT_24_8 */
+        static readonly TEXTURETYPE_UNSIGNED_INT_24_8: number;
+        /** UNSIGNED_INT_10F_11F_11F_REV */
+        static readonly TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV: number;
+        /** UNSIGNED_INT_5_9_9_9_REV */
+        static readonly TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV: number;
+        /** FLOAT_32_UNSIGNED_INT_24_8_REV */
+        static readonly TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV: number;
+        /** nearest is mag = nearest and min = nearest and mip = none */
+        static readonly TEXTURE_NEAREST_SAMPLINGMODE: number;
+        /** Bilinear is mag = linear and min = linear and mip = nearest */
+        static readonly TEXTURE_BILINEAR_SAMPLINGMODE: number;
+        /** Trilinear is mag = linear and min = linear and mip = linear */
+        static readonly TEXTURE_TRILINEAR_SAMPLINGMODE: number;
+        /** nearest is mag = nearest and min = nearest and mip = linear */
+        static readonly TEXTURE_NEAREST_NEAREST_MIPLINEAR: number;
+        /** Bilinear is mag = linear and min = linear and mip = nearest */
+        static readonly TEXTURE_LINEAR_LINEAR_MIPNEAREST: number;
+        /** Trilinear is mag = linear and min = linear and mip = linear */
+        static readonly TEXTURE_LINEAR_LINEAR_MIPLINEAR: number;
+        /** mag = nearest and min = nearest and mip = nearest */
+        static readonly TEXTURE_NEAREST_NEAREST_MIPNEAREST: number;
+        /** mag = nearest and min = linear and mip = nearest */
+        static readonly TEXTURE_NEAREST_LINEAR_MIPNEAREST: number;
+        /** mag = nearest and min = linear and mip = linear */
+        static readonly TEXTURE_NEAREST_LINEAR_MIPLINEAR: number;
+        /** mag = nearest and min = linear and mip = none */
+        static readonly TEXTURE_NEAREST_LINEAR: number;
+        /** mag = nearest and min = nearest and mip = none */
+        static readonly TEXTURE_NEAREST_NEAREST: number;
+        /** mag = linear and min = nearest and mip = nearest */
+        static readonly TEXTURE_LINEAR_NEAREST_MIPNEAREST: number;
+        /** mag = linear and min = nearest and mip = linear */
+        static readonly TEXTURE_LINEAR_NEAREST_MIPLINEAR: number;
+        /** mag = linear and min = linear and mip = none */
+        static readonly TEXTURE_LINEAR_LINEAR: number;
+        /** mag = linear and min = nearest and mip = none */
+        static readonly TEXTURE_LINEAR_NEAREST: number;
+        /** Explicit coordinates mode */
+        static readonly TEXTURE_EXPLICIT_MODE: number;
+        /** Spherical coordinates mode */
+        static readonly TEXTURE_SPHERICAL_MODE: number;
+        /** Planar coordinates mode */
+        static readonly TEXTURE_PLANAR_MODE: number;
+        /** Cubic coordinates mode */
+        static readonly TEXTURE_CUBIC_MODE: number;
+        /** Projection coordinates mode */
+        static readonly TEXTURE_PROJECTION_MODE: number;
+        /** Skybox coordinates mode */
+        static readonly TEXTURE_SKYBOX_MODE: number;
+        /** Inverse Cubic coordinates mode */
+        static readonly TEXTURE_INVCUBIC_MODE: number;
+        /** Equirectangular coordinates mode */
+        static readonly TEXTURE_EQUIRECTANGULAR_MODE: number;
+        /** Equirectangular Fixed coordinates mode */
+        static readonly TEXTURE_FIXED_EQUIRECTANGULAR_MODE: number;
+        /** Equirectangular Fixed Mirrored coordinates mode */
+        static readonly TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE: number;
+        /** Defines that texture rescaling will use a floor to find the closer power of 2 size */
+        static readonly SCALEMODE_FLOOR: number;
+        /** Defines that texture rescaling will look for the nearest power of 2 size */
+        static readonly SCALEMODE_NEAREST: number;
+        /** Defines that texture rescaling will use a ceil to find the closer power of 2 size */
+        static readonly SCALEMODE_CEILING: number;
+        /**
+         * Returns the current npm package of the sdk
+         */
+        static get NpmPackage(): string;
+        /**
+         * Returns the current version of the framework
+         */
+        static get Version(): string;
+        /** Gets the list of created engines */
+        static get Instances(): Engine[];
+        /**
+         * Gets the latest created engine
+         */
+        static get LastCreatedEngine(): Nullable<Engine>;
+        /**
+         * Gets the latest created scene
+         */
+        static get LastCreatedScene(): Nullable<Scene>;
+        /**
+         * Engine abstraction for createImageBitmap
+         * @param image source for image
+         * @param options An object that sets options for the image's extraction.
+         * @returns ImageBitmap
+         */
+        createImageBitmap(image: ImageBitmapSource, options?: ImageBitmapOptions): Promise<ImageBitmap>;
+        /**
+         * Resize an image and returns the image data as an uint8array
+         * @param image image to resize
+         * @param bufferWidth destination buffer width
+         * @param bufferHeight destination buffer height
+         * @returns an uint8array containing RGBA values of bufferWidth * bufferHeight size
+         */
+        resizeImageBitmap(image: HTMLImageElement | ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array;
+        /**
+         * Will flag all materials in all scenes in all engines as dirty to trigger new shader compilation
+         * @param flag defines which part of the materials must be marked as dirty
+         * @param predicate defines a predicate used to filter which materials should be affected
+         */
+        static MarkAllMaterialsAsDirty(flag: number, predicate?: (mat: Material) => boolean): void;
+        /**
+         * Method called to create the default loading screen.
+         * This can be overridden in your own app.
+         * @param canvas The rendering canvas element
+         * @returns The loading screen
+         */
+        static DefaultLoadingScreenFactory(canvas: HTMLCanvasElement): ILoadingScreen;
+        /**
+         * Method called to create the default rescale post process on each engine.
+         */
+        static _RescalePostProcessFactory: Nullable<(engine: Engine) => PostProcess>;
+        /**
+         * Gets or sets a boolean to enable/disable IndexedDB support and avoid XHR on .manifest
+         **/
+        enableOfflineSupport: boolean;
+        /**
+         * Gets or sets a boolean to enable/disable checking manifest if IndexedDB support is enabled (js will always consider the database is up to date)
+         **/
+        disableManifestCheck: boolean;
+        /**
+         * Gets the list of created scenes
+         */
+        scenes: Scene[];
+        /** @hidden */
+        _virtualScenes: Scene[];
+        /**
+         * Event raised when a new scene is created
+         */
+        onNewSceneAddedObservable: Observable<Scene>;
+        /**
+         * Gets the list of created postprocesses
+         */
+        postProcesses: PostProcess[];
+        /**
+         * Gets a boolean indicating if the pointer is currently locked
+         */
+        isPointerLock: boolean;
+        /**
+         * Stores instance of DeviceInputSystem
+         */
+        deviceInputSystem: IDeviceInputSystem;
+        /**
+         * Observable event triggered each time the rendering canvas is resized
+         */
+        onResizeObservable: Observable<Engine>;
+        /**
+         * Observable event triggered each time the canvas loses focus
+         */
+        onCanvasBlurObservable: Observable<Engine>;
+        /**
+         * Observable event triggered each time the canvas gains focus
+         */
+        onCanvasFocusObservable: Observable<Engine>;
+        /**
+         * Observable event triggered each time the canvas receives pointerout event
+         */
+        onCanvasPointerOutObservable: Observable<IPointerEvent>;
+        /**
+         * Observable raised when the engine begins a new frame
+         */
+        onBeginFrameObservable: Observable<Engine>;
+        /**
+         * If set, will be used to request the next animation frame for the render loop
+         */
+        customAnimationFrameRequester: Nullable<ICustomAnimationFrameRequester>;
+        /**
+         * Observable raised when the engine ends the current frame
+         */
+        onEndFrameObservable: Observable<Engine>;
+        /**
+         * Observable raised when the engine is about to compile a shader
+         */
+        onBeforeShaderCompilationObservable: Observable<Engine>;
+        /**
+         * Observable raised when the engine has just compiled a shader
+         */
+        onAfterShaderCompilationObservable: Observable<Engine>;
+        /**
+         * Gets the audio engine
+         * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
+         * @ignorenaming
+         */
+        static audioEngine: Nullable<IAudioEngine>;
+        /**
+         * Default AudioEngine factory responsible of creating the Audio Engine.
+         * By default, this will create a BabylonJS Audio Engine if the workload has been embedded.
+         */
+        static AudioEngineFactory: (hostElement: Nullable<HTMLElement>, audioContext: Nullable<AudioContext>, audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>) => IAudioEngine;
+        /**
+         * Default offline support factory responsible of creating a tool used to store data locally.
+         * By default, this will create a Database object if the workload has been embedded.
+         */
+        static OfflineProviderFactory: (urlToScene: string, callbackManifestChecked: (checked: boolean) => any, disableManifestCheck: boolean) => IOfflineProvider;
+        private _loadingScreen;
+        private _pointerLockRequested;
+        private _rescalePostProcess;
+        protected _deterministicLockstep: boolean;
+        protected _lockstepMaxSteps: number;
+        protected _timeStep: number;
+        protected get _supportsHardwareTextureRescaling(): boolean;
+        private _fps;
+        private _deltaTime;
+        /** @hidden */
+        _drawCalls: PerfCounter;
+        /** Gets or sets the tab index to set to the rendering canvas. 1 is the minimum value to set to be able to capture keyboard events */
+        canvasTabIndex: number;
+        /**
+         * Turn this value on if you want to pause FPS computation when in background
+         */
+        disablePerformanceMonitorInBackground: boolean;
+        private _performanceMonitor;
+        /**
+         * Gets the performance monitor attached to this engine
+         * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#engineinstrumentation
+         */
+        get performanceMonitor(): PerformanceMonitor;
+        private _onFocus;
+        private _onBlur;
+        private _onCanvasPointerOut;
+        private _onCanvasBlur;
+        private _onCanvasFocus;
+        private _onFullscreenChange;
+        private _onPointerLockChange;
+        /**
+         * Gets the HTML element used to attach event listeners
+         * @returns a HTML element
+         */
+        getInputElement(): Nullable<HTMLElement>;
+        /**
+         * Creates a new engine
+         * @param canvasOrContext defines the canvas or WebGL context to use for rendering. If you provide a WebGL context, Babylon.js will not hook events on the canvas (like pointers, keyboards, etc...) so no event observables will be available. This is mostly used when Babylon.js is used as a plugin on a system which already used the WebGL context
+         * @param antialias defines enable antialiasing (default: false)
+         * @param options defines further options to be sent to the getContext() function
+         * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
+         */
+        constructor(canvasOrContext: Nullable<HTMLCanvasElement | OffscreenCanvas | WebGLRenderingContext | WebGL2RenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio?: boolean);
+        /**
+         * Shared initialization across engines types.
+         * @param canvas The canvas associated with this instance of the engine.
+         * @param doNotHandleTouchAction Defines that engine should ignore modifying touch action attribute and style
+         * @param audioEngine Defines if an audio engine should be created by default
+         */
+        protected _sharedInit(canvas: HTMLCanvasElement, doNotHandleTouchAction: boolean, audioEngine: boolean): void;
+        /**
+         * Gets current aspect ratio
+         * @param viewportOwner defines the camera to use to get the aspect ratio
+         * @param useScreen defines if screen size must be used (or the current render target if any)
+         * @returns a number defining the aspect ratio
+         */
+        getAspectRatio(viewportOwner: IViewportOwnerLike, useScreen?: boolean): number;
+        /**
+         * Gets current screen aspect ratio
+         * @returns a number defining the aspect ratio
+         */
+        getScreenAspectRatio(): number;
+        /**
+         * Gets the client rect of the HTML canvas attached with the current webGL context
+         * @returns a client rectangle
+         */
+        getRenderingCanvasClientRect(): Nullable<ClientRect>;
+        /**
+         * Gets the client rect of the HTML element used for events
+         * @returns a client rectangle
+         */
+        getInputElementClientRect(): Nullable<ClientRect>;
+        /**
+         * Gets a boolean indicating that the engine is running in deterministic lock step mode
+         * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+         * @returns true if engine is in deterministic lock step mode
+         */
+        isDeterministicLockStep(): boolean;
+        /**
+         * Gets the max steps when engine is running in deterministic lock step
+         * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+         * @returns the max steps
+         */
+        getLockstepMaxSteps(): number;
+        /**
+         * Returns the time in ms between steps when using deterministic lock step.
+         * @returns time step in (ms)
+         */
+        getTimeStep(): number;
+        /**
+         * Force the mipmap generation for the given render target texture
+         * @param texture defines the render target texture to use
+         * @param unbind defines whether or not to unbind the texture after generation. Defaults to true.
+         */
+        generateMipMapsForCubemap(texture: InternalTexture, unbind?: boolean): void;
+        /** States */
+        /**
+         * Gets a boolean indicating if depth testing is enabled
+         * @returns the current state
+         */
+        getDepthBuffer(): boolean;
+        /**
+         * Enable or disable depth buffering
+         * @param enable defines the state to set
+         */
+        setDepthBuffer(enable: boolean): void;
+        /**
+         * Gets a boolean indicating if depth writing is enabled
+         * @returns the current depth writing state
+         */
+        getDepthWrite(): boolean;
+        /**
+         * Enable or disable depth writing
+         * @param enable defines the state to set
+         */
+        setDepthWrite(enable: boolean): void;
+        /**
+         * Gets a boolean indicating if stencil buffer is enabled
+         * @returns the current stencil buffer state
+         */
+        getStencilBuffer(): boolean;
+        /**
+         * Enable or disable the stencil buffer
+         * @param enable defines if the stencil buffer must be enabled or disabled
+         */
+        setStencilBuffer(enable: boolean): void;
+        /**
+         * Gets the current stencil mask
+         * @returns a number defining the new stencil mask to use
+         */
+        getStencilMask(): number;
+        /**
+         * Sets the current stencil mask
+         * @param mask defines the new stencil mask to use
+         */
+        setStencilMask(mask: number): void;
+        /**
+         * Gets the current stencil function
+         * @returns a number defining the stencil function to use
+         */
+        getStencilFunction(): number;
+        /**
+         * Gets the current stencil reference value
+         * @returns a number defining the stencil reference value to use
+         */
+        getStencilFunctionReference(): number;
+        /**
+         * Gets the current stencil mask
+         * @returns a number defining the stencil mask to use
+         */
+        getStencilFunctionMask(): number;
+        /**
+         * Sets the current stencil function
+         * @param stencilFunc defines the new stencil function to use
+         */
+        setStencilFunction(stencilFunc: number): void;
+        /**
+         * Sets the current stencil reference
+         * @param reference defines the new stencil reference to use
+         */
+        setStencilFunctionReference(reference: number): void;
+        /**
+         * Sets the current stencil mask
+         * @param mask defines the new stencil mask to use
+         */
+        setStencilFunctionMask(mask: number): void;
+        /**
+         * Gets the current stencil operation when stencil fails
+         * @returns a number defining stencil operation to use when stencil fails
+         */
+        getStencilOperationFail(): number;
+        /**
+         * Gets the current stencil operation when depth fails
+         * @returns a number defining stencil operation to use when depth fails
+         */
+        getStencilOperationDepthFail(): number;
+        /**
+         * Gets the current stencil operation when stencil passes
+         * @returns a number defining stencil operation to use when stencil passes
+         */
+        getStencilOperationPass(): number;
+        /**
+         * Sets the stencil operation to use when stencil fails
+         * @param operation defines the stencil operation to use when stencil fails
+         */
+        setStencilOperationFail(operation: number): void;
+        /**
+         * Sets the stencil operation to use when depth fails
+         * @param operation defines the stencil operation to use when depth fails
+         */
+        setStencilOperationDepthFail(operation: number): void;
+        /**
+         * Sets the stencil operation to use when stencil passes
+         * @param operation defines the stencil operation to use when stencil passes
+         */
+        setStencilOperationPass(operation: number): void;
+        /**
+         * Sets a boolean indicating if the dithering state is enabled or disabled
+         * @param value defines the dithering state
+         */
+        setDitheringState(value: boolean): void;
+        /**
+         * Sets a boolean indicating if the rasterizer state is enabled or disabled
+         * @param value defines the rasterizer state
+         */
+        setRasterizerState(value: boolean): void;
+        /**
+         * Gets the current depth function
+         * @returns a number defining the depth function
+         */
+        getDepthFunction(): Nullable<number>;
+        /**
+         * Sets the current depth function
+         * @param depthFunc defines the function to use
+         */
+        setDepthFunction(depthFunc: number): void;
+        /**
+         * Sets the current depth function to GREATER
+         */
+        setDepthFunctionToGreater(): void;
+        /**
+         * Sets the current depth function to GEQUAL
+         */
+        setDepthFunctionToGreaterOrEqual(): void;
+        /**
+         * Sets the current depth function to LESS
+         */
+        setDepthFunctionToLess(): void;
+        /**
+         * Sets the current depth function to LEQUAL
+         */
+        setDepthFunctionToLessOrEqual(): void;
+        private _cachedStencilBuffer;
+        private _cachedStencilFunction;
+        private _cachedStencilMask;
+        private _cachedStencilOperationPass;
+        private _cachedStencilOperationFail;
+        private _cachedStencilOperationDepthFail;
+        private _cachedStencilReference;
+        /**
+         * Caches the the state of the stencil buffer
+         */
+        cacheStencilState(): void;
+        /**
+         * Restores the state of the stencil buffer
+         */
+        restoreStencilState(): void;
+        /**
+         * Directly set the WebGL Viewport
+         * @param x defines the x coordinate of the viewport (in screen space)
+         * @param y defines the y coordinate of the viewport (in screen space)
+         * @param width defines the width of the viewport (in screen space)
+         * @param height defines the height of the viewport (in screen space)
+         * @return the current viewport Object (if any) that is being replaced by this call. You can restore this viewport later on to go back to the original state
+         */
+        setDirectViewport(x: number, y: number, width: number, height: number): Nullable<IViewportLike>;
+        /**
+         * Executes a scissor clear (ie. a clear on a specific portion of the screen)
+         * @param x defines the x-coordinate of the top left corner of the clear rectangle
+         * @param y defines the y-coordinate of the corner of the clear rectangle
+         * @param width defines the width of the clear rectangle
+         * @param height defines the height of the clear rectangle
+         * @param clearColor defines the clear color
+         */
+        scissorClear(x: number, y: number, width: number, height: number, clearColor: IColor4Like): void;
+        /**
+         * Enable scissor test on a specific rectangle (ie. render will only be executed on a specific portion of the screen)
+         * @param x defines the x-coordinate of the top left corner of the clear rectangle
+         * @param y defines the y-coordinate of the corner of the clear rectangle
+         * @param width defines the width of the clear rectangle
+         * @param height defines the height of the clear rectangle
+         */
+        enableScissor(x: number, y: number, width: number, height: number): void;
+        /**
+         * Disable previously set scissor test rectangle
+         */
+        disableScissor(): void;
+        protected _reportDrawCall(numDrawCalls?: number): void;
+        /**
+         * Initializes a webVR display and starts listening to display change events
+         * The onVRDisplayChangedObservable will be notified upon these changes
+         * @returns The onVRDisplayChangedObservable
+         */
+        initWebVR(): Observable<IDisplayChangedEventArgs>;
+        /** @hidden */
+        _prepareVRComponent(): void;
+        /** @hidden */
+        _connectVREvents(canvas?: HTMLCanvasElement, document?: any): void;
+        /** @hidden */
+        _submitVRFrame(): void;
+        /**
+         * Call this function to leave webVR mode
+         * Will do nothing if webVR is not supported or if there is no webVR device
+         * @see https://doc.babylonjs.com/how_to/webvr_camera
+         */
+        disableVR(): void;
+        /**
+         * Gets a boolean indicating that the system is in VR mode and is presenting
+         * @returns true if VR mode is engaged
+         */
+        isVRPresenting(): boolean;
+        /** @hidden */
+        _requestVRFrame(): void;
+        /** @hidden */
+        _loadFileAsync(url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean): Promise<string | ArrayBuffer>;
+        /**
+        * Gets the source code of the vertex shader associated with a specific webGL program
+        * @param program defines the program to use
+        * @returns a string containing the source code of the vertex shader associated with the program
+        */
+        getVertexShaderSource(program: WebGLProgram): Nullable<string>;
+        /**
+         * Gets the source code of the fragment shader associated with a specific webGL program
+         * @param program defines the program to use
+         * @returns a string containing the source code of the fragment shader associated with the program
+         */
+        getFragmentShaderSource(program: WebGLProgram): Nullable<string>;
+        /**
+         * Sets a depth stencil texture from a render target to the according uniform.
+         * @param channel The texture channel
+         * @param uniform The uniform to set
+         * @param texture The render target texture containing the depth stencil texture to apply
+         * @param name The texture name
+         */
+        setDepthStencilTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<RenderTargetTexture>, name?: string): void;
+        /**
+         * Sets a texture to the webGL context from a postprocess
+         * @param channel defines the channel to use
+         * @param postProcess defines the source postprocess
+         * @param name name of the channel
+         */
+        setTextureFromPostProcess(channel: number, postProcess: Nullable<PostProcess>, name: string): void;
+        /**
+         * Binds the output of the passed in post process to the texture channel specified
+         * @param channel The channel the texture should be bound to
+         * @param postProcess The post process which's output should be bound
+         * @param name name of the channel
+         */
+        setTextureFromPostProcessOutput(channel: number, postProcess: Nullable<PostProcess>, name: string): void;
+        protected _rebuildBuffers(): void;
+        /** @hidden */
+        _renderFrame(): void;
+        _renderLoop(): void;
+        /** @hidden */
+        _renderViews(): boolean;
+        /**
+         * Toggle full screen mode
+         * @param requestPointerLock defines if a pointer lock should be requested from the user
+         */
+        switchFullscreen(requestPointerLock: boolean): void;
+        /**
+         * Enters full screen mode
+         * @param requestPointerLock defines if a pointer lock should be requested from the user
+         */
+        enterFullscreen(requestPointerLock: boolean): void;
+        /**
+         * Exits full screen mode
+         */
+        exitFullscreen(): void;
+        /**
+         * Enters Pointerlock mode
+         */
+        enterPointerlock(): void;
+        /**
+         * Exits Pointerlock mode
+         */
+        exitPointerlock(): void;
+        /**
+         * Begin a new frame
+         */
+        beginFrame(): void;
+        /**
+         * End the current frame
+         */
+        endFrame(): void;
+        /**
+         * Resize the view according to the canvas' size
+         * @param forceSetSize true to force setting the sizes of the underlying canvas
+         */
+        resize(forceSetSize?: boolean): void;
+        /**
+         * Force a specific size of the canvas
+         * @param width defines the new canvas' width
+         * @param height defines the new canvas' height
+         * @param forceSetSize true to force setting the sizes of the underlying canvas
+         * @returns true if the size was changed
+         */
+        setSize(width: number, height: number, forceSetSize?: boolean): boolean;
+        _deletePipelineContext(pipelineContext: IPipelineContext): void;
+        createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext, transformFeedbackVaryings?: Nullable<string[]>): WebGLProgram;
+        protected _createShaderProgram(pipelineContext: WebGLPipelineContext, vertexShader: WebGLShader, fragmentShader: WebGLShader, context: WebGLRenderingContext, transformFeedbackVaryings?: Nullable<string[]>): WebGLProgram;
+        /** @hidden */
+        _releaseTexture(texture: InternalTexture): void;
+        /** @hidden */
+        _releaseRenderTargetWrapper(rtWrapper: RenderTargetWrapper): void;
+        /**
+         * @hidden
+         * Rescales a texture
+         * @param source input texture
+         * @param destination destination texture
+         * @param scene scene to use to render the resize
+         * @param internalFormat format to use when resizing
+         * @param onComplete callback to be called when resize has completed
+         */
+        _rescaleTexture(source: InternalTexture, destination: InternalTexture, scene: Nullable<any>, internalFormat: number, onComplete: () => void): void;
+        /**
+         * Gets the current framerate
+         * @returns a number representing the framerate
+         */
+        getFps(): number;
+        /**
+         * Gets the time spent between current and previous frame
+         * @returns a number representing the delta time in ms
+         */
+        getDeltaTime(): number;
+        private _measureFps;
+        /** @hidden */
+        _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement | ImageBitmap, faceIndex?: number, lod?: number): void;
+        /**
+         * Updates a depth texture Comparison Mode and Function.
+         * If the comparison Function is equal to 0, the mode will be set to none.
+         * Otherwise, this only works in webgl 2 and requires a shadow sampler in the shader.
+         * @param texture The texture to set the comparison function for
+         * @param comparisonFunction The comparison function to set, 0 if no comparison required
+         */
+        updateTextureComparisonFunction(texture: InternalTexture, comparisonFunction: number): void;
+        /**
+         * Creates a webGL buffer to use with instantiation
+         * @param capacity defines the size of the buffer
+         * @returns the webGL buffer
+         */
+        createInstancesBuffer(capacity: number): DataBuffer;
+        /**
+         * Delete a webGL buffer used with instantiation
+         * @param buffer defines the webGL buffer to delete
+         */
+        deleteInstancesBuffer(buffer: WebGLBuffer): void;
+        private _clientWaitAsync;
+        /** @hidden */
+        _readPixelsAsync(x: number, y: number, w: number, h: number, format: number, type: number, outputBuffer: ArrayBufferView): Promise<ArrayBufferView> | null;
+        dispose(): void;
+        private _disableTouchAction;
+        /**
+         * Display the loading screen
+         * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+         */
+        displayLoadingUI(): void;
+        /**
+         * Hide the loading screen
+         * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+         */
+        hideLoadingUI(): void;
+        /**
+         * Gets the current loading screen object
+         * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+         */
+        get loadingScreen(): ILoadingScreen;
+        /**
+         * Sets the current loading screen object
+         * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+         */
+        set loadingScreen(loadingScreen: ILoadingScreen);
+        /**
+         * Sets the current loading screen text
+         * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+         */
+        set loadingUIText(text: string);
+        /**
+         * Sets the current loading screen background color
+         * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+         */
+        set loadingUIBackgroundColor(color: string);
+        /**
+         * creates and returns a new video element
+         * @param constraints video constraints
+         * @returns video element
+         */
+        createVideoElement(constraints: MediaTrackConstraints): any;
+        /** Pointerlock and fullscreen */
+        /**
+         * Ask the browser to promote the current element to pointerlock mode
+         * @param element defines the DOM element to promote
+         */
+        static _RequestPointerlock(element: HTMLElement): void;
+        /**
+         * Asks the browser to exit pointerlock mode
+         */
+        static _ExitPointerlock(): void;
+        /**
+         * Ask the browser to promote the current element to fullscreen rendering mode
+         * @param element defines the DOM element to promote
+         */
+        static _RequestFullscreen(element: HTMLElement): void;
+        /**
+         * Asks the browser to exit fullscreen mode
+         */
+        static _ExitFullscreen(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * The engine store class is responsible to hold all the instances of Engine and Scene created
+     * during the life time of the application.
+     */
+    export class EngineStore {
+        /** Gets the list of created engines */
+        static Instances: Engine[];
+        /** @hidden */
+        static _LastCreatedScene: Nullable<Scene>;
+        /**
+         * Gets the latest created engine
+         */
+        static get LastCreatedEngine(): Nullable<Engine>;
+        /**
+         * Gets the latest created scene
+         */
+        static get LastCreatedScene(): Nullable<Scene>;
+        /**
+         * Gets or sets a global variable indicating if fallback texture must be used when a texture cannot be loaded
+         * @ignorenaming
+         */
+        static UseFallbackTexture: boolean;
+        /**
+         * Texture content used if a texture cannot loaded
+         * @ignorenaming
+         */
+        static FallbackTexture: string;
     }
 }
 declare module BABYLON {
@@ -42240,1639 +43802,331 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    /**
-     * Interface used to present a loading screen while loading a scene
-     * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
-     */
-    export interface ILoadingScreen {
-        /**
-         * Function called to display the loading screen
-         */
-        displayLoadingUI: () => void;
-        /**
-         * Function called to hide the loading screen
-         */
-        hideLoadingUI: () => void;
-        /**
-         * Gets or sets the color to use for the background
-         */
-        loadingUIBackgroundColor: string;
-        /**
-         * Gets or sets the text to display while loading
-         */
-        loadingUIText: string;
-    }
-    /**
-     * Class used for the default loading screen
-     * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
-     */
-    export class DefaultLoadingScreen implements ILoadingScreen {
-        private _renderingCanvas;
-        private _loadingText;
-        private _loadingDivBackgroundColor;
-        private _loadingDiv;
-        private _loadingTextDiv;
-        private _style;
-        /** Gets or sets the logo url to use for the default loading screen */
-        static DefaultLogoUrl: string;
-        /** Gets or sets the spinner url to use for the default loading screen */
-        static DefaultSpinnerUrl: string;
-        /**
-         * Creates a new default loading screen
-         * @param _renderingCanvas defines the canvas used to render the scene
-         * @param _loadingText defines the default text to display
-         * @param _loadingDivBackgroundColor defines the default background color
-         */
-        constructor(_renderingCanvas: HTMLCanvasElement, _loadingText?: string, _loadingDivBackgroundColor?: string);
-        /**
-         * Function called to display the loading screen
-         */
-        displayLoadingUI(): void;
-        /**
-         * Function called to hide the loading screen
-         */
-        hideLoadingUI(): void;
-        /**
-         * Gets or sets the text to display while loading
-         */
-        set loadingUIText(text: string);
-        get loadingUIText(): string;
-        /**
-         * Gets or sets the color to use for the background
-         */
-        get loadingUIBackgroundColor(): string;
-        set loadingUIBackgroundColor(color: string);
-        private _resizeLoadingUI;
-    }
-}
-declare module BABYLON {
-    /**
-     * Interface for any object that can request an animation frame
-     */
-    export interface ICustomAnimationFrameRequester {
-        /**
-         * This function will be called when the render loop is ready. If this is not populated, the engine's renderloop function will be called
-         */
-        renderFunction?: Function;
-        /**
-         * Called to request the next frame to render to
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame
-         */
-        requestAnimationFrame: Function;
-        /**
-         * You can pass this value to cancelAnimationFrame() to cancel the refresh callback request
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame#Return_value
-         */
-        requestID?: number;
-    }
-}
-declare module BABYLON {
-    /**
-     * Performance monitor tracks rolling average frame-time and frame-time variance over a user defined sliding-window
-     */
-    export class PerformanceMonitor {
-        private _enabled;
-        private _rollingFrameTime;
-        private _lastFrameTimeMs;
-        /**
-         * constructor
-         * @param frameSampleSize The number of samples required to saturate the sliding window
-         */
-        constructor(frameSampleSize?: number);
-        /**
-         * Samples current frame
-         * @param timeMs A timestamp in milliseconds of the current frame to compare with other frames
-         */
-        sampleFrame(timeMs?: number): void;
-        /**
-         * Returns the average frame time in milliseconds over the sliding window (or the subset of frames sampled so far)
-         */
-        get averageFrameTime(): number;
-        /**
-         * Returns the variance frame time in milliseconds over the sliding window (or the subset of frames sampled so far)
-         */
-        get averageFrameTimeVariance(): number;
-        /**
-         * Returns the frame time of the most recent frame
-         */
-        get instantaneousFrameTime(): number;
-        /**
-         * Returns the average framerate in frames per second over the sliding window (or the subset of frames sampled so far)
-         */
-        get averageFPS(): number;
-        /**
-         * Returns the average framerate in frames per second using the most recent frame time
-         */
-        get instantaneousFPS(): number;
-        /**
-         * Returns true if enough samples have been taken to completely fill the sliding window
-         */
-        get isSaturated(): boolean;
-        /**
-         * Enables contributions to the sliding window sample set
-         */
-        enable(): void;
-        /**
-         * Disables contributions to the sliding window sample set
-         * Samples will not be interpolated over the disabled period
-         */
-        disable(): void;
-        /**
-         * Returns true if sampling is enabled
-         */
-        get isEnabled(): boolean;
-        /**
-         * Resets performance monitor
-         */
-        reset(): void;
-    }
-    /**
-     * RollingAverage
-     *
-     * Utility to efficiently compute the rolling average and variance over a sliding window of samples
-     */
-    export class RollingAverage {
-        /**
-         * Current average
-         */
-        average: number;
-        /**
-         * Current variance
-         */
-        variance: number;
-        protected _samples: Array<number>;
-        protected _sampleCount: number;
-        protected _pos: number;
-        protected _m2: number;
-        /**
-         * constructor
-         * @param length The number of samples required to saturate the sliding window
-         */
-        constructor(length: number);
-        /**
-         * Adds a sample to the sample set
-         * @param v The sample value
-         */
-        add(v: number): void;
-        /**
-         * Returns previously added values or null if outside of history or outside the sliding window domain
-         * @param i Index in history. For example, pass 0 for the most recent value and 1 for the value before that
-         * @return Value previously recorded with add() or null if outside of range
-         */
-        history(i: number): number;
-        /**
-         * Returns true if enough samples have been taken to completely fill the sliding window
-         * @return true if sample-set saturated
-         */
-        isSaturated(): boolean;
-        /**
-         * Resets the rolling average (equivalent to 0 samples taken so far)
-         */
-        reset(): void;
-        /**
-         * Wraps a value around the sample range boundaries
-         * @param i Position in sample range, for example if the sample length is 5, and i is -3, then 2 will be returned.
-         * @return Wrapped position in sample range
-         */
-        protected _wrapPosition(i: number): number;
-    }
-}
-declare module BABYLON {
-    /**
-     * This class is used to track a performance counter which is number based.
-     * The user has access to many properties which give statistics of different nature.
-     *
-     * The implementer can track two kinds of Performance Counter: time and count.
-     * For time you can optionally call fetchNewFrame() to notify the start of a new frame to monitor, then call beginMonitoring() to start and endMonitoring() to record the lapsed time. endMonitoring takes a newFrame parameter for you to specify if the monitored time should be set for a new frame or accumulated to the current frame being monitored.
-     * For count you first have to call fetchNewFrame() to notify the start of a new frame to monitor, then call addCount() how many time required to increment the count value you monitor.
-     */
-    export class PerfCounter {
-        /**
-         * Gets or sets a global boolean to turn on and off all the counters
-         */
-        static Enabled: boolean;
-        /**
-         * Returns the smallest value ever
-         */
-        get min(): number;
-        /**
-         * Returns the biggest value ever
-         */
-        get max(): number;
-        /**
-         * Returns the average value since the performance counter is running
-         */
-        get average(): number;
-        /**
-         * Returns the average value of the last second the counter was monitored
-         */
-        get lastSecAverage(): number;
-        /**
-         * Returns the current value
-         */
-        get current(): number;
-        /**
-         * Gets the accumulated total
-         */
-        get total(): number;
-        /**
-         * Gets the total value count
-         */
-        get count(): number;
-        /**
-         * Creates a new counter
-         */
+    /** @hidden */
+    export type NativeData = Uint32Array;
+    /** @hidden */
+    export class NativeDataStream {
+        private readonly _uint32s;
+        private readonly _int32s;
+        private readonly _float32s;
+        private readonly _length;
+        private _position;
+        private readonly _nativeDataStream;
+        private static readonly DEFAULT_BUFFER_SIZE;
         constructor();
-        /**
-         * Call this method to start monitoring a new frame.
-         * This scenario is typically used when you accumulate monitoring time many times for a single frame, you call this method at the start of the frame, then beginMonitoring to start recording and endMonitoring(false) to accumulated the recorded time to the PerfCounter or addCount() to accumulate a monitored count.
-         */
-        fetchNewFrame(): void;
-        /**
-         * Call this method to monitor a count of something (e.g. mesh drawn in viewport count)
-         * @param newCount the count value to add to the monitored count
-         * @param fetchResult true when it's the last time in the frame you add to the counter and you wish to update the statistics properties (min/max/average), false if you only want to update statistics.
-         */
-        addCount(newCount: number, fetchResult: boolean): void;
-        /**
-         * Start monitoring this performance counter
-         */
-        beginMonitoring(): void;
-        /**
-         * Compute the time lapsed since the previous beginMonitoring() call.
-         * @param newFrame true by default to fetch the result and monitor a new frame, if false the time monitored will be added to the current frame counter
-         */
-        endMonitoring(newFrame?: boolean): void;
-        private _fetchResult;
-        private _startMonitoringTime;
-        private _min;
-        private _max;
-        private _average;
-        private _current;
-        private _totalValueCount;
-        private _totalAccumulated;
-        private _lastSecAverage;
-        private _lastSecAccumulated;
-        private _lastSecTime;
-        private _lastSecValueCount;
+        writeUint32(value: number): void;
+        writeInt32(value: number): void;
+        writeFloat32(value: number): void;
+        writeUint32Array(values: Uint32Array): void;
+        writeInt32Array(values: Int32Array): void;
+        writeFloat32Array(values: Float32Array): void;
+        writeNativeData(handle: NativeData): void;
+        writeBoolean(value: boolean): void;
+        private _flushIfNecessary;
+        private _flush;
     }
 }
 declare module BABYLON {
-        interface ThinEngine {
-            /** @hidden */
-            _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean, noDataConversion?: boolean): Promise<ArrayBufferView>;
-            /** @hidden */
-            _readTexturePixelsSync(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean, noDataConversion?: boolean): ArrayBufferView;
-        }
-    /**
-     * Allocate a typed array depending on a texture type. Optionally can copy existing data in the buffer.
-     * @param type type of the texture
-     * @param sizeOrDstBuffer size of the array OR an existing buffer that will be used as the destination of the copy (if copyBuffer is provided)
-     * @param sizeInBytes true if the size of the array is given in bytes, false if it is the number of elements of the array
-     * @param copyBuffer if provided, buffer to copy into the destination buffer (either a newly allocated buffer if sizeOrDstBuffer is a number or use sizeOrDstBuffer as the destination buffer otherwise)
-     * @returns the allocated buffer or sizeOrDstBuffer if the latter is an ArrayBuffer
-     */
-    export function allocateAndCopyTypedBuffer(type: number, sizeOrDstBuffer: number | ArrayBuffer, sizeInBytes?: boolean, copyBuffer?: ArrayBuffer): ArrayBufferView;
+    /** @hidden */
+    export interface INativeEngine {
+        dispose(): void;
+        requestAnimationFrame(callback: () => void): void;
+        createVertexArray(): NativeData;
+        createIndexBuffer(bytes: ArrayBuffer, byteOffset: number, byteLength: number, is32Bits: boolean, dynamic: boolean): NativeData;
+        recordIndexBuffer(vertexArray: NativeData, indexBuffer: NativeData): void;
+        updateDynamicIndexBuffer(buffer: NativeData, bytes: ArrayBuffer, byteOffset: number, byteLength: number, startIndex: number): void;
+        createVertexBuffer(bytes: ArrayBuffer, byteOffset: number, byteLength: number, dynamic: boolean): NativeData;
+        recordVertexBuffer(vertexArray: NativeData, vertexBuffer: NativeData, location: number, byteOffset: number, byteStride: number, numElements: number, type: number, normalized: boolean): void;
+        updateDynamicVertexBuffer(vertexBuffer: NativeData, bytes: ArrayBuffer, byteOffset: number, byteLength: number): void;
+        createProgram(vertexShader: string, fragmentShader: string): any;
+        getUniforms(shaderProgram: any, uniformsNames: string[]): WebGLUniformLocation[];
+        getAttributes(shaderProgram: any, attributeNames: string[]): number[];
+        createTexture(): WebGLTexture;
+        loadTexture(texture: WebGLTexture, data: ArrayBufferView, generateMips: boolean, invertY: boolean, srgb: boolean, onSuccess: () => void, onError: () => void): void;
+        loadRawTexture(texture: WebGLTexture, data: ArrayBufferView, width: number, height: number, format: number, generateMips: boolean, invertY: boolean): void;
+        loadCubeTexture(texture: WebGLTexture, data: Array<ArrayBufferView>, generateMips: boolean, invertY: boolean, srgb: boolean, onSuccess: () => void, onError: () => void): void;
+        loadCubeTextureWithMips(texture: WebGLTexture, data: Array<Array<ArrayBufferView>>, invertY: boolean, srgb: boolean, onSuccess: () => void, onError: () => void): void;
+        getTextureWidth(texture: WebGLTexture): number;
+        getTextureHeight(texture: WebGLTexture): number;
+        copyTexture(desination: Nullable<WebGLTexture>, source: Nullable<WebGLTexture>): void;
+        deleteTexture(texture: Nullable<WebGLTexture>): void;
+        createImageBitmap(data: ArrayBufferView): ImageBitmap;
+        resizeImageBitmap(image: ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array;
+        createFrameBuffer(texture: WebGLTexture, width: number, height: number, format: number, generateStencilBuffer: boolean, generateDepthBuffer: boolean, generateMips: boolean): WebGLFramebuffer;
+        getRenderWidth(): number;
+        getRenderHeight(): number;
+        getHardwareScalingLevel(): number;
+        setHardwareScalingLevel(level: number): void;
+        setViewPort(x: number, y: number, width: number, height: number): void;
+        setCommandDataStream(dataStream: NativeDataStream): void;
+        submitCommands(): void;
+    }
+    /** @hidden */
+    interface INativeEngineConstructor {
+        prototype: INativeEngine;
+        new (): INativeEngine;
+        readonly PROTOCOL_VERSION: number;
+        readonly TEXTURE_NEAREST_NEAREST: number;
+        readonly TEXTURE_LINEAR_LINEAR: number;
+        readonly TEXTURE_LINEAR_LINEAR_MIPLINEAR: number;
+        readonly TEXTURE_NEAREST_NEAREST_MIPNEAREST: number;
+        readonly TEXTURE_NEAREST_LINEAR_MIPNEAREST: number;
+        readonly TEXTURE_NEAREST_LINEAR_MIPLINEAR: number;
+        readonly TEXTURE_NEAREST_LINEAR: number;
+        readonly TEXTURE_NEAREST_NEAREST_MIPLINEAR: number;
+        readonly TEXTURE_LINEAR_NEAREST_MIPNEAREST: number;
+        readonly TEXTURE_LINEAR_NEAREST_MIPLINEAR: number;
+        readonly TEXTURE_LINEAR_LINEAR_MIPNEAREST: number;
+        readonly TEXTURE_LINEAR_NEAREST: number;
+        readonly DEPTH_TEST_LESS: number;
+        readonly DEPTH_TEST_LEQUAL: number;
+        readonly DEPTH_TEST_EQUAL: number;
+        readonly DEPTH_TEST_GEQUAL: number;
+        readonly DEPTH_TEST_GREATER: number;
+        readonly DEPTH_TEST_NOTEQUAL: number;
+        readonly DEPTH_TEST_NEVER: number;
+        readonly DEPTH_TEST_ALWAYS: number;
+        readonly ADDRESS_MODE_WRAP: number;
+        readonly ADDRESS_MODE_MIRROR: number;
+        readonly ADDRESS_MODE_CLAMP: number;
+        readonly ADDRESS_MODE_BORDER: number;
+        readonly ADDRESS_MODE_MIRROR_ONCE: number;
+        readonly TEXTURE_FORMAT_RGB8: number;
+        readonly TEXTURE_FORMAT_RGBA8: number;
+        readonly TEXTURE_FORMAT_RGBA32F: number;
+        readonly ATTRIB_TYPE_INT8: number;
+        readonly ATTRIB_TYPE_UINT8: number;
+        readonly ATTRIB_TYPE_INT16: number;
+        readonly ATTRIB_TYPE_UINT16: number;
+        readonly ATTRIB_TYPE_FLOAT: number;
+        readonly ALPHA_DISABLE: number;
+        readonly ALPHA_ADD: number;
+        readonly ALPHA_COMBINE: number;
+        readonly ALPHA_SUBTRACT: number;
+        readonly ALPHA_MULTIPLY: number;
+        readonly ALPHA_MAXIMIZED: number;
+        readonly ALPHA_ONEONE: number;
+        readonly ALPHA_PREMULTIPLIED: number;
+        readonly ALPHA_PREMULTIPLIED_PORTERDUFF: number;
+        readonly ALPHA_INTERPOLATE: number;
+        readonly ALPHA_SCREENMODE: number;
+        readonly STENCIL_TEST_LESS: number;
+        readonly STENCIL_TEST_LEQUAL: number;
+        readonly STENCIL_TEST_EQUAL: number;
+        readonly STENCIL_TEST_GEQUAL: number;
+        readonly STENCIL_TEST_GREATER: number;
+        readonly STENCIL_TEST_NOTEQUAL: number;
+        readonly STENCIL_TEST_NEVER: number;
+        readonly STENCIL_TEST_ALWAYS: number;
+        readonly STENCIL_OP_FAIL_S_ZERO: number;
+        readonly STENCIL_OP_FAIL_S_KEEP: number;
+        readonly STENCIL_OP_FAIL_S_REPLACE: number;
+        readonly STENCIL_OP_FAIL_S_INCR: number;
+        readonly STENCIL_OP_FAIL_S_INCRSAT: number;
+        readonly STENCIL_OP_FAIL_S_DECR: number;
+        readonly STENCIL_OP_FAIL_S_DECRSAT: number;
+        readonly STENCIL_OP_FAIL_S_INVERT: number;
+        readonly STENCIL_OP_FAIL_Z_ZERO: number;
+        readonly STENCIL_OP_FAIL_Z_KEEP: number;
+        readonly STENCIL_OP_FAIL_Z_REPLACE: number;
+        readonly STENCIL_OP_FAIL_Z_INCR: number;
+        readonly STENCIL_OP_FAIL_Z_INCRSAT: number;
+        readonly STENCIL_OP_FAIL_Z_DECR: number;
+        readonly STENCIL_OP_FAIL_Z_DECRSAT: number;
+        readonly STENCIL_OP_FAIL_Z_INVERT: number;
+        readonly STENCIL_OP_PASS_Z_ZERO: number;
+        readonly STENCIL_OP_PASS_Z_KEEP: number;
+        readonly STENCIL_OP_PASS_Z_REPLACE: number;
+        readonly STENCIL_OP_PASS_Z_INCR: number;
+        readonly STENCIL_OP_PASS_Z_INCRSAT: number;
+        readonly STENCIL_OP_PASS_Z_DECR: number;
+        readonly STENCIL_OP_PASS_Z_DECRSAT: number;
+        readonly STENCIL_OP_PASS_Z_INVERT: number;
+        readonly COMMAND_DELETEVERTEXARRAY: NativeData;
+        readonly COMMAND_DELETEINDEXBUFFER: NativeData;
+        readonly COMMAND_DELETEVERTEXBUFFER: NativeData;
+        readonly COMMAND_SETPROGRAM: NativeData;
+        readonly COMMAND_SETMATRIX: NativeData;
+        readonly COMMAND_SETMATRIX3X3: NativeData;
+        readonly COMMAND_SETMATRIX2X2: NativeData;
+        readonly COMMAND_SETMATRICES: NativeData;
+        readonly COMMAND_SETINT: NativeData;
+        readonly COMMAND_SETINTARRAY: NativeData;
+        readonly COMMAND_SETINTARRAY2: NativeData;
+        readonly COMMAND_SETINTARRAY3: NativeData;
+        readonly COMMAND_SETINTARRAY4: NativeData;
+        readonly COMMAND_SETFLOATARRAY: NativeData;
+        readonly COMMAND_SETFLOATARRAY2: NativeData;
+        readonly COMMAND_SETFLOATARRAY3: NativeData;
+        readonly COMMAND_SETFLOATARRAY4: NativeData;
+        readonly COMMAND_SETTEXTURESAMPLING: NativeData;
+        readonly COMMAND_SETTEXTUREWRAPMODE: NativeData;
+        readonly COMMAND_SETTEXTUREANISOTROPICLEVEL: NativeData;
+        readonly COMMAND_SETTEXTURE: NativeData;
+        readonly COMMAND_BINDVERTEXARRAY: NativeData;
+        readonly COMMAND_SETSTATE: NativeData;
+        readonly COMMAND_DELETEPROGRAM: NativeData;
+        readonly COMMAND_SETZOFFSET: NativeData;
+        readonly COMMAND_SETZOFFSETUNITS: NativeData;
+        readonly COMMAND_SETDEPTHTEST: NativeData;
+        readonly COMMAND_SETDEPTHWRITE: NativeData;
+        readonly COMMAND_SETCOLORWRITE: NativeData;
+        readonly COMMAND_SETBLENDMODE: NativeData;
+        readonly COMMAND_SETFLOAT: NativeData;
+        readonly COMMAND_SETFLOAT2: NativeData;
+        readonly COMMAND_SETFLOAT3: NativeData;
+        readonly COMMAND_SETFLOAT4: NativeData;
+        readonly COMMAND_BINDFRAMEBUFFER: NativeData;
+        readonly COMMAND_UNBINDFRAMEBUFFER: NativeData;
+        readonly COMMAND_DELETEFRAMEBUFFER: NativeData;
+        readonly COMMAND_DRAWINDEXED: NativeData;
+        readonly COMMAND_DRAW: NativeData;
+        readonly COMMAND_CLEAR: NativeData;
+        readonly COMMAND_SETSTENCIL: NativeData;
+    }
+    /** @hidden */
+    export interface INativeCamera {
+        createVideo(constraints: MediaTrackConstraints): any;
+        updateVideoTexture(texture: Nullable<InternalTexture>, video: HTMLVideoElement, invertY: boolean): void;
+    }
+    /** @hidden */
+    interface INativeCameraConstructor {
+        prototype: INativeCamera;
+        new (): INativeCamera;
+    }
+    /** @hidden */
+    interface INativeCanvasConstructor {
+        prototype: ICanvas;
+        new (): ICanvas;
+        loadTTFAsync(fontName: string, buffer: ArrayBuffer): void;
+    }
+    /** @hidden */
+    interface INativeImageConstructor {
+        prototype: IImage;
+        new (): IImage;
+    }
+    /** @hidden */
+    interface IDeviceInputSystemConstructor {
+        prototype: INativeInput;
+        new (): INativeInput;
+    }
+    /** @hidden */
+    export interface INativeDataStream {
+        writeBuffer(buffer: ArrayBuffer, length: number): void;
+    }
+    /** @hidden */
+    interface INativeDataStreamConstructor {
+        prototype: INativeDataStream;
+        new (requestFlushCallback: () => void): INativeDataStream;
+        readonly VALIDATION_ENABLED: boolean;
+        readonly VALIDATION_UINT_32: number;
+        readonly VALIDATION_INT_32: number;
+        readonly VALIDATION_FLOAT_32: number;
+        readonly VALIDATION_UINT_32_ARRAY: number;
+        readonly VALIDATION_INT_32_ARRAY: number;
+        readonly VALIDATION_FLOAT_32_ARRAY: number;
+        readonly VALIDATION_NATIVE_DATA: number;
+        readonly VALIDATION_BOOLEAN: number;
+    }
+    /** @hidden */
+    export interface INative {
+        Engine: INativeEngineConstructor;
+        Camera: INativeCameraConstructor;
+        Canvas: INativeCanvasConstructor;
+        Image: INativeImageConstructor;
+        XMLHttpRequest: any;
+        DeviceInputSystem: IDeviceInputSystemConstructor;
+        NativeDataStream: INativeDataStreamConstructor;
+    }
 }
 declare module BABYLON {
     /**
-     * Class used to work with sound analyzer using fast fourier transform (FFT)
-     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
+     * Extended version of XMLHttpRequest with support for customizations (headers, ...)
      */
-    export class Analyser {
+    export class WebRequest implements IWebRequest {
+        private readonly _xhr;
         /**
-         * Gets or sets the smoothing
-         * @ignorenaming
+         * Custom HTTP Request Headers to be sent with XMLHttpRequests
+         * i.e. when loading files, where the server/service expects an Authorization header
          */
-        SMOOTHING: number;
-        /**
-         * Gets or sets the FFT table size
-         * @ignorenaming
-         */
-        FFT_SIZE: number;
-        /**
-         * Gets or sets the bar graph amplitude
-         * @ignorenaming
-         */
-        BARGRAPHAMPLITUDE: number;
-        /**
-         * Gets or sets the position of the debug canvas
-         * @ignorenaming
-         */
-        DEBUGCANVASPOS: {
-            x: number;
-            y: number;
+        static CustomRequestHeaders: {
+            [key: string]: string;
         };
         /**
-         * Gets or sets the debug canvas size
-         * @ignorenaming
+         * Add callback functions in this array to update all the requests before they get sent to the network
          */
-        DEBUGCANVASSIZE: {
-            width: number;
-            height: number;
-        };
-        private _byteFreqs;
-        private _byteTime;
-        private _floatFreqs;
-        private _webAudioAnalyser;
-        private _debugCanvas;
-        private _debugCanvasContext;
-        private _scene;
-        private _registerFunc;
-        private _audioEngine;
+        static CustomRequestModifiers: ((request: XMLHttpRequest, url: string) => void)[];
+        private _injectCustomRequestHeaders;
         /**
-         * Creates a new analyser
-         * @param scene defines hosting scene
+         * Gets or sets a function to be called when loading progress changes
          */
-        constructor(scene: Scene);
+        get onprogress(): ((this: XMLHttpRequest, ev: ProgressEvent) => any) | null;
+        set onprogress(value: ((this: XMLHttpRequest, ev: ProgressEvent) => any) | null);
         /**
-         * Get the number of data values you will have to play with for the visualization
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/frequencyBinCount
-         * @returns a number
+         * Returns client's state
          */
-        getFrequencyBinCount(): number;
+        get readyState(): number;
         /**
-         * Gets the current frequency data as a byte array
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteFrequencyData
-         * @returns a Uint8Array
+         * Returns client's status
          */
-        getByteFrequencyData(): Uint8Array;
+        get status(): number;
         /**
-         * Gets the current waveform as a byte array
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteTimeDomainData
-         * @returns a Uint8Array
+         * Returns client's status as a text
          */
-        getByteTimeDomainData(): Uint8Array;
+        get statusText(): string;
         /**
-         * Gets the current frequency data as a float array
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteFrequencyData
-         * @returns a Float32Array
+         * Returns client's response
          */
-        getFloatFrequencyData(): Float32Array;
+        get response(): any;
         /**
-         * Renders the debug canvas
+         * Returns client's response url
          */
-        drawDebugCanvas(): void;
+        get responseURL(): string;
         /**
-         * Stops rendering the debug canvas and removes it
+         * Returns client's response as text
          */
-        stopDebugCanvas(): void;
+        get responseText(): string;
         /**
-         * Connects two audio nodes
-         * @param inputAudioNode defines first node to connect
-         * @param outputAudioNode defines second node to connect
+         * Gets or sets the expected response type
          */
-        connectAudioNodes(inputAudioNode: AudioNode, outputAudioNode: AudioNode): void;
+        get responseType(): XMLHttpRequestResponseType;
+        set responseType(value: XMLHttpRequestResponseType);
         /**
-         * Releases all associated resources
+         * Gets or sets the timeout value in milliseconds
          */
-        dispose(): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * This represents an audio engine and it is responsible
-     * to play, synchronize and analyse sounds throughout the application.
-     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
-     */
-    export interface IAudioEngine extends IDisposable {
-        /**
-         * Gets whether the current host supports Web Audio and thus could create AudioContexts.
-         */
-        readonly canUseWebAudio: boolean;
-        /**
-         * Gets the current AudioContext if available.
-         */
-        readonly audioContext: Nullable<AudioContext>;
-        /**
-         * The master gain node defines the global audio volume of your audio engine.
-         */
-        readonly masterGain: GainNode;
-        /**
-         * Gets whether or not mp3 are supported by your browser.
-         */
-        readonly isMP3supported: boolean;
-        /**
-         * Gets whether or not ogg are supported by your browser.
-         */
-        readonly isOGGsupported: boolean;
-        /**
-         * Defines if Babylon should emit a warning if WebAudio is not supported.
-         * @ignoreNaming
-         */
-        WarnedWebAudioUnsupported: boolean;
-        /**
-         * Defines if the audio engine relies on a custom unlocked button.
-         * In this case, the embedded button will not be displayed.
-         */
-        useCustomUnlockedButton: boolean;
-        /**
-         * Gets whether or not the audio engine is unlocked (require first a user gesture on some browser).
-         */
-        readonly unlocked: boolean;
-        /**
-         * Event raised when audio has been unlocked on the browser.
-         */
-        onAudioUnlockedObservable: Observable<IAudioEngine>;
-        /**
-         * Event raised when audio has been locked on the browser.
-         */
-        onAudioLockedObservable: Observable<IAudioEngine>;
-        /**
-         * Flags the audio engine in Locked state.
-         * This happens due to new browser policies preventing audio to autoplay.
-         */
-        lock(): void;
-        /**
-         * Unlocks the audio engine once a user action has been done on the dom.
-         * This is helpful to resume play once browser policies have been satisfied.
-         */
-        unlock(): void;
-        /**
-         * Gets the global volume sets on the master gain.
-         * @returns the global volume if set or -1 otherwise
-         */
-        getGlobalVolume(): number;
-        /**
-         * Sets the global volume of your experience (sets on the master gain).
-         * @param newVolume Defines the new global volume of the application
-         */
-        setGlobalVolume(newVolume: number): void;
-        /**
-         * Connect the audio engine to an audio analyser allowing some amazing
-         * synchronization between the sounds/music and your visualization (VuMeter for instance).
-         * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#using-the-analyser
-         * @param analyser The analyser to connect to the engine
-         */
-        connectToAnalyser(analyser: Analyser): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Enum for Device Types
-     */
-    export enum DeviceType {
-        /** Generic */
-        Generic = 0,
-        /** Keyboard */
-        Keyboard = 1,
-        /** Mouse */
-        Mouse = 2,
-        /** Touch Pointers */
-        Touch = 3,
-        /** PS4 Dual Shock */
-        DualShock = 4,
-        /** Xbox */
-        Xbox = 5,
-        /** Switch Controller */
-        Switch = 6
-    }
-    /**
-     * Enum for All Pointers (Touch/Mouse)
-     */
-    export enum PointerInput {
-        /** Horizontal Axis */
-        Horizontal = 0,
-        /** Vertical Axis */
-        Vertical = 1,
-        /** Left Click or Touch */
-        LeftClick = 2,
-        /** Middle Click */
-        MiddleClick = 3,
-        /** Right Click */
-        RightClick = 4,
-        /** Browser Back */
-        BrowserBack = 5,
-        /** Browser Forward */
-        BrowserForward = 6,
-        /** Mouse Wheel X */
-        MouseWheelX = 7,
-        /** Mouse Wheel Y */
-        MouseWheelY = 8,
-        /** Mouse Wheel Z */
-        MouseWheelZ = 9,
-        /** Delta X */
-        DeltaHorizontal = 10,
-        /** Delta Y */
-        DeltaVertical = 11,
-        /** MoveBeing Hijack for simultaneous buttons pressed for instance */
-        FakeMove = 12
-    }
-    /**
-     * Enum for Dual Shock Gamepad
-     */
-    export enum DualShockInput {
-        /** Cross */
-        Cross = 0,
-        /** Circle */
-        Circle = 1,
-        /** Square */
-        Square = 2,
-        /** Triangle */
-        Triangle = 3,
-        /** L1 */
-        L1 = 4,
-        /** R1 */
-        R1 = 5,
-        /** L2 */
-        L2 = 6,
-        /** R2 */
-        R2 = 7,
-        /** Share */
-        Share = 8,
-        /** Options */
-        Options = 9,
-        /** L3 */
-        L3 = 10,
-        /** R3 */
-        R3 = 11,
-        /** DPadUp */
-        DPadUp = 12,
-        /** DPadDown */
-        DPadDown = 13,
-        /** DPadLeft */
-        DPadLeft = 14,
-        /** DRight */
-        DPadRight = 15,
-        /** Home */
-        Home = 16,
-        /** TouchPad */
-        TouchPad = 17,
-        /** LStickXAxis */
-        LStickXAxis = 18,
-        /** LStickYAxis */
-        LStickYAxis = 19,
-        /** RStickXAxis */
-        RStickXAxis = 20,
-        /** RStickYAxis */
-        RStickYAxis = 21
-    }
-    /**
-     * Enum for Xbox Gamepad
-     */
-    export enum XboxInput {
-        /** A */
-        A = 0,
-        /** B */
-        B = 1,
-        /** X */
-        X = 2,
-        /** Y */
-        Y = 3,
-        /** LB */
-        LB = 4,
-        /** RB */
-        RB = 5,
-        /** LT */
-        LT = 6,
-        /** RT */
-        RT = 7,
-        /** Back */
-        Back = 8,
-        /** Start */
-        Start = 9,
-        /** LS */
-        LS = 10,
-        /** RS */
-        RS = 11,
-        /** DPadUp */
-        DPadUp = 12,
-        /** DPadDown */
-        DPadDown = 13,
-        /** DPadLeft */
-        DPadLeft = 14,
-        /** DRight */
-        DPadRight = 15,
-        /** Home */
-        Home = 16,
-        /** LStickXAxis */
-        LStickXAxis = 17,
-        /** LStickYAxis */
-        LStickYAxis = 18,
-        /** RStickXAxis */
-        RStickXAxis = 19,
-        /** RStickYAxis */
-        RStickYAxis = 20
-    }
-    /**
-     * Enum for Switch (Pro/JoyCon L+R) Gamepad
-     */
-    export enum SwitchInput {
-        /** B */
-        B = 0,
-        /** A */
-        A = 1,
-        /** Y */
-        Y = 2,
-        /** X */
-        X = 3,
-        /** L */
-        L = 4,
-        /** R */
-        R = 5,
-        /** ZL */
-        ZL = 6,
-        /** ZR */
-        ZR = 7,
-        /** Minus */
-        Minus = 8,
-        /** Plus */
-        Plus = 9,
-        /** LS */
-        LS = 10,
-        /** RS */
-        RS = 11,
-        /** DPadUp */
-        DPadUp = 12,
-        /** DPadDown */
-        DPadDown = 13,
-        /** DPadLeft */
-        DPadLeft = 14,
-        /** DRight */
-        DPadRight = 15,
-        /** Home */
-        Home = 16,
-        /** Capture */
-        Capture = 17,
-        /** LStickXAxis */
-        LStickXAxis = 18,
-        /** LStickYAxis */
-        LStickYAxis = 19,
-        /** RStickXAxis */
-        RStickXAxis = 20,
-        /** RStickYAxis */
-        RStickYAxis = 21
-    }
-}
-declare module BABYLON {
-    /**
-     * Interface for Observables in DeviceInputSystem
-     */
-    export interface IDeviceEvent extends IEvent {
-        /**
-         * Device type
-         */
-        deviceType: DeviceType;
-        /**
-         * Device slot
-         */
-        deviceSlot: number;
-        /**
-         * Input array index
-         */
-        inputIndex: number;
-        /**
-         * Previous state of given input
-         */
-        previousState: Nullable<number>;
-        /**
-         * Current state of given input
-         */
-        currentState: Nullable<number>;
-    }
-    /**
-     * Interface for NativeInput object
-     */
-    export interface INativeInput extends IDisposable {
-        /**
-         * Callback for when a device is connected
-         */
-        onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void;
-        /**
-         * Callback for when a device is disconnected
-         */
-        onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
-        /**
-         * Callback for when input is changed on a device
-         */
-        onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number>, eventData?: any) => void;
-        /**
-         * Checks for current device input value, given an id and input index.
-         * @param deviceType Type of device
-         * @param deviceSlot "Slot" or index that device is referenced in
-         * @param inputIndex Id of input to be checked
-         * @returns Current value of input
-         */
-        pollInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number): number;
-        /**
-         * Check for a specific device in the DeviceInputSystem
-         * @param deviceType Type of device to check for
-         * @returns bool with status of device's existence
-         */
-        isDeviceAvailable(deviceType: DeviceType): boolean;
-    }
-    /**
-     * Interface for DeviceInputSystem implementations (JS and Native)
-     */
-    export interface IDeviceInputSystem extends IDisposable {
-        /**
-         * Observable for devices being connected
-         */
-        readonly onDeviceConnectedObservable: Observable<{
-            deviceType: DeviceType;
-            deviceSlot: number;
-        }>;
-        /**
-         * Observable for devices being disconnected
-         */
-        readonly onDeviceDisconnectedObservable: Observable<{
-            deviceType: DeviceType;
-            deviceSlot: number;
-        }>;
-        /**
-         * Observable for changes to device input
-         */
-        readonly onInputChangedObservable: Observable<IDeviceEvent>;
-        /**
-         * Configures events to work with an engine's active element
-         */
-        configureEvents(): void;
-        /**
-         * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
-         * @param deviceType Enum specifiying device type
-         * @param deviceSlot "Slot" or index that device is referenced in
-         * @param inputIndex Id of input to be checked
-         * @returns Current value of input
-         */
-        pollInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number): number;
-        /**
-         * Check for a specific device in the DeviceInputSystem
-         * @param deviceType Type of device to check for
-         * @returns bool with status of device's existence
-         */
-        isDeviceAvailable(deviceType: DeviceType): boolean;
-    }
-}
-declare module BABYLON {
-    /**
-     * Defines the interface used by display changed events
-     */
-    export interface IDisplayChangedEventArgs {
-        /** Gets the vrDisplay object (if any) */
-        vrDisplay: Nullable<any>;
-        /** Gets a boolean indicating if webVR is supported */
-        vrSupported: boolean;
-    }
-    /**
-     * Defines the interface used by objects containing a viewport (like a camera)
-     */
-    interface IViewportOwnerLike {
-        /**
-         * Gets or sets the viewport
-         */
-        viewport: IViewportLike;
-    }
-    /**
-     * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio
-     */
-    export class Engine extends ThinEngine {
-        /** Defines that alpha blending is disabled */
-        static readonly ALPHA_DISABLE: number;
-        /** Defines that alpha blending to SRC ALPHA * SRC + DEST */
-        static readonly ALPHA_ADD: number;
-        /** Defines that alpha blending to SRC ALPHA * SRC + (1 - SRC ALPHA) * DEST */
-        static readonly ALPHA_COMBINE: number;
-        /** Defines that alpha blending to DEST - SRC * DEST */
-        static readonly ALPHA_SUBTRACT: number;
-        /** Defines that alpha blending to SRC * DEST */
-        static readonly ALPHA_MULTIPLY: number;
-        /** Defines that alpha blending to SRC ALPHA * SRC + (1 - SRC) * DEST */
-        static readonly ALPHA_MAXIMIZED: number;
-        /** Defines that alpha blending to SRC + DEST */
-        static readonly ALPHA_ONEONE: number;
-        /** Defines that alpha blending to SRC + (1 - SRC ALPHA) * DEST */
-        static readonly ALPHA_PREMULTIPLIED: number;
-        /**
-         * Defines that alpha blending to SRC + (1 - SRC ALPHA) * DEST
-         * Alpha will be set to (1 - SRC ALPHA) * DEST ALPHA
-         */
-        static readonly ALPHA_PREMULTIPLIED_PORTERDUFF: number;
-        /** Defines that alpha blending to CST * SRC + (1 - CST) * DEST */
-        static readonly ALPHA_INTERPOLATE: number;
-        /**
-         * Defines that alpha blending to SRC + (1 - SRC) * DEST
-         * Alpha will be set to SRC ALPHA + (1 - SRC ALPHA) * DEST ALPHA
-         */
-        static readonly ALPHA_SCREENMODE: number;
-        /** Defines that the resource is not delayed*/
-        static readonly DELAYLOADSTATE_NONE: number;
-        /** Defines that the resource was successfully delay loaded */
-        static readonly DELAYLOADSTATE_LOADED: number;
-        /** Defines that the resource is currently delay loading */
-        static readonly DELAYLOADSTATE_LOADING: number;
-        /** Defines that the resource is delayed and has not started loading */
-        static readonly DELAYLOADSTATE_NOTLOADED: number;
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will never pass. i.e. Nothing will be drawn */
-        static readonly NEVER: number;
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn */
-        static readonly ALWAYS: number;
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than the stored value */
-        static readonly LESS: number;
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is equals to the stored value */
-        static readonly EQUAL: number;
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than or equal to the stored value */
-        static readonly LEQUAL: number;
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than the stored value */
-        static readonly GREATER: number;
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than or equal to the stored value */
-        static readonly GEQUAL: number;
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is not equal to the stored value */
-        static readonly NOTEQUAL: number;
-        /** Passed to stencilOperation to specify that stencil value must be kept */
-        static readonly KEEP: number;
-        /** Passed to stencilOperation to specify that stencil value must be replaced */
-        static readonly REPLACE: number;
-        /** Passed to stencilOperation to specify that stencil value must be incremented */
-        static readonly INCR: number;
-        /** Passed to stencilOperation to specify that stencil value must be decremented */
-        static readonly DECR: number;
-        /** Passed to stencilOperation to specify that stencil value must be inverted */
-        static readonly INVERT: number;
-        /** Passed to stencilOperation to specify that stencil value must be incremented with wrapping */
-        static readonly INCR_WRAP: number;
-        /** Passed to stencilOperation to specify that stencil value must be decremented with wrapping */
-        static readonly DECR_WRAP: number;
-        /** Texture is not repeating outside of 0..1 UVs */
-        static readonly TEXTURE_CLAMP_ADDRESSMODE: number;
-        /** Texture is repeating outside of 0..1 UVs */
-        static readonly TEXTURE_WRAP_ADDRESSMODE: number;
-        /** Texture is repeating and mirrored */
-        static readonly TEXTURE_MIRROR_ADDRESSMODE: number;
-        /** ALPHA */
-        static readonly TEXTUREFORMAT_ALPHA: number;
-        /** LUMINANCE */
-        static readonly TEXTUREFORMAT_LUMINANCE: number;
-        /** LUMINANCE_ALPHA */
-        static readonly TEXTUREFORMAT_LUMINANCE_ALPHA: number;
-        /** RGB */
-        static readonly TEXTUREFORMAT_RGB: number;
-        /** RGBA */
-        static readonly TEXTUREFORMAT_RGBA: number;
-        /** RED */
-        static readonly TEXTUREFORMAT_RED: number;
-        /** RED (2nd reference) */
-        static readonly TEXTUREFORMAT_R: number;
-        /** RG */
-        static readonly TEXTUREFORMAT_RG: number;
-        /** RED_INTEGER */
-        static readonly TEXTUREFORMAT_RED_INTEGER: number;
-        /** RED_INTEGER (2nd reference) */
-        static readonly TEXTUREFORMAT_R_INTEGER: number;
-        /** RG_INTEGER */
-        static readonly TEXTUREFORMAT_RG_INTEGER: number;
-        /** RGB_INTEGER */
-        static readonly TEXTUREFORMAT_RGB_INTEGER: number;
-        /** RGBA_INTEGER */
-        static readonly TEXTUREFORMAT_RGBA_INTEGER: number;
-        /** UNSIGNED_BYTE */
-        static readonly TEXTURETYPE_UNSIGNED_BYTE: number;
-        /** UNSIGNED_BYTE (2nd reference) */
-        static readonly TEXTURETYPE_UNSIGNED_INT: number;
-        /** FLOAT */
-        static readonly TEXTURETYPE_FLOAT: number;
-        /** HALF_FLOAT */
-        static readonly TEXTURETYPE_HALF_FLOAT: number;
-        /** BYTE */
-        static readonly TEXTURETYPE_BYTE: number;
-        /** SHORT */
-        static readonly TEXTURETYPE_SHORT: number;
-        /** UNSIGNED_SHORT */
-        static readonly TEXTURETYPE_UNSIGNED_SHORT: number;
-        /** INT */
-        static readonly TEXTURETYPE_INT: number;
-        /** UNSIGNED_INT */
-        static readonly TEXTURETYPE_UNSIGNED_INTEGER: number;
-        /** UNSIGNED_SHORT_4_4_4_4 */
-        static readonly TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4: number;
-        /** UNSIGNED_SHORT_5_5_5_1 */
-        static readonly TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1: number;
-        /** UNSIGNED_SHORT_5_6_5 */
-        static readonly TEXTURETYPE_UNSIGNED_SHORT_5_6_5: number;
-        /** UNSIGNED_INT_2_10_10_10_REV */
-        static readonly TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV: number;
-        /** UNSIGNED_INT_24_8 */
-        static readonly TEXTURETYPE_UNSIGNED_INT_24_8: number;
-        /** UNSIGNED_INT_10F_11F_11F_REV */
-        static readonly TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV: number;
-        /** UNSIGNED_INT_5_9_9_9_REV */
-        static readonly TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV: number;
-        /** FLOAT_32_UNSIGNED_INT_24_8_REV */
-        static readonly TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV: number;
-        /** nearest is mag = nearest and min = nearest and mip = none */
-        static readonly TEXTURE_NEAREST_SAMPLINGMODE: number;
-        /** Bilinear is mag = linear and min = linear and mip = nearest */
-        static readonly TEXTURE_BILINEAR_SAMPLINGMODE: number;
-        /** Trilinear is mag = linear and min = linear and mip = linear */
-        static readonly TEXTURE_TRILINEAR_SAMPLINGMODE: number;
-        /** nearest is mag = nearest and min = nearest and mip = linear */
-        static readonly TEXTURE_NEAREST_NEAREST_MIPLINEAR: number;
-        /** Bilinear is mag = linear and min = linear and mip = nearest */
-        static readonly TEXTURE_LINEAR_LINEAR_MIPNEAREST: number;
-        /** Trilinear is mag = linear and min = linear and mip = linear */
-        static readonly TEXTURE_LINEAR_LINEAR_MIPLINEAR: number;
-        /** mag = nearest and min = nearest and mip = nearest */
-        static readonly TEXTURE_NEAREST_NEAREST_MIPNEAREST: number;
-        /** mag = nearest and min = linear and mip = nearest */
-        static readonly TEXTURE_NEAREST_LINEAR_MIPNEAREST: number;
-        /** mag = nearest and min = linear and mip = linear */
-        static readonly TEXTURE_NEAREST_LINEAR_MIPLINEAR: number;
-        /** mag = nearest and min = linear and mip = none */
-        static readonly TEXTURE_NEAREST_LINEAR: number;
-        /** mag = nearest and min = nearest and mip = none */
-        static readonly TEXTURE_NEAREST_NEAREST: number;
-        /** mag = linear and min = nearest and mip = nearest */
-        static readonly TEXTURE_LINEAR_NEAREST_MIPNEAREST: number;
-        /** mag = linear and min = nearest and mip = linear */
-        static readonly TEXTURE_LINEAR_NEAREST_MIPLINEAR: number;
-        /** mag = linear and min = linear and mip = none */
-        static readonly TEXTURE_LINEAR_LINEAR: number;
-        /** mag = linear and min = nearest and mip = none */
-        static readonly TEXTURE_LINEAR_NEAREST: number;
-        /** Explicit coordinates mode */
-        static readonly TEXTURE_EXPLICIT_MODE: number;
-        /** Spherical coordinates mode */
-        static readonly TEXTURE_SPHERICAL_MODE: number;
-        /** Planar coordinates mode */
-        static readonly TEXTURE_PLANAR_MODE: number;
-        /** Cubic coordinates mode */
-        static readonly TEXTURE_CUBIC_MODE: number;
-        /** Projection coordinates mode */
-        static readonly TEXTURE_PROJECTION_MODE: number;
-        /** Skybox coordinates mode */
-        static readonly TEXTURE_SKYBOX_MODE: number;
-        /** Inverse Cubic coordinates mode */
-        static readonly TEXTURE_INVCUBIC_MODE: number;
-        /** Equirectangular coordinates mode */
-        static readonly TEXTURE_EQUIRECTANGULAR_MODE: number;
-        /** Equirectangular Fixed coordinates mode */
-        static readonly TEXTURE_FIXED_EQUIRECTANGULAR_MODE: number;
-        /** Equirectangular Fixed Mirrored coordinates mode */
-        static readonly TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE: number;
-        /** Defines that texture rescaling will use a floor to find the closer power of 2 size */
-        static readonly SCALEMODE_FLOOR: number;
-        /** Defines that texture rescaling will look for the nearest power of 2 size */
-        static readonly SCALEMODE_NEAREST: number;
-        /** Defines that texture rescaling will use a ceil to find the closer power of 2 size */
-        static readonly SCALEMODE_CEILING: number;
-        /**
-         * Returns the current npm package of the sdk
-         */
-        static get NpmPackage(): string;
-        /**
-         * Returns the current version of the framework
-         */
-        static get Version(): string;
-        /** Gets the list of created engines */
-        static get Instances(): Engine[];
-        /**
-         * Gets the latest created engine
-         */
-        static get LastCreatedEngine(): Nullable<Engine>;
-        /**
-         * Gets the latest created scene
-         */
-        static get LastCreatedScene(): Nullable<Scene>;
-        /**
-         * Engine abstraction for createImageBitmap
-         * @param image source for image
-         * @param options An object that sets options for the image's extraction.
-         * @returns ImageBitmap
-         */
-        createImageBitmap(image: ImageBitmapSource, options?: ImageBitmapOptions): Promise<ImageBitmap>;
-        /**
-         * Resize an image and returns the image data as an uint8array
-         * @param image image to resize
-         * @param bufferWidth destination buffer width
-         * @param bufferHeight destination buffer height
-         * @returns an uint8array containing RGBA values of bufferWidth * bufferHeight size
-         */
-        resizeImageBitmap(image: HTMLImageElement | ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array;
-        /**
-         * Will flag all materials in all scenes in all engines as dirty to trigger new shader compilation
-         * @param flag defines which part of the materials must be marked as dirty
-         * @param predicate defines a predicate used to filter which materials should be affected
-         */
-        static MarkAllMaterialsAsDirty(flag: number, predicate?: (mat: Material) => boolean): void;
-        /**
-         * Method called to create the default loading screen.
-         * This can be overridden in your own app.
-         * @param canvas The rendering canvas element
-         * @returns The loading screen
-         */
-        static DefaultLoadingScreenFactory(canvas: HTMLCanvasElement): ILoadingScreen;
-        /**
-         * Method called to create the default rescale post process on each engine.
-         */
-        static _RescalePostProcessFactory: Nullable<(engine: Engine) => PostProcess>;
-        /**
-         * Gets or sets a boolean to enable/disable IndexedDB support and avoid XHR on .manifest
-         **/
-        enableOfflineSupport: boolean;
-        /**
-         * Gets or sets a boolean to enable/disable checking manifest if IndexedDB support is enabled (js will always consider the database is up to date)
-         **/
-        disableManifestCheck: boolean;
-        /**
-         * Gets the list of created scenes
-         */
-        scenes: Scene[];
+        get timeout(): number;
+        set timeout(value: number);
         /** @hidden */
-        _virtualScenes: Scene[];
-        /**
-         * Event raised when a new scene is created
-         */
-        onNewSceneAddedObservable: Observable<Scene>;
-        /**
-         * Gets the list of created postprocesses
-         */
-        postProcesses: PostProcess[];
-        /**
-         * Gets a boolean indicating if the pointer is currently locked
-         */
-        isPointerLock: boolean;
-        /**
-         * Stores instance of DeviceInputSystem
-         */
-        deviceInputSystem: IDeviceInputSystem;
-        /**
-         * Observable event triggered each time the rendering canvas is resized
-         */
-        onResizeObservable: Observable<Engine>;
-        /**
-         * Observable event triggered each time the canvas loses focus
-         */
-        onCanvasBlurObservable: Observable<Engine>;
-        /**
-         * Observable event triggered each time the canvas gains focus
-         */
-        onCanvasFocusObservable: Observable<Engine>;
-        /**
-         * Observable event triggered each time the canvas receives pointerout event
-         */
-        onCanvasPointerOutObservable: Observable<IPointerEvent>;
-        /**
-         * Observable raised when the engine begins a new frame
-         */
-        onBeginFrameObservable: Observable<Engine>;
-        /**
-         * If set, will be used to request the next animation frame for the render loop
-         */
-        customAnimationFrameRequester: Nullable<ICustomAnimationFrameRequester>;
-        /**
-         * Observable raised when the engine ends the current frame
-         */
-        onEndFrameObservable: Observable<Engine>;
-        /**
-         * Observable raised when the engine is about to compile a shader
-         */
-        onBeforeShaderCompilationObservable: Observable<Engine>;
-        /**
-         * Observable raised when the engine has just compiled a shader
-         */
-        onAfterShaderCompilationObservable: Observable<Engine>;
-        /**
-         * Gets the audio engine
-         * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
-         * @ignorenaming
-         */
-        static audioEngine: Nullable<IAudioEngine>;
-        /**
-         * Default AudioEngine factory responsible of creating the Audio Engine.
-         * By default, this will create a BabylonJS Audio Engine if the workload has been embedded.
-         */
-        static AudioEngineFactory: (hostElement: Nullable<HTMLElement>, audioContext: Nullable<AudioContext>, audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>) => IAudioEngine;
-        /**
-         * Default offline support factory responsible of creating a tool used to store data locally.
-         * By default, this will create a Database object if the workload has been embedded.
-         */
-        static OfflineProviderFactory: (urlToScene: string, callbackManifestChecked: (checked: boolean) => any, disableManifestCheck: boolean) => IOfflineProvider;
-        private _loadingScreen;
-        private _pointerLockRequested;
-        private _rescalePostProcess;
-        protected _deterministicLockstep: boolean;
-        protected _lockstepMaxSteps: number;
-        protected _timeStep: number;
-        protected get _supportsHardwareTextureRescaling(): boolean;
-        private _fps;
-        private _deltaTime;
+        addEventListener<K extends keyof XMLHttpRequestEventMap>(type: K, listener: (this: XMLHttpRequest, ev: XMLHttpRequestEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
         /** @hidden */
-        _drawCalls: PerfCounter;
-        /** Gets or sets the tab index to set to the rendering canvas. 1 is the minimum value to set to be able to capture keyboard events */
-        canvasTabIndex: number;
+        removeEventListener<K extends keyof XMLHttpRequestEventMap>(type: K, listener: (this: XMLHttpRequest, ev: XMLHttpRequestEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
         /**
-         * Turn this value on if you want to pause FPS computation when in background
+         * Cancels any network activity
          */
-        disablePerformanceMonitorInBackground: boolean;
-        private _performanceMonitor;
+        abort(): void;
         /**
-         * Gets the performance monitor attached to this engine
-         * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#engineinstrumentation
+         * Initiates the request. The optional argument provides the request body. The argument is ignored if request method is GET or HEAD
+         * @param body defines an optional request body
          */
-        get performanceMonitor(): PerformanceMonitor;
-        private _onFocus;
-        private _onBlur;
-        private _onCanvasPointerOut;
-        private _onCanvasBlur;
-        private _onCanvasFocus;
-        private _onFullscreenChange;
-        private _onPointerLockChange;
+        send(body?: Document | XMLHttpRequestBodyInit | null): void;
         /**
-         * Gets the HTML element used to attach event listeners
-         * @returns a HTML element
+         * Sets the request method, request URL
+         * @param method defines the method to use (GET, POST, etc..)
+         * @param url defines the url to connect with
          */
-        getInputElement(): Nullable<HTMLElement>;
+        open(method: string, url: string): void;
         /**
-         * Creates a new engine
-         * @param canvasOrContext defines the canvas or WebGL context to use for rendering. If you provide a WebGL context, Babylon.js will not hook events on the canvas (like pointers, keyboards, etc...) so no event observables will be available. This is mostly used when Babylon.js is used as a plugin on a system which already used the WebGL context
-         * @param antialias defines enable antialiasing (default: false)
-         * @param options defines further options to be sent to the getContext() function
-         * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
+         * Sets the value of a request header.
+         * @param name The name of the header whose value is to be set
+         * @param value The value to set as the body of the header
          */
-        constructor(canvasOrContext: Nullable<HTMLCanvasElement | OffscreenCanvas | WebGLRenderingContext | WebGL2RenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio?: boolean);
+        setRequestHeader(name: string, value: string): void;
         /**
-         * Shared initialization across engines types.
-         * @param canvas The canvas associated with this instance of the engine.
-         * @param doNotHandleTouchAction Defines that engine should ignore modifying touch action attribute and style
-         * @param audioEngine Defines if an audio engine should be created by default
+         * Get the string containing the text of a particular header's value.
+         * @param name The name of the header
+         * @returns The string containing the text of the given header name
          */
-        protected _sharedInit(canvas: HTMLCanvasElement, doNotHandleTouchAction: boolean, audioEngine: boolean): void;
-        /**
-         * Gets current aspect ratio
-         * @param viewportOwner defines the camera to use to get the aspect ratio
-         * @param useScreen defines if screen size must be used (or the current render target if any)
-         * @returns a number defining the aspect ratio
-         */
-        getAspectRatio(viewportOwner: IViewportOwnerLike, useScreen?: boolean): number;
-        /**
-         * Gets current screen aspect ratio
-         * @returns a number defining the aspect ratio
-         */
-        getScreenAspectRatio(): number;
-        /**
-         * Gets the client rect of the HTML canvas attached with the current webGL context
-         * @returns a client rectangle
-         */
-        getRenderingCanvasClientRect(): Nullable<ClientRect>;
-        /**
-         * Gets the client rect of the HTML element used for events
-         * @returns a client rectangle
-         */
-        getInputElementClientRect(): Nullable<ClientRect>;
-        /**
-         * Gets a boolean indicating that the engine is running in deterministic lock step mode
-         * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
-         * @returns true if engine is in deterministic lock step mode
-         */
-        isDeterministicLockStep(): boolean;
-        /**
-         * Gets the max steps when engine is running in deterministic lock step
-         * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
-         * @returns the max steps
-         */
-        getLockstepMaxSteps(): number;
-        /**
-         * Returns the time in ms between steps when using deterministic lock step.
-         * @returns time step in (ms)
-         */
-        getTimeStep(): number;
-        /**
-         * Force the mipmap generation for the given render target texture
-         * @param texture defines the render target texture to use
-         * @param unbind defines whether or not to unbind the texture after generation. Defaults to true.
-         */
-        generateMipMapsForCubemap(texture: InternalTexture, unbind?: boolean): void;
-        /** States */
-        /**
-         * Gets a boolean indicating if depth testing is enabled
-         * @returns the current state
-         */
-        getDepthBuffer(): boolean;
-        /**
-         * Enable or disable depth buffering
-         * @param enable defines the state to set
-         */
-        setDepthBuffer(enable: boolean): void;
-        /**
-         * Gets a boolean indicating if depth writing is enabled
-         * @returns the current depth writing state
-         */
-        getDepthWrite(): boolean;
-        /**
-         * Enable or disable depth writing
-         * @param enable defines the state to set
-         */
-        setDepthWrite(enable: boolean): void;
-        /**
-         * Gets a boolean indicating if stencil buffer is enabled
-         * @returns the current stencil buffer state
-         */
-        getStencilBuffer(): boolean;
-        /**
-         * Enable or disable the stencil buffer
-         * @param enable defines if the stencil buffer must be enabled or disabled
-         */
-        setStencilBuffer(enable: boolean): void;
-        /**
-         * Gets the current stencil mask
-         * @returns a number defining the new stencil mask to use
-         */
-        getStencilMask(): number;
-        /**
-         * Sets the current stencil mask
-         * @param mask defines the new stencil mask to use
-         */
-        setStencilMask(mask: number): void;
-        /**
-         * Gets the current stencil function
-         * @returns a number defining the stencil function to use
-         */
-        getStencilFunction(): number;
-        /**
-         * Gets the current stencil reference value
-         * @returns a number defining the stencil reference value to use
-         */
-        getStencilFunctionReference(): number;
-        /**
-         * Gets the current stencil mask
-         * @returns a number defining the stencil mask to use
-         */
-        getStencilFunctionMask(): number;
-        /**
-         * Sets the current stencil function
-         * @param stencilFunc defines the new stencil function to use
-         */
-        setStencilFunction(stencilFunc: number): void;
-        /**
-         * Sets the current stencil reference
-         * @param reference defines the new stencil reference to use
-         */
-        setStencilFunctionReference(reference: number): void;
-        /**
-         * Sets the current stencil mask
-         * @param mask defines the new stencil mask to use
-         */
-        setStencilFunctionMask(mask: number): void;
-        /**
-         * Gets the current stencil operation when stencil fails
-         * @returns a number defining stencil operation to use when stencil fails
-         */
-        getStencilOperationFail(): number;
-        /**
-         * Gets the current stencil operation when depth fails
-         * @returns a number defining stencil operation to use when depth fails
-         */
-        getStencilOperationDepthFail(): number;
-        /**
-         * Gets the current stencil operation when stencil passes
-         * @returns a number defining stencil operation to use when stencil passes
-         */
-        getStencilOperationPass(): number;
-        /**
-         * Sets the stencil operation to use when stencil fails
-         * @param operation defines the stencil operation to use when stencil fails
-         */
-        setStencilOperationFail(operation: number): void;
-        /**
-         * Sets the stencil operation to use when depth fails
-         * @param operation defines the stencil operation to use when depth fails
-         */
-        setStencilOperationDepthFail(operation: number): void;
-        /**
-         * Sets the stencil operation to use when stencil passes
-         * @param operation defines the stencil operation to use when stencil passes
-         */
-        setStencilOperationPass(operation: number): void;
-        /**
-         * Sets a boolean indicating if the dithering state is enabled or disabled
-         * @param value defines the dithering state
-         */
-        setDitheringState(value: boolean): void;
-        /**
-         * Sets a boolean indicating if the rasterizer state is enabled or disabled
-         * @param value defines the rasterizer state
-         */
-        setRasterizerState(value: boolean): void;
-        /**
-         * Gets the current depth function
-         * @returns a number defining the depth function
-         */
-        getDepthFunction(): Nullable<number>;
-        /**
-         * Sets the current depth function
-         * @param depthFunc defines the function to use
-         */
-        setDepthFunction(depthFunc: number): void;
-        /**
-         * Sets the current depth function to GREATER
-         */
-        setDepthFunctionToGreater(): void;
-        /**
-         * Sets the current depth function to GEQUAL
-         */
-        setDepthFunctionToGreaterOrEqual(): void;
-        /**
-         * Sets the current depth function to LESS
-         */
-        setDepthFunctionToLess(): void;
-        /**
-         * Sets the current depth function to LEQUAL
-         */
-        setDepthFunctionToLessOrEqual(): void;
-        private _cachedStencilBuffer;
-        private _cachedStencilFunction;
-        private _cachedStencilMask;
-        private _cachedStencilOperationPass;
-        private _cachedStencilOperationFail;
-        private _cachedStencilOperationDepthFail;
-        private _cachedStencilReference;
-        /**
-         * Caches the the state of the stencil buffer
-         */
-        cacheStencilState(): void;
-        /**
-         * Restores the state of the stencil buffer
-         */
-        restoreStencilState(): void;
-        /**
-         * Directly set the WebGL Viewport
-         * @param x defines the x coordinate of the viewport (in screen space)
-         * @param y defines the y coordinate of the viewport (in screen space)
-         * @param width defines the width of the viewport (in screen space)
-         * @param height defines the height of the viewport (in screen space)
-         * @return the current viewport Object (if any) that is being replaced by this call. You can restore this viewport later on to go back to the original state
-         */
-        setDirectViewport(x: number, y: number, width: number, height: number): Nullable<IViewportLike>;
-        /**
-         * Executes a scissor clear (ie. a clear on a specific portion of the screen)
-         * @param x defines the x-coordinate of the top left corner of the clear rectangle
-         * @param y defines the y-coordinate of the corner of the clear rectangle
-         * @param width defines the width of the clear rectangle
-         * @param height defines the height of the clear rectangle
-         * @param clearColor defines the clear color
-         */
-        scissorClear(x: number, y: number, width: number, height: number, clearColor: IColor4Like): void;
-        /**
-         * Enable scissor test on a specific rectangle (ie. render will only be executed on a specific portion of the screen)
-         * @param x defines the x-coordinate of the top left corner of the clear rectangle
-         * @param y defines the y-coordinate of the corner of the clear rectangle
-         * @param width defines the width of the clear rectangle
-         * @param height defines the height of the clear rectangle
-         */
-        enableScissor(x: number, y: number, width: number, height: number): void;
-        /**
-         * Disable previously set scissor test rectangle
-         */
-        disableScissor(): void;
-        protected _reportDrawCall(numDrawCalls?: number): void;
-        /**
-         * Initializes a webVR display and starts listening to display change events
-         * The onVRDisplayChangedObservable will be notified upon these changes
-         * @returns The onVRDisplayChangedObservable
-         */
-        initWebVR(): Observable<IDisplayChangedEventArgs>;
-        /** @hidden */
-        _prepareVRComponent(): void;
-        /** @hidden */
-        _connectVREvents(canvas?: HTMLCanvasElement, document?: any): void;
-        /** @hidden */
-        _submitVRFrame(): void;
-        /**
-         * Call this function to leave webVR mode
-         * Will do nothing if webVR is not supported or if there is no webVR device
-         * @see https://doc.babylonjs.com/how_to/webvr_camera
-         */
-        disableVR(): void;
-        /**
-         * Gets a boolean indicating that the system is in VR mode and is presenting
-         * @returns true if VR mode is engaged
-         */
-        isVRPresenting(): boolean;
-        /** @hidden */
-        _requestVRFrame(): void;
-        /** @hidden */
-        _loadFileAsync(url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean): Promise<string | ArrayBuffer>;
-        /**
-        * Gets the source code of the vertex shader associated with a specific webGL program
-        * @param program defines the program to use
-        * @returns a string containing the source code of the vertex shader associated with the program
-        */
-        getVertexShaderSource(program: WebGLProgram): Nullable<string>;
-        /**
-         * Gets the source code of the fragment shader associated with a specific webGL program
-         * @param program defines the program to use
-         * @returns a string containing the source code of the fragment shader associated with the program
-         */
-        getFragmentShaderSource(program: WebGLProgram): Nullable<string>;
-        /**
-         * Sets a depth stencil texture from a render target to the according uniform.
-         * @param channel The texture channel
-         * @param uniform The uniform to set
-         * @param texture The render target texture containing the depth stencil texture to apply
-         * @param name The texture name
-         */
-        setDepthStencilTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<RenderTargetTexture>, name?: string): void;
-        /**
-         * Sets a texture to the webGL context from a postprocess
-         * @param channel defines the channel to use
-         * @param postProcess defines the source postprocess
-         * @param name name of the channel
-         */
-        setTextureFromPostProcess(channel: number, postProcess: Nullable<PostProcess>, name: string): void;
-        /**
-         * Binds the output of the passed in post process to the texture channel specified
-         * @param channel The channel the texture should be bound to
-         * @param postProcess The post process which's output should be bound
-         * @param name name of the channel
-         */
-        setTextureFromPostProcessOutput(channel: number, postProcess: Nullable<PostProcess>, name: string): void;
-        protected _rebuildBuffers(): void;
-        /** @hidden */
-        _renderFrame(): void;
-        _renderLoop(): void;
-        /** @hidden */
-        _renderViews(): boolean;
-        /**
-         * Toggle full screen mode
-         * @param requestPointerLock defines if a pointer lock should be requested from the user
-         */
-        switchFullscreen(requestPointerLock: boolean): void;
-        /**
-         * Enters full screen mode
-         * @param requestPointerLock defines if a pointer lock should be requested from the user
-         */
-        enterFullscreen(requestPointerLock: boolean): void;
-        /**
-         * Exits full screen mode
-         */
-        exitFullscreen(): void;
-        /**
-         * Enters Pointerlock mode
-         */
-        enterPointerlock(): void;
-        /**
-         * Exits Pointerlock mode
-         */
-        exitPointerlock(): void;
-        /**
-         * Begin a new frame
-         */
-        beginFrame(): void;
-        /**
-         * End the current frame
-         */
-        endFrame(): void;
-        /**
-         * Resize the view according to the canvas' size
-         * @param forceSetSize true to force setting the sizes of the underlying canvas
-         */
-        resize(forceSetSize?: boolean): void;
-        /**
-         * Force a specific size of the canvas
-         * @param width defines the new canvas' width
-         * @param height defines the new canvas' height
-         * @param forceSetSize true to force setting the sizes of the underlying canvas
-         * @returns true if the size was changed
-         */
-        setSize(width: number, height: number, forceSetSize?: boolean): boolean;
-        _deletePipelineContext(pipelineContext: IPipelineContext): void;
-        createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext, transformFeedbackVaryings?: Nullable<string[]>): WebGLProgram;
-        protected _createShaderProgram(pipelineContext: WebGLPipelineContext, vertexShader: WebGLShader, fragmentShader: WebGLShader, context: WebGLRenderingContext, transformFeedbackVaryings?: Nullable<string[]>): WebGLProgram;
-        /** @hidden */
-        _releaseTexture(texture: InternalTexture): void;
-        /** @hidden */
-        _releaseRenderTargetWrapper(rtWrapper: RenderTargetWrapper): void;
-        /**
-         * @hidden
-         * Rescales a texture
-         * @param source input texture
-         * @param destination destination texture
-         * @param scene scene to use to render the resize
-         * @param internalFormat format to use when resizing
-         * @param onComplete callback to be called when resize has completed
-         */
-        _rescaleTexture(source: InternalTexture, destination: InternalTexture, scene: Nullable<any>, internalFormat: number, onComplete: () => void): void;
-        /**
-         * Gets the current framerate
-         * @returns a number representing the framerate
-         */
-        getFps(): number;
-        /**
-         * Gets the time spent between current and previous frame
-         * @returns a number representing the delta time in ms
-         */
-        getDeltaTime(): number;
-        private _measureFps;
-        /** @hidden */
-        _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement | ImageBitmap, faceIndex?: number, lod?: number): void;
-        /**
-         * Updates a depth texture Comparison Mode and Function.
-         * If the comparison Function is equal to 0, the mode will be set to none.
-         * Otherwise, this only works in webgl 2 and requires a shadow sampler in the shader.
-         * @param texture The texture to set the comparison function for
-         * @param comparisonFunction The comparison function to set, 0 if no comparison required
-         */
-        updateTextureComparisonFunction(texture: InternalTexture, comparisonFunction: number): void;
-        /**
-         * Creates a webGL buffer to use with instantiation
-         * @param capacity defines the size of the buffer
-         * @returns the webGL buffer
-         */
-        createInstancesBuffer(capacity: number): DataBuffer;
-        /**
-         * Delete a webGL buffer used with instantiation
-         * @param buffer defines the webGL buffer to delete
-         */
-        deleteInstancesBuffer(buffer: WebGLBuffer): void;
-        private _clientWaitAsync;
-        /** @hidden */
-        _readPixelsAsync(x: number, y: number, w: number, h: number, format: number, type: number, outputBuffer: ArrayBufferView): Promise<ArrayBufferView> | null;
-        dispose(): void;
-        private _disableTouchAction;
-        /**
-         * Display the loading screen
-         * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
-         */
-        displayLoadingUI(): void;
-        /**
-         * Hide the loading screen
-         * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
-         */
-        hideLoadingUI(): void;
-        /**
-         * Gets the current loading screen object
-         * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
-         */
-        get loadingScreen(): ILoadingScreen;
-        /**
-         * Sets the current loading screen object
-         * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
-         */
-        set loadingScreen(loadingScreen: ILoadingScreen);
-        /**
-         * Sets the current loading screen text
-         * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
-         */
-        set loadingUIText(text: string);
-        /**
-         * Sets the current loading screen background color
-         * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
-         */
-        set loadingUIBackgroundColor(color: string);
-        /**
-         * creates and returns a new video element
-         * @param constraints video constraints
-         * @returns video element
-         */
-        createVideoElement(constraints: MediaTrackConstraints): any;
-        /** Pointerlock and fullscreen */
-        /**
-         * Ask the browser to promote the current element to pointerlock mode
-         * @param element defines the DOM element to promote
-         */
-        static _RequestPointerlock(element: HTMLElement): void;
-        /**
-         * Asks the browser to exit pointerlock mode
-         */
-        static _ExitPointerlock(): void;
-        /**
-         * Ask the browser to promote the current element to fullscreen rendering mode
-         * @param element defines the DOM element to promote
-         */
-        static _RequestFullscreen(element: HTMLElement): void;
-        /**
-         * Asks the browser to exit fullscreen mode
-         */
-        static _ExitFullscreen(): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * The engine store class is responsible to hold all the instances of Engine and Scene created
-     * during the life time of the application.
-     */
-    export class EngineStore {
-        /** Gets the list of created engines */
-        static Instances: Engine[];
-        /** @hidden */
-        static _LastCreatedScene: Nullable<Scene>;
-        /**
-         * Gets the latest created engine
-         */
-        static get LastCreatedEngine(): Nullable<Engine>;
-        /**
-         * Gets the latest created scene
-         */
-        static get LastCreatedScene(): Nullable<Scene>;
-        /**
-         * Gets or sets a global variable indicating if fallback texture must be used when a texture cannot be loaded
-         * @ignorenaming
-         */
-        static UseFallbackTexture: boolean;
-        /**
-         * Texture content used if a texture cannot loaded
-         * @ignorenaming
-         */
-        static FallbackTexture: string;
+        getResponseHeader(name: string): Nullable<string>;
     }
 }
 declare module BABYLON {
@@ -45517,9 +45771,10 @@ declare module BABYLON {
          * Clone the current animation group and returns a copy
          * @param newName defines the name of the new group
          * @param targetConverter defines an optional function used to convert current animation targets to new ones
+         * @param cloneAnimations defines if the animations should be cloned or referenced
          * @returns the new animation group
          */
-        clone(newName: string, targetConverter?: (oldTarget: any) => any): AnimationGroup;
+        clone(newName: string, targetConverter?: (oldTarget: any) => any, cloneAnimations?: boolean): AnimationGroup;
         /**
          * Serializes the animationGroup to an object
          * @returns Serialized object
@@ -62462,6 +62717,943 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var rgbdDecodePixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /**
+     * Uses the GPU to create a copy texture rescaled at a given size
+     * @param texture Texture to copy from
+     * @param width defines the desired width
+     * @param height defines the desired height
+     * @param useBilinearMode defines if bilinear mode has to be used
+     * @return the generated texture
+     */
+    export function CreateResizedCopy(texture: Texture, width: number, height: number, useBilinearMode?: boolean): Texture;
+    /**
+     * Apply a post process to a texture
+     * @param postProcessName name of the fragment post process
+     * @param internalTexture the texture to encode
+     * @param scene the scene hosting the texture
+     * @param type type of the output texture. If not provided, use the one from internalTexture
+     * @param samplingMode sampling mode to use to sample the source texture. If not provided, use the one from internalTexture
+     * @param format format of the output texture. If not provided, use the one from internalTexture
+     * @return a promise with the internalTexture having its texture replaced by the result of the processing
+     */
+    export function ApplyPostProcess(postProcessName: string, internalTexture: InternalTexture, scene: Scene, type?: number, samplingMode?: number, format?: number): Promise<InternalTexture>;
+    /**
+     * Converts a number to half float
+     * @param value number to convert
+     * @returns converted number
+     */
+    export function ToHalfFloat(value: number): number;
+    /**
+     * Converts a half float to a number
+     * @param value half float to convert
+     * @returns converted half float
+     */
+    export function FromHalfFloat(value: number): number;
+    /**
+     * Class used to host texture specific utilities
+     */
+    export const TextureTools: {
+        /**
+         * Uses the GPU to create a copy texture rescaled at a given size
+         * @param texture Texture to copy from
+         * @param width defines the desired width
+         * @param height defines the desired height
+         * @param useBilinearMode defines if bilinear mode has to be used
+         * @return the generated texture
+         */
+        CreateResizedCopy: typeof CreateResizedCopy;
+        /**
+         * Apply a post process to a texture
+         * @param postProcessName name of the fragment post process
+         * @param internalTexture the texture to encode
+         * @param scene the scene hosting the texture
+         * @param type type of the output texture. If not provided, use the one from internalTexture
+         * @param samplingMode sampling mode to use to sample the source texture. If not provided, use the one from internalTexture
+         * @param format format of the output texture. If not provided, use the one from internalTexture
+         * @return a promise with the internalTexture having its texture replaced by the result of the processing
+         */
+        ApplyPostProcess: typeof ApplyPostProcess;
+        /**
+         * Converts a number to half float
+         * @param value number to convert
+         * @returns converted number
+         */
+        ToHalfFloat: typeof ToHalfFloat;
+        /**
+         * Converts a half float to a number
+         * @param value half float to convert
+         * @returns converted half float
+         */
+        FromHalfFloat: typeof FromHalfFloat;
+    };
+}
+declare module BABYLON {
+    /**
+     * Class used to host RGBD texture specific utilities
+     */
+    export class RGBDTextureTools {
+        /**
+         * Expand the RGBD Texture from RGBD to Half Float if possible.
+         * @param texture the texture to expand.
+         */
+        static ExpandRGBDTexture(texture: Texture): void;
+        /**
+         * Encode the texture to RGBD if possible.
+         * @param internalTexture the texture to encode
+         * @param scene the scene hosting the texture
+         * @param outputTextureType type of the texture in which the encoding is performed
+         * @return a promise with the internalTexture having its texture replaced by the result of the processing
+         */
+        static EncodeTextureToRGBD(internalTexture: InternalTexture, scene: Scene, outputTextureType?: number): Promise<InternalTexture>;
+    }
+}
+declare module BABYLON {
+    /**
+     * CubeMap information grouping all the data for each faces as well as the cubemap size.
+     */
+    export interface CubeMapInfo {
+        /**
+         * The pixel array for the front face.
+         * This is stored in format, left to right, up to down format.
+         */
+        front: Nullable<ArrayBufferView>;
+        /**
+         * The pixel array for the back face.
+         * This is stored in format, left to right, up to down format.
+         */
+        back: Nullable<ArrayBufferView>;
+        /**
+         * The pixel array for the left face.
+         * This is stored in format, left to right, up to down format.
+         */
+        left: Nullable<ArrayBufferView>;
+        /**
+         * The pixel array for the right face.
+         * This is stored in format, left to right, up to down format.
+         */
+        right: Nullable<ArrayBufferView>;
+        /**
+         * The pixel array for the up face.
+         * This is stored in format, left to right, up to down format.
+         */
+        up: Nullable<ArrayBufferView>;
+        /**
+         * The pixel array for the down face.
+         * This is stored in format, left to right, up to down format.
+         */
+        down: Nullable<ArrayBufferView>;
+        /**
+         * The size of the cubemap stored.
+         *
+         * Each faces will be size * size pixels.
+         */
+        size: number;
+        /**
+         * The format of the texture.
+         *
+         * RGBA, RGB.
+         */
+        format: number;
+        /**
+         * The type of the texture data.
+         *
+         * UNSIGNED_INT, FLOAT.
+         */
+        type: number;
+        /**
+         * Specifies whether the texture is in gamma space.
+         */
+        gammaSpace: boolean;
+    }
+    /**
+     * Helper class useful to convert panorama picture to their cubemap representation in 6 faces.
+     */
+    export class PanoramaToCubeMapTools {
+        private static FACE_LEFT;
+        private static FACE_RIGHT;
+        private static FACE_FRONT;
+        private static FACE_BACK;
+        private static FACE_DOWN;
+        private static FACE_UP;
+        /**
+         * Converts a panorama stored in RGB right to left up to down format into a cubemap (6 faces).
+         *
+         * @param float32Array The source data.
+         * @param inputWidth The width of the input panorama.
+         * @param inputHeight The height of the input panorama.
+         * @param size The willing size of the generated cubemap (each faces will be size * size pixels)
+         * @return The cubemap data
+         */
+        static ConvertPanoramaToCubemap(float32Array: Float32Array, inputWidth: number, inputHeight: number, size: number): CubeMapInfo;
+        private static CreateCubemapTexture;
+        private static CalcProjectionSpherical;
+    }
+}
+declare module BABYLON {
+    /**
+     * Helper class dealing with the extraction of spherical polynomial dataArray
+     * from a cube map.
+     */
+    export class CubeMapToSphericalPolynomialTools {
+        private static FileFaces;
+        /**
+         * Converts a texture to the according Spherical Polynomial data.
+         * This extracts the first 3 orders only as they are the only one used in the lighting.
+         *
+         * @param texture The texture to extract the information from.
+         * @return The Spherical Polynomial data.
+         */
+        static ConvertCubeMapTextureToSphericalPolynomial(texture: BaseTexture): Nullable<Promise<SphericalPolynomial>>;
+        /**
+         * Converts a cubemap to the according Spherical Polynomial data.
+         * This extracts the first 3 orders only as they are the only one used in the lighting.
+         *
+         * @param cubeInfo The Cube map to extract the information from.
+         * @return The Spherical Polynomial data.
+         */
+        static ConvertCubeMapToSphericalPolynomial(cubeInfo: CubeMapInfo): SphericalPolynomial;
+    }
+}
+declare module BABYLON {
+        interface BaseTexture {
+            /**
+             * Get the polynomial representation of the texture data.
+             * This is mainly use as a fast way to recover IBL Diffuse irradiance data.
+             * @see https://learnopengl.com/PBR/IBL/Diffuse-irradiance
+             */
+            sphericalPolynomial: Nullable<SphericalPolynomial>;
+            /**
+             * Force recomputation of spherical polynomials.
+             * Can be useful if you generate a cubemap multiple times (from a probe for eg) and you need the proper polynomials each time
+             */
+            forceSphericalPolynomialsRecompute(): void;
+        }
+}
+declare module BABYLON {
+    /** @hidden */
+    export var rgbdEncodePixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /**
+     * Raw texture data and descriptor sufficient for WebGL texture upload
+     */
+    export type EnvironmentTextureInfo = EnvironmentTextureInfoV1 | EnvironmentTextureInfoV2;
+    /**
+     * v1 of EnvironmentTextureInfo
+     */
+    interface EnvironmentTextureInfoV1 {
+        /**
+         * Version of the environment map
+         */
+        version: 1;
+        /**
+         * Width of image
+         */
+        width: number;
+        /**
+         * Irradiance information stored in the file.
+         */
+        irradiance: any;
+        /**
+         * Specular information stored in the file.
+         */
+        specular: any;
+    }
+    /**
+     * v2 of EnvironmentTextureInfo
+     */
+    interface EnvironmentTextureInfoV2 {
+        /**
+         * Version of the environment map
+         */
+        version: 2;
+        /**
+         * Width of image
+         */
+        width: number;
+        /**
+         * Irradiance information stored in the file.
+         */
+        irradiance: any;
+        /**
+         * Specular information stored in the file.
+         */
+        specular: any;
+        /**
+         * The mime type used to encode the image data.
+         */
+        imageType: string;
+    }
+    /**
+     * Defines One Image in the file. It requires only the position in the file
+     * as well as the length.
+     */
+    interface BufferImageData {
+        /**
+         * Length of the image data.
+         */
+        length: number;
+        /**
+         * Position of the data from the null terminator delimiting the end of the JSON.
+         */
+        position: number;
+    }
+    /**
+     * Defines the specular data enclosed in the file.
+     * This corresponds to the version 1 of the data.
+     */
+    export interface EnvironmentTextureSpecularInfoV1 {
+        /**
+         * Defines where the specular Payload is located. It is a runtime value only not stored in the file.
+         */
+        specularDataPosition?: number;
+        /**
+         * This contains all the images data needed to reconstruct the cubemap.
+         */
+        mipmaps: Array<BufferImageData>;
+        /**
+         * Defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness.
+         */
+        lodGenerationScale: number;
+    }
+    /**
+     * Options for creating environment textures
+     */
+    export interface CreateEnvTextureOptions {
+        /**
+         * The mime type of encoded images.
+         */
+        imageType?: string;
+        /**
+         * the image quality of encoded WebP images.
+         */
+        imageQuality?: number;
+    }
+    /**
+     * Gets the environment info from an env file.
+     * @param data The array buffer containing the .env bytes.
+     * @returns the environment file info (the json header) if successfully parsed, normalized to the latest supported version.
+     */
+    export function GetEnvInfo(data: ArrayBufferView): Nullable<EnvironmentTextureInfoV2>;
+    /**
+     * Normalizes any supported version of the environment file info to the latest version
+     * @param info environment file info on any supported version
+     * @returns environment file info in the latest supported version
+     * @private
+     */
+    export function normalizeEnvInfo(info: EnvironmentTextureInfo): EnvironmentTextureInfoV2;
+    /**
+     * Creates an environment texture from a loaded cube texture.
+     * @param texture defines the cube texture to convert in env file
+     * @param options options for the conversion process
+     * @param options.imageType the mime type for the encoded images, with support for "image/png" (default) and "image/webp"
+     * @param options.imageQuality the image quality of encoded WebP images.
+     * @return a promise containing the environment data if successful.
+     */
+    export function CreateEnvTextureAsync(texture: BaseTexture, options?: CreateEnvTextureOptions): Promise<ArrayBuffer>;
+    /**
+     * Creates the ArrayBufferViews used for initializing environment texture image data.
+     * @param data the image data
+     * @param info parameters that determine what views will be created for accessing the underlying buffer
+     * @return the views described by info providing access to the underlying buffer
+     */
+    export function CreateImageDataArrayBufferViews(data: ArrayBufferView, info: EnvironmentTextureInfo): Array<Array<ArrayBufferView>>;
+    /**
+     * Uploads the texture info contained in the env file to the GPU.
+     * @param texture defines the internal texture to upload to
+     * @param data defines the data to load
+     * @param info defines the texture info retrieved through the GetEnvInfo method
+     * @returns a promise
+     */
+    export function UploadEnvLevelsAsync(texture: InternalTexture, data: ArrayBufferView, info: EnvironmentTextureInfo): Promise<void>;
+    /**
+     * Uploads the levels of image data to the GPU.
+     * @param texture defines the internal texture to upload to
+     * @param imageData defines the array buffer views of image data [mipmap][face]
+     * @param imageType the mime type of the image data
+     * @returns a promise
+     */
+    export function UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBufferView[][], imageType?: string): Promise<void>;
+    /**
+     * Uploads spherical polynomials information to the texture.
+     * @param texture defines the texture we are trying to upload the information to
+     * @param info defines the environment texture info retrieved through the GetEnvInfo method
+     */
+    export function UploadEnvSpherical(texture: InternalTexture, info: EnvironmentTextureInfo): void;
+    /** @hidden */
+    export function _UpdateRGBDAsync(internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial>, lodScale: number, lodOffset: number): Promise<InternalTexture>;
+    /**
+     * Sets of helpers addressing the serialization and deserialization of environment texture
+     * stored in a BabylonJS env file.
+     * Those files are usually stored as .env files.
+     */
+    export const EnvironmentTextureTools: {
+        /**
+         * Gets the environment info from an env file.
+         * @param data The array buffer containing the .env bytes.
+         * @returns the environment file info (the json header) if successfully parsed, normalized to the latest supported version.
+         */
+        GetEnvInfo: typeof GetEnvInfo;
+        /**
+         * Creates an environment texture from a loaded cube texture.
+         * @param texture defines the cube texture to convert in env file
+         * @param options options for the conversion process
+         * @param options.imageType the mime type for the encoded images, with support for "image/png" (default) and "image/webp"
+         * @param options.imageQuality the image quality of encoded WebP images.
+         * @return a promise containing the environment data if successful.
+         */
+        CreateEnvTextureAsync: typeof CreateEnvTextureAsync;
+        /**
+         * Creates the ArrayBufferViews used for initializing environment texture image data.
+         * @param data the image data
+         * @param info parameters that determine what views will be created for accessing the underlying buffer
+         * @return the views described by info providing access to the underlying buffer
+         */
+        CreateImageDataArrayBufferViews: typeof CreateImageDataArrayBufferViews;
+        /**
+         * Uploads the texture info contained in the env file to the GPU.
+         * @param texture defines the internal texture to upload to
+         * @param data defines the data to load
+         * @param info defines the texture info retrieved through the GetEnvInfo method
+         * @returns a promise
+         */
+        UploadEnvLevelsAsync: typeof UploadEnvLevelsAsync;
+        /**
+         * Uploads the levels of image data to the GPU.
+         * @param texture defines the internal texture to upload to
+         * @param imageData defines the array buffer views of image data [mipmap][face]
+         * @param imageType the mime type of the image data
+         * @returns a promise
+         */
+        UploadLevelsAsync: typeof UploadLevelsAsync;
+        /**
+         * Uploads spherical polynomials information to the texture.
+         * @param texture defines the texture we are trying to upload the information to
+         * @param info defines the environment texture info retrieved through the GetEnvInfo method
+         */
+        UploadEnvSpherical: typeof UploadEnvSpherical;
+    };
+}
+declare module BABYLON {
+    /**
+     * Extracts the characters between two markers (for eg, between "(" and ")"). The function handles nested markers as well as markers inside strings (delimited by ", ' or `) and comments
+     * @param markerOpen opening marker
+     * @param markerClose closing marker
+     * @param block code block to parse
+     * @param startIndex starting index in block where the extraction must start. The character at block[startIndex] should be the markerOpen character!
+     * @returns index of the last character for the extraction (or -1 if the string is invalid - no matching closing marker found). The string to extract (without the markers) is the string between startIndex + 1 and the returned value (exclusive)
+     */
+    export function ExtractBetweenMarkers(markerOpen: string, markerClose: string, block: string, startIndex: number): number;
+    /**
+     * Parses a string and skip whitespaces
+     * @param s string to parse
+     * @param index index where to start parsing
+     * @returns the index after all whitespaces have been skipped
+     */
+    export function SkipWhitespaces(s: string, index: number): number;
+    /**
+     * Checks if a character is an identifier character (meaning, if it is 0-9, A-Z, a-z or _)
+     * @param c character to check
+     * @returns true if the character is an identifier character
+     */
+    export function IsIdentifierChar(c: string): boolean;
+    /**
+     * Removes the comments of a code block
+     * @param block code block to parse
+     * @returns block with the comments removed
+     */
+    export function RemoveComments(block: string): string;
+    /**
+     * Finds the first occurrence of a character in a string going backward
+     * @param s the string to parse
+     * @param index starting index in the string
+     * @param c the character to find
+     * @returns the index of the character if found, else -1
+     */
+    export function FindBackward(s: string, index: number, c: string): number;
+    /**
+     * Escapes a string so that it is usable as a regular expression
+     * @param s string to escape
+     * @returns escaped string
+     */
+    export function EscapeRegExp(s: string): string;
+}
+declare module BABYLON {
+    /**
+     * Class used to inline functions in shader code
+    */
+    export class ShaderCodeInliner {
+        private static readonly _RegexpFindFunctionNameAndType;
+        private _sourceCode;
+        private _functionDescr;
+        private _numMaxIterations;
+        /** Gets or sets the token used to mark the functions to inline */
+        inlineToken: string;
+        /** Gets or sets the debug mode */
+        debug: boolean;
+        /** Gets the code after the inlining process */
+        get code(): string;
+        /**
+         * Initializes the inliner
+         * @param sourceCode shader code source to inline
+         * @param numMaxIterations maximum number of iterations (used to detect recursive calls)
+         */
+        constructor(sourceCode: string, numMaxIterations?: number);
+        /**
+         * Start the processing of the shader code
+         */
+        processCode(): void;
+        private _collectFunctions;
+        private _processInlining;
+        private _replaceFunctionCallsByCode;
+        private _replaceNames;
+    }
+}
+declare module BABYLON {
+    /**
+     * Container for accessors for natively-stored mesh data buffers.
+     */
+    class NativeDataBuffer extends DataBuffer {
+        /**
+         * Accessor value used to identify/retrieve a natively-stored index buffer.
+         */
+        nativeIndexBuffer?: NativeData;
+        /**
+         * Accessor value used to identify/retrieve a natively-stored vertex buffer.
+         */
+        nativeVertexBuffer?: NativeData;
+    }
+    /**
+     * Options to create the Native engine
+     */
+    export interface NativeEngineOptions {
+        /**
+         * defines whether to adapt to the device's viewport characteristics (default: false)
+         */
+        adaptToDeviceRatio?: boolean;
+    }
+    /** @hidden */
+    export class NativeEngine extends Engine {
+        private static readonly PROTOCOL_VERSION;
+        private readonly _engine;
+        private readonly _camera;
+        private readonly _commandBufferEncoder;
+        private _boundBuffersVertexArray;
+        private _currentDepthTest;
+        private _stencilTest;
+        private _stencilMask;
+        private _stencilFunc;
+        private _stencilFuncRef;
+        private _stencilFuncMask;
+        private _stencilOpStencilFail;
+        private _stencilOpDepthFail;
+        private _stencilOpStencilDepthPass;
+        private _zOffset;
+        private _zOffsetUnits;
+        private _depthWrite;
+        getHardwareScalingLevel(): number;
+        setHardwareScalingLevel(level: number): void;
+        constructor(options?: NativeEngineOptions);
+        dispose(): void;
+        /** @hidden */
+        static _createNativeDataStream(): NativeDataStream;
+        /**
+         * Can be used to override the current requestAnimationFrame requester.
+         * @hidden
+         */
+        protected _queueNewFrame(bindedRenderFunction: any, requester?: any): number;
+        /**
+         * Override default engine behavior.
+         * @param color
+         * @param backBuffer
+         * @param depth
+         * @param stencil
+         */
+        _bindUnboundFramebuffer(framebuffer: Nullable<WebGLFramebuffer>): void;
+        /**
+         * Gets host document
+         * @returns the host document object
+         */
+        getHostDocument(): Nullable<Document>;
+        clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil?: boolean): void;
+        createIndexBuffer(indices: IndicesArray, updateable?: boolean): NativeDataBuffer;
+        createVertexBuffer(vertices: DataArray, updateable?: boolean): NativeDataBuffer;
+        protected _recordVertexArrayObject(vertexArray: any, vertexBuffers: {
+            [key: string]: VertexBuffer;
+        }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): void;
+        bindBuffers(vertexBuffers: {
+            [key: string]: VertexBuffer;
+        }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): void;
+        recordVertexArrayObject(vertexBuffers: {
+            [key: string]: VertexBuffer;
+        }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): WebGLVertexArrayObject;
+        private _deleteVertexArray;
+        bindVertexArrayObject(vertexArray: WebGLVertexArrayObject): void;
+        releaseVertexArrayObject(vertexArray: WebGLVertexArrayObject): void;
+        getAttributes(pipelineContext: IPipelineContext, attributesNames: string[]): number[];
+        /**
+         * Draw a list of indexed primitives
+         * @param fillMode defines the primitive to use
+         * @param indexStart defines the starting index
+         * @param indexCount defines the number of index to draw
+         * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
+         */
+        drawElementsType(fillMode: number, indexStart: number, indexCount: number, instancesCount?: number): void;
+        /**
+         * Draw a list of unindexed primitives
+         * @param fillMode defines the primitive to use
+         * @param verticesStart defines the index of first vertex to draw
+         * @param verticesCount defines the count of vertices to draw
+         * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
+         */
+        drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void;
+        createPipelineContext(): IPipelineContext;
+        createMaterialContext(): IMaterialContext | undefined;
+        createDrawContext(): IDrawContext | undefined;
+        _preparePipelineContext(pipelineContext: IPipelineContext, vertexSourceCode: string, fragmentSourceCode: string, createAsRaw: boolean, rawVertexSourceCode: string, rawFragmentSourceCode: string, rebuildRebind: any, defines: Nullable<string>, transformFeedbackVaryings: Nullable<string[]>): void;
+        /** @hidden */
+        _isRenderingStateCompiled(pipelineContext: IPipelineContext): boolean;
+        /** @hidden */
+        _executeWhenRenderingStateIsCompiled(pipelineContext: IPipelineContext, action: () => void): void;
+        createRawShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, context?: WebGLRenderingContext, transformFeedbackVaryings?: Nullable<string[]>): any;
+        createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext, transformFeedbackVaryings?: Nullable<string[]>): any;
+        /**
+         * Inline functions in shader code that are marked to be inlined
+         * @param code code to inline
+         * @returns inlined code
+         */
+        inlineShaderCode(code: string): string;
+        protected _setProgram(program: WebGLProgram): void;
+        _deletePipelineContext(pipelineContext: IPipelineContext): void;
+        getUniforms(pipelineContext: IPipelineContext, uniformsNames: string[]): WebGLUniformLocation[];
+        bindUniformBlock(pipelineContext: IPipelineContext, blockName: string, index: number): void;
+        bindSamplers(effect: Effect): void;
+        setMatrix(uniform: WebGLUniformLocation, matrix: IMatrixLike): void;
+        getRenderWidth(useScreen?: boolean): number;
+        getRenderHeight(useScreen?: boolean): number;
+        setViewport(viewport: IViewportLike, requiredWidth?: number, requiredHeight?: number): void;
+        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean, cullBackFaces?: boolean, stencil?: IStencilState, zOffsetUnits?: number): void;
+        /**
+         * Gets the client rect of native canvas.  Needed for InputManager.
+         * @returns a client rectangle
+         */
+        getInputElementClientRect(): Nullable<DOMRect>;
+        /**
+         * Set the z offset Factor to apply to current rendering
+         * @param value defines the offset to apply
+         */
+        setZOffset(value: number): void;
+        /**
+         * Gets the current value of the zOffset Factor
+         * @returns the current zOffset Factor state
+         */
+        getZOffset(): number;
+        /**
+         * Set the z offset Units to apply to current rendering
+         * @param value defines the offset to apply
+         */
+        setZOffsetUnits(value: number): void;
+        /**
+         * Gets the current value of the zOffset Units
+         * @returns the current zOffset Units state
+         */
+        getZOffsetUnits(): number;
+        /**
+         * Enable or disable depth buffering
+         * @param enable defines the state to set
+         */
+        setDepthBuffer(enable: boolean): void;
+        /**
+         * Gets a boolean indicating if depth writing is enabled
+         * @returns the current depth writing state
+         */
+        getDepthWrite(): boolean;
+        getDepthFunction(): Nullable<number>;
+        setDepthFunction(depthFunc: number): void;
+        /**
+         * Enable or disable depth writing
+         * @param enable defines the state to set
+         */
+        setDepthWrite(enable: boolean): void;
+        /**
+         * Enable or disable color writing
+         * @param enable defines the state to set
+         */
+        setColorWrite(enable: boolean): void;
+        /**
+         * Gets a boolean indicating if color writing is enabled
+         * @returns the current color writing state
+         */
+        getColorWrite(): boolean;
+        private applyStencil;
+        private _setStencil;
+        /**
+         * Enable or disable the stencil buffer
+         * @param enable defines if the stencil buffer must be enabled or disabled
+         */
+        setStencilBuffer(enable: boolean): void;
+        /**
+         * Gets a boolean indicating if stencil buffer is enabled
+         * @returns the current stencil buffer state
+         */
+        getStencilBuffer(): boolean;
+        /**
+     * Gets the current stencil operation when stencil passes
+     * @returns a number defining stencil operation to use when stencil passes
+     */
+        getStencilOperationPass(): number;
+        /**
+         * Sets the stencil operation to use when stencil passes
+         * @param operation defines the stencil operation to use when stencil passes
+         */
+        setStencilOperationPass(operation: number): void;
+        /**
+         * Sets the current stencil mask
+         * @param mask defines the new stencil mask to use
+         */
+        setStencilMask(mask: number): void;
+        /**
+         * Sets the current stencil function
+         * @param stencilFunc defines the new stencil function to use
+         */
+        setStencilFunction(stencilFunc: number): void;
+        /**
+         * Sets the current stencil reference
+         * @param reference defines the new stencil reference to use
+         */
+        setStencilFunctionReference(reference: number): void;
+        /**
+         * Sets the current stencil mask
+         * @param mask defines the new stencil mask to use
+         */
+        setStencilFunctionMask(mask: number): void;
+        /**
+         * Sets the stencil operation to use when stencil fails
+         * @param operation defines the stencil operation to use when stencil fails
+         */
+        setStencilOperationFail(operation: number): void;
+        /**
+         * Sets the stencil operation to use when depth fails
+         * @param operation defines the stencil operation to use when depth fails
+         */
+        setStencilOperationDepthFail(operation: number): void;
+        /**
+         * Gets the current stencil mask
+         * @returns a number defining the new stencil mask to use
+         */
+        getStencilMask(): number;
+        /**
+         * Gets the current stencil function
+         * @returns a number defining the stencil function to use
+         */
+        getStencilFunction(): number;
+        /**
+         * Gets the current stencil reference value
+         * @returns a number defining the stencil reference value to use
+         */
+        getStencilFunctionReference(): number;
+        /**
+         * Gets the current stencil mask
+         * @returns a number defining the stencil mask to use
+         */
+        getStencilFunctionMask(): number;
+        /**
+         * Gets the current stencil operation when stencil fails
+         * @returns a number defining stencil operation to use when stencil fails
+         */
+        getStencilOperationFail(): number;
+        /**
+         * Gets the current stencil operation when depth fails
+         * @returns a number defining stencil operation to use when depth fails
+         */
+        getStencilOperationDepthFail(): number;
+        /**
+         * Sets alpha constants used by some alpha blending modes
+         * @param r defines the red component
+         * @param g defines the green component
+         * @param b defines the blue component
+         * @param a defines the alpha component
+         */
+        setAlphaConstants(r: number, g: number, b: number, a: number): void;
+        /**
+         * Sets the current alpha mode
+         * @param mode defines the mode to use (one of the BABYLON.Constants.ALPHA_XXX)
+         * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
+         * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
+         */
+        setAlphaMode(mode: number, noDepthWriteChange?: boolean): void;
+        /**
+         * Gets the current alpha mode
+         * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
+         * @returns the current alpha mode
+         */
+        getAlphaMode(): number;
+        setInt(uniform: WebGLUniformLocation, int: number): boolean;
+        setIntArray(uniform: WebGLUniformLocation, array: Int32Array): boolean;
+        setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): boolean;
+        setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): boolean;
+        setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): boolean;
+        setFloatArray(uniform: WebGLUniformLocation, array: Float32Array): boolean;
+        setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array): boolean;
+        setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array): boolean;
+        setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array): boolean;
+        setArray(uniform: WebGLUniformLocation, array: number[]): boolean;
+        setArray2(uniform: WebGLUniformLocation, array: number[]): boolean;
+        setArray3(uniform: WebGLUniformLocation, array: number[]): boolean;
+        setArray4(uniform: WebGLUniformLocation, array: number[]): boolean;
+        setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): boolean;
+        setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): boolean;
+        setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): boolean;
+        setFloat(uniform: WebGLUniformLocation, value: number): boolean;
+        setFloat2(uniform: WebGLUniformLocation, x: number, y: number): boolean;
+        setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): boolean;
+        setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): boolean;
+        setColor3(uniform: WebGLUniformLocation, color3: IColor3Like): boolean;
+        setColor4(uniform: WebGLUniformLocation, color3: IColor3Like, alpha: number): boolean;
+        wipeCaches(bruteForce?: boolean): void;
+        protected _createTexture(): WebGLTexture;
+        protected _deleteTexture(texture: Nullable<WebGLTexture>): void;
+        /**
+         * Update the content of a dynamic texture
+         * @param texture defines the texture to update
+         * @param canvas defines the canvas containing the source
+         * @param invertY defines if data must be stored with Y axis inverted
+         * @param premulAlpha defines if alpha is stored as premultiplied
+         * @param format defines the format of the data
+         * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
+         */
+        updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: any, invertY: boolean, premulAlpha?: boolean, format?: number): void;
+        createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): InternalTexture;
+        createVideoElement(constraints: MediaTrackConstraints): any;
+        updateVideoTexture(texture: Nullable<InternalTexture>, video: HTMLVideoElement, invertY: boolean): void;
+        createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression?: Nullable<string>, type?: number): InternalTexture;
+        updateRawTexture(texture: Nullable<InternalTexture>, bufferView: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression?: Nullable<string>, type?: number): void;
+        /**
+         * Usually called from Texture.ts.
+         * Passed information to create a WebGLTexture
+         * @param url defines a value which contains one of the following:
+         * * A conventional http URL, e.g. 'http://...' or 'file://...'
+         * * A base64 string of in-line texture data, e.g. 'data:image/jpg;base64,/...'
+         * * An indicator that data being passed using the buffer parameter, e.g. 'data:mytexture.jpg'
+         * @param noMipmap defines a boolean indicating that no mipmaps shall be generated.  Ignored for compressed textures.  They must be in the file
+         * @param invertY when true, image is flipped when loaded.  You probably want true. Certain compressed textures may invert this if their default is inverted (eg. ktx)
+         * @param scene needed for loading to the correct scene
+         * @param samplingMode mode with should be used sample / access the texture (Default: Texture.TRILINEAR_SAMPLINGMODE)
+         * @param onLoad optional callback to be called upon successful completion
+         * @param onError optional callback to be called upon failure
+         * @param buffer a source of a file previously fetched as either a base64 string, an ArrayBuffer (compressed or image format), HTMLImageElement (image format), or a Blob
+         * @param fallback an internal argument in case the function must be called again, due to etc1 not having alpha capabilities
+         * @param format internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures
+         * @param forcedExtension defines the extension to use to pick the right loader
+         * @param mimeType defines an optional mime type
+         * @param loaderOptions options to be passed to the loader
+         * @returns a InternalTexture for assignment back into BABYLON.Texture
+         */
+        createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string, loaderOptions?: any, creationFlags?: number, useSRGBBuffer?: boolean): InternalTexture;
+        _createDepthStencilTexture(size: RenderTargetTextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture;
+        /** @hidden */
+        _releaseFramebufferObjects(framebuffer: Nullable<WebGLFramebuffer>): void;
+        /**
+         * Engine abstraction for createImageBitmap
+         * @param image source for image
+         * @param options An object that sets options for the image's extraction.
+         * @returns ImageBitmap
+         */
+        createImageBitmap(image: ImageBitmapSource, options?: ImageBitmapOptions): Promise<ImageBitmap>;
+        /**
+         * Resize an image and returns the image data as an uint8array
+         * @param image image to resize
+         * @param bufferWidth destination buffer width
+         * @param bufferHeight destination buffer height
+         * @returns an uint8array containing RGBA values of bufferWidth * bufferHeight size
+         */
+        resizeImageBitmap(image: ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array;
+        /**
+         * Creates a cube texture
+         * @param rootUrl defines the url where the files to load is located
+         * @param scene defines the current scene
+         * @param files defines the list of files to load (1 per face)
+         * @param noMipmap defines a boolean indicating that no mipmaps shall be generated (false by default)
+         * @param onLoad defines an optional callback raised when the texture is loaded
+         * @param onError defines an optional callback raised if there is an issue to load the texture
+         * @param format defines the format of the data
+         * @param forcedExtension defines the extension to use to pick the right loader
+         * @param createPolynomials if a polynomial sphere should be created for the cube texture
+         * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
+         * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
+         * @param fallback defines texture to use while falling back when (compressed) texture file not found.
+         * @param loaderOptions options to be passed to the loader
+         * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
+         * @returns the cube texture as an InternalTexture
+         */
+        createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad?: Nullable<(data?: any) => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, forcedExtension?: any, createPolynomials?: boolean, lodScale?: number, lodOffset?: number, fallback?: Nullable<InternalTexture>, loaderOptions?: any, useSRGBBuffer?: boolean): InternalTexture;
+        /** @hidden */
+        _createHardwareRenderTargetWrapper(isMulti: boolean, isCube: boolean, size: RenderTargetTextureSize): RenderTargetWrapper;
+        createRenderTargetTexture(size: number | {
+            width: number;
+            height: number;
+        }, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper;
+        updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void;
+        bindFramebuffer(texture: RenderTargetWrapper, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void;
+        unBindFramebuffer(texture: RenderTargetWrapper, disableGenerateMipMaps?: boolean, onBeforeUnbind?: () => void): void;
+        createDynamicVertexBuffer(data: DataArray): DataBuffer;
+        updateDynamicIndexBuffer(indexBuffer: DataBuffer, indices: IndicesArray, offset?: number): void;
+        updateDynamicVertexBuffer(vertexBuffer: DataBuffer, verticies: DataArray, byteOffset?: number, byteLength?: number): void;
+        protected _setTexture(channel: number, texture: Nullable<BaseTexture>, isPartOfTextureArray?: boolean, depthStencilTexture?: boolean): boolean;
+        private _setTextureSampling;
+        private _setTextureWrapMode;
+        private _setTextureCore;
+        private _updateAnisotropicLevel;
+        private _getAddressMode;
+        /** @hidden */
+        _bindTexture(channel: number, texture: InternalTexture): void;
+        protected _deleteBuffer(buffer: NativeDataBuffer): void;
+        /**
+         * Create a canvas
+         * @param width width
+         * @param height height
+         * @return ICanvas interface
+         */
+        createCanvas(width: number, height: number): ICanvas;
+        /**
+         * Create an image to use with canvas
+         * @return IImage interface
+         */
+        createCanvasImage(): IImage;
+        /** @hidden */
+        _uploadCompressedDataToTextureDirectly(texture: InternalTexture, internalFormat: number, width: number, height: number, data: ArrayBufferView, faceIndex?: number, lod?: number): void;
+        /** @hidden */
+        _uploadDataToTextureDirectly(texture: InternalTexture, imageData: ArrayBufferView, faceIndex?: number, lod?: number): void;
+        /** @hidden */
+        _uploadArrayBufferViewToTexture(texture: InternalTexture, imageData: ArrayBufferView, faceIndex?: number, lod?: number): void;
+        /** @hidden */
+        _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement, faceIndex?: number, lod?: number): void;
+        private _getNativeSamplingMode;
+        private _getStencilFunc;
+        private _getStencilOpFail;
+        private _getStencilDepthFail;
+        private _getStencilDepthPass;
+        private _getNativeTextureFormat;
+        private _getNativeAlphaMode;
+        private _getNativeAttribType;
+        getFontOffset(font: string): {
+            ascent: number;
+            height: number;
+            descent: number;
+        };
+    }
+}
+declare module BABYLON {
+    /** @hidden */
     export enum PowerPreference {
         SRGB = "srgb"
     }
@@ -63181,50 +64373,6 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    /**
-     * Extracts the characters between two markers (for eg, between "(" and ")"). The function handles nested markers as well as markers inside strings (delimited by ", ' or `) and comments
-     * @param markerOpen opening marker
-     * @param markerClose closing marker
-     * @param block code block to parse
-     * @param startIndex starting index in block where the extraction must start. The character at block[startIndex] should be the markerOpen character!
-     * @returns index of the last character for the extraction (or -1 if the string is invalid - no matching closing marker found). The string to extract (without the markers) is the string between startIndex + 1 and the returned value (exclusive)
-     */
-    export function ExtractBetweenMarkers(markerOpen: string, markerClose: string, block: string, startIndex: number): number;
-    /**
-     * Parses a string and skip whitespaces
-     * @param s string to parse
-     * @param index index where to start parsing
-     * @returns the index after all whitespaces have been skipped
-     */
-    export function SkipWhitespaces(s: string, index: number): number;
-    /**
-     * Checks if a character is an identifier character (meaning, if it is 0-9, A-Z, a-z or _)
-     * @param c character to check
-     * @returns true if the character is an identifier character
-     */
-    export function IsIdentifierChar(c: string): boolean;
-    /**
-     * Removes the comments of a code block
-     * @param block code block to parse
-     * @returns block with the comments removed
-     */
-    export function RemoveComments(block: string): string;
-    /**
-     * Finds the first occurrence of a character in a string going backward
-     * @param s the string to parse
-     * @param index starting index in the string
-     * @param c the character to find
-     * @returns the index of the character if found, else -1
-     */
-    export function FindBackward(s: string, index: number, c: string): number;
-    /**
-     * Escapes a string so that it is usable as a regular expression
-     * @param s string to escape
-     * @returns escaped string
-     */
-    export function EscapeRegExp(s: string): string;
-}
-declare module BABYLON {
     /** @hidden */
     export var bonesDeclaration: {
         name: string;
@@ -63342,77 +64490,6 @@ declare module BABYLON {
         constructor(resource: GPUBuffer);
         get underlyingResource(): any;
     }
-}
-declare module BABYLON {
-    /**
-     * Uses the GPU to create a copy texture rescaled at a given size
-     * @param texture Texture to copy from
-     * @param width defines the desired width
-     * @param height defines the desired height
-     * @param useBilinearMode defines if bilinear mode has to be used
-     * @return the generated texture
-     */
-    export function CreateResizedCopy(texture: Texture, width: number, height: number, useBilinearMode?: boolean): Texture;
-    /**
-     * Apply a post process to a texture
-     * @param postProcessName name of the fragment post process
-     * @param internalTexture the texture to encode
-     * @param scene the scene hosting the texture
-     * @param type type of the output texture. If not provided, use the one from internalTexture
-     * @param samplingMode sampling mode to use to sample the source texture. If not provided, use the one from internalTexture
-     * @param format format of the output texture. If not provided, use the one from internalTexture
-     * @return a promise with the internalTexture having its texture replaced by the result of the processing
-     */
-    export function ApplyPostProcess(postProcessName: string, internalTexture: InternalTexture, scene: Scene, type?: number, samplingMode?: number, format?: number): Promise<InternalTexture>;
-    /**
-     * Converts a number to half float
-     * @param value number to convert
-     * @returns converted number
-     */
-    export function ToHalfFloat(value: number): number;
-    /**
-     * Converts a half float to a number
-     * @param value half float to convert
-     * @returns converted half float
-     */
-    export function FromHalfFloat(value: number): number;
-    /**
-     * Class used to host texture specific utilities
-     */
-    export const TextureTools: {
-        /**
-         * Uses the GPU to create a copy texture rescaled at a given size
-         * @param texture Texture to copy from
-         * @param width defines the desired width
-         * @param height defines the desired height
-         * @param useBilinearMode defines if bilinear mode has to be used
-         * @return the generated texture
-         */
-        CreateResizedCopy: typeof CreateResizedCopy;
-        /**
-         * Apply a post process to a texture
-         * @param postProcessName name of the fragment post process
-         * @param internalTexture the texture to encode
-         * @param scene the scene hosting the texture
-         * @param type type of the output texture. If not provided, use the one from internalTexture
-         * @param samplingMode sampling mode to use to sample the source texture. If not provided, use the one from internalTexture
-         * @param format format of the output texture. If not provided, use the one from internalTexture
-         * @return a promise with the internalTexture having its texture replaced by the result of the processing
-         */
-        ApplyPostProcess: typeof ApplyPostProcess;
-        /**
-         * Converts a number to half float
-         * @param value number to convert
-         * @returns converted number
-         */
-        ToHalfFloat: typeof ToHalfFloat;
-        /**
-         * Converts a half float to a number
-         * @param value half float to convert
-         * @returns converted half float
-         */
-        FromHalfFloat: typeof FromHalfFloat;
-    };
 }
 declare module BABYLON {
     /** @hidden */
@@ -64007,37 +65084,6 @@ declare module BABYLON {
         private _allocateNewIndices;
         private _delayQuerySetDispose;
         dispose(): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Class used to inline functions in shader code
-    */
-    export class ShaderCodeInliner {
-        private static readonly _RegexpFindFunctionNameAndType;
-        private _sourceCode;
-        private _functionDescr;
-        private _numMaxIterations;
-        /** Gets or sets the token used to mark the functions to inline */
-        inlineToken: string;
-        /** Gets or sets the debug mode */
-        debug: boolean;
-        /** Gets the code after the inlining process */
-        get code(): string;
-        /**
-         * Initializes the inliner
-         * @param sourceCode shader code source to inline
-         * @param numMaxIterations maximum number of iterations (used to detect recursive calls)
-         */
-        constructor(sourceCode: string, numMaxIterations?: number);
-        /**
-         * Start the processing of the shader code
-         */
-        processCode(): void;
-        private _collectFunctions;
-        private _processInlining;
-        private _replaceFunctionCallsByCode;
-        private _replaceNames;
     }
 }
 declare module BABYLON {
@@ -64903,786 +65949,6 @@ declare module BABYLON {
              */
             setStorageBuffer(name: string, buffer: Nullable<StorageBuffer>): void;
         }
-}
-declare module BABYLON {
-    /** @hidden */
-    export var rgbdDecodePixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /**
-     * Class used to host RGBD texture specific utilities
-     */
-    export class RGBDTextureTools {
-        /**
-         * Expand the RGBD Texture from RGBD to Half Float if possible.
-         * @param texture the texture to expand.
-         */
-        static ExpandRGBDTexture(texture: Texture): void;
-        /**
-         * Encode the texture to RGBD if possible.
-         * @param internalTexture the texture to encode
-         * @param scene the scene hosting the texture
-         * @param outputTextureType type of the texture in which the encoding is performed
-         * @return a promise with the internalTexture having its texture replaced by the result of the processing
-         */
-        static EncodeTextureToRGBD(internalTexture: InternalTexture, scene: Scene, outputTextureType?: number): Promise<InternalTexture>;
-    }
-}
-declare module BABYLON {
-    /**
-     * CubeMap information grouping all the data for each faces as well as the cubemap size.
-     */
-    export interface CubeMapInfo {
-        /**
-         * The pixel array for the front face.
-         * This is stored in format, left to right, up to down format.
-         */
-        front: Nullable<ArrayBufferView>;
-        /**
-         * The pixel array for the back face.
-         * This is stored in format, left to right, up to down format.
-         */
-        back: Nullable<ArrayBufferView>;
-        /**
-         * The pixel array for the left face.
-         * This is stored in format, left to right, up to down format.
-         */
-        left: Nullable<ArrayBufferView>;
-        /**
-         * The pixel array for the right face.
-         * This is stored in format, left to right, up to down format.
-         */
-        right: Nullable<ArrayBufferView>;
-        /**
-         * The pixel array for the up face.
-         * This is stored in format, left to right, up to down format.
-         */
-        up: Nullable<ArrayBufferView>;
-        /**
-         * The pixel array for the down face.
-         * This is stored in format, left to right, up to down format.
-         */
-        down: Nullable<ArrayBufferView>;
-        /**
-         * The size of the cubemap stored.
-         *
-         * Each faces will be size * size pixels.
-         */
-        size: number;
-        /**
-         * The format of the texture.
-         *
-         * RGBA, RGB.
-         */
-        format: number;
-        /**
-         * The type of the texture data.
-         *
-         * UNSIGNED_INT, FLOAT.
-         */
-        type: number;
-        /**
-         * Specifies whether the texture is in gamma space.
-         */
-        gammaSpace: boolean;
-    }
-    /**
-     * Helper class useful to convert panorama picture to their cubemap representation in 6 faces.
-     */
-    export class PanoramaToCubeMapTools {
-        private static FACE_LEFT;
-        private static FACE_RIGHT;
-        private static FACE_FRONT;
-        private static FACE_BACK;
-        private static FACE_DOWN;
-        private static FACE_UP;
-        /**
-         * Converts a panorama stored in RGB right to left up to down format into a cubemap (6 faces).
-         *
-         * @param float32Array The source data.
-         * @param inputWidth The width of the input panorama.
-         * @param inputHeight The height of the input panorama.
-         * @param size The willing size of the generated cubemap (each faces will be size * size pixels)
-         * @return The cubemap data
-         */
-        static ConvertPanoramaToCubemap(float32Array: Float32Array, inputWidth: number, inputHeight: number, size: number): CubeMapInfo;
-        private static CreateCubemapTexture;
-        private static CalcProjectionSpherical;
-    }
-}
-declare module BABYLON {
-    /**
-     * Helper class dealing with the extraction of spherical polynomial dataArray
-     * from a cube map.
-     */
-    export class CubeMapToSphericalPolynomialTools {
-        private static FileFaces;
-        /**
-         * Converts a texture to the according Spherical Polynomial data.
-         * This extracts the first 3 orders only as they are the only one used in the lighting.
-         *
-         * @param texture The texture to extract the information from.
-         * @return The Spherical Polynomial data.
-         */
-        static ConvertCubeMapTextureToSphericalPolynomial(texture: BaseTexture): Nullable<Promise<SphericalPolynomial>>;
-        /**
-         * Converts a cubemap to the according Spherical Polynomial data.
-         * This extracts the first 3 orders only as they are the only one used in the lighting.
-         *
-         * @param cubeInfo The Cube map to extract the information from.
-         * @return The Spherical Polynomial data.
-         */
-        static ConvertCubeMapToSphericalPolynomial(cubeInfo: CubeMapInfo): SphericalPolynomial;
-    }
-}
-declare module BABYLON {
-        interface BaseTexture {
-            /**
-             * Get the polynomial representation of the texture data.
-             * This is mainly use as a fast way to recover IBL Diffuse irradiance data.
-             * @see https://learnopengl.com/PBR/IBL/Diffuse-irradiance
-             */
-            sphericalPolynomial: Nullable<SphericalPolynomial>;
-            /**
-             * Force recomputation of spherical polynomials.
-             * Can be useful if you generate a cubemap multiple times (from a probe for eg) and you need the proper polynomials each time
-             */
-            forceSphericalPolynomialsRecompute(): void;
-        }
-}
-declare module BABYLON {
-    /** @hidden */
-    export var rgbdEncodePixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /**
-     * Raw texture data and descriptor sufficient for WebGL texture upload
-     */
-    export type EnvironmentTextureInfo = EnvironmentTextureInfoV1 | EnvironmentTextureInfoV2;
-    /**
-     * v1 of EnvironmentTextureInfo
-     */
-    interface EnvironmentTextureInfoV1 {
-        /**
-         * Version of the environment map
-         */
-        version: 1;
-        /**
-         * Width of image
-         */
-        width: number;
-        /**
-         * Irradiance information stored in the file.
-         */
-        irradiance: any;
-        /**
-         * Specular information stored in the file.
-         */
-        specular: any;
-    }
-    /**
-     * v2 of EnvironmentTextureInfo
-     */
-    interface EnvironmentTextureInfoV2 {
-        /**
-         * Version of the environment map
-         */
-        version: 2;
-        /**
-         * Width of image
-         */
-        width: number;
-        /**
-         * Irradiance information stored in the file.
-         */
-        irradiance: any;
-        /**
-         * Specular information stored in the file.
-         */
-        specular: any;
-        /**
-         * The mime type used to encode the image data.
-         */
-        imageType: string;
-    }
-    /**
-     * Defines One Image in the file. It requires only the position in the file
-     * as well as the length.
-     */
-    interface BufferImageData {
-        /**
-         * Length of the image data.
-         */
-        length: number;
-        /**
-         * Position of the data from the null terminator delimiting the end of the JSON.
-         */
-        position: number;
-    }
-    /**
-     * Defines the specular data enclosed in the file.
-     * This corresponds to the version 1 of the data.
-     */
-    export interface EnvironmentTextureSpecularInfoV1 {
-        /**
-         * Defines where the specular Payload is located. It is a runtime value only not stored in the file.
-         */
-        specularDataPosition?: number;
-        /**
-         * This contains all the images data needed to reconstruct the cubemap.
-         */
-        mipmaps: Array<BufferImageData>;
-        /**
-         * Defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness.
-         */
-        lodGenerationScale: number;
-    }
-    /**
-     * Options for creating environment textures
-     */
-    export interface CreateEnvTextureOptions {
-        /**
-         * The mime type of encoded images.
-         */
-        imageType?: string;
-        /**
-         * the image quality of encoded WebP images.
-         */
-        imageQuality?: number;
-    }
-    /**
-     * Gets the environment info from an env file.
-     * @param data The array buffer containing the .env bytes.
-     * @returns the environment file info (the json header) if successfully parsed, normalized to the latest supported version.
-     */
-    export function GetEnvInfo(data: ArrayBufferView): Nullable<EnvironmentTextureInfoV2>;
-    /**
-     * Normalizes any supported version of the environment file info to the latest version
-     * @param info environment file info on any supported version
-     * @returns environment file info in the latest supported version
-     * @private
-     */
-    export function normalizeEnvInfo(info: EnvironmentTextureInfo): EnvironmentTextureInfoV2;
-    /**
-     * Creates an environment texture from a loaded cube texture.
-     * @param texture defines the cube texture to convert in env file
-     * @param options options for the conversion process
-     * @param options.imageType the mime type for the encoded images, with support for "image/png" (default) and "image/webp"
-     * @param options.imageQuality the image quality of encoded WebP images.
-     * @return a promise containing the environment data if successful.
-     */
-    export function CreateEnvTextureAsync(texture: BaseTexture, options?: CreateEnvTextureOptions): Promise<ArrayBuffer>;
-    /**
-     * Creates the ArrayBufferViews used for initializing environment texture image data.
-     * @param data the image data
-     * @param info parameters that determine what views will be created for accessing the underlying buffer
-     * @return the views described by info providing access to the underlying buffer
-     */
-    export function CreateImageDataArrayBufferViews(data: ArrayBufferView, info: EnvironmentTextureInfo): Array<Array<ArrayBufferView>>;
-    /**
-     * Uploads the texture info contained in the env file to the GPU.
-     * @param texture defines the internal texture to upload to
-     * @param data defines the data to load
-     * @param info defines the texture info retrieved through the GetEnvInfo method
-     * @returns a promise
-     */
-    export function UploadEnvLevelsAsync(texture: InternalTexture, data: ArrayBufferView, info: EnvironmentTextureInfo): Promise<void>;
-    /**
-     * Uploads the levels of image data to the GPU.
-     * @param texture defines the internal texture to upload to
-     * @param imageData defines the array buffer views of image data [mipmap][face]
-     * @param imageType the mime type of the image data
-     * @returns a promise
-     */
-    export function UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBufferView[][], imageType?: string): Promise<void>;
-    /**
-     * Uploads spherical polynomials information to the texture.
-     * @param texture defines the texture we are trying to upload the information to
-     * @param info defines the environment texture info retrieved through the GetEnvInfo method
-     */
-    export function UploadEnvSpherical(texture: InternalTexture, info: EnvironmentTextureInfo): void;
-    /** @hidden */
-    export function _UpdateRGBDAsync(internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial>, lodScale: number, lodOffset: number): Promise<InternalTexture>;
-    /**
-     * Sets of helpers addressing the serialization and deserialization of environment texture
-     * stored in a BabylonJS env file.
-     * Those files are usually stored as .env files.
-     */
-    export const EnvironmentTextureTools: {
-        /**
-         * Gets the environment info from an env file.
-         * @param data The array buffer containing the .env bytes.
-         * @returns the environment file info (the json header) if successfully parsed, normalized to the latest supported version.
-         */
-        GetEnvInfo: typeof GetEnvInfo;
-        /**
-         * Creates an environment texture from a loaded cube texture.
-         * @param texture defines the cube texture to convert in env file
-         * @param options options for the conversion process
-         * @param options.imageType the mime type for the encoded images, with support for "image/png" (default) and "image/webp"
-         * @param options.imageQuality the image quality of encoded WebP images.
-         * @return a promise containing the environment data if successful.
-         */
-        CreateEnvTextureAsync: typeof CreateEnvTextureAsync;
-        /**
-         * Creates the ArrayBufferViews used for initializing environment texture image data.
-         * @param data the image data
-         * @param info parameters that determine what views will be created for accessing the underlying buffer
-         * @return the views described by info providing access to the underlying buffer
-         */
-        CreateImageDataArrayBufferViews: typeof CreateImageDataArrayBufferViews;
-        /**
-         * Uploads the texture info contained in the env file to the GPU.
-         * @param texture defines the internal texture to upload to
-         * @param data defines the data to load
-         * @param info defines the texture info retrieved through the GetEnvInfo method
-         * @returns a promise
-         */
-        UploadEnvLevelsAsync: typeof UploadEnvLevelsAsync;
-        /**
-         * Uploads the levels of image data to the GPU.
-         * @param texture defines the internal texture to upload to
-         * @param imageData defines the array buffer views of image data [mipmap][face]
-         * @param imageType the mime type of the image data
-         * @returns a promise
-         */
-        UploadLevelsAsync: typeof UploadLevelsAsync;
-        /**
-         * Uploads spherical polynomials information to the texture.
-         * @param texture defines the texture we are trying to upload the information to
-         * @param info defines the environment texture info retrieved through the GetEnvInfo method
-         */
-        UploadEnvSpherical: typeof UploadEnvSpherical;
-    };
-}
-declare module BABYLON {
-    /**
-     * Container for accessors for natively-stored mesh data buffers.
-     */
-    class NativeDataBuffer extends DataBuffer {
-        /**
-         * Accessor value used to identify/retrieve a natively-stored index buffer.
-         */
-        nativeIndexBuffer?: any;
-        /**
-         * Accessor value used to identify/retrieve a natively-stored vertex buffer.
-         */
-        nativeVertexBuffer?: any;
-    }
-    /**
-     * Options to create the Native engine
-     */
-    export interface NativeEngineOptions {
-        /**
-         * defines whether to adapt to the device's viewport characteristics (default: false)
-         */
-        adaptToDeviceRatio?: boolean;
-    }
-    /** @hidden */
-    export class NativeEngine extends Engine {
-        private static readonly ProtocolVersion;
-        private readonly _native;
-        private readonly _nativeCamera;
-        private _boundBuffersVertexArray;
-        private _currentDepthTest;
-        private _stencilTest;
-        private _stencilMask;
-        private _stencilFunc;
-        private _stencilFuncRef;
-        private _stencilFuncMask;
-        private _stencilOpStencilFail;
-        private _stencilOpDepthFail;
-        private _stencilOpStencilDepthPass;
-        getHardwareScalingLevel(): number;
-        setHardwareScalingLevel(level: number): void;
-        constructor(options?: NativeEngineOptions);
-        dispose(): void;
-        /**
-         * Can be used to override the current requestAnimationFrame requester.
-         * @hidden
-         */
-        protected _queueNewFrame(bindedRenderFunction: any, requester?: any): number;
-        /**
-         * Override default engine behavior.
-         * @param color
-         * @param backBuffer
-         * @param depth
-         * @param stencil
-         */
-        _bindUnboundFramebuffer(framebuffer: Nullable<WebGLFramebuffer>): void;
-        /**
-         * Gets host document
-         * @returns the host document object
-         */
-        getHostDocument(): Nullable<Document>;
-        clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil?: boolean): void;
-        createIndexBuffer(indices: IndicesArray, updateable?: boolean): NativeDataBuffer;
-        createVertexBuffer(vertices: DataArray, updateable?: boolean): NativeDataBuffer;
-        protected _recordVertexArrayObject(vertexArray: any, vertexBuffers: {
-            [key: string]: VertexBuffer;
-        }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): void;
-        bindBuffers(vertexBuffers: {
-            [key: string]: VertexBuffer;
-        }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): void;
-        recordVertexArrayObject(vertexBuffers: {
-            [key: string]: VertexBuffer;
-        }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): WebGLVertexArrayObject;
-        bindVertexArrayObject(vertexArray: WebGLVertexArrayObject): void;
-        releaseVertexArrayObject(vertexArray: WebGLVertexArrayObject): void;
-        getAttributes(pipelineContext: IPipelineContext, attributesNames: string[]): number[];
-        /**
-         * Draw a list of indexed primitives
-         * @param fillMode defines the primitive to use
-         * @param indexStart defines the starting index
-         * @param indexCount defines the number of index to draw
-         * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
-         */
-        drawElementsType(fillMode: number, indexStart: number, indexCount: number, instancesCount?: number): void;
-        /**
-         * Draw a list of unindexed primitives
-         * @param fillMode defines the primitive to use
-         * @param verticesStart defines the index of first vertex to draw
-         * @param verticesCount defines the count of vertices to draw
-         * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
-         */
-        drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void;
-        createPipelineContext(): IPipelineContext;
-        createMaterialContext(): IMaterialContext | undefined;
-        createDrawContext(): IDrawContext | undefined;
-        _preparePipelineContext(pipelineContext: IPipelineContext, vertexSourceCode: string, fragmentSourceCode: string, createAsRaw: boolean, rawVertexSourceCode: string, rawFragmentSourceCode: string, rebuildRebind: any, defines: Nullable<string>, transformFeedbackVaryings: Nullable<string[]>): void;
-        /** @hidden */
-        _isRenderingStateCompiled(pipelineContext: IPipelineContext): boolean;
-        /** @hidden */
-        _executeWhenRenderingStateIsCompiled(pipelineContext: IPipelineContext, action: () => void): void;
-        createRawShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, context?: WebGLRenderingContext, transformFeedbackVaryings?: Nullable<string[]>): any;
-        createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext, transformFeedbackVaryings?: Nullable<string[]>): any;
-        /**
-         * Inline functions in shader code that are marked to be inlined
-         * @param code code to inline
-         * @returns inlined code
-         */
-        inlineShaderCode(code: string): string;
-        protected _setProgram(program: WebGLProgram): void;
-        _releaseEffect(effect: Effect): void;
-        _deletePipelineContext(pipelineContext: IPipelineContext): void;
-        getUniforms(pipelineContext: IPipelineContext, uniformsNames: string[]): WebGLUniformLocation[];
-        bindUniformBlock(pipelineContext: IPipelineContext, blockName: string, index: number): void;
-        bindSamplers(effect: Effect): void;
-        setMatrix(uniform: WebGLUniformLocation, matrix: IMatrixLike): void;
-        getRenderWidth(useScreen?: boolean): number;
-        getRenderHeight(useScreen?: boolean): number;
-        setViewport(viewport: IViewportLike, requiredWidth?: number, requiredHeight?: number): void;
-        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean, cullBackFaces?: boolean, stencil?: IStencilState, zOffsetUnits?: number): void;
-        /**
-         * Gets the client rect of native canvas.  Needed for InputManager.
-         * @returns a client rectangle
-         */
-        getInputElementClientRect(): Nullable<DOMRect>;
-        /**
-         * Set the z offset Factor to apply to current rendering
-         * @param value defines the offset to apply
-         */
-        setZOffset(value: number): void;
-        /**
-         * Gets the current value of the zOffset Factor
-         * @returns the current zOffset Factor state
-         */
-        getZOffset(): number;
-        /**
-         * Set the z offset Units to apply to current rendering
-         * @param value defines the offset to apply
-         */
-        setZOffsetUnits(value: number): void;
-        /**
-         * Gets the current value of the zOffset Units
-         * @returns the current zOffset Units state
-         */
-        getZOffsetUnits(): number;
-        /**
-         * Enable or disable depth buffering
-         * @param enable defines the state to set
-         */
-        setDepthBuffer(enable: boolean): void;
-        /**
-         * Gets a boolean indicating if depth writing is enabled
-         * @returns the current depth writing state
-         */
-        getDepthWrite(): boolean;
-        getDepthFunction(): Nullable<number>;
-        setDepthFunction(depthFunc: number): void;
-        /**
-         * Enable or disable depth writing
-         * @param enable defines the state to set
-         */
-        setDepthWrite(enable: boolean): void;
-        /**
-         * Enable or disable color writing
-         * @param enable defines the state to set
-         */
-        setColorWrite(enable: boolean): void;
-        /**
-         * Gets a boolean indicating if color writing is enabled
-         * @returns the current color writing state
-         */
-        getColorWrite(): boolean;
-        private applyStencil;
-        /**
-         * Enable or disable the stencil buffer
-         * @param enable defines if the stencil buffer must be enabled or disabled
-         */
-        setStencilBuffer(enable: boolean): void;
-        /**
-         * Gets a boolean indicating if stencil buffer is enabled
-         * @returns the current stencil buffer state
-         */
-        getStencilBuffer(): boolean;
-        /**
-     * Gets the current stencil operation when stencil passes
-     * @returns a number defining stencil operation to use when stencil passes
-     */
-        getStencilOperationPass(): number;
-        /**
-         * Sets the stencil operation to use when stencil passes
-         * @param operation defines the stencil operation to use when stencil passes
-         */
-        setStencilOperationPass(operation: number): void;
-        /**
-         * Sets the current stencil mask
-         * @param mask defines the new stencil mask to use
-         */
-        setStencilMask(mask: number): void;
-        /**
-         * Sets the current stencil function
-         * @param stencilFunc defines the new stencil function to use
-         */
-        setStencilFunction(stencilFunc: number): void;
-        /**
-         * Sets the current stencil reference
-         * @param reference defines the new stencil reference to use
-         */
-        setStencilFunctionReference(reference: number): void;
-        /**
-         * Sets the current stencil mask
-         * @param mask defines the new stencil mask to use
-         */
-        setStencilFunctionMask(mask: number): void;
-        /**
-         * Sets the stencil operation to use when stencil fails
-         * @param operation defines the stencil operation to use when stencil fails
-         */
-        setStencilOperationFail(operation: number): void;
-        /**
-         * Sets the stencil operation to use when depth fails
-         * @param operation defines the stencil operation to use when depth fails
-         */
-        setStencilOperationDepthFail(operation: number): void;
-        /**
-         * Gets the current stencil mask
-         * @returns a number defining the new stencil mask to use
-         */
-        getStencilMask(): number;
-        /**
-         * Gets the current stencil function
-         * @returns a number defining the stencil function to use
-         */
-        getStencilFunction(): number;
-        /**
-         * Gets the current stencil reference value
-         * @returns a number defining the stencil reference value to use
-         */
-        getStencilFunctionReference(): number;
-        /**
-         * Gets the current stencil mask
-         * @returns a number defining the stencil mask to use
-         */
-        getStencilFunctionMask(): number;
-        /**
-         * Gets the current stencil operation when stencil fails
-         * @returns a number defining stencil operation to use when stencil fails
-         */
-        getStencilOperationFail(): number;
-        /**
-         * Gets the current stencil operation when depth fails
-         * @returns a number defining stencil operation to use when depth fails
-         */
-        getStencilOperationDepthFail(): number;
-        /**
-         * Sets alpha constants used by some alpha blending modes
-         * @param r defines the red component
-         * @param g defines the green component
-         * @param b defines the blue component
-         * @param a defines the alpha component
-         */
-        setAlphaConstants(r: number, g: number, b: number, a: number): void;
-        /**
-         * Sets the current alpha mode
-         * @param mode defines the mode to use (one of the BABYLON.Constants.ALPHA_XXX)
-         * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
-         * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
-         */
-        setAlphaMode(mode: number, noDepthWriteChange?: boolean): void;
-        /**
-         * Gets the current alpha mode
-         * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
-         * @returns the current alpha mode
-         */
-        getAlphaMode(): number;
-        setInt(uniform: WebGLUniformLocation, int: number): boolean;
-        setIntArray(uniform: WebGLUniformLocation, array: Int32Array): boolean;
-        setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): boolean;
-        setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): boolean;
-        setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): boolean;
-        setFloatArray(uniform: WebGLUniformLocation, array: Float32Array): boolean;
-        setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array): boolean;
-        setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array): boolean;
-        setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array): boolean;
-        setArray(uniform: WebGLUniformLocation, array: number[]): boolean;
-        setArray2(uniform: WebGLUniformLocation, array: number[]): boolean;
-        setArray3(uniform: WebGLUniformLocation, array: number[]): boolean;
-        setArray4(uniform: WebGLUniformLocation, array: number[]): boolean;
-        setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): boolean;
-        setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): boolean;
-        setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): boolean;
-        setFloat(uniform: WebGLUniformLocation, value: number): boolean;
-        setFloat2(uniform: WebGLUniformLocation, x: number, y: number): boolean;
-        setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): boolean;
-        setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): boolean;
-        setColor3(uniform: WebGLUniformLocation, color3: IColor3Like): boolean;
-        setColor4(uniform: WebGLUniformLocation, color3: IColor3Like, alpha: number): boolean;
-        wipeCaches(bruteForce?: boolean): void;
-        protected _createTexture(): WebGLTexture;
-        protected _deleteTexture(texture: Nullable<WebGLTexture>): void;
-        /**
-         * Update the content of a dynamic texture
-         * @param texture defines the texture to update
-         * @param canvas defines the canvas containing the source
-         * @param invertY defines if data must be stored with Y axis inverted
-         * @param premulAlpha defines if alpha is stored as premultiplied
-         * @param format defines the format of the data
-         * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
-         */
-        updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: any, invertY: boolean, premulAlpha?: boolean, format?: number): void;
-        createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): InternalTexture;
-        createVideoElement(constraints: MediaTrackConstraints): any;
-        updateVideoTexture(texture: Nullable<InternalTexture>, video: HTMLVideoElement, invertY: boolean): void;
-        createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression?: Nullable<string>, type?: number): InternalTexture;
-        updateRawTexture(texture: Nullable<InternalTexture>, bufferView: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression?: Nullable<string>, type?: number): void;
-        /**
-         * Usually called from Texture.ts.
-         * Passed information to create a WebGLTexture
-         * @param url defines a value which contains one of the following:
-         * * A conventional http URL, e.g. 'http://...' or 'file://...'
-         * * A base64 string of in-line texture data, e.g. 'data:image/jpg;base64,/...'
-         * * An indicator that data being passed using the buffer parameter, e.g. 'data:mytexture.jpg'
-         * @param noMipmap defines a boolean indicating that no mipmaps shall be generated.  Ignored for compressed textures.  They must be in the file
-         * @param invertY when true, image is flipped when loaded.  You probably want true. Certain compressed textures may invert this if their default is inverted (eg. ktx)
-         * @param scene needed for loading to the correct scene
-         * @param samplingMode mode with should be used sample / access the texture (Default: Texture.TRILINEAR_SAMPLINGMODE)
-         * @param onLoad optional callback to be called upon successful completion
-         * @param onError optional callback to be called upon failure
-         * @param buffer a source of a file previously fetched as either a base64 string, an ArrayBuffer (compressed or image format), HTMLImageElement (image format), or a Blob
-         * @param fallback an internal argument in case the function must be called again, due to etc1 not having alpha capabilities
-         * @param format internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures
-         * @param forcedExtension defines the extension to use to pick the right loader
-         * @param mimeType defines an optional mime type
-         * @param loaderOptions options to be passed to the loader
-         * @returns a InternalTexture for assignment back into BABYLON.Texture
-         */
-        createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string, loaderOptions?: any, creationFlags?: number, useSRGBBuffer?: boolean): InternalTexture;
-        _createDepthStencilTexture(size: RenderTargetTextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture;
-        /**
-         * Engine abstraction for createImageBitmap
-         * @param image source for image
-         * @param options An object that sets options for the image's extraction.
-         * @returns ImageBitmap
-         */
-        createImageBitmap(image: ImageBitmapSource, options?: ImageBitmapOptions): Promise<ImageBitmap>;
-        /**
-         * Resize an image and returns the image data as an uint8array
-         * @param image image to resize
-         * @param bufferWidth destination buffer width
-         * @param bufferHeight destination buffer height
-         * @returns an uint8array containing RGBA values of bufferWidth * bufferHeight size
-         */
-        resizeImageBitmap(image: ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array;
-        /**
-         * Creates a cube texture
-         * @param rootUrl defines the url where the files to load is located
-         * @param scene defines the current scene
-         * @param files defines the list of files to load (1 per face)
-         * @param noMipmap defines a boolean indicating that no mipmaps shall be generated (false by default)
-         * @param onLoad defines an optional callback raised when the texture is loaded
-         * @param onError defines an optional callback raised if there is an issue to load the texture
-         * @param format defines the format of the data
-         * @param forcedExtension defines the extension to use to pick the right loader
-         * @param createPolynomials if a polynomial sphere should be created for the cube texture
-         * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
-         * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
-         * @param fallback defines texture to use while falling back when (compressed) texture file not found.
-         * @param loaderOptions options to be passed to the loader
-         * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
-         * @returns the cube texture as an InternalTexture
-         */
-        createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad?: Nullable<(data?: any) => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, forcedExtension?: any, createPolynomials?: boolean, lodScale?: number, lodOffset?: number, fallback?: Nullable<InternalTexture>, loaderOptions?: any, useSRGBBuffer?: boolean): InternalTexture;
-        /** @hidden */
-        _createHardwareRenderTargetWrapper(isMulti: boolean, isCube: boolean, size: RenderTargetTextureSize): RenderTargetWrapper;
-        createRenderTargetTexture(size: number | {
-            width: number;
-            height: number;
-        }, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper;
-        updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void;
-        bindFramebuffer(texture: RenderTargetWrapper, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void;
-        unBindFramebuffer(texture: RenderTargetWrapper, disableGenerateMipMaps?: boolean, onBeforeUnbind?: () => void): void;
-        createDynamicVertexBuffer(data: DataArray): DataBuffer;
-        updateDynamicIndexBuffer(indexBuffer: DataBuffer, indices: IndicesArray, offset?: number): void;
-        updateDynamicVertexBuffer(vertexBuffer: DataBuffer, verticies: DataArray, byteOffset?: number, byteLength?: number): void;
-        protected _setTexture(channel: number, texture: Nullable<BaseTexture>, isPartOfTextureArray?: boolean, depthStencilTexture?: boolean): boolean;
-        private _updateAnisotropicLevel;
-        private _getAddressMode;
-        /** @hidden */
-        _bindTexture(channel: number, texture: InternalTexture): void;
-        protected _deleteBuffer(buffer: NativeDataBuffer): void;
-        releaseEffects(): void;
-        /**
-         * Create a canvas
-         * @param width width
-         * @param height height
-         * @return ICanvas interface
-         */
-        createCanvas(width: number, height: number): ICanvas;
-        /**
-         * Create an image to use with canvas
-         * @return IImage interface
-         */
-        createCanvasImage(): IImage;
-        /** @hidden */
-        _uploadCompressedDataToTextureDirectly(texture: InternalTexture, internalFormat: number, width: number, height: number, data: ArrayBufferView, faceIndex?: number, lod?: number): void;
-        /** @hidden */
-        _uploadDataToTextureDirectly(texture: InternalTexture, imageData: ArrayBufferView, faceIndex?: number, lod?: number): void;
-        /** @hidden */
-        _uploadArrayBufferViewToTexture(texture: InternalTexture, imageData: ArrayBufferView, faceIndex?: number, lod?: number): void;
-        /** @hidden */
-        _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement, faceIndex?: number, lod?: number): void;
-        private _getNativeSamplingMode;
-        private _getStencilFunc;
-        private _getStencilOpFail;
-        private _getStencilDepthFail;
-        private _getStencilDepthPass;
-        private _getNativeTextureFormat;
-        private _getNativeAlphaMode;
-        private _getNativeAttribType;
-        getFontOffset(font: string): {
-            ascent: number;
-            height: number;
-            descent: number;
-        };
-    }
 }
 declare module BABYLON {
     /**
@@ -72662,7 +72928,7 @@ declare module BABYLON {
          * @param effectWrapper the effect to renderer
          * @param outputTexture texture to draw to, if null it will render to the screen.
          */
-        render(effectWrapper: EffectWrapper, outputTexture?: Nullable<RenderTargetWrapper | RenderTargetTexture>): void;
+        render(effectWrapper: EffectWrapper, outputTexture?: Nullable<RenderTargetWrapper | IRenderTargetTexture>): void;
         /**
          * Disposes of the effect renderer
          */
@@ -74803,6 +75069,52 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * This is a tiny helper class to wrap a RenderTargetWrapper in a texture
+     * usable as the input of an effect.
+     */
+    export class ThinRenderTargetTexture extends ThinTexture implements IRenderTargetTexture {
+        private readonly _renderTargetOptions;
+        private _renderTarget;
+        private _size;
+        /**
+         * Gets the render target wrapper associated with this render target
+         */
+        get renderTarget(): Nullable<RenderTargetWrapper>;
+        /**
+         * Instantiates a new ThinRenderTargetTexture.
+         * Tiny helper class to wrap a RenderTargetWrapper in a texture.
+         * This can be used as an internal texture wrapper in ThinEngine to benefit from the cache and to hold on the associated RTT
+         * @param engine Define the internalTexture to wrap
+         * @param size Define the size of the RTT to create
+         * @param options Define rendertarget options
+         */
+        constructor(engine: ThinEngine, size: RenderTargetTextureSize, options: RenderTargetCreationOptions);
+        /**
+         * Resize the texture to a new desired size.
+         * Be careful as it will recreate all the data in the new texture.
+         * @param size Define the new size. It can be:
+         *   - a number for squared texture,
+         *   - an object containing { width: number, height: number }
+         */
+        resize(size: RenderTargetTextureSize): void;
+        /**
+         * Get the underlying lower level texture from Babylon.
+         * @returns the internal texture
+         */
+        getInternalTexture(): Nullable<InternalTexture>;
+        /**
+         * Get the class name of the texture.
+         * @returns "ThinRenderTargetTexture"
+         */
+        getClassName(): string;
+        /**
+         * Dispose the texture and release its associated resources.
+         */
+        dispose(disposeOnlyFramebuffers?: boolean): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Block used to add support for vertex skinning (bones)
      */
     export class BonesBlock extends NodeMaterialBlock {
@@ -74965,6 +75277,7 @@ declare module BABYLON {
         private _lightDataUniformName;
         private _lightColorUniformName;
         private _lightTypeDefineName;
+        private _forcePrepareDefines;
         /**
          * Gets or sets the light associated with this block
          */
@@ -80138,9 +80451,10 @@ declare module BABYLON {
          * @param sceneOrEngine The scene or the engine to create the particle system in
          * @param rootUrl The root url to use to load external dependencies like texture
          * @param doNotStart Ignore the preventAutoStart attribute and does not start
+         * @param capacity defines the system capacity (if null or undefined the sotred capacity will be used)
          * @returns the parsed GPU particle system
          */
-        static Parse(parsedParticleSystem: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart?: boolean): GPUParticleSystem;
+        static Parse(parsedParticleSystem: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart?: boolean, capacity?: number): GPUParticleSystem;
     }
 }
 declare module BABYLON {
@@ -80267,9 +80581,10 @@ declare module BABYLON {
          * @param data defines a JSON compatible representation of the set
          * @param scene defines the hosting scene
          * @param gpu defines if we want GPU particles or CPU particles
+         * @param capacity defines the system capacity (if null or undefined the sotred capacity will be used)
          * @returns a new ParticleSystemSet
          */
-        static Parse(data: any, scene: Scene, gpu?: boolean): ParticleSystemSet;
+        static Parse(data: any, scene: Scene, gpu?: boolean, capacity?: number): ParticleSystemSet;
     }
 }
 declare module BABYLON {
@@ -80297,9 +80612,10 @@ declare module BABYLON {
          * @param type This string represents the type to the particle system to create
          * @param scene The scene where the particle system should live
          * @param gpu If the system will use gpu
+         * @param capacity defines the system capacity (if null or undefined the sotred capacity will be used)
          * @returns the ParticleSystemSet created
          */
-        static CreateAsync(type: string, scene: Nullable<Scene>, gpu?: boolean): Promise<ParticleSystemSet>;
+        static CreateAsync(type: string, scene: Nullable<Scene>, gpu?: boolean, capacity?: number): Promise<ParticleSystemSet>;
         /**
          * Static function used to export a particle system to a ParticleSystemSet variable.
          * Please note that the emitter shape is not exported
@@ -80314,18 +80630,20 @@ declare module BABYLON {
          * @param scene defines the hosting scene
          * @param gpu If the system will use gpu
          * @param rootUrl defines the root URL to use to load textures and relative dependencies
+         * @param capacity defines the system capacity (if null or undefined the sotred capacity will be used)
          * @returns a promise that will resolve to the new particle system
          */
-        static ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, gpu?: boolean, rootUrl?: string): Promise<IParticleSystem>;
+        static ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, gpu?: boolean, rootUrl?: string, capacity?: number): Promise<IParticleSystem>;
         /**
          * Creates a particle system from a snippet saved by the particle system editor
          * @param snippetId defines the snippet to load (can be set to _BLANK to create a default one)
          * @param scene defines the hosting scene
          * @param gpu If the system will use gpu
          * @param rootUrl defines the root URL to use to load textures and relative dependencies
+         * @param capacity defines the system capacity (if null or undefined the sotred capacity will be used)
          * @returns a promise that will resolve to the new particle system
          */
-        static CreateFromSnippetAsync(snippetId: string, scene: Scene, gpu?: boolean, rootUrl?: string): Promise<IParticleSystem>;
+        static CreateFromSnippetAsync(snippetId: string, scene: Scene, gpu?: boolean, rootUrl?: string, capacity?: number): Promise<IParticleSystem>;
     }
 }
 declare module BABYLON {

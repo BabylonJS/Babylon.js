@@ -62735,10 +62735,18 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
                 }
             });
         }
+        var rootNodes = scene.rootNodes.slice(0);
+        // Adding nodes parented to a bone
+        for (var _i = 0, _a = scene.meshes; _i < _a.length; _i++) {
+            var mesh = _a[_i];
+            if (mesh.parent && mesh.parent.getClassName() === "Bone") {
+                rootNodes.push(mesh);
+            }
+        }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "tree", onContextMenu: function (e) { return e.preventDefault(); } },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](SceneExplorerFilterComponent, { onFilter: function (filter) { return _this.filterContent(filter); } }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_entities_sceneTreeItemComponent__WEBPACK_IMPORTED_MODULE_6__["SceneTreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, scene: scene, onRefresh: function () { return _this.forceUpdate(); }, onSelectionChangedObservable: this.props.globalState.onSelectionChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, contextMenuItems: nodeContextMenus, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: scene.rootNodes, label: "Nodes", offset: 1, filter: this.state.filter }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, contextMenuItems: nodeContextMenus, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: rootNodes, label: "Nodes", offset: 1, filter: this.state.filter }),
             scene.skeletons.length > 0 &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: scene.skeletons, label: "Skeletons", offset: 1, filter: this.state.filter }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: materials, contextMenuItems: materialsContextMenus, label: "Materials", offset: 1, filter: this.state.filter }),

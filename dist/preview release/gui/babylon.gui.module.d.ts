@@ -1304,6 +1304,10 @@ declare module "babylonjs-gui/2D/controls/control" {
         /** @hidden */
         _intersectsRect(rect: Measure): boolean;
         /** @hidden */
+        protected _computeAdditionnalOffsetX(): number;
+        /** @hidden */
+        protected _computeAdditionnalOffsetY(): number;
+        /** @hidden */
         protected invalidateRect(): void;
         /** @hidden */
         _markAsDirty(force?: boolean): void;
@@ -1581,6 +1585,10 @@ declare module "babylonjs-gui/2D/controls/rectangle" {
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
+        /** @hidden */
+        protected _computeAdditionnalOffsetX(): 1 | 0;
+        /** @hidden */
+        protected _computeAdditionnalOffsetY(): 1 | 0;
         protected _localDraw(context: ICanvasRenderingContext): void;
         protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void;
         private _drawRoundedRect;
@@ -3659,13 +3667,10 @@ declare module "babylonjs-gui/2D/controls/scrollViewers/scrollViewer" {
     }
 }
 declare module "babylonjs-gui/2D/controls/toggleButton" {
-    import { Nullable } from "babylonjs/types";
     import { Observable } from "babylonjs/Misc/observable";
     import { Vector2 } from "babylonjs/Maths/math.vector";
     import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
     import { Control } from "babylonjs-gui/2D/controls/control";
-    import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
-    import { Image } from "babylonjs-gui/2D/controls/image";
     import { PointerInfoBase } from "babylonjs/Events/pointerEvents";
     /**
      * Class used to create toggle buttons
@@ -3719,16 +3724,6 @@ declare module "babylonjs-gui/2D/controls/toggleButton" {
          * Gets or sets a boolean indicating that the toggle button will let internal controls handle picking instead of doing it directly using its bounding info
          */
         delegatePickingToChildren: boolean;
-        private _image;
-        /**
-         * Returns the ToggleButton's image control if it exists
-         */
-        get image(): Nullable<Image>;
-        private _textBlock;
-        /**
-         * Returns the ToggleButton's child TextBlock control if it exists
-         */
-        get textBlock(): Nullable<TextBlock>;
         private _group;
         /** Gets or sets group name this toggle button belongs to */
         get group(): string;
@@ -8317,6 +8312,10 @@ declare module BABYLON.GUI {
         /** @hidden */
         _intersectsRect(rect: Measure): boolean;
         /** @hidden */
+        protected _computeAdditionnalOffsetX(): number;
+        /** @hidden */
+        protected _computeAdditionnalOffsetY(): number;
+        /** @hidden */
         protected invalidateRect(): void;
         /** @hidden */
         _markAsDirty(force?: boolean): void;
@@ -8584,6 +8583,10 @@ declare module BABYLON.GUI {
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
+        /** @hidden */
+        protected _computeAdditionnalOffsetX(): 1 | 0;
+        /** @hidden */
+        protected _computeAdditionnalOffsetY(): 1 | 0;
         protected _localDraw(context: BABYLON.ICanvasRenderingContext): void;
         protected _additionalProcessing(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         private _drawRoundedRect;
@@ -10585,16 +10588,6 @@ declare module BABYLON.GUI {
          * Gets or sets a boolean indicating that the toggle button will let internal controls handle picking instead of doing it directly using its bounding info
          */
         delegatePickingToChildren: boolean;
-        private _image;
-        /**
-         * Returns the ToggleButton's image control if it exists
-         */
-        get image(): BABYLON.Nullable<Image>;
-        private _textBlock;
-        /**
-         * Returns the ToggleButton's child TextBlock control if it exists
-         */
-        get textBlock(): BABYLON.Nullable<TextBlock>;
         private _group;
         /** Gets or sets group name this toggle button belongs to */
         get group(): string;
