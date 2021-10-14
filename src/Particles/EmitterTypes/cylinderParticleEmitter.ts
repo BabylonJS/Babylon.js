@@ -10,6 +10,8 @@ import { UniformBuffer } from "../../Materials/uniformBuffer";
  * It emits the particles alongside the cylinder radius. The emission direction might be randomized.
  */
 export class CylinderParticleEmitter implements IParticleEmitterType {
+    private _tempVector = Vector3.Zero();
+
     /**
     * Creates a new instance CylinderParticleEmitter
     * @param radius the radius of the emission cylinder (1 by default)
@@ -42,25 +44,31 @@ export class CylinderParticleEmitter implements IParticleEmitterType {
      * @param directionToUpdate is the direction vector to update with the result
      * @param particle is the particle we are computed the direction for
      * @param isLocal defines if the direction should be set in local space
+     * @param inverseWorldMatrix defines the inverted world matrix to use if isLocal is false
      */
-    public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
-        var direction = particle.position.subtract(worldMatrix.getTranslation()).normalize();
+    public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean, inverseWorldMatrix: Matrix): void {
+        particle.position.subtractToRef(worldMatrix.getTranslation(), this._tempVector);
+
+        this._tempVector.normalize();
+
+        Vector3.TransformNormalToRef(this._tempVector, inverseWorldMatrix, this._tempVector);
+
         var randY = Scalar.RandomRange(-this.directionRandomizer / 2, this.directionRandomizer / 2);
 
-        var angle = Math.atan2(direction.x, direction.z);
+        var angle = Math.atan2(this._tempVector.x, this._tempVector.z);
         angle += Scalar.RandomRange(-Math.PI / 2, Math.PI / 2) * this.directionRandomizer;
 
-        direction.y = randY; // set direction y to rand y to mirror normal of cylinder surface
-        direction.x = Math.sin(angle);
-        direction.z = Math.cos(angle);
-        direction.normalize();
+        this._tempVector.y = randY; // set direction y to rand y to mirror normal of cylinder surface
+        this._tempVector.x = Math.sin(angle);
+        this._tempVector.z = Math.cos(angle);
+        this._tempVector.normalize();
 
         if (isLocal) {
-            directionToUpdate.copyFrom(direction);
+            directionToUpdate.copyFrom(this._tempVector);
             return;
         }
 
-        Vector3.TransformNormalFromFloatsToRef(direction.x, direction.y, direction.z, worldMatrix, directionToUpdate);
+        Vector3.TransformNormalFromFloatsToRef(this._tempVector.x, this._tempVector.y, this._tempVector.z, worldMatrix, directionToUpdate);
     }
 
     /**
