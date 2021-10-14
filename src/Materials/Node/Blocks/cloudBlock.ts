@@ -47,8 +47,8 @@ export class CloudBlock extends NodeMaterialBlock {
      */
     public get gain(): NodeMaterialConnectionPoint {
         return this._inputs[1];
-    } 
-    
+    }
+
     /**
     * Gets the lacunarity input component
     */
@@ -61,7 +61,7 @@ export class CloudBlock extends NodeMaterialBlock {
     */
      public get time(): NodeMaterialConnectionPoint {
         return this._inputs[3];
-     }    
+     }
 
     /**
      * Gets the output component
@@ -86,26 +86,26 @@ export class CloudBlock extends NodeMaterialBlock {
                                  vec2(12.9898,78.233)))*
                 43758.5453123);
         }
-        
+
         // Based on Morgan McGuire @morgan3d
         // https://www.shadertoy.com/view/4dS3Wd
         float fbmNoise (in vec2 st) {
             vec2 i = floor(st);
             vec2 f = fract(st);
-        
+
             // Four corners in 2D of a tile
             float a = cloudRandom(i);
             float b = cloudRandom(i + vec2(1.0, 0.0));
             float c = cloudRandom(i + vec2(0.0, 1.0));
             float d = cloudRandom(i + vec2(1.0, 1.0));
-        
+
             vec2 u = f * f * (3.0 - 2.0 * f);
-        
+
             return mix(a, b, u.x) +
                     (c - a)* u.y * (1.0 - u.x) +
                     (d - b) * u.x * u.y;
         }`;
-        
+
         let fractalBrownianString = `float fbm (in vec2 st, in float gain, in float lacunarity) {
             // Initial values
             float value = 0.0;
@@ -119,7 +119,7 @@ export class CloudBlock extends NodeMaterialBlock {
                 amplitude *= gain;
             }
             return value;
-        }`
+        }`;
 
         const fbmNewName = `fbm${this.octaves}`;
         state._emitFunction('CloudBlockCode', functionString, '// CloudBlockCode');
@@ -127,8 +127,8 @@ export class CloudBlock extends NodeMaterialBlock {
 
         const localVariable = state._getFreeVariableName("st");
 
-        state.compilationString += `vec2 ${localVariable} = ${this.seed.associatedVariableName};\r\n`;     
-        if (this.time.isConnected) {   
+        state.compilationString += `vec2 ${localVariable} = ${this.seed.associatedVariableName};\r\n`;
+        if (this.time.isConnected) {
             state.compilationString += `${localVariable} += 0.1 * ${this.time.associatedVariableName};\r\n`;
         }
         state.compilationString += this._declareOutput(this._outputs[0], state) + ` = vec3(0.0) + ${fbmNewName}(${localVariable}, ${this.gain.isConnected ? this.gain.associatedVariableName : "0.5"}, ${this.lacunarity.isConnected ? this.lacunarity.associatedVariableName : "2.0"});\r\n`;
@@ -153,7 +153,7 @@ export class CloudBlock extends NodeMaterialBlock {
         super._deserialize(serializationObject, scene, rootUrl);
 
         this.octaves = serializationObject.octaves;
-    }    
+    }
 }
 
 RegisterClass("BABYLON.CloudBlock", CloudBlock);
