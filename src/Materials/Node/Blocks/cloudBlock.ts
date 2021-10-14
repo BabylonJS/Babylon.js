@@ -89,7 +89,7 @@ export class CloudBlock extends NodeMaterialBlock {
         
         // Based on Morgan McGuire @morgan3d
         // https://www.shadertoy.com/view/4dS3Wd
-        float noise (in vec2 st) {
+        float fbmNoise (in vec2 st) {
             vec2 i = floor(st);
             vec2 f = fract(st);
         
@@ -104,9 +104,9 @@ export class CloudBlock extends NodeMaterialBlock {
             return mix(a, b, u.x) +
                     (c - a)* u.y * (1.0 - u.x) +
                     (d - b) * u.x * u.y;
-        }
+        }`;
         
-        float fbm (in vec2 st, in float gain, in float lacunarity) {
+        let fractalBrownianString = `float fbm (in vec2 st, in float gain, in float lacunarity) {
             // Initial values
             float value = 0.0;
             float amplitude = .5;
@@ -114,14 +114,16 @@ export class CloudBlock extends NodeMaterialBlock {
 
             // Loop of octaves
             for (int i = 0; i < OCTAVES; i++) {
-                value += amplitude * noise(st);
+                value += amplitude * fbmNoise(st);
                 st *= lacunarity;
                 amplitude *= gain;
             }
             return value;
         }`
 
-        state._emitFunction('CloudBlockCode', functionString.replace("OCTAVES", (this.octaves | 0).toString()), '// CloudBlockCode');
+        const fbmNewName = `fbm${this.octaves}`;
+        state._emitFunction('CloudBlockCode', functionString, '// CloudBlockCode');
+        state._emitFunction('CloudBlockCodeFBM' + this.octaves, fractalBrownianString.replace("fbm", fbmNewName).replace("OCTAVES", (this.octaves | 0).toString()), '// CloudBlockCode FBM');
 
         const localVariable = state._getFreeVariableName("st");
 
@@ -129,7 +131,7 @@ export class CloudBlock extends NodeMaterialBlock {
         if (this.time.isConnected) {   
             state.compilationString += `${localVariable} += 0.1 * ${this.time.associatedVariableName};\r\n`;
         }
-        state.compilationString += this._declareOutput(this._outputs[0], state) + ` = vec3(0.0) + fbm(${localVariable}, ${this.gain.isConnected ? this.gain.associatedVariableName : "0.5"}, ${this.lacunarity.isConnected ? this.lacunarity.associatedVariableName : "2.0"});\r\n`;
+        state.compilationString += this._declareOutput(this._outputs[0], state) + ` = vec3(0.0) + ${fbmNewName}(${localVariable}, ${this.gain.isConnected ? this.gain.associatedVariableName : "0.5"}, ${this.lacunarity.isConnected ? this.lacunarity.associatedVariableName : "2.0"});\r\n`;
 
         return this;
     }
