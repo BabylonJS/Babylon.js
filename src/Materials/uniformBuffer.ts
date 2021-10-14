@@ -41,6 +41,8 @@ export class UniformBuffer {
     private _currentEffectName: string;
     private _name: string;
     private _currentFrameId: number;
+    private _currentBufferBoundToEffect: Nullable<DataBuffer>;
+    private _bufferToBindToEffect: Nullable<DataBuffer>;
 
     // Pool for avoiding memory leaks
     private static _MAX_UNIFORM_SIZE = 256;
@@ -214,6 +216,8 @@ export class UniformBuffer {
         this._uniformArraySizes = {};
         this._uniformLocationPointer = 0;
         this._needSync = false;
+        this._currentBufferBoundToEffect = null;
+        this._bufferToBindToEffect = null;
 
         if (this._engine._features.trackUbosInFrame) {
             this._buffers = [];
@@ -566,6 +570,11 @@ export class UniformBuffer {
      * Otherwise, the buffer will be updated only if the cache differs.
      */
     public update(): void {
+        if (this._bufferToBindToEffect && this._bufferToBindToEffect !== this._currentBufferBoundToEffect && this._currentEffect) {
+            this._currentBufferBoundToEffect = this._bufferToBindToEffect;
+            this._currentEffect.bindUniformBuffer(this._bufferToBindToEffect, this._currentEffectName);
+        }
+
         if (!this._buffer) {
             this.create();
             return;
@@ -608,9 +617,7 @@ export class UniformBuffer {
         } else {
             this._rebuild();
         }
-        if (this._currentEffect && this._buffer) {
-            this._currentEffect.bindUniformBuffer(this._buffer, this._currentEffectName);
-        }
+        this._bufferToBindToEffect = this._buffer;
     }
 
     private _checkNewFrame(): void {
@@ -624,9 +631,7 @@ export class UniformBuffer {
             } else {
                 this._bufferIndex = -1;
             }
-            if (this._currentEffect && this._buffer) {
-                this._currentEffect.bindUniformBuffer(this._buffer, this._currentEffectName);
-            }
+            this._bufferToBindToEffect = this._buffer;
         }
     }
 
@@ -1000,7 +1005,17 @@ export class UniformBuffer {
             return;
         }
 
+        this._currentBufferBoundToEffect = this._bufferToBindToEffect = this._buffer;
+
         effect.bindUniformBuffer(this._buffer, name);
+    }
+
+    /**
+     * Unbinds this uniform buffer from the current effect
+     */
+    public unbindEffect(): void {
+        this._currentEffect = undefined as any;
+        this._currentBufferBoundToEffect = this._bufferToBindToEffect = null;
     }
 
     /**
