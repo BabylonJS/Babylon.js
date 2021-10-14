@@ -111,9 +111,13 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     }
 
     private _setNamesForDrawWrapper(): void {
-        this._passIdForDrawWrapper.length = this._numCascades;
-        for (let i = 0; i < this._numCascades; ++i) {
-            this._passIdForDrawWrapper[i] = this._scene.getEngine()._createRenderPassId();
+        this._releaseRenderPassId();
+        // If createDrawWrapperPerRenderPass is true, we will use the render pass ids of the RenderTargetTexture, we don't need to create new ones
+        if (!this._scene.getEngine()._features.createDrawWrapperPerRenderPass) {
+            this._passIdForDrawWrapper.length = this._numCascades;
+            for (let i = 0; i < this._numCascades; ++i) {
+                this._passIdForDrawWrapper[i] = this._scene.getEngine().createRenderPassId(`CascadedShadowGenerator - light name=${this._light.name} cascade=${i}`);
+            }
         }
     }
 
@@ -736,7 +740,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             return;
         }
 
-        super(mapSize, light, usefulFloatFirst);
+        super(mapSize, light, usefulFloatFirst, true);
 
         this.usePercentageCloserFiltering = true;
     }
@@ -768,7 +772,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     protected _createTargetRenderTexture(): void {
         const engine = this._scene.getEngine();
         const size = { width: this._mapSize, height: this._mapSize, layers: this.numCascades };
-        this._shadowMap = new RenderTargetTexture(this._light.name + "_shadowMap", size, this._scene, false, true, this._textureType, false, undefined, false, false, undefined/*, Constants.TEXTUREFORMAT_RED*/);
+        this._shadowMap = new RenderTargetTexture(this._light.name + "_CSMShadowMap", size, this._scene, false, true, this._textureType, false, undefined, false, false, undefined/*, Constants.TEXTUREFORMAT_RED*/);
         this._shadowMap.createDepthStencilTexture(engine.useReverseDepthBuffer ? Constants.GREATER : Constants.LESS, true);
     }
 
@@ -821,13 +825,14 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         this._shadowMap.onBeforeRenderObservable.clear();
 
         this._shadowMap.onBeforeRenderObservable.add((layer: number) => {
-            this._passIdForDrawWrapperCurrent = this._passIdForDrawWrapper[layer];
+            this._passIdForDrawWrapperCurrent = this._scene.getEngine()._features.createDrawWrapperPerRenderPass ? this._shadowMap!.renderPassId : this._passIdForDrawWrapper[layer];
             this._currentLayer = layer;
             if (this._filter === ShadowGenerator.FILTER_PCF) {
                 engine.setColorWrite(false);
             }
             this._scene.setTransformMatrix(this.getCascadeViewMatrix(layer)!, this.getCascadeProjectionMatrix(layer)!);
             if (this._useUBO) {
+                this._scene.getSceneUniformBuffer().unbindEffect();
                 this._scene.finalizeSceneUbo();
             }
         });

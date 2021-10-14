@@ -73,7 +73,9 @@ export class DepthRenderer {
 
         var engine = scene.getEngine();
 
-        this._passIdForDrawWrapper = engine._createRenderPassId();
+        if (!engine._features.createDrawWrapperPerRenderPass) {
+            this._passIdForDrawWrapper = engine.createRenderPassId("DepthRenderer");
+        }
         this._camera = camera;
 
         if (samplingMode !== Texture.NEAREST_SAMPLINGMODE) {
@@ -87,7 +89,7 @@ export class DepthRenderer {
 
         // Render target
         var format = (this.isPacked || !engine._features.supportExtendedTextureFormats) ? Constants.TEXTUREFORMAT_RGBA : Constants.TEXTUREFORMAT_R;
-        this._depthMap = new RenderTargetTexture("depthMap", { width: engine.getRenderWidth(), height: engine.getRenderHeight() }, this._scene, false, true, type,
+        this._depthMap = new RenderTargetTexture("DepthRenderer", { width: engine.getRenderWidth(), height: engine.getRenderHeight() }, this._scene, false, true, type,
             false, samplingMode, undefined, undefined, undefined,
             format);
         this._depthMap.wrapU = Texture.CLAMP_ADDRESSMODE;
@@ -258,11 +260,7 @@ export class DepthRenderer {
 
         var defines = [];
 
-        const subMeshEffect = subMesh._getDrawWrapper(this._passIdForDrawWrapper, true)!;
         const engine = this._scene.getEngine();
-
-        let effect = subMeshEffect.effect!;
-        let cachedDefines = subMeshEffect.defines;
 
         var attribs = [VertexBuffer.PositionKind];
 
@@ -339,19 +337,19 @@ export class DepthRenderer {
         }
 
         // Get correct effect
-        var join = defines.join("\n");
+        const drawWrapper = subMesh._getDrawWrapper(this._passIdForDrawWrapper, true)!;
+        const cachedDefines = drawWrapper.defines;
+        const join = defines.join("\n");
         if (cachedDefines !== join) {
-            cachedDefines = join;
-            effect = engine.createEffect("depth",
+            drawWrapper.setEffect(engine.createEffect("depth",
                 attribs,
                 ["world", "mBones", "boneTextureWidth", "viewProjection", "diffuseMatrix", "depthValues", "morphTargetInfluences", "morphTargetTextureInfo", "morphTargetTextureIndices"],
                 ["diffuseSampler", "morphTargets", "boneSampler"], join,
-                undefined, undefined, undefined, { maxSimultaneousMorphTargets: numMorphInfluencers });
+                undefined, undefined, undefined, { maxSimultaneousMorphTargets: numMorphInfluencers }),
+                join);
         }
 
-        subMeshEffect.setEffect(effect, cachedDefines);
-
-        return effect.isReady();
+        return drawWrapper.effect!.isReady();
     }
 
     /**
@@ -367,5 +365,8 @@ export class DepthRenderer {
      */
     public dispose(): void {
         this._depthMap.dispose();
+        if (this._passIdForDrawWrapper !== undefined) {
+            this._scene.getEngine().releaseRenderPassId(this._passIdForDrawWrapper);
+        }
     }
 }

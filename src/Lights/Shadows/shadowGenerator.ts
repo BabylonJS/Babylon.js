@@ -836,8 +836,9 @@ export class ShadowGenerator implements IShadowGenerator {
      * @param mapSize The size of the texture what stores the shadows. Example : 1024.
      * @param light The light object generating the shadows.
      * @param usefullFloatFirst By default the generator will try to use half float textures but if you need precision (for self shadowing for instance), you can use this option to enforce full float texture.
+     * @param delayPassIdCreation true to delay the creation of the pass id(s) used by the shadow generator (normally only used by subclasses of ShadowGenerator)
      */
-    constructor(mapSize: number, light: IShadowLight, usefullFloatFirst?: boolean) {
+    constructor(mapSize: number, light: IShadowLight, usefullFloatFirst?: boolean, delayPassIdCreation = false) {
         this._mapSize = mapSize;
         this._light = light;
         this._scene = light.getScene();
@@ -845,10 +846,13 @@ export class ShadowGenerator implements IShadowGenerator {
         this.id = light.id;
         this._useUBO = this._scene.getEngine().supportsUniformBuffers;
 
-        this._passIdForDrawWrapper = [this._scene.getEngine()._createRenderPassId()];
-        if (light.needCube()) {
-            for (let i = 1; i < 6; ++i) {
-                this._passIdForDrawWrapper[i] = this._scene.getEngine()._createRenderPassId();
+        // If createDrawWrapperPerRenderPass is true, we will use the render pass ids of the RenderTargetTexture, we don't need to create new ones
+        if (!delayPassIdCreation && !this._scene.getEngine()._features.createDrawWrapperPerRenderPass) {
+            this._passIdForDrawWrapper = [this._scene.getEngine().createRenderPassId(`ShadowGenerator - light name=${this._light.name}`)];
+            if (light.needCube()) {
+                for (let i = 1; i < 6; ++i) {
+                    this._passIdForDrawWrapper[i] = this._scene.getEngine().createRenderPassId(`ShadowGenerator - light name=${this._light.name} face=${i}`);
+                }
             }
         }
 
@@ -881,8 +885,6 @@ export class ShadowGenerator implements IShadowGenerator {
 
         this._initializeGenerator();
         this._applyFilterValues();
-
-        this._passIdForDrawWrapperCurrent = this._passIdForDrawWrapper[0];
     }
 
     protected _initializeGenerator(): void {
@@ -936,7 +938,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
         // Record Face Index before render.
         this._shadowMap.onBeforeRenderObservable.add((faceIndex: number) => {
-            this._passIdForDrawWrapperCurrent = this._passIdForDrawWrapper[faceIndex];
+            this._passIdForDrawWrapperCurrent = this._scene.getEngine()._features.createDrawWrapperPerRenderPass ? this._shadowMap!.renderPassId : this._passIdForDrawWrapper[faceIndex];
             this._currentFaceIndex = faceIndex;
             if (this._filter === ShadowGenerator.FILTER_PCF) {
                 engine.setColorWrite(false);
@@ -944,6 +946,7 @@ export class ShadowGenerator implements IShadowGenerator {
             this.getTransformMatrix(); // generate the view/projection matrix
             this._scene.setTransformMatrix(this._viewMatrix, this._projectionMatrix);
             if (this._useUBO) {
+                this._scene.getSceneUniformBuffer().unbindEffect();
                 this._scene.finalizeSceneUbo();
             }
         });
@@ -1781,12 +1784,23 @@ export class ShadowGenerator implements IShadowGenerator {
         this._disposeBlurPostProcesses();
     }
 
+    protected _releaseRenderPassId(): void {
+        const engine = this._scene.getEngine();
+        if (this._passIdForDrawWrapper) {
+            for (let i = 0; i < this._passIdForDrawWrapper.length; ++i) {
+                engine.releaseRenderPassId(this._passIdForDrawWrapper[i]);
+            }
+            this._passIdForDrawWrapper = [];
+        }
+    }
+
     /**
      * Disposes the ShadowGenerator.
      * Returns nothing.
      */
     public dispose(): void {
         this._disposeRTTandPostProcesses();
+        this._releaseRenderPassId();
 
         if (this._light) {
             this._light._shadowGenerator = null;

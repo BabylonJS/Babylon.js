@@ -1746,11 +1746,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     private _createUbo(): void {
-        this._sceneUbo = new UniformBuffer(this._engine, undefined, false, "scene");
-        this._sceneUbo.addUniform("viewProjection", 16);
-        this._sceneUbo.addUniform("view", 16);
-        this._sceneUbo.addUniform("projection", 16);
-        this._sceneUbo.addUniform("vEyePosition", 4);
+        this.setSceneUniformBuffer(this.createSceneUniformBuffer());
     }
 
     /**
@@ -2127,6 +2123,29 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public getSceneUniformBuffer(): UniformBuffer {
         return this._multiviewSceneUbo ? this._multiviewSceneUbo : this._sceneUbo;
+    }
+
+    /**
+     * Creates a scene UBO
+     * @param name name of the uniform buffer (optional, for debugging purpose only)
+     * @returns a new ubo
+     */
+    public createSceneUniformBuffer(name?: string): UniformBuffer {
+        const sceneUbo = new UniformBuffer(this._engine, undefined, false, name ?? "scene");
+        sceneUbo.addUniform("viewProjection", 16);
+        sceneUbo.addUniform("view", 16);
+        sceneUbo.addUniform("projection", 16);
+        sceneUbo.addUniform("vEyePosition", 4);
+
+        return sceneUbo;
+    }
+
+    /**
+     * Sets the scene ubo
+     * @param ubo the ubo to set for the scene
+     */
+    public setSceneUniformBuffer(ubo: UniformBuffer): void {
+        this._sceneUbo = ubo;
     }
 
     /**
@@ -4110,7 +4129,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             this._intermediateRendering = false;
         }
 
-        this._engine._currentRenderPassId = Constants.RENDERPASS_MAIN;
+        this._engine.currentRenderPassId = Constants.RENDERPASS_MAIN;
 
         // Restore framebuffer after rendering to targets
         if (needRebind && !this.prePass) {
@@ -4427,7 +4446,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             this._renderId++;
         }
 
-        this._engine._currentRenderPassId = Constants.RENDERPASS_MAIN;
+        this._engine.currentRenderPassId = Constants.RENDERPASS_MAIN;
 
         // Restore back buffer
         this.activeCamera = currentActiveCamera;

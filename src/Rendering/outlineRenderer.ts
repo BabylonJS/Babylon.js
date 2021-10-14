@@ -116,7 +116,7 @@ export class OutlineRenderer implements ISceneComponent {
 
     private _engine: Engine;
     private _savedDepthWrite: boolean;
-    private _passIdForDrawWrapper: number;
+    private _passIdForDrawWrapper: number[];
 
     /**
      * Instantiates a new outline renderer. (There could be only one per scene).
@@ -126,7 +126,10 @@ export class OutlineRenderer implements ISceneComponent {
         this.scene = scene;
         this._engine = scene.getEngine();
         this.scene._addComponent(this);
-        this._passIdForDrawWrapper = this._engine._createRenderPassId();
+        this._passIdForDrawWrapper = [];
+        for (let i = 0; i < 4; ++i) {
+            this._passIdForDrawWrapper[i] = this._engine.createRenderPassId(`Outline Renderer (${i})`);
+        }
     }
 
     /**
@@ -149,7 +152,9 @@ export class OutlineRenderer implements ISceneComponent {
      * Disposes the component and the associated resources.
      */
     public dispose(): void {
-        // Nothing to do here.
+        for (let i = 0; i < this._passIdForDrawWrapper.length; ++i) {
+            this._engine.releaseRenderPassId(this._passIdForDrawWrapper[i]);
+        }
     }
 
     /**
@@ -157,14 +162,15 @@ export class OutlineRenderer implements ISceneComponent {
      * @param subMesh Defines the sumesh to render
      * @param batch Defines the batch of meshes in case of instances
      * @param useOverlay Defines if the rendering is for the overlay or the outline
+     * @param renderPassId Render pass id to use to render the mesh
      */
-    public render(subMesh: SubMesh, batch: _InstancesBatch, useOverlay: boolean = false): void {
+    public render(subMesh: SubMesh, batch: _InstancesBatch, useOverlay: boolean = false, renderPassId: number = 0): void {
         var scene = this.scene;
         var engine = scene.getEngine();
 
         var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null && batch.visibleInstances[subMesh._id] !== undefined || subMesh.getRenderingMesh().hasThinInstances);
 
-        if (!this.isReady(subMesh, hardwareInstancedRendering)) {
+        if (!this.isReady(subMesh, hardwareInstancedRendering, renderPassId)) {
             return;
         }
 
@@ -178,7 +184,7 @@ export class OutlineRenderer implements ISceneComponent {
             return;
         }
 
-        const drawWrapper = subMesh._getDrawWrapper(this._passIdForDrawWrapper)!;
+        const drawWrapper = subMesh._getDrawWrapper(renderPassId)!;
         const effect = DrawWrapper.GetEffect(drawWrapper)!;
 
         engine.enableEffect(drawWrapper);
@@ -233,16 +239,12 @@ export class OutlineRenderer implements ISceneComponent {
      * All the dependencies e.g. submeshes, texture, effect... mus be ready
      * @param subMesh Defines the submesh to check readiness for
      * @param useInstances Defines whether wee are trying to render instances or not
+     * @param renderPassId Render pass id to use to render the mesh
      * @returns true if ready otherwise false
      */
-    public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
+    public isReady(subMesh: SubMesh, useInstances: boolean, renderPassId: number = 0): boolean {
         var defines = [];
         var attribs = [VertexBuffer.PositionKind, VertexBuffer.NormalKind];
-
-        const subMeshEffect = subMesh._getDrawWrapper(this._passIdForDrawWrapper, true)!;
-
-        let effect = subMeshEffect.effect!;
-        let cachedDefines = subMeshEffect.defines;
 
         var mesh = subMesh.getMesh();
         var material = subMesh.getMaterial();
@@ -307,21 +309,22 @@ export class OutlineRenderer implements ISceneComponent {
         }
 
         // Get correct effect
-        var join = defines.join("\n");
+        const drawWrapper = subMesh._getDrawWrapper(renderPassId, true)!;
+        const cachedDefines = drawWrapper.defines;
+        const join = defines.join("\n");
+
         if (cachedDefines !== join) {
-            cachedDefines = join;
-            effect = this.scene.getEngine().createEffect("outline",
+            drawWrapper.setEffect(this.scene.getEngine().createEffect("outline",
                 attribs,
                 ["world", "mBones", "viewProjection", "diffuseMatrix", "offset", "color", "logarithmicDepthConstant",
                     "morphTargetInfluences", "morphTargetTextureInfo", "morphTargetTextureIndices"],
                 ["diffuseSampler", "morphTargets"], join,
                 undefined, undefined, undefined,
-                { maxSimultaneousMorphTargets: numMorphInfluencers });
+                { maxSimultaneousMorphTargets: numMorphInfluencers }),
+                join);
         }
 
-        subMeshEffect.setEffect(effect, cachedDefines);
-
-        return effect.isReady();
+        return drawWrapper.effect!.isReady();
     }
 
     private _beforeRenderingMesh(mesh: Mesh, subMesh: SubMesh, batch: _InstancesBatch): void {
@@ -341,7 +344,7 @@ export class OutlineRenderer implements ISceneComponent {
                 this._engine.setStencilMask(OutlineRenderer._StencilReference);
                 this._engine.setStencilFunctionReference(OutlineRenderer._StencilReference);
                 this._engine.stencilStateComposer.useStencilGlobalOnly = true;
-                this.render(subMesh, batch, /* This sets offset to 0 */ true);
+                this.render(subMesh, batch, /* This sets offset to 0 */ true, this._passIdForDrawWrapper[1]);
 
                 this._engine.setColorWrite(true);
                 this._engine.setStencilFunction(Constants.NOTEQUAL);
@@ -349,7 +352,7 @@ export class OutlineRenderer implements ISceneComponent {
 
             // Draw the outline using the above stencil if needed to avoid drawing within the mesh
             this._engine.setDepthWrite(false);
-            this.render(subMesh, batch);
+            this.render(subMesh, batch, false, this._passIdForDrawWrapper[0]);
             this._engine.setDepthWrite(this._savedDepthWrite);
 
             if (material && material.needAlphaBlendingForMesh(mesh)) {
@@ -365,7 +368,7 @@ export class OutlineRenderer implements ISceneComponent {
             var currentMode = this._engine.getAlphaMode();
             let alphaBlendState = this._engine.alphaState.alphaBlend;
             this._engine.setAlphaMode(Constants.ALPHA_COMBINE);
-            this.render(subMesh, batch, true);
+            this.render(subMesh, batch, true, this._passIdForDrawWrapper[3]);
             this._engine.setAlphaMode(currentMode);
             this._engine.setDepthWrite(this._savedDepthWrite);
             this._engine.alphaState.alphaBlend = alphaBlendState;
@@ -375,7 +378,7 @@ export class OutlineRenderer implements ISceneComponent {
         if (mesh.renderOutline && this._savedDepthWrite) {
             this._engine.setDepthWrite(true);
             this._engine.setColorWrite(false);
-            this.render(subMesh, batch);
+            this.render(subMesh, batch, false, this._passIdForDrawWrapper[2]);
             this._engine.setColorWrite(true);
         }
     }

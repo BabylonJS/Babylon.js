@@ -151,7 +151,7 @@ export class PrePassRenderer {
         } else {
             this._currentTarget = this.defaultRT;
         }
-        this._engine._currentRenderPassId = this._currentTarget._renderPassId;
+        this._engine.currentRenderPassId = this._currentTarget.renderPassId;
     }
 
     /**

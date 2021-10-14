@@ -1209,14 +1209,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
             if (generator && (!generator.getShadowMap()?.renderList || (generator.getShadowMap()?.renderList && generator.getShadowMap()?.renderList?.indexOf(this) !== -1))) {
                 if (generator.getShadowMap()) {
-                    engine._currentRenderPassId = generator.getShadowMap()!._renderPassId;
+                    engine.currentRenderPassId = generator.getShadowMap()!.renderPassId;
                 }
                 for (var subMesh of this.subMeshes) {
                     if (!generator.isReady(subMesh, hardwareInstancedRendering, subMesh.getMaterial()?.needAlphaBlendingForMesh(this) ?? false)) {
                         return false;
                     }
                 }
-                engine._currentRenderPassId = Constants.RENDERPASS_MAIN;
+                engine.currentRenderPassId = Constants.RENDERPASS_MAIN;
             }
         }
 
