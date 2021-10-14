@@ -179,13 +179,12 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
                 continue;
             }
 
-            if (this._engine._features.createDrawWrapperPerRenderPass) {
-                const renderTarget = (<RenderTargetTexture>(<any>layer)._mainTexture);
-                this._engine.currentRenderPassId = renderTarget.renderPassId;
-            }
+            const renderTarget = (<RenderTargetTexture>(<any>layer)._mainTexture);
+            this._engine.currentRenderPassId = renderTarget.renderPassId;
 
             for (var subMesh of mesh.subMeshes) {
                 if (!layer.isReady(subMesh, hardwareInstancedRendering)) {
+                    this._engine.currentRenderPassId = currentRenderPassId;
                     return false;
                 }
             }

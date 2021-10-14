@@ -23,7 +23,6 @@ import { _WarnImport } from '../Misc/devTools';
 export class DepthRenderer {
     private _scene: Scene;
     private _depthMap: RenderTargetTexture;
-    private _passIdForDrawWrapper: number;
     private readonly _storeNonLinearDepth: boolean;
     private readonly _clearColor: Color4;
 
@@ -73,9 +72,6 @@ export class DepthRenderer {
 
         var engine = scene.getEngine();
 
-        if (!engine._features.createDrawWrapperPerRenderPass) {
-            this._passIdForDrawWrapper = engine.createRenderPassId("DepthRenderer");
-        }
         this._camera = camera;
 
         if (samplingMode !== Texture.NEAREST_SAMPLINGMODE) {
@@ -153,7 +149,7 @@ export class DepthRenderer {
             if (this.isReady(subMesh, hardwareInstancedRendering) && camera) {
                 subMesh._renderId = scene.getRenderId();
 
-                const drawWrapper = subMesh._getDrawWrapper(this._passIdForDrawWrapper)!;
+                const drawWrapper = subMesh._getDrawWrapper()!;
                 const effect = DrawWrapper.GetEffect(drawWrapper)!;
                 const cameraIsOrtho = camera.mode === Camera.ORTHOGRAPHIC_CAMERA;
 
@@ -337,7 +333,7 @@ export class DepthRenderer {
         }
 
         // Get correct effect
-        const drawWrapper = subMesh._getDrawWrapper(this._passIdForDrawWrapper, true)!;
+        const drawWrapper = subMesh._getDrawWrapper(undefined, true)!;
         const cachedDefines = drawWrapper.defines;
         const join = defines.join("\n");
         if (cachedDefines !== join) {
@@ -365,8 +361,5 @@ export class DepthRenderer {
      */
     public dispose(): void {
         this._depthMap.dispose();
-        if (this._passIdForDrawWrapper !== undefined) {
-            this._scene.getEngine().releaseRenderPassId(this._passIdForDrawWrapper);
-        }
     }
 }

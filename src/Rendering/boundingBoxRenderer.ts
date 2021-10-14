@@ -281,7 +281,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
             if (boundingBox._tag !== renderingGroupId) {
                 continue;
             }
-            if (!boundingBox._drawWrapperFront && engine._features.createDrawWrapperPerRenderPass) {
+            if (!boundingBox._drawWrapperFront) {
                 boundingBox._drawWrapperFront = new DrawWrapper(engine);
                 boundingBox._drawWrapperBack = new DrawWrapper(engine);
 

@@ -172,7 +172,6 @@ export class NullEngine extends Engine {
             needsInvertingBitmap: false,
             useUBOBindingCache: false,
             needShaderCodeInlining: false,
-            createDrawWrapperPerRenderPass: false,
             _collectUbosUpdatedInFrame: false,
         };
 
