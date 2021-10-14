@@ -11,7 +11,7 @@ import { Scene } from '../../../scene';
  */
 export class CloudBlock extends NodeMaterialBlock {
     /** Gets or sets the number of octaves */
-    @editableInPropertyPage("Octaves", PropertyTypeForEdition.Float)
+    @editableInPropertyPage("Octaves", PropertyTypeForEdition.Int)
     public octaves = 6.0;
 
     /**
