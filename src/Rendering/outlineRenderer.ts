@@ -164,7 +164,9 @@ export class OutlineRenderer implements ISceneComponent {
      * @param useOverlay Defines if the rendering is for the overlay or the outline
      * @param renderPassId Render pass id to use to render the mesh
      */
-    public render(subMesh: SubMesh, batch: _InstancesBatch, useOverlay: boolean = false, renderPassId: number = 0): void {
+    public render(subMesh: SubMesh, batch: _InstancesBatch, useOverlay: boolean = false, renderPassId?: number): void {
+        renderPassId = renderPassId ?? this._passIdForDrawWrapper[0];
+
         var scene = this.scene;
         var engine = scene.getEngine();
 
@@ -242,7 +244,9 @@ export class OutlineRenderer implements ISceneComponent {
      * @param renderPassId Render pass id to use to render the mesh
      * @returns true if ready otherwise false
      */
-    public isReady(subMesh: SubMesh, useInstances: boolean, renderPassId: number = 0): boolean {
+    public isReady(subMesh: SubMesh, useInstances: boolean, renderPassId?: number): boolean {
+        renderPassId = renderPassId ?? this._passIdForDrawWrapper[0];
+
         var defines = [];
         var attribs = [VertexBuffer.PositionKind, VertexBuffer.NormalKind];
 
