@@ -1407,7 +1407,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         if ((<AbstractMesh>this.emitter).position) {
             var emitterMesh = (<AbstractMesh>this.emitter);
-            this._emitterWorldMatrix = emitterMesh.getWorldMatrix();    
+            this._emitterWorldMatrix = emitterMesh.getWorldMatrix();
         } else {
             var emitterPosition = (<Vector3>this.emitter);
             this._emitterWorldMatrix = Matrix.Translation(emitterPosition.x, emitterPosition.y, emitterPosition.z);
