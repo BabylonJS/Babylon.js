@@ -199,7 +199,7 @@ export class EdgesRenderer implements IEdgesRenderer {
     protected _linesIndices = new Array<number>();
     protected _epsilon: number;
     protected _indicesCount: number;
-    protected _drawWrapper: DrawWrapper;
+    protected _drawWrapper?: DrawWrapper;
 
     protected _lineShader: ShaderMaterial;
     protected _ib: DataBuffer;
@@ -278,7 +278,9 @@ export class EdgesRenderer implements IEdgesRenderer {
         this._options = options ?? null;
 
         this._epsilon = epsilon;
-        this._drawWrapper = new DrawWrapper(source.getEngine());
+        if (this._source.getScene().getEngine().isWebGPU) {
+            this._drawWrapper = new DrawWrapper(source.getEngine());
+        }
 
         this._prepareRessources();
         if (generateEdgesLines) {
@@ -879,7 +881,9 @@ export class EdgesRenderer implements IEdgesRenderer {
         const scene = this._source.getScene();
 
         let currentDrawWrapper = this._lineShader._getDrawWrapper();
-        this._lineShader._setDrawWrapper(this._drawWrapper);
+        if (this._drawWrapper) {
+            this._lineShader._setDrawWrapper(this._drawWrapper);
+        }
 
         if (!this.isReady() || !scene.activeCamera) {
             this._lineShader._setDrawWrapper(currentDrawWrapper);
