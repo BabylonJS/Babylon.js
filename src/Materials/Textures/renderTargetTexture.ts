@@ -351,12 +351,12 @@ export class RenderTargetTexture extends Texture {
         this.name = name;
         this.isRenderTarget = true;
         this._initialSizeParameter = size;
-        if (engine._features.createDrawWrapperPerRenderPass) {
-            this._renderPassIds = [];
-            this.__isCube = isCube;
-        }
+        this._renderPassIds = [];
+        this.__isCube = isCube;
 
         this._processSizeParameter(size);
+
+        this.renderPassId = this._renderPassIds[0];
 
         this._resizeObserver = engine.onResizeObservable.add(() => {
         });
@@ -416,13 +416,11 @@ export class RenderTargetTexture extends Texture {
     }
 
     private _releaseRenderPassId(): void {
-        if (this._renderPassIds) {
-            const engine = this._engine!;
-            for (let i = 0; i < this._renderPassIds.length; ++i) {
-                engine.releaseRenderPassId(this._renderPassIds[i]);
-            }
-            this._renderPassIds = [];
+        const engine = this._engine!;
+        for (let i = 0; i < this._renderPassIds.length; ++i) {
+            engine.releaseRenderPassId(this._renderPassIds[i]);
         }
+        this._renderPassIds = [];
     }
 
     private _createRenderPassId(): void {
@@ -448,9 +446,7 @@ export class RenderTargetTexture extends Texture {
             this._size = <number | { width: number, height: number, layers?: number }>size;
         }
 
-        if (this.getScene()!.getEngine()._features.createDrawWrapperPerRenderPass) {
-            this._createRenderPassId();
-        }
+        this._createRenderPassId();
     }
 
     /**
@@ -935,17 +931,12 @@ export class RenderTargetTexture extends Texture {
         // Bind
         this._prepareFrame(scene, faceIndex, layer, useCameraPostProcess);
 
-        const createDrawWrapperPerRenderPass = this.getScene()!.getEngine()._features.createDrawWrapperPerRenderPass;
         if (this.is2DArray) {
-            if (createDrawWrapperPerRenderPass) {
-                engine.currentRenderPassId = this._renderPassIds[layer];
-            }
+            engine.currentRenderPassId = this._renderPassIds[layer];
             this.onBeforeRenderObservable.notifyObservers(layer);
         }
         else {
-            if (createDrawWrapperPerRenderPass) {
-                engine.currentRenderPassId = this._renderPassIds[faceIndex];
-            }
+            engine.currentRenderPassId = this._renderPassIds[faceIndex];
             this.onBeforeRenderObservable.notifyObservers(faceIndex);
         }
 

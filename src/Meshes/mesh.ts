@@ -1204,6 +1204,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Shadows
+        const currentRenderPassId = engine.currentRenderPassId;
         for (var light of this.lightSources) {
             let generator = light.getShadowGenerator();
 
@@ -1213,10 +1214,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 }
                 for (var subMesh of this.subMeshes) {
                     if (!generator.isReady(subMesh, hardwareInstancedRendering, subMesh.getMaterial()?.needAlphaBlendingForMesh(this) ?? false)) {
+                        engine.currentRenderPassId = currentRenderPassId;
                         return false;
                     }
                 }
-                engine.currentRenderPassId = Constants.RENDERPASS_MAIN;
+                engine.currentRenderPassId = currentRenderPassId;
             }
         }
 

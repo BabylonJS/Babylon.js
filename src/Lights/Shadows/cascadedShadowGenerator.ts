@@ -106,19 +106,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         }
 
         this._numCascades = value;
-        this._setNamesForDrawWrapper();
         this.recreateShadowMap();
-    }
-
-    private _setNamesForDrawWrapper(): void {
-        this._releaseRenderPassId();
-        // If createDrawWrapperPerRenderPass is true, we will use the render pass ids of the RenderTargetTexture, we don't need to create new ones
-        if (!this._scene.getEngine()._features.createDrawWrapperPerRenderPass) {
-            this._passIdForDrawWrapper.length = this._numCascades;
-            for (let i = 0; i < this._numCascades; ++i) {
-                this._passIdForDrawWrapper[i] = this._scene.getEngine().createRenderPassId(`CascadedShadowGenerator - light name=${this._light.name} cascade=${i}`);
-            }
-        }
     }
 
     /**
@@ -740,7 +728,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             return;
         }
 
-        super(mapSize, light, usefulFloatFirst, true);
+        super(mapSize, light, usefulFloatFirst);
 
         this.usePercentageCloserFiltering = true;
     }
@@ -748,7 +736,6 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     protected _initializeGenerator(): void {
         this.penumbraDarkness = this.penumbraDarkness ?? 1.0;
         this._numCascades = this._numCascades ?? CascadedShadowGenerator.DEFAULT_CASCADES_COUNT;
-        this._setNamesForDrawWrapper();
         this.stabilizeCascades = this.stabilizeCascades ?? false;
         this._freezeShadowCastersBoundingInfoObservable = this._freezeShadowCastersBoundingInfoObservable ?? null;
         this.freezeShadowCastersBoundingInfo = this.freezeShadowCastersBoundingInfo ?? false;
@@ -825,7 +812,6 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         this._shadowMap.onBeforeRenderObservable.clear();
 
         this._shadowMap.onBeforeRenderObservable.add((layer: number) => {
-            this._passIdForDrawWrapperCurrent = this._scene.getEngine()._features.createDrawWrapperPerRenderPass ? this._shadowMap!.renderPassId : this._passIdForDrawWrapper[layer];
             this._currentLayer = layer;
             if (this._filter === ShadowGenerator.FILTER_PCF) {
                 engine.setColorWrite(false);
@@ -838,7 +824,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         });
 
         this._shadowMap.onBeforeBindObservable.add(() => {
-            engine._debugPushGroup?.(`cascaded shadow map generation for pass id ${this._passIdForDrawWrapper}`, 1);
+            engine._debugPushGroup?.(`cascaded shadow map generation for pass id ${engine.currentRenderPassId}`, 1);
             if (this._breaksAreDirty) {
                 this._splitFrustum();
             }

@@ -60,9 +60,6 @@ export interface EngineFeatures {
     /** Indicates that the inliner should be run over every shader code */
     needShaderCodeInlining: boolean;
 
-    /** Indicates that a draw wrapper should be created for each new render pass */
-    createDrawWrapperPerRenderPass: boolean;
-
     /** @hidden */
     _collectUbosUpdatedInFrame: boolean;
 }

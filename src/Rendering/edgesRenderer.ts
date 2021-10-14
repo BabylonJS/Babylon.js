@@ -199,7 +199,7 @@ export class EdgesRenderer implements IEdgesRenderer {
     protected _linesIndices = new Array<number>();
     protected _epsilon: number;
     protected _indicesCount: number;
-    protected _drawWrapper?: DrawWrapper;
+    protected _drawWrapper: DrawWrapper;
 
     protected _lineShader: ShaderMaterial;
     protected _ib: DataBuffer;
@@ -255,7 +255,7 @@ export class EdgesRenderer implements IEdgesRenderer {
 
             shader.disableDepthWrite = true;
             shader.backFaceCulling = false;
-            shader.checkReadyOnEveryCall = scene.getEngine()._features.createDrawWrapperPerRenderPass;
+            shader.checkReadyOnEveryCall = scene.getEngine().isWebGPU;
 
             scene._edgeRenderLineShader = shader;
         }
@@ -278,9 +278,7 @@ export class EdgesRenderer implements IEdgesRenderer {
         this._options = options ?? null;
 
         this._epsilon = epsilon;
-        if (source.getEngine()._features.createDrawWrapperPerRenderPass) {
-            this._drawWrapper = new DrawWrapper(source.getEngine());
-        }
+        this._drawWrapper = new DrawWrapper(source.getEngine());
 
         this._prepareRessources();
         if (generateEdgesLines) {
@@ -880,16 +878,11 @@ export class EdgesRenderer implements IEdgesRenderer {
     public render(): void {
         const scene = this._source.getScene();
 
-        let currentDrawWrapper: DrawWrapper | undefined;
-        if (this._drawWrapper) {
-            currentDrawWrapper = this._lineShader._getDrawWrapper();
-            this._lineShader._setDrawWrapper(this._drawWrapper);
-        }
+        let currentDrawWrapper = this._lineShader._getDrawWrapper();
+        this._lineShader._setDrawWrapper(this._drawWrapper);
 
         if (!this.isReady() || !scene.activeCamera) {
-            if (currentDrawWrapper) {
-                this._lineShader._setDrawWrapper(currentDrawWrapper);
-            }
+            this._lineShader._setDrawWrapper(currentDrawWrapper);
             return;
         }
 
@@ -967,9 +960,7 @@ export class EdgesRenderer implements IEdgesRenderer {
             this.customInstances.reset();
         }
 
-        if (currentDrawWrapper) {
-            this._lineShader._setDrawWrapper(currentDrawWrapper);
-        }
+        this._lineShader._setDrawWrapper(currentDrawWrapper);
     }
 }
 

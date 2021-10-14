@@ -807,8 +807,6 @@ export class ShadowGenerator implements IShadowGenerator {
     protected _defaultTextureMatrix = Matrix.Identity();
     protected _storedUniqueId: Nullable<number>;
     protected _useUBO: boolean;
-    protected _passIdForDrawWrapper: number[];
-    protected _passIdForDrawWrapperCurrent: number;
 
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
@@ -836,25 +834,14 @@ export class ShadowGenerator implements IShadowGenerator {
      * @param mapSize The size of the texture what stores the shadows. Example : 1024.
      * @param light The light object generating the shadows.
      * @param usefullFloatFirst By default the generator will try to use half float textures but if you need precision (for self shadowing for instance), you can use this option to enforce full float texture.
-     * @param delayPassIdCreation true to delay the creation of the pass id(s) used by the shadow generator (normally only used by subclasses of ShadowGenerator)
      */
-    constructor(mapSize: number, light: IShadowLight, usefullFloatFirst?: boolean, delayPassIdCreation = false) {
+    constructor(mapSize: number, light: IShadowLight, usefullFloatFirst?: boolean) {
         this._mapSize = mapSize;
         this._light = light;
         this._scene = light.getScene();
         light._shadowGenerator = this;
         this.id = light.id;
         this._useUBO = this._scene.getEngine().supportsUniformBuffers;
-
-        // If createDrawWrapperPerRenderPass is true, we will use the render pass ids of the RenderTargetTexture, we don't need to create new ones
-        if (!delayPassIdCreation && !this._scene.getEngine()._features.createDrawWrapperPerRenderPass) {
-            this._passIdForDrawWrapper = [this._scene.getEngine().createRenderPassId(`ShadowGenerator - light name=${this._light.name}`)];
-            if (light.needCube()) {
-                for (let i = 1; i < 6; ++i) {
-                    this._passIdForDrawWrapper[i] = this._scene.getEngine().createRenderPassId(`ShadowGenerator - light name=${this._light.name} face=${i}`);
-                }
-            }
-        }
 
         ShadowGenerator._SceneComponentInitialization(this._scene);
 
@@ -933,12 +920,11 @@ export class ShadowGenerator implements IShadowGenerator {
         let engine = this._scene.getEngine();
 
         this._shadowMap.onBeforeBindObservable.add(() => {
-            engine._debugPushGroup?.(`shadow map generation for pass id ${this._passIdForDrawWrapper}`, 1);
+            engine._debugPushGroup?.(`shadow map generation for pass id ${engine.currentRenderPassId}`, 1);
         });
 
         // Record Face Index before render.
         this._shadowMap.onBeforeRenderObservable.add((faceIndex: number) => {
-            this._passIdForDrawWrapperCurrent = this._scene.getEngine()._features.createDrawWrapperPerRenderPass ? this._shadowMap!.renderPassId : this._passIdForDrawWrapper[faceIndex];
             this._currentFaceIndex = faceIndex;
             if (this._filter === ShadowGenerator.FILTER_PCF) {
                 engine.setColorWrite(false);
@@ -1119,7 +1105,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
             const shadowDepthWrapper = material.shadowDepthWrapper;
 
-            const drawWrapper = shadowDepthWrapper?.getEffect(subMesh, this, this._passIdForDrawWrapperCurrent) ?? subMesh._getDrawWrapper(this._passIdForDrawWrapperCurrent)!;
+            const drawWrapper = shadowDepthWrapper?.getEffect(subMesh, this, engine.currentRenderPassId) ?? subMesh._getDrawWrapper()!;
             const effect = DrawWrapper.GetEffect(drawWrapper)!;
 
             engine.enableEffect(drawWrapper);
@@ -1365,11 +1351,11 @@ export class ShadowGenerator implements IShadowGenerator {
         this._prepareShadowDefines(subMesh, useInstances, defines, isTransparent);
 
         if (shadowDepthWrapper) {
-            if (!shadowDepthWrapper.isReadyForSubMesh(subMesh, defines, this, useInstances, this._passIdForDrawWrapperCurrent)) {
+            if (!shadowDepthWrapper.isReadyForSubMesh(subMesh, defines, this, useInstances, this._scene.getEngine().currentRenderPassId)) {
                 return false;
             }
         } else {
-            const subMeshEffect = subMesh._getDrawWrapper(this._passIdForDrawWrapperCurrent, true)!;
+            const subMeshEffect = subMesh._getDrawWrapper(undefined, true)!;
 
             let effect = subMeshEffect.effect!;
             let cachedDefines = subMeshEffect.defines;
@@ -1784,23 +1770,12 @@ export class ShadowGenerator implements IShadowGenerator {
         this._disposeBlurPostProcesses();
     }
 
-    protected _releaseRenderPassId(): void {
-        const engine = this._scene.getEngine();
-        if (this._passIdForDrawWrapper) {
-            for (let i = 0; i < this._passIdForDrawWrapper.length; ++i) {
-                engine.releaseRenderPassId(this._passIdForDrawWrapper[i]);
-            }
-            this._passIdForDrawWrapper = [];
-        }
-    }
-
     /**
      * Disposes the ShadowGenerator.
      * Returns nothing.
      */
     public dispose(): void {
         this._disposeRTTandPostProcesses();
-        this._releaseRenderPassId();
 
         if (this._light) {
             this._light._shadowGenerator = null;

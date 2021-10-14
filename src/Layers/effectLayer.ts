@@ -73,8 +73,6 @@ export abstract class EffectLayer {
 
     private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
     private _indexBuffer: Nullable<DataBuffer>;
-    private _cachedDefines: string;
-    private _effectLayerMapGenerationDrawWrapper: DrawWrapper;
     private _effectLayerOptions: IEffectLayerOptions;
     private _mergeDrawWrapper: DrawWrapper;
 
@@ -189,7 +187,6 @@ export abstract class EffectLayer {
         this._maxSize = this._engine.getCaps().maxTextureSize;
         this._scene.effectLayers.push(this);
 
-        this._effectLayerMapGenerationDrawWrapper = new DrawWrapper(this._engine);
         this._mergeDrawWrapper = new DrawWrapper(this._engine);
 
         // Generate Buffers
@@ -562,15 +559,10 @@ export abstract class EffectLayer {
         this._addCustomEffectDefines(defines);
 
         // Get correct effect
-        let cachedDefines = this._cachedDefines;
-        let drawWrapper = this._effectLayerMapGenerationDrawWrapper;
-        if (this._engine._features.createDrawWrapperPerRenderPass) {
-            drawWrapper = subMesh._getDrawWrapper(undefined, true)!;
-            cachedDefines = drawWrapper.defines as string;
-        }
+        const drawWrapper = subMesh._getDrawWrapper(undefined, true)!;
+        const cachedDefines = drawWrapper.defines as string;
         const join = defines.join("\n");
         if (cachedDefines !== join) {
-            this._cachedDefines = join;
             drawWrapper.setEffect(this._engine.createEffect("glowMapGeneration",
                 attribs,
                 ["world", "mBones", "viewProjection",
@@ -746,7 +738,7 @@ export abstract class EffectLayer {
             renderingMesh.render(subMesh, hardwareInstancedRendering, replacementMesh || undefined);
         }
         else if (this._isReady(subMesh, hardwareInstancedRendering, this._emissiveTextureAndColor.texture)) {
-            const drawWrapper = this._engine._features.createDrawWrapperPerRenderPass ? subMesh._getDrawWrapper()! : this._effectLayerMapGenerationDrawWrapper;
+            const drawWrapper = subMesh._getDrawWrapper()!;
             const effect = drawWrapper.effect!;
 
             engine.enableEffect(drawWrapper);

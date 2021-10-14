@@ -1311,41 +1311,21 @@ export class Material implements IAnimatable {
         }
 
         const meshes = this.getScene().meshes;
-        const engine = this.getScene().getEngine();
-        if (engine._features.createDrawWrapperPerRenderPass) {
-            for (const mesh of meshes) {
-                if (!mesh.subMeshes) {
-                    continue;
-                }
-                for (const subMesh of mesh.subMeshes) {
-                    if (subMesh.getMaterial() !== this) {
-                        continue;
-                    }
-
-                    const drawWrapper = subMesh._getDrawWrapper(Constants.RENDERPASS_MAIN);
-                    if (!drawWrapper || !drawWrapper.defines || !(drawWrapper.defines as MaterialDefines).markAllAsDirty) {
-                        continue;
-                    }
-
-                    func(drawWrapper.defines as MaterialDefines);
-                }
+        for (const mesh of meshes) {
+            if (!mesh.subMeshes) {
+                continue;
             }
-        } else {
-            for (var mesh of meshes) {
-                if (!mesh.subMeshes) {
+            for (const subMesh of mesh.subMeshes) {
+                if (subMesh.getMaterial() !== this) {
                     continue;
                 }
-                for (var subMesh of mesh.subMeshes) {
-                    if (subMesh.getMaterial() !== this) {
-                        continue;
-                    }
 
-                    if (!subMesh.materialDefines) {
-                        continue;
-                    }
-
-                    func(subMesh.materialDefines);
+                const drawWrapper = subMesh._getDrawWrapper(Constants.RENDERPASS_MAIN);
+                if (!drawWrapper || !drawWrapper.defines || !(drawWrapper.defines as MaterialDefines).markAllAsDirty) {
+                    continue;
                 }
+
+                func(drawWrapper.defines as MaterialDefines);
             }
         }
     }

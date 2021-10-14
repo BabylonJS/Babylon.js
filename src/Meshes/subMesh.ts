@@ -35,28 +35,20 @@ export class SubMesh implements ICullable {
      * Gets material defines used by the effect associated to the sub mesh
      */
     public get materialDefines(): Nullable<MaterialDefines> {
-        if (this._engine._features.createDrawWrapperPerRenderPass) {
-            return this._mainDrawWrapperOverride ? (this._mainDrawWrapperOverride.defines as MaterialDefines) : this._getDrawWrapper()?.defines as Nullable<MaterialDefines>;
-        }
-        return this._mainDrawWrapperOverride ? (this._mainDrawWrapperOverride.defines as MaterialDefines) : (this._mainDrawWrapper.defines as MaterialDefines);
+        return this._mainDrawWrapperOverride ? (this._mainDrawWrapperOverride.defines as MaterialDefines) : this._getDrawWrapper()?.defines as Nullable<MaterialDefines>;
     }
 
     /**
      * Sets material defines used by the effect associated to the sub mesh
      */
     public set materialDefines(defines: Nullable<MaterialDefines>) {
-        let drawWrapper;
-        if (this._engine._features.createDrawWrapperPerRenderPass) {
-            drawWrapper = this._mainDrawWrapperOverride ?? this._getDrawWrapper(undefined, true)!;
-        } else {
-            drawWrapper = this._mainDrawWrapperOverride ?? this._mainDrawWrapper;
-        }
+        const drawWrapper = this._mainDrawWrapperOverride ?? this._getDrawWrapper(undefined, true)!;
         drawWrapper.defines = defines;
     }
 
     /** @hidden */
     public _getDrawWrapper(passId?: number, createIfNotExisting = false): DrawWrapper | undefined {
-        passId = passId ?? (this._engine._features.createDrawWrapperPerRenderPass ? this._engine.currentRenderPassId : Constants.RENDERPASS_MAIN);
+        passId = passId ?? this._engine.currentRenderPassId;
         if (passId === Constants.RENDERPASS_MAIN) {
             return this._mainDrawWrapper;
         }
@@ -76,12 +68,12 @@ export class SubMesh implements ICullable {
      * Gets associated (main) effect (possibly the effect override if defined)
      */
     public get effect(): Nullable<Effect> {
-        return this._mainDrawWrapperOverride ? this._mainDrawWrapperOverride.effect : !this._engine._features.createDrawWrapperPerRenderPass ? this._mainDrawWrapper.effect : this._getDrawWrapper()?.effect ?? null;
+        return this._mainDrawWrapperOverride ? this._mainDrawWrapperOverride.effect : (this._getDrawWrapper()?.effect ?? null);
     }
 
     /** @hidden */
     public get _drawWrapper(): DrawWrapper {
-        return this._mainDrawWrapperOverride ?? (!this._engine._features.createDrawWrapperPerRenderPass ? this._mainDrawWrapper : this._getDrawWrapper(undefined, true)!);
+        return this._mainDrawWrapperOverride ?? this._getDrawWrapper(undefined, true)!;
     }
 
     /** @hidden */
