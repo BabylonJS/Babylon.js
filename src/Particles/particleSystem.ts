@@ -65,6 +65,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     public updateFunction: (particles: Particle[]) => void;
 
     private _emitterWorldMatrix: Matrix;
+    private _emitterInverseWorldMatrix: Matrix = Matrix.Identity();
 
     /**
      * This function can be defined to specify initial direction for every new particle.
@@ -1406,13 +1407,13 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         if ((<AbstractMesh>this.emitter).position) {
             var emitterMesh = (<AbstractMesh>this.emitter);
-            this._emitterWorldMatrix = emitterMesh.getWorldMatrix();
-
+            this._emitterWorldMatrix = emitterMesh.getWorldMatrix();    
         } else {
             var emitterPosition = (<Vector3>this.emitter);
             this._emitterWorldMatrix = Matrix.Translation(emitterPosition.x, emitterPosition.y, emitterPosition.z);
         }
 
+        this._emitterWorldMatrix.invertToRef(this._emitterInverseWorldMatrix);
         this.updateFunction(this._particles);
 
         // Add new ones
@@ -1464,7 +1465,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                 this.startDirectionFunction(this._emitterWorldMatrix, particle.direction, particle, this.isLocal);
             }
             else {
-                this.particleEmitterType.startDirectionFunction(this._emitterWorldMatrix, particle.direction, particle, this.isLocal);
+                this.particleEmitterType.startDirectionFunction(this._emitterWorldMatrix, particle.direction, particle, this.isLocal, this._emitterInverseWorldMatrix);
             }
 
             if (emitPower === 0) {

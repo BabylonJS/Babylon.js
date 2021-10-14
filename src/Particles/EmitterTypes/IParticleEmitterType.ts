@@ -17,8 +17,9 @@ export interface IParticleEmitterType {
      * @param directionToUpdate is the direction vector to update with the result
      * @param particle is the particle we are computed the direction for
      * @param isLocal defines if the direction should be set in local space
+     * @param inverseWorldMatrix defines the inverted world matrix to use if isLocal is false
      */
-    startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
+    startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean, inverseWorldMatrix: Matrix): void;
 
     /**
      * Called by the particle System when the position is computed for the created particle.
