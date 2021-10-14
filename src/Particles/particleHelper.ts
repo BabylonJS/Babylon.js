@@ -69,7 +69,7 @@ export class ParticleHelper {
      * This is the main static method (one-liner) of this helper to create different particle systems
      * @param type This string represents the type to the particle system to create
      * @param scene The scene where the particle system should live
-     * @param gpu If the system will use gpu     
+     * @param gpu If the system will use gpu
      * @param capacity defines the system capacity (if null or undefined the sotred capacity will be used)
      * @returns the ParticleSystemSet created
      */
@@ -164,7 +164,7 @@ export class ParticleHelper {
      * @param snippetId defines the snippet to load (can be set to _BLANK to create a default one)
      * @param scene defines the hosting scene
      * @param gpu If the system will use gpu
-     * @param rootUrl defines the root URL to use to load textures and relative dependencies     
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @param capacity defines the system capacity (if null or undefined the sotred capacity will be used)
      * @returns a promise that will resolve to the new particle system
      */
