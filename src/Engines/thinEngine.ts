@@ -461,7 +461,7 @@ export class ThinEngine {
     protected _compiledEffects: { [key: string]: Effect } = {};
     private _vertexAttribArraysEnabled: boolean[] = [];
     /** @hidden */
-    protected _cachedViewport: Nullable<IViewportLike>;
+    public _cachedViewport: Nullable<IViewportLike>;
     private _cachedVertexArrayObject: Nullable<WebGLVertexArrayObject>;
     /** @hidden */
     protected _cachedVertexBuffers: any;
