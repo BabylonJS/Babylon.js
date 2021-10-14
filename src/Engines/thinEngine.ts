@@ -475,12 +475,46 @@ export class ThinEngine {
     protected _cachedEffectForVertexBuffers: Nullable<Effect>;
 
     protected static _RenderPassIdCounter = 0;
-    /** @hidden */
-    public _currentRenderPassId = Constants.RENDERPASS_MAIN;
+    /**
+     * Gets or sets the current render pass id
+     */
+    public currentRenderPassId = Constants.RENDERPASS_MAIN;
 
-    public _createRenderPassId() {
-        // note: render pass id == 0 is always for the main render pass
-        return ++ThinEngine._RenderPassIdCounter;
+    private _renderPassNames: string[] = ["main"];
+    /**
+     * Gets the names of the render passes that are currently created
+     * @returns list of the render pass names
+     */
+    public getRenderPassNames(): string[] {
+        return this._renderPassNames;
+    }
+
+    /**
+     * Gets the name of the current render pass
+     * @returns name of the current render pass
+     */
+    public getCurrentRenderPassName(): string {
+        return this._renderPassNames[this.currentRenderPassId];
+    }
+
+    /**
+     * Creates a render pass id
+     * @param name Name of the render pass (for debug purpose only)
+     * @returns the id of the new render pass
+     */
+    public createRenderPassId(name?: string) {
+        // Note: render pass id == 0 is always for the main render pass
+        const id = ++ThinEngine._RenderPassIdCounter;
+        this._renderPassNames[id] = name ?? "NONAME";
+        return id;
+    }
+
+    /**
+     * Releases a render pass id
+     * @param id id of the render pass to release
+     */
+    public releaseRenderPassId(id: number): void {
+        this._renderPassNames[id] = undefined as any;
     }
 
     /** @hidden */

@@ -1372,7 +1372,7 @@ export class StandardMaterial extends PushMaterial {
      * Unbinds the material from the mesh
      */
     public unbind(): void {
-        if (this._activeEffect) {
+        if (this._activeEffect && !this.getScene().getEngine().isWebGPU) {
             let needFlag = false;
             if (this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
                 this._activeEffect.setTexture("reflection2DSampler", null);

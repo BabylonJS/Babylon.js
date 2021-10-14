@@ -254,8 +254,12 @@ export class RenderTargetTexture extends Texture {
     protected _renderTargetOptions: RenderTargetCreationOptions;
     private _canRescale = true;
     protected _renderTarget: Nullable<RenderTargetWrapper> = null;
-    /** @hidden */
-    public _renderPassId: number;
+    /**
+     * Current render pass id of the render target texture. Note it can change over the rendering as there's a separate id for each face of a cube / each layer of an array layer!
+     */
+    public renderPassId: number;
+    private _renderPassIds: number[];
+    private __isCube: boolean;
     /**
      * Gets render target creation options that were used.
      */
@@ -347,7 +351,10 @@ export class RenderTargetTexture extends Texture {
         this.name = name;
         this.isRenderTarget = true;
         this._initialSizeParameter = size;
-        this._renderPassId = engine._createRenderPassId();
+        if (engine._features.createDrawWrapperPerRenderPass) {
+            this._renderPassIds = [];
+            this.__isCube = isCube;
+        }
 
         this._processSizeParameter(size);
 
@@ -408,6 +415,27 @@ export class RenderTargetTexture extends Texture {
         this._renderTarget?.createDepthStencilTexture(comparisonFunction, bilinearFiltering, generateStencil, samples);
     }
 
+    private _releaseRenderPassId(): void {
+        if (this._renderPassIds) {
+            const engine = this._engine!;
+            for (let i = 0; i < this._renderPassIds.length; ++i) {
+                engine.releaseRenderPassId(this._renderPassIds[i]);
+            }
+            this._renderPassIds = [];
+        }
+    }
+
+    private _createRenderPassId(): void {
+        this._releaseRenderPassId();
+
+        const engine = this._engine!;
+        const numPasses = this.__isCube ? 6 : this.getRenderLayers() || 1;
+
+        for (let i = 0; i < numPasses; ++i) {
+            this._renderPassIds[i] = engine.createRenderPassId(`RenderTargetTexture - ${this.name}#${i}`);
+        }
+    }
+
     private _processSizeParameter(size: number | { width: number, height: number } | { ratio: number }): void {
         if ((<{ ratio: number }>size).ratio) {
             this._sizeRatio = (<{ ratio: number }>size).ratio;
@@ -418,6 +446,10 @@ export class RenderTargetTexture extends Texture {
             };
         } else {
             this._size = <number | { width: number, height: number, layers?: number }>size;
+        }
+
+        if (this.getScene()!.getEngine()._features.createDrawWrapperPerRenderPass) {
+            this._createRenderPassId();
         }
     }
 
@@ -706,7 +738,7 @@ export class RenderTargetTexture extends Texture {
             }
         }
 
-        engine._currentRenderPassId = this._renderPassId;
+        const currentRenderPassId = engine.currentRenderPassId;
 
         this.onBeforeBindObservable.notifyObservers(this);
 
@@ -742,7 +774,7 @@ export class RenderTargetTexture extends Texture {
 
         this.onAfterUnbindObservable.notifyObservers(this);
 
-        engine._currentRenderPassId = Constants.RENDERPASS_MAIN;
+        engine.currentRenderPassId = currentRenderPassId;
 
         if (scene.activeCamera) {
             // Do not avoid setting uniforms when multiple scenes are active as another camera may have overwrite these
@@ -903,10 +935,17 @@ export class RenderTargetTexture extends Texture {
         // Bind
         this._prepareFrame(scene, faceIndex, layer, useCameraPostProcess);
 
+        const createDrawWrapperPerRenderPass = this.getScene()!.getEngine()._features.createDrawWrapperPerRenderPass;
         if (this.is2DArray) {
+            if (createDrawWrapperPerRenderPass) {
+                engine.currentRenderPassId = this._renderPassIds[layer];
+            }
             this.onBeforeRenderObservable.notifyObservers(layer);
         }
         else {
+            if (createDrawWrapperPerRenderPass) {
+                engine.currentRenderPassId = this._renderPassIds[faceIndex];
+            }
             this.onBeforeRenderObservable.notifyObservers(faceIndex);
         }
 
@@ -1135,6 +1174,7 @@ export class RenderTargetTexture extends Texture {
             this._prePassRenderTarget.dispose();
         }
 
+        this._releaseRenderPassId();
         this.clearPostProcesses(true);
 
         if (this._resizeObserver) {

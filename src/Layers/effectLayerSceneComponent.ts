@@ -172,10 +172,16 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
     }
 
     private _isReadyForMesh(mesh: AbstractMesh, hardwareInstancedRendering: boolean): boolean {
+        const currentRenderPassId = this._engine.currentRenderPassId;
         let layers = this.scene.effectLayers;
         for (let layer of layers) {
             if (!layer.hasMesh(mesh)) {
                 continue;
+            }
+
+            if (this._engine._features.createDrawWrapperPerRenderPass) {
+                const renderTarget = (<RenderTargetTexture>(<any>layer)._mainTexture);
+                this._engine.currentRenderPassId = renderTarget.renderPassId;
             }
 
             for (var subMesh of mesh.subMeshes) {
@@ -184,6 +190,7 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
                 }
             }
         }
+        this._engine.currentRenderPassId = currentRenderPassId;
         return true;
     }
 
