@@ -223,19 +223,19 @@ export interface ICreateCapsuleOptions {
     orientation?: Vector3;
 
     /** Number of sub segments on the tube section of the capsule running parallel to orientation. */
-    subdivisions: number;
+    subdivisions?: number;
 
     /** Number of cylindrical segments on the capsule. */
-    tessellation: number;
+    tessellation?: number;
 
     /** Height or Length of the capsule. */
-    height: number;
+    height?: number;
 
     /** Radius of the capsule. */
-    radius: number;
+    radius?: number;
 
     /** Number of sub segments on the cap sections of the capsule running parallel to orientation. */
-    capSubdivisions: number;
+    capSubdivisions?: number;
 
     /** Overwrite for the top radius. */
     radiusTop?: number;
