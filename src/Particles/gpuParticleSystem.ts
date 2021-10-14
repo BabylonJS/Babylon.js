@@ -1764,9 +1764,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @param sceneOrEngine The scene or the engine to create the particle system in
      * @param rootUrl The root url to use to load external dependencies like texture
      * @param doNotStart Ignore the preventAutoStart attribute and does not start
+     * @param capacity defines the system capacity (if null or undefined the sotred capacity will be used)
      * @returns the parsed GPU particle system
      */
-    public static Parse(parsedParticleSystem: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart = false): GPUParticleSystem {
+    public static Parse(parsedParticleSystem: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart = false, capacity?: number): GPUParticleSystem {
         const name = parsedParticleSystem.name;
         let engine: ThinEngine;
         let scene: Nullable<Scene>;
@@ -1778,7 +1779,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             engine = scene.getEngine();
         }
 
-        const particleSystem = new GPUParticleSystem(name, { capacity: parsedParticleSystem.capacity, randomTextureSize: parsedParticleSystem.randomTextureSize }, sceneOrEngine, null, parsedParticleSystem.isAnimationSheetEnabled);
+        const particleSystem = new GPUParticleSystem(name, { capacity: capacity || parsedParticleSystem.capacity, randomTextureSize: parsedParticleSystem.randomTextureSize }, sceneOrEngine, null, parsedParticleSystem.isAnimationSheetEnabled);
         particleSystem._rootUrl = rootUrl;
 
         if (parsedParticleSystem.customShader && (engine as any).createEffectForParticles) {
