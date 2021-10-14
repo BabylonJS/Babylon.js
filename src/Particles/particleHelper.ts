@@ -70,9 +70,10 @@ export class ParticleHelper {
      * @param type This string represents the type to the particle system to create
      * @param scene The scene where the particle system should live
      * @param gpu If the system will use gpu
+     * @param capacity defines the system capacity (if null or undefined the sotred capacity will be used)
      * @returns the ParticleSystemSet created
      */
-    public static CreateAsync(type: string, scene: Nullable<Scene>, gpu: boolean = false): Promise<ParticleSystemSet> {
+    public static CreateAsync(type: string, scene: Nullable<Scene>, gpu: boolean = false, capacity?: number): Promise<ParticleSystemSet> {
 
         if (!scene) {
             scene = EngineStore.LastCreatedScene;
@@ -91,7 +92,7 @@ export class ParticleHelper {
             Tools.LoadFile(`${ParticleHelper.BaseAssetsUrl}/systems/${type}.json`, (data) => {
                 scene!._removePendingData(token);
                 const newData = JSON.parse(data.toString());
-                return resolve(ParticleSystemSet.Parse(newData, scene!, gpu));
+                return resolve(ParticleSystemSet.Parse(newData, scene!, gpu, capacity));
             }, undefined, undefined, undefined, () => {
                 scene!._removePendingData(token);
                 return reject(`An error occurred with the creation of your particle system. Check if your type '${type}' exists.`);
@@ -123,9 +124,10 @@ export class ParticleHelper {
      * @param scene defines the hosting scene
      * @param gpu If the system will use gpu
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @param capacity defines the system capacity (if null or undefined the sotred capacity will be used)
      * @returns a promise that will resolve to the new particle system
      */
-    public static ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, gpu: boolean = false, rootUrl: string = ""): Promise<IParticleSystem> {
+    public static ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, gpu: boolean = false, rootUrl: string = "", capacity?: number): Promise<IParticleSystem> {
 
         return new Promise((resolve, reject) => {
             var request = new WebRequest();
@@ -136,9 +138,9 @@ export class ParticleHelper {
                         let output: IParticleSystem;
 
                         if (gpu) {
-                            output = GPUParticleSystem.Parse(serializationObject, scene, rootUrl);
+                            output = GPUParticleSystem.Parse(serializationObject, scene, rootUrl, false, capacity);
                         } else {
-                            output = ParticleSystem.Parse(serializationObject, scene, rootUrl);
+                            output = ParticleSystem.Parse(serializationObject, scene, rootUrl, false, capacity);
                         }
 
                         if (name) {
@@ -163,9 +165,10 @@ export class ParticleHelper {
      * @param scene defines the hosting scene
      * @param gpu If the system will use gpu
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @param capacity defines the system capacity (if null or undefined the sotred capacity will be used)
      * @returns a promise that will resolve to the new particle system
      */
-    public static CreateFromSnippetAsync(snippetId: string, scene: Scene, gpu: boolean = false, rootUrl: string = ""): Promise<IParticleSystem> {
+    public static CreateFromSnippetAsync(snippetId: string, scene: Scene, gpu: boolean = false, rootUrl: string = "", capacity?: number): Promise<IParticleSystem> {
         if (snippetId === "_BLANK") {
             let system = this.CreateDefault(null);
             system.start();
@@ -182,9 +185,9 @@ export class ParticleHelper {
                         let output: IParticleSystem;
 
                         if (gpu) {
-                            output = GPUParticleSystem.Parse(serializationObject, scene, rootUrl);
+                            output = GPUParticleSystem.Parse(serializationObject, scene, rootUrl, false, capacity);
                         } else {
-                            output = ParticleSystem.Parse(serializationObject, scene, rootUrl);
+                            output = ParticleSystem.Parse(serializationObject, scene, rootUrl, false, capacity);
                         }
                         output.snippetId = snippetId;
 

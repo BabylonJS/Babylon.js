@@ -61,6 +61,7 @@ export class _CreationDataStorage {
 class _InstanceDataStorage {
     public visibleInstances: any = {};
     public batchCache = new _InstancesBatch();
+    public batchCacheReplacementModeInFrozenMode = new _InstancesBatch();
     public instancesBufferSize = 32 * 16 * 4; // let's start with a maximum of 32 instances
     public instancesBuffer: Nullable<Buffer>;
     public instancesPreviousBuffer: Nullable<Buffer>;
@@ -1750,8 +1751,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /** @hidden */
     public _getInstancesRenderList(subMeshId: number, isReplacementMode: boolean = false): _InstancesBatch {
-        if (this._instanceDataStorage.isFrozen && this._instanceDataStorage.previousBatch) {
-            return this._instanceDataStorage.previousBatch;
+        if (this._instanceDataStorage.isFrozen) {
+            if (isReplacementMode) {
+                this._instanceDataStorage.batchCacheReplacementModeInFrozenMode.hardwareInstancedRendering[subMeshId] = false;
+                this._instanceDataStorage.batchCacheReplacementModeInFrozenMode.renderSelf[subMeshId] = true;
+                return this._instanceDataStorage.batchCacheReplacementModeInFrozenMode;
+            }
+            if (this._instanceDataStorage.previousBatch) {
+                return this._instanceDataStorage.previousBatch;
+            }
         }
         var scene = this.getScene();
         const isInIntermediateRendering = scene._isInIntermediateRendering();
@@ -2902,7 +2910,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
 
             vbs[kind] = vertexBuffer;
-            data[kind] = <FloatArray>vbs[kind].getData();
+            data[kind] = this.getVerticesData(kind)!;
             newdata[kind] = [];
         }
 
@@ -2930,6 +2938,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Updating faces & normal
         var normals = [];
         var positions = newdata[VertexBuffer.PositionKind];
+        const useRightHandedSystem = this.getScene().useRightHandedSystem;
+        let flipNormalGeneration: boolean;
+        if (useRightHandedSystem) {
+            flipNormalGeneration = this.overrideMaterialSideOrientation === Constants.MATERIAL_CounterClockWiseSideOrientation;
+        }
+        else {
+            flipNormalGeneration = this.overrideMaterialSideOrientation === Constants.MATERIAL_ClockWiseSideOrientation;
+        }
+
         for (index = 0; index < totalIndices; index += 3) {
             indices[index] = index;
             indices[index + 1] = index + 1;
@@ -2943,6 +2960,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             var p3p2 = p3.subtract(p2);
 
             var normal = Vector3.Normalize(Vector3.Cross(p1p2, p3p2));
+            if (flipNormalGeneration) {
+                normal.scaleInPlace(-1);
+            }
 
             // Store same normals for every vertex
             for (var localIndex = 0; localIndex < 3; localIndex++) {
@@ -3454,6 +3474,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
         } else {
             this.material = null;
+            serializationObject.materialId = this._scene.defaultMaterial.id;
         }
 
         // Morph targets
