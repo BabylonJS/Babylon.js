@@ -1813,9 +1813,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * This function will check if the scene can be rendered (textures are loaded, shaders are compiled)
      * Delay loaded resources are not taking in account
+     * @params checkRenderTargets true to also check that the meshes rendered as part of a render target are ready (default: true)
      * @return true if all required resources are ready
      */
-    public isReady(): boolean {
+    public isReady(checkRenderTargets = true): boolean {
         if (this._isDisposed) {
             return false;
         }
@@ -1834,6 +1835,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         // Meshes
+        if (checkRenderTargets) {
+            this._processedMaterials.reset();        
+            this._renderTargets.reset();
+        }
         for (index = 0; index < this.meshes.length; index++) {
             var mesh = this.meshes[index];
 
@@ -1853,6 +1858,44 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             // Is Ready For Mesh
             for (let step of this._isReadyForMeshStage) {
                 if (!step.action(mesh, hardwareInstancedRendering)) {
+                    return false;
+                }
+            }
+
+            if (!checkRenderTargets) {
+                continue;
+            }
+
+            const mat = mesh.material || this.defaultMaterial;
+            if (mat) {
+                if (mat._storeEffectOnSubMeshes) {
+                    for (const subMesh of mesh.subMeshes) {
+                        const material = subMesh.getMaterial();
+                        if (material && material.hasRenderTargetTextures && material.getRenderTargetTextures != null) {
+                            if (this._processedMaterials.indexOf(material) === -1) {
+                                this._processedMaterials.push(material);
+            
+                                this._renderTargets.concatWithNoDuplicate(material.getRenderTargetTextures!());
+                            }
+                        }
+                    }
+                } else {
+                    if (mat.hasRenderTargetTextures && mat.getRenderTargetTextures != null) {
+                        if (this._processedMaterials.indexOf(mat) === -1) {
+                            this._processedMaterials.push(mat);
+        
+                            this._renderTargets.concatWithNoDuplicate(mat.getRenderTargetTextures!());
+                        }
+                    }
+                }
+            }
+        }
+
+        // Render targets
+        if (checkRenderTargets) {
+            for (index = 0; index < this._renderTargets.length; ++index) {
+                const rtt = this._renderTargets.data[index];
+                if (!rtt.isReady()) {
                     return false;
                 }
             }
