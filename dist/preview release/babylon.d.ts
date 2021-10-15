@@ -20331,10 +20331,12 @@ declare module BABYLON {
         Boolean = 0,
         /** property is a float */
         Float = 1,
+        /** property is a int */
+        Int = 2,
         /** property is a Vector2 */
-        Vector2 = 2,
+        Vector2 = 3,
         /** property is a list of values */
-        List = 3
+        List = 4
     }
     /**
      * Interface that defines an option in a variable of type list
@@ -29641,15 +29643,15 @@ declare module BABYLON {
         /** The Orientation of the capsule.  Default : Vector3.Up() */
         orientation?: Vector3;
         /** Number of sub segments on the tube section of the capsule running parallel to orientation. */
-        subdivisions: number;
+        subdivisions?: number;
         /** Number of cylindrical segments on the capsule. */
-        tessellation: number;
+        tessellation?: number;
         /** Height or Length of the capsule. */
-        height: number;
+        height?: number;
         /** Radius of the capsule. */
-        radius: number;
+        radius?: number;
         /** Number of sub segments on the cap sections of the capsule running parallel to orientation. */
-        capSubdivisions: number;
+        capSubdivisions?: number;
         /** Overwrite for the top radius. */
         radiusTop?: number;
         /** Overwrite for the bottom radius. */
@@ -41888,14 +41890,16 @@ declare module BABYLON {
          * @param scene Define the scene the texture should be created in
          * @param stream Define the stream the texture should be created from
          * @param constraints video constraints
+         * @param invertY Defines if the video should be stored with invert Y set to true (true by default)
          * @returns The created video texture as a promise
          */
-        static CreateFromStreamAsync(scene: Scene, stream: MediaStream, constraints: any): Promise<VideoTexture>;
+        static CreateFromStreamAsync(scene: Scene, stream: MediaStream, constraints: any, invertY?: boolean): Promise<VideoTexture>;
         /**
          * Creates a video texture straight from your WebCam video feed.
          * @param scene Define the scene the texture should be created in
          * @param constraints Define the constraints to use to create the web cam feed from WebRTC
          * @param audioConstaints Define the audio constraints to use to create the web cam feed from WebRTC
+         * @param invertY Defines if the video should be stored with invert Y set to true (true by default)
          * @returns The created video texture as a promise
          */
         static CreateFromWebCamAsync(scene: Scene, constraints: {
@@ -41904,13 +41908,14 @@ declare module BABYLON {
             minHeight: number;
             maxHeight: number;
             deviceId: string;
-        } & MediaTrackConstraints, audioConstaints?: boolean | MediaTrackConstraints): Promise<VideoTexture>;
+        } & MediaTrackConstraints, audioConstaints?: boolean | MediaTrackConstraints, invertY?: boolean): Promise<VideoTexture>;
         /**
          * Creates a video texture straight from your WebCam video feed.
-         * @param scene Define the scene the texture should be created in
-         * @param onReady Define a callback to triggered once the texture will be ready
-         * @param constraints Define the constraints to use to create the web cam feed from WebRTC
-         * @param audioConstaints Define the audio constraints to use to create the web cam feed from WebRTC
+         * @param scene Defines the scene the texture should be created in
+         * @param onReady Defines a callback to triggered once the texture will be ready
+         * @param constraints Defines the constraints to use to create the web cam feed from WebRTC
+         * @param audioConstaints Defines the audio constraints to use to create the web cam feed from WebRTC
+         * @param invertY Defines if the video should be stored with invert Y set to true (true by default)
          */
         static CreateFromWebCam(scene: Scene, onReady: (videoTexture: VideoTexture) => void, constraints: {
             minWidth: number;
@@ -41918,7 +41923,7 @@ declare module BABYLON {
             minHeight: number;
             maxHeight: number;
             deviceId: string;
-        } & MediaTrackConstraints, audioConstaints?: boolean | MediaTrackConstraints): void;
+        } & MediaTrackConstraints, audioConstaints?: boolean | MediaTrackConstraints, invertY?: boolean): void;
     }
 }
 declare module BABYLON {
@@ -55014,8 +55019,7 @@ declare module BABYLON {
          * Force the controller to update the bones
          */
         update(): void;
-        private static _SetAbsoluteRotation;
-        private static _IsTransformNode;
+        private _updateLinkedTransformRotation;
     }
 }
 declare module BABYLON {
@@ -77837,6 +77841,49 @@ declare module BABYLON {
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
         protected _dumpPropertiesCode(): string;
+    }
+}
+declare module BABYLON {
+    /**
+     * block used to Generate Fractal Brownian Motion Clouds
+     */
+    export class CloudBlock extends NodeMaterialBlock {
+        /** Gets or sets the number of octaves */
+        octaves: number;
+        /**
+         * Creates a new CloudBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the seed input component
+         */
+        get seed(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the gain input component
+         */
+        get gain(): NodeMaterialConnectionPoint;
+        /**
+        * Gets the lacunarity input component
+        */
+        get lacunarity(): NodeMaterialConnectionPoint;
+        /**
+        * Gets the time input component
+        */
+        get time(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        get output(): NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
+        protected _dumpPropertiesCode(): string;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
 }
 declare module BABYLON {

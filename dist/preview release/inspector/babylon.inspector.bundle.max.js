@@ -67253,7 +67253,7 @@ var TextureHelper = /** @class */ (function () {
                         if (!(rtt.renderTarget && internalTexture)) return [3 /*break*/, 2];
                         samplingMode = internalTexture.samplingMode;
                         texture.updateSamplingMode(babylonjs_PostProcesses_postProcess__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_NEAREST_MIPNEAREST);
-                        scene.postProcessManager.directRender([lodPostProcess], rtt.renderTarget);
+                        scene.postProcessManager.directRender([lodPostProcess], rtt.renderTarget, true);
                         texture.updateSamplingMode(samplingMode);
                         numberOfChannelsByLine = width * 4;
                         halfHeight = height / 2;
