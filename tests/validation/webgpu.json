@@ -153,12 +153,14 @@
         {
             "title": "wgsl in shadermaterial",
             "renderCount": 30,
-            "playgroundId": "#8RU8Q3#79"
+            "playgroundId": "#8RU8Q3#79",
+            "excludedEngines": ["webgl1", "webgl2"]
         },
         {
             "title": "terrain erosion",
             "renderCount": 15,
-            "playgroundId": "#C90R62#6"
+            "playgroundId": "#C90R62#6",
+            "excludedEngines": ["webgl1", "webgl2"]
         },
         {
             "title": "change texture of material",
