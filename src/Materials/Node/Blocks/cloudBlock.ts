@@ -23,7 +23,8 @@ export class CloudBlock extends NodeMaterialBlock {
         this.registerInput("seed", NodeMaterialBlockConnectionPointTypes.Vector2);
         this.registerInput("gain", NodeMaterialBlockConnectionPointTypes.Float, true);
         this.registerInput("lacunarity", NodeMaterialBlockConnectionPointTypes.Float, true);
-        this.registerInput("time", NodeMaterialBlockConnectionPointTypes.Vector2, true);
+        this.registerInput("timeX", NodeMaterialBlockConnectionPointTypes.Float, true);
+        this.registerInput("timeY", NodeMaterialBlockConnectionPointTypes.Float, true);
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Vector3);
     }
 
@@ -57,11 +58,18 @@ export class CloudBlock extends NodeMaterialBlock {
     }
 
     /**
-    * Gets the time input component
+    * Gets the time X input component
     */
-     public get time(): NodeMaterialConnectionPoint {
+    public get timeX(): NodeMaterialConnectionPoint {
         return this._inputs[3];
-     }
+    }
+
+    /**
+    * Gets the time Y input component
+    */
+     public get timeY(): NodeMaterialConnectionPoint {
+        return this._inputs[4];
+    }
 
     /**
      * Gets the output component
@@ -128,8 +136,11 @@ export class CloudBlock extends NodeMaterialBlock {
         const localVariable = state._getFreeVariableName("st");
 
         state.compilationString += `vec2 ${localVariable} = ${this.seed.associatedVariableName};\r\n`;
-        if (this.time.isConnected) {
-            state.compilationString += `${localVariable} += 0.1 * ${this.time.associatedVariableName};\r\n`;
+        if (this.timeX.isConnected) {
+            state.compilationString += `${localVariable}.x += 0.1 * ${this.timeX.associatedVariableName};\r\n`;
+        }
+        if (this.timeY.isConnected) {
+            state.compilationString += `${localVariable}.y += 0.1 * ${this.timeY.associatedVariableName};\r\n`;
         }
         state.compilationString += this._declareOutput(this._outputs[0], state) + ` = vec3(0.0) + ${fbmNewName}(${localVariable}, ${this.gain.isConnected ? this.gain.associatedVariableName : "0.5"}, ${this.lacunarity.isConnected ? this.lacunarity.associatedVariableName : "2.0"});\r\n`;
 
