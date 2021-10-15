@@ -446,7 +446,7 @@ export class VideoTexture extends Texture {
      * Creates a video texture straight from your WebCam video feed.
      * @param scene Define the scene the texture should be created in
      * @param constraints Define the constraints to use to create the web cam feed from WebRTC
-     * @param audioConstaints Define the audio constraints to use to create the web cam feed from WebRTC     
+     * @param audioConstaints Define the audio constraints to use to create the web cam feed from WebRTC
      * @param invertY Defines if the video should be stored with invert Y set to true (true by default)
      * @returns The created video texture as a promise
      */
