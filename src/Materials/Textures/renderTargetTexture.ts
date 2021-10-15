@@ -783,6 +783,60 @@ export class RenderTargetTexture extends Texture {
         scene.resetCachedMaterial();
     }
 
+    /**
+     * This function will check if the render target texture can be rendered (textures are loaded, shaders are compiled)
+     * @return true if all required resources are ready
+     */
+    public isReady(): boolean {
+        const scene = this.getScene();
+
+        if (!scene) {
+            return true;
+        }
+
+        const engine = scene.getEngine();
+        const currentRenderPassId = engine.currentRenderPassId;
+        const numLayers = this.is2DArray ? this.getRenderLayers() : this.isCube ? 6 : 1;
+
+        for (let layer = 0; layer < numLayers; layer++) {
+            let currentRenderList: Nullable<Array<AbstractMesh>> = null;
+            let defaultRenderList = this.renderList ? this.renderList : scene.getActiveMeshes().data;
+            let defaultRenderListLength = this.renderList ? this.renderList.length : scene.getActiveMeshes().length;
+    
+            if (this.getCustomRenderList) {
+                currentRenderList = this.getCustomRenderList(layer, defaultRenderList, defaultRenderListLength);
+            }
+    
+            if (!currentRenderList) {
+                currentRenderList = defaultRenderList;
+            }
+
+            engine.currentRenderPassId = this._renderPassIds[layer];
+
+            for (let i = 0; i < currentRenderList.length; ++i) {
+                const mesh = currentRenderList[i];
+
+                if (!mesh.isEnabled() || mesh.isBlocked || !mesh.isVisible || !mesh.subMeshes) {
+                    continue;
+                }
+
+                if (this.customIsReadyFunction) {
+                    if (!this.customIsReadyFunction(mesh, this.refreshRate)) {
+                        engine.currentRenderPassId = currentRenderPassId;
+                        return false;
+                    }
+                } else if (!mesh.isReady(true)) {
+                    engine.currentRenderPassId = currentRenderPassId;
+                    return false;
+                }
+            }
+        }
+
+        engine.currentRenderPassId = currentRenderPassId;
+
+        return true;
+    }
+
     private _bestReflectionRenderTargetDimension(renderDimension: number, scale: number): number {
         let minimum = 128;
         let x = renderDimension * scale;
