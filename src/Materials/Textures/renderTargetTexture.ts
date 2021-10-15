@@ -787,7 +787,7 @@ export class RenderTargetTexture extends Texture {
      * This function will check if the render target texture can be rendered (textures are loaded, shaders are compiled)
      * @return true if all required resources are ready
      */
-    public isReady(): boolean {
+    public isReadyForRendering(): boolean {
         const scene = this.getScene();
 
         if (!scene) {
