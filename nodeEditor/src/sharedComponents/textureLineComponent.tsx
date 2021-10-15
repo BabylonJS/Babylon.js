@@ -104,7 +104,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
         let internalTexture = rtt.renderTarget;
 
         if (internalTexture) {
-            scene.postProcessManager.directRender([passPostProcess], internalTexture);
+            scene.postProcessManager.directRender([passPostProcess], internalTexture, true);
 
             // Read the contents of the framebuffer
             var numberOfChannelsByLine = width * 4;

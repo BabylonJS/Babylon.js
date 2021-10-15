@@ -67,7 +67,7 @@ export class TextureHelper {
         if (rtt.renderTarget && internalTexture) {
             const samplingMode = internalTexture.samplingMode;
             texture.updateSamplingMode(Texture.NEAREST_NEAREST_MIPNEAREST);
-            scene.postProcessManager.directRender([lodPostProcess], rtt.renderTarget);
+            scene.postProcessManager.directRender([lodPostProcess], rtt.renderTarget, true);
             texture.updateSamplingMode(samplingMode);
 
             // Read the contents of the framebuffer
