@@ -783,6 +783,10 @@ export class RenderTargetTexture extends Texture {
                 this.renderToTarget(0, useCameraPostProcess, dumpForDebug, undefined, camera);
             }
         } else {
+            if (!scene.getViewMatrix()) {
+                // We probably didn't execute scene.render() yet, so make sure we have a view/projection matrix setup for the scene
+                scene.updateTransformMatrix();
+            }
             const numLayers = this.is2DArray ? this.getRenderLayers() : this.isCube ? 6 : 1;
             for (let layer = 0; layer < numLayers && returnValue; layer++) {
                 let currentRenderList: Nullable<Array<AbstractMesh>> = null;
