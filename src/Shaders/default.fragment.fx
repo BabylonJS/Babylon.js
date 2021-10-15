@@ -447,8 +447,8 @@ color.rgb = max(color.rgb, 0.);
         gl_FragData[PREPASS_NORMAL_INDEX] = vec4((view * vec4(normalW, 0.0)).rgb, writeGeometryInfo); // Normal
     #endif
 
-    #ifdef PREPASS_ALBEDO
-        gl_FragData[PREPASS_ALBEDO_INDEX] = vec4(0.0, 0.0, 0.0, writeGeometryInfo); // We can't split albedo on std material
+    #ifdef PREPASS_ALBEDO_SQRT
+        gl_FragData[PREPASS_ALBEDO_SQRT_INDEX] = vec4(0.0, 0.0, 0.0, writeGeometryInfo); // We can't split albedo on std material
     #endif
     #ifdef PREPASS_REFLECTIVITY
         #if defined(SPECULAR)

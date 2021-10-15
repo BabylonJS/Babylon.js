@@ -24,6 +24,8 @@
 
     float nearestDepth = -lastDepth.x;
     float furthestDepth = lastDepth.y;
+    // alpha is cleared to 0, and we want to initialize alpha to 1. 
+    // The operation will be canceled in the fragment shader by writing 1 - a for the next passes
     float alphaMultiplier = 1.0 - lastFrontColor.a;
 
     if (fragDepth < nearestDepth || fragDepth > furthestDepth) {

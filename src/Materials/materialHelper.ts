@@ -337,9 +337,9 @@ export class MaterialHelper {
                 index: "PREPASS_IRRADIANCE_INDEX",
             },
             {
-                type: Constants.PREPASS_ALBEDO_TEXTURE_TYPE,
-                define: "PREPASS_ALBEDO",
-                index: "PREPASS_ALBEDO_INDEX",
+                type: Constants.PREPASS_ALBEDO_SQRT_TEXTURE_TYPE,
+                define: "PREPASS_ALBEDO_SQRT",
+                index: "PREPASS_ALBEDO_SQRT_INDEX",
             },
             {
                 type: Constants.PREPASS_DEPTH_TEXTURE_TYPE,
