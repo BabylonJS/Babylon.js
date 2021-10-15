@@ -54949,11 +54949,14 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 var BlockTools = /** @class */ (function () {
     function BlockTools() {
     }
     BlockTools.GetBlockFromString = function (data, scene, nodeMaterial) {
         switch (data) {
+            case "CloudBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["CloudBlock"]("Cloud");
             case "MatrixBuilderBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["MatrixBuilderBlock"]("MatrixBuilder");
             case "DesaturateBlock":
@@ -55718,7 +55721,7 @@ var NodeListComponent = /** @class */ (function (_super) {
             Math__Vector: ["CrossBlock", "DerivativeBlock", "DistanceBlock", "DotBlock", "FresnelBlock", "LengthBlock", "ReflectBlock", "RefractBlock", "Rotate2dBlock", "TransformBlock",],
             Matrices: ["Matrix", "WorldMatrixBlock", "WorldViewMatrixBlock", "WorldViewProjectionMatrixBlock", "ViewMatrixBlock", "ViewProjectionMatrixBlock", "ProjectionMatrixBlock", "MatrixBuilderBlock"],
             Mesh: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "PerturbNormalBlock", "NormalBlendBlock", "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock", "WorldTangentBlock", "FrontFacingBlock"],
-            Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock"],
+            Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock", "CloudBlock"],
             Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
             Particle: ["ParticleBlendMultiplyBlock", "ParticleColorBlock", "ParticlePositionWorldBlock", "ParticleRampGradientBlock", "ParticleTextureBlock", "ParticleTextureMaskBlock", "ParticleUVBlock"],
             PBR: ["PBRMetallicRoughnessBlock", "AnisotropyBlock", "ClearCoatBlock", "ReflectionBlock", "RefractionBlock", "SheenBlock", "SubSurfaceBlock"],
@@ -55925,7 +55928,8 @@ var NodeListComponent = /** @class */ (function (_super) {
         "XorBlock": "Return a value if (a xor b) > 0",
         "OrBlock": "Return a value if (a or b) > 0",
         "AndBlock": "Return a value if (a and b) > 0",
-        "ImageSourceBlock": "Centralize texture access for TextureBlocks"
+        "ImageSourceBlock": "Centralize texture access for TextureBlocks",
+        "CloudBlock": "Generate Fractal Brownian Motion Clouds"
     };
     return NodeListComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -61914,6 +61918,10 @@ var GenericPropertyTabComponent = /** @class */ (function (_super) {
                     }
                     break;
                 }
+                case babylonjs_Materials_Node_nodeMaterialDecorator__WEBPACK_IMPORTED_MODULE_10__["PropertyTypeForEdition"].Int: {
+                    components.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__["FloatLineComponent"], { digits: 0, step: "1", isInteger: true, globalState: this_1.props.globalState, label: displayName, propertyName: propertyName, target: this_1.props.block, onChange: function () { return _this.forceRebuild(options.notifiers); } }));
+                    break;
+                }
                 case babylonjs_Materials_Node_nodeMaterialDecorator__WEBPACK_IMPORTED_MODULE_10__["PropertyTypeForEdition"].Vector2: {
                     components.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector2LineComponent__WEBPACK_IMPORTED_MODULE_8__["Vector2LineComponent"], { globalState: this_1.props.globalState, label: displayName, propertyName: propertyName, target: this_1.props.block, onChange: function () { return _this.forceRebuild(options.notifiers); } }));
                     break;
@@ -66078,7 +66086,7 @@ var TextureLineComponent = /** @class */ (function (_super) {
                         };
                         internalTexture = rtt.renderTarget;
                         if (!internalTexture) return [3 /*break*/, 2];
-                        scene.postProcessManager.directRender([passPostProcess], internalTexture);
+                        scene.postProcessManager.directRender([passPostProcess], internalTexture, true);
                         numberOfChannelsByLine = width * 4;
                         halfHeight = height / 2;
                         return [4 /*yield*/, engine.readPixels(0, 0, width, height)];
