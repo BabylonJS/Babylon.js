@@ -1895,7 +1895,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         if (checkRenderTargets) {
             for (index = 0; index < this._renderTargets.length; ++index) {
                 const rtt = this._renderTargets.data[index];
-                if (!rtt.isReady()) {
+                if (!rtt.isReadyForRendering()) {
                     return false;
                 }
             }
