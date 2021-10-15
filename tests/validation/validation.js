@@ -213,7 +213,7 @@ function processCurrentScene(test, resultCanvas, result, renderImage, index, wai
             }
         });
 
-    });
+    }, true);
 }
 
 function runTest(index, done, listname) {
