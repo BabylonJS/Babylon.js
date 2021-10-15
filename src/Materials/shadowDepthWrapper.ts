@@ -10,6 +10,7 @@ import { ShadowGenerator } from '../Lights/Shadows/shadowGenerator';
 import { RandomGUID } from '../Misc/guid';
 import { DrawWrapper } from "./drawWrapper";
 import { Engine } from "../Engines/engine";
+import { Constants } from "../Engines/constants";
 
 /**
  * Options to be used when creating a shadow depth material
@@ -182,7 +183,7 @@ export class ShadowDepthWrapper {
         let params = this._subMeshToDepthWrapper.get(subMesh, shadowGenerator);
         if (!params) {
             const mainDrawWrapper = new DrawWrapper(engine);
-            mainDrawWrapper.defines = subMesh.materialDefines;
+            mainDrawWrapper.defines = subMesh._getDrawWrapper(Constants.RENDERPASS_MAIN)?.defines ?? null;
 
             params = {
                 drawWrapper: [],
