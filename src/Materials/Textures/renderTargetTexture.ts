@@ -685,10 +685,22 @@ export class RenderTargetTexture extends Texture {
      * @param dumpForDebug Define if the rendering result should be dumped (copied) for debugging purpose
      */
     public render(useCameraPostProcess: boolean = false, dumpForDebug: boolean = false): void {
+        this._render(useCameraPostProcess, dumpForDebug);
+    }
+
+    /**
+     * This function will check if the render target texture can be rendered (textures are loaded, shaders are compiled)
+     * @return true if all required resources are ready
+     */
+    public isReadyForRendering(): boolean {
+        return this._render(false, false, true);
+    }
+
+    private _render(useCameraPostProcess: boolean = false, dumpForDebug: boolean = false, checkReadiness: boolean = false): boolean {
         var scene = this.getScene();
 
         if (!scene) {
-            return;
+            return checkReadiness;
         }
 
         var engine = scene.getEngine();
@@ -721,7 +733,7 @@ export class RenderTargetTexture extends Texture {
             var scene = this.getScene();
 
             if (!scene) {
-                return;
+                return checkReadiness;
             }
 
             var sceneMeshes = scene.meshes;
@@ -751,21 +763,68 @@ export class RenderTargetTexture extends Texture {
 
         this._defaultRenderListPrepared = false;
 
-        if (this.is2DArray) {
-            for (let layer = 0; layer < this.getRenderLayers(); layer++) {
-                this.renderToTarget(0, useCameraPostProcess, dumpForDebug, layer, camera);
-                scene.incrementRenderId();
-                scene.resetCachedMaterial();
+        let returnValue = checkReadiness;
+
+        if (!checkReadiness) {
+            if (this.is2DArray) {
+                for (let layer = 0; layer < this.getRenderLayers(); layer++) {
+                    this.renderToTarget(0, useCameraPostProcess, dumpForDebug, layer, camera);
+                    scene.incrementRenderId();
+                    scene.resetCachedMaterial();
+                }
             }
-        }
-        else if (this.isCube) {
-            for (var face = 0; face < 6; face++) {
-                this.renderToTarget(face, useCameraPostProcess, dumpForDebug, undefined, camera);
-                scene.incrementRenderId();
-                scene.resetCachedMaterial();
+            else if (this.isCube) {
+                for (var face = 0; face < 6; face++) {
+                    this.renderToTarget(face, useCameraPostProcess, dumpForDebug, undefined, camera);
+                    scene.incrementRenderId();
+                    scene.resetCachedMaterial();
+                }
+            } else {
+                this.renderToTarget(0, useCameraPostProcess, dumpForDebug, undefined, camera);
             }
         } else {
-            this.renderToTarget(0, useCameraPostProcess, dumpForDebug, undefined, camera);
+            const numLayers = this.is2DArray ? this.getRenderLayers() : this.isCube ? 6 : 1;
+            for (let layer = 0; layer < numLayers && returnValue; layer++) {
+                let currentRenderList: Nullable<Array<AbstractMesh>> = null;
+                let defaultRenderList = this.renderList ? this.renderList : scene.getActiveMeshes().data;
+                let defaultRenderListLength = this.renderList ? this.renderList.length : scene.getActiveMeshes().length;
+        
+                engine.currentRenderPassId = this._renderPassIds[layer];
+
+                this.onBeforeRenderObservable.notifyObservers(layer);
+
+                if (this.getCustomRenderList) {
+                    currentRenderList = this.getCustomRenderList(layer, defaultRenderList, defaultRenderListLength);
+                }
+        
+                if (!currentRenderList) {
+                    currentRenderList = defaultRenderList;
+                }
+    
+                if (!this._doNotChangeAspectRatio) {
+                    scene.updateTransformMatrix(true);
+                }
+
+                for (let i = 0; i < currentRenderList.length && returnValue; ++i) {
+                    const mesh = currentRenderList[i];
+    
+                    if (!mesh.isEnabled() || mesh.isBlocked || !mesh.isVisible || !mesh.subMeshes) {
+                        continue;
+                    }
+    
+                    if (this.customIsReadyFunction) {
+                        if (!this.customIsReadyFunction(mesh, this.refreshRate)) {
+                            returnValue = false;
+                            break;
+                        }
+                    } else if (!mesh.isReady(true)) {
+                        returnValue = false;
+                        break;
+                    }
+                }
+
+                this.onAfterRenderObservable.notifyObservers(layer);
+            }
         }
 
         this.onAfterUnbindObservable.notifyObservers(this);
@@ -781,60 +840,8 @@ export class RenderTargetTexture extends Texture {
         }
 
         scene.resetCachedMaterial();
-    }
 
-    /**
-     * This function will check if the render target texture can be rendered (textures are loaded, shaders are compiled)
-     * @return true if all required resources are ready
-     */
-    public isReadyForRendering(): boolean {
-        const scene = this.getScene();
-
-        if (!scene) {
-            return true;
-        }
-
-        const engine = scene.getEngine();
-        const currentRenderPassId = engine.currentRenderPassId;
-        const numLayers = this.is2DArray ? this.getRenderLayers() : this.isCube ? 6 : 1;
-
-        for (let layer = 0; layer < numLayers; layer++) {
-            let currentRenderList: Nullable<Array<AbstractMesh>> = null;
-            let defaultRenderList = this.renderList ? this.renderList : scene.getActiveMeshes().data;
-            let defaultRenderListLength = this.renderList ? this.renderList.length : scene.getActiveMeshes().length;
-    
-            if (this.getCustomRenderList) {
-                currentRenderList = this.getCustomRenderList(layer, defaultRenderList, defaultRenderListLength);
-            }
-    
-            if (!currentRenderList) {
-                currentRenderList = defaultRenderList;
-            }
-
-            engine.currentRenderPassId = this._renderPassIds[layer];
-
-            for (let i = 0; i < currentRenderList.length; ++i) {
-                const mesh = currentRenderList[i];
-
-                if (!mesh.isEnabled() || mesh.isBlocked || !mesh.isVisible || !mesh.subMeshes) {
-                    continue;
-                }
-
-                if (this.customIsReadyFunction) {
-                    if (!this.customIsReadyFunction(mesh, this.refreshRate)) {
-                        engine.currentRenderPassId = currentRenderPassId;
-                        return false;
-                    }
-                } else if (!mesh.isReady(true)) {
-                    engine.currentRenderPassId = currentRenderPassId;
-                    return false;
-                }
-            }
-        }
-
-        engine.currentRenderPassId = currentRenderPassId;
-
-        return true;
+        return returnValue;
     }
 
     private _bestReflectionRenderTargetDimension(renderDimension: number, scale: number): number {

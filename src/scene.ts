@@ -2036,8 +2036,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Registers a function to be executed when the scene is ready
      * @param {Function} func - the function to be executed
+     * @params checkRenderTargets true to also check that the meshes rendered as part of a render target are ready (default: false)
      */
-    public executeWhenReady(func: () => void): void {
+    public executeWhenReady(func: () => void, checkRenderTargets = false): void {
         this.onReadyObservable.add(func);
 
         if (this._executeWhenReadyTimeoutId !== -1) {
@@ -2045,27 +2046,28 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         this._executeWhenReadyTimeoutId = setTimeout(() => {
-            this._checkIsReady();
+            this._checkIsReady(checkRenderTargets);
         }, 150);
     }
 
     /**
      * Returns a promise that resolves when the scene is ready
+     * @params checkRenderTargets true to also check that the meshes rendered as part of a render target are ready (default: false)
      * @returns A promise that resolves when the scene is ready
      */
-    public whenReadyAsync(): Promise<void> {
+    public whenReadyAsync(checkRenderTargets = false): Promise<void> {
         return new Promise((resolve) => {
             this.executeWhenReady(() => {
                 resolve();
-            });
+            }, checkRenderTargets);
         });
     }
 
     /** @hidden */
-    public _checkIsReady() {
+    public _checkIsReady(checkRenderTargets = false) {
         this._registerTransientComponents();
 
-        if (this.isReady()) {
+        if (this.isReady(checkRenderTargets)) {
             this.onReadyObservable.notifyObservers(this);
 
             this.onReadyObservable.clear();
@@ -2080,7 +2082,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         this._executeWhenReadyTimeoutId = setTimeout(() => {
-            this._checkIsReady();
+            this._checkIsReady(checkRenderTargets);
         }, 150);
     }
 
