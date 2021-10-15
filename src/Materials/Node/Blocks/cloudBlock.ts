@@ -69,7 +69,7 @@ export class CloudBlock extends NodeMaterialBlock {
     */
      public get timeY(): NodeMaterialConnectionPoint {
         return this._inputs[4];
-    }    
+    }
 
     /**
      * Gets the output component
@@ -138,7 +138,7 @@ export class CloudBlock extends NodeMaterialBlock {
         state.compilationString += `vec2 ${localVariable} = ${this.seed.associatedVariableName};\r\n`;
         if (this.timeX.isConnected) {
             state.compilationString += `${localVariable}.x += 0.1 * ${this.timeX.associatedVariableName};\r\n`;
-        }        
+        }
         if (this.timeY.isConnected) {
             state.compilationString += `${localVariable}.y += 0.1 * ${this.timeY.associatedVariableName};\r\n`;
         }
