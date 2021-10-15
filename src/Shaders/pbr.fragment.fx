@@ -592,7 +592,7 @@ void main(void) {
     gl_FragData[PREPASS_VELOCITY_INDEX] = vec4(velocity, 0.0, writeGeometryInfo);
     #endif
 
-    #ifdef PREPASS_ALBEDO
+    #ifdef PREPASS_ALBEDO_SQRT
         vec3 sqAlbedo = sqrt(surfaceAlbedo); // for pre and post scatter
     #endif
 
@@ -625,8 +625,8 @@ void main(void) {
         gl_FragData[PREPASS_NORMAL_INDEX] = vec4((view * vec4(normalW, 0.0)).rgb, writeGeometryInfo); // Normal
     #endif
 
-    #ifdef PREPASS_ALBEDO
-        gl_FragData[PREPASS_ALBEDO_INDEX] = vec4(sqAlbedo, writeGeometryInfo); // albedo, for pre and post scatter
+    #ifdef PREPASS_ALBEDO_SQRT
+        gl_FragData[PREPASS_ALBEDO_SQRT_INDEX] = vec4(sqAlbedo, writeGeometryInfo); // albedo, for pre and post scatter
     #endif
 
     #ifdef PREPASS_REFLECTIVITY
@@ -645,6 +645,7 @@ void main(void) {
 #if ORDER_INDEPENDENT_TRANSPARENCY
 	if (fragDepth == nearestDepth) {
 		frontColor.rgb += finalColor.rgb * finalColor.a * alphaMultiplier;
+        // Cancels the 1 - a initial value operation
 		frontColor.a = 1.0 - alphaMultiplier * (1.0 - finalColor.a);
 	} else {
 		backColor += finalColor;

@@ -113,7 +113,7 @@ export class PrePassRenderer {
             name: "prePass_Normal",
         },
         {
-            type: Constants.PREPASS_ALBEDO_TEXTURE_TYPE,
+            type: Constants.PREPASS_ALBEDO_SQRT_TEXTURE_TYPE,
             format: Constants.TEXTURETYPE_UNSIGNED_INT,
             name: "prePass_Albedo",
         },
