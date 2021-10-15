@@ -77873,9 +77873,13 @@ declare module BABYLON {
         */
         get lacunarity(): NodeMaterialConnectionPoint;
         /**
-        * Gets the time input component
+        * Gets the time X input component
         */
-        get time(): NodeMaterialConnectionPoint;
+        get timeX(): NodeMaterialConnectionPoint;
+        /**
+        * Gets the time Y input component
+        */
+        get timeY(): NodeMaterialConnectionPoint;
         /**
          * Gets the output component
          */
