@@ -263,7 +263,7 @@ export class LightBlock extends NodeMaterialBlock {
         }
 
         // Fragment
-        state.sharedData.bindableBlocks.push(this);
+        state.sharedData.forcedBindableBlocks.push(this);
         state.sharedData.blocksWithDefines.push(this);
 
         let comments = `//${this.name}`;
