@@ -22,6 +22,8 @@ import "../../Engines/Extensions/engine.renderTarget";
 import "../../Engines/Extensions/engine.renderTargetCube";
 import { Engine } from '../../Engines/engine';
 
+declare type Material = import("../material").Material;
+
 /**
  * This Helps creating a texture that will be created from a camera in your scene.
  * It is basically a dynamic texture that could be used to create special effects for instance.
@@ -259,6 +261,25 @@ export class RenderTargetTexture extends Texture {
      */
     public renderPassId: number;
     private _renderPassIds: number[];
+    /**
+     * Gets the render pass ids used by the render target texture. For a single render target the array length will be 1, for a cube texture it will be 6 and for
+     * a 2D texture array it will return an array of ids the size of the 2D texture array
+     */
+    public get renderPassIds(): readonly number[] {
+        return this._renderPassIds;
+    }
+
+    /**
+     * Sets a specific material to be used to render the mesh in this render target texture
+     * @param renderPassId render pass id
+     * @param material material or array of materials to use for this render pass. If undefined is passed, no specific material will be used but the regular material instead (mesh.material). It's possible to provide an array of materials to use a different material for each rendering in the case of a cube texture (6 rendering) and a 2D texture array (as many rendering as the length of the array)
+     */
+    public setMaterialForRendering(mesh: AbstractMesh, material?: Material | Material[]): void {
+        for (let i = 0; i < this._renderPassIds.length; ++i) {
+            mesh.setMaterialForRenderPass(this._renderPassIds[i], material !== undefined ? (Array.isArray(material) ? material[i] : material) : undefined);
+        }
+    }
+
     private __isCube: boolean;
     /**
      * Gets render target creation options that were used.
