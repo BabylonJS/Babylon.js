@@ -370,6 +370,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
 
     /** @hidden */
     public _prefiltered: boolean = false;
+    public _forceSerialize: boolean = false;
 
     /**
      * Return a string representation of the texture.
