@@ -222,9 +222,14 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         savePromise(content, adt).then((snippetId: string) => {
             adt.snippetId = snippetId;
             if (navigator.clipboard) {
-                navigator.clipboard.writeText(adt.snippetId);
+                navigator.clipboard.writeText(adt.snippetId).then(() => {
+                    alert("GUI saved with ID: " + adt.snippetId + " (please note that the id was also saved to your clipboard)");
+                }).catch((err: any) => {
+                    alert("GUI saved with ID: " + adt.snippetId);
+                })
+            } else {
+                alert("GUI saved with ID: " + adt.snippetId);
             }
-            alert("GUI saved with ID: " + adt.snippetId + " (please note that the id was also saved to your clipboard)");
             this.props.globalState.onBuiltObservable.notifyObservers();
         }).catch((err: any) => {
             alert(err);
