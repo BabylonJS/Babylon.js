@@ -9,6 +9,7 @@ import { ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
 declare type LinesMesh = import("./linesMesh").LinesMesh;
 declare type GroundMesh = import("./groundMesh").GroundMesh;
 declare type Mesh = import('./mesh').Mesh;
+declare type TypeofMesh = typeof import('./mesh').Mesh;
 
 declare var earcut: any;
 
@@ -541,7 +542,7 @@ declare module "./mesh" {
 }
 
 /** @hidden */
-export const _injectLTSMesh = (Mesh: typeof import('./mesh').Mesh) => {
+export const _injectLTSMesh = (Mesh: TypeofMesh) => {
     Mesh.prototype.setMaterialByID = function (id: string): Mesh {
         return this.setMaterialById(id);
     };
