@@ -67,6 +67,7 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         private _constraintDirection;
         private _forcePanning;
         private _forceZooming;
+        private _forceMoving;
         private _forceSelecting;
         private _outlines;
         private _panning;
@@ -79,11 +80,14 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         private _cameraRadias;
         private _cameraMaxRadiasFactor;
         private _pasted;
+        private _engine;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
         constructor(props: IWorkbenchComponentProps);
         keyEvent: (evt: KeyboardEvent) => void;
+        private updateHitTest;
+        private updateHitTestForSelection;
         private setCameraRadius;
         private copyToClipboard;
         private pasteFromClipboard;
@@ -101,6 +105,7 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         isContainer(guiControl: Control): boolean;
         createNewGuiNode(guiControl: Control): Control;
         private parent;
+        private _convertToPixels;
         private _reorderGrid;
         private _isNotChildInsert;
         private _adjustParentingIndex;
@@ -188,6 +193,7 @@ declare module "babylonjs-gui-editor/globalState" {
         onFitToWindowObservable: Observable<void>;
         onPanObservable: Observable<void>;
         onSelectionButtonObservable: Observable<void>;
+        onMoveObservable: Observable<void>;
         onLoadObservable: Observable<File>;
         onSaveObservable: Observable<void>;
         onSnippetLoadObservable: Observable<void>;
@@ -198,6 +204,7 @@ declare module "babylonjs-gui-editor/globalState" {
         onPropertyGridUpdateRequiredObservable: Observable<void>;
         onDraggingEndObservable: Observable<void>;
         onDraggingStartObservable: Observable<void>;
+        onWindowResizeObservable: Observable<void>;
         draggedControl: Nullable<Control>;
         draggedControlDirection: DragOverLocation;
         isSaving: boolean;
@@ -831,9 +838,23 @@ declare module "babylonjs-gui-editor/components/propertyTab/propertyGrids/gui/gr
     }
     export class GridPropertyGridComponent extends React.Component<IGridPropertyGridComponentProps> {
         constructor(props: IGridPropertyGridComponentProps);
+        private _removingColumn;
+        private _removingRow;
+        private _previousGrid;
+        private _rowDefinitions;
+        private _rowEditFlags;
+        private _columnEditFlags;
+        private _columnDefinitions;
+        private _editedRow;
+        private _editedColumn;
         renderRows(): JSX.Element[];
+        setRowValues(): void;
+        setColumnValues(): void;
         renderColumns(): JSX.Element[];
+        resizeRow(): void;
         resizeColumn(): void;
+        checkValue(value: string, percent: boolean): string;
+        checkPercentage(value: string): boolean;
         render(): JSX.Element;
     }
 }
@@ -1228,6 +1249,7 @@ declare module "babylonjs-gui-editor/components/commandBarComponent" {
         private _panning;
         private _zooming;
         private _selecting;
+        private _moving;
         private _outlines;
         constructor(props: ICommandBarComponentProps);
         private updateNodeOutline;
@@ -2194,6 +2216,7 @@ declare module GUIEDITOR {
         private _constraintDirection;
         private _forcePanning;
         private _forceZooming;
+        private _forceMoving;
         private _forceSelecting;
         private _outlines;
         private _panning;
@@ -2206,11 +2229,14 @@ declare module GUIEDITOR {
         private _cameraRadias;
         private _cameraMaxRadiasFactor;
         private _pasted;
+        private _engine;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
         constructor(props: IWorkbenchComponentProps);
         keyEvent: (evt: KeyboardEvent) => void;
+        private updateHitTest;
+        private updateHitTestForSelection;
         private setCameraRadius;
         private copyToClipboard;
         private pasteFromClipboard;
@@ -2228,6 +2254,7 @@ declare module GUIEDITOR {
         isContainer(guiControl: Control): boolean;
         createNewGuiNode(guiControl: Control): Control;
         private parent;
+        private _convertToPixels;
         private _reorderGrid;
         private _isNotChildInsert;
         private _adjustParentingIndex;
@@ -2304,6 +2331,7 @@ declare module GUIEDITOR {
         onFitToWindowObservable: BABYLON.Observable<void>;
         onPanObservable: BABYLON.Observable<void>;
         onSelectionButtonObservable: BABYLON.Observable<void>;
+        onMoveObservable: BABYLON.Observable<void>;
         onLoadObservable: BABYLON.Observable<File>;
         onSaveObservable: BABYLON.Observable<void>;
         onSnippetLoadObservable: BABYLON.Observable<void>;
@@ -2314,6 +2342,7 @@ declare module GUIEDITOR {
         onPropertyGridUpdateRequiredObservable: BABYLON.Observable<void>;
         onDraggingEndObservable: BABYLON.Observable<void>;
         onDraggingStartObservable: BABYLON.Observable<void>;
+        onWindowResizeObservable: BABYLON.Observable<void>;
         draggedControl: BABYLON.Nullable<Control>;
         draggedControlDirection: DragOverLocation;
         isSaving: boolean;
@@ -2852,9 +2881,23 @@ declare module GUIEDITOR {
     }
     export class GridPropertyGridComponent extends React.Component<IGridPropertyGridComponentProps> {
         constructor(props: IGridPropertyGridComponentProps);
+        private _removingColumn;
+        private _removingRow;
+        private _previousGrid;
+        private _rowDefinitions;
+        private _rowEditFlags;
+        private _columnEditFlags;
+        private _columnDefinitions;
+        private _editedRow;
+        private _editedColumn;
         renderRows(): JSX.Element[];
+        setRowValues(): void;
+        setColumnValues(): void;
         renderColumns(): JSX.Element[];
+        resizeRow(): void;
         resizeColumn(): void;
+        checkValue(value: string, percent: boolean): string;
+        checkPercentage(value: string): boolean;
         render(): JSX.Element;
     }
 }
@@ -3172,6 +3215,7 @@ declare module GUIEDITOR {
         private _panning;
         private _zooming;
         private _selecting;
+        private _moving;
         private _outlines;
         constructor(props: ICommandBarComponentProps);
         private updateNodeOutline;

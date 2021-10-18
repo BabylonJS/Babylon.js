@@ -677,20 +677,23 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
         /**
          * Recreate the content of the ADT from a JSON object
          * @param serializedObject define the JSON serialized object to restore from
+         * @param scaleToSize defines whether to scale to texture to the saved size
          */
-        parseContent(serializedObject: any): void;
+        parseContent(serializedObject: any, scaleToSize?: boolean): void;
         /**
          * Recreate the content of the ADT from a snippet saved by the GUI editor
          * @param snippetId defines the snippet to load
+         * @param scaleToSize defines whether to scale to texture to the saved size
          * @returns a promise that will resolve on success
          */
-        parseFromSnippetAsync(snippetId: string): Promise<void>;
+        parseFromSnippetAsync(snippetId: string, scaleToSize?: boolean): Promise<void>;
         /**
         * Recreate the content of the ADT from a url json
         * @param url defines the url to load
+        * @param scaleToSize defines whether to scale to texture to the saved size
         * @returns a promise that will resolve on success
         */
-        parseFromURLAsync(url: string): Promise<void>;
+        parseFromURLAsync(url: string, scaleToSize?: boolean): Promise<void>;
         /**
          * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh)
          * @param mesh defines the mesh which will receive the texture
@@ -1301,6 +1304,10 @@ declare module "babylonjs-gui/2D/controls/control" {
         /** @hidden */
         _intersectsRect(rect: Measure): boolean;
         /** @hidden */
+        protected _computeAdditionnalOffsetX(): number;
+        /** @hidden */
+        protected _computeAdditionnalOffsetY(): number;
+        /** @hidden */
         protected invalidateRect(): void;
         /** @hidden */
         _markAsDirty(force?: boolean): void;
@@ -1578,6 +1585,10 @@ declare module "babylonjs-gui/2D/controls/rectangle" {
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
+        /** @hidden */
+        protected _computeAdditionnalOffsetX(): 1 | 0;
+        /** @hidden */
+        protected _computeAdditionnalOffsetY(): 1 | 0;
         protected _localDraw(context: ICanvasRenderingContext): void;
         protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void;
         private _drawRoundedRect;
@@ -3656,13 +3667,10 @@ declare module "babylonjs-gui/2D/controls/scrollViewers/scrollViewer" {
     }
 }
 declare module "babylonjs-gui/2D/controls/toggleButton" {
-    import { Nullable } from "babylonjs/types";
     import { Observable } from "babylonjs/Misc/observable";
     import { Vector2 } from "babylonjs/Maths/math.vector";
     import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
     import { Control } from "babylonjs-gui/2D/controls/control";
-    import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
-    import { Image } from "babylonjs-gui/2D/controls/image";
     import { PointerInfoBase } from "babylonjs/Events/pointerEvents";
     /**
      * Class used to create toggle buttons
@@ -3716,16 +3724,6 @@ declare module "babylonjs-gui/2D/controls/toggleButton" {
          * Gets or sets a boolean indicating that the toggle button will let internal controls handle picking instead of doing it directly using its bounding info
          */
         delegatePickingToChildren: boolean;
-        private _image;
-        /**
-         * Returns the ToggleButton's image control if it exists
-         */
-        get image(): Nullable<Image>;
-        private _textBlock;
-        /**
-         * Returns the ToggleButton's child TextBlock control if it exists
-         */
-        get textBlock(): Nullable<TextBlock>;
         private _group;
         /** Gets or sets group name this toggle button belongs to */
         get group(): string;
@@ -7700,20 +7698,23 @@ declare module BABYLON.GUI {
         /**
          * Recreate the content of the ADT from a JSON object
          * @param serializedObject define the JSON serialized object to restore from
+         * @param scaleToSize defines whether to scale to texture to the saved size
          */
-        parseContent(serializedObject: any): void;
+        parseContent(serializedObject: any, scaleToSize?: boolean): void;
         /**
          * Recreate the content of the ADT from a snippet saved by the GUI editor
          * @param snippetId defines the snippet to load
+         * @param scaleToSize defines whether to scale to texture to the saved size
          * @returns a promise that will resolve on success
          */
-        parseFromSnippetAsync(snippetId: string): Promise<void>;
+        parseFromSnippetAsync(snippetId: string, scaleToSize?: boolean): Promise<void>;
         /**
         * Recreate the content of the ADT from a url json
         * @param url defines the url to load
+        * @param scaleToSize defines whether to scale to texture to the saved size
         * @returns a promise that will resolve on success
         */
-        parseFromURLAsync(url: string): Promise<void>;
+        parseFromURLAsync(url: string, scaleToSize?: boolean): Promise<void>;
         /**
          * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh)
          * @param mesh defines the mesh which will receive the texture
@@ -8311,6 +8312,10 @@ declare module BABYLON.GUI {
         /** @hidden */
         _intersectsRect(rect: Measure): boolean;
         /** @hidden */
+        protected _computeAdditionnalOffsetX(): number;
+        /** @hidden */
+        protected _computeAdditionnalOffsetY(): number;
+        /** @hidden */
         protected invalidateRect(): void;
         /** @hidden */
         _markAsDirty(force?: boolean): void;
@@ -8578,6 +8583,10 @@ declare module BABYLON.GUI {
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
+        /** @hidden */
+        protected _computeAdditionnalOffsetX(): 1 | 0;
+        /** @hidden */
+        protected _computeAdditionnalOffsetY(): 1 | 0;
         protected _localDraw(context: BABYLON.ICanvasRenderingContext): void;
         protected _additionalProcessing(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         private _drawRoundedRect;
@@ -10579,16 +10588,6 @@ declare module BABYLON.GUI {
          * Gets or sets a boolean indicating that the toggle button will let internal controls handle picking instead of doing it directly using its bounding info
          */
         delegatePickingToChildren: boolean;
-        private _image;
-        /**
-         * Returns the ToggleButton's image control if it exists
-         */
-        get image(): BABYLON.Nullable<Image>;
-        private _textBlock;
-        /**
-         * Returns the ToggleButton's child TextBlock control if it exists
-         */
-        get textBlock(): BABYLON.Nullable<TextBlock>;
         private _group;
         /** Gets or sets group name this toggle button belongs to */
         get group(): string;

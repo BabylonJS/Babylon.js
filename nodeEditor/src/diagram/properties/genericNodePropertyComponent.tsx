@@ -143,6 +143,12 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                     }
                     break;
                 }
+                case PropertyTypeForEdition.Int: {
+                    components.push(
+                        <FloatLineComponent digits={0} step={"1"} isInteger={true} globalState={this.props.globalState} label={displayName} propertyName={propertyName} target={this.props.block} onChange={() => this.forceRebuild(options.notifiers)} />
+                    );
+                    break;
+                }                
                 case PropertyTypeForEdition.Vector2: {
                     components.push(
                         <Vector2LineComponent globalState={this.props.globalState} label={displayName} propertyName={propertyName} target={this.props.block} onChange={() => this.forceRebuild(options.notifiers)} />

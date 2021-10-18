@@ -8,8 +8,8 @@ import { VertexData } from "../../Meshes/mesh.vertexData";
 import { Nullable } from "../../types";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Mesh } from "../../Meshes/mesh";
-import { ShapeBuilder } from "../../Meshes/Builders/shapeBuilder";
-import { LinesBuilder } from "../../Meshes/Builders/linesBuilder";
+import { ExtrudeShape } from "../../Meshes/Builders/shapeBuilder";
+import { CreateLines } from "../../Meshes/Builders/linesBuilder";
 import { LinesMesh } from '../../Meshes/linesMesh';
 import { PhysicsRaycastResult } from "../physicsRaycastResult";
 import { Scalar } from "../../Maths/math.scalar";
@@ -275,10 +275,10 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         var object = impostor.object;
         var shape = impostor.getParam("shape");
         if (impostor._isFromLine) {
-            impostor.object = LinesBuilder.CreateLines("lines", { points: path, instance: <LinesMesh>object });
+            impostor.object = CreateLines("lines", { points: path, instance: <LinesMesh>object });
         }
         else {
-            impostor.object = ShapeBuilder.ExtrudeShape("ext", { shape: shape, path: path, instance: <Mesh>object });
+            impostor.object = ExtrudeShape("ext", { shape: shape, path: path, instance: <Mesh>object });
         }
 
     }

@@ -54949,11 +54949,14 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 var BlockTools = /** @class */ (function () {
     function BlockTools() {
     }
     BlockTools.GetBlockFromString = function (data, scene, nodeMaterial) {
         switch (data) {
+            case "CloudBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["CloudBlock"]("Cloud");
             case "MatrixBuilderBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["MatrixBuilderBlock"]("MatrixBuilder");
             case "DesaturateBlock":
@@ -55718,7 +55721,7 @@ var NodeListComponent = /** @class */ (function (_super) {
             Math__Vector: ["CrossBlock", "DerivativeBlock", "DistanceBlock", "DotBlock", "FresnelBlock", "LengthBlock", "ReflectBlock", "RefractBlock", "Rotate2dBlock", "TransformBlock",],
             Matrices: ["Matrix", "WorldMatrixBlock", "WorldViewMatrixBlock", "WorldViewProjectionMatrixBlock", "ViewMatrixBlock", "ViewProjectionMatrixBlock", "ProjectionMatrixBlock", "MatrixBuilderBlock"],
             Mesh: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "PerturbNormalBlock", "NormalBlendBlock", "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock", "WorldTangentBlock", "FrontFacingBlock"],
-            Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock"],
+            Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock", "CloudBlock"],
             Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
             Particle: ["ParticleBlendMultiplyBlock", "ParticleColorBlock", "ParticlePositionWorldBlock", "ParticleRampGradientBlock", "ParticleTextureBlock", "ParticleTextureMaskBlock", "ParticleUVBlock"],
             PBR: ["PBRMetallicRoughnessBlock", "AnisotropyBlock", "ClearCoatBlock", "ReflectionBlock", "RefractionBlock", "SheenBlock", "SubSurfaceBlock"],
@@ -55925,7 +55928,8 @@ var NodeListComponent = /** @class */ (function (_super) {
         "XorBlock": "Return a value if (a xor b) > 0",
         "OrBlock": "Return a value if (a or b) > 0",
         "AndBlock": "Return a value if (a and b) > 0",
-        "ImageSourceBlock": "Centralize texture access for TextureBlocks"
+        "ImageSourceBlock": "Centralize texture access for TextureBlocks",
+        "CloudBlock": "Generate Fractal Brownian Motion Clouds"
     };
     return NodeListComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -56064,6 +56068,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _previewType__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./previewType */ "./components/preview/previewType.ts");
 /* harmony import */ var _log_logComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../log/logComponent */ "./components/log/logComponent.tsx");
+
+
 
 
 
@@ -56240,7 +56246,6 @@ var PreviewManager = /** @class */ (function () {
                 this._camera.radius = this._globalState.previewType === _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].Explosion ? 50 : this._globalState.previewType === _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].DefaultParticleSystem ? 6 : 20;
                 this._camera.upperRadiusLimit = 5000;
                 this._globalState.particleSystemBlendMode = (_b = (_a = this._particleSystem) === null || _a === void 0 ? void 0 : _a.blendMode) !== null && _b !== void 0 ? _b : babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["ParticleSystem"].BLENDMODE_STANDARD;
-                ;
                 break;
             }
         }
@@ -56288,10 +56293,12 @@ var PreviewManager = /** @class */ (function () {
                         });
                         return;
                     case _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].Sphere:
-                        this._meshes.push(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateSphere("dummy-sphere", 32, 2, this._scene));
+                        this._meshes.push(Object(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["CreateSphere"])("dummy-sphere", { segments: 32, diameter: 2 }, this._scene));
                         break;
                     case _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].Torus:
-                        this._meshes.push(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateTorus("dummy-torus", 2, 0.5, 32, this._scene));
+                        this._meshes.push(Object(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["CreateTorus"])("dummy-torus", {
+                            diameter: 2, thickness: 0.5, tessellation: 32
+                        }, this._scene));
                         break;
                     case _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].Cylinder:
                         babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["SceneLoader"].AppendAsync("https://models.babylonjs.com/", "roundedCylinder.glb", this._scene).then(function () {
@@ -56301,7 +56308,7 @@ var PreviewManager = /** @class */ (function () {
                         });
                         return;
                     case _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].Plane:
-                        var plane = babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateGround("dummy-plane", 2, 2, 128, this._scene);
+                        var plane = Object(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["CreateGround"])("dummy-plane", { width: 2, height: 2, subdivisions: 128 }, this._scene);
                         plane.scaling.y = -1;
                         plane.rotation.x = Math.PI;
                         this._meshes.push(plane);
@@ -56358,7 +56365,7 @@ var PreviewManager = /** @class */ (function () {
                         this._loadParticleSystem(this._globalState.previewType);
                         return;
                     case _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].Custom:
-                        babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["FileTools"].ReadFile(this._globalState.previewFile, function (json) {
+                        Object(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["ReadFile"])(this._globalState.previewFile, function (json) {
                             _this._particleSystem = babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["ParticleSystem"].Parse(JSON.parse(json), _this._scene, "");
                             _this._particleSystem.start();
                             _this._prepareScene();
@@ -61911,6 +61918,10 @@ var GenericPropertyTabComponent = /** @class */ (function (_super) {
                     }
                     break;
                 }
+                case babylonjs_Materials_Node_nodeMaterialDecorator__WEBPACK_IMPORTED_MODULE_10__["PropertyTypeForEdition"].Int: {
+                    components.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__["FloatLineComponent"], { digits: 0, step: "1", isInteger: true, globalState: this_1.props.globalState, label: displayName, propertyName: propertyName, target: this_1.props.block, onChange: function () { return _this.forceRebuild(options.notifiers); } }));
+                    break;
+                }
                 case babylonjs_Materials_Node_nodeMaterialDecorator__WEBPACK_IMPORTED_MODULE_10__["PropertyTypeForEdition"].Vector2: {
                     components.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector2LineComponent__WEBPACK_IMPORTED_MODULE_8__["Vector2LineComponent"], { globalState: this_1.props.globalState, label: displayName, propertyName: propertyName, target: this_1.props.block, onChange: function () { return _this.forceRebuild(options.notifiers); } }));
                     break;
@@ -66075,7 +66086,7 @@ var TextureLineComponent = /** @class */ (function (_super) {
                         };
                         internalTexture = rtt.renderTarget;
                         if (!internalTexture) return [3 /*break*/, 2];
-                        scene.postProcessManager.directRender([passPostProcess], internalTexture);
+                        scene.postProcessManager.directRender([passPostProcess], internalTexture, true);
                         numberOfChannelsByLine = width * 4;
                         halfHeight = height / 2;
                         return [4 /*yield*/, engine.readPixels(0, 0, width, height)];

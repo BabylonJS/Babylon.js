@@ -590,61 +590,9 @@ const initSideEffects = () => {
     ShaderProcessor._FileToolsLoadFile = LoadFile;
 };
 
-/**
- * Backwards compatibility.
- * @hidden
- * @deprecated
- */
-export const FileTools = {
-    DecodeBase64UrlToBinary,
-    DecodeBase64UrlToString,
-    DefaultRetryStrategy: FileToolsOptions.DefaultRetryStrategy,
-    BaseUrl: FileToolsOptions.BaseUrl,
-    CorsBehavior: FileToolsOptions.CorsBehavior,
-    PreprocessUrl: FileToolsOptions.PreprocessUrl,
-    IsBase64DataUrl,
-    IsFileURL,
-    LoadFile,
-    LoadImage,
-    ReadFile,
-    RequestFile,
-    SetCorsBehavior,
-};
-
-Object.defineProperty(FileTools, "DefaultRetryStrategy", {
-    get: function (this: null) {
-        return FileToolsOptions.DefaultRetryStrategy;
-    },
-    set: function (this: null, value: (url: string, request: WebRequest, retryIndex: number) => number) {
-        FileToolsOptions.DefaultRetryStrategy = value;
-    }
-});
-
-Object.defineProperty(FileTools, "BaseUrl", {
-    get: function (this: null) {
-        return FileToolsOptions.BaseUrl;
-    },
-    set: function (this: null, value: string) {
-        FileToolsOptions.BaseUrl = value;
-    }
-});
-
-Object.defineProperty(FileTools, "PreprocessUrl", {
-    get: function (this: null) {
-        return FileToolsOptions.PreprocessUrl;
-    },
-    set: function (this: null, value: (url: string) => string) {
-        FileToolsOptions.PreprocessUrl = value;
-    }
-});
-
-Object.defineProperty(FileTools, "CorsBehavior", {
-    get: function (this: null) {
-        return FileToolsOptions.CorsBehavior;
-    },
-    set: function (this: null, value: string | ((url: string | string[]) => string)) {
-        FileToolsOptions.CorsBehavior = value;
-    }
-});
-
 initSideEffects();
+
+// LTS. Export FileTools in this module for backward compatibility.
+import { _injectLTSFileTools, FileTools } from './fileTools.lts';
+_injectLTSFileTools();
+export { FileTools };

@@ -8,7 +8,26 @@ import { Logger } from "../../Misc/logger";
 import { _PrimaryIsoTriangle, GeodesicData, PolyhedronData } from "../geodesicMesh";
 import { VertexBuffer } from "../../Buffers/buffer";
 
-VertexData.CreateGoldberg = function(options: { size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, sideOrientation?: number }, goldbergData: PolyhedronData): VertexData {
+/**
+ * Creates the Mesh for a Goldberg Polyhedron
+ * @param name defines the name of the mesh
+ * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty
+ * * m number of horizontal steps along an isogrid
+ * * n number of angled steps along an isogrid
+ * * size the size of the Goldberg, optional default 1
+ * * sizeX allows stretching in the x direction, optional, default size
+ * * sizeY allows stretching in the y direction, optional, default size
+ * * sizeZ allows stretching in the z direction, optional, default size
+ * * faceUV an array of Vector4 elements used to set different images to the top, rings and bottom respectively
+ * * faceColors an array of Color3 elements used to set different colors to the top, rings and bottom respectively
+ * * subdivisions increasing the subdivisions increases the number of faces, optional, default 4
+ * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+ * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+ * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+ * @param goldBergData polyhedronData defining the Goldberg polyhedron
+ * @returns GoldbergSphere mesh
+ */
+export function CreateGoldbergVertexData(options: { size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, sideOrientation?: number }, goldbergData: PolyhedronData): VertexData {
 
     const size = options.size;
     const sizeX: number = options.sizeX || size || 1;
@@ -62,86 +81,81 @@ VertexData.CreateGoldberg = function(options: { size?: number, sizeX?: number, s
     vertexData.normals = normals;
     vertexData.uvs = uvs;
     return vertexData;
-};
+}
 
 /**
- * Class containing static functions to help procedurally build a Goldberg mesh
+ * Creates the Mesh for a Goldberg Polyhedron which is made from 12 pentagonal and the rest hexagonal faces
+ * @see https://en.wikipedia.org/wiki/Goldberg_polyhedron
+ * @param name defines the name of the mesh
+ * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty
+ * * m number of horizontal steps along an isogrid
+ * * n number of angled steps along an isogrid
+ * * size the size of the Goldberg, optional default 1
+ * * sizeX allows stretching in the x direction, optional, default size
+ * * sizeY allows stretching in the y direction, optional, default size
+ * * sizeZ allows stretching in the z direction, optional, default size
+ * * updatable defines if the mesh must be flagged as updatable
+ * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+ * @param scene defines the hosting scene
+ * @returns Goldberg mesh
  */
- export class GoldbergBuilder {
-    /**
-     * Creates the Mesh for a Goldberg Polyhedron which is made from 12 pentagonal and the rest hexagonal faces
-     * @see https://en.wikipedia.org/wiki/Goldberg_polyhedron
-     * @param name defines the name of the mesh
-     * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty
-     * * m number of horizontal steps along an isogrid
-     * * n number of angled steps along an isogrid
-     * * size the size of the Goldberg, optional default 1
-     * * sizeX allows stretching in the x direction, optional, default size
-     * * sizeY allows stretching in the y direction, optional, default size
-     * * sizeZ allows stretching in the z direction, optional, default size
-     * * updatable defines if the mesh must be flagged as updatable
-     * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
-     * @param scene defines the hosting scene
-     * @returns Goldberg mesh
-     */
-    public static CreateGoldberg(name: string, options: { m?: number, n?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, updatable?: boolean, sideOrientation?: number }, scene: Nullable<Scene> = null): Mesh {
-        let m: number = options.m || 1;
-        if (m !== Math.floor(m)) {
-            m === Math.floor(m);
-            Logger.Warn("m not an integer only floor(m) used");
-        }
-        let n: number = options.n || 0;
-        if (n !== Math.floor(n)) {
-            n === Math.floor(n);
-            Logger.Warn("n not an integer only floor(n) used");
-        }
-        if (n > m) {
-            const temp = n;
-            n = m;
-            m = temp;
-            Logger.Warn("n > m therefore m and n swapped");
-        }
-        const primTri: _PrimaryIsoTriangle = new _PrimaryIsoTriangle();
-        primTri.build(m, n);
-        const geodesicData = GeodesicData.BuildGeodesicData(primTri);
-        const goldbergData = geodesicData.toGoldbergData();
-
-        const goldberg = new GoldbergMesh(name);
-
-        options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
-        goldberg._originalBuilderSideOrientation = options.sideOrientation;
-
-        const vertexData = VertexData.CreateGoldberg(options, goldbergData);
-
-        vertexData.applyToMesh(goldberg, options.updatable);
-
-        goldberg.nbSharedFaces = geodesicData.sharedNodes;
-        goldberg.nbUnsharedFaces = geodesicData.poleNodes;
-        goldberg.adjacentFaces = geodesicData.adjacentFaces;
-        goldberg.nbFaces = goldberg.nbSharedFaces + goldberg.nbUnsharedFaces;
-        goldberg.nbFacesAtPole = (goldberg.nbUnsharedFaces - 12) / 12;
-        for (let f = 0; f < geodesicData.vertex.length; f++) {
-            goldberg.faceCenters.push(Vector3.FromArray(geodesicData.vertex[f]));
-            goldberg.faceColors.push(new Color4(1, 1, 1, 1));
-        }
-
-        for (let f = 0; f < goldbergData.face.length; f++) {
-            const verts = goldbergData.face[f];
-            const a = Vector3.FromArray(goldbergData.vertex[verts[0]]);
-            const b = Vector3.FromArray(goldbergData.vertex[verts[2]]);
-            const c = Vector3.FromArray(goldbergData.vertex[verts[1]]);
-            const ba = b.subtract(a);
-            const ca = c.subtract(a);
-            const norm = Vector3.Cross(ca, ba).normalize();
-            const z = Vector3.Cross(ca, norm).normalize();
-            goldberg.faceXaxis.push(ca.normalize());
-            goldberg.faceYaxis.push(norm);
-            goldberg.faceZaxis.push(z);
-        }
-        goldberg.setMetadata();
-
-        return goldberg;
+export function CreateGoldberg(name: string, options: { m?: number, n?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, updatable?: boolean, sideOrientation?: number }, scene: Nullable<Scene> = null): Mesh {
+    let m: number = options.m || 1;
+    if (m !== Math.floor(m)) {
+        m === Math.floor(m);
+        Logger.Warn("m not an integer only floor(m) used");
     }
+    let n: number = options.n || 0;
+    if (n !== Math.floor(n)) {
+        n === Math.floor(n);
+        Logger.Warn("n not an integer only floor(n) used");
+    }
+    if (n > m) {
+        const temp = n;
+        n = m;
+        m = temp;
+        Logger.Warn("n > m therefore m and n swapped");
+    }
+    const primTri: _PrimaryIsoTriangle = new _PrimaryIsoTriangle();
+    primTri.build(m, n);
+    const geodesicData = GeodesicData.BuildGeodesicData(primTri);
+    const goldbergData = geodesicData.toGoldbergData();
+
+    const goldberg = new GoldbergMesh(name);
+
+    options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
+    goldberg._originalBuilderSideOrientation = options.sideOrientation;
+
+    const vertexData = CreateGoldbergVertexData(options, goldbergData);
+
+    vertexData.applyToMesh(goldberg, options.updatable);
+
+    goldberg.nbSharedFaces = geodesicData.sharedNodes;
+    goldberg.nbUnsharedFaces = geodesicData.poleNodes;
+    goldberg.adjacentFaces = geodesicData.adjacentFaces;
+    goldberg.nbFaces = goldberg.nbSharedFaces + goldberg.nbUnsharedFaces;
+    goldberg.nbFacesAtPole = (goldberg.nbUnsharedFaces - 12) / 12;
+    for (let f = 0; f < geodesicData.vertex.length; f++) {
+        goldberg.faceCenters.push(Vector3.FromArray(geodesicData.vertex[f]));
+        goldberg.faceColors.push(new Color4(1, 1, 1, 1));
+    }
+
+    for (let f = 0; f < goldbergData.face.length; f++) {
+        const verts = goldbergData.face[f];
+        const a = Vector3.FromArray(goldbergData.vertex[verts[0]]);
+        const b = Vector3.FromArray(goldbergData.vertex[verts[2]]);
+        const c = Vector3.FromArray(goldbergData.vertex[verts[1]]);
+        const ba = b.subtract(a);
+        const ca = c.subtract(a);
+        const norm = Vector3.Cross(ca, ba).normalize();
+        const z = Vector3.Cross(ca, norm).normalize();
+        goldberg.faceXaxis.push(ca.normalize());
+        goldberg.faceYaxis.push(norm);
+        goldberg.faceZaxis.push(z);
+    }
+    goldberg.setMetadata();
+
+    return goldberg;
 }
 
 /**
@@ -211,12 +225,12 @@ function GoldbergCreate<TBase extends isMesh>(Base: TBase) {
             this.adjacentFaces = this.metadata.adjacentFaces;
             this.nbFaces = this.metadata.nbFaces;
             this.faceCenters = this.metadata.faceCenters,
-            this.faceXaxis = this.metadata.faceXaxis,
-            this.faceYaxis = this.metadata.faceYaxis,
-            this.faceZaxis = this.metadata.faceZaxis;
+                this.faceXaxis = this.metadata.faceXaxis,
+                this.faceYaxis = this.metadata.faceYaxis,
+                this.faceZaxis = this.metadata.faceZaxis;
         }
 
-        public changeFaceColors(colorRange : (number | Color4)[][]): number[] {
+        public changeFaceColors(colorRange: (number | Color4)[][]): number[] {
             for (let i = 0; i < colorRange.length; i++) {
                 const min: number = <number>colorRange[i][0];
                 const max: number = <number>colorRange[i][1];
@@ -239,17 +253,17 @@ function GoldbergCreate<TBase extends isMesh>(Base: TBase) {
             return newCols;
         }
 
-        public setFaceColors(colorRange : (number | Color4)[][]) {
+        public setFaceColors(colorRange: (number | Color4)[][]) {
             const newCols = this.changeFaceColors(colorRange);
             this.setVerticesData(VertexBuffer.ColorKind, newCols);
         }
 
-        public updateFaceColors(colorRange : (number | Color4)[][]) {
+        public updateFaceColors(colorRange: (number | Color4)[][]) {
             const newCols = this.changeFaceColors(colorRange);
             this.updateVerticesData(VertexBuffer.ColorKind, newCols);
         }
 
-        private changeFaceUVs(uvRange : (number | Vector2)[][]): FloatArray {
+        private changeFaceUVs(uvRange: (number | Vector2)[][]): FloatArray {
             const uvs: FloatArray = this.getVerticesData(VertexBuffer.UVKind)!!;
             for (let i = 0; i < uvRange.length; i++) {
                 const min: number = <number>uvRange[i][0];
@@ -300,12 +314,12 @@ function GoldbergCreate<TBase extends isMesh>(Base: TBase) {
             return uvs;
         }
 
-        public setFaceUVs(uvRange : (number | Vector2)[][]) {
+        public setFaceUVs(uvRange: (number | Vector2)[][]) {
             const newUVs: FloatArray = this.changeFaceUVs(uvRange);
             this.setVerticesData(VertexBuffer.UVKind, newUVs);
         }
 
-        public updateFaceUVs(uvRange : (number | Vector2)[][]) {
+        public updateFaceUVs(uvRange: (number | Vector2)[][]) {
             const newUVs = this.changeFaceUVs(uvRange);
             this.updateVerticesData(VertexBuffer.UVKind, newUVs);
         }
@@ -322,8 +336,11 @@ function GoldbergCreate<TBase extends isMesh>(Base: TBase) {
  * Function to use when extending the mesh class to a Goldberg class
  */
 const GoldbergMesh = GoldbergCreate(Mesh);
+/**
+ * Function to use when extending the mesh class to a Goldberg class
+ */
 
-Mesh.ExtendToGoldberg =  (mesh: Mesh) : Mesh => {
+export const ExtendMeshToGoldberg = (mesh: Mesh): Mesh => {
     const metadata = mesh.metadata;
     metadata.faceCenters = metadata.faceCenters.map((el: Vector3) => new Vector3(el._x, el._y, el._z));
     metadata.faceZaxis = metadata.faceZaxis.map((el: Vector3) => new Vector3(el._x, el._y, el._z));

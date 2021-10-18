@@ -54553,7 +54553,7 @@ var TextureCanvasManager = /** @class */ (function () {
         var cam = new babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["FreeCamera"]('camera', new babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0, 0, -1), this._3DScene);
         cam.mode = babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["Camera"].ORTHOGRAPHIC_CAMERA;
         _a = [-0.5, -0.5, 0.5, 0.5], cam.orthoBottom = _a[0], cam.orthoLeft = _a[1], cam.orthoTop = _a[2], cam.orthoRight = _a[3];
-        this._3DPlane = babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["PlaneBuilder"].CreatePlane('texture', { width: 1, height: 1 }, this._3DScene);
+        this._3DPlane = Object(babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["CreatePlane"])('texture', { width: 1, height: 1 }, this._3DScene);
         this._3DPlane.hasVertexAlpha = true;
         var mat = new babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["StandardMaterial"]('material', this._3DScene);
         mat.diffuseTexture = this._3DCanvasTexture;
@@ -55015,7 +55015,7 @@ var TextureCanvasManager = /** @class */ (function () {
         if (this._plane) {
             this._plane.dispose();
         }
-        this._plane = babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["PlaneBuilder"].CreatePlane("plane", { width: this._size.width, height: this._size.height }, this._scene);
+        this._plane = Object(babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["CreatePlane"])("plane", { width: this._size.width, height: this._size.height }, this._scene);
         this._plane.enableEdgesRendering();
         this._plane.edgesWidth = 4.0;
         this._plane.edgesColor = new babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["Color4"](1, 1, 1, 1);
@@ -55673,7 +55673,7 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
             var v2 = v1.add(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Vector3"].FromArray(normals, i).scaleInPlace(size));
             lines.push([v1, v2]);
         }
-        var normalLines = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["LinesBuilder"].CreateLineSystem("normalLines", { lines: lines }, scene);
+        var normalLines = Object(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["CreateLineSystem"])("normalLines", { lines: lines }, scene);
         normalLines.color = color;
         normalLines.parent = mesh;
         normalLines.reservedDataStore = { hidden: true };
@@ -57824,7 +57824,7 @@ var RenderGridPropertyGridComponent = /** @class */ (function (_super) {
             var extend = this.props.scene.getWorldExtends();
             var width = (extend.max.x - extend.min.x) * 5.0;
             var depth = (extend.max.z - extend.min.z) * 5.0;
-            this._gridMesh = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Mesh"].CreateGround("grid", 1.0, 1.0, 1, scene);
+            this._gridMesh = Object(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["CreateGround"])("grid", { width: 1.0, height: 1.0, subdivisions: 1 }, scene);
             if (!this._gridMesh.reservedDataStore) {
                 this._gridMesh.reservedDataStore = {};
             }
@@ -62735,10 +62735,18 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
                 }
             });
         }
+        var rootNodes = scene.rootNodes.slice(0);
+        // Adding nodes parented to a bone
+        for (var _i = 0, _a = scene.meshes; _i < _a.length; _i++) {
+            var mesh = _a[_i];
+            if (mesh.parent && mesh.parent.getClassName() === "Bone") {
+                rootNodes.push(mesh);
+            }
+        }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "tree", onContextMenu: function (e) { return e.preventDefault(); } },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](SceneExplorerFilterComponent, { onFilter: function (filter) { return _this.filterContent(filter); } }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_entities_sceneTreeItemComponent__WEBPACK_IMPORTED_MODULE_6__["SceneTreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, scene: scene, onRefresh: function () { return _this.forceUpdate(); }, onSelectionChangedObservable: this.props.globalState.onSelectionChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, contextMenuItems: nodeContextMenus, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: scene.rootNodes, label: "Nodes", offset: 1, filter: this.state.filter }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, contextMenuItems: nodeContextMenus, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: rootNodes, label: "Nodes", offset: 1, filter: this.state.filter }),
             scene.skeletons.length > 0 &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: scene.skeletons, label: "Skeletons", offset: 1, filter: this.state.filter }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: materials, contextMenuItems: materialsContextMenus, label: "Materials", offset: 1, filter: this.state.filter }),
@@ -67245,7 +67253,7 @@ var TextureHelper = /** @class */ (function () {
                         if (!(rtt.renderTarget && internalTexture)) return [3 /*break*/, 2];
                         samplingMode = internalTexture.samplingMode;
                         texture.updateSamplingMode(babylonjs_PostProcesses_postProcess__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_NEAREST_MIPNEAREST);
-                        scene.postProcessManager.directRender([lodPostProcess], rtt.renderTarget);
+                        scene.postProcessManager.directRender([lodPostProcess], rtt.renderTarget, true);
                         texture.updateSamplingMode(samplingMode);
                         numberOfChannelsByLine = width * 4;
                         halfHeight = height / 2;

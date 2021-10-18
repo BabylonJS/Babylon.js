@@ -1287,12 +1287,16 @@ export class NodeMaterial extends PushMaterial {
         this.bindOnlyWorldMatrix(world);
 
         let mustRebind = this._mustRebind(scene, effect, mesh.visibility);
+        let sharedData = this._sharedData;
 
         if (mustRebind) {
-            let sharedData = this._sharedData;
             if (effect) {
                 // Bindable blocks
                 for (var block of sharedData.bindableBlocks) {
+                    block.bind(effect, this, mesh, subMesh);
+                }
+
+                for (var block of sharedData.forcedBindableBlocks) {
                     block.bind(effect, this, mesh, subMesh);
                 }
 
@@ -1300,6 +1304,10 @@ export class NodeMaterial extends PushMaterial {
                 for (var inputBlock of sharedData.inputBlocks) {
                     inputBlock._transmit(effect, scene);
                 }
+            }
+        } else if (!this.isFrozen) {
+            for (var block of sharedData.forcedBindableBlocks) {
+                block.bind(effect, this, mesh, subMesh);
             }
         }
 
