@@ -20,7 +20,7 @@ const dependencies = function(settings, moduleName, cb) {
                     name: 'no-circular',
                     comment: 'circular dependencies will make you dizzy',
                     severity: 'error',
-                    from: {path: '^lts\.'},
+                    from: {},
                     to: {
                         circular: true
                     }
