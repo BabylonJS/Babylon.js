@@ -270,13 +270,21 @@ export class RenderTargetTexture extends Texture {
     }
 
     /**
-     * Sets a specific material to be used to render the mesh in this render target texture
-     * @param renderPassId render pass id
+     * Sets a specific material to be used to render a mesh/a list of meshes in this render target texture
+     * @param mesh mesh or array of meshes
      * @param material material or array of materials to use for this render pass. If undefined is passed, no specific material will be used but the regular material instead (mesh.material). It's possible to provide an array of materials to use a different material for each rendering in the case of a cube texture (6 rendering) and a 2D texture array (as many rendering as the length of the array)
      */
-    public setMaterialForRendering(mesh: AbstractMesh, material?: Material | Material[]): void {
-        for (let i = 0; i < this._renderPassIds.length; ++i) {
-            mesh.setMaterialForRenderPass(this._renderPassIds[i], material !== undefined ? (Array.isArray(material) ? material[i] : material) : undefined);
+    public setMaterialForRendering(mesh: AbstractMesh | AbstractMesh[], material?: Material | Material[]): void {
+        let meshes;
+        if (!Array.isArray(mesh)) {
+            meshes = [mesh]
+        } else {
+            meshes = mesh;
+        }
+        for (let j = 0; j < meshes.length; ++j) {
+            for (let i = 0; i < this._renderPassIds.length; ++i) {
+                meshes[j].setMaterialForRenderPass(this._renderPassIds[i], material !== undefined ? (Array.isArray(material) ? material[i] : material) : undefined);
+            }
         }
     }
 
