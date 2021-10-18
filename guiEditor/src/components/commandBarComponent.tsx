@@ -106,6 +106,10 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                             label: "Help",
                             onClick: () => { window.open('https://doc.babylonjs.com/toolsAndResources/tools/guiEditor', '_blank') }
                         },
+                        {
+                            label: "Give feedback",
+                            onClick: () => { window.open('https://forum.babylonjs.com/t/introducing-the-gui-editor-alpha/24578', '_blank') }
+                        },
                     ]} />
                     <CommandButtonComponent tooltip="Select" icon={pointerIcon} shortcut="S" isActive={this._selecting}
                         onClick={() => { if (!this._selecting) this.props.globalState.onSelectionButtonObservable.notifyObservers(); }} />

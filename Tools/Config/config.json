@@ -128,6 +128,7 @@
                             "namespace": "BABYLON.Debug"
                         }
                     ],
+                    "namedExportPathsToExclude": "Buffers/buffer",
                     "hiddenConsts": [
                         "Debug"
                     ]
@@ -526,7 +527,8 @@
                         "babylonjs": "BABYLON",
                         "babylonjs-loaders": "BABYLON",
                         "babylonjs-serializers": "BABYLON"
-                    }
+                    },
+                    "namedExportPathsToExclude": "3D/materials/fluent/fluentMaterial"
                 }
             },
             "es6": {
