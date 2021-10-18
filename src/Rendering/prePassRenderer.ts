@@ -113,7 +113,7 @@ export class PrePassRenderer {
             name: "prePass_Normal",
         },
         {
-            type: Constants.PREPASS_ALBEDO_TEXTURE_TYPE,
+            type: Constants.PREPASS_ALBEDO_SQRT_TEXTURE_TYPE,
             format: Constants.TEXTURETYPE_UNSIGNED_INT,
             name: "prePass_Albedo",
         },
@@ -692,6 +692,11 @@ export class PrePassRenderer {
         this._disable();
         let enablePrePass = false;
         this._scene.imageProcessingConfiguration.applyByPostProcess = false;
+
+        if (this._scene.depthPeelingRenderer) {
+            this._scene.depthPeelingRenderer.setPrePassRenderer(this);
+            enablePrePass = true;
+        }
 
         for (let i = 0; i < this._scene.materials.length; i++) {
             if (this._scene.materials[i].setPrePassRenderer(this)) {

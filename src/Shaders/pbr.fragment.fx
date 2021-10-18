@@ -15,6 +15,7 @@
 #include<prePassDeclaration>[SCENE_MRT_COUNT]
 
 precision highp float;
+#include<oitDeclaration>
 
 // Forces linear space for image processing
 #ifndef FROMLINEARSPACE
@@ -69,6 +70,8 @@ precision highp float;
 void main(void) {
 
     #define CUSTOM_FRAGMENT_MAIN_BEGIN
+
+    #include<oitFragment>
 
     #include<clipPlaneFragment>
 
@@ -574,7 +577,7 @@ void main(void) {
 
 #ifdef PREPASS
     float writeGeometryInfo = finalColor.a > 0.4 ? 1.0 : 0.0;
-    
+
     #ifdef PREPASS_POSITION
     gl_FragData[PREPASS_POSITION_INDEX] = vec4(vPositionW, writeGeometryInfo);
     #endif
@@ -589,6 +592,10 @@ void main(void) {
     gl_FragData[PREPASS_VELOCITY_INDEX] = vec4(velocity, 0.0, writeGeometryInfo);
     #endif
 
+    #ifdef PREPASS_ALBEDO_SQRT
+        vec3 sqAlbedo = sqrt(surfaceAlbedo); // for pre and post scatter
+    #endif
+
     #ifdef PREPASS_IRRADIANCE
         vec3 irradiance = finalDiffuse;
         #ifndef UNLIT
@@ -597,7 +604,6 @@ void main(void) {
             #endif
         #endif
 
-        vec3 sqAlbedo = sqrt(surfaceAlbedo); // for pre and post scatter
         #ifdef SS_SCATTERING
             gl_FragData[0] = vec4(finalColor.rgb - irradiance, finalColor.a); // Split irradiance from final color
             irradiance /= sqAlbedo;
@@ -610,7 +616,7 @@ void main(void) {
     #else
         gl_FragData[0] = vec4(finalColor.rgb, finalColor.a);
     #endif
-    
+
     #ifdef PREPASS_DEPTH
         gl_FragData[PREPASS_DEPTH_INDEX] = vec4(vViewPos.z, 0.0, 0.0, writeGeometryInfo); // Linear depth
     #endif
@@ -619,8 +625,8 @@ void main(void) {
         gl_FragData[PREPASS_NORMAL_INDEX] = vec4((view * vec4(normalW, 0.0)).rgb, writeGeometryInfo); // Normal
     #endif
 
-    #ifdef PREPASS_ALBEDO
-        gl_FragData[PREPASS_ALBEDO_INDEX] = vec4(sqAlbedo, writeGeometryInfo); // albedo, for pre and post scatter
+    #ifdef PREPASS_ALBEDO_SQRT
+        gl_FragData[PREPASS_ALBEDO_SQRT_INDEX] = vec4(sqAlbedo, writeGeometryInfo); // albedo, for pre and post scatter
     #endif
 
     #ifdef PREPASS_REFLECTIVITY
@@ -632,8 +638,19 @@ void main(void) {
     #endif
 #endif
 
-#if !defined(PREPASS) || defined(WEBGL2) 
+#if !defined(PREPASS) || defined(WEBGL2)
     gl_FragColor = finalColor;
 #endif
+
+#if ORDER_INDEPENDENT_TRANSPARENCY
+	if (fragDepth == nearestDepth) {
+		frontColor.rgb += finalColor.rgb * finalColor.a * alphaMultiplier;
+        // Cancels the 1 - a initial value operation
+		frontColor.a = 1.0 - alphaMultiplier * (1.0 - finalColor.a);
+	} else {
+		backColor += finalColor;
+	}
+#endif
+
     #include<pbrDebug>
 }

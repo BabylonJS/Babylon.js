@@ -142,8 +142,8 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public PREPASS = false;
     public PREPASS_IRRADIANCE = false;
     public PREPASS_IRRADIANCE_INDEX = -1;
-    public PREPASS_ALBEDO = false;
-    public PREPASS_ALBEDO_INDEX = -1;
+    public PREPASS_ALBEDO_SQRT = false;
+    public PREPASS_ALBEDO_SQRT_INDEX = -1;
     public PREPASS_DEPTH = false;
     public PREPASS_DEPTH_INDEX = -1;
     public PREPASS_NORMAL = false;
@@ -174,6 +174,8 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public SAMPLER3DBGRMAP = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public MULTIVIEW = false;
+    public ORDER_INDEPENDENT_TRANSPARENCY = false;
+
     /**
      * If the reflection texture on this material is in linear color space
      * @hidden
@@ -883,7 +885,11 @@ export class StandardMaterial extends PushMaterial {
         MaterialHelper.PrepareDefinesForMultiview(scene, defines);
 
         // PrePass
-        MaterialHelper.PrepareDefinesForPrePass(scene, defines, this.canRenderToMRT);
+        const oit = this.needAlphaBlendingForMesh(mesh) && this.getScene().useOrderIndependentTransparency;
+        MaterialHelper.PrepareDefinesForPrePass(scene, defines, this.canRenderToMRT && !oit);
+
+        // Order independant transparency
+        MaterialHelper.PrepareDefinesForOIT(scene, defines, oit);
 
         // Textures
         if (defines._areTexturesDirty) {
@@ -1234,7 +1240,8 @@ export class StandardMaterial extends PushMaterial {
 
             var samplers = ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler",
                 "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler",
-                "refractionCubeSampler", "refraction2DSampler", "boneSampler", "morphTargets"];
+                "refractionCubeSampler", "refraction2DSampler", "boneSampler", "morphTargets", "oitDepthSampler",
+                "oitFrontColorSampler"];
 
             var uniformBuffers = ["Material", "Scene", "Mesh"];
 
@@ -1605,6 +1612,11 @@ export class StandardMaterial extends PushMaterial {
                         effect.setTexture("refraction2DSampler", this._refractionTexture);
                     }
                 }
+            }
+
+            // OIT with depth peeling
+            if (this.getScene().useOrderIndependentTransparency && this.needAlphaBlendingForMesh(mesh)) {
+                this.getScene().depthPeelingRenderer!.bind(effect);
             }
 
             this.detailMap.bindForSubMesh(ubo, scene, this.isFrozen);

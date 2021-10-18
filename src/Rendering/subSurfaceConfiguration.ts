@@ -81,7 +81,7 @@ export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
      */
     public readonly texturesRequired: number[] = [
         Constants.PREPASS_DEPTH_TEXTURE_TYPE,
-        Constants.PREPASS_ALBEDO_TEXTURE_TYPE,
+        Constants.PREPASS_ALBEDO_SQRT_TEXTURE_TYPE,
         Constants.PREPASS_COLOR_TEXTURE_TYPE,
         Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
     ];
