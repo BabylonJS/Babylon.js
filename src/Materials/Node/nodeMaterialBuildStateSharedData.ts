@@ -44,6 +44,11 @@ export class NodeMaterialBuildStateSharedData {
     public bindableBlocks = new Array<NodeMaterialBlock>();
 
     /**
+     * Bindable blocks (Blocks that need to set data to the effect) that will always be called (by bindForSubMesh), contrary to bindableBlocks that won't be called if _mustRebind() returns false
+     */
+    public forcedBindableBlocks = new Array<NodeMaterialBlock>();
+
+     /**
      * List of blocks that can provide a compilation fallback
      */
     public blocksWithFallbacks = new Array<NodeMaterialBlock>();
