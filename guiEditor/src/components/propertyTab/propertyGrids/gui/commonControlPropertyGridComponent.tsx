@@ -74,6 +74,10 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
             percentage = false;
         }
 
+        if(this.props.control.parent?.typeName === "StackPanel") {
+            percentage = false;
+        }
+
         let newValue = value.match(/([\d\.\,]+)/g)?.[0];
         if (!newValue) {
             newValue = '0';
@@ -165,7 +169,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     <FloatLineComponent iconLabel={"Scale"} icon={scaleIcon} lockObject={this.props.lockObject} label="X" target={control} propertyName="scaleX" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Y" target={control} propertyName="scaleY" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </div>
-                <SliderLineComponent lockObject={this.props.lockObject} icon={rotationIcon} label="R" target={control} decimalCount={2} propertyName="rotation" minimum={0} maximum={2 * Math.PI} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <SliderLineComponent iconLabel={"Rotation"} lockObject={this.props.lockObject} icon={rotationIcon} label="R" target={control} decimalCount={2} propertyName="rotation" minimum={0} maximum={2 * Math.PI} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <hr className="ge" />
                 <TextLineComponent tooltip="" label="APPEARANCE" value=" " color="grey"></TextLineComponent>
                 {

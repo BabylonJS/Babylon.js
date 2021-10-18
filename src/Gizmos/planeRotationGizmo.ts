@@ -14,6 +14,8 @@ import { StandardMaterial } from "../Materials/standardMaterial";
 import { RotationGizmo } from "./rotationGizmo";
 import { ShaderMaterial } from "../Materials/shaderMaterial";
 import { Effect } from "../Materials/effect";
+import { CreatePlane } from "../Meshes/Builders/planeBuilder";
+import { CreateTorus } from "../Meshes/Builders/torusBuilder";
 
 /**
  * Single plane rotation gizmo
@@ -128,7 +130,7 @@ export class PlaneRotationGizmo extends Gizmo {
         const { rotationMesh, collider } = this._createGizmoMesh(this._gizmoMesh, thickness, tessellation);
 
         // Setup Rotation Circle
-        this._rotationDisplayPlane = Mesh.CreatePlane("rotationDisplay", 0.6, this.gizmoLayer.utilityLayerScene, false);
+        this._rotationDisplayPlane = CreatePlane("rotationDisplay", { size: 0.6, updatable: false }, this.gizmoLayer.utilityLayerScene);
         this._rotationDisplayPlane.rotation.z = Math.PI * 0.5;
         this._rotationDisplayPlane.parent = this._gizmoMesh;
         this._rotationDisplayPlane.setEnabled(false);
@@ -310,9 +312,17 @@ export class PlaneRotationGizmo extends Gizmo {
 
     /** Create Geometry for Gizmo */
     private _createGizmoMesh(parentMesh: AbstractMesh, thickness: number, tessellation: number) {
-        let collider = Mesh.CreateTorus("ignore", 0.6, 0.03 * thickness, tessellation, this.gizmoLayer.utilityLayerScene);
+        let collider = CreateTorus("ignore", {
+            diameter: 0.6,
+            thickness: 0.03 * thickness,
+            tessellation,
+        }, this.gizmoLayer.utilityLayerScene);
         collider.visibility = 0;
-        let rotationMesh = Mesh.CreateTorus("", 0.6, 0.005 * thickness, tessellation, this.gizmoLayer.utilityLayerScene);
+        let rotationMesh = CreateTorus("", {
+            diameter: 0.6,
+            thickness: 0.005 * thickness,
+            tessellation,
+        }, this.gizmoLayer.utilityLayerScene);
         rotationMesh.material = this._coloredMaterial;
 
         // Position arrow pointing in its drag axis

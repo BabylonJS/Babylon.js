@@ -312,7 +312,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                         deviceEvent.deviceType = DeviceType.Keyboard;
                         deviceEvent.deviceSlot = 0;
                         deviceEvent.inputIndex = i;
-                        deviceEvent.currentState = 1;
+                        deviceEvent.currentState = 0;
                         deviceEvent.previousState = 1;
                         this.onInputChangedObservable.notifyObservers(deviceEvent);
                     }

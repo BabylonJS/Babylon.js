@@ -621,6 +621,7 @@ export class Image extends Control {
      * Gets or sets the cell width to use when animation sheet is enabled
      * @see https://doc.babylonjs.com/how_to/gui#image
      */
+    @serialize()
     get cellWidth(): number {
         return this._cellWidth;
     }
@@ -637,6 +638,7 @@ export class Image extends Control {
      * Gets or sets the cell height to use when animation sheet is enabled
      * @see https://doc.babylonjs.com/how_to/gui#image
      */
+    @serialize()
     get cellHeight(): number {
         return this._cellHeight;
     }
@@ -653,6 +655,7 @@ export class Image extends Control {
      * Gets or sets the cell id to use (this will turn on the animation sheet mode)
      * @see https://doc.babylonjs.com/how_to/gui#image
      */
+    @serialize()
     get cellId(): number {
         return this._cellId;
     }

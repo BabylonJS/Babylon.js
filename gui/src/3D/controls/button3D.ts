@@ -1,7 +1,7 @@
 import { Vector4 } from "babylonjs/Maths/math.vector";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
+import { CreateBox } from "babylonjs/Meshes/Builders/boxBuilder";
 import { Material } from "babylonjs/Materials/material";
 import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
 import { Scene } from "babylonjs/scene";
@@ -75,7 +75,7 @@ export class Button3D extends AbstractButton3D {
         }
         faceUV[1] = new Vector4(0, 0, 1, 1);
 
-        let mesh = BoxBuilder.CreateBox(
+        let mesh = CreateBox(
             this.name + "_rootMesh",
             {
                 width: 1.0,

@@ -2,7 +2,6 @@ import { Scene } from "../scene";
 import { VertexBuffer } from "../Buffers/buffer";
 import { SubMesh } from "../Meshes/subMesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
-import { VertexData } from "../Meshes/mesh.vertexData";
 import { Matrix } from "../Maths/math.vector";
 import { SmartArray } from "../Misc/smartArray";
 import { Nullable, FloatArray, IndicesArray } from "../types";
@@ -19,6 +18,7 @@ import "../Shaders/color.vertex";
 import { DataBuffer } from '../Buffers/dataBuffer';
 import { Color3 } from '../Maths/math.color';
 import { Observable } from '../Misc/observable';
+import { CreateBoxVertexData } from "../Meshes/Builders/boxBuilder";
 
 declare module "../scene" {
     export interface Scene {
@@ -206,7 +206,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
             hidden: true
         };
         var engine = this.scene.getEngine();
-        var boxdata = VertexData.CreateBox({ size: 1.0 });
+        var boxdata = CreateBoxVertexData({ size: 1.0 });
         this._vertexBuffers[VertexBuffer.PositionKind] = new VertexBuffer(engine, <FloatArray>boxdata.positions, VertexBuffer.PositionKind, false);
         this._createIndexBuffer();
         this._fillIndexData = boxdata.indices;

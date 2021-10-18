@@ -4,7 +4,7 @@ import { Vector3, Vector2 } from 'babylonjs/Maths/math.vector';
 import { Color4, Color3 } from 'babylonjs/Maths/math.color';
 import { FreeCamera } from 'babylonjs/Cameras/freeCamera';
 import { Nullable } from 'babylonjs/types';
-import { PlaneBuilder } from 'babylonjs/Meshes/Builders/planeBuilder';
+import { CreatePlane } from 'babylonjs/Meshes/Builders/planeBuilder';
 import { Mesh } from 'babylonjs/Meshes/mesh';
 import { Camera } from 'babylonjs/Cameras/camera';
 
@@ -175,7 +175,7 @@ export class TextureCanvasManager {
         const cam = new FreeCamera('camera', new Vector3(0, 0, -1), this._3DScene);
         cam.mode = Camera.ORTHOGRAPHIC_CAMERA;
         [cam.orthoBottom, cam.orthoLeft, cam.orthoTop, cam.orthoRight] = [-0.5, -0.5, 0.5, 0.5];
-        this._3DPlane = PlaneBuilder.CreatePlane('texture', { width: 1, height: 1 }, this._3DScene);
+        this._3DPlane = CreatePlane('texture', { width: 1, height: 1 }, this._3DScene);
         this._3DPlane.hasVertexAlpha = true;
         const mat = new StandardMaterial('material', this._3DScene);
         mat.diffuseTexture = this._3DCanvasTexture;
@@ -579,7 +579,7 @@ export class TextureCanvasManager {
 
     private makePlane() {
         if (this._plane) { this._plane.dispose(); }
-        this._plane = PlaneBuilder.CreatePlane("plane", { width: this._size.width, height: this._size.height }, this._scene);
+        this._plane = CreatePlane("plane", { width: this._size.width, height: this._size.height }, this._scene);
         this._plane.enableEdgesRendering();
         this._plane.edgesWidth = 4.0;
         this._plane.edgesColor = new Color4(1, 1, 1, 1);
