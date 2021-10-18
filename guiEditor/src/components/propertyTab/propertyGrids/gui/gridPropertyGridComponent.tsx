@@ -33,7 +33,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
         return (
             this._rowDefinitions.map((rd, i) => {
                 return (
-                    <div key={`r${i}`} className="divider">
+                    <div key={`r${i}`} className="ge-divider">
                         <TextInputLineComponent lockObject={this.props.lockObject} key={`rText${i}`} label={`Row ${i}`} value={rd} numbersOnly={true}
                             onChange={(newValue) => {
                                 this._rowDefinitions[i] = newValue;
@@ -80,7 +80,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
         return (
             this._columnDefinitions.map((cd, i) => {
                 return (
-                    <div key={`c${i}`} className="divider">
+                    <div key={`c${i}`} className="ge-divider">
                         <TextInputLineComponent lockObject={this.props.lockObject} key={`ctext${i}`} label={`Column ${i}`} value={cd} numbersOnly={true}
                             onChange={(newValue) => {
                                 this._columnDefinitions[i] = newValue;

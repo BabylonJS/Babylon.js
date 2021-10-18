@@ -502,7 +502,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             }}
                         />}
                     {!DataStorage.ReadBoolean("Responsive", true) &&
-                        <div className="divider">
+                        <div className="ge-divider">
                             <FloatLineComponent
                                 icon={canvasSizeIcon}
                                 iconLabel="Canvas Size"
