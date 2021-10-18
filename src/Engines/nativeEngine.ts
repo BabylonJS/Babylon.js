@@ -2336,7 +2336,7 @@ export class NativeEngine extends Engine {
     public createRenderTargetTexture(size: number | { width: number, height: number }, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper {
         const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, size) as NativeRenderTargetWrapper;
 
-        const fullOptions = new RenderTargetCreationOptions();
+        const fullOptions: RenderTargetCreationOptions = {};
 
         if (options !== undefined && typeof options === "object") {
             fullOptions.generateMipMaps = options.generateMipMaps;
