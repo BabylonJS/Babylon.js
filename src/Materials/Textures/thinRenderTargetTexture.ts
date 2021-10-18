@@ -3,9 +3,8 @@ import { InternalTexture } from "../../Materials/Textures/internalTexture";
 
 import { ThinEngine } from '../../Engines/thinEngine';
 import { IRenderTargetTexture, RenderTargetWrapper } from "../../Engines/renderTargetWrapper";
-import { RenderTargetTextureSize } from "../../Engines/Extensions/engine.renderTarget";
-import { RenderTargetCreationOptions } from "./renderTargetCreationOptions";
 import { ThinTexture } from "./thinTexture";
+import { TextureSize, RenderTargetCreationOptions } from "./textureCreationOptions";
 
 /**
  * This is a tiny helper class to wrap a RenderTargetWrapper in a texture
@@ -15,7 +14,7 @@ export class ThinRenderTargetTexture extends ThinTexture implements IRenderTarge
     private readonly _renderTargetOptions: RenderTargetCreationOptions;
 
     private _renderTarget: Nullable<RenderTargetWrapper> = null;
-    private _size: RenderTargetTextureSize;
+    private _size: TextureSize;
 
     /**
      * Gets the render target wrapper associated with this render target
@@ -32,7 +31,7 @@ export class ThinRenderTargetTexture extends ThinTexture implements IRenderTarge
      * @param size Define the size of the RTT to create
      * @param options Define rendertarget options
      */
-    constructor(engine: ThinEngine, size: RenderTargetTextureSize, options: RenderTargetCreationOptions) {
+    constructor(engine: ThinEngine, size: TextureSize, options: RenderTargetCreationOptions) {
         super(null, false);
         this._engine = engine;
         this._renderTargetOptions = options;
@@ -46,7 +45,7 @@ export class ThinRenderTargetTexture extends ThinTexture implements IRenderTarge
      *   - a number for squared texture,
      *   - an object containing { width: number, height: number }
      */
-    public resize(size: RenderTargetTextureSize): void {
+    public resize(size: TextureSize): void {
         this._renderTarget?.dispose();
         this._renderTarget = null;
         this._texture = null;
