@@ -9,6 +9,9 @@ import { ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
 declare type LinesMesh = import("./linesMesh").LinesMesh;
 declare type GroundMesh = import("./groundMesh").GroundMesh;
 declare type Mesh = import('./mesh').Mesh;
+/**
+ * @hidden
+ */
 declare type TypeofMesh = typeof import('./mesh').Mesh;
 
 declare var earcut: any;
