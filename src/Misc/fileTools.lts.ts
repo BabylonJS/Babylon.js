@@ -13,7 +13,7 @@ declare type RequestFileError = import('./fileTools').RequestFileError;
  * @hidden
  * @deprecated import the needed function from fileTools.ts
  */
-export let FileTools: any;
+export let LTSFileTools: any;
 /** @hidden */
 export const _injectLTSFileTools = (
     DecodeBase64UrlToBinary: (uri: string) => ArrayBuffer,
@@ -35,7 +35,7 @@ export const _injectLTSFileTools = (
  * @hidden
  * @deprecated
  */
-    FileTools = {
+    LTSFileTools = {
         DecodeBase64UrlToBinary,
         DecodeBase64UrlToString,
         DefaultRetryStrategy: FileToolsOptions.DefaultRetryStrategy,
@@ -51,7 +51,7 @@ export const _injectLTSFileTools = (
         SetCorsBehavior,
     };
 
-    Object.defineProperty(FileTools, "DefaultRetryStrategy", {
+    Object.defineProperty(LTSFileTools, "DefaultRetryStrategy", {
         get: function (this: null) {
             return FileToolsOptions.DefaultRetryStrategy;
         },
@@ -60,7 +60,7 @@ export const _injectLTSFileTools = (
         }
     });
 
-    Object.defineProperty(FileTools, "BaseUrl", {
+    Object.defineProperty(LTSFileTools, "BaseUrl", {
         get: function (this: null) {
             return FileToolsOptions.BaseUrl;
         },
@@ -69,7 +69,7 @@ export const _injectLTSFileTools = (
         }
     });
 
-    Object.defineProperty(FileTools, "PreprocessUrl", {
+    Object.defineProperty(LTSFileTools, "PreprocessUrl", {
         get: function (this: null) {
             return FileToolsOptions.PreprocessUrl;
         },
@@ -78,7 +78,7 @@ export const _injectLTSFileTools = (
         }
     });
 
-    Object.defineProperty(FileTools, "CorsBehavior", {
+    Object.defineProperty(LTSFileTools, "CorsBehavior", {
         get: function (this: null) {
             return FileToolsOptions.CorsBehavior;
         },
