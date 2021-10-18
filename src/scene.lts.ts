@@ -12,6 +12,9 @@ import { Skeleton } from "./Bones/skeleton";
 import { IParticleSystem } from "./Particles/IParticleSystem";
 import { Geometry } from "./Meshes/geometry";
 
+/**
+ * @hidden
+ */
 declare type TypeofScene = typeof import('./scene').Scene;
 
 declare module './scene' {
