@@ -1,7 +1,7 @@
 import { Logger } from "../Misc/logger";
 import { Nullable, FloatArray, IndicesArray } from "../types";
 import { Engine } from "../Engines/engine";
-import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
+import { RenderTargetCreationOptions } from "../Materials/Textures/textureCreationOptions";
 import { VertexBuffer } from "../Buffers/buffer";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { Effect } from "../Materials/effect";
@@ -692,7 +692,7 @@ export class NullEngine extends Engine {
     public createRenderTargetTexture(size: any, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper {
         const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, size);
 
-        let fullOptions = new RenderTargetCreationOptions();
+        const fullOptions: RenderTargetCreationOptions = {};
 
         if (options !== undefined && typeof options === "object") {
             fullOptions.generateMipMaps = options.generateMipMaps;

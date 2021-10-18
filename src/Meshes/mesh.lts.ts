@@ -5,10 +5,14 @@ import { Scene } from "../scene";
 import { Nullable } from "../types";
 import { AbstractMesh } from "./abstractMesh";
 import { ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
-import { Mesh } from "./mesh";
 
 declare type LinesMesh = import("./linesMesh").LinesMesh;
 declare type GroundMesh = import("./groundMesh").GroundMesh;
+declare type Mesh = import('./mesh').Mesh;
+/**
+ * @hidden
+ */
+declare type TypeofMesh = typeof import('./mesh').Mesh;
 
 declare var earcut: any;
 
@@ -541,7 +545,7 @@ declare module "./mesh" {
 }
 
 /** @hidden */
-export const _injectLTSMesh = () => {
+export const _injectLTSMesh = (Mesh: TypeofMesh) => {
     Mesh.prototype.setMaterialByID = function (id: string): Mesh {
         return this.setMaterialById(id);
     };

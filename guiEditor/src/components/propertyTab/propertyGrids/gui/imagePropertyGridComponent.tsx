@@ -41,11 +41,11 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                 <hr/>
                 <TextLineComponent label="IMAGE" value=" " color="grey"></TextLineComponent>
                 <TextInputLineComponent lockObject={this.props.lockObject} label="Source" target={image} propertyName="source" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <div className="divider">
+                <div className="ge-divider">
                     <FloatLineComponent iconLabel={"Source Position"} icon={positionIcon}  lockObject={this.props.lockObject} label="L" target={image} propertyName="sourceLeft" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="T" target={image} propertyName="sourceTop" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </div>
-                <div className="divider">
+                <div className="ge-divider">
                     <FloatLineComponent iconLabel={"Source Size"} icon={sizeIcon} lockObject={this.props.lockObject} label="W" target={image} propertyName="sourceWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="H" target={image} propertyName="sourceHeight" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </div>
@@ -54,7 +54,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                 <hr/>
                 <TextLineComponent label="ANIMATION SHEET" value=" " color="grey"></TextLineComponent>
                 <FloatLineComponent lockObject={this.props.lockObject} label="Cell Id" isInteger={true} target={image} propertyName="cellId" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <div className="divider">
+                <div className="ge-divider">
                     <FloatLineComponent  icon={sizeIcon} lockObject={this.props.lockObject} label="W" target={image} propertyName="cellWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="H" target={image} propertyName="cellHeight" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </div>

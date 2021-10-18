@@ -4437,4 +4437,4 @@ RegisterClass("BABYLON.Mesh", Mesh);
 
 // LTS
 import { _injectLTSMesh } from "./mesh.lts";
-_injectLTSMesh();
+_injectLTSMesh(Mesh);
