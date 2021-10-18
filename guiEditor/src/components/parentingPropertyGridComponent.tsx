@@ -47,7 +47,7 @@ export class ParentingPropertyGridComponent extends React.Component<IParentingPr
             <div className="pane">
                 <hr className="ge" />
                 <TextLineComponent tooltip="" label="GRID PARENTING" value=" " color="grey"></TextLineComponent>
-                <div className="divider">
+                <div className="ge-divider">
                     <FloatLineComponent lockObject={this.props.lockObject} label={"Row #"} target={this} propertyName={"_rowNumber"} isInteger={true} min={0} onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         onChange={(newValue) => {
                             this.updateGridPosition();

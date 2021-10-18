@@ -41,6 +41,7 @@ import { StencilStateComposer } from "../States/stencilStateComposer";
 import { StorageBuffer } from "../Buffers/storageBuffer";
 import { IAudioEngineOptions } from '../Audio/Interfaces/IAudioEngineOptions';
 import { IStencilState } from "../States/IStencilState";
+import { InternalTextureCreationOptions, TextureSize } from '../Materials/Textures/textureCreationOptions';
 import { ShaderLanguage } from "../Materials/shaderLanguage";
 
 declare type WebRequest = import("../Misc/webRequest").WebRequest;
@@ -182,14 +183,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-alpha.55";
+        return "babylonjs@5.0.0-alpha.56";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-alpha.55";
+        return "5.0.0-alpha.56";
     }
 
     /**
@@ -3441,6 +3442,90 @@ export class ThinEngine {
     /** @hidden */
     public _createHardwareTexture(): HardwareTextureWrapper {
         return new WebGLHardwareTexture(this._createTexture(), this._gl);
+    }
+
+    /**
+     * Creates an internal texture without binding it to a framebuffer
+     * @hidden
+     * @param size defines the size of the texture
+     * @param options defines the options used to create the texture
+     * @returns a new render target texture stored in an InternalTexture
+     */
+     public _createInternalTexture(size: TextureSize, options: boolean | InternalTextureCreationOptions): InternalTexture {
+        const fullOptions: InternalTextureCreationOptions = {};
+
+        if (options !== undefined && typeof options === "object") {
+            fullOptions.generateMipMaps = options.generateMipMaps;
+            fullOptions.type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_INT : options.type;
+            fullOptions.samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
+            fullOptions.format = options.format === undefined ? Constants.TEXTUREFORMAT_RGBA : options.format;
+        } else {
+            fullOptions.generateMipMaps = <boolean>options;
+            fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
+            fullOptions.samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
+            fullOptions.format = Constants.TEXTUREFORMAT_RGBA;
+        }
+
+        if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+            // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
+            fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        } else if (fullOptions.type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+            // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
+            fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        }
+        if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
+            fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
+            Logger.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
+        }
+
+        const gl = this._gl;
+        const texture = new InternalTexture(this, InternalTextureSource.Unknown);
+        const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
+        const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
+        const layers = (<{ width: number; height: number; layers?: number }>size).layers || 0;
+        const filters = this._getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps ? true : false);
+        const target = layers !== 0 ? gl.TEXTURE_2D_ARRAY : gl.TEXTURE_2D;
+        const sizedFormat = this._getRGBABufferInternalSizedFormat(fullOptions.type, fullOptions.format);
+        const internalFormat = this._getInternalFormat(fullOptions.format);
+        const type = this._getWebGLTextureType(fullOptions.type);
+
+        // Bind
+        this._bindTextureDirectly(target, texture);
+
+        if (layers !== 0) {
+            texture.is2DArray = true;
+            gl.texImage3D(target, 0, sizedFormat, width, height, layers, 0, internalFormat, type, null);
+        } else {
+            gl.texImage2D(target, 0, sizedFormat, width, height, 0, internalFormat, type, null);
+        }
+
+        gl.texParameteri(target, gl.TEXTURE_MAG_FILTER, filters.mag);
+        gl.texParameteri(target, gl.TEXTURE_MIN_FILTER, filters.min);
+        gl.texParameteri(target, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(target, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+        // MipMaps
+        if (fullOptions.generateMipMaps) {
+            this._gl.generateMipmap(target);
+        }
+
+        this._bindTextureDirectly(target, null);
+
+        texture.baseWidth = width;
+        texture.baseHeight = height;
+        texture.width = width;
+        texture.height = height;
+        texture.depth = layers;
+        texture.isReady = true;
+        texture.samples = 1;
+        texture.generateMipMaps = fullOptions.generateMipMaps ? true : false;
+        texture.samplingMode = fullOptions.samplingMode;
+        texture.type = fullOptions.type;
+        texture.format = fullOptions.format;
+
+        this._internalTexturesCache.push(texture);
+
+        return texture;
     }
 
     /** @hidden */

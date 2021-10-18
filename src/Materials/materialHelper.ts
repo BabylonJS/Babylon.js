@@ -287,6 +287,22 @@ export class MaterialHelper {
     }
 
     /**
+     * Prepares the defines related to order independant transparency
+     * @param scene The scene we are intending to draw
+     * @param defines The defines to update
+     * @param needAlphaBlending Determines if the material needs alpha blending
+     */
+    public static PrepareDefinesForOIT(scene: Scene, defines: any, needAlphaBlending: boolean) {
+        const previousDefine = defines.ORDER_INDEPENDENT_TRANSPARENCY;
+
+        defines.ORDER_INDEPENDENT_TRANSPARENCY = scene.useOrderIndependentTransparency && needAlphaBlending;
+
+        if (previousDefine !== defines.ORDER_INDEPENDENT_TRANSPARENCY) {
+            defines.markAsUnprocessed();
+        }
+    }
+
+    /**
      * Prepares the defines related to the prepass
      * @param scene The scene we are intending to draw
      * @param defines The defines to update
@@ -321,9 +337,9 @@ export class MaterialHelper {
                 index: "PREPASS_IRRADIANCE_INDEX",
             },
             {
-                type: Constants.PREPASS_ALBEDO_TEXTURE_TYPE,
-                define: "PREPASS_ALBEDO",
-                index: "PREPASS_ALBEDO_INDEX",
+                type: Constants.PREPASS_ALBEDO_SQRT_TEXTURE_TYPE,
+                define: "PREPASS_ALBEDO_SQRT",
+                index: "PREPASS_ALBEDO_SQRT_INDEX",
             },
             {
                 type: Constants.PREPASS_DEPTH_TEXTURE_TYPE,
