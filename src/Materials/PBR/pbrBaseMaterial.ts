@@ -181,8 +181,8 @@ export class PBRMaterialDefines extends MaterialDefines
     public PREPASS = false;
     public PREPASS_IRRADIANCE = false;
     public PREPASS_IRRADIANCE_INDEX = -1;
-    public PREPASS_ALBEDO = false;
-    public PREPASS_ALBEDO_INDEX = -1;
+    public PREPASS_ALBEDO_SQRT = false;
+    public PREPASS_ALBEDO_SQRT_INDEX = -1;
     public PREPASS_DEPTH = false;
     public PREPASS_DEPTH_INDEX = -1;
     public PREPASS_NORMAL = false;
@@ -224,6 +224,7 @@ export class PBRMaterialDefines extends MaterialDefines
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public EXPOSURE = false;
     public MULTIVIEW = false;
+    public ORDER_INDEPENDENT_TRANSPARENCY = false;
 
     public USEPHYSICALLIGHTFALLOFF = false;
     public USEGLTFLIGHTFALLOFF = false;
@@ -1406,7 +1407,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         var samplers = ["albedoSampler", "reflectivitySampler", "ambientSampler", "emissiveSampler",
             "bumpSampler", "lightmapSampler", "opacitySampler",
             "reflectionSampler", "reflectionSamplerLow", "reflectionSamplerHigh", "irradianceSampler",
-            "microSurfaceSampler", "environmentBrdfSampler", "boneSampler", "metallicReflectanceSampler", "reflectanceSampler", "morphTargets"];
+            "microSurfaceSampler", "environmentBrdfSampler", "boneSampler", "metallicReflectanceSampler", "reflectanceSampler", "morphTargets",
+            "oitDepthSampler", "oitFrontColorSampler"];
 
         var uniformBuffers = ["Material", "Scene", "Mesh"];
 
@@ -1475,7 +1477,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         MaterialHelper.PrepareDefinesForMultiview(scene, defines);
 
         // PrePass
-        MaterialHelper.PrepareDefinesForPrePass(scene, defines, this.canRenderToMRT);
+        const oit = this.needAlphaBlendingForMesh(mesh) && this.getScene().useOrderIndependentTransparency;
+        MaterialHelper.PrepareDefinesForPrePass(scene, defines, this.canRenderToMRT && !oit);
+
+        // Order independant transparency
+        MaterialHelper.PrepareDefinesForOIT(scene, defines, oit);
 
         // Textures
         defines.METALLICWORKFLOW = this.isMetallicWorkflow();
@@ -2199,6 +2205,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 if (this._bumpTexture && engine.getCaps().standardDerivatives && MaterialFlags.BumpTextureEnabled && !this._disableBumpMap) {
                     ubo.setTexture("bumpSampler", this._bumpTexture);
                 }
+            }
+
+            // OIT with depth peeling
+            if (this.getScene().useOrderIndependentTransparency && this.needAlphaBlendingForMesh(mesh)) {
+                this.getScene().depthPeelingRenderer!.bind(effect);
             }
 
             this.detailMap.bindForSubMesh(ubo, scene, this.isFrozen);
