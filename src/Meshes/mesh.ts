@@ -3474,6 +3474,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
         } else {
             this.material = null;
+            serializationObject.materialId = this._scene.defaultMaterial.id;
         }
 
         // Morph targets
@@ -4436,4 +4437,4 @@ RegisterClass("BABYLON.Mesh", Mesh);
 
 // LTS
 import { _injectLTSMesh } from "./mesh.lts";
-_injectLTSMesh();
+_injectLTSMesh(Mesh);
