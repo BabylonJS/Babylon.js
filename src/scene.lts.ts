@@ -11,7 +11,6 @@ import { Node } from "./node";
 import { Skeleton } from "./Bones/skeleton";
 import { IParticleSystem } from "./Particles/IParticleSystem";
 import { Geometry } from "./Meshes/geometry";
-import { Scene } from "./scene";
 
 declare module './scene' {
     interface Scene {
@@ -167,7 +166,7 @@ declare module './scene' {
 }
 
 /** @hidden */
-export const _injectLTSScene = () => {
+export const _injectLTSScene = (Scene: typeof import('./scene').Scene) => {
     Scene.prototype.setActiveCameraByID = function (id: string): Nullable<Camera> {
         return this.setActiveCameraById(id);
     };

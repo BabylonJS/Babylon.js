@@ -564,9 +564,9 @@ export const IsBase64DataUrl = (uri: string): boolean => {
  * @return The decoded base64 data.
  * @hidden
  */
-export const DecodeBase64UrlToBinary = (uri: string): ArrayBuffer => {
+export function DecodeBase64UrlToBinary(uri: string): ArrayBuffer {
     return DecodeBase64ToBinary(uri.split(",")[1]);
-};
+}
 
 /**
  * Decode the given base64 uri into a UTF-8 encoded string.
@@ -594,5 +594,5 @@ initSideEffects();
 
 // LTS. Export FileTools in this module for backward compatibility.
 import { _injectLTSFileTools, FileTools } from './fileTools.lts';
-_injectLTSFileTools();
+_injectLTSFileTools(DecodeBase64UrlToBinary, DecodeBase64UrlToString, FileToolsOptions, IsBase64DataUrl, IsFileURL, LoadFile, LoadImage, ReadFile, RequestFile, SetCorsBehavior);
 export { FileTools };
