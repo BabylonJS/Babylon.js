@@ -5,7 +5,7 @@ import { Nullable } from "babylonjs/types";
 import { Control3D } from "./control3D";
 import { VolumeBasedPanel } from "./volumeBasedPanel";
 import { Mesh } from "babylonjs/Meshes/mesh";
-import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
+import { CreateBox } from "babylonjs/Meshes/Builders/boxBuilder";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { FluentMaterial } from "../materials/fluent/fluentMaterial";
 import { Color3 } from "babylonjs/Maths/math.color";
@@ -55,7 +55,7 @@ export class TouchHolographicMenu extends VolumeBasedPanel {
     protected _createNode(scene: Scene): Nullable<TransformNode> {
         const node = new Mesh(`menu_${this.name}`, scene);
 
-        this._backPlate = BoxBuilder.CreateBox("backPlate" + this.name, { size: 1 }, scene);
+        this._backPlate = CreateBox("backPlate" + this.name, { size: 1 }, scene);
         this._backPlate.parent = node;
 
         return node;

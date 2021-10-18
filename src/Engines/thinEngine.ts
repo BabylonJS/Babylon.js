@@ -182,14 +182,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-alpha.48";
+        return "babylonjs@5.0.0-alpha.55";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-alpha.48";
+        return "5.0.0-alpha.55";
     }
 
     /**
@@ -1969,9 +1969,9 @@ export class ThinEngine {
         this.bindArrayBuffer(dataBuffer);
 
         if (data instanceof Array) {
-            this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(data), this._gl.STATIC_DRAW);
+            this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(data), usage);
         } else {
-            this._gl.bufferData(this._gl.ARRAY_BUFFER, <ArrayBuffer>data, this._gl.STATIC_DRAW);
+            this._gl.bufferData(this._gl.ARRAY_BUFFER, <ArrayBuffer>data, usage);
         }
 
         this._resetVertexBufferBinding();
@@ -2019,8 +2019,9 @@ export class ThinEngine {
     }
 
     protected _normalizeIndexData(indices: IndicesArray): Uint16Array | Uint32Array {
-        if (indices instanceof Uint16Array) {
-            return indices;
+        const bytesPerElement = (indices as Exclude<IndicesArray, number[]>).BYTES_PER_ELEMENT;
+        if (bytesPerElement === 2) {
+            return indices as Uint16Array;
         }
 
         // Check 32 bit support
@@ -2568,13 +2569,16 @@ export class ThinEngine {
         if (this._compiledEffects[effect._key]) {
             delete this._compiledEffects[effect._key];
 
-            this._deletePipelineContext(effect.getPipelineContext() as WebGLPipelineContext);
+            const pipelineContext = effect.getPipelineContext();
+            if (pipelineContext) {
+                this._deletePipelineContext(pipelineContext);
+            }
         }
     }
 
     /** @hidden */
     public _deletePipelineContext(pipelineContext: IPipelineContext): void {
-        let webGLPipelineContext = pipelineContext as WebGLPipelineContext;
+        const webGLPipelineContext = pipelineContext as WebGLPipelineContext;
         if (webGLPipelineContext && webGLPipelineContext.program) {
             webGLPipelineContext.program.__SPECTOR_rebuildProgram = null;
 
@@ -3586,8 +3590,10 @@ export class ThinEngine {
                     this._createTextureBase(EngineStore.FallbackTexture, noMipmap, texture.invertY, scene, samplingMode, null, onError, prepareTexture, prepareTextureProcessFunction, buffer, texture);
                 }
 
+                message = (message || "Unknown error") + (EngineStore.UseFallbackTexture ? " - Fallback texture was used" : "");
+                texture.onErrorObservable.notifyObservers({ message, exception });
                 if (onError) {
-                    onError((message || "Unknown error") + (EngineStore.UseFallbackTexture ? " - Fallback texture was used" : ""), exception);
+                    onError(message, exception);
                 }
             }
             else {

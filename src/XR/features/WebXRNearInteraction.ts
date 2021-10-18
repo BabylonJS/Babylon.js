@@ -1,7 +1,7 @@
 import { IWebXRFeature, WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
 import { WebXRSessionManager } from "../webXRSessionManager";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { SphereBuilder } from "../../Meshes/Builders/sphereBuilder";
+import { CreateSphere } from "../../Meshes/Builders/sphereBuilder";
 import { Observer } from "../../Misc/observable";
 import { WebXRInput } from "../webXRInput";
 import { WebXRInputSource } from "../webXRInputSource";
@@ -21,7 +21,6 @@ import { Color3 } from "../../Maths/math.color";
 
 type ControllerData = {
     xrController?: WebXRInputSource;
-    xrControllerTransform: Nullable<AbstractMesh>;
     squeezeComponent?: WebXRControllerComponent;
     selectionComponent?: WebXRControllerComponent;
     onButtonChangedObserver?: Nullable<Observer<WebXRControllerComponent>>;
@@ -95,7 +94,6 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
 
         this._controllers[xrController.uniqueId] = {
             xrController,
-            xrControllerTransform: null,
             meshUnderPointer: null,
             nearInteractionMesh: null,
             pick: null,
@@ -340,8 +338,6 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                         }
                     }
                 }
-
-                controllerData.xrControllerTransform = controllerData.xrController.grip || null;
             } else {
                 return;
             }
@@ -445,7 +441,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
 
     private _generateVisualCue() {
         const sceneToRenderTo = this._options.useUtilityLayer ? this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene : this._scene;
-        const selectionMesh = SphereBuilder.CreateSphere(
+        const selectionMesh = CreateSphere(
             "nearInteraction",
             {
                 diameter: 0.0035 * 3,
@@ -634,7 +630,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
 
         let createSphereMesh = (name: string, scale: number, sceneToUse: Scene): Nullable<AbstractMesh> => {
             let resultMesh = null;
-            resultMesh = SphereBuilder.CreateSphere(name, { diameter: 1 }, sceneToUse);
+            resultMesh = CreateSphere(name, { diameter: 1 }, sceneToUse);
             resultMesh.scaling.set(scale, scale, scale);
             resultMesh.isVisible = false;
 
@@ -664,7 +660,8 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                     pickingInfo.hit = result.hit;
                     pickingInfo.pickedMesh = mesh;
                     pickingInfo.pickedPoint = result.pickedPoint;
-                    pickingInfo.originTransform = controllerData.xrControllerTransform;
+                    pickingInfo.aimTransform = controllerData.xrController.pointer;
+                    pickingInfo.gripTransform = controllerData.xrController.grip || null;
                     pickingInfo.originMesh = controllerData.pickIndexMeshTip;
                     pickingInfo.distance = result.distance;
                 }

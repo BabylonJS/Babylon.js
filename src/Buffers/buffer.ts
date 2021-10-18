@@ -327,9 +327,6 @@ export class VertexBuffer {
             this._buffer = data;
             this._ownsBuffer = takeBufferOwnership;
 
-            if (takeBufferOwnership) {
-                this._buffer._increaseReferences();
-            }
         } else {
             this._buffer = new Buffer(engine, data, updatable, stride, postponeInternalCreation, instanced, useBytes);
             this._ownsBuffer = true;

@@ -8,6 +8,8 @@ export enum PropertyTypeForEdition {
     Boolean,
     /** property is a float */
     Float,
+    /** property is a int */
+    Int,
     /** property is a Vector2 */
     Vector2,
     /** property is a list of values */

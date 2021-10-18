@@ -106,7 +106,7 @@ describe('Babylon physicsComponents', () => {
             scene.enablePhysics(gravityVector, physicsPlugin);
 
             // The built-in 'sphere' shape. Params: name, subdivs, size, scene
-            let sphere = BABYLON.Mesh.CreateSphere("sphere1", 16, 2, scene);
+            let sphere = BABYLON.MeshBuilder.CreateSphere("sphere1", { segments: 16, diameter: 2 }, scene);
 
             sphere.physicsImpostor = new BABYLON.PhysicsImpostor(sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1, restitution: 0.9 }, scene);
             expect(sphere.physicsImpostor).to.be.an('object');
@@ -118,7 +118,7 @@ describe('Babylon physicsComponents', () => {
             expect(sphere.physicsImpostor.uniqueId).to.be.a('number');
 
             // if we create another sphere, it should have a different ID
-            let sphere2 = BABYLON.Mesh.CreateSphere("sphere2", 16, 2, scene);
+            let sphere2 = BABYLON.MeshBuilder.CreateSphere("sphere2", { segments: 16, diameter: 2 }, scene);
             sphere2.physicsImpostor = new BABYLON.PhysicsImpostor(sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1, restitution: 0.9 }, scene);
 
             expect(sphere.physicsImpostor.uniqueId).to.not.equal(sphere2.physicsImpostor.uniqueId);
