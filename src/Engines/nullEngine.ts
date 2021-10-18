@@ -692,7 +692,7 @@ export class NullEngine extends Engine {
     public createRenderTargetTexture(size: any, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper {
         const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, size);
 
-        let fullOptions = new RenderTargetCreationOptions();
+        const fullOptions: RenderTargetCreationOptions = {};
 
         if (options !== undefined && typeof options === "object") {
             fullOptions.generateMipMaps = options.generateMipMaps;
