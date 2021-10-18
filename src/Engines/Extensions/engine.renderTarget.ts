@@ -54,7 +54,7 @@ ThinEngine.prototype._createHardwareRenderTargetWrapper = function (isMulti: boo
 ThinEngine.prototype.createRenderTargetTexture = function (this: ThinEngine, size: TextureSize, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper {
     const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, size) as WebGLRenderTargetWrapper;
 
-    const fullOptions = new RenderTargetCreationOptions();
+    const fullOptions: RenderTargetCreationOptions = {};
     if (options !== undefined && typeof options === "object") {
         fullOptions.generateDepthBuffer = !!options.generateDepthBuffer;
         fullOptions.generateStencilBuffer = !!options.generateStencilBuffer;

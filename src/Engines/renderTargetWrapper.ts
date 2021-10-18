@@ -265,7 +265,7 @@ export class RenderTargetWrapper {
                 rtw = this._engine.createMultipleRenderTarget(size, optionsMRT);
             }
         } else {
-            let options = new RenderTargetCreationOptions();
+            const options: RenderTargetCreationOptions = {};
 
             options.generateDepthBuffer = this._generateDepthBuffer;
             options.generateMipMaps = this.texture?.generateMipMaps ?? false;
