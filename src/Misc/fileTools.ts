@@ -174,7 +174,7 @@ export const LoadImage = (input: string | ArrayBuffer | ArrayBufferView | Blob, 
     const onErrorHandler = (exception: any) => {
         if (onError) {
             const inputText = url || input.toString();
-            onError(`Error while trying to load image: ${((inputText.indexOf('http') === 0 || inputText.length < 128) ? inputText : inputText.slice(0, 128) + "...")}`, exception);
+            onError(`Error while trying to load image: ${((inputText.indexOf('http') === 0 || inputText.length <= 128) ? inputText : inputText.slice(0, 128) + "...")}`, exception);
         }
     };
 
