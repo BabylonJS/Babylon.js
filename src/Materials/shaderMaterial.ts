@@ -127,6 +127,7 @@ export class ShaderMaterial extends Material {
     private _cachedWorldViewProjectionMatrix = new Matrix();
     private _multiview: boolean = false;
     private _cachedDefines: string;
+    private _effectUsesInstances: boolean;
 
     /** Define the Url to load snippets */
     public static SnippetUrl = "https://snippet.babylonjs.com";
@@ -571,7 +572,7 @@ export class ShaderMaterial extends Material {
     public isReady(mesh?: AbstractMesh, useInstances?: boolean, subMesh?: SubMesh): boolean {
         let effect = this.getEffect();
         if (effect && this.isFrozen) {
-            if (effect._wasPreviouslyReady) {
+            if (effect._wasPreviouslyReady && this._effectUsesInstances === useInstances) {
                 return true;
             }
         }
@@ -807,6 +808,8 @@ export class ShaderMaterial extends Material {
                 this._onEffectCreatedObservable.notifyObservers(onCreatedEffectParameters);
             }
         }
+
+        this._effectUsesInstances = !!useInstances;
 
         if (!effect?.isReady() ?? true) {
             return false;
