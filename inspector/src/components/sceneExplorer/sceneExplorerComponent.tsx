@@ -418,6 +418,15 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             });
         }
 
+        const rootNodes = scene.rootNodes.slice(0);
+
+        // Adding nodes parented to a bone
+        for (const mesh of scene.meshes) {
+            if (mesh.parent && mesh.parent.getClassName() === "Bone") {
+                rootNodes.push(mesh);
+            }
+        }
+
         return (
             <div id="tree" onContextMenu={(e) => e.preventDefault()}>
                 <SceneExplorerFilterComponent onFilter={(filter) => this.filterContent(filter)} />
@@ -425,7 +434,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                     extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} scene={scene} onRefresh={() => this.forceUpdate()} onSelectionChangedObservable={this.props.globalState.onSelectionChangedObservable} />
                 <TreeItemComponent globalState={this.props.globalState}
                     contextMenuItems={nodeContextMenus}
-                    extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.rootNodes} label="Nodes" offset={1} filter={this.state.filter} />
+                    extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={rootNodes} label="Nodes" offset={1} filter={this.state.filter} />
                 {
                     scene.skeletons.length > 0 &&
                     <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.skeletons} label="Skeletons" offset={1} filter={this.state.filter} />

@@ -6,7 +6,7 @@ import { Color3 } from '../Maths/math.color';
 import { TransformNode } from "../Meshes/transformNode";
 import { Node } from "../node";
 import { Mesh } from "../Meshes/mesh";
-import { PlaneBuilder } from "../Meshes/Builders/planeBuilder";
+import { CreatePlane } from "../Meshes/Builders/planeBuilder";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
 import { Gizmo, GizmoAxisCache } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
@@ -46,7 +46,7 @@ export class PlaneDragGizmo extends Gizmo {
         var plane = new TransformNode("plane", scene);
 
         //make sure plane is double sided
-        var dragPlane = PlaneBuilder.CreatePlane("dragPlane", { width: .1375, height: .1375, sideOrientation: 2 }, scene);
+        var dragPlane = CreatePlane("dragPlane", { width: .1375, height: .1375, sideOrientation: 2 }, scene);
         dragPlane.material = material;
         dragPlane.parent = plane;
         return plane;

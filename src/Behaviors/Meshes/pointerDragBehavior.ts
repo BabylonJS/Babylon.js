@@ -10,6 +10,7 @@ import { Ray } from "../../Culling/ray";
 import { PivotTools } from '../../Misc/pivotTools';
 import { ArcRotateCamera } from '../../Cameras/arcRotateCamera';
 import "../../Meshes/Builders/planeBuilder";
+import { CreatePlane } from "../../Meshes/Builders/planeBuilder";
 
 /**
  * A behavior that when attached to a mesh will allow the mesh to be dragged around the screen based on pointer events
@@ -202,7 +203,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
                 });
             }
         }
-        this._dragPlane = Mesh.CreatePlane("pointerDragPlane", this._debugMode ? 1 : 10000, PointerDragBehavior._planeScene, false, Mesh.DOUBLESIDE);
+        this._dragPlane = CreatePlane("pointerDragPlane", { size: this._debugMode ? 1 : 10000, updatable: false, sideOrientation: Mesh.DOUBLESIDE }, PointerDragBehavior._planeScene);
 
         // State of the drag
         this.lastDragPosition = new Vector3(0, 0, 0);

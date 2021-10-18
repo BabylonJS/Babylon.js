@@ -10,7 +10,7 @@ import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/chec
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
 
 const strokeWeightIcon: string = require("../../../../sharedUiComponents/imgs/strokeWeightIcon.svg");
-const checkboxIcon: string = require("../../../../sharedUiComponents/imgs/checkboxIcon.svg");
+const checkboxIcon: string = require("../../../../sharedUiComponents/imgs/checkboxIconDark.svg");
 const scaleIcon: string = require("../../../../sharedUiComponents/imgs/scaleIcon.svg");
 
 interface IRadioButtonPropertyGridComponentProps {

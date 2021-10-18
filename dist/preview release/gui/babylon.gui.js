@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!************************************************************************************!*\
-  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \************************************************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \*****************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -915,14 +915,6 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
     AdvancedDynamicTexture.prototype.getControlByName = function (name) {
         return this._getControlByKey("name", name);
     };
-    /**
-    * Will return the first control with the given id
-    * @param uniqueId defines the id to search for
-    * @return the first control found or null
-    */
-    AdvancedDynamicTexture.prototype.getControlById = function (uniqueId) {
-        return this._getControlByKey("uniqueId", uniqueId);
-    };
     AdvancedDynamicTexture.prototype._getControlByKey = function (key, value) {
         return this._rootContainer.getDescendants().find(function (control) { return control[key] === value; }) || null;
     };
@@ -1161,14 +1153,8 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
     * @returns the projected position
     */
     AdvancedDynamicTexture.prototype.getProjectedPosition = function (position, worldMatrix) {
-        var scene = this.getScene();
-        if (!scene) {
-            return babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector2"].Zero();
-        }
-        var globalViewport = this._getGlobalViewport();
-        var projectedPosition = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Project(position, worldMatrix, scene.getTransformMatrix(), globalViewport);
-        projectedPosition.scaleInPlace(this.renderScale);
-        return new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector2"](projectedPosition.x, projectedPosition.y);
+        var result = this.getProjectedPositionWithZ(position, worldMatrix);
+        return new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector2"](result.x, result.y);
     };
     /**
     * Get screen coordinates for a vector3
@@ -1183,7 +1169,6 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         }
         var globalViewport = this._getGlobalViewport();
         var projectedPosition = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Project(position, worldMatrix, scene.getTransformMatrix(), globalViewport);
-        projectedPosition.scaleInPlace(this.renderScale);
         return new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector3"](projectedPosition.x, projectedPosition.y, projectedPosition.z);
     };
     AdvancedDynamicTexture.prototype._checkUpdate = function (camera) {
@@ -1216,11 +1201,8 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
                     return "continue";
                 }
                 control.notRenderable = false;
-                // Account for RenderScale.
-                projectedPosition.scaleInPlace(this_1.renderScale);
                 control._moveToProjectedPosition(projectedPosition);
             };
-            var this_1 = this;
             for (var _i = 0, _a = this._linkedControls; _i < _a.length; _i++) {
                 var control = _a[_i];
                 _loop_1(control);
@@ -1519,8 +1501,11 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
      * @returns an object with the JSON serialized data
      */
     AdvancedDynamicTexture.prototype.serializeContent = function () {
+        var size = this.getSize();
         var serializationObject = {
-            root: {}
+            root: {},
+            width: size.width,
+            height: size.height,
         };
         this._rootContainer.serialize(serializationObject.root);
         return serializationObject;
@@ -1528,16 +1513,25 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
     /**
      * Recreate the content of the ADT from a JSON object
      * @param serializedObject define the JSON serialized object to restore from
+     * @param scaleToSize defines whether to scale to texture to the saved size
      */
-    AdvancedDynamicTexture.prototype.parseContent = function (serializedObject) {
+    AdvancedDynamicTexture.prototype.parseContent = function (serializedObject, scaleToSize) {
         this._rootContainer = _controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].Parse(serializedObject.root, this);
+        if (scaleToSize) {
+            var width = serializedObject.width;
+            var height = serializedObject.height;
+            if (typeof (width) === "number" && typeof (height) === "number" && width >= 0 && height >= 0) {
+                this.scaleTo(width, height);
+            }
+        }
     };
     /**
      * Recreate the content of the ADT from a snippet saved by the GUI editor
      * @param snippetId defines the snippet to load
+     * @param scaleToSize defines whether to scale to texture to the saved size
      * @returns a promise that will resolve on success
      */
-    AdvancedDynamicTexture.prototype.parseFromSnippetAsync = function (snippetId) {
+    AdvancedDynamicTexture.prototype.parseFromSnippetAsync = function (snippetId, scaleToSize) {
         var _this = this;
         if (snippetId === "_BLANK") {
             return Promise.resolve();
@@ -1549,7 +1543,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
                     if (request.status == 200) {
                         var snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
                         var serializationObject = JSON.parse(snippet.gui);
-                        _this.parseContent(serializationObject);
+                        _this.parseContent(serializationObject, scaleToSize);
                         _this.snippetId = snippetId;
                         resolve();
                     }
@@ -1565,9 +1559,10 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
     /**
     * Recreate the content of the ADT from a url json
     * @param url defines the url to load
+    * @param scaleToSize defines whether to scale to texture to the saved size
     * @returns a promise that will resolve on success
     */
-    AdvancedDynamicTexture.prototype.parseFromURLAsync = function (url) {
+    AdvancedDynamicTexture.prototype.parseFromURLAsync = function (url, scaleToSize) {
         var _this = this;
         if (url === "") {
             return Promise.resolve();
@@ -1579,7 +1574,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
                     if (request.status == 200) {
                         var gui = request.responseText;
                         var serializationObject = JSON.parse(gui);
-                        _this.parseContent(serializationObject);
+                        _this.parseContent(serializationObject, scaleToSize);
                         resolve();
                     }
                     else {
@@ -5415,6 +5410,14 @@ var Control = /** @class */ (function () {
         return true;
     };
     /** @hidden */
+    Control.prototype._computeAdditionnalOffsetX = function () {
+        return 0;
+    };
+    /** @hidden */
+    Control.prototype._computeAdditionnalOffsetY = function () {
+        return 0;
+    };
+    /** @hidden */
     Control.prototype.invalidateRect = function () {
         this._transform();
         if (this.host && this.host.useInvalidateRectOptimization) {
@@ -5431,7 +5434,9 @@ var Control = /** @class */ (function () {
             var rightShadowOffset = Math.max(Math.max(shadowOffsetX, 0) + shadowBlur * 2, 0);
             var topShadowOffset = Math.min(Math.min(shadowOffsetY, 0) - shadowBlur * 2, 0);
             var bottomShadowOffset = Math.max(Math.max(shadowOffsetY, 0) + shadowBlur * 2, 0);
-            this.host.invalidateRect(Math.floor(this._tmpMeasureA.left + leftShadowOffset), Math.floor(this._tmpMeasureA.top + topShadowOffset), Math.ceil(this._tmpMeasureA.left + this._tmpMeasureA.width + rightShadowOffset), Math.ceil(this._tmpMeasureA.top + this._tmpMeasureA.height + bottomShadowOffset));
+            var offsetX = this._computeAdditionnalOffsetX();
+            var offsetY = this._computeAdditionnalOffsetY();
+            this.host.invalidateRect(Math.floor(this._tmpMeasureA.left + leftShadowOffset - offsetX), Math.floor(this._tmpMeasureA.top + topShadowOffset - offsetY), Math.ceil(this._tmpMeasureA.left + this._tmpMeasureA.width + rightShadowOffset + offsetX), Math.ceil(this._tmpMeasureA.top + this._tmpMeasureA.height + bottomShadowOffset + offsetY));
         }
     };
     /** @hidden */
@@ -8130,6 +8135,15 @@ var Image = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], Image.prototype, "source", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Image.prototype, "cellWidth", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Image.prototype, "cellHeight", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Image.prototype, "cellId", null);
     return Image;
 }(_control__WEBPACK_IMPORTED_MODULE_2__["Control"]));
 
@@ -10301,6 +10315,22 @@ var Rectangle = /** @class */ (function (_super) {
     });
     Rectangle.prototype._getTypeName = function () {
         return "Rectangle";
+    };
+    /** @hidden */
+    Rectangle.prototype._computeAdditionnalOffsetX = function () {
+        if (this._cornerRadius) {
+            // Take in account the aliasing
+            return 1;
+        }
+        return 0;
+    };
+    /** @hidden */
+    Rectangle.prototype._computeAdditionnalOffsetY = function () {
+        if (this._cornerRadius) {
+            // Take in account the aliasing
+            return 1;
+        }
+        return 0;
     };
     Rectangle.prototype._localDraw = function (context) {
         context.save();
@@ -14387,26 +14417,6 @@ var ToggleButton = /** @class */ (function (_super) {
         };
         return _this;
     }
-    Object.defineProperty(ToggleButton.prototype, "image", {
-        /**
-         * Returns the ToggleButton's image control if it exists
-         */
-        get: function () {
-            return this._image;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(ToggleButton.prototype, "textBlock", {
-        /**
-         * Returns the ToggleButton's child TextBlock control if it exists
-         */
-        get: function () {
-            return this._textBlock;
-        },
-        enumerable: false,
-        configurable: true
-    });
     Object.defineProperty(ToggleButton.prototype, "group", {
         /** Gets or sets group name this toggle button belongs to */
         get: function () {
@@ -16421,7 +16431,7 @@ var Button3D = /** @class */ (function (_super) {
             faceUV[i] = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector4"](0, 0, 0, 0);
         }
         faceUV[1] = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector4"](0, 0, 1, 1);
-        var mesh = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["BoxBuilder"].CreateBox(this.name + "_rootMesh", {
+        var mesh = Object(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["CreateBox"])(this.name + "_rootMesh", {
             width: 1.0,
             height: 1.0,
             depth: 0.08,
@@ -17356,7 +17366,7 @@ var HolographicBackplate = /** @class */ (function (_super) {
     HolographicBackplate.prototype._createNode = function (scene) {
         var _this = this;
         var _a;
-        var collisionMesh = babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["BoxBuilder"].CreateBox(((_a = this.name) !== null && _a !== void 0 ? _a : "HolographicBackplate") + "_CollisionMesh", {
+        var collisionMesh = Object(babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["CreateBox"])(((_a = this.name) !== null && _a !== void 0 ? _a : "HolographicBackplate") + "_CollisionMesh", {
             width: 1.0,
             height: 1.0,
             depth: 1.0,
@@ -17531,8 +17541,8 @@ var HolographicButton = /** @class */ (function (_super) {
             }
             if (!this._tooltipFade) {
                 // Create tooltip with mesh and text
-                this._tooltipMesh = babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["PlaneBuilder"].CreatePlane("", { size: 1 }, this._backPlate._scene);
-                var tooltipBackground = babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["PlaneBuilder"].CreatePlane("", { size: 1, sideOrientation: babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["Mesh"].DOUBLESIDE }, this._backPlate._scene);
+                this._tooltipMesh = Object(babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["CreatePlane"])("", { size: 1 }, this._backPlate._scene);
+                var tooltipBackground = Object(babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["CreatePlane"])("", { size: 1, sideOrientation: babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["Mesh"].DOUBLESIDE }, this._backPlate._scene);
                 var mat = new babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["StandardMaterial"]("", this._backPlate._scene);
                 mat.diffuseColor = babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromHexString("#212121");
                 tooltipBackground.material = mat;
@@ -17679,12 +17689,12 @@ var HolographicButton = /** @class */ (function (_super) {
     };
     // Mesh association
     HolographicButton.prototype._createNode = function (scene) {
-        this._backPlate = babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["BoxBuilder"].CreateBox(this.name + "BackMesh", {
+        this._backPlate = Object(babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["CreateBox"])(this.name + "BackMesh", {
             width: 1.0,
             height: 1.0,
             depth: 0.08
         }, scene);
-        this._frontPlate = babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["BoxBuilder"].CreateBox(this.name + "FrontMesh", {
+        this._frontPlate = Object(babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["CreateBox"])(this.name + "FrontMesh", {
             width: 1.0,
             height: 1.0,
             depth: 0.08
@@ -18001,8 +18011,8 @@ var HolographicSlate = /** @class */ (function (_super) {
     HolographicSlate.prototype._createNode = function (scene) {
         var _this = this;
         var node = new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Mesh"]("slate" + this.name, scene);
-        this._backPlate = babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["BoxBuilder"].CreateBox("backPlate" + this.name, { size: 1 }, scene);
-        this._contentPlate = babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["BoxBuilder"].CreateBox("contentPlate" + this.name, { size: 1 }, scene);
+        this._backPlate = Object(babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["CreateBox"])("backPlate" + this.name, { size: 1 }, scene);
+        this._contentPlate = Object(babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["CreateBox"])("contentPlate" + this.name, { size: 1 }, scene);
         this._backPlate.parent = node;
         this._backPlate.isNearGrabbable = true;
         this._contentPlate.parent = node;
@@ -18829,7 +18839,7 @@ var Slider3D = /** @class */ (function (_super) {
     // Mesh association
     Slider3D.prototype._createNode = function (scene) {
         var _this = this;
-        var sliderBackplate = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["BoxBuilder"].CreateBox(this.name + "_sliderbackplate", {
+        var sliderBackplate = Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["CreateBox"])(this.name + "_sliderbackplate", {
             width: 1.0,
             height: 1.0,
             depth: 1.0,
@@ -19442,8 +19452,8 @@ var TouchHolographicButton = /** @class */ (function (_super) {
             }
             if (!this._tooltipFade) {
                 // Create tooltip with mesh and text
-                this._tooltipMesh = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["PlaneBuilder"].CreatePlane("", { size: 1 }, this._backPlate._scene);
-                var tooltipBackground = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["PlaneBuilder"].CreatePlane("", { size: 1, sideOrientation: babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Mesh"].DOUBLESIDE }, this._backPlate._scene);
+                this._tooltipMesh = Object(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["CreatePlane"])("", { size: 1 }, this._backPlate._scene);
+                var tooltipBackground = Object(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["CreatePlane"])("", { size: 1, sideOrientation: babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Mesh"].DOUBLESIDE }, this._backPlate._scene);
                 var mat = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["StandardMaterial"]("", this._backPlate._scene);
                 mat.diffuseColor = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Color3"].FromHexString("#212121");
                 tooltipBackground.material = mat;
@@ -19609,7 +19619,7 @@ var TouchHolographicButton = /** @class */ (function (_super) {
         var _this = this;
         var _a;
         this.name = (_a = this.name) !== null && _a !== void 0 ? _a : "TouchHolographicButton";
-        var collisionMesh = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["BoxBuilder"].CreateBox(this.name + "_collisionMesh", {
+        var collisionMesh = Object(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["CreateBox"])(this.name + "_collisionMesh", {
             width: 1.0,
             height: 1.0,
             depth: this._frontPlateDepth,
@@ -19630,7 +19640,7 @@ var TouchHolographicButton = /** @class */ (function (_super) {
             }
             _this._frontPlate = importedFrontPlate;
         });
-        this._backPlate = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["BoxBuilder"].CreateBox(this.name + "_backPlate", {
+        this._backPlate = Object(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["CreateBox"])(this.name + "_backPlate", {
             width: 1.0,
             height: 1.0,
             depth: this._backPlateDepth,
@@ -19788,7 +19798,7 @@ var TouchHolographicMenu = /** @class */ (function (_super) {
     });
     TouchHolographicMenu.prototype._createNode = function (scene) {
         var node = new babylonjs_Meshes_mesh__WEBPACK_IMPORTED_MODULE_2__["Mesh"]("menu_" + this.name, scene);
-        this._backPlate = babylonjs_Meshes_mesh__WEBPACK_IMPORTED_MODULE_2__["BoxBuilder"].CreateBox("backPlate" + this.name, { size: 1 }, scene);
+        this._backPlate = Object(babylonjs_Meshes_mesh__WEBPACK_IMPORTED_MODULE_2__["CreateBox"])("backPlate" + this.name, { size: 1 }, scene);
         this._backPlate.parent = node;
         return node;
     };
@@ -20425,7 +20435,7 @@ var SideHandle = /** @class */ (function (_super) {
      */
     SideHandle.prototype.createNode = function () {
         // Create a simple vertical rectangle
-        var verticalBox = babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["BoxBuilder"].CreateBox("sideVert", { width: 1, height: 10, depth: 0.1 }, this._scene);
+        var verticalBox = Object(babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["CreateBox"])("sideVert", { width: 1, height: 10, depth: 0.1 }, this._scene);
         var sideNode = new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["TransformNode"]("side", this._scene);
         verticalBox.parent = sideNode;
         var mat = this._createMaterial();
@@ -20451,8 +20461,8 @@ var CornerHandle = /** @class */ (function (_super) {
      */
     CornerHandle.prototype.createNode = function () {
         // Create 2 boxes making a bottom left corner
-        var horizontalBox = babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["BoxBuilder"].CreateBox("angleHor", { width: 3, height: 1, depth: 0.1 }, this._scene);
-        var verticalBox = babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["BoxBuilder"].CreateBox("angleVert", { width: 1, height: 3, depth: 0.1 }, this._scene);
+        var horizontalBox = Object(babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["CreateBox"])("angleHor", { width: 3, height: 1, depth: 0.1 }, this._scene);
+        var verticalBox = Object(babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["CreateBox"])("angleVert", { width: 1, height: 3, depth: 0.1 }, this._scene);
         var angleNode = new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["TransformNode"]("angle", this._scene);
         horizontalBox.parent = angleNode;
         verticalBox.parent = angleNode;

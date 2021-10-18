@@ -1,7 +1,7 @@
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { Scene } from "babylonjs/scene";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
-import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
+import { CreateBox } from "babylonjs/Meshes/Builders/boxBuilder";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { FluentMaterial } from "../materials/fluent/fluentMaterial";
 import { TouchHolographicButton } from "./touchHolographicButton";
@@ -265,8 +265,8 @@ export class HolographicSlate extends ContentDisplay3D {
     protected _createNode(scene: Scene): TransformNode {
         const node = new Mesh("slate" + this.name, scene);
 
-        this._backPlate = BoxBuilder.CreateBox("backPlate" + this.name, { size: 1 }, scene);
-        this._contentPlate = BoxBuilder.CreateBox("contentPlate" + this.name, { size: 1 }, scene);
+        this._backPlate = CreateBox("backPlate" + this.name, { size: 1 }, scene);
+        this._contentPlate = CreateBox("contentPlate" + this.name, { size: 1 }, scene);
 
         this._backPlate.parent = node;
         this._backPlate.isNearGrabbable = true;

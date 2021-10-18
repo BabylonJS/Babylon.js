@@ -599,13 +599,18 @@ export class RuntimeAnimation {
             const hostNormalizedFrame = (syncRoot.masterFrame - syncRoot.fromFrame) / (syncRoot.toFrame - syncRoot.fromFrame);
             currentFrame = from + (to - from) * hostNormalizedFrame;
         } else {
-            currentFrame = (returnValue && range !== 0) ? from + ratio % range : to;
+            if (ratio > 0 && from > to || ratio < 0 && from < to) {
+                currentFrame = (returnValue && range !== 0) ? to + ratio % range : from;
+            } else {
+                currentFrame = (returnValue && range !== 0) ? from + ratio % range : to;
+            }
         }
 
         // Reset events if looping
         const events = this._events;
-        if (range > 0 && this.currentFrame > currentFrame ||
-            range < 0 && this.currentFrame < currentFrame) {
+
+        if (speedRatio > 0 && this.currentFrame > currentFrame ||
+            speedRatio < 0 && this.currentFrame < currentFrame) {
             this._onLoop();
 
             // Need to reset animation events

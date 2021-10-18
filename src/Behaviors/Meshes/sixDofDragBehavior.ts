@@ -44,7 +44,7 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
     /**
      * Should the behavior rotate 1:1 with the motion controller, when one is used.
      */
-    public rotateWithMotionController = false;
+    public rotateWithMotionController = true;
 
     /**
      *  The name of the behavior

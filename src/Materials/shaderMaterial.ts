@@ -125,9 +125,9 @@ export class ShaderMaterial extends Material {
     private _storageBuffers: { [name: string]: StorageBuffer } = {};
     private _cachedWorldViewMatrix = new Matrix();
     private _cachedWorldViewProjectionMatrix = new Matrix();
-    private _renderId: number;
     private _multiview: boolean = false;
     private _cachedDefines: string;
+    private _effectUsesInstances: boolean;
 
     /** Define the Url to load snippets */
     public static SnippetUrl = "https://snippet.babylonjs.com";
@@ -551,19 +551,6 @@ export class ShaderMaterial extends Material {
         return this;
     }
 
-    private _checkCache(mesh?: AbstractMesh, useInstances?: boolean): boolean {
-        if (!mesh) {
-            return true;
-        }
-
-        const effect = this.getEffect();
-        if (effect && (effect.defines.indexOf("#define INSTANCES") !== -1) !== useInstances) {
-            return false;
-        }
-
-        return true;
-    }
-
     /**
      * Specifies that the submesh is ready to be used
      * @param mesh defines the mesh to check
@@ -585,21 +572,13 @@ export class ShaderMaterial extends Material {
     public isReady(mesh?: AbstractMesh, useInstances?: boolean, subMesh?: SubMesh): boolean {
         let effect = this.getEffect();
         if (effect && this.isFrozen) {
-            if (effect._wasPreviouslyReady) {
+            if (effect._wasPreviouslyReady && this._effectUsesInstances === useInstances) {
                 return true;
             }
         }
 
         var scene = this.getScene();
         var engine = scene.getEngine();
-
-        if (!this.checkReadyOnEveryCall) {
-            if (this._renderId === scene.getRenderId()) {
-                if (this._checkCache(mesh, useInstances)) {
-                    return true;
-                }
-            }
-        }
 
         // Instances
         var defines = [];
@@ -830,6 +809,8 @@ export class ShaderMaterial extends Material {
             }
         }
 
+        this._effectUsesInstances = !!useInstances;
+
         if (!effect?.isReady() ?? true) {
             return false;
         }
@@ -838,7 +819,6 @@ export class ShaderMaterial extends Material {
             scene.resetCachedMaterial();
         }
 
-        this._renderId = scene.getRenderId();
         effect._wasPreviouslyReady = true;
 
         return true;
