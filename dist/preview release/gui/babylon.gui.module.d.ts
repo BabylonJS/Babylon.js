@@ -7037,6 +7037,12 @@ declare module "babylonjs-gui/index" {
     export * from "babylonjs-gui/2D/index";
     export * from "babylonjs-gui/3D/index";
 }
+declare module "babylonjs-gui/3D/materials/fluentMaterial" {
+    /**
+     * This is here for backwards compatibility with 4.2
+     */
+    // export { FluentMaterial } from "babylonjs-gui/3D/materials/fluent/fluentMaterial";
+}
 declare module "babylonjs-gui/legacy/legacy" {
     export * from "babylonjs-gui/index";
 }
@@ -13543,4 +13549,10 @@ declare module BABYLON.GUI {
          */
         dispose(): void;
     }
+}
+declare module BABYLON.GUI {
+    /**
+     * This is here for backwards compatibility with 4.2
+     */
+    // export { FluentMaterial } from "babylonjs-gui/3D/materials/fluent/fluentMaterial";
 }

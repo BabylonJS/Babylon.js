@@ -171,6 +171,13 @@ export const LoadImage = (input: string | ArrayBuffer | ArrayBufferView | Blob, 
 
     const engine = EngineStore.LastCreatedEngine;
 
+    const onErrorHandler = (exception: any) => {
+        if (onError) {
+            const inputText = url || input.toString();
+            onError(`Error while trying to load image: ${((inputText.indexOf('http') === 0 || inputText.length <= 128) ? inputText : inputText.slice(0, 128) + "...")}`, exception);
+        }
+    };
+
     if (typeof Image === "undefined" || (engine?._features.forceBitmapOverHTMLImageElement ?? false)) {
         LoadFile(url, (data) => {
             engine!.createImageBitmap(new Blob([data], { type: mimeType }), { premultiplyAlpha: "none", ...imageBitmapOptions }).then((imgBmp) => {
@@ -184,10 +191,7 @@ export const LoadImage = (input: string | ArrayBuffer | ArrayBufferView | Blob, 
                 }
             });
         }, undefined, offlineProvider || undefined, true, (request, exception) => {
-            if (onError) {
-                const inputText = url || input.toString();
-                onError(`Error while trying to load image: ${((inputText.indexOf('http') === 0 || inputText.length < 64) ? inputText : inputText.slice(0, 64) + "...")}`, exception);
-            }
+            onErrorHandler(exception);
         });
 
         return null;
@@ -213,10 +217,7 @@ export const LoadImage = (input: string | ArrayBuffer | ArrayBufferView | Blob, 
         img.removeEventListener("load", loadHandler);
         img.removeEventListener("error", errorHandler);
 
-        if (onError) {
-            const inputText = input.toString();
-            onError("Error while trying to load image: " + (inputText.length < 32 ? inputText : inputText.slice(0, 32) + "..."), err);
-        }
+        onErrorHandler(err);
 
         if (usingObjectURL && img.src) {
             URL.revokeObjectURL(img.src);
@@ -564,9 +565,9 @@ export const IsBase64DataUrl = (uri: string): boolean => {
  * @return The decoded base64 data.
  * @hidden
  */
-export const DecodeBase64UrlToBinary = (uri: string): ArrayBuffer => {
+export function DecodeBase64UrlToBinary(uri: string): ArrayBuffer {
     return DecodeBase64ToBinary(uri.split(",")[1]);
-};
+}
 
 /**
  * Decode the given base64 uri into a UTF-8 encoded string.
@@ -593,6 +594,5 @@ const initSideEffects = () => {
 initSideEffects();
 
 // LTS. Export FileTools in this module for backward compatibility.
-import { _injectLTSFileTools, FileTools } from './fileTools.lts';
-_injectLTSFileTools();
-export { FileTools };
+import { _injectLTSFileTools } from './fileTools.lts';
+_injectLTSFileTools(DecodeBase64UrlToBinary, DecodeBase64UrlToString, FileToolsOptions, IsBase64DataUrl, IsFileURL, LoadFile, LoadImage, ReadFile, RequestFile, SetCorsBehavior);

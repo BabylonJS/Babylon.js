@@ -1,21 +1,14 @@
-import { InternalTexture, InternalTextureSource } from '../../Materials/Textures/internalTexture';
-import { Logger } from '../../Misc/logger';
-import { RenderTargetCreationOptions } from '../../Materials/Textures/renderTargetCreationOptions';
-import { Constants } from '../constants';
-import { ThinEngine } from '../thinEngine';
-import { DepthTextureCreationOptions } from '../depthTextureCreationOptions';
+import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
+import { Logger } from "../../Misc/logger";
+import { RenderTargetCreationOptions, DepthTextureCreationOptions } from "../../Materials/Textures/textureCreationOptions";
+import { ThinEngine } from "../thinEngine";
 import { Nullable } from "../../types";
 import { RenderTargetWrapper } from "../renderTargetWrapper";
 import { WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
 import { WebGLHardwareTexture } from "../WebGL/webGLHardwareTexture";
-
-/**
- * Type used to define a render target texture size (either with a number or with a rect width and height)
- */
-export type RenderTargetTextureSize = number | { width: number, height: number, layers?: number };
+import { TextureSize } from "../../Materials/Textures/textureCreationOptions";
 
 declare module "../../Engines/thinEngine" {
-
     export interface ThinEngine {
         /**
          * Creates a new render target texture
@@ -23,7 +16,7 @@ declare module "../../Engines/thinEngine" {
          * @param options defines the options used to create the texture
          * @returns a new render target wrapper ready to render texture
          */
-        createRenderTargetTexture(size: RenderTargetTextureSize, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper;
+        createRenderTargetTexture(size: TextureSize, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper;
 
         /**
          * Creates a depth stencil texture.
@@ -33,7 +26,7 @@ declare module "../../Engines/thinEngine" {
          * @param rtWrapper The render target wrapper for which the depth/stencil texture must be created
          * @returns The texture
          */
-        createDepthStencilTexture(size: RenderTargetTextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture;
+        createDepthStencilTexture(size: TextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture;
 
         /**
          * Updates the sample count of a render target texture
@@ -45,87 +38,37 @@ declare module "../../Engines/thinEngine" {
         updateRenderTargetTextureSampleCount(rtWrapper: Nullable<RenderTargetWrapper>, samples: number): number;
 
         /** @hidden */
-        _createDepthStencilTexture(size: RenderTargetTextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture;
+        _createDepthStencilTexture(size: TextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture;
 
         /** @hidden */
-        _createHardwareRenderTargetWrapper(isMulti: boolean, isCube: boolean, size: RenderTargetTextureSize): RenderTargetWrapper;
+        _createHardwareRenderTargetWrapper(isMulti: boolean, isCube: boolean, size: TextureSize): RenderTargetWrapper;
     }
 }
 
-ThinEngine.prototype._createHardwareRenderTargetWrapper = function(isMulti: boolean, isCube: boolean, size: RenderTargetTextureSize): RenderTargetWrapper {
+ThinEngine.prototype._createHardwareRenderTargetWrapper = function (isMulti: boolean, isCube: boolean, size: TextureSize): RenderTargetWrapper {
     const rtWrapper = new WebGLRenderTargetWrapper(isMulti, isCube, size, this, this._gl);
     this._renderTargetWrapperCache.push(rtWrapper);
     return rtWrapper;
 };
 
-ThinEngine.prototype.createRenderTargetTexture = function (this: ThinEngine, size: RenderTargetTextureSize, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper {
+ThinEngine.prototype.createRenderTargetTexture = function (this: ThinEngine, size: TextureSize, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper {
     const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, size) as WebGLRenderTargetWrapper;
 
-    const fullOptions = new RenderTargetCreationOptions();
+    const fullOptions: RenderTargetCreationOptions = {};
     if (options !== undefined && typeof options === "object") {
-        fullOptions.generateMipMaps = options.generateMipMaps;
         fullOptions.generateDepthBuffer = !!options.generateDepthBuffer;
         fullOptions.generateStencilBuffer = !!options.generateStencilBuffer;
-        fullOptions.type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_INT : options.type;
-        fullOptions.samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
-        fullOptions.format = options.format === undefined ? Constants.TEXTUREFORMAT_RGBA : options.format;
     } else {
-        fullOptions.generateMipMaps = <boolean>options;
         fullOptions.generateDepthBuffer = true;
         fullOptions.generateStencilBuffer = false;
-        fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
-        fullOptions.samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
-        fullOptions.format = Constants.TEXTUREFORMAT_RGBA;
     }
 
-    if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
-        // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
-        fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
-    }
-    else if (fullOptions.type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
-        // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
-        fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
-    }
-    if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
-        fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
-        Logger.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
-    }
-
-    const gl = this._gl;
-    const texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
-    const width = (<{ width: number, height: number, layers?: number }>size).width || <number>size;
-    const height = (<{ width: number, height: number, layers?: number }>size).height || <number>size;
-    const layers = (<{ width: number, height: number, layers?: number }>size).layers || 0;
-    const filters = this._getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps ? true : false);
-    const target = layers !== 0 ? gl.TEXTURE_2D_ARRAY : gl.TEXTURE_2D;
-    const sizedFormat = this._getRGBABufferInternalSizedFormat(fullOptions.type, fullOptions.format);
-    const internalFormat = this._getInternalFormat(fullOptions.format);
-    const type = this._getWebGLTextureType(fullOptions.type);
-
-    // Bind
-    this._bindTextureDirectly(target, texture);
-
-    if (layers !== 0) {
-        texture.is2DArray = true;
-        gl.texImage3D(target, 0, sizedFormat, width, height, layers, 0, internalFormat, type, null);
-    }
-    else {
-        gl.texImage2D(target, 0, sizedFormat, width, height, 0, internalFormat, type, null);
-    }
-
-    gl.texParameteri(target, gl.TEXTURE_MAG_FILTER, filters.mag);
-    gl.texParameteri(target, gl.TEXTURE_MIN_FILTER, filters.min);
-    gl.texParameteri(target, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(target, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-    // MipMaps
-    if (fullOptions.generateMipMaps) {
-        this._gl.generateMipmap(target);
-    }
-
-    this._bindTextureDirectly(target, null);
+    const texture = this._createInternalTexture(size, options);
+    const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
+    const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
 
     const currentFrameBuffer = this._currentFramebuffer;
+    const gl = this._gl;
 
     // Create the framebuffer
     const framebuffer = gl.createFramebuffer();
@@ -143,37 +86,23 @@ ThinEngine.prototype.createRenderTargetTexture = function (this: ThinEngine, siz
     rtWrapper._generateDepthBuffer = fullOptions.generateDepthBuffer;
     rtWrapper._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
 
-    texture.baseWidth = width;
-    texture.baseHeight = height;
-    texture.width = width;
-    texture.height = height;
-    texture.depth = layers;
-    texture.isReady = true;
-    texture.samples = 1;
-    texture.generateMipMaps = fullOptions.generateMipMaps ? true : false;
-    texture.samplingMode = fullOptions.samplingMode;
-    texture.type = fullOptions.type;
-    texture.format = fullOptions.format;
-
-    this._internalTexturesCache.push(texture);
     rtWrapper.setTextures(texture);
 
     return rtWrapper;
 };
 
-ThinEngine.prototype.createDepthStencilTexture = function (size: RenderTargetTextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
+ThinEngine.prototype.createDepthStencilTexture = function (size: TextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
     if (options.isCube) {
-        let width = (<{ width: number, height: number }>size).width || <number>size;
+        let width = (<{ width: number; height: number }>size).width || <number>size;
         return this._createDepthStencilCubeTexture(width, options, rtWrapper);
-    }
-    else {
+    } else {
         return this._createDepthStencilTexture(size, options, rtWrapper);
     }
 };
 
-ThinEngine.prototype._createDepthStencilTexture = function (size: RenderTargetTextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
+ThinEngine.prototype._createDepthStencilTexture = function (size: TextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
     const gl = this._gl;
-    const layers = (<{ width: number, height: number, layers?: number }>size).layers || 0;
+    const layers = (<{ width: number; height: number; layers?: number }>size).layers || 0;
     const target = layers !== 0 ? gl.TEXTURE_2D_ARRAY : gl.TEXTURE_2D;
     const internalTexture = new InternalTexture(this, InternalTextureSource.DepthStencil);
     if (!this._caps.depthTextureExtension) {
@@ -185,12 +114,19 @@ ThinEngine.prototype._createDepthStencilTexture = function (size: RenderTargetTe
         bilinearFiltering: false,
         comparisonFunction: 0,
         generateStencil: false,
-        ...options
+        ...options,
     };
 
     this._bindTextureDirectly(target, internalTexture, true);
 
-    this._setupDepthStencilTexture(internalTexture, size, internalOptions.generateStencil, internalOptions.comparisonFunction === 0 ? false : internalOptions.bilinearFiltering, internalOptions.comparisonFunction);
+    this._setupDepthStencilTexture(
+        internalTexture,
+        size,
+        internalOptions.generateStencil,
+
+        internalOptions.comparisonFunction === 0 ? false : internalOptions.bilinearFiltering,
+        internalOptions.comparisonFunction
+    );
 
     rtWrapper._depthStencilTexture = internalTexture;
     rtWrapper._depthStencilTextureWithStencil = internalOptions.generateStencil;
@@ -204,8 +140,7 @@ ThinEngine.prototype._createDepthStencilTexture = function (size: RenderTargetTe
 
     if (internalTexture.is2DArray) {
         gl.texImage3D(target, 0, sizedFormat, internalTexture.width, internalTexture.height, layers, 0, internalFormat, type, null);
-    }
-    else {
+    } else {
         gl.texImage2D(target, 0, sizedFormat, internalTexture.width, internalTexture.height, 0, internalFormat, type, null);
     }
 
@@ -216,7 +151,7 @@ ThinEngine.prototype._createDepthStencilTexture = function (size: RenderTargetTe
     return internalTexture;
 };
 
-ThinEngine.prototype.updateRenderTargetTextureSampleCount = function(rtWrapper: Nullable<WebGLRenderTargetWrapper>, samples: number): number {
+ThinEngine.prototype.updateRenderTargetTextureSampleCount = function (rtWrapper: Nullable<WebGLRenderTargetWrapper>, samples: number): number {
     if (this.webGLVersion < 2 || !rtWrapper || !rtWrapper.texture) {
         return 1;
     }
@@ -256,7 +191,15 @@ ThinEngine.prototype.updateRenderTargetTextureSampleCount = function(rtWrapper: 
         rtWrapper._MSAAFramebuffer = framebuffer;
         this._bindUnboundFramebuffer(rtWrapper._MSAAFramebuffer);
 
-        const colorRenderbuffer = this._createRenderBuffer(rtWrapper.texture.width, rtWrapper.texture.height, samples, -1 /* not used */, this._getRGBAMultiSampleBufferFormat(rtWrapper.texture.type), gl.COLOR_ATTACHMENT0, false);
+        const colorRenderbuffer = this._createRenderBuffer(
+            rtWrapper.texture.width,
+            rtWrapper.texture.height,
+            samples,
+            -1 /* not used */,
+            this._getRGBAMultiSampleBufferFormat(rtWrapper.texture.type),
+            gl.COLOR_ATTACHMENT0,
+            false
+        );
 
         if (!colorRenderbuffer) {
             throw new Error("Unable to create multi sampled framebuffer");
@@ -268,7 +211,13 @@ ThinEngine.prototype.updateRenderTargetTextureSampleCount = function(rtWrapper: 
     }
 
     rtWrapper.texture.samples = samples;
-    rtWrapper._depthStencilBuffer = this._setupFramebufferDepthAttachments(rtWrapper._generateStencilBuffer, rtWrapper._generateDepthBuffer, rtWrapper.texture.width, rtWrapper.texture.height, samples);
+    rtWrapper._depthStencilBuffer = this._setupFramebufferDepthAttachments(
+        rtWrapper._generateStencilBuffer,
+        rtWrapper._generateDepthBuffer,
+        rtWrapper.texture.width,
+        rtWrapper.texture.height,
+        samples
+    );
 
     this._bindUnboundFramebuffer(null);
 

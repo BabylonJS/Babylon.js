@@ -6498,4 +6498,10 @@ declare module BABYLON.GUI {
          */
         dispose(): void;
     }
+}
+declare module BABYLON.GUI {
+    /**
+     * This is here for backwards compatibility with 4.2
+     */
+    // export { FluentMaterial } from "babylonjs-gui/3D/materials/fluent/fluentMaterial";
 }

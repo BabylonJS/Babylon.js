@@ -148,16 +148,17 @@ export class ParticleSystemSet implements IDisposable {
      * @param data defines a JSON compatible representation of the set
      * @param scene defines the hosting scene
      * @param gpu defines if we want GPU particles or CPU particles
+     * @param capacity defines the system capacity (if null or undefined the sotred capacity will be used)
      * @returns a new ParticleSystemSet
      */
-    public static Parse(data: any, scene: Scene, gpu = false): ParticleSystemSet {
+    public static Parse(data: any, scene: Scene, gpu = false, capacity?: number): ParticleSystemSet {
         var result = new ParticleSystemSet();
         var rootUrl = this.BaseAssetsUrl + "/textures/";
 
         scene = scene || EngineStore.LastCreatedScene;
 
         for (var system of data.systems) {
-            result.systems.push(gpu ? GPUParticleSystem.Parse(system, scene, rootUrl, true) : ParticleSystem.Parse(system, scene, rootUrl, true));
+            result.systems.push(gpu ? GPUParticleSystem.Parse(system, scene, rootUrl, true, capacity) : ParticleSystem.Parse(system, scene, rootUrl, true, capacity));
         }
 
         if (data.emitter) {

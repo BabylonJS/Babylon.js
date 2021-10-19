@@ -1,6 +1,5 @@
 import { Bone } from "./bone";
-import { Vector3, Quaternion, Matrix, TmpVectors } from "../Maths/math.vector";
-import { Node } from "../node";
+import { Vector3, Quaternion, Matrix } from "../Maths/math.vector";
 import { TransformNode } from "../Meshes/transformNode";
 import { Nullable } from "../types";
 import { Space } from '../Maths/math.axis';
@@ -336,52 +335,28 @@ export class BoneIKController {
                 Quaternion.FromRotationMatrixToRef(mat1, _tmpQuat);
                 Quaternion.SlerpToRef(this._bone1Quat, _tmpQuat, this.slerpAmount, this._bone1Quat);
                 angC = this._bone2Ang * (1.0 - this.slerpAmount) + angC * this.slerpAmount;
-                if (this._bone1._linkedTransformNode) {
-                    BoneIKController._SetAbsoluteRotation(this._bone1._linkedTransformNode, this._bone1Quat);
-                }
-                else {
-                    this._bone1.setRotationQuaternion(this._bone1Quat, Space.WORLD, this.mesh);
-                }
+
+                this._bone1.setRotationQuaternion(this._bone1Quat, Space.WORLD, this.mesh);
                 this._slerping = true;
             } else {
-                if (this._bone1._linkedTransformNode) {
-                    Quaternion.FromRotationMatrixToRef(mat1, _tmpQuat);
-                    BoneIKController._SetAbsoluteRotation(this._bone1._linkedTransformNode, _tmpQuat);
-                }
-                else {
-                    this._bone1.setRotationMatrix(mat1, Space.WORLD, this.mesh);
-                }
+                this._bone1.setRotationMatrix(mat1, Space.WORLD, this.mesh);
                 this._bone1Mat.copyFrom(mat1);
                 this._slerping = false;
             }
+            this._updateLinkedTransformRotation(this._bone1);
         }
 
-        if (this._bone2._linkedTransformNode) {
-            if (!this._bone2._linkedTransformNode.rotationQuaternion) {
-                this._bone2._linkedTransformNode.rotationQuaternion = new Quaternion();
-            }
-            Quaternion.RotationAxisToRef(this._bendAxis, angC, this._bone2._linkedTransformNode.rotationQuaternion);
-        }
-        else {
-            this._bone2.setAxisAngle(this._bendAxis, angC, Space.LOCAL);
-        }
+        this._bone2.setAxisAngle(this._bendAxis, angC, Space.LOCAL);
+        this._updateLinkedTransformRotation(this._bone2);
         this._bone2Ang = angC;
     }
 
-    private static _SetAbsoluteRotation(transform: TransformNode, rotation: Quaternion): void {
-        if (transform.rotationQuaternion == null) {
-            transform.rotationQuaternion = new Quaternion();
+    private _updateLinkedTransformRotation(bone: Bone): void {
+        if (bone._linkedTransformNode) {
+            if (!bone._linkedTransformNode.rotationQuaternion) {
+                bone._linkedTransformNode.rotationQuaternion = new Quaternion();
+            }
+            bone.getRotationQuaternionToRef(Space.LOCAL, null, bone._linkedTransformNode.rotationQuaternion);
         }
-        if (this._IsTransformNode(transform.parent)) {
-            const tmpQuat = TmpVectors.Quaternion[0];
-            Quaternion.InverseToRef(transform.parent.absoluteRotationQuaternion, tmpQuat);
-            tmpQuat.multiplyToRef(rotation, transform.rotationQuaternion);
-        } else {
-            transform.rotationQuaternion.copyFrom(rotation);
-        }
-    }
-
-    private static _IsTransformNode(node: Nullable<Node>): node is TransformNode {
-        return !!node && (node as TransformNode).isUsingPivotMatrix !== undefined;
     }
 }

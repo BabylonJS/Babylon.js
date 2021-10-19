@@ -65,6 +65,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     public updateFunction: (particles: Particle[]) => void;
 
     private _emitterWorldMatrix: Matrix;
+    private _emitterInverseWorldMatrix: Matrix = Matrix.Identity();
 
     /**
      * This function can be defined to specify initial direction for every new particle.
@@ -1407,12 +1408,12 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         if ((<AbstractMesh>this.emitter).position) {
             var emitterMesh = (<AbstractMesh>this.emitter);
             this._emitterWorldMatrix = emitterMesh.getWorldMatrix();
-
         } else {
             var emitterPosition = (<Vector3>this.emitter);
             this._emitterWorldMatrix = Matrix.Translation(emitterPosition.x, emitterPosition.y, emitterPosition.z);
         }
 
+        this._emitterWorldMatrix.invertToRef(this._emitterInverseWorldMatrix);
         this.updateFunction(this._particles);
 
         // Add new ones
@@ -1464,7 +1465,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                 this.startDirectionFunction(this._emitterWorldMatrix, particle.direction, particle, this.isLocal);
             }
             else {
-                this.particleEmitterType.startDirectionFunction(this._emitterWorldMatrix, particle.direction, particle, this.isLocal);
+                this.particleEmitterType.startDirectionFunction(this._emitterWorldMatrix, particle.direction, particle, this.isLocal, this._emitterInverseWorldMatrix);
             }
 
             if (emitPower === 0) {
@@ -2766,9 +2767,10 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      * @param sceneOrEngine The scene or the engine to create the particle system in
      * @param rootUrl The root url to use to load external dependencies like texture
      * @param doNotStart Ignore the preventAutoStart attribute and does not start
+     * @param capacity defines the system capacity (if null or undefined the sotred capacity will be used)
      * @returns the Parsed particle system
      */
-    public static Parse(parsedParticleSystem: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart = false): ParticleSystem {
+    public static Parse(parsedParticleSystem: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart = false, capacity?: number): ParticleSystem {
         var name = parsedParticleSystem.name;
         var custom: Nullable<Effect> = null;
         var program: any = null;
@@ -2787,7 +2789,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             var defines: string = (program.shaderOptions.defines.length > 0) ? program.shaderOptions.defines.join("\n") : "";
             custom = (engine as any).createEffectForParticles(program.shaderPath.fragmentElement, program.shaderOptions.uniforms, program.shaderOptions.samplers, defines);
         }
-        var particleSystem = new ParticleSystem(name, parsedParticleSystem.capacity, sceneOrEngine, custom, parsedParticleSystem.isAnimationSheetEnabled);
+        var particleSystem = new ParticleSystem(name, capacity || parsedParticleSystem.capacity, sceneOrEngine, custom, parsedParticleSystem.isAnimationSheetEnabled);
         particleSystem.customShader = program;
         particleSystem._rootUrl = rootUrl;
 

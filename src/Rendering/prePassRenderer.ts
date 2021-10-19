@@ -113,7 +113,7 @@ export class PrePassRenderer {
             name: "prePass_Normal",
         },
         {
-            type: Constants.PREPASS_ALBEDO_TEXTURE_TYPE,
+            type: Constants.PREPASS_ALBEDO_SQRT_TEXTURE_TYPE,
             format: Constants.TEXTURETYPE_UNSIGNED_INT,
             name: "prePass_Albedo",
         },
@@ -495,7 +495,7 @@ export class PrePassRenderer {
         }
 
         for (let i = 0; i < this.renderTargets.length; i++) {
-            if (this.mrtCount !== previousMrtCount) {
+            if (this.mrtCount !== previousMrtCount || this.renderTargets[i].count !== this.mrtCount) {
                 this.renderTargets[i].updateCount(this.mrtCount, { types: this._mrtFormats }, this._mrtNames.concat("prePass_DepthBuffer"));
             }
 
@@ -691,6 +691,11 @@ export class PrePassRenderer {
         this._disable();
         let enablePrePass = false;
         this._scene.imageProcessingConfiguration.applyByPostProcess = false;
+
+        if (this._scene.depthPeelingRenderer) {
+            this._scene.depthPeelingRenderer.setPrePassRenderer(this);
+            enablePrePass = true;
+        }
 
         for (let i = 0; i < this._scene.materials.length; i++) {
             if (this._scene.materials[i].setPrePassRenderer(this)) {
