@@ -27,7 +27,7 @@ export class CloudBlock extends NodeMaterialBlock {
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Vector3);
 
         this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector2);
-        this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector3);        
+        this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector3);
     }
 
     /**
@@ -110,15 +110,15 @@ export class CloudBlock extends NodeMaterialBlock {
                     (c - a)* u.y * (1.0 - u.x) +
                     (d - b) * u.x * u.y;
         }
-        
+
         float cloudNoise(in vec3 x) {
             const vec3 step = vec3(110, 241, 171);
-        
+
             vec3 i = floor(x);
             vec3 f = fract(x);
-         
+
             float n = dot(i, step);
-        
+
             vec3 u = f * f * (3.0 - 2.0 * f);
             return mix(mix(mix( cloudRandom(n + dot(step, vec3(0, 0, 0))), cloudRandom(n + dot(step, vec3(1, 0, 0))), u.x),
                            mix( cloudRandom(n + dot(step, vec3(0, 1, 0))), cloudRandom(n + dot(step, vec3(1, 1, 0))), u.x), u.y),
