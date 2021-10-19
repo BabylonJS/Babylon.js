@@ -255,7 +255,6 @@ export class WebXRSessionManager implements IDisposable {
                 if (this._sessionEnded || !this._engine) {
                     return;
                 }
-
                 // Store the XR frame and timestamp in the session manager
                 this.currentFrame = xrFrame;
                 this.currentTimestamp = timestamp;
