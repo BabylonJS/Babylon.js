@@ -1813,7 +1813,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * This function will check if the scene can be rendered (textures are loaded, shaders are compiled)
      * Delay loaded resources are not taking in account
-     * @params checkRenderTargets true to also check that the meshes rendered as part of a render target are ready (default: true)
+     * @param checkRenderTargets true to also check that the meshes rendered as part of a render target are ready (default: true)
      * @return true if all required resources are ready
      */
     public isReady(checkRenderTargets = true): boolean {
@@ -2036,7 +2036,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Registers a function to be executed when the scene is ready
      * @param {Function} func - the function to be executed
-     * @params checkRenderTargets true to also check that the meshes rendered as part of a render target are ready (default: false)
+     * @param checkRenderTargets true to also check that the meshes rendered as part of a render target are ready (default: false)
      */
     public executeWhenReady(func: () => void, checkRenderTargets = false): void {
         this.onReadyObservable.add(func);
@@ -2052,7 +2052,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /**
      * Returns a promise that resolves when the scene is ready
-     * @params checkRenderTargets true to also check that the meshes rendered as part of a render target are ready (default: false)
+     * @param checkRenderTargets true to also check that the meshes rendered as part of a render target are ready (default: false)
      * @returns A promise that resolves when the scene is ready
      */
     public whenReadyAsync(checkRenderTargets = false): Promise<void> {

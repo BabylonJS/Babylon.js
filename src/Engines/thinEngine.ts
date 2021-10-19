@@ -1387,13 +1387,13 @@ export class ThinEngine {
         return this.getGlInfo();
     }
 
+    protected _compatibilityMode = true;
+
     /**
      * (WebGPU only) True (default) to be in compatibility mode, meaning rendering all existing scenes without artifacts (same rendering than WebGL).
      * Setting the property to false will improve performances but may not work in some scenes if some precautions are not taken.
      * See @TODO WEBGPU DOC PAGE for more details
      */
-    protected _compatibilityMode = true;
-
     public get compatibilityMode() {
         return this._compatibilityMode;
     }
