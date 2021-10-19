@@ -1896,7 +1896,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * Unbinds the material from the mesh
      */
     public unbind(): void {
-        if (this._activeEffect && !this.getScene().getEngine().isWebGPU) {
+        if (this._activeEffect && !this.getScene().getEngine()._features.needToAlwaysBindUniformBuffers) {
             let needFlag = false;
             if (this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
                 this._activeEffect.setTexture("reflection2DSampler", null);
@@ -2222,7 +2222,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             MaterialHelper.BindClipPlane(this._activeEffect, scene);
 
             this.bindEyePosition(effect);
-        } else if (scene.getEngine().isWebGPU) {
+        } else if (scene.getEngine()._features.needToAlwaysBindUniformBuffers) {
             ubo.bindToEffect(effect, "Material");
             this._needToBindSceneUbo = true;
         }
