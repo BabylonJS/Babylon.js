@@ -9,7 +9,7 @@ import { VertexBuffer } from "../../Buffers/buffer";
 import { SubMesh } from "../../Meshes/subMesh";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Mesh } from "../../Meshes/mesh";
-import { Effect, IEffectCreationOptions } from "../../Materials/effect";
+import { IEffectCreationOptions } from "../../Materials/effect";
 import { MaterialHelper } from "../../Materials/materialHelper";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
@@ -911,14 +911,6 @@ export class BackgroundMaterial extends PushMaterial {
                 maxSimultaneousLights: this._maxSimultaneousLights
             });
 
-            var onCompiled = (effect: Effect) => {
-                if (this.onCompiled) {
-                    this.onCompiled(effect);
-                }
-
-                MaterialHelper.BindSceneUniformBuffer(effect, scene.getSceneUniformBuffer());
-            };
-
             var join = defines.toString();
             const effect = scene.getEngine().createEffect("background", <IEffectCreationOptions>{
                 attributes: attribs,
@@ -927,7 +919,7 @@ export class BackgroundMaterial extends PushMaterial {
                 samplers: samplers,
                 defines: join,
                 fallbacks: fallbacks,
-                onCompiled: onCompiled,
+                onCompiled: this.onCompiled,
                 onError: this.onError,
                 indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights }
             }, engine);

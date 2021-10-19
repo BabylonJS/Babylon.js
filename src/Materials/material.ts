@@ -1037,8 +1037,8 @@ export class Material implements IAnimatable {
         if (this._needToBindSceneUbo) {
             if (effect) {
                 this._needToBindSceneUbo = false;
-                this._scene.finalizeSceneUbo();
                 MaterialHelper.BindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
+                this._scene.finalizeSceneUbo();
             }
         }
         if (mesh) {
