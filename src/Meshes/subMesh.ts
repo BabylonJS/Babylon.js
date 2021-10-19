@@ -60,7 +60,10 @@ export class SubMesh implements ICullable {
     }
 
     /** @hidden */
-    public _removeDrawWrapper(passId: number) {
+    public _removeDrawWrapper(passId: number, disposeWrapper = true) {
+        if (disposeWrapper) {
+            this._drawWrappers[passId]?.dispose();
+        }
         this._drawWrappers[passId] = undefined as any;
     }
 
