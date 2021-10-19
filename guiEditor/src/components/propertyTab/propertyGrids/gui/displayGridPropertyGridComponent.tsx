@@ -28,7 +28,7 @@ export class DisplayGridPropertyGridComponent extends React.Component<IDisplayGr
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={displayGrid} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <hr />
                 <TextLineComponent label="DISPLAY GRID" value=" " color="grey"></TextLineComponent>
-                <div className="divider">
+                <div className="ge-divider">
                 <FloatLineComponent min={1} isInteger={true} lockObject={this.props.lockObject} label="Cell Width" target={displayGrid} propertyName="cellWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <FloatLineComponent min={1} isInteger={true} lockObject={this.props.lockObject} label="Cell Height" target={displayGrid} propertyName="cellHeight" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </div>

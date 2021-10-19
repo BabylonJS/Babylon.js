@@ -496,7 +496,7 @@ export class PrePassRenderer {
         }
 
         for (let i = 0; i < this.renderTargets.length; i++) {
-            if (this.mrtCount !== previousMrtCount) {
+            if (this.mrtCount !== previousMrtCount || this.renderTargets[i].count !== this.mrtCount) {
                 this.renderTargets[i].updateCount(this.mrtCount, { types: this._mrtFormats }, this._mrtNames.concat("prePass_DepthBuffer"));
             }
 

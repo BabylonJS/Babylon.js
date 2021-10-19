@@ -3516,7 +3516,7 @@ export class ThinEngine {
      * @returns a new render target texture stored in an InternalTexture
      */
      public _createInternalTexture(size: TextureSize, options: boolean | InternalTextureCreationOptions): InternalTexture {
-        const fullOptions = new InternalTextureCreationOptions();
+        const fullOptions: InternalTextureCreationOptions = {};
 
         if (options !== undefined && typeof options === "object") {
             fullOptions.generateMipMaps = options.generateMipMaps;

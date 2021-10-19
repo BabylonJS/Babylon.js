@@ -221,10 +221,16 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         const savePromise = this.props.globalState.customSave?.action || this.saveToSnippetServerHelper;
         savePromise(content, adt).then((snippetId: string) => {
             adt.snippetId = snippetId;
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(adt.snippetId);
-            }
-            alert("GUI saved with ID: " + adt.snippetId + " (please note that the id was also saved to your clipboard)");
+            const alertMessage = `GUI saved with ID:  ${adt.snippetId}`;
+            if (navigator.clipboard) {                
+                navigator.clipboard.writeText(adt.snippetId).then(() => {
+                    alert(`${alertMessage}. The ID was copied to your clipboard.`);
+                }).catch((err: any) => {
+                    alert(alertMessage);
+                })
+            } else {
+                alert(alertMessage);
+            }   
             this.props.globalState.onBuiltObservable.notifyObservers();
         }).catch((err: any) => {
             alert(err);
@@ -502,7 +508,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             }}
                         />}
                     {!DataStorage.ReadBoolean("Responsive", true) &&
-                        <div className="divider">
+                        <div className="ge-divider">
                             <FloatLineComponent
                                 icon={canvasSizeIcon}
                                 iconLabel="Canvas Size"
