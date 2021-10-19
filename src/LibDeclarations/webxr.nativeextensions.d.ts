@@ -65,9 +65,11 @@ interface XRSession {
 }
 
 interface XRFrame {
-    featurePointCloud?: Array<number>;
-    detectedMeshes?: XRMeshSet;
+    readonly featurePointCloud?: Array<number>;
+    readonly detectedMeshes?: XRMeshSet;
     getPoseData?: (space: XRSpace, baseSpace: XRReferenceSpace, vectorBuffer: ArrayBuffer, matrixBuffer: ArrayBuffer) => XRPose;
+    fillJointPoseData?: (spaces: XRJointSpace[], baseSpace: XRSpace, numSpaces: number, transformsBuffer: ArrayBuffer) => boolean;
+    fillJointPoseRadiiData?: (spaces: XRJointSpace[], numSpaces: number, radiiBuffer: ArrayBuffer) => boolean;
 }
 
 type XRMeshSet = Set<XRMesh>;

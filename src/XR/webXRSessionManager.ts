@@ -256,32 +256,6 @@ export class WebXRSessionManager implements IDisposable {
                     return;
                 }
 
-                if (xrFrame?.getPoseData && !xrFrame.getPose) {
-                    let xrTransform = new XRRigidTransform();
-                    let xrPose: XRPose = {
-                        transform: xrTransform,
-                        emulatedPosition: false
-                    };
-                    let xrPoseVectorData = new Float32Array(4 * (4 + 4)); // Enough space for position, orientation
-                    xrFrame.getPose = (space: XRSpace, baseSpace: XRReferenceSpace) => {
-                        if (!xrFrame.getPoseData!(space, baseSpace, xrPoseVectorData.buffer, xrTransform.matrix.buffer)) {
-                            return undefined;
-                        }
-                        const position = xrTransform.position as DOMPoint;
-                        position.x = xrPoseVectorData[0];
-                        position.y = xrPoseVectorData[1];
-                        position.z = xrPoseVectorData[2];
-                        position.w = xrPoseVectorData[3];
-
-                        const orientation = xrTransform.orientation as DOMPoint;
-                        orientation.x = xrPoseVectorData[4];
-                        orientation.y = xrPoseVectorData[5];
-                        orientation.z = xrPoseVectorData[6];
-                        orientation.w = xrPoseVectorData[7];
-                        return xrPose;
-                    };
-                }
-
                 // Store the XR frame and timestamp in the session manager
                 this.currentFrame = xrFrame;
                 this.currentTimestamp = timestamp;

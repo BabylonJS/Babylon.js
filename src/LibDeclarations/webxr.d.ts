@@ -170,9 +170,10 @@ interface XRFrame {
     getHitTestResults(hitTestSource: XRHitTestSource): Array<XRHitTestResult>;
     getHitTestResultsForTransientInput(hitTestSource: XRTransientInputHitTestSource): Array<XRTransientInputHitTestResult>;
     // Anchors
-    trackedAnchors?: XRAnchorSet;
+    readonly trackedAnchors?: XRAnchorSet;
     createAnchor?(pose: XRRigidTransform, space: XRSpace): Promise<XRAnchor>;
-    detectedPlanes?: XRPlaneSet;
+    // Planes
+    readonly detectedPlanes?: XRPlaneSet;
     // Hand tracking
     getJointPose?(joint: XRJointSpace, baseSpace: XRSpace): XRJointPose;
     fillJointRadii?(jointSpaces: XRJointSpace[], radii: Float32Array): boolean;
