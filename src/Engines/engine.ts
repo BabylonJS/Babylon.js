@@ -1480,6 +1480,25 @@ export class Engine extends ThinEngine {
     }
 
     /**
+     * Releases a render pass id
+     * @param id id of the render pass to release
+     */
+     public releaseRenderPassId(id: number): void {
+        super.releaseRenderPassId(id);
+
+        for (let s = 0; s < this.scenes.length; ++s) {
+            const scene = this.scenes[s];
+            for (let m = 0; m < scene.meshes.length; ++m) {
+                const mesh = scene.meshes[m];
+                for (let b = 0; b < mesh.subMeshes.length; ++b) {
+                    const subMesh = mesh.subMeshes[b];
+                    subMesh._removeDrawWrapper(id);
+                }
+            }
+        }
+    }
+
+    /**
      * @hidden
      * Rescales a texture
      * @param source input texture
