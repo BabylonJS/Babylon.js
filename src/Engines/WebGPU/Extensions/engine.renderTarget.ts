@@ -14,7 +14,7 @@ WebGPUEngine.prototype._createHardwareRenderTargetWrapper = function(isMulti: bo
 WebGPUEngine.prototype.createRenderTargetTexture = function (size: TextureSize, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper {
     const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, size) as RenderTargetWrapper;
 
-    let fullOptions = new RenderTargetCreationOptions();
+    const fullOptions: RenderTargetCreationOptions = {};
 
     if (options !== undefined && typeof options === "object") {
         fullOptions.generateMipMaps = options.generateMipMaps;
