@@ -591,7 +591,7 @@ export class Constants {
 
   /** @hidden */
   public static readonly RENDERPASS_MAIN = 0;
-  
+
   /**
    * Constant used as key code for Alt key
    */
