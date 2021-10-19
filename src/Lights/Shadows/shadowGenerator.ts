@@ -1185,6 +1185,7 @@ export class ShadowGenerator implements IShadowGenerator {
             }
 
             MaterialHelper.BindSceneUniformBuffer(effect, this._scene.getSceneUniformBuffer());
+            this._scene.getSceneUniformBuffer().bindUniformBuffer();
 
             const world = effectiveMesh.getWorldMatrix();
 

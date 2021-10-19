@@ -41,8 +41,6 @@ export class UniformBuffer {
     private _currentEffectName: string;
     private _name: string;
     private _currentFrameId: number;
-    private _currentBufferBoundToEffect: Nullable<DataBuffer>;
-    private _bufferToBindToEffect: Nullable<DataBuffer>;
 
     // Pool for avoiding memory leaks
     private static _MAX_UNIFORM_SIZE = 256;
@@ -216,8 +214,6 @@ export class UniformBuffer {
         this._uniformArraySizes = {};
         this._uniformLocationPointer = 0;
         this._needSync = false;
-        this._currentBufferBoundToEffect = null;
-        this._bufferToBindToEffect = null;
 
         if (this._engine._features.trackUbosInFrame) {
             this._buffers = [];
@@ -570,10 +566,7 @@ export class UniformBuffer {
      * Otherwise, the buffer will be updated only if the cache differs.
      */
     public update(): void {
-        if (this._bufferToBindToEffect && this._bufferToBindToEffect !== this._currentBufferBoundToEffect && this._currentEffect) {
-            this._currentBufferBoundToEffect = this._bufferToBindToEffect;
-            this._currentEffect.bindUniformBuffer(this._bufferToBindToEffect, this._currentEffectName);
-        }
+        this.bindUniformBuffer();
 
         if (!this._buffer) {
             this.create();
@@ -617,7 +610,6 @@ export class UniformBuffer {
         } else {
             this._rebuild();
         }
-        this._bufferToBindToEffect = this._buffer;
     }
 
     private _checkNewFrame(): void {
@@ -631,7 +623,6 @@ export class UniformBuffer {
             } else {
                 this._bufferIndex = -1;
             }
-            this._bufferToBindToEffect = this._buffer;
         }
     }
 
@@ -993,29 +984,30 @@ export class UniformBuffer {
     }
 
     /**
-     * Binds this uniform buffer to an effect.
-     * @param effect Define the effect to bind the buffer to
+     * Associates an effect to this uniform buffer
+     * @param effect Define the effect to associate the buffer to
      * @param name Name of the uniform block in the shader.
      */
     public bindToEffect(effect: Effect, name: string): void {
         this._currentEffect = effect;
         this._currentEffectName = name;
-
-        if (this._noUBO || !this._buffer) {
-            return;
-        }
-
-        this._currentBufferBoundToEffect = this._bufferToBindToEffect = this._buffer;
-
-        effect.bindUniformBuffer(this._buffer, name);
     }
 
     /**
-     * Unbinds this uniform buffer from the current effect
+     * Binds the current (GPU) buffer to the effect
+     */
+    public bindUniformBuffer(): void {
+        if (!this._noUBO && this._buffer && this._currentEffect) {
+            this._currentEffect.bindUniformBuffer(this._buffer, this._currentEffectName);
+        }
+    }
+
+    /**
+     * Dissociates the current effect from this uniform buffer
      */
     public unbindEffect(): void {
         this._currentEffect = undefined as any;
-        this._currentBufferBoundToEffect = this._bufferToBindToEffect = null;
+        this._currentEffectName = undefined as any;
     }
 
     /**
