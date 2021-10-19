@@ -838,6 +838,7 @@ export class WebGPUEngine extends Engine {
             needsInvertingBitmap: false,
             useUBOBindingCache: false,
             needShaderCodeInlining: true,
+            needToAlwaysBindUniformBuffers: true,
             _collectUbosUpdatedInFrame: false,
         };
     }

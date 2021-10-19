@@ -1324,6 +1324,7 @@ export class ThinEngine {
             needsInvertingBitmap: true,
             useUBOBindingCache: true,
             needShaderCodeInlining: false,
+            needToAlwaysBindUniformBuffers: false,
             _collectUbosUpdatedInFrame: false,
         };
     }
