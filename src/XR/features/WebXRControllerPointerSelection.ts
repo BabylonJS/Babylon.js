@@ -328,7 +328,8 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         return null;
     }
 
-    public getPointerSelectionDisabledByPointerId(id: number): boolean {
+    /** @hidden */
+    public _getPointerSelectionDisabledByPointerId(id: number): boolean {
         const keys = Object.keys(this._controllers);
 
         for (let i = 0; i < keys.length; ++i) {
@@ -339,7 +340,8 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         return true;
     }
 
-    public setPointerSelectionDisabledByPointerId(id: number, state: boolean) {
+    /** @hidden */
+    public _setPointerSelectionDisabledByPointerId(id: number, state: boolean) {
         const keys = Object.keys(this._controllers);
 
         for (let i = 0; i < keys.length; ++i) {

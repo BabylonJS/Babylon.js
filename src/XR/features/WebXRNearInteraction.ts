@@ -422,14 +422,14 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                     controllerData.pickedPointVisualCue.isVisible = true;
 
                     if (this._farInteractionFeature && this._farInteractionFeature.attached) {
-                        this._farInteractionFeature.setPointerSelectionDisabledByPointerId(controllerData.id, true);
+                        this._farInteractionFeature._setPointerSelectionDisabledByPointerId(controllerData.id, true);
                     }
                 } else {
                     controllerData.meshUnderPointer = null;
                     controllerData.pickedPointVisualCue.isVisible = false;
 
                     if (this._farInteractionFeature && this._farInteractionFeature.attached) {
-                        this._farInteractionFeature.setPointerSelectionDisabledByPointerId(controllerData.id, false);
+                        this._farInteractionFeature._setPointerSelectionDisabledByPointerId(controllerData.id, false);
                     }
                 }
             }
@@ -464,7 +464,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
 
     private _isControllerReadyForNearInteraction(id: number) {
         if (this._farInteractionFeature) {
-            return this._farInteractionFeature.getPointerSelectionDisabledByPointerId(id);
+            return this._farInteractionFeature._getPointerSelectionDisabledByPointerId(id);
         }
 
         return true;
