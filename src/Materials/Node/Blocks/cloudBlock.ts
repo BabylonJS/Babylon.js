@@ -20,12 +20,14 @@ export class CloudBlock extends NodeMaterialBlock {
      */
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Neutral);
-        this.registerInput("seed", NodeMaterialBlockConnectionPointTypes.Vector2);
-        this.registerInput("gain", NodeMaterialBlockConnectionPointTypes.Float, true);
-        this.registerInput("lacunarity", NodeMaterialBlockConnectionPointTypes.Float, true);
-        this.registerInput("timeX", NodeMaterialBlockConnectionPointTypes.Float, true);
-        this.registerInput("timeY", NodeMaterialBlockConnectionPointTypes.Float, true);
+        this.registerInput("seed", NodeMaterialBlockConnectionPointTypes.AutoDetect);
+        this.registerInput("offsetX", NodeMaterialBlockConnectionPointTypes.Float, true);
+        this.registerInput("offsetY", NodeMaterialBlockConnectionPointTypes.Float, true);
+        this.registerInput("offsetZ", NodeMaterialBlockConnectionPointTypes.Float, true);
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Vector3);
+
+        this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector2);
+        this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector3);
     }
 
     /**
@@ -44,31 +46,24 @@ export class CloudBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the gain input component
-     */
-    public get gain(): NodeMaterialConnectionPoint {
+    * Gets the offset X input component
+    */
+    public get offsetX(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-    * Gets the lacunarity input component
+    * Gets the offset Y input component
     */
-    public get lacunarity(): NodeMaterialConnectionPoint {
-       return this._inputs[2];
+     public get offsetY(): NodeMaterialConnectionPoint {
+        return this._inputs[2];
     }
 
     /**
-    * Gets the time X input component
+    * Gets the offset Z input component
     */
-    public get timeX(): NodeMaterialConnectionPoint {
+     public get offsetZ(): NodeMaterialConnectionPoint {
         return this._inputs[3];
-    }
-
-    /**
-    * Gets the time Y input component
-    */
-     public get timeY(): NodeMaterialConnectionPoint {
-        return this._inputs[4];
     }
 
     /**
@@ -95,9 +90,11 @@ export class CloudBlock extends NodeMaterialBlock {
                 43758.5453123);
         }
 
+        float cloudRandom(in float p) { p = fract(p * 0.011); p *= p + 7.5; p *= p + p; return fract(p); }
+
         // Based on Morgan McGuire @morgan3d
         // https://www.shadertoy.com/view/4dS3Wd
-        float fbmNoise (in vec2 st) {
+        float cloudNoise(in vec2 st) {
             vec2 i = floor(st);
             vec2 f = fract(st);
 
@@ -112,9 +109,25 @@ export class CloudBlock extends NodeMaterialBlock {
             return mix(a, b, u.x) +
                     (c - a)* u.y * (1.0 - u.x) +
                     (d - b) * u.x * u.y;
+        }
+
+        float cloudNoise(in vec3 x) {
+            const vec3 step = vec3(110, 241, 171);
+
+            vec3 i = floor(x);
+            vec3 f = fract(x);
+
+            float n = dot(i, step);
+
+            vec3 u = f * f * (3.0 - 2.0 * f);
+            return mix(mix(mix( cloudRandom(n + dot(step, vec3(0, 0, 0))), cloudRandom(n + dot(step, vec3(1, 0, 0))), u.x),
+                           mix( cloudRandom(n + dot(step, vec3(0, 1, 0))), cloudRandom(n + dot(step, vec3(1, 1, 0))), u.x), u.y),
+                       mix(mix( cloudRandom(n + dot(step, vec3(0, 0, 1))), cloudRandom(n + dot(step, vec3(1, 0, 1))), u.x),
+                           mix( cloudRandom(n + dot(step, vec3(0, 1, 1))), cloudRandom(n + dot(step, vec3(1, 1, 1))), u.x), u.y), u.z);
         }`;
 
-        let fractalBrownianString = `float fbm (in vec2 st, in float gain, in float lacunarity) {
+        let fractalBrownianString = `
+        float fbm(in vec2 st) {
             // Initial values
             float value = 0.0;
             float amplitude = .5;
@@ -122,27 +135,43 @@ export class CloudBlock extends NodeMaterialBlock {
 
             // Loop of octaves
             for (int i = 0; i < OCTAVES; i++) {
-                value += amplitude * fbmNoise(st);
-                st *= lacunarity;
-                amplitude *= gain;
+                value += amplitude * cloudNoise(st);
+                st *= 2.0;
+                amplitude *= 0.5;
+            }
+            return value;
+        }
+
+        float fbm(in vec3 x) {
+            // Initial values
+            float value = 0.0;
+            float amplitude = 0.5;
+            for (int i = 0; i < OCTAVES; ++i) {
+                value += amplitude * cloudNoise(x);
+                x = x * 2.0;
+                amplitude *= 0.5;
             }
             return value;
         }`;
 
         const fbmNewName = `fbm${this.octaves}`;
         state._emitFunction('CloudBlockCode', functionString, '// CloudBlockCode');
-        state._emitFunction('CloudBlockCodeFBM' + this.octaves, fractalBrownianString.replace("fbm", fbmNewName).replace("OCTAVES", (this.octaves | 0).toString()), '// CloudBlockCode FBM');
+        state._emitFunction('CloudBlockCodeFBM' + this.octaves, fractalBrownianString.replace(/fbm/gi, fbmNewName).replace(/OCTAVES/gi, (this.octaves | 0).toString()), '// CloudBlockCode FBM');
 
         const localVariable = state._getFreeVariableName("st");
+        const seedType = this.seed.connectedPoint?.type === NodeMaterialBlockConnectionPointTypes.Vector2 ? "vec2" : "vec3";
 
-        state.compilationString += `vec2 ${localVariable} = ${this.seed.associatedVariableName};\r\n`;
-        if (this.timeX.isConnected) {
-            state.compilationString += `${localVariable}.x += 0.1 * ${this.timeX.associatedVariableName};\r\n`;
+        state.compilationString += `${seedType} ${localVariable} = ${this.seed.associatedVariableName};\r\n`;
+        if (this.offsetX.isConnected) {
+            state.compilationString += `${localVariable}.x += 0.1 * ${this.offsetX.associatedVariableName};\r\n`;
         }
-        if (this.timeY.isConnected) {
-            state.compilationString += `${localVariable}.y += 0.1 * ${this.timeY.associatedVariableName};\r\n`;
+        if (this.offsetY.isConnected) {
+            state.compilationString += `${localVariable}.y += 0.1 * ${this.offsetY.associatedVariableName};\r\n`;
         }
-        state.compilationString += this._declareOutput(this._outputs[0], state) + ` = vec3(0.0) + ${fbmNewName}(${localVariable}, ${this.gain.isConnected ? this.gain.associatedVariableName : "0.5"}, ${this.lacunarity.isConnected ? this.lacunarity.associatedVariableName : "2.0"});\r\n`;
+        if (this.offsetZ.isConnected && seedType === "vec3") {
+            state.compilationString += `${localVariable}.z += 0.1 * ${this.offsetZ.associatedVariableName};\r\n`;
+        }
+        state.compilationString += this._declareOutput(this._outputs[0], state) + ` = vec3(0.0) + ${fbmNewName}(${localVariable});\r\n`;
 
         return this;
     }
