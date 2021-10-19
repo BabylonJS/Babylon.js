@@ -692,8 +692,8 @@ export class PrePassRenderer {
         let enablePrePass = false;
         this._scene.imageProcessingConfiguration.applyByPostProcess = false;
 
-        if (this._scene.depthPeelingRenderer) {
-            this._scene.depthPeelingRenderer.setPrePassRenderer(this);
+        if (this._scene._depthPeelingRenderer) {
+            this._scene._depthPeelingRenderer.setPrePassRenderer(this);
             enablePrePass = true;
         }
 
