@@ -292,7 +292,6 @@ export class DepthRenderer {
 
         var defines = [];
 
-
         var attribs = [VertexBuffer.PositionKind];
 
         // Alpha test

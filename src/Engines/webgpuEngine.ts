@@ -501,7 +501,7 @@ export class WebGPUEngine extends Engine {
     public get compatibilityMode() {
         return this._compatibilityMode;
     }
- 
+
     public set compatibilityMode(mode: boolean) {
         this._compatibilityMode = mode;
     }
@@ -2948,7 +2948,7 @@ export class WebGPUEngine extends Engine {
                 renderPass2.drawIndexedIndirect(this._currentDrawContext.indirectDrawBuffer, 0);
             } else {
                 renderPass2.drawIndirect(this._currentDrawContext.indirectDrawBuffer, 0);
-            }            
+            }
         } else if (drawType === 0) {
             renderPass2.drawIndexed(count, instancesCount || 1, start, 0, 0);
         } else {

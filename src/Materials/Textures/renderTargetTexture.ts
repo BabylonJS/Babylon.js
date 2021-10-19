@@ -276,7 +276,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     public setMaterialForRendering(mesh: AbstractMesh | AbstractMesh[], material?: Material | Material[]): void {
         let meshes;
         if (!Array.isArray(mesh)) {
-            meshes = [mesh]
+            meshes = [mesh];
         } else {
             meshes = mesh;
         }
@@ -820,7 +820,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                 let currentRenderList: Nullable<Array<AbstractMesh>> = null;
                 let defaultRenderList = this.renderList ? this.renderList : scene.getActiveMeshes().data;
                 let defaultRenderListLength = this.renderList ? this.renderList.length : scene.getActiveMeshes().length;
-        
+
                 engine.currentRenderPassId = this._renderPassIds[layer];
 
                 this.onBeforeRenderObservable.notifyObservers(layer);
@@ -828,22 +828,22 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                 if (this.getCustomRenderList) {
                     currentRenderList = this.getCustomRenderList(layer, defaultRenderList, defaultRenderListLength);
                 }
-        
+
                 if (!currentRenderList) {
                     currentRenderList = defaultRenderList;
                 }
-    
+
                 if (!this._doNotChangeAspectRatio) {
                     scene.updateTransformMatrix(true);
                 }
 
                 for (let i = 0; i < currentRenderList.length && returnValue; ++i) {
                     const mesh = currentRenderList[i];
-    
+
                     if (!mesh.isEnabled() || mesh.isBlocked || !mesh.isVisible || !mesh.subMeshes) {
                         continue;
                     }
-    
+
                     if (this.customIsReadyFunction) {
                         if (!this.customIsReadyFunction(mesh, this.refreshRate)) {
                             returnValue = false;

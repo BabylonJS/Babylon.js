@@ -1836,7 +1836,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         // Meshes
         if (checkRenderTargets) {
-            this._processedMaterials.reset();        
+            this._processedMaterials.reset();
             this._renderTargets.reset();
         }
         for (index = 0; index < this.meshes.length; index++) {
@@ -1874,7 +1874,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                         if (material && material.hasRenderTargetTextures && material.getRenderTargetTextures != null) {
                             if (this._processedMaterials.indexOf(material) === -1) {
                                 this._processedMaterials.push(material);
-            
+
                                 this._renderTargets.concatWithNoDuplicate(material.getRenderTargetTextures!());
                             }
                         }
@@ -1883,7 +1883,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                     if (mat.hasRenderTargetTextures && mat.getRenderTargetTextures != null) {
                         if (this._processedMaterials.indexOf(mat) === -1) {
                             this._processedMaterials.push(mat);
-        
+
                             this._renderTargets.concatWithNoDuplicate(mat.getRenderTargetTextures!());
                         }
                     }
