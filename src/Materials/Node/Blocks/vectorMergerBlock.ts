@@ -62,7 +62,7 @@ export class VectorMergerBlock extends NodeMaterialBlock {
      */
      public get xyzwIn(): NodeMaterialConnectionPoint {
         return this._inputs[0];
-    }    
+    }
 
     /**
      * Gets the xyz component (input)
@@ -160,7 +160,7 @@ export class VectorMergerBlock extends NodeMaterialBlock {
     protected _inputRename(name: string) {
         if (name === "xyzw ") {
             return "xyzwIn";
-        }        
+        }
         if (name === "xyz ") {
             return "xyzIn";
         }
