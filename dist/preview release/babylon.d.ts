@@ -6307,7 +6307,7 @@ declare module BABYLON {
     /**
      * Define options used to create an internal texture
      */
-    export class InternalTextureCreationOptions {
+    export interface InternalTextureCreationOptions {
         /**
          * Specifies if mipmaps must be created. If undefined, the value from generateMipMaps is taken instead
          */
@@ -6330,7 +6330,7 @@ declare module BABYLON {
     /**
      * Define options used to create a render target texture
      */
-    export class RenderTargetCreationOptions extends InternalTextureCreationOptions {
+    export interface RenderTargetCreationOptions extends InternalTextureCreationOptions {
         /** Specifies whether or not a depth should be allocated in the texture (true by default) */
         generateDepthBuffer?: boolean;
         /** Specifies whether or not a stencil should be allocated in the texture (false by default)*/
@@ -6339,7 +6339,7 @@ declare module BABYLON {
     /**
      * Define options used to create a depth texture
      */
-    export class DepthTextureCreationOptions {
+    export interface DepthTextureCreationOptions {
         /** Specifies whether or not a stencil should be allocated in the texture */
         generateStencil?: boolean;
         /** Specifies whether or not bilinear filtering is enable on the texture */
@@ -57631,6 +57631,10 @@ declare module BABYLON {
          * @returns the controller that correlates to this id or null if not found
          */
         getXRControllerByPointerId(id: number): Nullable<WebXRInputSource>;
+        /** @hidden */
+        _getPointerSelectionDisabledByPointerId(id: number): boolean;
+        /** @hidden */
+        _setPointerSelectionDisabledByPointerId(id: number, state: boolean): void;
         private _identityMatrix;
         private _screenCoordinatesRef;
         private _viewportRef;
@@ -57682,7 +57686,7 @@ declare module BABYLON {
         /**
          * Far interaction feature to toggle when near interaction takes precedence
          */
-        farInteractionFeature?: WebXRAbstractFeature;
+        farInteractionFeature?: WebXRControllerPointerSelection;
     }
     /**
      * A module that will enable near interaction near interaction for hands and motion controllers of XR Input Sources
@@ -57748,12 +57752,12 @@ declare module BABYLON {
          */
         getXRControllerByPointerId(id: number): Nullable<WebXRInputSource>;
         /**
-         * This function sets webXRControllerPointer Selection feature that will be disabled when
+         * This function sets webXRControllerPointerSelection feature that will be disabled when
          * the hover range is reached for a mesh and will be reattached when not in hover range.
          * This is used to remove the selection rays when moving.
          * @param farInteractionFeature the feature to disable when finger is in hover range for a mesh
          */
-        setFarInteractionFeature(farInteractionFeature: Nullable<IWebXRFeature>): void;
+        setFarInteractionFeature(farInteractionFeature: Nullable<WebXRControllerPointerSelection>): void;
         /**
          * Filter used for near interaction pick and hover
          */
@@ -57775,6 +57779,7 @@ declare module BABYLON {
         protected _onXRFrame(_xrFrame: XRFrame): void;
         private get _utilityLayerScene();
         private _generateVisualCue;
+        private _isControllerReadyForNearInteraction;
         private _attachNearInteractionMode;
         private _detachController;
         private _generateNewHandTipMesh;
@@ -77954,21 +77959,17 @@ declare module BABYLON {
          */
         get seed(): NodeMaterialConnectionPoint;
         /**
-         * Gets the gain input component
-         */
-        get gain(): NodeMaterialConnectionPoint;
-        /**
-        * Gets the lacunarity input component
+        * Gets the offset X input component
         */
-        get lacunarity(): NodeMaterialConnectionPoint;
+        get offsetX(): NodeMaterialConnectionPoint;
         /**
-        * Gets the time X input component
+        * Gets the offset Y input component
         */
-        get timeX(): NodeMaterialConnectionPoint;
+        get offsetY(): NodeMaterialConnectionPoint;
         /**
-        * Gets the time Y input component
+        * Gets the offset Z input component
         */
-        get timeY(): NodeMaterialConnectionPoint;
+        get offsetZ(): NodeMaterialConnectionPoint;
         /**
          * Gets the output component
          */
