@@ -3968,7 +3968,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             this._intermediateRendering = false;
         }
 
-        this._engine.currentRenderPassId = Constants.RENDERPASS_MAIN;
+        this._engine.currentRenderPassId = camera.outputRenderTarget?.renderPassId ?? Constants.RENDERPASS_MAIN;
 
         // Restore framebuffer after rendering to targets
         if (needRebind && !this.prePass) {
