@@ -19,7 +19,6 @@
     VATFrameNum = ceil(VATFrameNum);
     // add to start frame
     VATFrameNum += VATStartFrame;
-    }
 
     mat4 VATInfluence;
     VATInfluence = readMatrixFromRawSamplerVAT(bakedVertexAnimationTexture, matricesIndices[0], frameNum, boneTextureWidth) * matricesWeights[0];

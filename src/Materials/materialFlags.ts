@@ -38,6 +38,22 @@ export class MaterialFlags {
         Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
+    private static _BakedVertexAnimationTextureEnabled = true;
+    /**
+     * Are detail textures enabled in the application.
+     */
+    public static get BakedVertexAnimationTextureEnabled(): boolean {
+        return this._BakedVertexAnimationTextureEnabled;
+    }
+    public static set BakedVertexAnimationTextureEnabled(value: boolean) {
+        if (this._BakedVertexAnimationTextureEnabled === value) {
+            return;
+        }
+
+        this._BakedVertexAnimationTextureEnabled = value;
+        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
+
     private static _VertexAnimationTextureEnabled = true;
     /**
      * Are vertex animation textures enabled in the application.
