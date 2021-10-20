@@ -40,6 +40,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     private _pointerUpEvent = (evt: any) => { };
     private _pointerWheelEvent = (evt: any) => { };
     private _pointerBlurEvent = (evt: any) => { };
+    private _pointerOutEvent = (evt: any) => { };
     private _wheelEventName: string;
 
     private _mouseId = -1;
@@ -362,7 +363,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 // The browser might use a move event in case
                 // of simultaneous mouse buttons click for instance. So
                 // in this case we stil need to propagate it.
-                let fireFakeMove = this._usingSafari;
+                let fireFakeMove = !this._usingSafari;
                 if (previousHorizontal !== evt.clientX) {
                     deviceEvent.inputIndex = PointerInput.Horizontal;
                     deviceEvent.previousState = previousHorizontal;
@@ -630,6 +631,17 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             }
         });
 
+        this._pointerOutEvent = ((evt) => {
+            let totalPressed = 0;
+            for (let i = PointerInput.LeftClick; i < PointerInput.BrowserForward; i++) {
+                totalPressed += this._inputs[DeviceType.Mouse][0][i];
+            }
+
+            if (totalPressed > 0) {
+                this._pointerBlurEvent(evt);
+            }
+        });
+
         this._pointerWheelEvent = ((evt) => {
             const deviceType = DeviceType.Mouse;
             const deviceSlot = 0;
@@ -683,6 +695,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         this._elementToAttachTo.addEventListener(this._eventPrefix + "down", this._pointerDownEvent);
         this._elementToAttachTo.addEventListener(this._eventPrefix + "up", this._pointerUpEvent);
         this._elementToAttachTo.addEventListener("blur", this._pointerBlurEvent);
+        this._elementToAttachTo.addEventListener("pointerout", this._pointerOutEvent);
         this._elementToAttachTo.addEventListener(this._wheelEventName, this._pointerWheelEvent, passiveSupported ? { passive: false } : false);
 
         // Since there's no up or down event for mouse wheel or delta x/y, clear mouse values at end of frame
@@ -796,6 +809,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             this._elementToAttachTo.removeEventListener(this._eventPrefix + "down", this._pointerDownEvent);
             this._elementToAttachTo.removeEventListener(this._eventPrefix + "up", this._pointerUpEvent);
             this._elementToAttachTo.removeEventListener(this._wheelEventName, this._pointerWheelEvent);
+            this._elementToAttachTo.removeEventListener("pointerout", this._pointerOutEvent);
 
             if (this._pointerInputClearObserver) {
                 this._engine.onEndFrameObservable.remove(this._pointerInputClearObserver);
