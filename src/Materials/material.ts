@@ -1320,12 +1320,14 @@ export class Material implements IAnimatable {
                     continue;
                 }
 
-                const drawWrapper = subMesh._getDrawWrapper(Constants.RENDERPASS_MAIN);
-                if (!drawWrapper || !drawWrapper.defines || !(drawWrapper.defines as MaterialDefines).markAllAsDirty) {
-                    continue;
+                for (const drawWrapper of subMesh._drawWrappers) {
+                    if (!drawWrapper || !drawWrapper.defines || !(drawWrapper.defines as MaterialDefines).markAllAsDirty) {
+                        continue;
+                    }
+                    if (this._materialContext === drawWrapper.materialContext) {
+                        func(drawWrapper.defines as MaterialDefines);
+                    }
                 }
-
-                func(drawWrapper.defines as MaterialDefines);
             }
         }
     }
