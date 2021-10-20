@@ -46,7 +46,7 @@ export class CloudBlock extends NodeMaterialBlock {
     public get seed(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
-    
+
     /**
      * Gets the chaos input component
      */
