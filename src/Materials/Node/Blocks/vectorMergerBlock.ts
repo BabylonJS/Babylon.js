@@ -15,15 +15,15 @@ export class VectorMergerBlock extends NodeMaterialBlock {
      */
     public xSwizzle: "x" | "y" | "z" | "w" = "x";
     /**
-     * Gets or sets the swizzle for y (meaning which compoent to affect to the output.x)
+     * Gets or sets the swizzle for y (meaning which compoent to affect to the output.y)
      */
      public ySwizzle: "x" | "y" | "z" | "w"  = "y";
     /**
-     * Gets or sets the swizzle for z (meaning which compoent to affect to the output.x)
+     * Gets or sets the swizzle for z (meaning which compoent to affect to the output.z)
      */
      public zSwizzle: "x" | "y" | "z" | "w"  = "z";
     /**
-     * Gets or sets the swizzle for w (meaning which compoent to affect to the output.x)
+     * Gets or sets the swizzle for w (meaning which compoent to affect to the output.w)
      */
      public wSwizzle: "x" | "y" | "z" | "w"  = "w";
 
@@ -176,16 +176,7 @@ export class VectorMergerBlock extends NodeMaterialBlock {
     private _buildSwizzle(len: number) {
         let swizzle = this.xSwizzle + this.ySwizzle + this.zSwizzle + this.wSwizzle;
 
-        if (len === 4) {
-            return "." + swizzle;
-        }
-        if (len === 3) {
-            return "." + swizzle.substr(0, 3);
-        }
-        if (len === 2) {
-            return "." + swizzle.substr(0, 2);
-        }        
-        return "." + swizzle.substr(0, 1);
+        return "." + swizzle.substr(0, len);
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
