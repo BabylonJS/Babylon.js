@@ -352,12 +352,6 @@ export class Camera extends Node {
     private _absoluteRotation: Quaternion = Quaternion.Identity();
 
     /**
-     * Render pass id used by the camera when the camera is used to render the main scene
-     * If the camera is used by a RenderTargetTexture, the render pass id from the RTT is used instead
-     */
-    public renderPassId: number;
-
-    /**
      * Instantiates a new camera object.
      * This should not be used directly but through the inherited cameras: ArcRotate, Free...
      * @see https://doc.babylonjs.com/features/cameras
@@ -376,7 +370,6 @@ export class Camera extends Node {
         }
 
         this.position = position;
-        this.renderPassId = this.getScene().getEngine().createRenderPassId(`Camera ${name}`);
     }
 
     /**
@@ -973,8 +966,6 @@ export class Camera extends Node {
         this.onProjectionMatrixChangedObservable.clear();
         this.onAfterCheckInputsObservable.clear();
         this.onRestoreStateObservable.clear();
-
-        this.getScene().getEngine().releaseRenderPassId(this.renderPassId);
 
         // Inputs
         if (this.inputs) {
