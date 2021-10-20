@@ -21,13 +21,15 @@ export class CloudBlock extends NodeMaterialBlock {
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Neutral);
         this.registerInput("seed", NodeMaterialBlockConnectionPointTypes.AutoDetect);
+        this.registerInput("chaos", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
         this.registerInput("offsetX", NodeMaterialBlockConnectionPointTypes.Float, true);
         this.registerInput("offsetY", NodeMaterialBlockConnectionPointTypes.Float, true);
         this.registerInput("offsetZ", NodeMaterialBlockConnectionPointTypes.Float, true);
-        this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Vector3);
+        this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Float);
 
         this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector2);
         this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector3);
+        this._linkConnectionTypes(0, 1);
     }
 
     /**
@@ -46,24 +48,31 @@ export class CloudBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the chaos input component
+     */
+     public get chaos(): NodeMaterialConnectionPoint {
+        return this._inputs[1];
+    }
+
+    /**
     * Gets the offset X input component
     */
     public get offsetX(): NodeMaterialConnectionPoint {
-        return this._inputs[1];
+        return this._inputs[2];
     }
 
     /**
     * Gets the offset Y input component
     */
      public get offsetY(): NodeMaterialConnectionPoint {
-        return this._inputs[2];
+        return this._inputs[3];
     }
 
     /**
     * Gets the offset Z input component
     */
      public get offsetZ(): NodeMaterialConnectionPoint {
-        return this._inputs[3];
+        return this._inputs[4];
     }
 
     /**
@@ -111,8 +120,8 @@ export class CloudBlock extends NodeMaterialBlock {
                     (d - b) * u.x * u.y;
         }
 
-        float cloudNoise(in vec3 x) {
-            const vec3 step = vec3(110, 241, 171);
+        float cloudNoise(in vec3 x, in vec3 chaos) {
+            vec3 step = chaos * vec3(60., 120., 75.) + vec3(60., 120., 75.);
 
             vec3 i = floor(x);
             vec3 f = fract(x);
@@ -127,7 +136,7 @@ export class CloudBlock extends NodeMaterialBlock {
         }`;
 
         let fractalBrownianString = `
-        float fbm(in vec2 st) {
+        float fbm(in vec2 st, in vec2 chaos) {
             // Initial values
             float value = 0.0;
             float amplitude = .5;
@@ -142,12 +151,12 @@ export class CloudBlock extends NodeMaterialBlock {
             return value;
         }
 
-        float fbm(in vec3 x) {
+        float fbm(in vec3 x, in vec3 chaos) {
             // Initial values
             float value = 0.0;
             float amplitude = 0.5;
             for (int i = 0; i < OCTAVES; ++i) {
-                value += amplitude * cloudNoise(x);
+                value += amplitude * cloudNoise(x, chaos);
                 x = x * 2.0;
                 amplitude *= 0.5;
             }
@@ -171,7 +180,15 @@ export class CloudBlock extends NodeMaterialBlock {
         if (this.offsetZ.isConnected && seedType === "vec3") {
             state.compilationString += `${localVariable}.z += 0.1 * ${this.offsetZ.associatedVariableName};\r\n`;
         }
-        state.compilationString += this._declareOutput(this._outputs[0], state) + ` = vec3(0.0) + ${fbmNewName}(${localVariable});\r\n`;
+
+        let chaosValue = "";
+        if (this.chaos.isConnected) {
+            chaosValue = this.chaos.associatedVariableName;
+        } else {
+            chaosValue = this.seed.connectedPoint?.type === NodeMaterialBlockConnectionPointTypes.Vector2 ? "vec2(0., 0.)" : "vec3(0., 0., 0.)";
+        }
+
+        state.compilationString += this._declareOutput(this._outputs[0], state) + ` = ${fbmNewName}(${localVariable}, ${chaosValue});\r\n`;
 
         return this;
     }
