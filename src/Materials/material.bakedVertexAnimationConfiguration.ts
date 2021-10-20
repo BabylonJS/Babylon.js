@@ -1,29 +1,28 @@
 import { Nullable } from "../types";
 import { Scene } from "../scene";
-import { serialize, expandToProperty, serializeAsTexture, SerializationHelper } from '../Misc/decorators';
-import { MaterialFlags } from './materialFlags';
-import { MaterialHelper } from './materialHelper';
-import { RawTexture } from './Textures/rawTexture';
-import { UniformBuffer } from './uniformBuffer';
+import { serialize, expandToProperty, serializeAsTexture, SerializationHelper } from "../Misc/decorators";
+import { MaterialFlags } from "./materialFlags";
+import { MaterialHelper } from "./materialHelper";
+import { RawTexture } from "./Textures/rawTexture";
+import { UniformBuffer } from "./uniformBuffer";
 import { BaseTexture } from ".";
+import { Vector4 } from "..";
 
 /**
  * @hidden
  */
- export interface IMaterialBakedVertexAnimationDefines {
+export interface IMaterialBakedVertexAnimationDefines {
     // TODO: do we need something?
 
     /** @hidden */
     _areTexturesDirty: boolean;
 }
 
-
 /**
  * Define the code related to the vertex animation texture (VAT) parameters.
  *
  */
 export class BakedVertexAnimationConfiguration {
-
     private _texture: Nullable<RawTexture> = null;
     /**
      * The detail texture of the material.
@@ -40,9 +39,6 @@ export class BakedVertexAnimationConfiguration {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public isEnabled = false;
 
-    /** total number of frames in our animations */
-    private _frameCount = 0;
-
     /** @hidden */
     private _internalMarkAllSubMeshesAsTexturesDirty: () => void;
 
@@ -50,6 +46,11 @@ export class BakedVertexAnimationConfiguration {
     public _markAllSubMeshesAsTexturesDirty(): void {
         this._internalMarkAllSubMeshesAsTexturesDirty();
     }
+
+    /**
+     * The time counter, to pick the correct animation frame.
+     */
+    public time = 0;
 
     /**
      * Instantiate a new vertex animation
@@ -70,10 +71,8 @@ export class BakedVertexAnimationConfiguration {
             return true;
         }
 
-        const engine = scene.getEngine();
-
         if (defines._areTexturesDirty && scene.texturesEnabled) {
-            if (engine.getCaps().standardDerivatives && this._texture && MaterialFlags.DetailTextureEnabled) {
+            if (this._texture && MaterialFlags.BakedVertexAnimationTextureEnabled) {
                 // Detail texture cannot be not blocking.
                 if (!this._texture.isReady()) {
                     return false;
@@ -109,8 +108,8 @@ export class BakedVertexAnimationConfiguration {
 
         if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {
             if (this._texture && MaterialFlags.VertexAnimationTextureEnabled) {
-                uniformBuffer.updateFloat("bakedVertexAnimationSingleFrameUVPer", this._frameCount);
-                uniformBuffer.updateFloat("bakedVertexAnimationTime", this._frameCount);
+                uniformBuffer.updateFloat("bakedVertexAnimationSingleFrameUVPer", this._texture.getSize().height);
+                uniformBuffer.updateFloat("bakedVertexAnimationTime", this.time);
                 MaterialHelper.BindTextureMatrix(this._texture, uniformBuffer, "bakedVertexAnimationTexture");
             }
         }
@@ -123,12 +122,22 @@ export class BakedVertexAnimationConfiguration {
         }
     }
 
+    public setAnimationParameters(
+        startFrame: number,
+        endFrame: number,
+        offset: number = 0,
+        speedFramesPerSecond: number = 30
+    ): void {
+        const v = new Vector4(startFrame, endFrame, offset, speedFramesPerSecond);
+        // TODO: how to set this?
+    }
+
     /**
      * Checks to see if a texture is used in the material.
      * @param texture - Base texture to use.
      * @returns - Boolean specifying if a texture is used in the material.
      */
-     public hasTexture(texture: BaseTexture): boolean {
+    public hasTexture(texture: BaseTexture): boolean {
         if (this._texture === texture) {
             return true;
         }
@@ -140,7 +149,7 @@ export class BakedVertexAnimationConfiguration {
      * Returns an array of the actively used textures.
      * @param activeTextures Array of BaseTextures
      */
-     public getActiveTextures(activeTextures: BaseTexture[]): void {
+    public getActiveTextures(activeTextures: BaseTexture[]): void {
         if (this._texture) {
             activeTextures.push(this._texture);
         }
@@ -157,9 +166,9 @@ export class BakedVertexAnimationConfiguration {
     }
 
     /**
-    * Get the current class name useful for serialization or dynamic coding.
-    * @returns "BakedVertexAnimation"
-    */
+     * Get the current class name useful for serialization or dynamic coding.
+     * @returns "BakedVertexAnimation"
+     */
     public getClassName(): string {
         return "BakedVertexAnimation";
     }
@@ -177,7 +186,7 @@ export class BakedVertexAnimationConfiguration {
      * Add the required samplers to the current list.
      * @param samplers defines the current sampler list.
      */
-     public static AddSamplers(samplers: string[]): void {
+    public static AddSamplers(samplers: string[]): void {
         samplers.push("bakedVertexAnimationTexture");
     }
 
@@ -185,7 +194,7 @@ export class BakedVertexAnimationConfiguration {
      * Add the required uniforms to the current list.
      * @param attribs defines the current atribute list.
      */
-     public static AddAttributes(attribs: string[]): void {
+    public static AddAttributes(attribs: string[]): void {
         attribs.push("bakedVertexAnimationSettings");
     }
 
