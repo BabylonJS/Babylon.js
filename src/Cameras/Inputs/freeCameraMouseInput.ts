@@ -44,7 +44,6 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
     public _allowCameraRotation = true;
 
     private _currentActiveButton: number = -1;
-    private _usingSafari = Tools.IsSafari();
 
     /**
      * Manage the mouse inputs to control the movement of a free camera.
@@ -70,12 +69,13 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
         if (!this._pointerInput) {
             this._pointerInput = (p) => {
                 var evt = <IPointerEvent>p.event;
+                let isTouch = evt.pointerType === "touch";
 
                 if (engine.isInVRExclusivePointerMode) {
                     return;
                 }
 
-                if (!this.touchEnabled && evt.pointerType === "touch") {
+                if (!this.touchEnabled && isTouch) {
                     return;
                 }
 
@@ -85,7 +85,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
 
                 let srcElement = <HTMLElement>(evt.srcElement || evt.target);
 
-                if (p.type === PointerEventTypes.POINTERDOWN && srcElement) {
+                if (p.type === PointerEventTypes.POINTERDOWN && srcElement && (this._currentActiveButton === -1 || isTouch))  {
                     try {
                         srcElement.setPointerCapture(evt.pointerId);
                     } catch (e) {
@@ -110,7 +110,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                     if (engine.isPointerLock && this._onMouseMove) {
                         this._onMouseMove(p.event);
                     }
-                } else if (srcElement && (p.type === PointerEventTypes.POINTERUP || (p.type === PointerEventTypes.POINTERMOVE && p.event.button === this._currentActiveButton && this._currentActiveButton !== -1 && !this._usingSafari))) {
+                } else if (srcElement && p.type === PointerEventTypes.POINTERUP && (this._currentActiveButton === evt.button || isTouch)) {
                     try {
                         srcElement.releasePointerCapture(evt.pointerId);
                     } catch (e) {
