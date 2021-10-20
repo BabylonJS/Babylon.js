@@ -392,6 +392,20 @@ export class DepthRenderer {
      * Disposes of the depth renderer.
      */
     public dispose(): void {
-        this._depthMap.dispose();
+        const keysToDelete = [];
+        for (var key in this._scene._depthRenderer) {
+            const depthRenderer = this._scene._depthRenderer[key];
+            if (depthRenderer === this) {
+                keysToDelete.push(key);
+            }
+        }
+
+        if (keysToDelete.length > 0) {
+            this._depthMap.dispose();
+
+            for (const key of keysToDelete) {
+                delete this._scene._depthRenderer[key];
+            }
+        }
     }
 }
