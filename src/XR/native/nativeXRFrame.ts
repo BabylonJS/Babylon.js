@@ -81,11 +81,11 @@ export class NativeXRFrame implements XRFrame {
     }
     
     public fillPoses(spaces: XRSpace[], baseSpace: XRSpace, transforms: Float32Array): boolean {
-        return this._nativeImpl.fillJointPoseData!(spaces, baseSpace, spaces.length, transforms.buffer);
+        return this._nativeImpl.fillJointPoseData!(spaces, baseSpace, spaces.length, transforms.buffer, transforms.byteOffset);
     }
 
     public fillJointRadii(jointSpaces: XRJointSpace[], radii: Float32Array): boolean {
-        return this._nativeImpl.fillJointPoseRadiiData!(jointSpaces, jointSpaces.length, radii.buffer);
+        return this._nativeImpl.fillJointPoseRadiiData!(jointSpaces, jointSpaces.length, radii.buffer, radii.byteOffset);
     }
 
     // Image tracking
