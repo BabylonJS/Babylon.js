@@ -44,7 +44,6 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
     public _allowCameraRotation = true;
 
     private _currentActiveButton: number = -1;
-    //private _usingSafari = Tools.IsSafari();
 
     /**
      * Manage the mouse inputs to control the movement of a free camera.
