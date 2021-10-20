@@ -26,8 +26,8 @@ declare type TrianglePickingPredicate = import("../Culling/ray").TrianglePicking
  */
 export class SubMesh implements ICullable {
     private _engine: Engine;
-    private _drawWrappers: Array<DrawWrapper>; // index in this array = pass id
-    private _mainDrawWrapper: DrawWrapper; // same thing than _drawWrappers[Constants.RENDERPASS_MAIN] but faster access
+    /** @hidden */
+    public _drawWrappers: Array<DrawWrapper>; // index in this array = pass id
     private _mainDrawWrapperOverride: Nullable<DrawWrapper> = null;
 
     /**
@@ -48,9 +48,6 @@ export class SubMesh implements ICullable {
     /** @hidden */
     public _getDrawWrapper(passId?: number, createIfNotExisting = false): DrawWrapper | undefined {
         passId = passId ?? this._engine.currentRenderPassId;
-        if (passId === Constants.RENDERPASS_MAIN) {
-            return this._mainDrawWrapper;
-        }
         let drawWrapper = this._drawWrappers[passId];
         if (!drawWrapper && createIfNotExisting) {
             this._drawWrappers[passId] = drawWrapper = new DrawWrapper(this._mesh.getScene().getEngine());
@@ -111,11 +108,12 @@ export class SubMesh implements ICullable {
      * Resets the draw wrappers cache
      */
     public resetDrawCache(): void {
-        for (const drawWrapper of this._drawWrappers) {
-            drawWrapper?.dispose();
+        if (this._drawWrappers) {
+            for (const drawWrapper of this._drawWrappers) {
+                drawWrapper?.dispose();
+            }
         }
-        this._mainDrawWrapper = new DrawWrapper(this._engine, false);
-        this._drawWrappers[Constants.RENDERPASS_MAIN] = this._mainDrawWrapper;
+        this._drawWrappers = [];
     }
 
     /** @hidden */
@@ -202,9 +200,7 @@ export class SubMesh implements ICullable {
         }
 
         this._engine = this._mesh.getScene().getEngine();
-        this._drawWrappers = [];
-        this._mainDrawWrapper = new DrawWrapper(this._engine, false);
-        this._drawWrappers[Constants.RENDERPASS_MAIN] = this._mainDrawWrapper;
+        this.resetDrawCache();
         this._trianglePlanes = [];
 
         this._id = mesh.subMeshes.length - 1;
@@ -293,7 +289,7 @@ export class SubMesh implements ICullable {
 
             if (this._currentMaterial !== effectiveMaterial) {
                 this._currentMaterial = effectiveMaterial;
-                this._mainDrawWrapper.defines = null;
+                this.resetDrawCache();
             }
 
             return effectiveMaterial;
