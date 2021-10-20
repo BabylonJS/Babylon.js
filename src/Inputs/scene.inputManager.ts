@@ -778,7 +778,7 @@ export class InputManager {
                     }
                 }
 
-                if (!this._pointerCaptures[evt.pointerId]) {
+                if (!this._pointerCaptures[evt.pointerId] && evt.buttons > 0) {
                     return;
                 }
 

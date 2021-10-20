@@ -33,7 +33,6 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
     protected _buttonsPressed: number;
 
     private _currentActiveButton: number = -1;
-    private _usingSafari = Tools.IsSafari();
 
     /**
      * Defines the buttons associated with the input to handle camera move.
@@ -65,7 +64,6 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
         this._pointerInput = (p, s) => {
             var evt = <IPointerEvent>p.event;
             let isTouch = evt.pointerType === "touch";
-            let ignoreContext = isTouch || this._usingSafari;
 
             if (engine.isInVRExclusivePointerMode) {
                 return;
@@ -99,7 +97,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                 this.onTouch(null, offsetX, offsetY);
                 this.pointA = null;
                 this.pointB = null;
-            } else if (p.type === PointerEventTypes.POINTERDOWN && srcElement) {
+            } else if (p.type === PointerEventTypes.POINTERDOWN && srcElement && (this._currentActiveButton === -1 || isTouch)) {
                 try {
                     srcElement.setPointerCapture(evt.pointerId);
                 } catch (e) {
@@ -133,9 +131,11 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                 }
             } else if (p.type === PointerEventTypes.POINTERDOUBLETAP) {
                 this.onDoubleTap(evt.pointerType);
-            } else if (srcElement && (p.type === PointerEventTypes.POINTERUP || (p.type === PointerEventTypes.POINTERMOVE && p.event.button === this._currentActiveButton && this._currentActiveButton !== -1 && !ignoreContext))) {
+            } else if (srcElement && p.type === PointerEventTypes.POINTERUP && (this._currentActiveButton === evt.button || isTouch)) {
                 try {
-                    srcElement.releasePointerCapture(evt.pointerId);
+                    if (evt.buttons === 0) {
+                        srcElement.releasePointerCapture(evt.pointerId);
+                    }
                 } catch (e) {
                     //Nothing to do with the error.
                 }
