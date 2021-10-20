@@ -157,7 +157,7 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
             effect.setFloat("threshold", this.threshold);
             effect.setFloat("reflectionSpecularFalloffExponent", this.reflectionSpecularFalloffExponent);
             effect.setFloat("strength", this.strength);
-            effect.setFloat("step", this.step);
+            effect.setFloat("stepSize", this.step);
             effect.setFloat("roughnessFactor", this.roughnessFactor);
         };
     }

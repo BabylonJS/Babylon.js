@@ -495,7 +495,7 @@ export class PrePassRenderer {
         }
 
         for (let i = 0; i < this.renderTargets.length; i++) {
-            if (this.mrtCount !== previousMrtCount) {
+            if (this.mrtCount !== previousMrtCount || this.renderTargets[i].count !== this.mrtCount) {
                 this.renderTargets[i].updateCount(this.mrtCount, { types: this._mrtFormats }, this._mrtNames.concat("prePass_DepthBuffer"));
             }
 
@@ -692,8 +692,8 @@ export class PrePassRenderer {
         let enablePrePass = false;
         this._scene.imageProcessingConfiguration.applyByPostProcess = false;
 
-        if (this._scene.depthPeelingRenderer) {
-            this._scene.depthPeelingRenderer.setPrePassRenderer(this);
+        if (this._scene._depthPeelingRenderer) {
+            this._scene._depthPeelingRenderer.setPrePassRenderer(this);
             enablePrePass = true;
         }
 
