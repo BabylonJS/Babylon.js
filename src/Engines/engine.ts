@@ -1541,9 +1541,11 @@ export class Engine extends ThinEngine {
             const scene = this.scenes[s];
             for (let m = 0; m < scene.meshes.length; ++m) {
                 const mesh = scene.meshes[m];
-                for (let b = 0; b < mesh.subMeshes.length; ++b) {
-                    const subMesh = mesh.subMeshes[b];
-                    subMesh._removeDrawWrapper(id);
+                if (mesh.subMeshes) {
+                    for (let b = 0; b < mesh.subMeshes.length; ++b) {
+                        const subMesh = mesh.subMeshes[b];
+                        subMesh._removeDrawWrapper(id);
+                    }
                 }
             }
         }
