@@ -25,7 +25,7 @@ export class CloudBlock extends NodeMaterialBlock {
         this.registerInput("offsetX", NodeMaterialBlockConnectionPointTypes.Float, true);
         this.registerInput("offsetY", NodeMaterialBlockConnectionPointTypes.Float, true);
         this.registerInput("offsetZ", NodeMaterialBlockConnectionPointTypes.Float, true);
-        this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Vector3);
+        this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Float);
 
         this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector2);
         this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector3);
@@ -188,7 +188,7 @@ export class CloudBlock extends NodeMaterialBlock {
             chaosValue = this.seed.connectedPoint?.type === NodeMaterialBlockConnectionPointTypes.Vector2 ? "vec2(0., 0.)" : "vec3(0., 0., 0.)";
         }
 
-        state.compilationString += this._declareOutput(this._outputs[0], state) + ` = vec3(0.0) + ${fbmNewName}(${localVariable}, ${chaosValue});\r\n`;
+        state.compilationString += this._declareOutput(this._outputs[0], state) + ` = ${fbmNewName}(${localVariable}, ${chaosValue});\r\n`;
 
         return this;
     }
