@@ -34,6 +34,7 @@ import { Constants } from "../Engines/constants";
 import { EffectFallbacks } from './effectFallbacks';
 import { Effect, IEffectCreationOptions } from './effect';
 import { IMaterialDetailMapDefines, DetailMapConfiguration } from './material.detailMapConfiguration';
+import { BakedVertexAnimationConfiguration } from "./material.bakedVertexAnimationConfiguration";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -731,6 +732,11 @@ export class StandardMaterial extends PushMaterial {
      */
     public readonly detailMap = new DetailMapConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
 
+    /**
+     * Defines the detail map parameters for the material.
+     */
+    public readonly bakedVertexAnimationMap = new BakedVertexAnimationConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
+
     protected _renderTargets = new SmartArray<RenderTargetTexture>(16);
     protected _worldViewProjectionMatrix = Matrix.Zero();
     protected _globalAmbientColor = new Color3(0, 0, 0);
@@ -1080,6 +1086,10 @@ export class StandardMaterial extends PushMaterial {
             return false;
         }
 
+        if (!this.bakedVertexAnimationMap.isReadyForSubMesh(defines, scene)) {
+            return false;
+        }
+
         if (defines._areImageProcessingDirty && this._imageProcessingConfiguration) {
             if (!this._imageProcessingConfiguration.isReady()) {
                 return false;
@@ -1129,6 +1139,7 @@ export class StandardMaterial extends PushMaterial {
 
         // External config
         this.detailMap.prepareDefines(defines, scene);
+        this.bakedVertexAnimationMap.prepareDefines(defines, scene);
 
         // Get correct effect
         if (defines.isDirty) {
@@ -1224,6 +1235,8 @@ export class StandardMaterial extends PushMaterial {
                 attribs.push(VertexBuffer.ColorKind);
             }
 
+            BakedVertexAnimationConfiguration.AddAttributes(attribs);
+
             MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
             MaterialHelper.PrepareAttributesForInstances(attribs, defines);
             MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, defines);
@@ -1250,6 +1263,9 @@ export class StandardMaterial extends PushMaterial {
 
             DetailMapConfiguration.AddUniforms(uniforms);
             DetailMapConfiguration.AddSamplers(samplers);
+
+            BakedVertexAnimationConfiguration.AddUniforms(uniforms);
+            BakedVertexAnimationConfiguration.AddSamplers(samplers);
 
             PrePassConfiguration.AddUniforms(uniforms);
             PrePassConfiguration.AddSamplers(samplers);
@@ -1373,6 +1389,7 @@ export class StandardMaterial extends PushMaterial {
         ubo.addUniform("vAmbientColor", 3);
 
         DetailMapConfiguration.PrepareUniformBuffer(ubo);
+        BakedVertexAnimationConfiguration.PrepareUniformBuffer(ubo);
 
         ubo.create();
     }
@@ -1622,6 +1639,7 @@ export class StandardMaterial extends PushMaterial {
             }
 
             this.detailMap.bindForSubMesh(ubo, scene, this.isFrozen);
+            this.bakedVertexAnimationMap.bindForSubMesh(ubo, scene, this.isFrozen);
 
             // Clip plane
             MaterialHelper.BindClipPlane(effect, scene);
@@ -1759,6 +1777,7 @@ export class StandardMaterial extends PushMaterial {
         }
 
         this.detailMap.getActiveTextures(activeTextures);
+        this.bakedVertexAnimationMap.getActiveTextures(activeTextures);
 
         return activeTextures;
     }
@@ -1809,7 +1828,15 @@ export class StandardMaterial extends PushMaterial {
             return true;
         }
 
-        return this.detailMap.hasTexture(texture);
+        if (this.detailMap.hasTexture(texture)) {
+            return true;
+        }
+
+        if (this.bakedVertexAnimationMap.hasTexture(texture)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -1831,6 +1858,7 @@ export class StandardMaterial extends PushMaterial {
         }
 
         this.detailMap.dispose(forceDisposeTextures);
+        this.bakedVertexAnimationMap.dispose(forceDisposeTextures);
 
         if (this._imageProcessingConfiguration && this._imageProcessingObserver) {
             this._imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingObserver);
