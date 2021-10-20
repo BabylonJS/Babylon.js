@@ -1,4 +1,5 @@
-import { IWebXRFeature, WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
+import { WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
+import { WebXRControllerPointerSelection } from "./WebXRControllerPointerSelection";
 import { WebXRSessionManager } from "../webXRSessionManager";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { CreateSphere } from "../../Meshes/Builders/sphereBuilder";
@@ -74,7 +75,7 @@ export interface IWebXRNearInteractionOptions {
     /**
      * Far interaction feature to toggle when near interaction takes precedence
      */
-    farInteractionFeature?: WebXRAbstractFeature;
+    farInteractionFeature?: WebXRControllerPointerSelection;
 }
 
 /**
@@ -136,7 +137,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
 
     private _attachedController: string;
 
-    private _farInteractionFeature: Nullable<IWebXRFeature> = null;
+    private _farInteractionFeature: Nullable<WebXRControllerPointerSelection> = null;
 
     /**
      * The module's name
@@ -243,12 +244,12 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
     }
 
     /**
-     * This function sets webXRControllerPointer Selection feature that will be disabled when
+     * This function sets webXRControllerPointerSelection feature that will be disabled when
      * the hover range is reached for a mesh and will be reattached when not in hover range.
      * This is used to remove the selection rays when moving.
      * @param farInteractionFeature the feature to disable when finger is in hover range for a mesh
      */
-    public setFarInteractionFeature(farInteractionFeature: Nullable<IWebXRFeature>) {
+    public setFarInteractionFeature(farInteractionFeature: Nullable<WebXRControllerPointerSelection>) {
         this._farInteractionFeature = farInteractionFeature;
     }
 
@@ -420,15 +421,15 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                     controllerData.pickedPointVisualCue.position.copyFrom(controllerData.pick.pickedPoint);
                     controllerData.pickedPointVisualCue.isVisible = true;
 
-                    if (this._farInteractionFeature) {
-                        this._farInteractionFeature.detach();
+                    if (this._farInteractionFeature && this._farInteractionFeature.attached) {
+                        this._farInteractionFeature._setPointerSelectionDisabledByPointerId(controllerData.id, true);
                     }
                 } else {
                     controllerData.meshUnderPointer = null;
                     controllerData.pickedPointVisualCue.isVisible = false;
 
-                    if (this._farInteractionFeature) {
-                        this._farInteractionFeature.attach();
+                    if (this._farInteractionFeature && this._farInteractionFeature.attached) {
+                        this._farInteractionFeature._setPointerSelectionDisabledByPointerId(controllerData.id, false);
                     }
                 }
             }
@@ -461,6 +462,14 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         return selectionMesh;
     }
 
+    private _isControllerReadyForNearInteraction(id: number) {
+        if (this._farInteractionFeature) {
+            return this._farInteractionFeature._getPointerSelectionDisabledByPointerId(id);
+        }
+
+        return true;
+    }
+
     private _attachNearInteractionMode(xrController: WebXRInputSource) {
         const controllerData = this._controllers[xrController.uniqueId];
         const pointerEventInit: PointerEventInit = {
@@ -477,7 +486,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 controllerData.pick.ray = controllerData.grabRay;
             }
 
-            if (controllerData.pick && !this._farInteractionFeature?.attached) {
+            if (controllerData.pick && this._isControllerReadyForNearInteraction(controllerData.id)) {
                 this._scene.simulatePointerMove(controllerData.pick, pointerEventInit);
             }
 
@@ -494,7 +503,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         });
 
         const grabCheck = (pressed: boolean) => {
-            if (this._options.enableNearInteractionOnAllControllers || (xrController.uniqueId === this._attachedController && !this._farInteractionFeature?.attached)) {
+            if (this._options.enableNearInteractionOnAllControllers || (xrController.uniqueId === this._attachedController && this._isControllerReadyForNearInteraction(controllerData.id))) {
                 if (controllerData.pick) {
                     controllerData.pick.ray = controllerData.grabRay;
                 }
@@ -546,7 +555,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                     controllerData.xrController &&
                     event.inputSource === controllerData.xrController.inputSource &&
                     controllerData.pick &&
-                    !this._farInteractionFeature?.attached &&
+                    this._isControllerReadyForNearInteraction(controllerData.id) &&
                     controllerData.meshUnderPointer &&
                     this._nearGrabPredicate(controllerData.meshUnderPointer)
                 ) {
@@ -557,7 +566,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             };
 
             const selectEndListener = (event: XRInputSourceEvent) => {
-                if (controllerData.xrController && event.inputSource === controllerData.xrController.inputSource && controllerData.pick && !this._farInteractionFeature?.attached) {
+                if (controllerData.xrController && event.inputSource === controllerData.xrController.inputSource && controllerData.pick && this._isControllerReadyForNearInteraction(controllerData.id)) {
                     this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
                     controllerData.grabInteraction = false;
                     controllerData.pickedPointVisualCue.isVisible = true;

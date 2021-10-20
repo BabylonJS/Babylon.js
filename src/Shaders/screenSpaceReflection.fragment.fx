@@ -11,7 +11,7 @@ uniform sampler2D positionSampler;
 uniform mat4 view;
 uniform mat4 projection;
 
-uniform float step;
+uniform float stepSize;
 uniform float strength;
 uniform float threshold;
 uniform float roughnessFactor;
@@ -88,7 +88,7 @@ ReflectionInfo getReflectionInfo(vec3 dir, vec3 hitCoord)
     vec4 projectedCoord;
     float sampledDepth;
 
-    dir *= step;
+    dir *= stepSize;
 
     for(int i = 0; i < REFLECTION_SAMPLES; i++)
     {

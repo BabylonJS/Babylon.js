@@ -127,6 +127,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             meshUnderPointer: null,
             pick: null,
             tmpRay: new Ray(new Vector3(), new Vector3()),
+            disabledByNearInteraction: false,
             id: WebXRControllerPointerSelection._idCounter++,
         };
 
@@ -167,6 +168,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             pick: Nullable<PickingInfo>;
             id: number;
             tmpRay: Ray;
+            disabledByNearInteraction: boolean;
             // event support
             eventListeners?: { [event in XREventType]?: (event: XRInputSourceEvent) => void };
         };
@@ -268,6 +270,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 meshUnderPointer: null,
                 pick: null,
                 tmpRay: new Ray(new Vector3(), new Vector3()),
+                disabledByNearInteraction: false,
                 id: WebXRControllerPointerSelection._idCounter++,
             };
             this._attachGazeMode();
@@ -325,6 +328,30 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         return null;
     }
 
+    /** @hidden */
+    public _getPointerSelectionDisabledByPointerId(id: number): boolean {
+        const keys = Object.keys(this._controllers);
+
+        for (let i = 0; i < keys.length; ++i) {
+            if (this._controllers[keys[i]].id === id) {
+                return this._controllers[keys[i]].disabledByNearInteraction;
+            }
+        }
+        return true;
+    }
+
+    /** @hidden */
+    public _setPointerSelectionDisabledByPointerId(id: number, state: boolean) {
+        const keys = Object.keys(this._controllers);
+
+        for (let i = 0; i < keys.length; ++i) {
+            if (this._controllers[keys[i]].id === id) {
+                this._controllers[keys[i]].disabledByNearInteraction = state;
+                return;
+            }
+        }
+    }
+
     private _identityMatrix = Matrix.Identity();
     private _screenCoordinatesRef = Vector3.Zero();
     private _viewportRef = new Viewport(0, 0, 0, 0);
@@ -333,7 +360,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         Object.keys(this._controllers).forEach((id) => {
             // only do this for the selected pointer
             const controllerData = this._controllers[id];
-            if (!this._options.enablePointerSelectionOnAllControllers && id !== this._attachedController) {
+            if ((!this._options.enablePointerSelectionOnAllControllers && id !== this._attachedController) || controllerData.disabledByNearInteraction) {
                 controllerData.selectionMesh.isVisible = false;
                 controllerData.laserPointer.isVisible = false;
                 controllerData.pick = null;
