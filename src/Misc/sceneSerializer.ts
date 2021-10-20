@@ -66,10 +66,6 @@ var finalizeSingleMesh = (mesh: Mesh, serializationObject: any) => {
                     }
                 }
             } else {
-                serializationObject.materials = serializationObject.materials || [];
-                if (!serializationObject.materials.some((mat: Material) => (mat.id === (<Material>mesh.material).id))) {
-                    serializationObject.materials.push(mesh.material.serialize());
-                }
                 serializeMaterial(mesh.material);
             }
         }
