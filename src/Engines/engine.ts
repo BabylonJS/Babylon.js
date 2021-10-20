@@ -508,6 +508,22 @@ export class Engine extends ThinEngine {
     private _onFullscreenChange: () => void;
     private _onPointerLockChange: () => void;
 
+    protected _compatibilityMode = true;
+
+    /**
+     * (WebGPU only) True (default) to be in compatibility mode, meaning rendering all existing scenes without artifacts (same rendering than WebGL).
+     * Setting the property to false will improve performances but may not work in some scenes if some precautions are not taken.
+     * See @TODO WEBGPU DOC PAGE for more details
+     */
+    public get compatibilityMode() {
+        return this._compatibilityMode;
+    }
+
+    public set compatibilityMode(mode: boolean) {
+        // not supported in WebGL
+        this._compatibilityMode = true;
+    }
+
     // Events
 
     /**
@@ -1479,12 +1495,47 @@ export class Engine extends ThinEngine {
         });
     }
 
+    protected static _RenderPassIdCounter = 0;
+    /**
+     * Gets or sets the current render pass id
+     */
+    public currentRenderPassId = Constants.RENDERPASS_MAIN;
+
+    private _renderPassNames: string[] = ["main"];
+    /**
+     * Gets the names of the render passes that are currently created
+     * @returns list of the render pass names
+     */
+    public getRenderPassNames(): string[] {
+        return this._renderPassNames;
+    }
+
+    /**
+     * Gets the name of the current render pass
+     * @returns name of the current render pass
+     */
+    public getCurrentRenderPassName(): string {
+        return this._renderPassNames[this.currentRenderPassId];
+    }
+
+    /**
+     * Creates a render pass id
+     * @param name Name of the render pass (for debug purpose only)
+     * @returns the id of the new render pass
+     */
+    public createRenderPassId(name?: string) {
+        // Note: render pass id == 0 is always for the main render pass
+        const id = ++Engine._RenderPassIdCounter;
+        this._renderPassNames[id] = name ?? "NONAME";
+        return id;
+    }
+
     /**
      * Releases a render pass id
      * @param id id of the render pass to release
      */
-     public releaseRenderPassId(id: number): void {
-        super.releaseRenderPassId(id);
+    public releaseRenderPassId(id: number): void {
+        this._renderPassNames[id] = undefined as any;
 
         for (let s = 0; s < this.scenes.length; ++s) {
             const scene = this.scenes[s];

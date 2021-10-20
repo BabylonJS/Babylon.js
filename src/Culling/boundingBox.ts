@@ -1,4 +1,4 @@
-import { DeepImmutable } from "../types";
+import { DeepImmutable, Nullable } from "../types";
 import { ArrayTools } from "../Misc/arrayTools";
 import { Matrix, Vector3 } from "../Maths/math.vector";
 import { BoundingSphere } from "../Culling/boundingSphere";
@@ -67,9 +67,9 @@ export class BoundingBox implements ICullable {
     public _tag: number;
 
     /** @hidden */
-    public _drawWrapperFront: DrawWrapper;
+    public _drawWrapperFront: Nullable<DrawWrapper> = null;
     /** @hidden */
-    public _drawWrapperBack: DrawWrapper;
+    public _drawWrapperBack: Nullable<DrawWrapper> = null;
 
     /**
      * Creates a new bounding box

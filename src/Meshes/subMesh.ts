@@ -11,7 +11,6 @@ import { extractMinAndMaxIndexed } from "../Maths/math.functions";
 import { Plane } from "../Maths/math.plane";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { IMaterialContext } from "../Engines/IMaterialContext";
-import { ThinEngine } from "../Engines/thinEngine";
 
 declare type Collider = import("../Collisions/collider").Collider;
 declare type Material = import("../Materials/material").Material;
@@ -26,7 +25,7 @@ declare type TrianglePickingPredicate = import("../Culling/ray").TrianglePicking
  * Defines a subdivision inside a mesh
  */
 export class SubMesh implements ICullable {
-    private _engine: ThinEngine;
+    private _engine: Engine;
     private _drawWrappers: Array<DrawWrapper>; // index in this array = pass id
     private _mainDrawWrapper: DrawWrapper; // same thing than _drawWrappers[Constants.RENDERPASS_MAIN] but faster access
     private _mainDrawWrapperOverride: Nullable<DrawWrapper> = null;

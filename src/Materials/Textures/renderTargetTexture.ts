@@ -444,7 +444,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 
     private _releaseRenderPassId(): void {
-        const engine = this._engine!;
+        const engine = this._scene!.getEngine(); // scene can't be null in a RenderTargetTexture, see constructor
         for (let i = 0; i < this._renderPassIds.length; ++i) {
             engine.releaseRenderPassId(this._renderPassIds[i]);
         }
@@ -454,7 +454,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     private _createRenderPassId(): void {
         this._releaseRenderPassId();
 
-        const engine = this._engine!;
+        const engine = this._scene!.getEngine(); // scene can't be null in a RenderTargetTexture, see constructor
         const numPasses = this.__isCube ? 6 : this.getRenderLayers() || 1;
 
         for (let i = 0; i < numPasses; ++i) {
