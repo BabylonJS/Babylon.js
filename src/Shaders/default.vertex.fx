@@ -22,6 +22,8 @@ attribute vec4 color;
 
 #include<bonesDeclaration>
 
+#include<bakedVertexAnimationDeclaration>
+
 // Uniforms
 #include<instancesDeclaration>
 #include<prePassVertexDeclaration>
@@ -107,6 +109,8 @@ void main(void) {
 #include<bonesVertex>
 
 	vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
+
+#include<bakedVertexAnimation>
 
 #ifdef NORMAL
 	mat3 normalWorld = mat3(finalWorld);
