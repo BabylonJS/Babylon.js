@@ -1271,7 +1271,7 @@
         {
             "title": "Instances manual update + motion blur",
             "renderCount": 10,
-            "playgroundId": "#HJGC2G#50",
+            "playgroundId": "#HJGC2G#127",
             "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "instances-mb-manual.png"
         },

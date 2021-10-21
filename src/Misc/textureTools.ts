@@ -50,6 +50,7 @@ export function CreateResizedCopy(texture: Texture, width: number, height: numbe
     texture.wrapV = Texture.CLAMP_ADDRESSMODE;
 
     let passPostProcess = new PassPostProcess("pass", 1, null, useBilinearMode ? Texture.BILINEAR_SAMPLINGMODE : Texture.NEAREST_SAMPLINGMODE, engine, false, Constants.TEXTURETYPE_UNSIGNED_INT);
+    passPostProcess.externalTextureSamplerBinding = true;
     passPostProcess.getEffect().executeWhenCompiled(() => {
         passPostProcess.onApply = function (effect) {
             effect.setTexture("textureSampler", texture);
@@ -99,6 +100,7 @@ export function ApplyPostProcess(postProcessName: string, internalTexture: Inter
         // Create the post process
         const postProcess = new PostProcess("postprocess", postProcessName, null, null, 1, null, samplingMode, engine,
             false, undefined, type, undefined, null, false, format);
+        postProcess.externalTextureSamplerBinding = true;
 
         // Hold the output of the decoding.
         const encodedTexture = engine.createRenderTargetTexture({ width: internalTexture.width, height: internalTexture.height }, {

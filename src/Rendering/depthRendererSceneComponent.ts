@@ -61,7 +61,6 @@ Scene.prototype.disableDepthRenderer = function (camera?: Nullable<Camera>): voi
     }
 
     this._depthRenderer[camera.id].dispose();
-    delete this._depthRenderer[camera.id];
 };
 
 /**
