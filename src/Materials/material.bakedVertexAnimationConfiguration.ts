@@ -110,7 +110,7 @@ export class BakedVertexAnimationConfiguration {
             if (this._texture && MaterialFlags.VertexAnimationTextureEnabled) {
                 uniformBuffer.updateFloat("bakedVertexAnimationSingleFrameUVPer", this._texture.getSize().height);
                 uniformBuffer.updateFloat("bakedVertexAnimationTime", this.time);
-                MaterialHelper.BindTextureMatrix(this._texture, uniformBuffer, "bakedVertexAnimationTexture");
+                uniformBuffer.setTexture("bakedVertexAnimationTexture", this._texture);
             }
         }
 
@@ -122,15 +122,15 @@ export class BakedVertexAnimationConfiguration {
         }
     }
 
-    public setAnimationParameters(
-        startFrame: number,
-        endFrame: number,
-        offset: number = 0,
-        speedFramesPerSecond: number = 30
-    ): void {
-        const v = new Vector4(startFrame, endFrame, offset, speedFramesPerSecond);
-        // TODO: how to set this?
-    }
+    // TODO: how to set this? commented while discussing PR
+    // public setAnimationParameters(
+    //     startFrame: number,
+    //     endFrame: number,
+    //     offset: number = 0,
+    //     speedFramesPerSecond: number = 30
+    // ): void {
+    //     // const v = new Vector4(startFrame, endFrame, offset, speedFramesPerSecond);
+    // }
 
     /**
      * Checks to see if a texture is used in the material.

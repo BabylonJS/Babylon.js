@@ -4,7 +4,7 @@ import { Mesh } from "../Meshes/mesh";
 /**
  * Class to bake vertex animation textures.
  */
-export class BakeVertexAnimation {
+export class VertexAnimationBaker {
     private _scene: Scene;
     private _mesh: Mesh;
 
@@ -37,7 +37,7 @@ export class BakeVertexAnimation {
         let textureIndex = 0;
         const vertexData = new Float32Array((boneCount + 1) * 4 * 4 * frameCount);
         this._scene.stopAnimation(this._mesh);
-        this._mesh.skeleton?.returnToRest();
+        this._mesh.skeleton.returnToRest();
 
         // render all frames from our slices
         for (const range of ranges) {
@@ -49,7 +49,7 @@ export class BakeVertexAnimation {
         // at this point we have the vertex data, so convert it to an actual texture
         // and build a material
         this._scene.stopAnimation(this._mesh);
-        this._mesh.skeleton?.returnToRest();
+        this._mesh.skeleton.returnToRest();
         return vertexData;
     }
 
