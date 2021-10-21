@@ -12,7 +12,7 @@
     // add offset to time to get actual time, then
     // compute time elapsed in terms of frame cycle (30 fps/180 frames = 1/6 of an animation cycle per second)
     // so 0.5s = 0.08333 of an animation cycle, 7.5s = 1.25 of an animation cycle etc
-    float VATFrameNum = fract((time + offsetCycle) * VATSpeed / _numOfFrames);
+    float VATFrameNum = fract((bakedVertexAnimationTime + offsetCycle) * VATSpeed / _numOfFrames);
     // convert to actual frame
     VATFrameNum *= _numOfFrames;
     // round it to integer
