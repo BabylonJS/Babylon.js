@@ -47,6 +47,10 @@ export class BabylonFileLoaderConfiguration {
 }
 
 var parseMaterialById = (id: string, parsedData: any, scene: Scene, rootUrl: string) => {
+    if (!parsedData.materials) {
+        return null;
+    }
+
     for (var index = 0, cache = parsedData.materials.length; index < cache; index++) {
         var parsedMaterial = parsedData.materials[index];
         if (parsedMaterial.id === id) {

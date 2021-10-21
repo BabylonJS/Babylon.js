@@ -46,28 +46,33 @@ var serializeMesh = (mesh: Mesh, serializationScene: any): any => {
 var finalizeSingleMesh = (mesh: Mesh, serializationObject: any) => {
     //only works if the mesh is already loaded
     if (mesh.delayLoadState === Constants.DELAYLOADSTATE_LOADED || mesh.delayLoadState === Constants.DELAYLOADSTATE_NONE) {
+        const serializeMaterial = (material: Material) => {
+            serializationObject.materials = serializationObject.materials || [];
+            if (!serializationObject.materials.some((mat: Material) => (mat.id === (<Material>mesh.material).id))) {
+                serializationObject.materials.push(material.serialize());
+            }
+        };
+
         //serialize material
         if (mesh.material && !mesh.material.doNotSerialize) {
             if (mesh.material instanceof MultiMaterial) {
                 serializationObject.multiMaterials = serializationObject.multiMaterials || [];
-                serializationObject.materials = serializationObject.materials || [];
                 if (!serializationObject.multiMaterials.some((mat: Material) => (mat.id === (<Material>mesh.material).id))) {
                     serializationObject.multiMaterials.push(mesh.material.serialize());
                     for (let submaterial of mesh.material.subMaterials) {
                         if (submaterial) {
-                            if (!serializationObject.materials.some((mat: Material) => (mat.id === (<Material>submaterial).id))) {
-                                serializationObject.materials.push(submaterial.serialize());
-                            }
+                            serializeMaterial(submaterial);
                         }
                     }
                 }
             } else {
-                serializationObject.materials = serializationObject.materials || [];
-                if (!serializationObject.materials.some((mat: Material) => (mat.id === (<Material>mesh.material).id))) {
-                    serializationObject.materials.push(mesh.material.serialize());
-                }
+                serializeMaterial(mesh.material);
             }
         }
+        else if (!mesh.material) {
+            serializeMaterial(mesh.getScene().defaultMaterial);
+        }
+
         //serialize geometry
         var geometry = mesh._geometry;
         if (geometry) {
