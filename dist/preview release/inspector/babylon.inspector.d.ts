@@ -1492,7 +1492,9 @@ declare module INSPECTOR {
     interface ICanvasComponentState {
     }
     export class CanvasComponent extends React.Component<ICanvasComponentProps, ICanvasComponentState> {
+        private _onActiveAnimationChangedObserver;
         constructor(props: ICanvasComponentProps);
+        componentWillUnmount(): void;
         render(): JSX.Element;
     }
 }
