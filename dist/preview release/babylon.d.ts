@@ -798,9 +798,7 @@ declare module BABYLON {
         /** Delta X */
         DeltaHorizontal = 10,
         /** Delta Y */
-        DeltaVertical = 11,
-        /** MoveBeing Hijack for simultaneous buttons pressed for instance */
-        FakeMove = 12
+        DeltaVertical = 11
     }
     /**
      * Enum for Dual Shock Gamepad
@@ -21436,6 +21434,22 @@ declare module BABYLON {
      */
     export class VectorMergerBlock extends NodeMaterialBlock {
         /**
+         * Gets or sets the swizzle for x (meaning which compoent to affect to the output.x)
+         */
+        xSwizzle: "x" | "y" | "z" | "w";
+        /**
+         * Gets or sets the swizzle for y (meaning which compoent to affect to the output.y)
+         */
+        ySwizzle: "x" | "y" | "z" | "w";
+        /**
+         * Gets or sets the swizzle for z (meaning which compoent to affect to the output.z)
+         */
+        zSwizzle: "x" | "y" | "z" | "w";
+        /**
+         * Gets or sets the swizzle for w (meaning which compoent to affect to the output.w)
+         */
+        wSwizzle: "x" | "y" | "z" | "w";
+        /**
          * Create a new VectorMergerBlock
          * @param name defines the block name
          */
@@ -21445,6 +21459,10 @@ declare module BABYLON {
          * @returns the class name
          */
         getClassName(): string;
+        /**
+         * Gets the xyzw component (input)
+         */
+        get xyzwIn(): NodeMaterialConnectionPoint;
         /**
          * Gets the xyz component (input)
          */
@@ -21500,7 +21518,11 @@ declare module BABYLON {
          */
         get xyz(): NodeMaterialConnectionPoint;
         protected _inputRename(name: string): string;
+        private _buildSwizzle;
         protected _buildBlock(state: NodeMaterialBuildState): this;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+        protected _dumpPropertiesCode(): string;
     }
 }
 declare module BABYLON {
@@ -22779,7 +22801,6 @@ declare module BABYLON {
          */
         _allowCameraRotation: boolean;
         private _currentActiveButton;
-        private _usingSafari;
         /**
          * Manage the mouse inputs to control the movement of a free camera.
          * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -45175,6 +45196,7 @@ declare module BABYLON {
         private _pointerActive;
         private _elementToAttachTo;
         private _engine;
+        private _usingSafari;
         private _keyboardDownEvent;
         private _keyboardUpEvent;
         private _keyboardBlurEvent;
@@ -49781,7 +49803,6 @@ declare module BABYLON {
          */
         protected _buttonsPressed: number;
         private _currentActiveButton;
-        private _usingSafari;
         /**
          * Defines the buttons associated with the input to handle camera move.
          */
@@ -76108,6 +76129,22 @@ declare module BABYLON {
      */
     export class ColorMergerBlock extends NodeMaterialBlock {
         /**
+         * Gets or sets the swizzle for r (meaning which compoent to affect to the output.r)
+         */
+        rSwizzle: "r" | "g" | "b" | "a";
+        /**
+         * Gets or sets the swizzle for g (meaning which compoent to affect to the output.g)
+         */
+        gSwizzle: "r" | "g" | "b" | "a";
+        /**
+         * Gets or sets the swizzle for b (meaning which compoent to affect to the output.b)
+         */
+        bSwizzle: "r" | "g" | "b" | "a";
+        /**
+         * Gets or sets the swizzle for a (meaning which compoent to affect to the output.a)
+         */
+        aSwizzle: "r" | "g" | "b" | "a";
+        /**
          * Create a new ColorMergerBlock
          * @param name defines the block name
          */
@@ -76151,7 +76188,11 @@ declare module BABYLON {
          */
         get rgb(): NodeMaterialConnectionPoint;
         protected _inputRename(name: string): string;
+        private _buildSwizzle;
         protected _buildBlock(state: NodeMaterialBuildState): this;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+        protected _dumpPropertiesCode(): string;
     }
 }
 declare module BABYLON {
@@ -77958,6 +77999,10 @@ declare module BABYLON {
          * Gets the seed input component
          */
         get seed(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the chaos input component
+         */
+        get chaos(): NodeMaterialConnectionPoint;
         /**
         * Gets the offset X input component
         */
