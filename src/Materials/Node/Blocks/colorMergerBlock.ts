@@ -27,7 +27,6 @@ export class ColorMergerBlock extends NodeMaterialBlock {
       */
       public aSwizzle: "r" | "g" | "b" | "a"  = "a";
 
-      
     /**
      * Create a new ColorMergerBlock
      * @param name defines the block name
@@ -118,7 +117,7 @@ export class ColorMergerBlock extends NodeMaterialBlock {
     }
 
     private _buildSwizzle(len: number) {
-        let swizzle = this.rSwizzle + this.gSwizzle + this.bSwizzle + this.aSwizzle;   
+        let swizzle = this.rSwizzle + this.gSwizzle + this.bSwizzle + this.aSwizzle;
         return "." + swizzle.substr(0, len);
     }
 
@@ -155,7 +154,6 @@ export class ColorMergerBlock extends NodeMaterialBlock {
         return this;
     }
 
-    
     public serialize(): any {
         let serializationObject = super.serialize();
 
