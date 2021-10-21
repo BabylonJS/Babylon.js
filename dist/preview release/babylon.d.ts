@@ -1957,13 +1957,7 @@ declare module BABYLON {
          * Prefixes used by the engine for sub mesh draw wrappers
          */
         /** @hidden */
-        static readonly SUBMESH_DRAWWRAPPER_MAINPASS: string;
-        /** @hidden */
-        static readonly SUBMESH_DRAWWRAPPER_SHADOWGENERATOR_PREFIX: string;
-        /** @hidden */
-        static readonly SUBMESH_DRAWWRAPPER_DEPTHRENDERER_PREFIX: string;
-        /** @hidden */
-        static readonly SUBMESH_DRAWWRAPPER_OUTLINERENDERER_PREFIX: string;
+        static readonly RENDERPASS_MAIN: number;
         /**
          * Constant used as key code for Alt key
          */
@@ -8472,6 +8466,34 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /** @hidden */
+    export interface IDrawContext {
+        useInstancing: boolean;
+        reset(): void;
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export interface IMaterialContext {
+        reset(): void;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class DrawWrapper {
+        effect: Nullable<Effect>;
+        defines: Nullable<string | MaterialDefines>;
+        materialContext?: IMaterialContext;
+        drawContext?: IDrawContext;
+        static IsWrapper(effect: Effect | DrawWrapper): effect is DrawWrapper;
+        static GetEffect(effect: Effect | DrawWrapper): Nullable<Effect>;
+        constructor(engine: ThinEngine, createMaterialContext?: boolean);
+        setEffect(effect: Nullable<Effect>, defines?: Nullable<string | MaterialDefines>, resetContext?: boolean): void;
+        dispose(): void;
+    }
+}
+declare module BABYLON {
     /**
      * Class used to store bounding box information
      */
@@ -8526,6 +8548,10 @@ declare module BABYLON {
          * @hidden
          */
         _tag: number;
+        /** @hidden */
+        _drawWrapperFront: Nullable<DrawWrapper>;
+        /** @hidden */
+        _drawWrapperBack: Nullable<DrawWrapper>;
         /**
          * Creates a new bounding box
          * @param min defines the minimum vector (in local space)
@@ -8836,30 +8862,6 @@ declare module BABYLON {
         minimum: Vector3;
         maximum: Vector3;
     };
-}
-declare module BABYLON {
-    /** @hidden */
-    export interface IDrawContext {
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export interface IMaterialContext {
-        reset(): void;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export class DrawWrapper {
-        effect: Nullable<Effect>;
-        defines: Nullable<string | MaterialDefines>;
-        materialContext?: IMaterialContext;
-        drawContext?: IDrawContext;
-        static IsWrapper(effect: Effect | DrawWrapper): effect is DrawWrapper;
-        static GetEffect(effect: Effect | DrawWrapper): Nullable<Effect>;
-        constructor(engine: ThinEngine, createMaterialContext?: boolean);
-        setEffect(effect: Nullable<Effect>, defines?: Nullable<string | MaterialDefines>): void;
-    }
 }
 declare module BABYLON {
     /**
@@ -9626,11 +9628,19 @@ declare module BABYLON {
          */
         updateUniformDirectly(uniformName: string, data: FloatArray): void;
         /**
-         * Binds this uniform buffer to an effect.
-         * @param effect Define the effect to bind the buffer to
+         * Associates an effect to this uniform buffer
+         * @param effect Define the effect to associate the buffer to
          * @param name Name of the uniform block in the shader.
          */
         bindToEffect(effect: Effect, name: string): void;
+        /**
+         * Binds the current (GPU) buffer to the effect
+         */
+        bindUniformBuffer(): void;
+        /**
+         * Dissociates the current effect from this uniform buffer
+         */
+        unbindEffect(): void;
         /**
          * Disposes the uniform buffer.
          */
@@ -12492,6 +12502,7 @@ declare module BABYLON {
         private _indexBuffer;
         private _drawWrapperBase;
         private _drawWrapperFog;
+        private _drawWrapperDepth;
         private _vertexArrayObject;
         /**
          * Creates a new sprite Renderer
@@ -12651,11 +12662,13 @@ declare module BABYLON {
          */
         get blendMode(): number;
         set blendMode(blendMode: number);
+        private _disableDepthWrite;
         /** Disables writing to the depth buffer when rendering the sprites.
          *  It can be handy to disable depth writing when using textures without alpha channel
          *  and setting some specific blend modes.
         */
-        disableDepthWrite: boolean;
+        get disableDepthWrite(): boolean;
+        set disableDepthWrite(value: boolean);
         private _spriteRenderer;
         /** Associative array from JSON sprite data file */
         private _cellData;
@@ -13835,7 +13848,7 @@ declare module BABYLON {
         private _vertexBuffers;
         private _spriteBuffer;
         private _indexBuffer;
-        private _drawWrapper;
+        private _drawWrappers;
         private _customWrappers;
         private _scaledColorStep;
         private _colorDiff;
@@ -14126,6 +14139,10 @@ declare module BABYLON {
          * @returns this particle system
          */
         removeColorGradient(gradient: number): IParticleSystem;
+        /**
+         * Resets the draw wrappers cache
+         */
+        resetDrawCache(): void;
         private _fetchR;
         protected _reset(): void;
         private _resetEffect;
@@ -16370,7 +16387,6 @@ declare module BABYLON {
         private _cachedWorldViewMatrix;
         private _cachedWorldViewProjectionMatrix;
         private _multiview;
-        private _cachedDefines;
         private _effectUsesInstances;
         /** Define the Url to load snippets */
         static SnippetUrl: string;
@@ -16969,6 +16985,7 @@ declare module BABYLON {
         protected _linesIndices: number[];
         protected _epsilon: number;
         protected _indicesCount: number;
+        protected _drawWrapper?: DrawWrapper;
         protected _lineShader: ShaderMaterial;
         protected _ib: DataBuffer;
         protected _buffers: {
@@ -17584,7 +17601,6 @@ declare module BABYLON {
      * Documentation: https://doc.babylonjs.com/babylon101/shadows
      */
     export class ShadowGenerator implements IShadowGenerator {
-        private static _Counter;
         /**
          * Name of the shadow generator class
          */
@@ -17960,8 +17976,6 @@ declare module BABYLON {
         protected _defaultTextureMatrix: Matrix;
         protected _storedUniqueId: Nullable<number>;
         protected _useUBO: boolean;
-        protected _nameForDrawWrapper: string[];
-        protected _nameForDrawWrapperCurrent: string;
         /** @hidden */
         static _SceneComponentInitialization: (scene: Scene) => void;
         /**
@@ -18104,20 +18118,20 @@ declare module BABYLON {
          * Gets the effect to use to generate the depth map
          * @param subMesh subMesh to get the effect for
          * @param shadowGenerator shadow generator to get the effect for
-         * @param nameForDrawWrapper Name of the draw wrapper to retrieve the effect from
+         * @param passIdForDrawWrapper Id of the pass for which the effect from the draw wrapper must be retrieved from
          * @returns the effect to use to generate the depth map for the subMesh + shadow generator specified
          */
-        getEffect(subMesh: Nullable<SubMesh>, shadowGenerator: ShadowGenerator, nameForDrawWrapper: string): Nullable<DrawWrapper>;
+        getEffect(subMesh: Nullable<SubMesh>, shadowGenerator: ShadowGenerator, passIdForDrawWrapper: number): Nullable<DrawWrapper>;
         /**
          * Specifies that the submesh is ready to be used for depth rendering
          * @param subMesh submesh to check
          * @param defines the list of defines to take into account when checking the effect
          * @param shadowGenerator combined with subMesh, it defines the effect to check
          * @param useInstances specifies that instances should be used
-         * @param nameForDrawWrapper Name to use to create the draw wrapper
+         * @param passIdForDrawWrapper Id of the pass for which the draw wrapper should be created
          * @returns a boolean indicating that the submesh is ready or not
          */
-        isReadyForSubMesh(subMesh: SubMesh, defines: string[], shadowGenerator: ShadowGenerator, useInstances: boolean, nameForDrawWrapper: string): boolean;
+        isReadyForSubMesh(subMesh: SubMesh, defines: string[], shadowGenerator: ShadowGenerator, useInstances: boolean, passIdForDrawWrapper: number): boolean;
         /**
          * Disposes the resources
          */
@@ -19715,6 +19729,8 @@ declare module BABYLON {
         protected _drawWrapper: DrawWrapper;
         /** @hidden */
         _getDrawWrapper(): DrawWrapper;
+        /** @hidden */
+        _setDrawWrapper(drawWrapper: DrawWrapper): void;
         /**
          * Specifies if uniform buffers should be used
          */
@@ -19723,7 +19739,7 @@ declare module BABYLON {
          * Stores a reference to the scene
          */
         private _scene;
-        private _needToBindSceneUbo;
+        protected _needToBindSceneUbo: boolean;
         /**
          * Stores the fill mode state
          */
@@ -20146,12 +20162,9 @@ declare module BABYLON {
         indexStart: number;
         /** indices count */
         indexCount: number;
+        private _engine;
         /** @hidden */
-        readonly _materialDefines: Nullable<MaterialDefines>;
-        /** @hidden */
-        readonly _materialEffect: Nullable<Effect>;
-        private _drawWrappers;
-        private _mainDrawWrapper;
+        _drawWrappers: Array<DrawWrapper>;
         private _mainDrawWrapperOverride;
         /**
          * Gets material defines used by the effect associated to the sub mesh
@@ -20162,9 +20175,9 @@ declare module BABYLON {
          */
         set materialDefines(defines: Nullable<MaterialDefines>);
         /** @hidden */
-        _getDrawWrapper(name: string, createIfNotExisting?: boolean): DrawWrapper | undefined;
+        _getDrawWrapper(passId?: number, createIfNotExisting?: boolean): DrawWrapper | undefined;
         /** @hidden */
-        _removeEffect(name: string): void;
+        _removeDrawWrapper(passId: number, disposeWrapper?: boolean): void;
         /**
          * Gets associated (main) effect (possibly the effect override if defined)
          */
@@ -20180,9 +20193,13 @@ declare module BABYLON {
          * @param effect defines the effect to associate with
          * @param defines defines the set of defines used to compile this effect
          * @param materialContext material context associated to the effect
-         * @param resetMaterialContext true to reset the material context (if defined)
+         * @param resetContext true to reset the draw context
          */
-        setEffect(effect: Nullable<Effect>, defines?: Nullable<string | MaterialDefines>, materialContext?: IMaterialContext, resetMaterialContext?: boolean): void;
+        setEffect(effect: Nullable<Effect>, defines?: Nullable<string | MaterialDefines>, materialContext?: IMaterialContext, resetContext?: boolean): void;
+        /**
+         * Resets the draw wrappers cache
+         */
+        resetDrawCache(): void;
         /** @hidden */
         _linesIndexCount: number;
         private _mesh;
@@ -24549,6 +24566,12 @@ declare module BABYLON {
         private _renderId;
         private _textureType;
         private _textureFormat;
+        /**
+         * if externalTextureSamplerBinding is true, the "apply" method won't bind the textureSampler texture, it is expected to be done by the "outside" (by the onApplyObservable observer most probably).
+         * counter-productive in some cases because if the texture bound by "apply" is different from the currently texture bound, (the one set by the onApplyObservable observer, for eg) some
+         * internal structures (materialContext) will be dirtified, which may impact performances
+         */
+        externalTextureSamplerBinding: boolean;
         /**
         * Smart array of input and output textures for the post process.
         * @hidden
@@ -31446,7 +31469,7 @@ declare module BABYLON {
         dispose(forceDisposeTextures?: boolean): void;
         /**
         * Get the current class name useful for serialization or dynamic coding.
-        * @returns "DetailMap"
+        * @returns "DetailMapConfiguration"
         */
         getClassName(): string;
         /**
@@ -33108,6 +33131,7 @@ declare module BABYLON {
         _morphTargetManager: Nullable<MorphTargetManager>;
         _renderingGroupId: number;
         _material: Nullable<Material>;
+        _materialForRenderPass: Array<Material | undefined>;
         _positions: Nullable<Vector3[]>;
         _meshCollisionData: _MeshCollisionData;
     }
@@ -33309,6 +33333,18 @@ declare module BABYLON {
         /** Gets or sets current material */
         get material(): Nullable<Material>;
         set material(value: Nullable<Material>);
+        /**
+         * Gets the material used to render the mesh in a specific render pass
+         * @param renderPassId render pass id
+         * @returns material used for the render pass. If no specific material is used for this render pass, undefined is returned (meaning mesh.material is used for this pass)
+         */
+        getMaterialForRenderPass(renderPassId: number): Material | undefined;
+        /**
+         * Sets the material to be used to render the mesh in a specific render pass
+         * @param renderPassId render pass id
+         * @param material material to use for this render pass. If undefined is passed, no specific material will be used for this render pass but the regular material will be used instead (mesh.material)
+         */
+        setMaterialForRenderPass(renderPassId: number, material?: Material): void;
         /**
          * Gets or sets a boolean indicating that this mesh can receive realtime shadows
          * @see https://doc.babylonjs.com/babylon101/shadows
@@ -38373,6 +38409,10 @@ declare module BABYLON {
          * The parent camera is not (!) necessarily the .parent of this camera (like in the case of XR)
          */
         rigParent?: Camera;
+        /**
+         * Render pass id used by the camera to render into the main framebuffer
+         */
+        renderPassId: number;
         /** @hidden */
         _cameraRigParams: any;
         /** @hidden */
@@ -38926,6 +38966,23 @@ declare module BABYLON {
         private _canRescale;
         protected _renderTarget: Nullable<RenderTargetWrapper>;
         /**
+         * Current render pass id of the render target texture. Note it can change over the rendering as there's a separate id for each face of a cube / each layer of an array layer!
+         */
+        renderPassId: number;
+        private _renderPassIds;
+        /**
+         * Gets the render pass ids used by the render target texture. For a single render target the array length will be 1, for a cube texture it will be 6 and for
+         * a 2D texture array it will return an array of ids the size of the 2D texture array
+         */
+        get renderPassIds(): readonly number[];
+        /**
+         * Sets a specific material to be used to render a mesh/a list of meshes in this render target texture
+         * @param mesh mesh or array of meshes
+         * @param material material or array of materials to use for this render pass. If undefined is passed, no specific material will be used but the regular material instead (mesh.material). It's possible to provide an array of materials to use a different material for each rendering in the case of a cube texture (6 rendering) and a 2D texture array (as many rendering as the length of the array)
+         */
+        setMaterialForRendering(mesh: AbstractMesh | AbstractMesh[], material?: Material | Material[]): void;
+        private __isCube;
+        /**
          * Gets render target creation options that were used.
          */
         get renderTargetOptions(): RenderTargetCreationOptions;
@@ -38989,6 +39046,8 @@ declare module BABYLON {
          * @param samples sample count of the depth/stencil texture
          */
         createDepthStencilTexture(comparisonFunction?: number, bilinearFiltering?: boolean, generateStencil?: boolean, samples?: number): void;
+        private _releaseRenderPassId;
+        private _createRenderPassId;
         private _processSizeParameter;
         /**
          * Define the number of samples to use in case of MSAA.
@@ -39083,6 +39142,12 @@ declare module BABYLON {
          * @param dumpForDebug Define if the rendering result should be dumped (copied) for debugging purpose
          */
         render(useCameraPostProcess?: boolean, dumpForDebug?: boolean): void;
+        /**
+         * This function will check if the render target texture can be rendered (textures are loaded, shaders are compiled)
+         * @return true if all required resources are ready
+         */
+        isReadyForRendering(): boolean;
+        private _render;
         private _bestReflectionRenderTargetDimension;
         private _prepareRenderingManager;
         /**
@@ -40964,6 +41029,14 @@ declare module BABYLON {
         private _onCanvasFocus;
         private _onFullscreenChange;
         private _onPointerLockChange;
+        protected _compatibilityMode: boolean;
+        /**
+         * (WebGPU only) True (default) to be in compatibility mode, meaning rendering all existing scenes without artifacts (same rendering than WebGL).
+         * Setting the property to false will improve performances but may not work in some scenes if some precautions are not taken.
+         * See @TODO WEBGPU DOC PAGE for more details
+         */
+        get compatibilityMode(): boolean;
+        set compatibilityMode(mode: boolean);
         /**
          * Gets the HTML element used to attach event listeners
          * @returns a HTML element
@@ -41329,6 +41402,33 @@ declare module BABYLON {
         _releaseTexture(texture: InternalTexture): void;
         /** @hidden */
         _releaseRenderTargetWrapper(rtWrapper: RenderTargetWrapper): void;
+        protected static _RenderPassIdCounter: number;
+        /**
+         * Gets or sets the current render pass id
+         */
+        currentRenderPassId: number;
+        private _renderPassNames;
+        /**
+         * Gets the names of the render passes that are currently created
+         * @returns list of the render pass names
+         */
+        getRenderPassNames(): string[];
+        /**
+         * Gets the name of the current render pass
+         * @returns name of the current render pass
+         */
+        getCurrentRenderPassName(): string;
+        /**
+         * Creates a render pass id
+         * @param name Name of the render pass (for debug purpose only)
+         * @returns the id of the new render pass
+         */
+        createRenderPassId(name?: string): number;
+        /**
+         * Releases a render pass id
+         * @param id id of the render pass to release
+         */
+        releaseRenderPassId(id: number): void;
         /**
          * @hidden
          * Rescales a texture
@@ -41777,6 +41877,8 @@ declare module BABYLON {
         useUBOBindingCache: boolean;
         /** Indicates that the inliner should be run over every shader code */
         needShaderCodeInlining: boolean;
+        /** Indicates that even if we don't have to update the properties of a uniform buffer (because of some optimzations in the material) we still need to bind the uniform buffer themselves */
+        needToAlwaysBindUniformBuffers: boolean;
         /** @hidden */
         _collectUbosUpdatedInFrame: boolean;
     }
@@ -42309,6 +42411,10 @@ declare module BABYLON {
             [key: string]: Nullable<InternalTexture>;
         };
         protected _currentEffect: Nullable<Effect>;
+        /** @hidden */
+        _currentDrawContext: IDrawContext;
+        /** @hidden */
+        _currentMaterialContext: IMaterialContext;
         /** @hidden */
         protected _currentProgram: Nullable<WebGLProgram>;
         protected _compiledEffects: {
@@ -47453,9 +47559,10 @@ declare module BABYLON {
         /**
          * This function will check if the scene can be rendered (textures are loaded, shaders are compiled)
          * Delay loaded resources are not taking in account
+         * @param checkRenderTargets true to also check that the meshes rendered as part of a render target are ready (default: true)
          * @return true if all required resources are ready
          */
-        isReady(): boolean;
+        isReady(checkRenderTargets?: boolean): boolean;
         /** Resets all cached information relative to material (including effect and visibility) */
         resetCachedMaterial(): void;
         /**
@@ -47503,15 +47610,17 @@ declare module BABYLON {
         /**
          * Registers a function to be executed when the scene is ready
          * @param {Function} func - the function to be executed
+         * @param checkRenderTargets true to also check that the meshes rendered as part of a render target are ready (default: false)
          */
-        executeWhenReady(func: () => void): void;
+        executeWhenReady(func: () => void, checkRenderTargets?: boolean): void;
         /**
          * Returns a promise that resolves when the scene is ready
+         * @param checkRenderTargets true to also check that the meshes rendered as part of a render target are ready (default: false)
          * @returns A promise that resolves when the scene is ready
          */
-        whenReadyAsync(): Promise<void>;
+        whenReadyAsync(checkRenderTargets?: boolean): Promise<void>;
         /** @hidden */
-        _checkIsReady(): void;
+        _checkIsReady(checkRenderTargets?: boolean): void;
         /**
          * Gets all animatable attached to the scene
          */
@@ -47549,6 +47658,17 @@ declare module BABYLON {
          * @returns a UniformBuffer
          */
         getSceneUniformBuffer(): UniformBuffer;
+        /**
+         * Creates a scene UBO
+         * @param name name of the uniform buffer (optional, for debugging purpose only)
+         * @returns a new ubo
+         */
+        createSceneUniformBuffer(name?: string): UniformBuffer;
+        /**
+         * Sets the scene ubo
+         * @param ubo the ubo to set for the scene
+         */
+        setSceneUniformBuffer(ubo: UniformBuffer): void;
         /**
          * Gets an unique (relatively to the current scene) Id
          * @returns an unique number for the scene
@@ -64191,6 +64311,7 @@ declare module BABYLON {
     /** @hidden */
     export abstract class WebGPUShaderProcessor implements IShaderProcessor {
         static readonly AutoSamplerSuffix: string;
+        static readonly LeftOvertUBOName: string;
         static UniformSizes: {
             [type: string]: number;
         };
@@ -64618,6 +64739,7 @@ declare module BABYLON {
         constructor(device: GPUDevice);
         createRawBuffer(viewOrSize: ArrayBufferView | number, flags: GPUBufferUsageFlags, mappedAtCreation?: boolean): GPUBuffer;
         createBuffer(viewOrSize: ArrayBufferView | number, flags: GPUBufferUsageFlags): DataBuffer;
+        setRawData(buffer: GPUBuffer, dstByteOffset: number, src: ArrayBufferView, srcByteOffset: number, byteLength: number): void;
         setSubData(dataBuffer: WebGPUDataBuffer, dstByteOffset: number, src: ArrayBufferView, srcByteOffset?: number, byteLength?: number): void;
         private _GetHalfFloatAsFloatRGBAArrayBuffer;
         readDataFromBuffer(gpuBuffer: GPUBuffer, size: number, width: number, height: number, bytesPerRow: number, bytesPerRowAligned: number, type?: number, offset?: number, buffer?: Nullable<ArrayBufferView>, destroyBuffer?: boolean, noDataConversion?: boolean): Promise<ArrayBufferView>;
@@ -64959,6 +65081,8 @@ declare module BABYLON {
             nodeCount: number;
             pipelineCount: number;
         };
+        static _GetPipelines(node: NodeState, pipelines: Array<Array<number>>, curPath: Array<number>, curPathLen: number): void;
+        static GetPipelines(): Array<Array<number>>;
         constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer, useTextureStage: boolean);
         protected _getRenderPipeline(param: {
             token: any;
@@ -65048,10 +65172,6 @@ declare module BABYLON {
         textures: {
             [name: string]: Nullable<IWebGPUMaterialContextTextureCache>;
         };
-        buffers: {
-            [name: string]: Nullable<WebGPUDataBuffer>;
-        };
-        bindGroups: GPUBindGroup[];
         get forceBindGroupCreation(): boolean;
         get hasFloatTextures(): boolean;
         protected _numFloatTextures: number;
@@ -65060,16 +65180,31 @@ declare module BABYLON {
         reset(): void;
         setSampler(name: string, sampler: Nullable<TextureSampler>): void;
         setTexture(name: string, texture: Nullable<InternalTexture | ExternalTexture>): void;
-        setBuffer(name: string, buffer: Nullable<WebGPUDataBuffer>): void;
     }
 }
 declare module BABYLON {
     /** @hidden */
     export class WebGPUDrawContext implements IDrawContext {
         private static _Counter;
-        fastBundle: GPURenderBundle;
+        fastBundle?: GPURenderBundle;
+        bindGroups?: GPUBindGroup[];
         uniqueId: number;
-        constructor();
+        isDirty: boolean;
+        buffers: {
+            [name: string]: Nullable<WebGPUDataBuffer>;
+        };
+        indirectDrawBuffer?: GPUBuffer;
+        private _bufferManager;
+        private _useInstancing;
+        private _indirectDrawData?;
+        private _currentInstanceCount;
+        get useInstancing(): boolean;
+        set useInstancing(use: boolean);
+        constructor(bufferManager: WebGPUBufferManager);
+        reset(): void;
+        setBuffer(name: string, buffer: Nullable<WebGPUDataBuffer>): void;
+        setIndirectData(indexOrVertexCount: number, instanceCount: number, firstIndexOrVertex: number): void;
+        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -65096,11 +65231,11 @@ declare module BABYLON {
         constructor(device: GPUDevice, cacheSampler: WebGPUCacheSampler, engine: WebGPUEngine);
         endFrame(): void;
         /**
-         * Cache is currently based on the uniform buffers, samplers and textures used by the binding groups.
+         * Cache is currently based on the uniform/storage buffers, samplers and textures used by the binding groups.
          * Note that all uniform buffers have an offset of 0 in Babylon and we don't have a use case where we would have the same buffer used with different capacity values:
          * that means we don't need to factor in the offset/size of the buffer in the cache, only the id
          */
-        getBindGroups(webgpuPipelineContext: WebGPUPipelineContext, materialContext: WebGPUMaterialContext): GPUBindGroup[];
+        getBindGroups(webgpuPipelineContext: WebGPUPipelineContext, drawContext: WebGPUDrawContext, materialContext: WebGPUMaterialContext): GPUBindGroup[];
     }
 }
 declare module BABYLON {
@@ -65369,6 +65504,8 @@ declare module BABYLON {
         _counters: {
             numEnableEffects: number;
             numEnableDrawWrapper: number;
+            numBundleCreationNonCompatMode: number;
+            numBundleReuseNonCompatMode: number;
         };
         /**
          * Counters from last frame
@@ -65376,6 +65513,8 @@ declare module BABYLON {
         readonly countersLastFrame: {
             numEnableEffects: number;
             numEnableDrawWrapper: number;
+            numBundleCreationNonCompatMode: number;
+            numBundleReuseNonCompatMode: number;
         };
         /**
          * Max number of uncaptured error messages to log
@@ -65405,12 +65544,15 @@ declare module BABYLON {
         /** @hidden */
         _pendingDebugCommands: Array<[string, Nullable<string>]>;
         private _bundleList;
+        private _bundleListRenderTarget;
         /** @hidden */
         _onAfterUnbindFrameBufferObservable: Observable<WebGPUEngine>;
+        private _defaultDrawContext;
         private _defaultMaterialContext;
         /** @hidden */
+        _currentDrawContext: WebGPUDrawContext;
+        /** @hidden */
         _currentMaterialContext: WebGPUMaterialContext;
-        private _currentDrawContext;
         private _currentOverrideVertexBuffers;
         private _currentIndexBuffer;
         private __colorWrite;
@@ -65499,12 +65641,12 @@ declare module BABYLON {
             version: string;
         };
         /**
-         * True to be in compatibility mode, meaning rendering in the same way than OpenGL.
-         * Setting the property to false will improve performances, but can lead to rendering artifacts.
-         * See @TODO WEBGPU DOC PAGE
-         * @hidden
+         * (WebGPU only) True (default) to be in compatibility mode, meaning rendering all existing scenes without artifacts (same rendering than WebGL).
+         * Setting the property to false will improve performances but may not work in some scenes if some precautions are not taken.
+         * See @TODO WEBGPU DOC PAGE for more details
          */
-        compatibilityMode: boolean;
+        get compatibilityMode(): boolean;
+        set compatibilityMode(mode: boolean);
         /** @hidden */
         get currentSampleCount(): number;
         /**
@@ -65890,6 +66032,7 @@ declare module BABYLON {
          * @param zOffsetUnits defines the value to apply to zOffsetUnits (0 by default)
          */
         setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean, cullBackFaces?: boolean, stencil?: IStencilState, zOffsetUnits?: number): void;
+        private _applyRenderPassChanges;
         private _draw;
         /**
          * Draw a list of indexed primitives
@@ -71022,8 +71165,6 @@ declare module BABYLON {
     export abstract class EffectLayer {
         private _vertexBuffers;
         private _indexBuffer;
-        private _cachedDefines;
-        private _effectLayerMapGenerationDrawWrapper;
         private _effectLayerOptions;
         private _mergeDrawWrapper;
         protected _scene: Scene;
@@ -72071,6 +72212,8 @@ declare module BABYLON {
          * Restricts the rendering of the effect to only the camera rendering this layer mask.
          */
         layerMask: number;
+        /** Gets the scene */
+        get scene(): Scene;
         /**
          * Define the id of the lens flare system in the scene.
          * (equal to name by default)
@@ -72080,7 +72223,6 @@ declare module BABYLON {
         private _emitter;
         private _vertexBuffers;
         private _indexBuffer;
-        private _drawWrapper;
         private _positionX;
         private _positionY;
         private _isEnabled;
@@ -72189,6 +72331,8 @@ declare module BABYLON {
          * Define the alpha mode to render this particular lens.
          */
         alphaMode: number;
+        /** @hidden */
+        _drawWrapper: DrawWrapper;
         private _system;
         /**
          * Creates a new Lens Flare.
@@ -72337,10 +72481,8 @@ declare module BABYLON {
      * A depth renderer will render to it's depth map every frame which can be displayed or used in post processing
      */
     export class DepthRenderer {
-        private static _Counter;
         private _scene;
         private _depthMap;
-        private _nameForDrawWrapper;
         private readonly _storeNonLinearDepth;
         private readonly _clearColor;
         /** Get if the depth renderer is using packed depth or not */
@@ -72358,6 +72500,12 @@ declare module BABYLON {
         useOnlyInActiveCamera: boolean;
         /** @hidden */
         static _SceneComponentInitialization: (scene: Scene) => void;
+        /**
+         * Sets a specific material to be used to render a mesh/a list of meshes by the depth renderer
+         * @param mesh mesh or array of meshes
+         * @param material material or array of materials to use by the depth renderer. If undefined is passed, the specific material created by the depth renderer will be used.
+         */
+        setMaterialForRendering(mesh: AbstractMesh | AbstractMesh[], material?: Material): void;
         /**
          * Instantiates a depth renderer
          * @param scene The scene the renderer belongs to
@@ -72541,7 +72689,6 @@ declare module BABYLON {
          */
         get numCascades(): number;
         set numCascades(value: number);
-        private _setNamesForDrawWrapper;
         /**
          * Sets this to true if you want that the edges of the shadows don't "swimm" / "shimmer" when rotating the camera.
          * The trade off is that you lose some precision in the shadow rendering when enabling this setting.
@@ -72725,7 +72872,6 @@ declare module BABYLON {
         static get IsSupported(): boolean;
         /** @hidden */
         static _SceneComponentInitialization: (scene: Scene) => void;
-        private _nameForDrawWrapperOrig;
         /**
          * Creates a Cascaded Shadow Generator object.
          * A ShadowGenerator is the required tool to use the shadows.
@@ -80255,7 +80401,7 @@ declare module BABYLON {
         private _cachedUpdateDefines;
         private _randomTextureSize;
         private _actualFrame;
-        private _drawWrapper;
+        private _drawWrappers;
         private _customWrappers;
         private readonly _rawTextureWidth;
         private _platform;
@@ -80379,6 +80525,10 @@ declare module BABYLON {
          * @returns the current particle system
          */
         removeColorGradient(gradient: number): GPUParticleSystem;
+        /**
+         * Resets the draw wrappers cache
+         */
+        resetDrawCache(): void;
         /** @hidden */
         _angularSpeedGradientsTexture: RawTexture;
         /** @hidden */
@@ -84360,10 +84510,11 @@ declare module BABYLON {
          * @param samplingMode defines the required sampling mode (BABYLON.Texture.BILINEAR_SAMPLINGMODE by default)
          * @param engine defines the hosting engine (can be ignore if camera is set)
          * @param textureFormat defines the texture format to use (BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT by default)
+         * @param reusable If the post process can be reused on the same frame. (default: false)
          */
         constructor(name: string, _operator: TonemappingOperator, 
         /** Defines the required exposure adjustment */
-        exposureAdjustment: number, camera: Camera, samplingMode?: number, engine?: Engine, textureFormat?: number);
+        exposureAdjustment: number, camera: Camera, samplingMode?: number, engine?: Engine, textureFormat?: number, reusable?: boolean);
     }
 }
 declare module BABYLON {
@@ -84543,6 +84694,41 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /** @hidden */
+    export var boundingBoxRendererFragmentDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var boundingBoxRendererUboDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var boundingBoxRendererPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var boundingBoxRendererVertexDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var boundingBoxRendererVertexShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
         interface Scene {
             /** @hidden (Backing field) */
             _boundingBoxRenderer: BoundingBoxRenderer;
@@ -84616,11 +84802,14 @@ declare module BABYLON {
         private _indexBuffer;
         private _fillIndexBuffer;
         private _fillIndexData;
+        private _uniformBufferFront;
+        private _uniformBufferBack;
         /**
          * Instantiates a new bounding box renderer in a scene.
          * @param scene the scene the  renderer renders in
          */
         constructor(scene: Scene);
+        private _buildUniformLayout;
         /**
          * Registers the component in a given scene
          */
@@ -85141,7 +85330,6 @@ declare module BABYLON {
      * It should not be used directly but through the available method on mesh.
      */
     export class OutlineRenderer implements ISceneComponent {
-        private static _Counter;
         /**
          * Stencil value used to avoid outline being seen within the mesh when the mesh is transparent
          */
@@ -85164,7 +85352,7 @@ declare module BABYLON {
         zOffsetUnits: number;
         private _engine;
         private _savedDepthWrite;
-        private _nameForDrawWrapper;
+        private _passIdForDrawWrapper;
         /**
          * Instantiates a new outline renderer. (There could be only one per scene).
          * @param scene Defines the scene it belongs to
@@ -85188,16 +85376,18 @@ declare module BABYLON {
          * @param subMesh Defines the sumesh to render
          * @param batch Defines the batch of meshes in case of instances
          * @param useOverlay Defines if the rendering is for the overlay or the outline
+         * @param renderPassId Render pass id to use to render the mesh
          */
-        render(subMesh: SubMesh, batch: _InstancesBatch, useOverlay?: boolean): void;
+        render(subMesh: SubMesh, batch: _InstancesBatch, useOverlay?: boolean, renderPassId?: number): void;
         /**
          * Returns whether or not the outline renderer is ready for a given submesh.
          * All the dependencies e.g. submeshes, texture, effect... mus be ready
          * @param subMesh Defines the submesh to check readiness for
          * @param useInstances Defines whether wee are trying to render instances or not
+         * @param renderPassId Render pass id to use to render the mesh
          * @returns true if ready otherwise false
          */
-        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+        isReady(subMesh: SubMesh, useInstances: boolean, renderPassId?: number): boolean;
         private _beforeRenderingMesh;
         private _afterRenderingMesh;
     }
@@ -90436,8 +90626,8 @@ interface GPUImageCopyTexture {
 }
 
 interface GPUImageCopyTextureTagged extends GPUImageCopyTexture {
-    colorSpace: GPUPredefinedColorSpace; /* default="srgb" */
-    premultipliedAlpha: boolean; /* default=false */
+    colorSpace?: GPUPredefinedColorSpace; /* default="srgb" */
+    premultipliedAlpha?: boolean; /* default=false */
 }
 
 interface GPUImageCopyExternalImage {
