@@ -3,6 +3,8 @@ import { Color3 } from "../Maths/math.color";
 import { Texture } from "../Materials/Textures/texture";
 import { LensFlareSystem } from "./lensFlareSystem";
 import { Constants } from "../Engines/constants";
+import { DrawWrapper } from "../Materials/drawWrapper";
+import { VertexBuffer } from "../Buffers/buffer";
 /**
  * This represents one of the lens effect in a `lensFlareSystem`.
  * It controls one of the individual texture used in the effect.
@@ -23,6 +25,9 @@ export class LensFlare {
      * Define the alpha mode to render this particular lens.
      */
     public alphaMode: number = Constants.ALPHA_ONEONE;
+
+    /** @hidden */
+    public _drawWrapper: DrawWrapper;
 
     private _system: LensFlareSystem;
 
@@ -69,6 +74,15 @@ export class LensFlare {
         this.color = color || new Color3(1, 1, 1);
         this.texture = imgUrl ? new Texture(imgUrl, system.getScene(), true) : null;
         this._system = system;
+
+        const engine = system.scene.getEngine();
+
+        this._drawWrapper = new DrawWrapper(engine);
+
+        this._drawWrapper.effect = engine.createEffect("lensFlare",
+            [VertexBuffer.PositionKind],
+            ["color", "viewportMatrix"],
+            ["textureSampler"], "");
 
         system.lensFlares.push(this);
     }

@@ -73,8 +73,6 @@ export abstract class EffectLayer {
 
     private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
     private _indexBuffer: Nullable<DataBuffer>;
-    private _cachedDefines: string;
-    private _effectLayerMapGenerationDrawWrapper: DrawWrapper;
     private _effectLayerOptions: IEffectLayerOptions;
     private _mergeDrawWrapper: DrawWrapper;
 
@@ -189,7 +187,6 @@ export abstract class EffectLayer {
         this._maxSize = this._engine.getCaps().maxTextureSize;
         this._scene.effectLayers.push(this);
 
-        this._effectLayerMapGenerationDrawWrapper = new DrawWrapper(this._engine);
         this._mergeDrawWrapper = new DrawWrapper(this._engine);
 
         // Generate Buffers
@@ -330,7 +327,7 @@ export abstract class EffectLayer {
      * Creates the main texture for the effect layer.
      */
     protected _createMainTexture(): void {
-        this._mainTexture = new RenderTargetTexture("HighlightLayerMainRTT",
+        this._mainTexture = new RenderTargetTexture("EffectLayerMainRTT",
             {
                 width: this._mainTextureDesiredSize.width,
                 height: this._mainTextureDesiredSize.height
@@ -421,8 +418,8 @@ export abstract class EffectLayer {
             return false;
         }
 
-        if (!material.isReadyForSubMesh(subMesh.getMesh(), subMesh, useInstances)) {
-            return false;
+        if (this._useMeshMaterial(subMesh.getRenderingMesh())) {
+            return material.isReadyForSubMesh(subMesh.getMesh(), subMesh, useInstances);
         }
 
         var defines: string[] = [];
@@ -562,21 +559,23 @@ export abstract class EffectLayer {
         this._addCustomEffectDefines(defines);
 
         // Get correct effect
-        var join = defines.join("\n");
-        if (this._cachedDefines !== join) {
-            this._cachedDefines = join;
-            this._effectLayerMapGenerationDrawWrapper.setEffect(this._scene.getEngine().createEffect("glowMapGeneration",
+        const drawWrapper = subMesh._getDrawWrapper(undefined, true)!;
+        const cachedDefines = drawWrapper.defines as string;
+        const join = defines.join("\n");
+        if (cachedDefines !== join) {
+            drawWrapper.setEffect(this._engine.createEffect("glowMapGeneration",
                 attribs,
                 ["world", "mBones", "viewProjection",
                     "glowColor", "morphTargetInfluences", "boneTextureWidth",
                     "diffuseMatrix", "emissiveMatrix", "opacityMatrix", "opacityIntensity",
                     "morphTargetTextureInfo", "morphTargetTextureIndices"],
                 ["diffuseSampler", "emissiveSampler", "opacitySampler", "boneSampler", "morphTargets"], join,
-                fallbacks, undefined, undefined, { maxSimultaneousMorphTargets: morphInfluencers })
+                fallbacks, undefined, undefined, { maxSimultaneousMorphTargets: morphInfluencers }),
+                join
             );
         }
 
-        return this._effectLayerMapGenerationDrawWrapper.effect!.isReady();
+        return drawWrapper.effect!.isReady();
     }
 
     /**
@@ -739,9 +738,10 @@ export abstract class EffectLayer {
             renderingMesh.render(subMesh, hardwareInstancedRendering, replacementMesh || undefined);
         }
         else if (this._isReady(subMesh, hardwareInstancedRendering, this._emissiveTextureAndColor.texture)) {
-            const effect = this._effectLayerMapGenerationDrawWrapper.effect!;
+            const drawWrapper = subMesh._getDrawWrapper()!;
+            const effect = drawWrapper.effect!;
 
-            engine.enableEffect(this._effectLayerMapGenerationDrawWrapper);
+            engine.enableEffect(drawWrapper);
             if (!hardwareInstancedRendering) {
                 const fillMode = scene.forcePointsCloud ? Material.PointFillMode : scene.forceWireframe ? Material.WireFrameFillMode : material.fillMode;
                 renderingMesh._bind(subMesh, effect, fillMode);

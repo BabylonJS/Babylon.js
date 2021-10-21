@@ -30,10 +30,17 @@ export class DrawWrapper {
         }
     }
 
-    public setEffect(effect: Nullable<Effect>, defines?: Nullable<string | MaterialDefines>): void {
+    public setEffect(effect: Nullable<Effect>, defines?: Nullable<string | MaterialDefines>, resetContext = true): void {
         this.effect = effect;
         if (defines !== undefined) {
             this.defines = defines;
         }
+        if (resetContext) {
+            this.drawContext?.reset();
+        }
+    }
+
+    public dispose(): void {
+        this.drawContext?.dispose();
     }
 }

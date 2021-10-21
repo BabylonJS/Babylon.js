@@ -249,9 +249,13 @@ export class WebGPUEngine extends Engine {
     public _counters: {
         numEnableEffects: number;
         numEnableDrawWrapper: number;
+        numBundleCreationNonCompatMode: number;
+        numBundleReuseNonCompatMode: number;
     } = {
             numEnableEffects: 0,
             numEnableDrawWrapper: 0,
+            numBundleCreationNonCompatMode: 0,
+            numBundleReuseNonCompatMode: 0,
         };
     /**
      * Counters from last frame
@@ -259,9 +263,13 @@ export class WebGPUEngine extends Engine {
     public readonly countersLastFrame: {
         numEnableEffects: number;
         numEnableDrawWrapper: number;
+        numBundleCreationNonCompatMode: number;
+        numBundleReuseNonCompatMode: number;
     } = {
             numEnableEffects: 0,
             numEnableDrawWrapper: 0,
+            numBundleCreationNonCompatMode: 0,
+            numBundleReuseNonCompatMode: 0,
         };
     /**
      * Max number of uncaptured error messages to log
@@ -301,16 +309,19 @@ export class WebGPUEngine extends Engine {
     /** @hidden */
     public _pendingDebugCommands: Array<[string, Nullable<string>]> = [];
     private _bundleList: WebGPUBundleList;
+    private _bundleListRenderTarget: WebGPUBundleList;
     /** @hidden */
     public _onAfterUnbindFrameBufferObservable = new Observable<WebGPUEngine>();
 
     // DrawCall Life Cycle
     // Effect is on the parent class
     // protected _currentEffect: Nullable<Effect> = null;
+    private _defaultDrawContext: WebGPUDrawContext;
     private _defaultMaterialContext: WebGPUMaterialContext;
     /** @hidden */
+    public _currentDrawContext: WebGPUDrawContext;
+    /** @hidden */
     public _currentMaterialContext: WebGPUMaterialContext;
-    private _currentDrawContext: WebGPUDrawContext | undefined;
     private _currentOverrideVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }> = null;
     private _currentIndexBuffer: Nullable<DataBuffer> = null;
     private __colorWrite = true;
@@ -483,12 +494,17 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * True to be in compatibility mode, meaning rendering in the same way than OpenGL.
-     * Setting the property to false will improve performances, but can lead to rendering artifacts.
-     * See @TODO WEBGPU DOC PAGE
-     * @hidden
+     * (WebGPU only) True (default) to be in compatibility mode, meaning rendering all existing scenes without artifacts (same rendering than WebGL).
+     * Setting the property to false will improve performances but may not work in some scenes if some precautions are not taken.
+     * See @TODO WEBGPU DOC PAGE for more details
      */
-    public compatibilityMode = true;
+    public get compatibilityMode() {
+        return this._compatibilityMode;
+    }
+
+    public set compatibilityMode(mode: boolean) {
+        this._compatibilityMode = mode;
+    }
 
     /** @hidden */
     public get currentSampleCount(): number {
@@ -669,6 +685,7 @@ export class WebGPUEngine extends Engine {
                 this._timestampQuery = new WebGPUTimestampQuery(this._device, this._bufferManager);
                 this._occlusionQuery = (this._device as any).createQuerySet ? new WebGPUOcclusionQuery(this, this._device, this._bufferManager) : undefined as any;
                 this._bundleList = new WebGPUBundleList(this._device);
+                this._bundleListRenderTarget = new WebGPUBundleList(this._device);
 
                 if (this.dbgVerboseLogsForFirstFrames) {
                     if ((this as any)._count === undefined) {
@@ -698,6 +715,8 @@ export class WebGPUEngine extends Engine {
                 this._textureHelper.setCommandEncoder(this._uploadEncoder);
 
                 this._clearQuad = new WebGPUClearQuad(this._device, this, this._emptyVertexBuffer);
+                this._defaultDrawContext = this.createDrawContext()!;
+                this._currentDrawContext = this._defaultDrawContext;
                 this._defaultMaterialContext = this.createMaterialContext()!;
                 this._currentMaterialContext = this._defaultMaterialContext;
 
@@ -819,6 +838,7 @@ export class WebGPUEngine extends Engine {
             needsInvertingBitmap: false,
             useUBOBindingCache: false,
             needShaderCodeInlining: true,
+            needToAlwaysBindUniformBuffers: true,
             _collectUbosUpdatedInFrame: false,
         };
     }
@@ -1265,7 +1285,7 @@ export class WebGPUEngine extends Engine {
                     this._startRenderTargetRenderPass(this._currentRenderTarget!, false, backBuffer ? color : null, depth, stencil);
                 }
                 if (!this.compatibilityMode) {
-                    this._bundleList.addItem(new WebGPURenderItemScissor(this._scissorCached.x, this._scissorCached.y, this._scissorCached.z, this._scissorCached.w));
+                    this._bundleListRenderTarget.addItem(new WebGPURenderItemScissor(this._scissorCached.x, this._scissorCached.y, this._scissorCached.z, this._scissorCached.w));
                 } else {
                     this._applyScissor(this._currentRenderPass!);
                 }
@@ -1293,13 +1313,15 @@ export class WebGPUEngine extends Engine {
 
     private _clearFullQuad(clearColor?: Nullable<IColor4Like>, clearDepth?: boolean, clearStencil?: boolean): void {
         const renderPass = !this.compatibilityMode ? null : this._getCurrentRenderPass();
+        const renderPassIndex = this._getCurrentRenderPassIndex();
+        const bundleList = renderPassIndex === 0 ? this._bundleList : this._bundleListRenderTarget;
 
         this._clearQuad.setColorFormat(this._colorFormat);
         this._clearQuad.setDepthStencilFormat(this._depthTextureFormat);
         this._clearQuad.setMRTAttachments(this._cacheRenderPipeline.mrtAttachments ?? [], this._cacheRenderPipeline.mrtTextureArray ?? []);
 
         if (!this.compatibilityMode) {
-            this._bundleList.addItem(new WebGPURenderItemStencilRef(this._clearStencilValue));
+            bundleList.addItem(new WebGPURenderItemStencilRef(this._clearStencilValue));
         } else {
             renderPass!.setStencilReference(this._clearStencilValue);
         }
@@ -1307,8 +1329,8 @@ export class WebGPUEngine extends Engine {
         const bundle = this._clearQuad.clear(renderPass, clearColor, clearDepth, clearStencil, this.currentSampleCount);
 
         if (!this.compatibilityMode) {
-            this._bundleList.addBundle(bundle!);
-            this._bundleList.addItem(new WebGPURenderItemStencilRef(this._stencilStateComposer.funcRef ?? 0));
+            bundleList.addBundle(bundle!);
+            bundleList.addItem(new WebGPURenderItemStencilRef(this._stencilStateComposer.funcRef ?? 0));
             this._reportDrawCall();
         } else {
             this._applyStencilRef(renderPass!);
@@ -1596,7 +1618,7 @@ export class WebGPUEngine extends Engine {
      * @returns the new context
      */
     public createDrawContext(): WebGPUDrawContext | undefined {
-        return new WebGPUDrawContext();
+        return new WebGPUDrawContext(this._bufferManager);
     }
 
     /** @hidden */
@@ -1668,7 +1690,7 @@ export class WebGPUEngine extends Engine {
             isNewEffect = effect !== this._currentEffect;
             this._currentEffect = effect;
             this._currentMaterialContext = this._defaultMaterialContext;
-            this._currentDrawContext = undefined;
+            this._currentDrawContext = this._defaultDrawContext;
             this._counters.numEnableEffects++;
             if (this.dbgLogIfNotDrawWrapper) {
                 Logger.Warn(`enableEffect has been called with an Effect and not a Wrapper! effect.uniqueId=${effect.uniqueId}, effect.name=${effect.name}, effect.name.vertex=${effect.name.vertex}, effect.name.fragment=${effect.name.fragment}`, 10);
@@ -2244,8 +2266,12 @@ export class WebGPUEngine extends Engine {
 
         this.countersLastFrame.numEnableEffects = this._counters.numEnableEffects;
         this.countersLastFrame.numEnableDrawWrapper = this._counters.numEnableDrawWrapper;
+        this.countersLastFrame.numBundleCreationNonCompatMode = this._counters.numBundleCreationNonCompatMode;
+        this.countersLastFrame.numBundleReuseNonCompatMode = this._counters.numBundleReuseNonCompatMode;
         this._counters.numEnableEffects = 0;
         this._counters.numEnableDrawWrapper = 0;
+        this._counters.numBundleCreationNonCompatMode = 0;
+        this._counters.numBundleReuseNonCompatMode = 0;
 
         this._cacheRenderPipeline.endFrame();
         this._cacheBindGroups.endFrame();
@@ -2300,6 +2326,7 @@ export class WebGPUEngine extends Engine {
         this._textureHelper.setCommandEncoder(this._uploadEncoder);
 
         this._bundleList.reset();
+        this._bundleListRenderTarget.reset();
 
         // restart the render pass
         if (reopenPass) {
@@ -2443,12 +2470,12 @@ export class WebGPUEngine extends Engine {
                 if (!gpuWrapper._bundleLists) {
                     gpuWrapper._bundleLists = [];
                 }
-                gpuWrapper._bundleLists[gpuWrapper._currentLayer] = this._bundleList.clone();
+                gpuWrapper._bundleLists[gpuWrapper._currentLayer] = this._bundleListRenderTarget.clone();
                 gpuWrapper._bundleLists[gpuWrapper._currentLayer].run(this._currentRenderPass);
-                this._bundleList.reset();
+                this._bundleListRenderTarget.reset();
             } else if (!this.compatibilityMode) {
-                this._bundleList.run(this._currentRenderPass);
-                this._bundleList.reset();
+                this._bundleListRenderTarget.run(this._currentRenderPass);
+                this._bundleListRenderTarget.reset();
             }
             this._currentRenderPass.endPass();
             if (this.dbgVerboseLogsForFirstFrames) {
@@ -2785,20 +2812,53 @@ export class WebGPUEngine extends Engine {
         this._stencilStateComposer.stencilMaterial = stencil;
     }
 
+    private _applyRenderPassChanges(renderPass: GPURenderPassEncoder, bundleList: Nullable<WebGPUBundleList>): void {
+        const mustUpdateViewport = this._mustUpdateViewport(renderPass);
+        const mustUpdateScissor = this._mustUpdateScissor(renderPass);
+        const mustUpdateStencilRef = !this._stencilStateComposer.enabled ? false : this._mustUpdateStencilRef(renderPass);
+        const mustUpdateBlendColor = !this._alphaState.alphaBlend ? false : this._mustUpdateBlendColor(renderPass);
+
+        if (bundleList) {
+            if (mustUpdateViewport) {
+                bundleList.addItem(new WebGPURenderItemViewport(this._viewportCached.x, this._viewportCached.y, this._viewportCached.z, this._viewportCached.w));
+            }
+            if (mustUpdateScissor) {
+                bundleList.addItem(new WebGPURenderItemScissor(this._scissorCached.x, this._scissorCached.y, this._scissorCached.z, this._scissorCached.w));
+            }
+            if (mustUpdateStencilRef) {
+                bundleList.addItem(new WebGPURenderItemStencilRef(this._stencilStateComposer.funcRef ?? 0));
+            }
+            if (mustUpdateBlendColor) {
+                bundleList.addItem(new WebGPURenderItemBlendColor(this._alphaState._blendConstants.slice()));
+            }
+        } else {
+            if (mustUpdateViewport) {
+                this._applyViewport(renderPass as GPURenderPassEncoder);
+            }
+            if (mustUpdateScissor) {
+                this._applyScissor(renderPass as GPURenderPassEncoder);
+            }
+            if (mustUpdateStencilRef) {
+                this._applyStencilRef(renderPass as GPURenderPassEncoder);
+            }
+            if (mustUpdateBlendColor) {
+                this._applyBlendColor(renderPass as GPURenderPassEncoder);
+            }
+        }
+    }
+
     private _draw(drawType: number, fillMode: number, start: number, count: number, instancesCount: number): void {
         const renderPass = this._getCurrentRenderPass();
+        const renderPassIndex = this._getCurrentRenderPassIndex();
+        const bundleList = renderPassIndex === 0 ? this._bundleList : this._bundleListRenderTarget;
 
         this.applyStates();
-
-        const mustUpdateViewport = this._mustUpdateViewport(renderPass as GPURenderPassEncoder);
-        const mustUpdateScissor = this._mustUpdateScissor(renderPass as GPURenderPassEncoder);
-        const mustUpdateStencilRef = !this._stencilStateComposer.enabled ? false : this._mustUpdateStencilRef(renderPass as GPURenderPassEncoder);
-        const mustUpdateBlendColor = !this._alphaState.alphaBlend ? false : this._mustUpdateBlendColor(renderPass as GPURenderPassEncoder);
 
         const webgpuPipelineContext = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
 
         if (webgpuPipelineContext.uniformBuffer) {
             webgpuPipelineContext.uniformBuffer.update();
+            this.bindUniformBufferBase(webgpuPipelineContext.uniformBuffer.getBuffer()!, 0, WebGPUShaderProcessor.LeftOvertUBOName);
         }
 
         if (this._snapshotRenderingPlayBundles) {
@@ -2806,35 +2866,27 @@ export class WebGPUEngine extends Engine {
             return;
         }
 
-        const useFastPath = !this.compatibilityMode && this._currentDrawContext?.fastBundle;
+        if (!this.compatibilityMode && (this._currentDrawContext.isDirty || this._currentMaterialContext.isDirty || this._currentMaterialContext.forceBindGroupCreation)) {
+            this._currentDrawContext.fastBundle = undefined;
+        }
+
+        const useFastPath = !this.compatibilityMode && this._currentDrawContext.fastBundle;
         let renderPass2: GPURenderPassEncoder | GPURenderBundleEncoder = renderPass;
 
         if (useFastPath || this._snapshotRenderingRecordBundles) {
-            if (mustUpdateViewport) {
-                this._bundleList.addItem(new WebGPURenderItemViewport(this._viewportCached.x, this._viewportCached.y, this._viewportCached.z, this._viewportCached.w));
-            }
-            if (mustUpdateScissor) {
-                this._bundleList.addItem(new WebGPURenderItemScissor(this._scissorCached.x, this._scissorCached.y, this._scissorCached.z, this._scissorCached.w));
-            }
-            if (mustUpdateStencilRef) {
-                this._bundleList.addItem(new WebGPURenderItemStencilRef(this._stencilStateComposer.funcRef ?? 0));
-            }
-            if (mustUpdateBlendColor) {
-                this._bundleList.addItem(new WebGPURenderItemBlendColor(this._alphaState._blendConstants.slice()));
-            }
-
+            this._applyRenderPassChanges(renderPass, bundleList);
             if (!this._snapshotRenderingRecordBundles) {
-                this._bundleList.addBundle(this._currentDrawContext!.fastBundle);
+                this._counters.numBundleReuseNonCompatMode++;
+                if (this._currentDrawContext.indirectDrawBuffer) {
+                    this._currentDrawContext.setIndirectData(count, instancesCount || 1, start);
+                }
+                bundleList.addBundle(this._currentDrawContext.fastBundle);
                 this._reportDrawCall();
                 return;
             }
 
-            renderPass2 = this._bundleList.getBundleEncoder(this._cacheRenderPipeline.colorFormats, this._depthTextureFormat, this.currentSampleCount); // for snapshot recording mode
-            this._bundleList.numDrawCalls++;
-        }
-
-        if (webgpuPipelineContext.uniformBuffer) {
-            this.bindUniformBufferBase(webgpuPipelineContext.uniformBuffer.getBuffer()!, 0, "LeftOver");
+            renderPass2 = bundleList.getBundleEncoder(this._cacheRenderPipeline.colorFormats, this._depthTextureFormat, this.currentSampleCount); // for snapshot recording mode
+            bundleList.numDrawCalls++;
         }
 
         let textureState = 0;
@@ -2851,22 +2903,12 @@ export class WebGPUEngine extends Engine {
         }
 
         const pipeline = this._cacheRenderPipeline.getRenderPipeline(fillMode, this._currentEffect!, this.currentSampleCount, textureState);
-        const bindGroups = this._cacheBindGroups.getBindGroups(webgpuPipelineContext, this._currentMaterialContext);
+        const bindGroups = this._cacheBindGroups.getBindGroups(webgpuPipelineContext, this._currentDrawContext, this._currentMaterialContext);
 
         if (!this._snapshotRenderingRecordBundles) {
-            if (mustUpdateViewport) {
-                this._applyViewport(renderPass as GPURenderPassEncoder);
-            }
-            if (mustUpdateScissor) {
-                this._applyScissor(renderPass as GPURenderPassEncoder);
-            }
-            if (mustUpdateStencilRef) {
-                this._applyStencilRef(renderPass as GPURenderPassEncoder);
-            }
-            if (mustUpdateBlendColor) {
-                this._applyBlendColor(renderPass as GPURenderPassEncoder);
-            }
+            this._applyRenderPassChanges(renderPass, !this.compatibilityMode ? bundleList : null);
             if (!this.compatibilityMode) {
+                this._counters.numBundleCreationNonCompatMode++;
                 renderPass2 = this._device.createRenderBundleEncoder({
                     colorFormats: this._cacheRenderPipeline.colorFormats,
                     depthStencilFormat: this._depthTextureFormat,
@@ -2899,15 +2941,24 @@ export class WebGPUEngine extends Engine {
         }
 
         // draw
-        if (drawType === 0) {
+        const nonCompatMode = !this.compatibilityMode && !this._snapshotRenderingRecordBundles;
+
+        if (nonCompatMode && this._currentDrawContext.indirectDrawBuffer) {
+            this._currentDrawContext.setIndirectData(count, instancesCount || 1, start);
+            if (drawType === 0) {
+                renderPass2.drawIndexedIndirect(this._currentDrawContext.indirectDrawBuffer, 0);
+            } else {
+                renderPass2.drawIndirect(this._currentDrawContext.indirectDrawBuffer, 0);
+            }
+        } else if (drawType === 0) {
             renderPass2.drawIndexed(count, instancesCount || 1, start, 0, 0);
         } else {
             renderPass2.draw(count, instancesCount || 1, start, 0);
         }
 
-        if (!this.compatibilityMode && this._currentDrawContext && !this._snapshotRenderingRecordBundles) {
+        if (nonCompatMode) {
             this._currentDrawContext.fastBundle = (renderPass2 as GPURenderBundleEncoder).finish();
-            this._bundleList.addBundle(this._currentDrawContext.fastBundle);
+            bundleList.addBundle(this._currentDrawContext.fastBundle);
         }
 
         this._reportDrawCall();
