@@ -866,12 +866,12 @@ export class StandardMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh._materialDefines) {
+        if (!subMesh.materialDefines) {
             subMesh.materialDefines = new StandardMaterialDefines();
         }
 
         var scene = this.getScene();
-        var defines = <StandardMaterialDefines>subMesh._materialDefines;
+        var defines = <StandardMaterialDefines>subMesh.materialDefines;
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }
@@ -1379,7 +1379,7 @@ export class StandardMaterial extends PushMaterial {
      * Unbinds the material from the mesh
      */
     public unbind(): void {
-        if (this._activeEffect) {
+        if (this._activeEffect && !this.getScene().getEngine()._features.needToAlwaysBindUniformBuffers) {
             let needFlag = false;
             if (this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
                 this._activeEffect.setTexture("reflection2DSampler", null);
@@ -1408,7 +1408,7 @@ export class StandardMaterial extends PushMaterial {
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         var scene = this.getScene();
 
-        var defines = <StandardMaterialDefines>subMesh._materialDefines;
+        var defines = <StandardMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }
@@ -1626,6 +1626,9 @@ export class StandardMaterial extends PushMaterial {
 
             // Colors
             this.bindEyePosition(effect);
+        } else if (scene.getEngine()._features.needToAlwaysBindUniformBuffers) {
+            ubo.bindToEffect(effect, "Material");
+            this._needToBindSceneUbo = true;
         }
 
         if (mustRebind || !this.isFrozen) {

@@ -96,6 +96,7 @@ class _InternalAbstractMeshDataInfo {
     public _morphTargetManager: Nullable<MorphTargetManager> = null;
     public _renderingGroupId = 0;
     public _material: Nullable<Material> = null;
+    public _materialForRenderPass: Array<Material | undefined>; // map a render pass id (index in the array) to a Material
     public _positions: Nullable<Vector3[]> = null;
     // Collisions
     public _meshCollisionData = new _MeshCollisionData();
@@ -446,6 +447,27 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         }
 
         this._unBindEffect();
+    }
+
+    /**
+     * Gets the material used to render the mesh in a specific render pass
+     * @param renderPassId render pass id
+     * @returns material used for the render pass. If no specific material is used for this render pass, undefined is returned (meaning mesh.material is used for this pass)
+     */
+    public getMaterialForRenderPass(renderPassId: number): Material | undefined {
+        return this._internalAbstractMeshDataInfo._materialForRenderPass?.[renderPassId];
+    }
+
+    /**
+     * Sets the material to be used to render the mesh in a specific render pass
+     * @param renderPassId render pass id
+     * @param material material to use for this render pass. If undefined is passed, no specific material will be used for this render pass but the regular material will be used instead (mesh.material)
+     */
+    public setMaterialForRenderPass(renderPassId: number, material?: Material): void {
+        if (!this._internalAbstractMeshDataInfo._materialForRenderPass) {
+            this._internalAbstractMeshDataInfo._materialForRenderPass = [];
+        }
+        this._internalAbstractMeshDataInfo._materialForRenderPass[renderPassId] = material;
     }
 
     /**
@@ -934,8 +956,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         }
 
         for (var subMesh of this.subMeshes) {
-            if (subMesh._materialDefines) {
-                func(subMesh._materialDefines);
+            if (subMesh.materialDefines) {
+                func(subMesh.materialDefines);
             }
         }
     }

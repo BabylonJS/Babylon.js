@@ -155,7 +155,7 @@ export class LinesMesh extends Mesh {
         scene.clipPlane5 ? this._addClipPlaneDefine("CLIPPLANE5") : this._removeClipPlaneDefine("CLIPPLANE5");
         scene.clipPlane6 ? this._addClipPlaneDefine("CLIPPLANE6") : this._removeClipPlaneDefine("CLIPPLANE6");
 
-        if (!this._lineMaterial.isReady(this)) {
+        if (!this._lineMaterial.isReady(this, !!this._userInstancedBuffersStorage)) {
             return false;
         }
 
