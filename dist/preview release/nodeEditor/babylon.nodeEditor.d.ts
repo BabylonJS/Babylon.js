@@ -1132,6 +1132,18 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export class VectorMergerPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        constructor(props: IPropertyComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export class ColorMergerPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        constructor(props: IPropertyComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
     export class PropertyLedger {
         static RegisteredControls: {
             [key: string]: React.ComponentClass<IPropertyComponentProps>;

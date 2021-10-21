@@ -9990,7 +9990,7 @@ var convertCurry = convert.bind(null, react__WEBPACK_IMPORTED_MODULE_2___default
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#log-console {\n  background: #333333;\n  height: 120px;\n  box-sizing: border-box;\n  margin: 0;\n  padding: 10px;\n  width: 100%;\n  overflow: hidden;\n  overflow-y: auto; }\n  #log-console .log {\n    color: white;\n    font-size: 14px;\n    font-family: 'Courier New', Courier, monospace; }\n    #log-console .log.error {\n      color: red; }\n", ""]);
+exports.push([module.i, "#nme-log-console {\n  background: #333333;\n  height: 120px;\n  box-sizing: border-box;\n  margin: 0;\n  padding: 10px;\n  width: 100%;\n  overflow: hidden;\n  overflow-y: auto; }\n  #nme-log-console .log {\n    color: white;\n    font-size: 14px;\n    font-family: 'Courier New', Courier, monospace; }\n    #nme-log-console .log.error {\n      color: red; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -55560,7 +55560,7 @@ var LogComponent = /** @class */ (function (_super) {
         });
     };
     LogComponent.prototype.componentDidUpdate = function () {
-        var logConsole = react_dom__WEBPACK_IMPORTED_MODULE_2__["findDOMNode"](this.refs["log-console"]);
+        var logConsole = react_dom__WEBPACK_IMPORTED_MODULE_2__["findDOMNode"](this.refs["nme-log-console"]);
         if (!logConsole) {
             return;
         }
@@ -55571,7 +55571,7 @@ var LogComponent = /** @class */ (function (_super) {
         var h = today.getHours();
         var m = today.getMinutes();
         var s = today.getSeconds();
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "log-console", ref: "log-console" }, this.state.logs.map(function (l, i) {
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "nme-log-console", ref: "log-console" }, this.state.logs.map(function (l, i) {
             return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: i, className: "log" + (l.isError ? " error" : "") }, h + ":" + m + ":" + s + ": " + l.message));
         })));
     };
@@ -61569,6 +61569,72 @@ var NodePort = /** @class */ (function () {
 
 /***/ }),
 
+/***/ "./diagram/properties/colorMergerPropertyComponent.tsx":
+/*!*************************************************************!*\
+  !*** ./diagram/properties/colorMergerPropertyComponent.tsx ***!
+  \*************************************************************/
+/*! exports provided: ColorMergerPropertyTabComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ColorMergerPropertyTabComponent", function() { return ColorMergerPropertyTabComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
+/* harmony import */ var _sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../sharedComponents/optionsLineComponent */ "./sharedComponents/optionsLineComponent.tsx");
+/* harmony import */ var _genericNodePropertyComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./genericNodePropertyComponent */ "./diagram/properties/genericNodePropertyComponent.tsx");
+
+
+
+
+
+var ColorMergerPropertyTabComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ColorMergerPropertyTabComponent, _super);
+    function ColorMergerPropertyTabComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    ColorMergerPropertyTabComponent.prototype.render = function () {
+        var _this = this;
+        var colorMergerBlock = this.props.block;
+        var targetOptions = [
+            { label: "R", value: "r" },
+            { label: "G", value: "g" },
+            { label: "B", value: "b" },
+            { label: "A", value: "a" },
+        ];
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_genericNodePropertyComponent__WEBPACK_IMPORTED_MODULE_4__["GeneralPropertyTabComponent"], { globalState: this.props.globalState, block: this.props.block }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "SWIZZLES" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_3__["OptionsLineComponent"], { label: "R", options: targetOptions, target: colorMergerBlock, propertyName: "rSwizzle", valuesAreStrings: true, onSelect: function (value) {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                        _this.forceUpdate();
+                    } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_3__["OptionsLineComponent"], { label: "G", options: targetOptions, target: colorMergerBlock, propertyName: "gSwizzle", valuesAreStrings: true, onSelect: function (value) {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                        _this.forceUpdate();
+                    } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_3__["OptionsLineComponent"], { label: "B", options: targetOptions, target: colorMergerBlock, propertyName: "bSwizzle", valuesAreStrings: true, onSelect: function (value) {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                        _this.forceUpdate();
+                    } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_3__["OptionsLineComponent"], { label: "A", options: targetOptions, target: colorMergerBlock, propertyName: "aSwizzle", valuesAreStrings: true, onSelect: function (value) {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                        _this.forceUpdate();
+                    } }))));
+    };
+    return ColorMergerPropertyTabComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
 /***/ "./diagram/properties/conditionalNodePropertyComponent.tsx":
 /*!*****************************************************************!*\
   !*** ./diagram/properties/conditionalNodePropertyComponent.tsx ***!
@@ -63283,6 +63349,72 @@ var TrigonometryPropertyTabComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./diagram/properties/vectorMergerPropertyComponent.tsx":
+/*!**************************************************************!*\
+  !*** ./diagram/properties/vectorMergerPropertyComponent.tsx ***!
+  \**************************************************************/
+/*! exports provided: VectorMergerPropertyTabComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "VectorMergerPropertyTabComponent", function() { return VectorMergerPropertyTabComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
+/* harmony import */ var _sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../sharedComponents/optionsLineComponent */ "./sharedComponents/optionsLineComponent.tsx");
+/* harmony import */ var _genericNodePropertyComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./genericNodePropertyComponent */ "./diagram/properties/genericNodePropertyComponent.tsx");
+
+
+
+
+
+var VectorMergerPropertyTabComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(VectorMergerPropertyTabComponent, _super);
+    function VectorMergerPropertyTabComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    VectorMergerPropertyTabComponent.prototype.render = function () {
+        var _this = this;
+        var vectorMergerBlock = this.props.block;
+        var targetOptions = [
+            { label: "X", value: "x" },
+            { label: "Y", value: "y" },
+            { label: "Z", value: "z" },
+            { label: "W", value: "w" },
+        ];
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_genericNodePropertyComponent__WEBPACK_IMPORTED_MODULE_4__["GeneralPropertyTabComponent"], { globalState: this.props.globalState, block: this.props.block }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "SWIZZLES" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_3__["OptionsLineComponent"], { label: "X", options: targetOptions, target: vectorMergerBlock, propertyName: "xSwizzle", valuesAreStrings: true, onSelect: function (value) {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                        _this.forceUpdate();
+                    } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_3__["OptionsLineComponent"], { label: "Y", options: targetOptions, target: vectorMergerBlock, propertyName: "ySwizzle", valuesAreStrings: true, onSelect: function (value) {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                        _this.forceUpdate();
+                    } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_3__["OptionsLineComponent"], { label: "Z", options: targetOptions, target: vectorMergerBlock, propertyName: "zSwizzle", valuesAreStrings: true, onSelect: function (value) {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                        _this.forceUpdate();
+                    } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_3__["OptionsLineComponent"], { label: "W", options: targetOptions, target: vectorMergerBlock, propertyName: "wSwizzle", valuesAreStrings: true, onSelect: function (value) {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                        _this.forceUpdate();
+                    } }))));
+    };
+    return VectorMergerPropertyTabComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
 /***/ "./diagram/propertyLedger.ts":
 /*!***********************************!*\
   !*** ./diagram/propertyLedger.ts ***!
@@ -63302,6 +63434,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _properties_trigonometryNodePropertyComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./properties/trigonometryNodePropertyComponent */ "./diagram/properties/trigonometryNodePropertyComponent.tsx");
 /* harmony import */ var _properties_conditionalNodePropertyComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./properties/conditionalNodePropertyComponent */ "./diagram/properties/conditionalNodePropertyComponent.tsx");
 /* harmony import */ var _properties_imageSourcePropertyTabComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./properties/imageSourcePropertyTabComponent */ "./diagram/properties/imageSourcePropertyTabComponent.tsx");
+/* harmony import */ var _properties_vectorMergerPropertyComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./properties/vectorMergerPropertyComponent */ "./diagram/properties/vectorMergerPropertyComponent.tsx");
+/* harmony import */ var _properties_colorMergerPropertyComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./properties/colorMergerPropertyComponent */ "./diagram/properties/colorMergerPropertyComponent.tsx");
+
+
 
 
 
@@ -63332,6 +63468,8 @@ PropertyLedger.RegisteredControls["ParticleTextureBlock"] = _properties_textureP
 PropertyLedger.RegisteredControls["TrigonometryBlock"] = _properties_trigonometryNodePropertyComponent__WEBPACK_IMPORTED_MODULE_6__["TrigonometryPropertyTabComponent"];
 PropertyLedger.RegisteredControls["ConditionalBlock"] = _properties_conditionalNodePropertyComponent__WEBPACK_IMPORTED_MODULE_7__["ConditionalPropertyTabComponent"];
 PropertyLedger.RegisteredControls["ImageSourceBlock"] = _properties_imageSourcePropertyTabComponent__WEBPACK_IMPORTED_MODULE_8__["ImageSourcePropertyTabComponent"];
+PropertyLedger.RegisteredControls["VectorMergerBlock"] = _properties_vectorMergerPropertyComponent__WEBPACK_IMPORTED_MODULE_9__["VectorMergerPropertyTabComponent"];
+PropertyLedger.RegisteredControls["ColorMergerBlock"] = _properties_colorMergerPropertyComponent__WEBPACK_IMPORTED_MODULE_10__["ColorMergerPropertyTabComponent"];
 
 
 /***/ }),
