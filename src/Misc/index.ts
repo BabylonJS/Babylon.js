@@ -59,4 +59,4 @@ export * from "./reflector";
 export * from "./domManagement";
 export * from "./computePressure";
 export * from "./PerformanceViewer/index";
-export * from "./bakeVertexAnimation";
+export * from "./vertexAnimationBaker";
