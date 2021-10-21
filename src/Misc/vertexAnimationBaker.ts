@@ -12,7 +12,7 @@ export class VertexAnimationBaker {
     private _mesh: Mesh;
 
     /**
-     *
+     * Create a new VertexAnimationBaker object which can help baking animations into a texture.
      * @param scene Defines the scene the VAT belongs to
      * @param mesh Defines the mesh the VAT belongs to
      * @param skeleton Defines the skeleton the VAT belongs to
@@ -25,6 +25,7 @@ export class VertexAnimationBaker {
     /**
      * Bakes the animation into the texture. This should be called once, when the
      * scene starts, so the VAT is generated and associated to the mesh.
+     * @param ranges Defines the ranges in the animation that will be baked.
      * @returns Float32Array
      */
     public async bakeVertexData(ranges: AnimationRange[]): Promise<Float32Array> {
@@ -80,7 +81,7 @@ export class VertexAnimationBaker {
 
     /**
      * Builds a vertex animation texture given the vertexData in an array.
-     * @param vertexData
+     * @param vertexData The vertex animation data. You can generate it with bakeVertexData().
      * @returns RawTexture
      */
     public textureFromBakedVertexData(vertexData: Float32Array): RawTexture {
