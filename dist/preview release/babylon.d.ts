@@ -6307,7 +6307,7 @@ declare module BABYLON {
     /**
      * Define options used to create an internal texture
      */
-    export class InternalTextureCreationOptions {
+    export interface InternalTextureCreationOptions {
         /**
          * Specifies if mipmaps must be created. If undefined, the value from generateMipMaps is taken instead
          */
@@ -6330,7 +6330,7 @@ declare module BABYLON {
     /**
      * Define options used to create a render target texture
      */
-    export class RenderTargetCreationOptions extends InternalTextureCreationOptions {
+    export interface RenderTargetCreationOptions extends InternalTextureCreationOptions {
         /** Specifies whether or not a depth should be allocated in the texture (true by default) */
         generateDepthBuffer?: boolean;
         /** Specifies whether or not a stencil should be allocated in the texture (false by default)*/
@@ -6339,7 +6339,7 @@ declare module BABYLON {
     /**
      * Define options used to create a depth texture
      */
-    export class DepthTextureCreationOptions {
+    export interface DepthTextureCreationOptions {
         /** Specifies whether or not a stencil should be allocated in the texture */
         generateStencil?: boolean;
         /** Specifies whether or not bilinear filtering is enable on the texture */
