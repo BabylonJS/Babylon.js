@@ -168,10 +168,10 @@ export class ColorMergerBlock extends NodeMaterialBlock {
     public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 
-        this.rSwizzle = serializationObject.rSwizzle;
-        this.gSwizzle = serializationObject.gSwizzle;
-        this.bSwizzle = serializationObject.bSwizzle;
-        this.aSwizzle = serializationObject.aSwizzle;
+        this.rSwizzle = serializationObject.rSwizzle ?? "r";
+        this.gSwizzle = serializationObject.gSwizzle ?? "g";
+        this.bSwizzle = serializationObject.bSwizzle ?? "b";
+        this.aSwizzle = serializationObject.aSwizzle ?? "a";
     }
 
     protected _dumpPropertiesCode() {

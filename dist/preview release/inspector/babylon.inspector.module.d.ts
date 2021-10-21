@@ -1635,7 +1635,9 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     interface ICanvasComponentState {
     }
     export class CanvasComponent extends React.Component<ICanvasComponentProps, ICanvasComponentState> {
+        private _onActiveAnimationChangedObserver;
         constructor(props: ICanvasComponentProps);
+        componentWillUnmount(): void;
         render(): JSX.Element;
     }
 }
@@ -6383,7 +6385,9 @@ declare module INSPECTOR {
     interface ICanvasComponentState {
     }
     export class CanvasComponent extends React.Component<ICanvasComponentProps, ICanvasComponentState> {
+        private _onActiveAnimationChangedObserver;
         constructor(props: ICanvasComponentProps);
+        componentWillUnmount(): void;
         render(): JSX.Element;
     }
 }
