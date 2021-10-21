@@ -2,11 +2,9 @@ import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { serialize, expandToProperty, serializeAsTexture, SerializationHelper } from "../Misc/decorators";
 import { MaterialFlags } from "./materialFlags";
-import { MaterialHelper } from "./materialHelper";
 import { RawTexture } from "./Textures/rawTexture";
+import { BaseTexture } from './Textures/baseTexture';
 import { UniformBuffer } from "./uniformBuffer";
-import { BaseTexture } from ".";
-import { Vector4 } from "..";
 
 /**
  * @hidden

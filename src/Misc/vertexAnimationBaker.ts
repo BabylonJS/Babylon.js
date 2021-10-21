@@ -1,5 +1,8 @@
-import { AnimationRange, RawTexture, Scene, Texture } from "..";
+import { AnimationRange } from "../Animations/animationRange";
+import { RawTexture } from "../Materials/Textures/rawTexture";
+import { Texture } from "../Materials/Textures/texture";
 import { Mesh } from "../Meshes/mesh";
+import { Scene } from "../scene";
 
 /**
  * Class to bake vertex animation textures.
