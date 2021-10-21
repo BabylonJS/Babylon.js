@@ -1379,6 +1379,22 @@ declare module "babylonjs-node-editor/diagram/properties/imageSourcePropertyTabC
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-node-editor/diagram/properties/vectorMergerPropertyComponent" {
+    import * as React from "react";
+    import { IPropertyComponentProps } from "babylonjs-node-editor/diagram/properties/propertyComponentProps";
+    export class VectorMergerPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        constructor(props: IPropertyComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/diagram/properties/colorMergerPropertyComponent" {
+    import * as React from "react";
+    import { IPropertyComponentProps } from "babylonjs-node-editor/diagram/properties/propertyComponentProps";
+    export class ColorMergerPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        constructor(props: IPropertyComponentProps);
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-node-editor/diagram/propertyLedger" {
     import { ComponentClass } from 'react';
     import { IPropertyComponentProps } from "babylonjs-node-editor/diagram/properties/propertyComponentProps";
@@ -4181,6 +4197,18 @@ declare module NODEEDITOR {
          */
         replaceTexture(file: File): void;
         replaceTextureWithUrl(url: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export class VectorMergerPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        constructor(props: IPropertyComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export class ColorMergerPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        constructor(props: IPropertyComponentProps);
         render(): JSX.Element;
     }
 }
