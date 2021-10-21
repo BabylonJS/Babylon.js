@@ -1138,7 +1138,7 @@ export class WebGPUTextureHelper {
                     }
 
                     // create a temp texture and copy the image to it
-                    const srcTexture = this.createTexture({ width, height, layers: 1 }, false, false, false, false, false, format, 1, commandEncoder, WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.Sampled);
+                    const srcTexture = this.createTexture({ width, height, layers: 1 }, false, false, false, false, false, format, 1, commandEncoder, WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.TextureBinding);
 
                     this._deferredReleaseTextures.push([srcTexture, null]);
 
