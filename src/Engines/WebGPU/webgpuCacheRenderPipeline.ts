@@ -8,6 +8,7 @@ import { Nullable } from "../../types";
 import { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
 import { WebGPUPipelineContext } from "./webgpuPipelineContext";
 import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
+import { WebGPUTextureHelper } from "./webgpuTextureHelper";
 
 enum StatePosition {
     //DepthBias = 0, // not used, so remove it to improve perf
@@ -729,6 +730,21 @@ export abstract class WebGPUCacheRenderPipeline {
         };
     }
 
+    private _blendFactorContainsSrcAlpha(factor: Nullable<number>): boolean {
+        if (!this._alphaBlendEnabled) {
+            return false;
+        }
+
+        switch (factor) {
+            case 0x0302: // SrcAlpha
+            case 0x0303: // OneMinusSrcAlpha
+            case 0x0308: // SrcAlphaSaturated
+                return true;
+        }
+
+        return false;
+    }
+
     private _setShaderStage(id: number): void {
         if (this._shaderId !== id) {
             this._shaderId = id;
@@ -992,6 +1008,8 @@ export abstract class WebGPUCacheRenderPipeline {
         const colorStates: Array<GPUColorTargetState> = [];
         const alphaBlend = this._getAphaBlendState();
         const colorBlend = this._getColorBlendState();
+        const hasBlend = alphaBlend && colorBlend;
+        const colorBlendFactorContainsSrcAlpha = hasBlend && (this._blendFactorContainsSrcAlpha(this._alphaBlendFuncParams[0]) || this._blendFactorContainsSrcAlpha(this._alphaBlendFuncParams[1]));
 
         if (this._mrtAttachments1 > 0) {
             for (let i = 0; i < this._mrtFormats.length; ++i) {
@@ -999,7 +1017,7 @@ export abstract class WebGPUCacheRenderPipeline {
                     format: this._mrtFormats[i],
                     writeMask: this._writeMask,
                 };
-                if (alphaBlend && colorBlend) {
+                if (hasBlend && (!colorBlendFactorContainsSrcAlpha || colorBlendFactorContainsSrcAlpha && WebGPUTextureHelper.GetNumChannelsFromWebGPUTextureFormat(this._mrtFormats[i]) === 4)) {
                     descr.blend = {
                         alpha: alphaBlend,
                         color: colorBlend,
@@ -1012,7 +1030,7 @@ export abstract class WebGPUCacheRenderPipeline {
                 format: this._webgpuColorFormat[0],
                 writeMask: this._writeMask,
             };
-            if (alphaBlend && colorBlend) {
+            if (hasBlend && (!colorBlendFactorContainsSrcAlpha || colorBlendFactorContainsSrcAlpha && WebGPUTextureHelper.GetNumChannelsFromWebGPUTextureFormat(this._webgpuColorFormat[0]) === 4)) {
                 descr.blend = {
                     alpha: alphaBlend,
                     color: colorBlend,
