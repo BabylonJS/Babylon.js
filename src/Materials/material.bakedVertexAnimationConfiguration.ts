@@ -110,7 +110,7 @@ export class BakedVertexAnimationConfiguration {
         if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {
             if (this._texture && MaterialFlags.BakedVertexAnimationTextureEnabled) {
                 uniformBuffer.updateFloat("bakedVertexAnimationSingleFrameUVPer", this._texture.getSize().height);
-                uniformBuffer.updateFloat("bakedVertexAnimationTextureWidthInverse", 1/this._texture.getSize().width);
+                uniformBuffer.updateFloat("bakedVertexAnimationTextureWidthInverse", 1 / this._texture.getSize().width);
                 uniformBuffer.updateFloat("bakedVertexAnimationTime", this.time);
                 uniformBuffer.setTexture("bakedVertexAnimationTexture", this._texture);
             }
