@@ -53,23 +53,6 @@ export class MaterialFlags {
         this._BakedVertexAnimationTextureEnabled = value;
         Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
-
-    private static _VertexAnimationTextureEnabled = true;
-    /**
-     * Are vertex animation textures enabled in the application.
-     */
-    public static get VertexAnimationTextureEnabled(): boolean {
-        return this._VertexAnimationTextureEnabled;
-    }
-    public static set VertexAnimationTextureEnabled(value: boolean) {
-        if (this._VertexAnimationTextureEnabled === value) {
-            return;
-        }
-
-        this._VertexAnimationTextureEnabled = value;
-        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
-    }
-
     private static _AmbientTextureEnabled = true;
     /**
      * Are ambient textures enabled in the application.
