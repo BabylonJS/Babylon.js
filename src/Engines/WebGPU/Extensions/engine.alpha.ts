@@ -91,6 +91,12 @@ WebGPUEngine.prototype.setAlphaMode = function (mode: number, noDepthWriteChange
             this._alphaState.setAlphaBlendFunctionParameters(0x0307, 0x0301, 0, 1);
             this._alphaState.alphaBlend = true;
             break;
+        case Constants.ALPHA_LAYER_ACCUMULATE:
+            // Same as ALPHA_COMBINE but accumulates (1 - alpha) values in the alpha channel for a later readout in order independant transparency
+            //this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA);
+            this._alphaState.setAlphaBlendFunctionParameters(0x0302, 0x0303, 1, 0x0303);
+            this._alphaState.alphaBlend = true;
+            break;
     }
     if (!noDepthWriteChange) {
         this.setDepthWrite(mode === Engine.ALPHA_DISABLE);
@@ -102,7 +108,7 @@ WebGPUEngine.prototype.setAlphaMode = function (mode: number, noDepthWriteChange
 };
 
 WebGPUEngine.prototype.setAlphaEquation = function (equation: number): void {
-    Engine.prototype.setAlphaEquation(equation);
+    Engine.prototype.setAlphaEquation.call(this, equation);
 
     this._cacheRenderPipeline.setAlphaBlendFactors(this._alphaState._blendFunctionParameters, this._alphaState._blendEquationParameters);
 };
