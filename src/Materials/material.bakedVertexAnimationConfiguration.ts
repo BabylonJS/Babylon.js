@@ -5,7 +5,6 @@ import { MaterialFlags } from "./materialFlags";
 import { RawTexture } from "./Textures/rawTexture";
 import { BaseTexture } from './Textures/baseTexture';
 import { UniformBuffer } from "./uniformBuffer";
-import { Effect } from './effect';
 
 /**
  * @hidden
