@@ -15,20 +15,20 @@ interface IFrameBarComponentState {
 export class FrameBarComponent extends React.Component<
 IFrameBarComponentProps,
 IFrameBarComponentState
-> {        
+> {
     private readonly _GraphAbsoluteWidth = 788;
     private _svgHost: React.RefObject<SVGSVGElement>;
     private _viewWidth = 748;
     private _viewScale = 1;
     private _offsetX = 0;
-    
+
     private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
 
     constructor(props: IFrameBarComponentProps) {
         super(props);
 
         this.state = { };
-        
+
         this._svgHost = React.createRef();
 
         this.props.context.onHostWindowResized.add(() => {
@@ -40,12 +40,12 @@ IFrameBarComponentState
             this.forceUpdate();
         });
 
-        this.props.context.onGraphMoved.add(x => {
+        this.props.context.onGraphMoved.add((x) => {
             this._offsetX = x;
             this.forceUpdate();
         });
 
-        this.props.context.onGraphScaled.add(scale => {
+        this.props.context.onGraphScaled.add((scale) => {
             this._viewScale = scale;
             this.forceUpdate();
         });
@@ -87,7 +87,7 @@ IFrameBarComponentState
 
         let startPosition = this._offsetX * convertRatio;
         let start = minFrame - ((startPosition / offset) | 0) * offset;
-        let end = start + (this._viewWidth * this._viewScale ) * convertRatio;
+        let end = start + (this._viewWidth * this._viewScale) * convertRatio;
 
         for (var step = start - offset; step <= end + offset; step += offset) {
             steps.push(step);
@@ -117,7 +117,7 @@ IFrameBarComponentState
                             textAnchor="middle"
                             dy={`${15 * this._viewScale}px`}
                             style={{
-                                fontFamily:"acumin-pro-condensed",                                
+                                fontFamily: "acumin-pro-condensed",
                                 fontSize: `${10 * this._viewScale}px`,
                                 fill: "#555555",
                                 textAlign: "center",
@@ -137,8 +137,11 @@ IFrameBarComponentState
 
         return (
             <div id="frame-bar">
-                <div id="angle-unit">
-                </div>
+                {
+                    this.props.context.activeAnimations.length > 0 &&
+                    <div id="angle-unit">
+                    </div>
+                }
 
                 <div id="frames">
                     <svg

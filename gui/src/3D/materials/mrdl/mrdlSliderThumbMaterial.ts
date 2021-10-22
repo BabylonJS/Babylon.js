@@ -505,11 +505,11 @@ export class MRDLSliderThumbMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh._materialDefines) {
+        if (!subMesh.materialDefines) {
             subMesh.materialDefines = new MRDLSliderThumbMaterialDefines();
         }
 
-        const defines = <MRDLSliderThumbMaterialDefines>subMesh._materialDefines;
+        const defines = <MRDLSliderThumbMaterialDefines>subMesh.materialDefines;
         const scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
@@ -619,7 +619,7 @@ export class MRDLSliderThumbMaterial extends PushMaterial {
     }
 
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
-        const defines = <MRDLSliderThumbMaterialDefines>subMesh._materialDefines;
+        const defines = <MRDLSliderThumbMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }

@@ -598,10 +598,10 @@ var SimpleMaterial = /** @class */ (function (_super) {
                 return true;
             }
         }
-        if (!subMesh._materialDefines) {
+        if (!subMesh.materialDefines) {
             subMesh.materialDefines = new SimpleMaterialDefines();
         }
-        var defines = subMesh._materialDefines;
+        var defines = subMesh.materialDefines;
         var scene = this.getScene();
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
@@ -698,7 +698,7 @@ var SimpleMaterial = /** @class */ (function (_super) {
     };
     SimpleMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {
         var scene = this.getScene();
-        var defines = subMesh._materialDefines;
+        var defines = subMesh.materialDefines;
         if (!defines) {
             return;
         }

@@ -473,7 +473,7 @@ export class PBRSubSurfaceConfiguration {
             return;
         }
 
-        const defines = subMesh!._materialDefines as unknown as IMaterialSubSurfaceDefines;
+        const defines = subMesh!.materialDefines as unknown as IMaterialSubSurfaceDefines;
 
         var refractionTexture = this._getRefractionTexture(scene);
 

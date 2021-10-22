@@ -21332,11 +21332,11 @@ var FluentMaterial = /** @class */ (function (_super) {
                 return true;
             }
         }
-        if (!subMesh._materialDefines) {
+        if (!subMesh.materialDefines) {
             subMesh.materialDefines = new FluentMaterialDefines();
         }
         var scene = this.getScene();
-        var defines = subMesh._materialDefines;
+        var defines = subMesh.materialDefines;
         if (!this.checkReadyOnEveryCall && subMesh.effect) {
             if (defines._renderId === scene.getRenderId()) {
                 return true;
@@ -21402,7 +21402,7 @@ var FluentMaterial = /** @class */ (function (_super) {
     };
     FluentMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {
         var scene = this.getScene();
-        var defines = subMesh._materialDefines;
+        var defines = subMesh.materialDefines;
         if (!defines) {
             return;
         }
@@ -21764,10 +21764,10 @@ var FluentBackplateMaterial = /** @class */ (function (_super) {
                 return true;
             }
         }
-        if (!subMesh._materialDefines) {
+        if (!subMesh.materialDefines) {
             subMesh.materialDefines = new FluentBackplateMaterialDefines();
         }
-        var defines = subMesh._materialDefines;
+        var defines = subMesh.materialDefines;
         var scene = this.getScene();
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
@@ -21848,7 +21848,7 @@ var FluentBackplateMaterial = /** @class */ (function (_super) {
     };
     FluentBackplateMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {
         var _a, _b;
-        var defines = subMesh._materialDefines;
+        var defines = subMesh.materialDefines;
         if (!defines) {
             return;
         }
@@ -22318,10 +22318,10 @@ var FluentButtonMaterial = /** @class */ (function (_super) {
                 return true;
             }
         }
-        if (!subMesh._materialDefines) {
+        if (!subMesh.materialDefines) {
             subMesh.materialDefines = new FluentButtonMaterialDefines();
         }
-        var defines = subMesh._materialDefines;
+        var defines = subMesh.materialDefines;
         var scene = this.getScene();
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
@@ -22440,7 +22440,7 @@ var FluentButtonMaterial = /** @class */ (function (_super) {
     };
     FluentButtonMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {
         var scene = this.getScene();
-        var defines = subMesh._materialDefines;
+        var defines = subMesh.materialDefines;
         if (!defines) {
             return;
         }
@@ -23164,10 +23164,10 @@ var MRDLBackplateMaterial = /** @class */ (function (_super) {
                 return true;
             }
         }
-        if (!subMesh._materialDefines) {
+        if (!subMesh.materialDefines) {
             subMesh.materialDefines = new MRDLBackplateMaterialDefines();
         }
-        var defines = subMesh._materialDefines;
+        var defines = subMesh.materialDefines;
         var scene = this.getScene();
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
@@ -23246,7 +23246,7 @@ var MRDLBackplateMaterial = /** @class */ (function (_super) {
         return true;
     };
     MRDLBackplateMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {
-        var defines = subMesh._materialDefines;
+        var defines = subMesh.materialDefines;
         if (!defines) {
             return;
         }
@@ -23779,10 +23779,10 @@ var MRDLSliderBarMaterial = /** @class */ (function (_super) {
                 return true;
             }
         }
-        if (!subMesh._materialDefines) {
+        if (!subMesh.materialDefines) {
             subMesh.materialDefines = new MRDLSliderBarMaterialDefines();
         }
-        var defines = subMesh._materialDefines;
+        var defines = subMesh.materialDefines;
         var scene = this.getScene();
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
@@ -23869,7 +23869,7 @@ var MRDLSliderBarMaterial = /** @class */ (function (_super) {
         return true;
     };
     MRDLSliderBarMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {
-        var defines = subMesh._materialDefines;
+        var defines = subMesh.materialDefines;
         if (!defines) {
             return;
         }
@@ -24584,10 +24584,10 @@ var MRDLSliderThumbMaterial = /** @class */ (function (_super) {
                 return true;
             }
         }
-        if (!subMesh._materialDefines) {
+        if (!subMesh.materialDefines) {
             subMesh.materialDefines = new MRDLSliderThumbMaterialDefines();
         }
-        var defines = subMesh._materialDefines;
+        var defines = subMesh.materialDefines;
         var scene = this.getScene();
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
@@ -24674,7 +24674,7 @@ var MRDLSliderThumbMaterial = /** @class */ (function (_super) {
         return true;
     };
     MRDLSliderThumbMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {
-        var defines = subMesh._materialDefines;
+        var defines = subMesh.materialDefines;
         if (!defines) {
             return;
         }

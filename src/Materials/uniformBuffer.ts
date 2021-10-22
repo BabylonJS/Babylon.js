@@ -566,6 +566,8 @@ export class UniformBuffer {
      * Otherwise, the buffer will be updated only if the cache differs.
      */
     public update(): void {
+        this.bindUniformBuffer();
+
         if (!this._buffer) {
             this.create();
             return;
@@ -608,9 +610,6 @@ export class UniformBuffer {
         } else {
             this._rebuild();
         }
-        if (this._currentEffect && this._buffer) {
-            this._currentEffect.bindUniformBuffer(this._buffer, this._currentEffectName);
-        }
     }
 
     private _checkNewFrame(): void {
@@ -623,9 +622,6 @@ export class UniformBuffer {
                 this._buffer = this._buffers[this._bufferIndex][0];
             } else {
                 this._bufferIndex = -1;
-            }
-            if (this._currentEffect && this._buffer) {
-                this._currentEffect.bindUniformBuffer(this._buffer, this._currentEffectName);
             }
         }
     }
@@ -988,19 +984,30 @@ export class UniformBuffer {
     }
 
     /**
-     * Binds this uniform buffer to an effect.
-     * @param effect Define the effect to bind the buffer to
+     * Associates an effect to this uniform buffer
+     * @param effect Define the effect to associate the buffer to
      * @param name Name of the uniform block in the shader.
      */
     public bindToEffect(effect: Effect, name: string): void {
         this._currentEffect = effect;
         this._currentEffectName = name;
+    }
 
-        if (this._noUBO || !this._buffer) {
-            return;
+    /**
+     * Binds the current (GPU) buffer to the effect
+     */
+    public bindUniformBuffer(): void {
+        if (!this._noUBO && this._buffer && this._currentEffect) {
+            this._currentEffect.bindUniformBuffer(this._buffer, this._currentEffectName);
         }
+    }
 
-        effect.bindUniformBuffer(this._buffer, name);
+    /**
+     * Dissociates the current effect from this uniform buffer
+     */
+    public unbindEffect(): void {
+        this._currentEffect = undefined as any;
+        this._currentEffectName = undefined as any;
     }
 
     /**

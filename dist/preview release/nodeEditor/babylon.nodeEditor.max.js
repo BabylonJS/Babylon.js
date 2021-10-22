@@ -56446,6 +56446,7 @@ var PreviewManager = /** @class */ (function () {
                     this._postprocess = tempMaterial_1.createPostProcess(this._camera, 1.0, babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Constants"].TEXTURE_NEAREST_SAMPLINGMODE, this._engine);
                     var currentScreen_1 = tempMaterial_1.getBlockByPredicate(function (block) { return block instanceof babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["CurrentScreenBlock"]; });
                     if (currentScreen_1 && this._postprocess) {
+                        this._postprocess.externalTextureSamplerBinding = true;
                         this._postprocess.onApplyObservable.add(function (effect) {
                             effect.setTexture("textureSampler", currentScreen_1.texture);
                         });
@@ -66219,6 +66220,7 @@ var TextureLineComponent = /** @class */ (function (_super) {
                             globalState.blockMutationUpdates = true;
                         }
                         rtt = new babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["RenderTargetTexture"]("temp", { width: width, height: height }, scene, false);
+                        passPostProcess.externalTextureSamplerBinding = true;
                         passPostProcess.onApply = function (effect) {
                             effect.setTexture("textureSampler", texture);
                         };

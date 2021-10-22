@@ -287,10 +287,10 @@ export class VectorMergerBlock extends NodeMaterialBlock {
     public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 
-        this.xSwizzle = serializationObject.xSwizzle;
-        this.ySwizzle = serializationObject.ySwizzle;
-        this.zSwizzle = serializationObject.zSwizzle;
-        this.wSwizzle = serializationObject.wSwizzle;
+        this.xSwizzle = serializationObject.xSwizzle ?? "x";
+        this.ySwizzle = serializationObject.ySwizzle ?? "y";
+        this.zSwizzle = serializationObject.zSwizzle ?? "z";
+        this.wSwizzle = serializationObject.wSwizzle ?? "w";
     }
 
     protected _dumpPropertiesCode() {
