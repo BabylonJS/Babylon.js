@@ -5,12 +5,14 @@ import { MaterialFlags } from "./materialFlags";
 import { RawTexture } from "./Textures/rawTexture";
 import { BaseTexture } from './Textures/baseTexture';
 import { UniformBuffer } from "./uniformBuffer";
+import { Effect } from './effect';
 
 /**
  * @hidden
  */
 export interface IMaterialBakedVertexAnimationDefines {
-    // TODO: do we need something?
+    BAKED_VERTEX_ANIMATION_TEXTURE: boolean;
+    INSTANCES: boolean;
 
     /** @hidden */
     _areTexturesDirty: boolean;
@@ -25,7 +27,7 @@ export class BakedVertexAnimationConfiguration {
     /**
      * The detail texture of the material.
      */
-    @serializeAsTexture("bakedVertexAnimationTexture")
+    @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public texture: Nullable<RawTexture>;
 
@@ -65,13 +67,13 @@ export class BakedVertexAnimationConfiguration {
      * @returns - boolean indicating that the submesh is ready or not.
      */
     public isReadyForSubMesh(defines: IMaterialBakedVertexAnimationDefines, scene: Scene): boolean {
-        if (!this._isEnabled) {
+        if (!this._isEnabled || !scene.texturesEnabled) {
             return true;
         }
 
         if (defines._areTexturesDirty && scene.texturesEnabled) {
             if (this._texture && MaterialFlags.BakedVertexAnimationTextureEnabled) {
-                // Detail texture cannot be not blocking.
+                // Texture cannot be not blocking.
                 if (!this._texture.isReady()) {
                     return false;
                 }
@@ -87,9 +89,10 @@ export class BakedVertexAnimationConfiguration {
      * @param scene defines the scene the material belongs to.
      */
     public prepareDefines(defines: IMaterialBakedVertexAnimationDefines, scene: Scene): void {
-        if (this._isEnabled) {
-            // TODO:
+        if (!this._isEnabled || !scene.texturesEnabled) {
+            defines.BAKED_VERTEX_ANIMATION_TEXTURE = true;
         } else {
+            defines.BAKED_VERTEX_ANIMATION_TEXTURE = false;
         }
     }
 
@@ -100,13 +103,14 @@ export class BakedVertexAnimationConfiguration {
      * @param isFrozen defines whether the material is frozen or not.
      */
     public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, isFrozen: boolean): void {
-        if (!this._isEnabled) {
+        if (!this._isEnabled || !scene.texturesEnabled) {
             return;
         }
 
         if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {
-            if (this._texture && MaterialFlags.VertexAnimationTextureEnabled) {
+            if (this._texture && MaterialFlags.BakedVertexAnimationTextureEnabled) {
                 uniformBuffer.updateFloat("bakedVertexAnimationSingleFrameUVPer", this._texture.getSize().height);
+                uniformBuffer.updateFloat("bakedVertexAnimationTextureWidthInverse", 1/this._texture.getSize().width);
                 uniformBuffer.updateFloat("bakedVertexAnimationTime", this.time);
                 uniformBuffer.setTexture("bakedVertexAnimationTexture", this._texture);
             }
@@ -114,7 +118,7 @@ export class BakedVertexAnimationConfiguration {
 
         // Textures
         if (scene.texturesEnabled) {
-            if (this._texture && MaterialFlags.VertexAnimationTextureEnabled) {
+            if (this._texture && MaterialFlags.BakedVertexAnimationTextureEnabled) {
                 uniformBuffer.setTexture("bakedVertexAnimationTexture", this._texture);
             }
         }
@@ -165,10 +169,10 @@ export class BakedVertexAnimationConfiguration {
 
     /**
      * Get the current class name useful for serialization or dynamic coding.
-     * @returns "BakedVertexAnimation"
+     * @returns "BakedVertexAnimationConfiguration"
      */
     public getClassName(): string {
-        return "BakedVertexAnimation";
+        return "BakedVertexAnimationConfiguration";
     }
 
     /**
@@ -176,6 +180,7 @@ export class BakedVertexAnimationConfiguration {
      * @param uniforms defines the current uniform list.
      */
     public static AddUniforms(uniforms: string[]): void {
+        uniforms.push("bakedVertexAnimationSettings");
         uniforms.push("bakedVertexAnimationSingleFrameUVPer");
         uniforms.push("bakedVertexAnimationTime");
     }
@@ -189,7 +194,7 @@ export class BakedVertexAnimationConfiguration {
     }
 
     /**
-     * Add the required uniforms to the current list.
+     * Add the required attributes to the current list.
      * @param attribs defines the current atribute list.
      */
     public static AddAttributes(attribs: string[]): void {
@@ -201,6 +206,7 @@ export class BakedVertexAnimationConfiguration {
      * @param uniformBuffer defines the current uniform buffer.
      */
     public static PrepareUniformBuffer(uniformBuffer: UniformBuffer): void {
+        uniformBuffer.addUniform("bakedVertexAnimationSettings", 4);
         uniformBuffer.addUniform("bakedVertexAnimationSingleFrameUVPer", 1);
         uniformBuffer.addUniform("bakedVertexAnimationTime", 1);
     }

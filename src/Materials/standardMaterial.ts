@@ -51,6 +51,7 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public DETAIL = false;
     public DETAILDIRECTUV = 0;
     public DETAIL_NORMALBLENDMETHOD = 0;
+    public BAKED_VERTEX_ANIMATION_TEXTURE = false;
     public AMBIENT = false;
     public AMBIENTDIRECTUV = 0;
     public OPACITY = false;
@@ -733,7 +734,7 @@ export class StandardMaterial extends PushMaterial {
     public readonly detailMap = new DetailMapConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
 
     /**
-     * Defines the detail map parameters for the material.
+     * Defines the vertex animation map parameters for the material.
      */
     public readonly bakedVertexAnimationMap = new BakedVertexAnimationConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
 
