@@ -297,11 +297,11 @@ export class FluentButtonMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh._materialDefines) {
+        if (!subMesh.materialDefines) {
             subMesh.materialDefines = new FluentButtonMaterialDefines();
         }
 
-        var defines = <FluentButtonMaterialDefines>subMesh._materialDefines;
+        var defines = <FluentButtonMaterialDefines>subMesh.materialDefines;
         var scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
@@ -446,7 +446,7 @@ export class FluentButtonMaterial extends PushMaterial {
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         var scene = this.getScene();
 
-        var defines = <FluentButtonMaterialDefines>subMesh._materialDefines;
+        var defines = <FluentButtonMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }

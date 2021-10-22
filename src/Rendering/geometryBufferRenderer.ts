@@ -639,8 +639,8 @@ export class GeometryBufferRenderer {
                     effect.setMatrix("viewProjection", scene.getTransformMatrix());
                     effect.setMatrix("view", scene.getViewMatrix());
                 } else {
-                    this._scene.finalizeSceneUbo();
                     MaterialHelper.BindSceneUniformBuffer(effect, this._scene.getSceneUniformBuffer());
+                    this._scene.finalizeSceneUbo();
                 }
 
                 if (material) {

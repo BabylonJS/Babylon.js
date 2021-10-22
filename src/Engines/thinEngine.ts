@@ -458,6 +458,10 @@ export class ThinEngine {
     protected _boundTexturesCache: { [key: string]: Nullable<InternalTexture> } = {};
     protected _currentEffect: Nullable<Effect>;
     /** @hidden */
+    public _currentDrawContext: IDrawContext;
+    /** @hidden */
+    public _currentMaterialContext: IMaterialContext;
+    /** @hidden */
     protected _currentProgram: Nullable<WebGLProgram>;
     protected _compiledEffects: { [key: string]: Effect } = {};
     private _vertexAttribArraysEnabled: boolean[] = [];
@@ -470,6 +474,7 @@ export class ThinEngine {
     protected _cachedIndexBuffer: Nullable<DataBuffer>;
     /** @hidden */
     protected _cachedEffectForVertexBuffers: Nullable<Effect>;
+
     /** @hidden */
     public _currentRenderTarget: Nullable<RenderTargetWrapper>;
     private _uintIndicesCurrentlySet = false;
@@ -1276,6 +1281,7 @@ export class ThinEngine {
             needsInvertingBitmap: true,
             useUBOBindingCache: true,
             needShaderCodeInlining: false,
+            needToAlwaysBindUniformBuffers: false,
             _collectUbosUpdatedInFrame: false,
         };
     }

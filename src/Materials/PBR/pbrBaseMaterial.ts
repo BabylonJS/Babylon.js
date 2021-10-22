@@ -1089,11 +1089,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh._materialDefines) {
+        if (!subMesh.materialDefines) {
             subMesh.materialDefines = new PBRMaterialDefines();
         }
 
-        const defines = <PBRMaterialDefines>subMesh._materialDefines;
+        const defines = <PBRMaterialDefines>subMesh.materialDefines;
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }
@@ -1896,7 +1896,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * Unbinds the material from the mesh
      */
     public unbind(): void {
-        if (this._activeEffect) {
+        if (this._activeEffect && !this.getScene().getEngine()._features.needToAlwaysBindUniformBuffers) {
             let needFlag = false;
             if (this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
                 this._activeEffect.setTexture("reflection2DSampler", null);
@@ -1924,7 +1924,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         var scene = this.getScene();
 
-        var defines = <PBRMaterialDefines>subMesh._materialDefines;
+        var defines = <PBRMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }
@@ -2222,6 +2222,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             MaterialHelper.BindClipPlane(this._activeEffect, scene);
 
             this.bindEyePosition(effect);
+        } else if (scene.getEngine()._features.needToAlwaysBindUniformBuffers) {
+            ubo.bindToEffect(effect, "Material");
+            this._needToBindSceneUbo = true;
         }
 
         if (mustRebind || !this.isFrozen) {

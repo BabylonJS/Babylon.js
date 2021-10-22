@@ -810,6 +810,7 @@ export class NativeEngine extends Engine {
             needsInvertingBitmap: true,
             useUBOBindingCache: true,
             needShaderCodeInlining: true,
+            needToAlwaysBindUniformBuffers: false,
             _collectUbosUpdatedInFrame: false,
         };
 
