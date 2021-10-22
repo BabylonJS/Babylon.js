@@ -63,7 +63,7 @@ ThinEngine.prototype.createRenderTargetTexture = function (this: ThinEngine, siz
         fullOptions.generateStencilBuffer = false;
     }
 
-    const texture = this._createInternalTexture(size, options);
+    const texture = this._createInternalTexture(size, options, true, InternalTextureSource.RenderTarget);
     const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
     const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
 
