@@ -271,9 +271,9 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 let deviceEvent = evt as IDeviceEvent;
                 deviceEvent.deviceType = DeviceType.Keyboard;
                 deviceEvent.deviceSlot = 0;
-                deviceEvent.inputIndex = evt.keyCode;
-                deviceEvent.previousState = 0;
-                deviceEvent.currentState = kbKey[evt.keyCode];
+                deviceEvent.inputIndex = [evt.keyCode];
+                deviceEvent.previousState = [0];
+                deviceEvent.currentState = [kbKey[evt.keyCode]];
 
                 this.onInputChangedObservable.notifyObservers(deviceEvent);
             }
@@ -292,9 +292,9 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 let deviceEvent = evt as IDeviceEvent;
                 deviceEvent.deviceType = DeviceType.Keyboard;
                 deviceEvent.deviceSlot = 0;
-                deviceEvent.inputIndex = evt.keyCode;
-                deviceEvent.previousState = 1;
-                deviceEvent.currentState = kbKey[evt.keyCode];
+                deviceEvent.inputIndex = [evt.keyCode];
+                deviceEvent.previousState = [1];
+                deviceEvent.currentState = [kbKey[evt.keyCode]];
 
                 this.onInputChangedObservable.notifyObservers(deviceEvent);
             }
@@ -312,9 +312,9 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                         const deviceEvent = evt as IDeviceEvent;
                         deviceEvent.deviceType = DeviceType.Keyboard;
                         deviceEvent.deviceSlot = 0;
-                        deviceEvent.inputIndex = i;
-                        deviceEvent.currentState = 0;
-                        deviceEvent.previousState = 1;
+                        deviceEvent.inputIndex = [i];
+                        deviceEvent.currentState = [0];
+                        deviceEvent.previousState = [1];
                         this.onInputChangedObservable.notifyObservers(deviceEvent);
                     }
                 }
@@ -358,46 +358,43 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 let deviceEvent = evt as IDeviceEvent;
                 deviceEvent.deviceType = deviceType;
                 deviceEvent.deviceSlot = deviceSlot;
+                deviceEvent.inputIndex = [];
+                deviceEvent.currentState = [];
+                deviceEvent.previousState = [];
 
                 // The browser might use a move event in case
                 // of simultaneous mouse buttons click for instance. So
                 // in this case we stil need to propagate it.
                 if (previousHorizontal !== evt.clientX) {
-                    deviceEvent.inputIndex = PointerInput.Horizontal;
-                    deviceEvent.previousState = previousHorizontal;
-                    deviceEvent.currentState = pointer[PointerInput.Horizontal];
-
-                    this.onInputChangedObservable.notifyObservers(deviceEvent);
+                    deviceEvent.inputIndex.push(PointerInput.Horizontal);
+                    deviceEvent.previousState.push(previousHorizontal);
+                    deviceEvent.currentState.push(pointer[PointerInput.Horizontal]);
                 }
                 if (previousVertical !== evt.clientY) {
-                    deviceEvent.inputIndex = PointerInput.Vertical;
-                    deviceEvent.previousState = previousVertical;
-                    deviceEvent.currentState = pointer[PointerInput.Vertical];
-
-                    this.onInputChangedObservable.notifyObservers(deviceEvent);
+                    deviceEvent.inputIndex.push(PointerInput.Vertical);
+                    deviceEvent.previousState.push(previousVertical);
+                    deviceEvent.currentState.push(pointer[PointerInput.Vertical]);
                 }
                 if (pointer[PointerInput.DeltaHorizontal] !== 0) {
-                    deviceEvent.inputIndex = PointerInput.DeltaHorizontal;
-                    deviceEvent.previousState = previousDeltaHorizontal;
-                    deviceEvent.currentState = pointer[PointerInput.DeltaHorizontal];
-
-                    this.onInputChangedObservable.notifyObservers(deviceEvent);
+                    deviceEvent.inputIndex.push(PointerInput.DeltaHorizontal);
+                    deviceEvent.previousState.push(previousDeltaHorizontal);
+                    deviceEvent.currentState.push(pointer[PointerInput.DeltaHorizontal]);
                 }
                 if (pointer[PointerInput.DeltaVertical] !== 0) {
-                    deviceEvent.inputIndex = PointerInput.DeltaVertical;
-                    deviceEvent.previousState = previousDeltaVertical;
-                    deviceEvent.currentState = pointer[PointerInput.DeltaVertical];
-
-                    this.onInputChangedObservable.notifyObservers(deviceEvent);
+                    deviceEvent.inputIndex.push(PointerInput.DeltaVertical);
+                    deviceEvent.previousState.push(previousDeltaVertical);
+                    deviceEvent.currentState.push(pointer[PointerInput.DeltaVertical]);
                 }
                 // Lets Propagate the event for move with same position.
                 if (!this._usingSafari && evt.button !== -1) {
-                    deviceEvent.inputIndex = evt.button + 2;
-                    deviceEvent.previousState = pointer[evt.button + 2];
+                    deviceEvent.inputIndex.push(evt.button + 2);
+                    deviceEvent.previousState.push(pointer[evt.button + 2]);
                     pointer[evt.button + 2] = (pointer[evt.button + 2] ? 0 : 1); // Reverse state of button if evt.button has value
-                    deviceEvent.currentState = pointer[evt.button + 2];
-                    this.onInputChangedObservable.notifyObservers(deviceEvent);
+                    deviceEvent.currentState.push(pointer[evt.button + 2]);
+
                 }
+
+                this.onInputChangedObservable.notifyObservers(deviceEvent);
             }
         });
 
@@ -461,25 +458,24 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 let deviceEvent = evt as IDeviceEvent;
                 deviceEvent.deviceType = deviceType;
                 deviceEvent.deviceSlot = deviceSlot;
+                deviceEvent.inputIndex = [];
+                deviceEvent.currentState = [];
+                deviceEvent.previousState = [];
 
                 if (previousHorizontal !== evt.clientX) {
-                    deviceEvent.inputIndex = PointerInput.Horizontal;
-                    deviceEvent.previousState = previousHorizontal;
-                    deviceEvent.currentState = pointer[PointerInput.Horizontal];
-
-                    this.onInputChangedObservable.notifyObservers(deviceEvent);
+                    deviceEvent.inputIndex.push(PointerInput.Horizontal);
+                    deviceEvent.previousState.push(previousHorizontal);
+                    deviceEvent.currentState.push(pointer[PointerInput.Horizontal]);
                 }
                 if (previousVertical !== evt.clientY) {
-                    deviceEvent.inputIndex = PointerInput.Vertical;
-                    deviceEvent.previousState = previousVertical;
-                    deviceEvent.currentState = pointer[PointerInput.Vertical];
-
-                    this.onInputChangedObservable.notifyObservers(deviceEvent);
+                    deviceEvent.inputIndex.push(PointerInput.Vertical);
+                    deviceEvent.previousState.push(previousVertical);
+                    deviceEvent.currentState.push(pointer[PointerInput.Vertical]);
                 }
 
-                deviceEvent.inputIndex = evt.button + 2;
-                deviceEvent.previousState = previousButton;
-                deviceEvent.currentState = pointer[evt.button + 2];
+                deviceEvent.inputIndex.push(evt.button + 2);
+                deviceEvent.previousState.push(previousButton);
+                deviceEvent.currentState.push(pointer[evt.button + 2]);
                 this.onInputChangedObservable.notifyObservers(deviceEvent);
             }
         });
@@ -501,25 +497,24 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 let deviceEvent = evt as IDeviceEvent;
                 deviceEvent.deviceType = deviceType;
                 deviceEvent.deviceSlot = deviceSlot;
+                deviceEvent.inputIndex = [];
+                deviceEvent.currentState = [];
+                deviceEvent.previousState = [];
 
                 if (previousHorizontal !== evt.clientX) {
-                    deviceEvent.inputIndex = PointerInput.Horizontal;
-                    deviceEvent.previousState = previousHorizontal;
-                    deviceEvent.currentState = pointer[PointerInput.Horizontal];
-
-                    this.onInputChangedObservable.notifyObservers(deviceEvent);
+                    deviceEvent.inputIndex.push(PointerInput.Horizontal);
+                    deviceEvent.previousState.push(previousHorizontal);
+                    deviceEvent.currentState.push(pointer[PointerInput.Horizontal]);
                 }
                 if (previousVertical !== evt.clientY) {
-                    deviceEvent.inputIndex = PointerInput.Vertical;
-                    deviceEvent.previousState = previousVertical;
-                    deviceEvent.currentState = pointer[PointerInput.Vertical];
-
-                    this.onInputChangedObservable.notifyObservers(deviceEvent);
+                    deviceEvent.inputIndex.push(PointerInput.Vertical);
+                    deviceEvent.previousState.push(previousVertical);
+                    deviceEvent.currentState.push(pointer[PointerInput.Vertical]);
                 }
 
-                deviceEvent.inputIndex = evt.button + 2;
-                deviceEvent.previousState = previousButton;
-                deviceEvent.currentState = pointer[evt.button + 2];
+                deviceEvent.inputIndex.push(evt.button + 2);
+                deviceEvent.previousState.push(previousButton);
+                deviceEvent.currentState.push(pointer[evt.button + 2]);
 
                 if (deviceType === DeviceType.Mouse && this._mouseId >= 0 && this._elementToAttachTo.hasPointerCapture(this._mouseId)) {
                     this._elementToAttachTo.releasePointerCapture(this._mouseId);
@@ -584,9 +579,9 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                         const deviceEvent = evt as IDeviceEvent;
                         deviceEvent.deviceType = DeviceType.Mouse;
                         deviceEvent.deviceSlot = 0;
-                        deviceEvent.inputIndex = i + 2;
-                        deviceEvent.currentState = pointer[i + 2];
-                        deviceEvent.previousState = 1;
+                        deviceEvent.inputIndex = [i + 2];
+                        deviceEvent.currentState = [pointer[i + 2]];
+                        deviceEvent.previousState = [1];
                         this.onInputChangedObservable.notifyObservers(deviceEvent);
                     }
                 }
@@ -612,9 +607,9 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                         const deviceEvent = evt as IDeviceEvent;
                         deviceEvent.deviceType = DeviceType.Mouse;
                         deviceEvent.deviceSlot = deviceSlot;
-                        deviceEvent.inputIndex = PointerInput.LeftClick;
-                        deviceEvent.currentState = pointer[deviceSlot][PointerInput.LeftClick];
-                        deviceEvent.previousState = 1;
+                        deviceEvent.inputIndex = [PointerInput.LeftClick];
+                        deviceEvent.currentState = [pointer[deviceSlot][PointerInput.LeftClick]];
+                        deviceEvent.previousState = [1];
                         this.onInputChangedObservable.notifyObservers(deviceEvent);
 
                         this._unregisterDevice(DeviceType.Touch, deviceSlot);
@@ -652,25 +647,27 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 let deviceEvent = evt as IDeviceEvent;
                 deviceEvent.deviceType = deviceType;
                 deviceEvent.deviceSlot = deviceSlot;
+                deviceEvent.inputIndex = [];
+                deviceEvent.currentState = [];
+                deviceEvent.previousState = [];
 
                 if (pointer[PointerInput.MouseWheelX] !== 0) {
-                    deviceEvent.inputIndex = PointerInput.MouseWheelX;
-                    deviceEvent.previousState = previousWheelScrollX;
-                    deviceEvent.currentState = pointer[PointerInput.MouseWheelX];
-                    this.onInputChangedObservable.notifyObservers(deviceEvent);
+                    deviceEvent.inputIndex.push(PointerInput.MouseWheelX);
+                    deviceEvent.previousState.push(previousWheelScrollX);
+                    deviceEvent.currentState.push(pointer[PointerInput.MouseWheelX]);
                 }
                 if (pointer[PointerInput.MouseWheelY] !== 0) {
-                    deviceEvent.inputIndex = PointerInput.MouseWheelY;
-                    deviceEvent.previousState = previousWheelScrollY;
-                    deviceEvent.currentState = pointer[PointerInput.MouseWheelY];
-                    this.onInputChangedObservable.notifyObservers(deviceEvent);
+                    deviceEvent.inputIndex.push(PointerInput.MouseWheelY);
+                    deviceEvent.previousState.push(previousWheelScrollY);
+                    deviceEvent.currentState.push(pointer[PointerInput.MouseWheelY]);
                 }
                 if (pointer[PointerInput.MouseWheelZ] !== 0) {
-                    deviceEvent.inputIndex = PointerInput.MouseWheelZ;
-                    deviceEvent.previousState = previousWheelScrollZ;
-                    deviceEvent.currentState = pointer[PointerInput.MouseWheelZ];
-                    this.onInputChangedObservable.notifyObservers(deviceEvent);
+                    deviceEvent.inputIndex.push(PointerInput.MouseWheelZ);
+                    deviceEvent.previousState.push(previousWheelScrollZ);
+                    deviceEvent.currentState.push(pointer[PointerInput.MouseWheelZ]);
                 }
+
+                this.onInputChangedObservable.notifyObservers(deviceEvent);
             }
         });
 

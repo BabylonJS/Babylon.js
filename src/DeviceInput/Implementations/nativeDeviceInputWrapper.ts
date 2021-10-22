@@ -40,9 +40,9 @@ export class NativeDeviceInputWrapper implements IDeviceInputSystem {
             let deviceEvent = evt as IDeviceEvent;
             deviceEvent.deviceType = deviceType;
             deviceEvent.deviceSlot = deviceSlot;
-            deviceEvent.inputIndex = inputIndex;
-            deviceEvent.previousState = previousState;
-            deviceEvent.currentState = currentState;
+            deviceEvent.inputIndex = [inputIndex];
+            deviceEvent.previousState = [previousState];
+            deviceEvent.currentState = [currentState];
 
             this.onInputChangedObservable.notifyObservers(deviceEvent);
         };

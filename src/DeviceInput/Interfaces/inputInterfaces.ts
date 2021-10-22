@@ -19,15 +19,15 @@ export interface IDeviceEvent extends IEvent {
     /**
      * Input array index
      */
-    inputIndex: number;
+    inputIndex: Array<number>;
     /**
      * Previous state of given input
      */
-    previousState: Nullable<number>;
+    previousState: Array<Nullable<number>>;
     /**
      * Current state of given input
      */
-    currentState: Nullable<number>;
+    currentState: Array<Nullable<number>>;
 }
 
 /**

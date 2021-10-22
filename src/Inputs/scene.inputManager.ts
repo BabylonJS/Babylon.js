@@ -857,37 +857,52 @@ export class InputManager {
             const evt: IEvent = eventData;
             // Keyboard Events
             if (eventData.deviceType === DeviceType.Keyboard) {
-                if (eventData.currentState === 1) {
+                if (eventData.currentState[0] === 1) {
                     this._onKeyDown(evt as IKeyboardEvent);
                 }
 
-                if (eventData.currentState === 0) {
+                if (eventData.currentState[0] === 0) {
                     this._onKeyUp(evt as IKeyboardEvent);
                 }
             }
 
             // Pointer Events
             if (eventData.deviceType === DeviceType.Mouse || eventData.deviceType === DeviceType.Touch) {
-                if (attachDown && eventData.inputIndex >= PointerInput.LeftClick && eventData.inputIndex <= PointerInput.RightClick && eventData.currentState === 1) {
-                    this._onPointerDown(evt as IPointerEvent);
-                }
+                let fireMove = false;
+                let fireDown = false;
+                let fireUp = false;
+                let fireWheel = false;
 
-                if (attachUp && eventData.inputIndex >= PointerInput.LeftClick && eventData.inputIndex <= PointerInput.RightClick && eventData.currentState === 0) {
-                    this._onPointerUp(evt as IPointerEvent);
-                }
+                while (eventData.inputIndex.length > 0) {
+                    let inputIndex = eventData.inputIndex.pop();
+                    let currentState = eventData.currentState.pop();
 
-                if (attachMove) {
-                    if (
-                        eventData.inputIndex === PointerInput.Horizontal ||
-                        eventData.inputIndex === PointerInput.Vertical ||
-                        eventData.inputIndex === PointerInput.DeltaHorizontal ||
-                        eventData.inputIndex === PointerInput.DeltaVertical
-                    ) {
-                        this._onPointerMove(evt as IPointerEvent);
-                    } else if (eventData.inputIndex === PointerInput.MouseWheelX || eventData.inputIndex === PointerInput.MouseWheelY || eventData.inputIndex === PointerInput.MouseWheelZ) {
-                        this._onPointerMove(evt as IWheelEvent);
+                    if (attachMove) {
+                        if (
+                            inputIndex === PointerInput.Horizontal ||
+                            inputIndex === PointerInput.Vertical ||
+                            inputIndex === PointerInput.DeltaHorizontal ||
+                            inputIndex === PointerInput.DeltaVertical
+                        ) {
+                            fireMove = true;
+                        } else if (inputIndex === PointerInput.MouseWheelX || inputIndex === PointerInput.MouseWheelY || inputIndex === PointerInput.MouseWheelZ) {
+                            fireWheel = true;
+                        }
                     }
-                }
+
+                    if (attachDown && inputIndex! >= PointerInput.LeftClick && inputIndex! <= PointerInput.RightClick && currentState === 1) {
+                        fireDown = true;
+                    }
+
+                    if (attachUp && inputIndex! >= PointerInput.LeftClick && inputIndex! <= PointerInput.RightClick && currentState === 0) {
+                        fireUp = true;
+                    }
+
+                    if (fireDown) this._onPointerDown(evt as IPointerEvent);
+                    if (fireUp) this._onPointerUp(evt as IPointerEvent);
+                    if (fireMove) this._onPointerMove(evt as IPointerEvent);
+                    if (fireWheel) this._onPointerMove(evt as IWheelEvent);
+                };
             }
         });
 
