@@ -21,15 +21,15 @@
     VATFrameNum += VATStartFrame;
 
     mat4 VATInfluence;
-    VATInfluence = readMatrixFromRawSamplerVAT(bakedVertexAnimationTexture, matricesIndices[0], frameNum, bakedVertexAnimationTextureWidthInverse) * matricesWeights[0];
+    VATInfluence = readMatrixFromRawSamplerVAT(bakedVertexAnimationTexture, matricesIndices[0], VATFrameNum, bakedVertexAnimationTextureWidthInverse) * matricesWeights[0];
     #if NUM_BONE_INFLUENCERS > 1
-        VATInfluence += readMatrixFromRawSamplerVAT(bakedVertexAnimationTexture, matricesIndices[1], frameNum, bakedVertexAnimationTextureWidthInverse) * matricesWeights[1];
+        VATInfluence += readMatrixFromRawSamplerVAT(bakedVertexAnimationTexture, matricesIndices[1], VATFrameNum, bakedVertexAnimationTextureWidthInverse) * matricesWeights[1];
     #endif
     #if NUM_BONE_INFLUENCERS > 2
-        VATInfluence += readMatrixFromRawSamplerVAT(bakedVertexAnimationTexture, matricesIndices[2], frameNum, bakedVertexAnimationTextureWidthInverse) * matricesWeights[2];
+        VATInfluence += readMatrixFromRawSamplerVAT(bakedVertexAnimationTexture, matricesIndices[2], VATFrameNum, bakedVertexAnimationTextureWidthInverse) * matricesWeights[2];
     #endif
     #if NUM_BONE_INFLUENCERS > 3
-        VATInfluence += readMatrixFromRawSamplerVAT(bakedVertexAnimationTexture, matricesIndices[3], frameNum, bakedVertexAnimationTextureWidthInverse) * matricesWeights[3];
+        VATInfluence += readMatrixFromRawSamplerVAT(bakedVertexAnimationTexture, matricesIndices[3], VATFrameNum, bakedVertexAnimationTextureWidthInverse) * matricesWeights[3];
     #endif
 
     finalWorld = finalWorld * VATInfluence;
