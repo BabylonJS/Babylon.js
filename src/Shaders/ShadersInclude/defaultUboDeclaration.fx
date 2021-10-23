@@ -45,7 +45,7 @@ uniform Material
 	mat4 detailMatrix;
 
     float bakedVertexAnimationTime;
-    vec2 bakedVertexAnimationTextureSize;
+    vec2 bakedVertexAnimationTextureSizeInverted;
     vec4 bakedVertexAnimationSettings;
 };
 

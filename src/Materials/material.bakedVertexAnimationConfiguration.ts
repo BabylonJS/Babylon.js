@@ -46,7 +46,10 @@ export class BakedVertexAnimationConfiguration {
         this._internalMarkAllSubMeshesAsTexturesDirty();
     }
 
-    public animationParameters: Vector4;
+    /**
+     * The animation parameters for this frame. See setAnimationParameters()
+     */
+     public animationParameters: Vector4;
 
     /**
      * The time counter, to pick the correct animation frame.
@@ -111,20 +114,19 @@ export class BakedVertexAnimationConfiguration {
 
         if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {
             if (this._texture && MaterialFlags.BakedVertexAnimationTextureEnabled) {
+                const size = this._texture.getSize();
                 uniformBuffer.updateFloat2(
-                    "bakedVertexAnimationTextureSize",
-                    1 / this._texture.getSize().width,
-                    this._texture.getSize().height
+                    "bakedVertexAnimationTextureSizeInverted",
+                    1.0 / size.width,
+                    1.0 / size.height
                 );
                 uniformBuffer.updateFloat("bakedVertexAnimationTime", this.time);
             }
         }
 
         // Textures
-        if (scene.texturesEnabled) {
-            if (this._texture && MaterialFlags.BakedVertexAnimationTextureEnabled) {
-                uniformBuffer.setTexture("bakedVertexAnimationTexture", this._texture);
-            }
+        if (this._texture && MaterialFlags.BakedVertexAnimationTextureEnabled) {
+            uniformBuffer.setTexture("bakedVertexAnimationTexture", this._texture);
         }
 
         if (!defines.INSTANCES) {
@@ -195,7 +197,7 @@ export class BakedVertexAnimationConfiguration {
      */
     public static AddUniforms(uniforms: string[]): void {
         uniforms.push("bakedVertexAnimationSettings");
-        uniforms.push("bakedVertexAnimationTextureSize");
+        uniforms.push("bakedVertexAnimationTextureSizeInverted");
         uniforms.push("bakedVertexAnimationTime");
     }
 
@@ -221,7 +223,7 @@ export class BakedVertexAnimationConfiguration {
      */
     public static PrepareUniformBuffer(uniformBuffer: UniformBuffer): void {
         uniformBuffer.addUniform("bakedVertexAnimationSettings", 4);
-        uniformBuffer.addUniform("bakedVertexAnimationTextureSize", 2);
+        uniformBuffer.addUniform("bakedVertexAnimationTextureSizeInverted", 2);
         uniformBuffer.addUniform("bakedVertexAnimationTime", 1);
     }
 
