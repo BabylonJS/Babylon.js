@@ -23,6 +23,7 @@ export class GUI3DManager implements IDisposable {
     private _rootContainer: Container3D;
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
     private _pointerOutObserver: Nullable<Observer<number>>;
+    private _customControlsScale = 1.0;
     /** @hidden */
     public _lastPickedControl: Control3D;
     /** @hidden */
@@ -56,6 +57,25 @@ export class GUI3DManager implements IDisposable {
     public get utilityLayer(): Nullable<UtilityLayerRenderer> {
         return this._utilityLayer;
     }
+
+    /** Gets the scaling for all UI elements owned by this manager */
+    public get controlScaling() {
+        return this._customControlsScale;
+    }
+
+    /** Sets the scaling adjustment for all UI elements owned by this manager */
+    public set controlScaling(newScale: number) {
+        if (this._customControlsScale !== newScale && newScale > 0) {
+            let scaleRatio = newScale / this._customControlsScale;
+            this._customControlsScale = newScale;
+
+            this._rootContainer.children.forEach((control: Control3D) => {
+                control.scaling.scaleInPlace(scaleRatio);
+                control._isScaledByManager = true;
+            });
+        }
+    }
+
 
     /**
      * Creates a new GUI3DManager
@@ -184,6 +204,8 @@ export class GUI3DManager implements IDisposable {
      * @returns the current manager
      */
     public addControl(control: Control3D): GUI3DManager {
+        control.scaling.scaleInPlace(this._customControlsScale);
+        control._isScaledByManager = true;
         this._rootContainer.addControl(control);
         return this;
     }
@@ -194,7 +216,10 @@ export class GUI3DManager implements IDisposable {
      * @returns the current container
      */
     public removeControl(control: Control3D): GUI3DManager {
-        this._rootContainer.removeControl(control);
+        if (control._isScaledByManager) {
+            this._rootContainer.removeControl(control);
+        }
+        control.scaling.scaleInPlace(1 / this._customControlsScale);
         return this;
     }
 
