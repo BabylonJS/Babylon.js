@@ -132,15 +132,21 @@ export class BakedVertexAnimationConfiguration {
          }
     }
 
-    // TODO: how to set this? commented while discussing PR
-    // public setAnimationParameters(
-    //     startFrame: number,
-    //     endFrame: number,
-    //     offset: number = 0,
-    //     speedFramesPerSecond: number = 30
-    // ): void {
-    //     // const v = new Vector4(startFrame, endFrame, offset, speedFramesPerSecond);
-    // }
+    /**
+     * Sets animation parameters.
+     * @param startFrame The first frame of the animation.
+     * @param endFrame The last frame of the animation.
+     * @param offset The offset when starting the animation.
+     * @param speedFramesPerSecond The frame rate.
+     */
+    public setAnimationParameters(
+        startFrame: number,
+        endFrame: number,
+        offset: number = 0,
+        speedFramesPerSecond: number = 30
+    ): void {
+        this.animationParameters = new Vector4(startFrame, endFrame, offset, speedFramesPerSecond);
+    }
 
     /**
      * Checks to see if a texture is used in the material.
@@ -189,7 +195,7 @@ export class BakedVertexAnimationConfiguration {
      */
     public static AddUniforms(uniforms: string[]): void {
         uniforms.push("bakedVertexAnimationSettings");
-        uniforms.push("bakedVertexAnimationSingleFrameUVPer");
+        uniforms.push("bakedVertexAnimationTextureSize");
         uniforms.push("bakedVertexAnimationTime");
     }
 
@@ -215,7 +221,7 @@ export class BakedVertexAnimationConfiguration {
      */
     public static PrepareUniformBuffer(uniformBuffer: UniformBuffer): void {
         uniformBuffer.addUniform("bakedVertexAnimationSettings", 4);
-        uniformBuffer.addUniform("bakedVertexAnimationSingleFrameUVPer", 1);
+        uniformBuffer.addUniform("bakedVertexAnimationTextureSize", 2);
         uniformBuffer.addUniform("bakedVertexAnimationTime", 1);
     }
 

@@ -46,6 +46,7 @@ uniform Material
 
     float bakedVertexAnimationTime;
     vec2 bakedVertexAnimationTextureSize;
+    vec4 bakedVertexAnimationSettings;
 };
 
 #include<sceneUboDeclaration>
