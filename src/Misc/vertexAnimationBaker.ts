@@ -98,7 +98,7 @@ export class VertexAnimationBaker {
         }
         const boneCount = this._mesh.skeleton.bones.length;
 
-        return RawTexture.CreateRGBATexture(
+        const texture = RawTexture.CreateRGBATexture(
             vertexData,
             (boneCount + 1) * 4,
             vertexData.length / ((boneCount + 1) * 4 * 4),
@@ -108,5 +108,7 @@ export class VertexAnimationBaker {
             Texture.NEAREST_NEAREST,
             1
         );
+        texture.name = "VAT" + this._mesh.skeleton.name;
+        return texture;
     }
 }
