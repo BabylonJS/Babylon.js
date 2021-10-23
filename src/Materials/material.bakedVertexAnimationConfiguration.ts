@@ -2,16 +2,16 @@ import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { serialize, expandToProperty, serializeAsTexture, SerializationHelper } from "../Misc/decorators";
 import { MaterialFlags } from "./materialFlags";
-import { RawTexture } from "./Textures/rawTexture";
+import { Texture } from "./Textures/texture";
 import { BaseTexture } from './Textures/baseTexture';
 import { UniformBuffer } from "./uniformBuffer";
+import { Vector4 } from "../Maths/math.vector";
 
 /**
  * @hidden
  */
 export interface IMaterialBakedVertexAnimationDefines {
     BAKED_VERTEX_ANIMATION_TEXTURE: boolean;
-    INSTANCES: boolean;
 
     /** @hidden */
     _areTexturesDirty: boolean;
@@ -22,13 +22,13 @@ export interface IMaterialBakedVertexAnimationDefines {
  *
  */
 export class BakedVertexAnimationConfiguration {
-    private _texture: Nullable<RawTexture> = null;
+    private _texture: Nullable<Texture> = null;
     /**
-     * The detail texture of the material.
+     * The vertex animation texture of the material.
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public texture: Nullable<RawTexture>;
+    public texture: Nullable<Texture>;
 
     private _isEnabled = false;
     /**
@@ -45,6 +45,8 @@ export class BakedVertexAnimationConfiguration {
     public _markAllSubMeshesAsTexturesDirty(): void {
         this._internalMarkAllSubMeshesAsTexturesDirty();
     }
+
+    public animationParameters: Vector4;
 
     /**
      * The time counter, to pick the correct animation frame.
@@ -89,9 +91,9 @@ export class BakedVertexAnimationConfiguration {
      */
     public prepareDefines(defines: IMaterialBakedVertexAnimationDefines, scene: Scene): void {
         if (!this._isEnabled || !scene.texturesEnabled) {
-            defines.BAKED_VERTEX_ANIMATION_TEXTURE = true;
-        } else {
             defines.BAKED_VERTEX_ANIMATION_TEXTURE = false;
+        } else {
+            defines.BAKED_VERTEX_ANIMATION_TEXTURE = true;
         }
     }
 
@@ -100,18 +102,21 @@ export class BakedVertexAnimationConfiguration {
      * @param uniformBuffer defines the Uniform buffer to fill in.
      * @param scene defines the scene the material belongs to.
      * @param isFrozen defines whether the material is frozen or not.
+     * @param defines list of defines from the material.
      */
-    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, isFrozen: boolean): void {
+    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, isFrozen: boolean, defines: any): void {
         if (!this._isEnabled || !scene.texturesEnabled) {
             return;
         }
 
         if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {
             if (this._texture && MaterialFlags.BakedVertexAnimationTextureEnabled) {
-                uniformBuffer.updateFloat("bakedVertexAnimationSingleFrameUVPer", this._texture.getSize().height);
-                uniformBuffer.updateFloat("bakedVertexAnimationTextureWidthInverse", 1 / this._texture.getSize().width);
+                uniformBuffer.updateFloat2(
+                    "bakedVertexAnimationTextureSize",
+                    1 / this._texture.getSize().width,
+                    this._texture.getSize().height
+                );
                 uniformBuffer.updateFloat("bakedVertexAnimationTime", this.time);
-                uniformBuffer.setTexture("bakedVertexAnimationTexture", this._texture);
             }
         }
 
@@ -121,6 +126,10 @@ export class BakedVertexAnimationConfiguration {
                 uniformBuffer.setTexture("bakedVertexAnimationTexture", this._texture);
             }
         }
+
+        if (!defines.INSTANCES) {
+            uniformBuffer.updateVector4("bakedVertexAnimationSettings", this.animationParameters);
+         }
     }
 
     // TODO: how to set this? commented while discussing PR
@@ -197,7 +206,7 @@ export class BakedVertexAnimationConfiguration {
      * @param attribs defines the current atribute list.
      */
     public static AddAttributes(attribs: string[]): void {
-        attribs.push("bakedVertexAnimationSettings");
+        attribs.push("bakedVertexAnimationSettingsInstanced");
     }
 
     /**

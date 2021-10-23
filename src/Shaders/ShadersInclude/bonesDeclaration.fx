@@ -1,5 +1,12 @@
-﻿#ifndef BAKED_VERTEX_ANIMATION_TEXTURE
-    #if NUM_BONE_INFLUENCERS > 0
+﻿#if NUM_BONE_INFLUENCERS > 0
+    attribute vec4 matricesIndices;
+    attribute vec4 matricesWeights;
+    #if NUM_BONE_INFLUENCERS > 4
+        attribute vec4 matricesIndicesExtra;
+        attribute vec4 matricesWeightsExtra;
+    #endif
+
+    #ifndef BAKED_VERTEX_ANIMATION_TEXTURE
         #ifdef BONETEXTURE
             uniform sampler2D boneSampler;
             uniform float boneTextureWidth;
@@ -8,13 +15,6 @@
             #ifdef BONES_VELOCITY_ENABLED
                 uniform mat4 mPreviousBones[BonesPerMesh];
             #endif
-        #endif
-
-        attribute vec4 matricesIndices;
-        attribute vec4 matricesWeights;
-        #if NUM_BONE_INFLUENCERS > 4
-            attribute vec4 matricesIndicesExtra;
-            attribute vec4 matricesWeightsExtra;
         #endif
 
         #ifdef BONETEXTURE
@@ -32,6 +32,5 @@
                 return mat4(m0, m1, m2, m3);
             }
         #endif
-
     #endif
 #endif

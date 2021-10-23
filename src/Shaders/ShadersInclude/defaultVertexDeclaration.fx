@@ -49,3 +49,8 @@ uniform mat4 reflectionMatrix;
 uniform vec4 vDetailInfos;
 uniform mat4 detailMatrix;
 #endif
+
+#ifdef BAKED_VERTEX_ANIMATION_TEXTURE
+uniform float bakedVertexAnimationTime;
+uniform float bakedVertexAnimationTextureSize;
+#endif

@@ -1640,7 +1640,7 @@ export class StandardMaterial extends PushMaterial {
             }
 
             this.detailMap.bindForSubMesh(ubo, scene, this.isFrozen);
-            this.bakedVertexAnimationMap.bindForSubMesh(ubo, scene, this.isFrozen);
+            this.bakedVertexAnimationMap.bindForSubMesh(ubo, scene, this.isFrozen, defines);
 
             // Clip plane
             MaterialHelper.BindClipPlane(effect, scene);

@@ -40,7 +40,7 @@ export class MaterialFlags {
 
     private static _BakedVertexAnimationTextureEnabled = true;
     /**
-     * Are detail textures enabled in the application.
+     * Are vertex animation textures enabled in the application.
      */
     public static get BakedVertexAnimationTextureEnabled(): boolean {
         return this._BakedVertexAnimationTextureEnabled;
