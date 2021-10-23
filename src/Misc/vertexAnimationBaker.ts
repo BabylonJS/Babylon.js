@@ -35,11 +35,19 @@ export class VertexAnimationBaker {
         const boneCount = this._mesh.skeleton.bones.length;
 
         /** total number of frames in our animations */
-        const frameCount = ranges.reduce((previous: number, current: AnimationRange) => previous + current.to - current.from + 1, 0);
+        const frameCount = ranges.reduce(
+            (previous: number, current: AnimationRange) => previous + current.to - current.from + 1,
+            0
+        );
+
+        if (isNaN(frameCount)) {
+            throw new Error("Invalid animation ranges.");
+        }
 
         // reset our loop data
         let textureIndex = 0;
-        const vertexData = new Float32Array((boneCount + 1) * 4 * 4 * frameCount);
+        const textureSize = (boneCount + 1) * 4 * 4 * frameCount;
+        const vertexData = new Float32Array(textureSize);
         this._scene.stopAnimation(this._mesh);
         this._mesh.skeleton.returnToRest();
 
