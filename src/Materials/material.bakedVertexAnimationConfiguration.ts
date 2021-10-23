@@ -120,6 +120,10 @@ export class BakedVertexAnimationConfiguration {
                     1.0 / size.height
                 );
                 uniformBuffer.updateFloat("bakedVertexAnimationTime", this.time);
+
+                if (!defines.INSTANCES) {
+                    uniformBuffer.updateVector4("bakedVertexAnimationSettings", this.animationParameters);
+                }
             }
         }
 
@@ -127,10 +131,6 @@ export class BakedVertexAnimationConfiguration {
         if (this._texture && MaterialFlags.BakedVertexAnimationTextureEnabled) {
             uniformBuffer.setTexture("bakedVertexAnimationTexture", this._texture);
         }
-
-        if (!defines.INSTANCES) {
-            uniformBuffer.updateVector4("bakedVertexAnimationSettings", this.animationParameters);
-         }
     }
 
     /**
