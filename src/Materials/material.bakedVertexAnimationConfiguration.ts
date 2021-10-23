@@ -2,7 +2,6 @@ import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { serialize, expandToProperty, serializeAsTexture, SerializationHelper } from "../Misc/decorators";
 import { MaterialFlags } from "./materialFlags";
-import { Texture } from "./Textures/texture";
 import { BaseTexture } from './Textures/baseTexture';
 import { UniformBuffer } from "./uniformBuffer";
 import { Vector4 } from "../Maths/math.vector";
@@ -22,13 +21,13 @@ export interface IMaterialBakedVertexAnimationDefines {
  *
  */
 export class BakedVertexAnimationConfiguration {
-    private _texture: Nullable<Texture> = null;
+    private _texture: Nullable<BaseTexture> = null;
     /**
      * The vertex animation texture of the material.
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public texture: Nullable<Texture>;
+    public texture: Nullable<BaseTexture>;
 
     private _isEnabled = false;
     /**
