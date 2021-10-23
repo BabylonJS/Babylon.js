@@ -71,11 +71,23 @@ export class GUI3DManager implements IDisposable {
 
             this._rootContainer.children.forEach((control: Control3D) => {
                 control.scaling.scaleInPlace(scaleRatio);
-                control._isScaledByManager = true;
+
+                if (newScale !== 1) {
+                    control._isScaledByManager = true;
+                }
             });
         }
     }
 
+    /** Gets if controls attached to this manager are realistically sized, based on the fact that 1 unit length is 1 meter */
+    public get useRealisticScaling() {
+        return this.controlScaling === 0.1;
+    }
+
+    /** Sets if controls attached to this manager are realistically sized, based on the fact that 1 unit length is 1 meter */
+    public set useRealisticScaling(newValue: boolean) {
+        this.controlScaling = newValue ? 0.1 : 1;
+    }
 
     /**
      * Creates a new GUI3DManager
@@ -204,9 +216,9 @@ export class GUI3DManager implements IDisposable {
      * @returns the current manager
      */
     public addControl(control: Control3D): GUI3DManager {
+        this._rootContainer.addControl(control);
         control.scaling.scaleInPlace(this._customControlsScale);
         control._isScaledByManager = true;
-        this._rootContainer.addControl(control);
         return this;
     }
 
@@ -216,10 +228,11 @@ export class GUI3DManager implements IDisposable {
      * @returns the current container
      */
     public removeControl(control: Control3D): GUI3DManager {
+        this._rootContainer.removeControl(control);
         if (control._isScaledByManager) {
-            this._rootContainer.removeControl(control);
+            control.scaling.scaleInPlace(1 / this._customControlsScale);
+            control._isScaledByManager = false;
         }
-        control.scaling.scaleInPlace(1 / this._customControlsScale);
         return this;
     }
 
