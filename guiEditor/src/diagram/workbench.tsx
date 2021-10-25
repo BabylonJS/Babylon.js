@@ -24,6 +24,8 @@ import { DataStorage } from "babylonjs/Misc/dataStorage";
 import { Grid } from "babylonjs-gui/2D/controls/grid";
 import { Tools } from "../tools";
 import { CreateGround } from "babylonjs/Meshes/Builders/groundBuilder";
+import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial";
+import { TextureBlock } from "babylonjs/Materials/Node/Blocks/Dual/textureBlock";
 require("./workbenchCanvas.scss");
 
 export interface IWorkbenchComponentProps {
@@ -755,10 +757,19 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.artBoardBackground = new Rectangle("Art-Board-Background");
         this.artBoardBackground.width = "100%"
         this.artBoardBackground.height = "100%";
-        this.artBoardBackground.background = "white";
+        this.artBoardBackground.background = "transparent";
         this.artBoardBackground.thickness = 0;
 
         this.globalState.guiTexture.addControl(this.artBoardBackground);
+
+        NodeMaterial.ParseFromSnippetAsync("#GZI99M#6", this._scene).then(nodeMaterial => {
+            this._textureMesh.material = nodeMaterial;
+            if(nodeMaterial) {
+                let block = nodeMaterial.getBlockByName("Texture") as TextureBlock;
+                block.texture = this.globalState.guiTexture;
+            }
+        });
+
         this.setCameraRadius();
         this._camera = new ArcRotateCamera("Camera", -Math.PI / 2, 0, this._cameraRadias, Vector3.Zero(), this._scene);
         this._camera.maxZ = this._cameraMaxRadiasFactor * 2;
