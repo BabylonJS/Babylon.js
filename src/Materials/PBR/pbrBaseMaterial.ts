@@ -41,6 +41,7 @@ import "../../Shaders/pbr.vertex";
 
 import { EffectFallbacks } from '../effectFallbacks';
 import { IMaterialDetailMapDefines, DetailMapConfiguration } from '../material.detailMapConfiguration';
+import { BakedVertexAnimationConfiguration, IMaterialBakedVertexAnimationDefines } from "../material.bakedVertexAnimationConfiguration";
 
 declare type PrePassRenderer = import("../../Rendering/prePassRenderer").PrePassRenderer;
 
@@ -57,7 +58,8 @@ export class PBRMaterialDefines extends MaterialDefines
     IMaterialBRDFDefines,
     IMaterialSheenDefines,
     IMaterialSubSurfaceDefines,
-    IMaterialDetailMapDefines {
+    IMaterialDetailMapDefines,
+    IMaterialBakedVertexAnimationDefines {
     public PBR = true;
 
     public NUM_SAMPLES = "0";
@@ -84,6 +86,8 @@ export class PBRMaterialDefines extends MaterialDefines
     public DETAIL = false;
     public DETAILDIRECTUV = 0;
     public DETAIL_NORMALBLENDMETHOD = 0;
+
+    public BAKED_VERTEX_ANIMATION_TEXTURE = false;
 
     public AMBIENT = false;
     public AMBIENTDIRECTUV = 0;
@@ -952,6 +956,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     public readonly detailMap = new DetailMapConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
 
     /**
+     * Defines the vertex animation map parameters for the material.
+     */
+    public readonly bakedVertexAnimationMap = new BakedVertexAnimationConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
+
+    /**
      * Instantiates a new PBRMaterial instance.
      *
      * @param name The material name
@@ -1197,7 +1206,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             !this.clearCoat.isReadyForSubMesh(defines, scene, engine, this._disableBumpMap) ||
             !this.sheen.isReadyForSubMesh(defines, scene) ||
             !this.anisotropy.isReadyForSubMesh(defines, scene) ||
-            !this.detailMap.isReadyForSubMesh(defines, scene)) {
+            !this.detailMap.isReadyForSubMesh(defines, scene) ||
+            !this.bakedVertexAnimationMap.isReadyForSubMesh(defines, scene)) {
             return false;
         }
 
@@ -1380,6 +1390,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             attribs.push(VertexBuffer.ColorKind);
         }
 
+        BakedVertexAnimationConfiguration.AddAttributes(attribs);
+
         MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
         MaterialHelper.PrepareAttributesForInstances(attribs, defines);
         MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, defines);
@@ -1416,6 +1428,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         DetailMapConfiguration.AddUniforms(uniforms);
         DetailMapConfiguration.AddSamplers(samplers);
+
+        BakedVertexAnimationConfiguration.AddUniforms(uniforms);
+        BakedVertexAnimationConfiguration.AddSamplers(samplers);
 
         PBRSubSurfaceConfiguration.AddUniforms(uniforms);
         PBRSubSurfaceConfiguration.AddSamplers(samplers);
@@ -1774,6 +1789,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         // External config
         this.detailMap.prepareDefines(defines, scene);
+        this.bakedVertexAnimationMap.prepareDefines(defines, scene);
         this.subSurface.prepareDefines(defines, scene);
         this.clearCoat.prepareDefines(defines, scene);
         this.anisotropy.prepareDefines(defines, mesh, scene);
@@ -1870,6 +1886,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         PBRSheenConfiguration.PrepareUniformBuffer(ubo);
         PBRSubSurfaceConfiguration.PrepareUniformBuffer(ubo);
         DetailMapConfiguration.PrepareUniformBuffer(ubo);
+        BakedVertexAnimationConfiguration.PrepareUniformBuffer(ubo);
 
         ubo.addUniform("vSphericalL00", 3);
         ubo.addUniform("vSphericalL1_1", 3);
@@ -2215,6 +2232,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             }
 
             this.detailMap.bindForSubMesh(ubo, scene, this.isFrozen);
+            this.bakedVertexAnimationMap.bindForSubMesh(ubo, scene, this.isFrozen, defines);
             this.subSurface.bindForSubMesh(ubo, scene, engine, this.isFrozen, defines.LODBASEDMICROSFURACE, this.realTimeFiltering, subMesh);
             this.clearCoat.bindForSubMesh(ubo, scene, engine, this._disableBumpMap, this.isFrozen, this._invertNormalMapX, this._invertNormalMapY, subMesh);
             this.anisotropy.bindForSubMesh(ubo, scene, this.isFrozen);
@@ -2379,6 +2397,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         this.detailMap.getActiveTextures(activeTextures);
+        this.bakedVertexAnimationMap.getActiveTextures(activeTextures);
         this.subSurface.getActiveTextures(activeTextures);
         this.clearCoat.getActiveTextures(activeTextures);
         this.sheen.getActiveTextures(activeTextures);
@@ -2445,7 +2464,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             this.subSurface.hasTexture(texture) ||
             this.clearCoat.hasTexture(texture) ||
             this.sheen.hasTexture(texture) ||
-            this.anisotropy.hasTexture(texture);
+            this.anisotropy.hasTexture(texture) ||
+            this.bakedVertexAnimationMap.hasTexture(texture);
     }
 
     /**
@@ -2491,6 +2511,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         this.detailMap.dispose(forceDisposeTextures);
+        this.bakedVertexAnimationMap.dispose(forceDisposeTextures);
         this.subSurface.dispose(forceDisposeTextures);
         this.clearCoat.dispose(forceDisposeTextures);
         this.sheen.dispose(forceDisposeTextures);

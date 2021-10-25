@@ -34,12 +34,15 @@ import { Constants } from "../Engines/constants";
 import { EffectFallbacks } from './effectFallbacks';
 import { Effect, IEffectCreationOptions } from './effect';
 import { IMaterialDetailMapDefines, DetailMapConfiguration } from './material.detailMapConfiguration';
-import { BakedVertexAnimationConfiguration } from "./material.bakedVertexAnimationConfiguration";
+import { IMaterialBakedVertexAnimationDefines, BakedVertexAnimationConfiguration } from "./material.bakedVertexAnimationConfiguration";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
 /** @hidden */
-export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines, IMaterialDetailMapDefines {
+export class StandardMaterialDefines extends MaterialDefines
+    implements IImageProcessingConfigurationDefines,
+    IMaterialDetailMapDefines,
+    IMaterialBakedVertexAnimationDefines {
     public MAINUV1 = false;
     public MAINUV2 = false;
     public MAINUV3 = false;

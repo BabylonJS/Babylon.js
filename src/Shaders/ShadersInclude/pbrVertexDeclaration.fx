@@ -26,7 +26,7 @@ uniform vec2 vLightmapInfos;
 uniform mat4 lightmapMatrix;
 #endif
 
-#ifdef REFLECTIVITY 
+#ifdef REFLECTIVITY
 uniform vec3 vReflectivityInfos;
 uniform mat4 reflectivityMatrix;
 #endif
@@ -162,4 +162,10 @@ uniform float pointSize;
 #ifdef DETAIL
 uniform vec4 vDetailInfos;
 uniform mat4 detailMatrix;
+#endif
+
+#ifdef BAKED_VERTEX_ANIMATION_TEXTURE
+uniform float bakedVertexAnimationTime;
+uniform vec2 bakedVertexAnimationTextureSizeInverted;
+uniform vec4 bakedVertexAnimationSettings;
 #endif
