@@ -9,7 +9,7 @@
     mat4 readMatrixFromRawSamplerVAT(sampler2D smp, float index, float frame)
     {
         float offset = index * 4.0;
-        float frameUV = frame * bakedVertexAnimationTextureSizeInverted.y;
+        float frameUV = (frame + 0.5) * bakedVertexAnimationTextureSizeInverted.y;
         float dx = bakedVertexAnimationTextureSizeInverted.x;
         vec4 m0 = texture2D(smp, vec2(dx * (offset + 0.5), frameUV));
         vec4 m1 = texture2D(smp, vec2(dx * (offset + 1.5), frameUV));
