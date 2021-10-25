@@ -12,6 +12,7 @@
     float VATOffsetFrame = BVASNAME.z;
     float VATSpeed = BVASNAME.w;
 
+    float totalFrames = VATEndFrame - VATStartFrame + 1.0;
     float time = bakedVertexAnimationTime * VATSpeed / totalFrames;
     // when you loop an animation after the first run (and for all subsequent loops), we wrap to frame #1, not to frame #0
     float frameCorrection = time < 1.0 ? 0.0 : 1.0;
