@@ -778,7 +778,7 @@ export class Texture extends BaseTexture {
                 serializationObject.name = serializationObject.name.replace("data:", "");
             } else if (this.url && StartsWith(this.url, "data:") && this._buffer instanceof Uint8Array) {
                 serializationObject.base64String = "data:image/png;base64," + EncodeArrayBufferToBase64(this._buffer);
-            } else if (Texture.ForceSerializeBuffers || (this.url && StartsWith(this.url, "blob:"))) {
+            } else if (Texture.ForceSerializeBuffers || (this.url && StartsWith(this.url, "blob:")) || this._forceSerialize) {
                 serializationObject.base64String = !this._engine || this._engine._features.supportSyncTextureRead ? GenerateBase64StringFromTexture(this) : GenerateBase64StringFromTextureAsync(this);
             }
         }
