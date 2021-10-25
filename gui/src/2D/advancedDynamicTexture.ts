@@ -287,6 +287,19 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
 
     /**
+    * Will return all controls with the given type name
+    * @param typeName defines the type name to search for
+    * @returns an array of all controls found
+    */
+     public getControlsByType(typeName: string): Control[]  {
+        return this._getControlsByKey("typeName", typeName);
+    }
+
+    private _getControlsByKey(key: string, value: any): Control[] {
+        return this._rootContainer.getDescendants().filter((control) => (control as any)[key] === value);
+    }
+
+    /**
     * Gets or sets the current focused control
     */
     public get focusedControl(): Nullable<IFocusableControl> {
