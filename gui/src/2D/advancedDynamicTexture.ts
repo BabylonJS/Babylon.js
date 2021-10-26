@@ -281,7 +281,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     public getControlsByType(typeName: string): Control[]  {
         return this._rootContainer.getDescendants(false, (control) => control.typeName === typeName);
     }
-    
+
     /**
     * Will return the first control with the given name
     * @param name defines the name to search for
