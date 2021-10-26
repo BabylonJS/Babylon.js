@@ -51,6 +51,7 @@ Object.defineProperty(Scene.prototype, "useOrderIndependentTransparency", {
         }
         this._useOrderIndependentTransparency = value;
         this.markAllMaterialsAsDirty(Constants.MATERIAL_AllDirtyFlag);
+        this.prePassRenderer?.markAsDirty();
     },
     enumerable: true,
     configurable: true,
