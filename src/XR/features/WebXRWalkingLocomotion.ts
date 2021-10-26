@@ -220,7 +220,7 @@ class WalkingTracker {
         const projDistSquared = this._currentPosition.lengthSquared() - (dot / this._axisLength) * (dot / this._axisLength);
 
         // TODO: Extricate the magic.
-        this._vitality *= (0.95 - 100 * Math.max(projDistSquared - 0.0016, 0) + Math.max(this._t - priorT, 0));
+        this._vitality *= (0.92 - 100 * Math.max(projDistSquared - 0.0016, 0) + Math.max(this._t - priorT, 0));
     }
 
     public update(x: number, y: number) {
@@ -345,12 +345,18 @@ export class WebXRWalkingLocomotion extends WebXRAbstractFeature {
         return 1;
     }
 
+    private static get _MillisecondsPerUpdate(): number {
+        // 15 FPS
+        return 1000 / 15;
+    }
+
     private _sessionManager: WebXRSessionManager;
     private _up: Vector3 = new Vector3();
     private _forward: Vector3 = new Vector3();
     private _position: Vector3 = new Vector3();
     private _movement: Vector3 = new Vector3();
     private _walker: Nullable<Walker>;
+    private _millisecondsSinceLastUpdate: number = WebXRWalkingLocomotion._MillisecondsPerUpdate;
 
     private _locomotionTarget: WebXRCamera | TransformNode;
     private _isLocomotionTargetWebXRCamera: boolean;
@@ -432,6 +438,13 @@ export class WebXRWalkingLocomotion extends WebXRAbstractFeature {
     }
 
     protected _onXRFrame(frame: XRFrame): void {
+        // Enforce reduced framerate
+        this._millisecondsSinceLastUpdate += this._sessionManager.scene.getEngine().getDeltaTime();
+        if (this._millisecondsSinceLastUpdate < WebXRWalkingLocomotion._MillisecondsPerUpdate) {
+            return;
+        }
+        this._millisecondsSinceLastUpdate -= WebXRWalkingLocomotion._MillisecondsPerUpdate;
+
         const pose = frame.getViewerPose(this._sessionManager.baseReferenceSpace);
         if (!pose) {
             return;
