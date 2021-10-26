@@ -28,14 +28,14 @@ declare module BABYLON {
         static HasAudioContext(): boolean;
         /** Returns a Promise that resolves after the specfied time */
         static WaitForSeconds: (seconds: number) => Promise<void>;
-        /** Post a safe message to top parent window */
-        static PostWindowMessage(msg: BABYLON.IWindowMessage, targetOrigin: string, transfer?: Transferable[]): void;
         /** Register handler that is triggered when then engine has been resized (engine.html) */
         static OnEngineResizeObservable: Observable<Engine>;
         /** Register handler that is triggered when the scene has been loaded (engine.html) */
         static OnLoadCompleteObservable: Observable<Engine>;
         /** Register asset manager progress event (engine.html) */
         static OnAssetManagerProgress: (event: ProgressEvent) => void;
+        /** Post a safe message to a browser window */
+        static PostWindowMessage(msg: BABYLON.IWindowMessage, targetOrigin: string, localWindow?: boolean, transfer?: Transferable[]): void;
         /** Loads a babylon gltf scene file (engine.html) */
         static LoadSceneFile(sceneFile: string, queryString?: string): void;
         private static SceneParsingEnabled;
