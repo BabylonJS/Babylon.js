@@ -100,12 +100,48 @@ export class NativeXRFrame implements XRFrame {
         return this._detectedPlanes;
     }
     
-    public get featurePointCloud(): number[] | undefined {
-        return this._nativeImpl.featurePointCloud;
+    private _trackedMeshes = new Map<number, XRMesh>();
+    private _newMeshIds = new Array<number>();
+    private _newMeshes = new Array<XRMesh>();
+    private _detectedMeshes = new Set<XRMesh>();
+
+    public updateMeshes(timestamp: number, updatedMeshIds?: Uint32Array, removedMeshIds?: Uint32Array) {
+        if (updatedMeshIds) {
+            this._newMeshIds.length = 0;
+            updatedMeshIds.forEach((meshId) => {
+                if (this._trackedMeshes.has(meshId)) {
+                    this._trackedMeshes.get(meshId)!.lastChangedTime = timestamp;
+                } else {
+                    this._newMeshIds.push(meshId);
+                }
+            });
+
+            if (this._newMeshIds.length > 0) {
+                this._newMeshes.length = this._newMeshIds.length;
+                this._nativeImpl.createMeshes!(this._newMeshIds, this._newMeshIds.length, this._newMeshes);
+                this._newMeshIds.forEach((newMeshId, meshIdIdx) => {
+                    const newMesh = this._newMeshes[meshIdIdx];
+                    newMesh.lastChangedTime = timestamp;
+                    this._trackedMeshes.set(newMeshId, newMesh);
+                });
+            }
+        }
+
+        if (removedMeshIds) {
+            removedMeshIds.forEach((removedMeshId) => {
+                this._trackedMeshes.delete(removedMeshId);
+            });
+        }
+
+        this._detectedMeshes = new Set<XRMesh>(Array.from(this._trackedMeshes.values()));    
     }
     
     public get detectedMeshes(): XRMeshSet | undefined {
-        return this._nativeImpl.detectedMeshes;
+        return this._detectedMeshes;
+    }
+    
+    public get featurePointCloud(): number[] | undefined {
+        return this._nativeImpl.featurePointCloud;
     }
     
     // Hand tracking
