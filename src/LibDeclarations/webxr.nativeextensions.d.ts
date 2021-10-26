@@ -67,9 +67,12 @@ interface XRSession {
 interface XRFrame {
     readonly featurePointCloud?: Array<number>;
     readonly detectedMeshes?: XRMeshSet;
+
+    // Native-only helper functions
     getPoseData?: (space: XRSpace, baseSpace: XRReferenceSpace, vectorBuffer: ArrayBuffer, matrixBuffer: ArrayBuffer) => XRPose;
     fillJointPoseData?: (spaces: XRJointSpace[], baseSpace: XRSpace, numSpaces: number, transformsBuffer: ArrayBuffer, transformsBufferOffset: number) => boolean;
     fillJointPoseRadiiData?: (spaces: XRJointSpace[], numSpaces: number, radiiBuffer: ArrayBuffer, radiiBufferOffset: number) => boolean;
+    createPlanes?: (planeIds: Array<number>, numPlaneIds: number, newPlanes: Array<XRPlane>) => void;
 }
 
 type XRMeshSet = Set<XRMesh>;

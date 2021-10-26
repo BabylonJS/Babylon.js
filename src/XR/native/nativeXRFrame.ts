@@ -16,8 +16,6 @@ export class NativeXRFrame implements XRFrame {
     // Enough space for position, orientation
     private _xrPoseVectorData = new Float32Array(4 * (4 + 4));
 
-    public getPoseData: (space: XRSpace, baseSpace: XRReferenceSpace, vectorBuffer: ArrayBuffer, matrixBuffer: ArrayBuffer) => XRPose;
-
     public getPose(space: XRSpace, baseSpace: XRReferenceSpace): XRPose | undefined {
         if (!this._nativeImpl.getPoseData!(space, baseSpace, this._xrPoseVectorData.buffer, this._xrTransform.matrix.buffer)) {
             return undefined;
@@ -62,8 +60,42 @@ export class NativeXRFrame implements XRFrame {
     
     // Scene understanding
     
+    private _trackedPlanes = new Map<number, XRPlane>();
+    private _newPlaneIds = new Array<number>();
+    private _newPlanes = new Array<XRPlane>();
+    private _detectedPlanes = new Set<XRPlane>();
+
+    public updatePlanes(timestamp: number, updatedPlaneIds?: Uint32Array, removedPlaneIds?: Uint32Array) {
+        if (updatedPlaneIds) {
+            this._newPlaneIds.length = 0;
+            updatedPlaneIds.forEach((planeId) => {
+                if (this._trackedPlanes.has(planeId)) {
+                    this._trackedPlanes.get(planeId)!.lastChangedTime = timestamp;
+                } else {
+                    this._newPlaneIds.push(planeId);
+                }
+            });
+
+            this._newPlanes.length = this._newPlaneIds.length;
+            this._nativeImpl.createPlanes!(this._newPlaneIds, this._newPlaneIds.length, this._newPlanes);
+            this._newPlaneIds.forEach((newPlaneId, planeIdIdx) => {
+                const newPlane = this._newPlanes[planeIdIdx];
+                newPlane.lastChangedTime = timestamp;
+                this._trackedPlanes.set(newPlaneId, newPlane);
+            });
+        }
+
+        if (removedPlaneIds) {
+            removedPlaneIds.forEach((removedPlaneId) => {
+                this._trackedPlanes.delete(removedPlaneId);
+            });
+        }
+
+        this._detectedPlanes = new Set<XRPlane>(Array.from(this._trackedPlanes.values()));    
+    }
+
     public get detectedPlanes(): XRPlaneSet | undefined {
-        return this._nativeImpl.detectedPlanes;
+        return this._detectedPlanes;
     }
     
     public get featurePointCloud(): number[] | undefined {
