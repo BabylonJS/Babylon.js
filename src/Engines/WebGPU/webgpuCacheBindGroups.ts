@@ -72,7 +72,7 @@ export class WebGPUCacheBindGroups {
 
         const cacheIsDisabled = this.disabled || materialContext.forceBindGroupCreation;
         if (!cacheIsDisabled) {
-            if (!drawContext.isDirty && !materialContext.isDirty) {
+            if (!drawContext.isDirty(materialContext.updateId) && !materialContext.isDirty) {
                 WebGPUCacheBindGroups._NumBindGroupsNoLookupCurrentFrame++;
                 return drawContext.bindGroups!;
             }
@@ -110,7 +110,7 @@ export class WebGPUCacheBindGroups {
             bindGroups = node.bindGroups;
         }
 
-        drawContext.isDirty = false;
+        drawContext.resetIsDirty(materialContext.updateId);
         materialContext.isDirty = false;
 
         if (bindGroups) {

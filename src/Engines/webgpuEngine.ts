@@ -1019,6 +1019,7 @@ export class WebGPUEngine extends Engine {
     /** @hidden */
     public applyStates() {
         this._stencilStateComposer.apply();
+        this._cacheRenderPipeline.setAlphaBlendEnabled(this._alphaState.alphaBlend);
     }
 
     /**
@@ -2935,7 +2936,7 @@ export class WebGPUEngine extends Engine {
             return;
         }
 
-        if (!this.compatibilityMode && (this._currentDrawContext.isDirty || this._currentMaterialContext.isDirty || this._currentMaterialContext.forceBindGroupCreation)) {
+        if (!this.compatibilityMode && (this._currentDrawContext.isDirty(this._currentMaterialContext.updateId) || this._currentMaterialContext.isDirty || this._currentMaterialContext.forceBindGroupCreation)) {
             this._currentDrawContext.fastBundle = undefined;
         }
 
@@ -3164,7 +3165,7 @@ export class WebGPUEngine extends Engine {
 
     /** @hidden */
     public _bindUnboundFramebuffer(framebuffer: Nullable<WebGLFramebuffer>) {
-        throw "_bindUnboundFramebuffer is not implementedin WebGPU! You probably want to use unBindFramebuffer instead";
+        throw "_bindUnboundFramebuffer is not implementedin WebGPU! You probably want to use restoreDefaultFramebuffer or unBindFramebuffer instead";
     }
 
     // TODO WEBGPU. All of the below should go once engine split with baseEngine.
