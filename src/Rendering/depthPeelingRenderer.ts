@@ -162,8 +162,6 @@ export class DepthPeelingRenderer {
         };
 
         // 2 for ping pong
-        // Note that depth peeling does not need a depth buffer attached to the render framebuffer as the front/back depths are stored in the Red/Green texture
-        // and the shader is taking care of computing the right values
         this._depthMrts = [new MultiRenderTarget("depthPeelingDepth0", size, 1, this._scene), new MultiRenderTarget("depthPeelingDepth1", size, 1, this._scene)];
         this._colorMrts = [new MultiRenderTarget("depthPeelingColor0", size, 1, this._scene, { generateDepthBuffer: false }), new MultiRenderTarget("depthPeelingColor1", size, 1, this._scene, { generateDepthBuffer: false })];
         this._blendBackMrt = new MultiRenderTarget("depthPeelingBack", size, 1, this._scene, { generateDepthBuffer: false });
