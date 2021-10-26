@@ -274,6 +274,15 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
 
     /**
+    * Will return all controls with the given type name
+    * @param typeName defines the type name to search for
+    * @returns an array of all controls found
+    */
+    public getControlsByType(typeName: string): Control[]  {
+        return this._rootContainer.getDescendants(false, (control) => control.typeName === typeName);
+    }
+    
+    /**
     * Will return the first control with the given name
     * @param name defines the name to search for
     * @return the first control found or null
@@ -284,19 +293,6 @@ export class AdvancedDynamicTexture extends DynamicTexture {
 
     private _getControlByKey(key: string, value: any): Nullable<Control> {
         return this._rootContainer.getDescendants().find((control) => control[key as keyof Control] === value) || null;
-    }
-
-    /**
-    * Will return all controls with the given type name
-    * @param typeName defines the type name to search for
-    * @returns an array of all controls found
-    */
-    public getControlsByType(typeName: string): Control[]  {
-        return this._filterControls((control) => control.typeName === typeName);
-    }
-
-    private _filterControls(predicate: (control: Control) => boolean): Control[] {
-        return this._rootContainer.getDescendants().filter(predicate);
     }
 
     /**
