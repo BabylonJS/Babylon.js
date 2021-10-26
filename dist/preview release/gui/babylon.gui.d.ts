@@ -500,6 +500,12 @@ declare module BABYLON.GUI {
         */
         getDescendants(directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): Control[];
         /**
+        * Will return all controls with the given type name
+        * @param typeName defines the type name to search for
+        * @returns an array of all controls found
+        */
+        getControlsByType(typeName: string): Control[];
+        /**
         * Will return the first control with the given name
         * @param name defines the name to search for
         * @return the first control found or null
