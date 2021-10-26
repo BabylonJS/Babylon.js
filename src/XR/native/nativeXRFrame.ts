@@ -76,13 +76,15 @@ export class NativeXRFrame implements XRFrame {
                 }
             });
 
-            this._newPlanes.length = this._newPlaneIds.length;
-            this._nativeImpl.createPlanes!(this._newPlaneIds, this._newPlaneIds.length, this._newPlanes);
-            this._newPlaneIds.forEach((newPlaneId, planeIdIdx) => {
-                const newPlane = this._newPlanes[planeIdIdx];
-                newPlane.lastChangedTime = timestamp;
-                this._trackedPlanes.set(newPlaneId, newPlane);
-            });
+            if (this._newPlaneIds.length > 0) {
+                this._newPlanes.length = this._newPlaneIds.length;
+                this._nativeImpl.createPlanes!(this._newPlaneIds, this._newPlaneIds.length, this._newPlanes);
+                this._newPlaneIds.forEach((newPlaneId, planeIdIdx) => {
+                    const newPlane = this._newPlanes[planeIdIdx];
+                    newPlane.lastChangedTime = timestamp;
+                    this._trackedPlanes.set(newPlaneId, newPlane);
+                });
+            }
         }
 
         if (removedPlaneIds) {
