@@ -3,6 +3,8 @@ import { RawTexture } from "../Materials/Textures/rawTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { Mesh } from "../Meshes/mesh";
 import { Scene } from "../scene";
+import { GenerateBase64StringFromPixelData } from "./copyTools";
+import { DecodeBase64ToBinary } from "./stringTools";
 
 /**
  * Class to bake vertex animation textures.
@@ -86,7 +88,6 @@ export class VertexAnimationBaker {
             });
         });
     }
-
     /**
      * Builds a vertex animation texture given the vertexData in an array.
      * @param vertexData The vertex animation data. You can generate it with bakeVertexData().
@@ -110,5 +111,52 @@ export class VertexAnimationBaker {
         );
         texture.name = "VAT" + this._mesh.skeleton.name;
         return texture;
+    }
+    /**
+     * Serializes our vertexData to an object, with a nice string for the vertexData.
+     * @returns Object
+     */
+    public serializeBakedVertexDataToObject(vertexData: Float32Array): Record<string, any> {
+        if (!this._mesh.skeleton) {
+            throw new Error("No skeleton in this mesh.");
+        }
+
+        // this converts the float array to a serialized base64 string, ~1.3x larger
+        // than the original.
+        const boneCount = this._mesh.skeleton.bones.length;
+        const width = (boneCount + 1) * 4;
+        const height = vertexData.length / ((boneCount + 1) * 4 * 4);
+        const data = {
+            vertexData: GenerateBase64StringFromPixelData(vertexData, { width, height }),
+            width,
+            height
+        };
+        return data;
+    }
+    /**
+     * Loads previously baked data.
+     * @returns self
+     */
+    public loadBakedVertexDataFromObject(data: Record<string, any>): Float32Array {
+        const vertexData = new Float32Array(
+            DecodeBase64ToBinary(data.vertexData)
+        );
+        return vertexData;
+    }
+    /**
+     * Serializes our vertexData to a JSON string, with a nice string for the vertexData.
+     * Should be called right after bakeVertexData(), since we release the vertexData
+     * from memory on rebuild().
+     * @returns string
+     */
+    public serializeBakedVertexDataToJSON(vertexData: Float32Array): string {
+        return JSON.stringify(this.serializeBakedVertexDataToObject(vertexData));
+    }
+    /**
+     * Loads previously baked data.
+     * @returns self
+     */
+    public loadBakedJSON(json: string): Float32Array {
+        return this.loadBakedVertexDataFromObject(JSON.parse(json));
     }
 }
