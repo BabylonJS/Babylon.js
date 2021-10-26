@@ -1,3 +1,4 @@
+import { Engine } from "../../Engines/engine";
 import { TmpVectors, Vector2, Vector3 } from "../../Maths/math.vector";
 import { TransformNode } from "../../Meshes/transformNode";
 import { Logger } from "../../Misc/logger";
@@ -43,7 +44,7 @@ interface IDetectedStep {
 }
 
 class FirstStepDetector {
-    private _samples = new CircleBuffer(60);
+    private _samples = new CircleBuffer(20);
     private _entropy = 0;
 
     public onFirstStepDetected: Observable<IDetectedStep> = new Observable<IDetectedStep>();
@@ -132,7 +133,7 @@ class FirstStepDetector {
     }
 
     private get _samePointCheckStartIdx() {
-        return this._samples.length / 3;
+        return Math.floor(this._samples.length / 3);
     }
 
     private get _samePointSquaredDistanceThreshold() {
@@ -156,11 +157,11 @@ class FirstStepDetector {
     }
 
     private get _entropyDecayFactor() {
-        return 0.98;
+        return 0.93;
     }
 
     private get _entropyThreshold() {
-        return 0.25;
+        return 0.4;
     }
 }
 
@@ -220,7 +221,7 @@ class WalkingTracker {
         const projDistSquared = this._currentPosition.lengthSquared() - (dot / this._axisLength) * (dot / this._axisLength);
 
         // TODO: Extricate the magic.
-        this._vitality *= (0.95 - 100 * Math.max(projDistSquared - 0.0016, 0) + Math.max(this._t - priorT, 0));
+        this._vitality *= (0.92 - 100 * Math.max(projDistSquared - 0.0016, 0) + Math.max(this._t - priorT, 0));
     }
 
     public update(x: number, y: number) {
@@ -275,13 +276,21 @@ class WalkingTracker {
 }
 
 class Walker {
+    private _engine: Engine;
     private _detector = new FirstStepDetector();
     private _walker: Nullable<WalkingTracker> = null;
     private _movement = new Vector2();
+    private _millisecondsSinceLastUpdate: number = Walker._MillisecondsPerUpdate;
+
+    private static get _MillisecondsPerUpdate(): number {
+        // 15 FPS
+        return 1000 / 15;
+    }
 
     public movementThisFrame: Vector3 = Vector3.Zero();
 
-    constructor() {
+    constructor(engine: Engine) {
+        this._engine = engine;
         this._detector.onFirstStepDetected.add((event) => {
             if (!this._walker) {
                 this._walker = new WalkingTracker(event.leftApex, event.rightApex, event.currentPosition, event.currentStepDirection);
@@ -299,16 +308,21 @@ class Walker {
         forward.y = 0;
         forward.normalize();
 
-        this._detector.update(position.x, position.z, forward.x, forward.z);
-        if (this._walker) {
-            const updated = this._walker.update(position.x, position.z);
-            if (!updated) {
-                this._walker = null;
+        // Enforce reduced framerate
+        this._millisecondsSinceLastUpdate += this._engine.getDeltaTime();
+        if (this._millisecondsSinceLastUpdate >= Walker._MillisecondsPerUpdate) {
+            this._millisecondsSinceLastUpdate -= Walker._MillisecondsPerUpdate;
+            this._detector.update(position.x, position.z, forward.x, forward.z);
+            if (this._walker) {
+                const updated = this._walker.update(position.x, position.z);
+                if (!updated) {
+                    this._walker = null;
+                }
             }
+            this._movement.scaleInPlace(0.85);
         }
 
         this.movementThisFrame.set(this._movement.x, 0, this._movement.y);
-        this._movement.scaleInPlace(0.96);
     }
 }
 
@@ -413,7 +427,7 @@ export class WebXRWalkingLocomotion extends WebXRAbstractFeature {
             return false;
         }
 
-        this._walker = new Walker();
+        this._walker = new Walker(this._sessionManager.scene.getEngine());
         return true;
     }
 
