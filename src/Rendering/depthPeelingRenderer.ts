@@ -164,7 +164,7 @@ export class DepthPeelingRenderer {
         // 2 for ping pong
         // Note that depth peeling does not need a depth buffer attached to the render framebuffer as the front/back depths are stored in the Red/Green texture
         // and the shader is taking care of computing the right values
-        this._depthMrts = [new MultiRenderTarget("depthPeelingDepth0", size, 1, this._scene, { generateDepthBuffer: false }), new MultiRenderTarget("depthPeelingDepth1", size, 1, this._scene, { generateDepthBuffer: false })];
+        this._depthMrts = [new MultiRenderTarget("depthPeelingDepth0", size, 1, this._scene), new MultiRenderTarget("depthPeelingDepth1", size, 1, this._scene)];
         this._colorMrts = [new MultiRenderTarget("depthPeelingColor0", size, 1, this._scene, { generateDepthBuffer: false }), new MultiRenderTarget("depthPeelingColor1", size, 1, this._scene, { generateDepthBuffer: false })];
         this._blendBackMrt = new MultiRenderTarget("depthPeelingBack", size, 1, this._scene, { generateDepthBuffer: false });
 
@@ -251,7 +251,7 @@ export class DepthPeelingRenderer {
             }
             this._thinTextures[6] = new ThinTexture(this._blendBackTexture);
 
-            //prePassRenderer.defaultRT.renderTarget!._shareDepth(this._depthMrts[0].renderTarget!);
+            prePassRenderer.defaultRT.renderTarget!._shareDepth(this._depthMrts[0].renderTarget!);
         }
 
         return true;
@@ -404,6 +404,8 @@ export class DepthPeelingRenderer {
 
         this._engine.setAlphaMode(Constants.ALPHA_ONEONE); // the value does not matter (as MAX operation does not use them) but the src and dst color factors should not use SRC_ALPHA else WebGPU will throw a validation error
         this._engine.setAlphaEquation(Constants.ALPHA_EQUATION_MAX);
+        this._engine.depthCullingState.depthMask = false;
+        this._engine.depthCullingState.depthTest = true;
         this._engine.applyStates();
 
         this._currentPingPongState = 1;
@@ -439,6 +441,7 @@ export class DepthPeelingRenderer {
 
             this._engine.setAlphaMode(Constants.ALPHA_ONEONE); // the value does not matter (as MAX operation does not use them) but the src and dst color factors should not use SRC_ALPHA else WebGPU will throw a validation error
             this._engine.setAlphaEquation(Constants.ALPHA_EQUATION_MAX);
+            this._engine.depthCullingState.depthTest = false;
             this._engine.applyStates();
 
             // Render
@@ -465,6 +468,8 @@ export class DepthPeelingRenderer {
         this._finalCompose(writeId);
 
         (this._scene.prePassRenderer! as any)._enabled = true;
+        this._engine.depthCullingState.depthMask = true;
+        this._engine.depthCullingState.depthTest = true;
     }
 
     /**
