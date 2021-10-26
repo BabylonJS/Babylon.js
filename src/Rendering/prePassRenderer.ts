@@ -693,7 +693,7 @@ export class PrePassRenderer {
         let enablePrePass = false;
         this._scene.imageProcessingConfiguration.applyByPostProcess = false;
 
-        if (this._scene._depthPeelingRenderer) {
+        if (this._scene._depthPeelingRenderer && this._scene.useOrderIndependentTransparency) {
             this._scene._depthPeelingRenderer.setPrePassRenderer(this);
             enablePrePass = true;
         }
