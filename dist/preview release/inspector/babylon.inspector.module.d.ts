@@ -2186,8 +2186,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         private _originalTexture;
         /** This is a hidden texture which is only responsible for holding the actual texture memory in the original engine */
         private _target;
-        /** The internal texture representation of the original texture */
-        private _originalInternalTexture;
+        private _originalTextureProperties;
         /** Keeps track of whether we have modified the texture */
         private _didEdit;
         private _plane;
@@ -6850,8 +6849,7 @@ declare module INSPECTOR {
         private _originalTexture;
         /** This is a hidden texture which is only responsible for holding the actual texture memory in the original engine */
         private _target;
-        /** The internal texture representation of the original texture */
-        private _originalInternalTexture;
+        private _originalTextureProperties;
         /** Keeps track of whether we have modified the texture */
         private _didEdit;
         private _plane;

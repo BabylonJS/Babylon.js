@@ -15,6 +15,7 @@
 
 ### General
 
+- Added `getControlsByType` to `AdvancedDynamicTexture` ([BlakeOne](https://github.com/BlakeOne))
 - Added `zoomToMouseLocation` on `ArcRotateCamera` ([lovettchris](https://github.com/lovettchris))
 - Added static CenterToRef for vectors 2/3/4 ([aWeirdo](https://github.com/aWeirdo))
 - Added ability to view images (ktx2, png, jpg) to the sandbox. ([bghgary](https://github.com/bghgary))
@@ -323,6 +324,7 @@
 - Fix small typo in transformNode getDirectionToRef method definition. ([PirateJC](https://github.com/piratejc))
 - Fix textures not properly inverting along the vertical axis when using ImageBitmaps ([nmrugg](https://github.com/nmrugg))
 - Fix for SkyMaterial sun position not working with non-default azimuth  ([AdversInc](https://github.com/adversinc))
+- Fix issue where default free camera rotation didn't work during pointer lock ([PolygonalSun](https://github.com/PolygonalSun))
 
 ## Breaking changes
 

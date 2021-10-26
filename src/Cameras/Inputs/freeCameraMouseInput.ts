@@ -85,7 +85,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
 
                 let srcElement = <HTMLElement>(evt.srcElement || evt.target);
 
-                if (p.type === PointerEventTypes.POINTERDOWN && srcElement && (this._currentActiveButton === -1 || isTouch))  {
+                if (p.type === PointerEventTypes.POINTERDOWN && srcElement && (this._currentActiveButton === -1 || isTouch)) {
                     try {
                         srcElement.setPointerCapture(evt.pointerId);
                     } catch (e) {
@@ -123,36 +123,34 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                         evt.preventDefault();
                     }
                 } else if (p.type === PointerEventTypes.POINTERMOVE) {
-                    if (!this.previousPosition) {
-                        if (engine.isPointerLock && this._onMouseMove) {
-                            this._onMouseMove(p.event);
+
+                    if (engine.isPointerLock && this._onMouseMove) {
+                        this._onMouseMove(p.event);
+                    }
+                    else if (this.previousPosition) {
+                        var offsetX = evt.clientX - this.previousPosition.x;
+                        var offsetY = evt.clientY - this.previousPosition.y;
+                        if (this.camera.getScene().useRightHandedSystem) {
+                            offsetX *= -1;
+                        }
+                        if (this.camera.parent && this.camera.parent._getWorldMatrixDeterminant() < 0) {
+                            offsetX *= -1;
                         }
 
-                        return;
-                    }
+                        if (this._allowCameraRotation) {
+                            this.camera.cameraRotation.y += offsetX / this.angularSensibility;
+                            this.camera.cameraRotation.x += offsetY / this.angularSensibility;
+                        }
+                        this.onPointerMovedObservable.notifyObservers({ offsetX: offsetX, offsetY: offsetY });
 
-                    var offsetX = evt.clientX - this.previousPosition.x;
-                    var offsetY = evt.clientY - this.previousPosition.y;
-                    if (this.camera.getScene().useRightHandedSystem) {
-                        offsetX *= -1;
-                    }
-                    if (this.camera.parent && this.camera.parent._getWorldMatrixDeterminant() < 0) {
-                        offsetX *= -1;
-                    }
+                        this.previousPosition = {
+                            x: evt.clientX,
+                            y: evt.clientY,
+                        };
 
-                    if (this._allowCameraRotation) {
-                        this.camera.cameraRotation.y += offsetX / this.angularSensibility;
-                        this.camera.cameraRotation.x += offsetY / this.angularSensibility;
-                    }
-                    this.onPointerMovedObservable.notifyObservers({ offsetX: offsetX, offsetY: offsetY });
-
-                    this.previousPosition = {
-                        x: evt.clientX,
-                        y: evt.clientY,
-                    };
-
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
+                        if (!noPreventDefault) {
+                            evt.preventDefault();
+                        }
                     }
                 }
             };
