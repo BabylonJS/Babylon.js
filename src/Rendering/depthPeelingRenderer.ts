@@ -54,7 +54,7 @@ export class DepthPeelingRenderer {
     private _blendBackMrt: MultiRenderTarget;
 
     private _blendBackEffectWrapper: EffectWrapper;
-    private _blendBackEffectWrapper2: EffectWrapper;
+    private _blendBackEffectWrapperPingPong: EffectWrapper;
     private _finalEffectWrapper: EffectWrapper;
     private _effectRenderer: EffectRenderer;
 
@@ -263,7 +263,7 @@ export class DepthPeelingRenderer {
             samplerNames: ["uBackColor"],
             uniformNames: [],
         });
-        this._blendBackEffectWrapper2 = new EffectWrapper({
+        this._blendBackEffectWrapperPingPong = new EffectWrapper({
             fragmentShader: "oitBackBlend",
             useShaderStore: true,
             engine: this._engine,
@@ -362,7 +362,7 @@ export class DepthPeelingRenderer {
      * @param transparentSubMeshes List of transparent meshes to render
      */
     public render(transparentSubMeshes: SmartArray<SubMesh>): void {
-        if (!this._blendBackEffectWrapper.effect.isReady() || !this._blendBackEffectWrapper2.effect.isReady() || !this._finalEffectWrapper.effect.isReady() || !this._updateTextures()) {
+        if (!this._blendBackEffectWrapper.effect.isReady() || !this._blendBackEffectWrapperPingPong.effect.isReady() || !this._finalEffectWrapper.effect.isReady() || !this._updateTextures()) {
             return;
         }
 
@@ -454,7 +454,7 @@ export class DepthPeelingRenderer {
             this._engine.setAlphaMode(Constants.ALPHA_LAYER_ACCUMULATE);
             this._engine.applyStates();
 
-            const blendBackEffectWrapper = writeId === 0 || !this._useRenderPasses ? this._blendBackEffectWrapper : this._blendBackEffectWrapper2;
+            const blendBackEffectWrapper = writeId === 0 || !this._useRenderPasses ? this._blendBackEffectWrapper : this._blendBackEffectWrapperPingPong;
             this._engine.enableEffect(blendBackEffectWrapper._drawWrapper);
             blendBackEffectWrapper.effect.setTexture("uBackColor", this._thinTextures[writeId * 3 + 2]);
             this._effectRenderer.render(blendBackEffectWrapper);
