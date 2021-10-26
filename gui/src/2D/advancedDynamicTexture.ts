@@ -291,12 +291,12 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     * @param typeName defines the type name to search for
     * @returns an array of all controls found
     */
-     public getControlsByType(typeName: string): Control[]  {
-        return this._getControlsByKey("typeName", typeName);
+    public getControlsByType(typeName: string): Control[]  {
+        return this._filterControls((control) => control.typeName === typeName);
     }
 
-    private _getControlsByKey(key: string, value: any): Control[] {
-        return this._rootContainer.getDescendants().filter((control) => control[key as keyof Control] === value);
+    private _filterControls(predicate: (control: Control) => boolean): Control[] {
+        return this._rootContainer.getDescendants().filter(predicate);
     }
 
     /**
