@@ -15,7 +15,7 @@
 
 ### General
 
-- Added `getControlsByType` and `_filterControls` to `AdvancedDynamicTexture` ([BlakeOne](https://github.com/BlakeOne), [sebavan](https://github.com/sebavan))
+- Added `getControlsByType` to `AdvancedDynamicTexture` ([BlakeOne](https://github.com/BlakeOne))
 - Added `zoomToMouseLocation` on `ArcRotateCamera` ([lovettchris](https://github.com/lovettchris))
 - Added static CenterToRef for vectors 2/3/4 ([aWeirdo](https://github.com/aWeirdo))
 - Added ability to view images (ktx2, png, jpg) to the sandbox. ([bghgary](https://github.com/bghgary))
