@@ -5929,6 +5929,8 @@ declare module BABYLON {
         get uid(): string;
         /** @hidden */
         _prefiltered: boolean;
+        /** @hidden */
+        _forceSerialize: boolean;
         /**
          * Return a string representation of the texture.
          * @returns the texture as a string
