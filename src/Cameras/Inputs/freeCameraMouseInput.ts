@@ -32,6 +32,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
     private _onMouseMove: Nullable<(e: IMouseEvent) => any>;
     private _observer: Nullable<Observer<PointerInfo>>;
     private previousPosition: Nullable<{ x: number; y: number }> = null;
+    private _usingNative = false;
 
     /**
      * Observable for when a pointer move event occurs containing the move offset
@@ -66,6 +67,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         var engine = this.camera.getEngine();
         const element = engine.getInputElement();
+        if (!engine.getHostDocument()) this._usingNative = true;
 
         if (!this._pointerInput) {
             this._pointerInput = (p) => {
@@ -85,9 +87,9 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
 
                 let srcElement = <HTMLElement>(evt.srcElement || evt.target);
 
-                if (p.type === PointerEventTypes.POINTERDOWN && srcElement) {
+                if (p.type === PointerEventTypes.POINTERDOWN && (srcElement || this._usingNative)) {
                     try {
-                        srcElement.setPointerCapture(evt.pointerId);
+                        srcElement?.setPointerCapture(evt.pointerId);
                     } catch (e) {
                         //Nothing to do with the error. Execution will continue.
                     }
@@ -110,9 +112,9 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                     if (engine.isPointerLock && this._onMouseMove) {
                         this._onMouseMove(p.event);
                     }
-                } else if (srcElement && (p.type === PointerEventTypes.POINTERUP || (p.type === PointerEventTypes.POINTERMOVE && p.event.button === this._currentActiveButton && this._currentActiveButton !== -1 && !this._usingSafari))) {
+                } else if ((srcElement || this._usingNative) && (p.type === PointerEventTypes.POINTERUP || (p.type === PointerEventTypes.POINTERMOVE && p.event.button === this._currentActiveButton && this._currentActiveButton !== -1 && !this._usingSafari))) {
                     try {
-                        srcElement.releasePointerCapture(evt.pointerId);
+                        srcElement?.releasePointerCapture(evt.pointerId);
                     } catch (e) {
                         //Nothing to do with the error.
                     }
