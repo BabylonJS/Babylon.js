@@ -24,6 +24,7 @@ export class WebGPUMaterialContext implements IMaterialContext {
     private static _Counter = 0;
 
     public uniqueId: number;
+    public updateId: number;
     public isDirty: boolean;
     public samplers: { [name: string]: Nullable<IWebGPUMaterialContextSamplerCache> };
     public textures: { [name: string]: Nullable<IWebGPUMaterialContextTextureCache> };
@@ -43,6 +44,7 @@ export class WebGPUMaterialContext implements IMaterialContext {
 
     constructor() {
         this.uniqueId = WebGPUMaterialContext._Counter++;
+        this.updateId = 0;
         this.reset();
     }
 
@@ -66,7 +68,12 @@ export class WebGPUMaterialContext implements IMaterialContext {
         samplerCache.sampler = sampler;
         samplerCache.hashCode = sampler ? WebGPUCacheSampler.GetSamplerHashCode(sampler) : 0;
 
-        this.isDirty ||= currentHashCode !== samplerCache.hashCode;
+        const isDirty = currentHashCode !== samplerCache.hashCode;
+        if (isDirty) {
+            this.updateId++;
+        }
+
+        this.isDirty ||= isDirty;
     }
 
     public setTexture(name: string, texture: Nullable<InternalTexture | ExternalTexture>): void {
@@ -101,6 +108,11 @@ export class WebGPUMaterialContext implements IMaterialContext {
 
         textureCache.texture = texture;
 
-        this.isDirty ||= currentTextureId !== (texture?.uniqueId ?? -1);
+        const isDirty = currentTextureId !== (texture?.uniqueId ?? -1);
+        if (isDirty) {
+            this.updateId++;
+        }
+
+        this.isDirty ||= isDirty;
     }
 }

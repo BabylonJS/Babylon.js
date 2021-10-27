@@ -1,3 +1,6 @@
+/**
+ * Implementation based on https://medium.com/@shrekshao_71662/dual-depth-peeling-implementation-in-webgl-11baa061ba4b
+ */
 import { Constants } from "../Engines/constants";
 import { Engine } from "../Engines/engine";
 import { Effect } from "../Materials/effect";
@@ -13,6 +16,8 @@ import { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
 import { PrePassRenderer } from "./prePassRenderer";
 import { InternalTexture } from "../Materials/Textures/internalTexture";
 import { Logger } from "../Misc/logger";
+import { IMaterialContext } from "../Engines/IMaterialContext";
+import { DrawWrapper } from "../Materials/drawWrapper";
 
 import "../Shaders/postprocess.vertex";
 import "../Shaders/oitFinal.fragment";
@@ -49,15 +54,17 @@ export class DepthPeelingRenderer {
     private _blendBackMrt: MultiRenderTarget;
 
     private _blendBackEffectWrapper: EffectWrapper;
+    private _blendBackEffectWrapperPingPong: EffectWrapper;
     private _finalEffectWrapper: EffectWrapper;
     private _effectRenderer: EffectRenderer;
 
-    private _passCount: number;
     private _currentPingPongState: number = 0;
     private _prePassEffectConfiguration: DepthPeelingEffectConfiguration;
 
     private _blendBackTexture: InternalTexture;
-    private _layoutCache = [[true], [true, true], [true, true, true]];
+    private _layoutCacheFormat = [[true], [true, true], [true, true, true]];
+    private _layoutCache: number[][] = [];
+    private _renderPassIds: number[];
 
     private static _DEPTH_CLEAR_VALUE = -99999.0;
     private static _MIN_DEPTH = 0;
@@ -68,6 +75,38 @@ export class DepthPeelingRenderer {
         new Color4(-DepthPeelingRenderer._MIN_DEPTH, DepthPeelingRenderer._MAX_DEPTH, 0, 0),
         new Color4(0, 0, 0, 0)
     ];
+
+    private _passCount: number;
+    /**
+     * Number of depth peeling passes. As we are using dual depth peeling, each pass two levels of transparency are processed.
+     */
+    public get passCount(): number {
+        return this._passCount;
+    }
+
+    public set passCount(count: number) {
+        if (this._passCount === count) {
+            return;
+        }
+        this._passCount = count;
+        this._createRenderPassIds();
+    }
+
+    private _useRenderPasses: boolean;
+    /**
+     * Instructs the renderer to use render passes. It is an optimization that makes the rendering faster for some engines (like WebGPU) but that consumes more memory, so it is disabled by default.
+     */
+    public get useRenderPasses() {
+        return this._useRenderPasses;
+    }
+
+    public set useRenderPasses(usePasses: boolean) {
+        if (this._useRenderPasses === usePasses) {
+            return;
+        }
+        this._useRenderPasses = usePasses;
+        this._createRenderPassIds();
+    }
 
     /**
      * Instanciates the depth peeling renderer
@@ -86,9 +125,34 @@ export class DepthPeelingRenderer {
             return;
         }
 
+        for (let i = 0; i < this._layoutCacheFormat.length; ++i) {
+            this._layoutCache[i] = this._engine.buildTextureLayout(this._layoutCacheFormat[i]);
+        }
+
+        this._renderPassIds = [];
+        this.useRenderPasses = false;
+
         this._prePassEffectConfiguration = new DepthPeelingEffectConfiguration();
         this._createTextures();
         this._createEffects();
+    }
+
+    private _createRenderPassIds(): void {
+        this._releaseRenderPassIds();
+        if (this._useRenderPasses) {
+            for (let i = 0; i < this._passCount + 1; ++i) {
+                if (!this._renderPassIds[i]) {
+                    this._renderPassIds[i] = this._engine.createRenderPassId(`DepthPeelingRenderer - pass #${i}`);
+                }
+            }
+        }
+    }
+
+    private _releaseRenderPassIds(): void {
+        for (let i = 0; i < this._renderPassIds.length; ++i) {
+            this._engine.releaseRenderPassId(this._renderPassIds[i]);
+        }
+        this._renderPassIds = [];
     }
 
     private _createTextures() {
@@ -99,8 +163,8 @@ export class DepthPeelingRenderer {
 
         // 2 for ping pong
         this._depthMrts = [new MultiRenderTarget("depthPeelingDepth0", size, 1, this._scene), new MultiRenderTarget("depthPeelingDepth1", size, 1, this._scene)];
-        this._colorMrts = [new MultiRenderTarget("depthPeelingColor0", size, 1, this._scene), new MultiRenderTarget("depthPeelingColor1", size, 1, this._scene)];
-        this._blendBackMrt = new MultiRenderTarget("depthPeelingBack", size, 1, this._scene);
+        this._colorMrts = [new MultiRenderTarget("depthPeelingColor0", size, 1, this._scene, { generateDepthBuffer: false }), new MultiRenderTarget("depthPeelingColor1", size, 1, this._scene, { generateDepthBuffer: false })];
+        this._blendBackMrt = new MultiRenderTarget("depthPeelingBack", size, 1, this._scene, { generateDepthBuffer: false });
 
         // 0 is a depth texture
         // 1 is a color texture
@@ -108,7 +172,7 @@ export class DepthPeelingRenderer {
             {
                 format: Constants.TEXTUREFORMAT_RG,
                 samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-                type: Constants.TEXTURETYPE_FLOAT,
+                type: this._engine.getCaps().textureFloatLinearFiltering ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_HALF_FLOAT,
             } as InternalTextureCreationOptions,
             {
                 format: Constants.TEXTUREFORMAT_RGBA,
@@ -118,9 +182,9 @@ export class DepthPeelingRenderer {
         ];
 
         for (let i = 0; i < 2; i++) {
-            const depthTexture = this._engine._createInternalTexture(size, optionsArray[0]);
-            const frontColorTexture = this._engine._createInternalTexture(size, optionsArray[1]);
-            const backColorTexture = this._engine._createInternalTexture(size, optionsArray[1]);
+            const depthTexture = this._engine._createInternalTexture(size, optionsArray[0], false);
+            const frontColorTexture = this._engine._createInternalTexture(size, optionsArray[1], false);
+            const backColorTexture = this._engine._createInternalTexture(size, optionsArray[1], false);
 
             this._depthMrts[i].setInternalTexture(depthTexture, 0);
             this._depthMrts[i].setInternalTexture(frontColorTexture, 1);
@@ -199,6 +263,13 @@ export class DepthPeelingRenderer {
             samplerNames: ["uBackColor"],
             uniformNames: [],
         });
+        this._blendBackEffectWrapperPingPong = new EffectWrapper({
+            fragmentShader: "oitBackBlend",
+            useShaderStore: true,
+            engine: this._engine,
+            samplerNames: ["uBackColor"],
+            uniformNames: [],
+        });
 
         this._finalEffectWrapper = new EffectWrapper({
             fragmentShader: "oitFinal",
@@ -229,10 +300,23 @@ export class DepthPeelingRenderer {
     }
 
     private _renderSubMeshes(transparentSubMeshes: SmartArray<SubMesh>) {
+        let mapMaterialContext: { [uniqueId: number]: IMaterialContext | undefined };
+        if (this._useRenderPasses) {
+            mapMaterialContext = {};
+        }
         for (let j = 0; j < transparentSubMeshes.length; j++) {
             const material = transparentSubMeshes.data[j].getMaterial();
             let previousShaderHotSwapping = true;
             let previousBFC = false;
+
+            const subMesh = transparentSubMeshes.data[j];
+            let drawWrapper: DrawWrapper | undefined;
+            let firstDraw = false;
+
+            if (this._useRenderPasses) {
+                drawWrapper = subMesh._getDrawWrapper();
+                firstDraw = !drawWrapper;
+            }
 
             if (material) {
                 previousShaderHotSwapping = material.allowShaderHotSwapping;
@@ -241,7 +325,18 @@ export class DepthPeelingRenderer {
                 material.backFaceCulling = false;
             }
 
-            transparentSubMeshes.data[j].render(false);
+            subMesh.render(false);
+
+            if (firstDraw) { // first time we draw this submesh: we replace the material context
+                drawWrapper = subMesh._getDrawWrapper()!; // we are sure it is now non empty as we just rendered the submesh
+                if (drawWrapper.materialContext) {
+                    let newMaterialContext = mapMaterialContext![drawWrapper.materialContext.uniqueId];
+                    if (!newMaterialContext) {
+                        newMaterialContext = mapMaterialContext![drawWrapper.materialContext.uniqueId] = this._engine.createMaterialContext();
+                    }
+                    subMesh._getDrawWrapper()!.materialContext = newMaterialContext;
+                }
+            }
 
             if (material) {
                 material.allowShaderHotSwapping = previousShaderHotSwapping;
@@ -251,10 +346,9 @@ export class DepthPeelingRenderer {
     }
 
     private _finalCompose(writeId: number) {
-        this._engine._bindUnboundFramebuffer(null);
+        this._engine.restoreDefaultFramebuffer();
 
-        this._engine.setAlphaMode(Constants.ALPHA_SRC_DSTONEMINUSSRCALPHA);
-        this._engine._alphaState.alphaBlend = false;
+        this._engine.setAlphaMode(Constants.ALPHA_DISABLE);
         this._engine.applyStates();
 
         this._engine.enableEffect(this._finalEffectWrapper._drawWrapper);
@@ -268,7 +362,7 @@ export class DepthPeelingRenderer {
      * @param transparentSubMeshes List of transparent meshes to render
      */
     public render(transparentSubMeshes: SmartArray<SubMesh>): void {
-        if (!this._blendBackEffectWrapper.effect.isReady() || !this._finalEffectWrapper.effect.isReady() || !this._updateTextures()) {
+        if (!this._blendBackEffectWrapper.effect.isReady() || !this._blendBackEffectWrapperPingPong.effect.isReady() || !this._finalEffectWrapper.effect.isReady() || !this._updateTextures()) {
             return;
         }
 
@@ -277,40 +371,46 @@ export class DepthPeelingRenderer {
             return;
         }
 
+        const currentRenderPassId = this._engine.currentRenderPassId;
+
         (this._scene.prePassRenderer! as any)._enabled = false;
+
+        if (this._useRenderPasses) {
+            this._engine.currentRenderPassId = this._renderPassIds[0];
+        }
 
         // Clears
         this._engine.bindFramebuffer(this._depthMrts[0].renderTarget!);
-        let attachments = this._engine.buildTextureLayout(this._layoutCache[0]);
-        this._engine.bindAttachments(attachments);
+        this._engine.bindAttachments(this._layoutCache[0]);
         this._engine.clear(this._colorCache[0], true, false, false);
 
         this._engine.bindFramebuffer(this._depthMrts[1].renderTarget!);
+        this._engine.bindAttachments(this._layoutCache[0]);
         this._engine.clear(this._colorCache[1], true, false, false);
 
         this._engine.bindFramebuffer(this._colorMrts[0].renderTarget!);
-        attachments = this._engine.buildTextureLayout(this._layoutCache[1]);
-        this._engine.bindAttachments(attachments);
+        this._engine.bindAttachments(this._layoutCache[1]);
         this._engine.clear(this._colorCache[2], true, false, false);
 
         this._engine.bindFramebuffer(this._colorMrts[1].renderTarget!);
+        this._engine.bindAttachments(this._layoutCache[1]);
         this._engine.clear(this._colorCache[2], true, false, false);
 
         // Draw depth for first pass
         this._engine.bindFramebuffer(this._depthMrts[0].renderTarget!);
-        attachments = this._engine.buildTextureLayout(this._layoutCache[0]);
-        this._engine.bindAttachments(attachments);
+        this._engine.bindAttachments(this._layoutCache[0]);
 
+        this._engine.setAlphaMode(Constants.ALPHA_ONEONE); // the value does not matter (as MAX operation does not use them) but the src and dst color factors should not use SRC_ALPHA else WebGPU will throw a validation error
         this._engine.setAlphaEquation(Constants.ALPHA_EQUATION_MAX);
-        this._engine._alphaState.alphaBlend = true;
         this._engine.depthCullingState.depthMask = false;
         this._engine.depthCullingState.depthTest = true;
-        this._engine.depthCullingState.cull = false;
         this._engine.applyStates();
 
         this._currentPingPongState = 1;
         // Render
         this._renderSubMeshes(transparentSubMeshes);
+
+        this._scene.resetCachedMaterial();
 
         // depth peeling ping-pong
         let readId = 0;
@@ -321,47 +421,53 @@ export class DepthPeelingRenderer {
             writeId = 1 - readId;
             this._currentPingPongState = readId;
 
+            if (this._useRenderPasses) {
+                this._engine.currentRenderPassId = this._renderPassIds[i + 1];
+            }
+
             // Clears
             this._engine.bindFramebuffer(this._depthMrts[writeId].renderTarget!);
-            attachments = this._engine.buildTextureLayout(this._layoutCache[0]);
-            this._engine.bindAttachments(attachments);
+            this._engine.bindAttachments(this._layoutCache[0]);
             this._engine.clear(this._colorCache[0], true, false, false);
 
             this._engine.bindFramebuffer(this._colorMrts[writeId].renderTarget!);
-            attachments = this._engine.buildTextureLayout(this._layoutCache[1]);
-            this._engine.bindAttachments(attachments);
+            this._engine.bindAttachments(this._layoutCache[1]);
             this._engine.clear(this._colorCache[2], true, false, false);
 
             this._engine.bindFramebuffer(this._depthMrts[writeId].renderTarget!);
-            attachments = this._engine.buildTextureLayout(this._layoutCache[2]);
-            this._engine.bindAttachments(attachments);
+            this._engine.bindAttachments(this._layoutCache[2]);
 
+            this._engine.setAlphaMode(Constants.ALPHA_ONEONE); // the value does not matter (as MAX operation does not use them) but the src and dst color factors should not use SRC_ALPHA else WebGPU will throw a validation error
             this._engine.setAlphaEquation(Constants.ALPHA_EQUATION_MAX);
-            this._engine._alphaState.alphaBlend = true;
             this._engine.depthCullingState.depthTest = false;
             this._engine.applyStates();
 
             // Render
             this._renderSubMeshes(transparentSubMeshes);
 
+            this._scene.resetCachedMaterial();
+
             // Back color
             this._engine.bindFramebuffer(this._blendBackMrt.renderTarget!);
-            attachments = this._engine.buildTextureLayout(this._layoutCache[0]);
-            this._engine.bindAttachments(attachments);
+            this._engine.bindAttachments(this._layoutCache[0]);
             this._engine.setAlphaEquation(Constants.ALPHA_EQUATION_ADD);
             this._engine.setAlphaMode(Constants.ALPHA_LAYER_ACCUMULATE);
             this._engine.applyStates();
 
-            this._engine.enableEffect(this._blendBackEffectWrapper._drawWrapper);
-            this._blendBackEffectWrapper.effect.setTexture("uBackColor", this._thinTextures[writeId * 3 + 2]);
-            this._effectRenderer.render(this._blendBackEffectWrapper);
+            const blendBackEffectWrapper = writeId === 0 || !this._useRenderPasses ? this._blendBackEffectWrapper : this._blendBackEffectWrapperPingPong;
+            this._engine.enableEffect(blendBackEffectWrapper._drawWrapper);
+            blendBackEffectWrapper.effect.setTexture("uBackColor", this._thinTextures[writeId * 3 + 2]);
+            this._effectRenderer.render(blendBackEffectWrapper);
         }
+
+        this._engine.currentRenderPassId = currentRenderPassId;
 
         // Final composition on default FB
         this._finalCompose(writeId);
 
         (this._scene.prePassRenderer! as any)._enabled = true;
         this._engine.depthCullingState.depthMask = true;
+        this._engine.depthCullingState.depthTest = true;
     }
 
     /**
@@ -372,5 +478,6 @@ export class DepthPeelingRenderer {
         this._blendBackEffectWrapper.dispose();
         this._finalEffectWrapper.dispose();
         this._effectRenderer.dispose();
+        this._releaseRenderPassIds();
     }
 }

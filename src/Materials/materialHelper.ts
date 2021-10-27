@@ -294,10 +294,12 @@ export class MaterialHelper {
      */
     public static PrepareDefinesForOIT(scene: Scene, defines: any, needAlphaBlending: boolean) {
         const previousDefine = defines.ORDER_INDEPENDENT_TRANSPARENCY;
+        const previousDefine16Bits = defines.ORDER_INDEPENDENT_TRANSPARENCY_16BITS;
 
         defines.ORDER_INDEPENDENT_TRANSPARENCY = scene.useOrderIndependentTransparency && needAlphaBlending;
+        defines.ORDER_INDEPENDENT_TRANSPARENCY_16BITS = !scene.getEngine().getCaps().textureFloatLinearFiltering;
 
-        if (previousDefine !== defines.ORDER_INDEPENDENT_TRANSPARENCY) {
+        if (previousDefine !== defines.ORDER_INDEPENDENT_TRANSPARENCY || previousDefine16Bits !== defines.ORDER_INDEPENDENT_TRANSPARENCY_16BITS) {
             defines.markAsUnprocessed();
         }
     }
