@@ -132,7 +132,12 @@
       "emissiveTexture": {
         "index": 3
       },
-      "name": "BoomBox_Mat"
+      "name": "BoomBox_Mat",
+	  "extensions": {
+                "KHR_materials_emissive_strength": {
+                    "emissiveStrength": 0.2
+                }
+            }
     }
   ],
   "nodes": [
