@@ -18,6 +18,7 @@ import { MaterialDefines } from "../Materials/materialDefines";
 import { Light } from "../Lights/light";
 import { Skeleton } from "../Bones/skeleton";
 import { MorphTargetManager } from "../Morph/morphTargetManager";
+import { BakedVertexAnimationManager } from "../BakedVertexAnimation/bakedVertexAnimationManager";
 import { IEdgesRenderer } from "../Rendering/edgesRenderer";
 import { SolidParticle } from "../Particles/solidParticle";
 import { Constants } from "../Engines/constants";
@@ -94,6 +95,7 @@ class _InternalAbstractMeshDataInfo {
     public _currentLODIsUpToDate: boolean = false;
     public _collisionRetryCount: number = 3;
     public _morphTargetManager: Nullable<MorphTargetManager> = null;
+    public _bakedVertexAnimationManager: Nullable<BakedVertexAnimationManager> = null;
     public _renderingGroupId = 0;
     public _material: Nullable<Material> = null;
     public _materialForRenderPass: Array<Material | undefined>; // map a render pass id (index in the array) to a Material
@@ -284,6 +286,18 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         }
         this._internalAbstractMeshDataInfo._morphTargetManager = value;
         this._syncGeometryWithMorphTargetManager();
+    }
+
+    public get bakedVertexAnimationManager(): Nullable<BakedVertexAnimationManager> {
+        return this._internalAbstractMeshDataInfo._bakedVertexAnimationManager;
+    }
+
+    public set bakedVertexAnimationManager(value: Nullable<BakedVertexAnimationManager>) {
+        if (this._internalAbstractMeshDataInfo._bakedVertexAnimationManager === value) {
+            return;
+        }
+        this._internalAbstractMeshDataInfo._bakedVertexAnimationManager = value;
+        this._markSubMeshesAsAttributesDirty();
     }
 
     /** @hidden */

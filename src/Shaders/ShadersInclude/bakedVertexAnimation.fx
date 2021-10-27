@@ -1,11 +1,10 @@
-#ifdef INSTANCES
-    #define BVASNAME bakedVertexAnimationSettingsInstanced
-#else
-    #define BVASNAME bakedVertexAnimationSettings
-#endif
-
 #ifdef BAKED_VERTEX_ANIMATION_TEXTURE
-{
+    #ifdef INSTANCES
+        #define BVASNAME bakedVertexAnimationSettingsInstanced
+    #else
+        #define BVASNAME bakedVertexAnimationSettings
+    #endif
+
     // calculate the current frame for the VAT
     float VATStartFrame = BVASNAME.x;
     float VATEndFrame = BVASNAME.y;
@@ -47,5 +46,4 @@
     #endif
 
     finalWorld = finalWorld * VATInfluence;
-}
 #endif

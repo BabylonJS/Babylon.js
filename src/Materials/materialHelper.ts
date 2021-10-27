@@ -226,6 +226,11 @@ export class MaterialHelper {
         }
     }
 
+    public static PrepareDefinesForBakedVertexAnimation(mesh: AbstractMesh, defines: any) {
+        const manager = (<Mesh>mesh).bakedVertexAnimationManager;
+        defines["BAKED_VERTEX_ANIMATION_TEXTURE"] = manager && manager.isEnabled ? true : false;
+    }
+
     /**
      * Prepares the defines used in the shader depending on the attributes data available in the mesh
      * @param mesh The mesh containing the geometry data we will draw
@@ -236,7 +241,7 @@ export class MaterialHelper {
      * @param useVertexAlpha Precise whether vertex alpha should be used or not (override mesh info)
      * @returns false if defines are considered not dirty and have not been checked
      */
-    public static PrepareDefinesForAttributes(mesh: AbstractMesh, defines: any, useVertexColor: boolean, useBones: boolean, useMorphTargets = false, useVertexAlpha = true): boolean {
+    public static PrepareDefinesForAttributes(mesh: AbstractMesh, defines: any, useVertexColor: boolean, useBones: boolean, useMorphTargets = false, useVertexAlpha = true, useBakedVertexAnimation = true): boolean {
         if (!defines._areAttributesDirty && defines._needNormals === defines._normals && defines._needUVs === defines._uvs) {
             return false;
         }
@@ -266,6 +271,10 @@ export class MaterialHelper {
 
         if (useMorphTargets) {
             this.PrepareDefinesForMorphTargets(mesh, defines);
+        }
+
+        if (useBakedVertexAnimation) {
+            this.PrepareDefinesForBakedVertexAnimation(mesh, defines);
         }
 
         return true;
@@ -642,6 +651,13 @@ export class MaterialHelper {
         if (defines["NUM_MORPH_INFLUENCERS"]) {
             uniformsList.push("morphTargetInfluences");
         }
+
+        if (defines["BAKED_VERTEX_ANIMATION_TEXTURE"]) {
+            uniformsList.push("bakedVertexAnimationSettings");
+            uniformsList.push("bakedVertexAnimationTextureSizeInverted");
+            uniformsList.push("bakedVertexAnimationTime");
+            samplersList.push("bakedVertexAnimationTexture");
+        }
     }
 
     /**
@@ -742,6 +758,14 @@ export class MaterialHelper {
                     Logger.Error("Cannot add more vertex attributes for mesh " + mesh.name);
                 }
             }
+        }
+    }
+
+    public static PrepareAttributesForBakedVertexAnimation(attribs: string[], mesh: AbstractMesh, defines: any): void {
+        const enabled = defines["BAKED_VERTEX_ANIMATION_TEXTURE"] && defines["INSTANCES"];
+
+        if (enabled) {
+            attribs.push("bakedVertexAnimationSettingsInstanced");
         }
     }
 

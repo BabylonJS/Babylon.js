@@ -3,8 +3,8 @@ import { RawTexture } from "../Materials/Textures/rawTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { Mesh } from "../Meshes/mesh";
 import { Scene } from "../scene";
-import { GenerateBase64StringFromPixelData } from "./copyTools";
-import { DecodeBase64ToBinary } from "./stringTools";
+import { GenerateBase64StringFromPixelData } from "../Misc/copyTools";
+import { DecodeBase64ToBinary } from "../Misc/stringTools";
 
 /**
  * Class to bake vertex animation textures.
