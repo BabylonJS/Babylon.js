@@ -11,6 +11,7 @@ import { CommandButtonComponent } from "../../../commandButtonComponent";
 import { Image } from "babylonjs-gui/2D/controls/image";
 import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
 import { DataStorage } from "babylonjs/Misc/dataStorage";
+import { CssColor3LineComponent } from "../../../../sharedUiComponents/lines/cssColor3LineComponent";
 
 const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");
 const verticalMarginIcon: string = require("../../../../sharedUiComponents/imgs/verticalMarginIcon.svg");
@@ -174,10 +175,8 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 <TextLineComponent tooltip="" label="APPEARANCE" value=" " color="grey"></TextLineComponent>
                 {
                     (control as any).color !== undefined &&
-                    <TextInputLineComponent iconLabel={"Color"} icon={colorIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="color" onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        onChange={(newValue) => {
-                            if (newValue === "") { control.color = "Transparent" }
-                        }} />
+                    <CssColor3LineComponent iconLabel={"Color"} icon={colorIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="color" onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        />
                 }
                 {
                     (control as any).background !== undefined &&
