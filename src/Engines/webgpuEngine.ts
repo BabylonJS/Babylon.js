@@ -50,6 +50,7 @@ import { TwgslOptions, WebGPUTintWASM } from "./WebGPU/webgpuTintWASM";
 import { ExternalTexture } from "../Materials/Textures/externalTexture";
 import { WebGPUShaderProcessor } from "./WebGPU/webgpuShaderProcessor";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
+import { InternalTextureCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
 
 declare function importScripts(...urls: string[]): void;
 
@@ -1018,6 +1019,7 @@ export class WebGPUEngine extends Engine {
     /** @hidden */
     public applyStates() {
         this._stencilStateComposer.apply();
+        this._cacheRenderPipeline.setAlphaBlendEnabled(this._alphaState.alphaBlend);
     }
 
     /**
@@ -1788,6 +1790,74 @@ export class WebGPUEngine extends Engine {
 
     public updateTextureComparisonFunction(texture: InternalTexture, comparisonFunction: number): void {
         texture._comparisonFunction = comparisonFunction;
+    }
+
+    /**
+     * Creates an internal texture without binding it to a framebuffer
+     * @hidden
+     * @param size defines the size of the texture
+     * @param options defines the options used to create the texture
+     * @param delayGPUTextureCreation true to delay the texture creation the first time it is really needed. false to create it right away
+     * @param source source type of the texture
+     * @returns a new render target texture stored in an InternalTexture
+     */
+    public _createInternalTexture(size: TextureSize, options: boolean | InternalTextureCreationOptions, delayGPUTextureCreation = true, source = InternalTextureSource.Unknown): InternalTexture {
+        const fullOptions: InternalTextureCreationOptions = {};
+
+        if (options !== undefined && typeof options === "object") {
+            fullOptions.generateMipMaps = options.generateMipMaps;
+            fullOptions.type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_INT : options.type;
+            fullOptions.samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
+            fullOptions.format = options.format === undefined ? Constants.TEXTUREFORMAT_RGBA : options.format;
+            fullOptions.samples = options.samples ?? 1;
+            fullOptions.creationFlags = options.creationFlags ?? 0;
+        } else {
+            fullOptions.generateMipMaps = <boolean>options;
+            fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
+            fullOptions.samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
+            fullOptions.format = Constants.TEXTUREFORMAT_RGBA;
+            fullOptions.samples = 1;
+            fullOptions.creationFlags = 0;
+        }
+
+        if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+            fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        } else if (fullOptions.type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+            fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        }
+        if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
+            fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
+            Logger.Warn("Float textures are not supported. Type forced to TEXTURETYPE_UNSIGNED_BYTE");
+        }
+
+        const texture = new InternalTexture(this, source);
+
+        const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
+        const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
+        const layers = (<{ width: number; height: number; layers?: number }>size).layers || 0;
+
+        texture.baseWidth = width;
+        texture.baseHeight = height;
+        texture.width = width;
+        texture.height = height;
+        texture.depth = layers;
+        texture.isReady = true;
+        texture.samples = fullOptions.samples;
+        texture.generateMipMaps = fullOptions.generateMipMaps ? true : false;
+        texture.samplingMode = fullOptions.samplingMode;
+        texture.type = fullOptions.type;
+        texture.format = fullOptions.format;
+        texture.is2DArray = layers > 0;
+        texture._cachedWrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+        texture._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+
+        this._internalTexturesCache.push(texture);
+
+        if (!delayGPUTextureCreation) {
+            this._textureHelper.createGPUTextureForInternalTexture(texture, width, height, layers || 1, fullOptions.creationFlags);
+        }
+
+        return texture;
     }
 
     /**
@@ -2866,7 +2936,7 @@ export class WebGPUEngine extends Engine {
             return;
         }
 
-        if (!this.compatibilityMode && (this._currentDrawContext.isDirty || this._currentMaterialContext.isDirty || this._currentMaterialContext.forceBindGroupCreation)) {
+        if (!this.compatibilityMode && (this._currentDrawContext.isDirty(this._currentMaterialContext.updateId) || this._currentMaterialContext.isDirty || this._currentMaterialContext.forceBindGroupCreation)) {
             this._currentDrawContext.fastBundle = undefined;
         }
 
@@ -3092,6 +3162,11 @@ export class WebGPUEngine extends Engine {
 
     /** @hidden */
     public _unpackFlipY(value: boolean) { }
+
+    /** @hidden */
+    public _bindUnboundFramebuffer(framebuffer: Nullable<WebGLFramebuffer>) {
+        throw "_bindUnboundFramebuffer is not implementedin WebGPU! You probably want to use restoreDefaultFramebuffer or unBindFramebuffer instead";
+    }
 
     // TODO WEBGPU. All of the below should go once engine split with baseEngine.
 

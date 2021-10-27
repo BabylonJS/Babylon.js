@@ -3455,9 +3455,11 @@ export class ThinEngine {
      * @hidden
      * @param size defines the size of the texture
      * @param options defines the options used to create the texture
+     * @param delayGPUTextureCreation true to delay the texture creation the first time it is really needed. false to create it right away
+     * @param source source type of the texture
      * @returns a new render target texture stored in an InternalTexture
      */
-     public _createInternalTexture(size: TextureSize, options: boolean | InternalTextureCreationOptions): InternalTexture {
+     public _createInternalTexture(size: TextureSize, options: boolean | InternalTextureCreationOptions, delayGPUTextureCreation = true, source = InternalTextureSource.Unknown): InternalTexture {
         const fullOptions: InternalTextureCreationOptions = {};
 
         if (options !== undefined && typeof options === "object") {
@@ -3481,11 +3483,11 @@ export class ThinEngine {
         }
         if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
             fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
-            Logger.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
+            Logger.Warn("Float textures are not supported. Type forced to TEXTURETYPE_UNSIGNED_BYTE");
         }
 
         const gl = this._gl;
-        const texture = new InternalTexture(this, InternalTextureSource.Unknown);
+        const texture = new InternalTexture(this, source);
         const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
         const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
         const layers = (<{ width: number; height: number; layers?: number }>size).layers || 0;
