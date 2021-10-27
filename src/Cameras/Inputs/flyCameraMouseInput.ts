@@ -66,6 +66,7 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
     private previousPosition: Nullable<{ x: number, y: number }> = null;
     private noPreventDefault: boolean | undefined;
     private element: HTMLElement;
+    private _usingNative: boolean = false;
 
     /**
      * Listen to mouse events to control the camera.
@@ -82,6 +83,7 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
     public attachControl(noPreventDefault?: boolean): void {
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         this.noPreventDefault = noPreventDefault;
+        if (!this.camera.getEngine().getHostDocument()) this._usingNative = true;
 
         this._observer = this.camera.getScene().onPointerObservable.add(
             (p: any, s: any) => {
@@ -161,9 +163,9 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
         var srcElement = <HTMLElement>(e.srcElement || e.target);
 
         // Mouse down.
-        if (p.type === PointerEventTypes.POINTERDOWN && srcElement) {
+        if (p.type === PointerEventTypes.POINTERDOWN && (srcElement || this._usingNative)) {
             try {
-                srcElement.setPointerCapture(e.pointerId);
+                srcElement?.setPointerCapture(e.pointerId);
             } catch (e) {
                 // Nothing to do with the error. Execution continues.
             }
@@ -186,9 +188,9 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
             }
         } else
             // Mouse up.
-            if (p.type === PointerEventTypes.POINTERUP && srcElement) {
+            if (p.type === PointerEventTypes.POINTERUP && (srcElement || this._usingNative)) {
                 try {
-                    srcElement.releasePointerCapture(e.pointerId);
+                    srcElement?.releasePointerCapture(e.pointerId);
                 } catch (e) {
                     // Nothing to do with the error. Execution continues.
                 }
