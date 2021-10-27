@@ -2019,6 +2019,38 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_clearcoat" {
         private _loadClearCoatPropertiesAsync;
     }
 }
+declare module "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_emissive_strength" {
+    import { Nullable } from "babylonjs/types";
+    import { Material } from "babylonjs/Materials/material";
+    import { IMaterial } from "babylonjs-loaders/glTF/2.0/glTFLoaderInterfaces";
+    import { IGLTFLoaderExtension } from "babylonjs-loaders/glTF/2.0/glTFLoaderExtension";
+    import { GLTFLoader } from "babylonjs-loaders/glTF/2.0/glTFLoader";
+    /**
+     * [Experimental Spec](https://github.com/KhronosGroup/glTF/pull/1994)
+     */
+    export class KHR_materials_emissive_strength implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /**
+         * Defines a number that determines the order the extensions are applied.
+         */
+        order: number;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
+        private _loadEmissiveProperties;
+    }
+}
 declare module "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_sheen" {
     import { Nullable } from "babylonjs/types";
     import { Material } from "babylonjs/Materials/material";
@@ -2592,6 +2624,7 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/index" {
     export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_unlit";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_clearcoat";
+    export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_emissive_strength";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_sheen";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_specular";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_ior";
@@ -5010,6 +5043,33 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** @hidden */
         loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
         private _loadClearCoatPropertiesAsync;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
+     * [Experimental Spec](https://github.com/KhronosGroup/glTF/pull/1994)
+     */
+    export class KHR_materials_emissive_strength implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /**
+         * Defines a number that determines the order the extensions are applied.
+         */
+        order: number;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
+        private _loadEmissiveProperties;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
