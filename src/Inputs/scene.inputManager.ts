@@ -65,6 +65,7 @@ export class InputManager {
     /** This is a defensive check to not allow control attachment prior to an already active one. If already attached, previous control is unattached before attaching the new one. */
     private _alreadyAttached = false;
     private _alreadyAttachedTo: HTMLElement;
+    private _usingNative = false;
 
     // Observer
     private _onInputObserver: Nullable<Observer<IDeviceEvent>>;
@@ -177,6 +178,10 @@ export class InputManager {
 
         this._pointerX = evt.clientX - canvasRect.left;
         this._pointerY = evt.clientY - canvasRect.top;
+
+        if (this._usingNative) {
+            this._pointerY += canvasRect.height;
+        }
 
         this._unTranslatedPointerX = this._pointerX;
         this._unTranslatedPointerY = this._pointerY;
@@ -482,20 +487,23 @@ export class InputManager {
      */
     public attachControl(attachUp = true, attachDown = true, attachMove = true, elementToAttachTo: Nullable<HTMLElement> = null): void {
         let scene = this._scene;
+        let engine = scene.getEngine();
+
+        if (!engine.getHostDocument()) this._usingNative = true;
 
         if (!elementToAttachTo) {
-            elementToAttachTo = scene.getEngine().getInputElement();
+            elementToAttachTo = engine.getInputElement();
         }
 
-        if (!elementToAttachTo) {
+        if (!elementToAttachTo && !this._usingNative) {
             return;
         }
 
         if (this._alreadyAttached) {
             this.detachControl();
         }
-        this._alreadyAttachedTo = elementToAttachTo;
-        let engine = scene.getEngine();
+
+        if (elementToAttachTo) this._alreadyAttachedTo = elementToAttachTo;
 
         if (!this._deviceInputSystem) {
             this._deviceInputSystem = DeviceInputSystem.Create(engine);
@@ -899,18 +907,17 @@ export class InputManager {
      * Detaches all event handlers
      */
     public detachControl() {
-        if (!this._alreadyAttachedTo || !this._alreadyAttached) {
-            return;
+        if ((this._alreadyAttachedTo || this._usingNative) && this._alreadyAttached) {
+
+            this._deviceInputSystem.onInputChangedObservable.remove(this._onInputObserver);
+
+            // Cursor
+            if (this._alreadyAttachedTo && !this._scene.doNotHandleCursors) {
+                this._alreadyAttachedTo.style.cursor = this._scene.defaultCursor;
+            }
+
+            this._alreadyAttached = false;
         }
-
-        this._deviceInputSystem.onInputChangedObservable.remove(this._onInputObserver);
-
-        // Cursor
-        if (!this._scene.doNotHandleCursors) {
-            this._alreadyAttachedTo.style.cursor = this._scene.defaultCursor;
-        }
-
-        this._alreadyAttached = false;
     }
 
     /**

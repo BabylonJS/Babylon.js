@@ -34,6 +34,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
 
     private _currentActiveButton: number = -1;
     private _usingSafari = Tools.IsSafari();
+    private _usingNative = false;
 
     /**
      * Defines the buttons associated with the input to handle camera move.
@@ -52,6 +53,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
         const element = engine.getInputElement();
         var previousPinchSquaredDistance = 0;
         var previousMultiTouchPanPosition: Nullable<PointerTouch> = null;
+        if (!engine.getHostDocument()) this._usingNative = true;
 
         this.pointA = null;
         this.pointB = null;
@@ -99,9 +101,9 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                 this.onTouch(null, offsetX, offsetY);
                 this.pointA = null;
                 this.pointB = null;
-            } else if (p.type === PointerEventTypes.POINTERDOWN && srcElement) {
+            } else if (p.type === PointerEventTypes.POINTERDOWN && (srcElement || this._usingNative)) {
                 try {
-                    srcElement.setPointerCapture(evt.pointerId);
+                    srcElement?.setPointerCapture(evt.pointerId);
                 } catch (e) {
                     //Nothing to do with the error. Execution will continue.
                 }
@@ -133,9 +135,9 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                 }
             } else if (p.type === PointerEventTypes.POINTERDOUBLETAP) {
                 this.onDoubleTap(evt.pointerType);
-            } else if (srcElement && (p.type === PointerEventTypes.POINTERUP || (p.type === PointerEventTypes.POINTERMOVE && p.event.button === this._currentActiveButton && this._currentActiveButton !== -1 && !ignoreContext))) {
+            } else if ((srcElement || this._usingNative) && (p.type === PointerEventTypes.POINTERUP || (p.type === PointerEventTypes.POINTERMOVE && p.event.button === this._currentActiveButton && this._currentActiveButton !== -1 && !ignoreContext))) {
                 try {
-                    srcElement.releasePointerCapture(evt.pointerId);
+                    srcElement?.releasePointerCapture(evt.pointerId);
                 } catch (e) {
                     //Nothing to do with the error.
                 }
