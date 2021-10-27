@@ -34,15 +34,13 @@ import { Constants } from "../Engines/constants";
 import { EffectFallbacks } from './effectFallbacks';
 import { Effect, IEffectCreationOptions } from './effect';
 import { IMaterialDetailMapDefines, DetailMapConfiguration } from './material.detailMapConfiguration';
-import { IMaterialBakedVertexAnimationDefines, BakedVertexAnimationConfiguration } from "./material.bakedVertexAnimationConfiguration";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
 /** @hidden */
 export class StandardMaterialDefines extends MaterialDefines
     implements IImageProcessingConfigurationDefines,
-    IMaterialDetailMapDefines,
-    IMaterialBakedVertexAnimationDefines {
+    IMaterialDetailMapDefines {
     public MAINUV1 = false;
     public MAINUV2 = false;
     public MAINUV3 = false;
@@ -736,11 +734,6 @@ export class StandardMaterial extends PushMaterial {
      */
     public readonly detailMap = new DetailMapConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
 
-    /**
-     * Defines the vertex animation map parameters for the material.
-     */
-    public readonly bakedVertexAnimationMap = new BakedVertexAnimationConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
-
     protected _renderTargets = new SmartArray<RenderTargetTexture>(16);
     protected _worldViewProjectionMatrix = Matrix.Zero();
     protected _globalAmbientColor = new Color3(0, 0, 0);
@@ -1090,10 +1083,6 @@ export class StandardMaterial extends PushMaterial {
             return false;
         }
 
-        if (!this.bakedVertexAnimationMap.isReadyForSubMesh(defines, scene)) {
-            return false;
-        }
-
         if (defines._areImageProcessingDirty && this._imageProcessingConfiguration) {
             if (!this._imageProcessingConfiguration.isReady()) {
                 return false;
@@ -1143,7 +1132,6 @@ export class StandardMaterial extends PushMaterial {
 
         // External config
         this.detailMap.prepareDefines(defines, scene);
-        this.bakedVertexAnimationMap.prepareDefines(defines, scene);
 
         // Get correct effect
         if (defines.isDirty) {
@@ -1239,11 +1227,10 @@ export class StandardMaterial extends PushMaterial {
                 attribs.push(VertexBuffer.ColorKind);
             }
 
-            BakedVertexAnimationConfiguration.AddAttributes(attribs);
-
             MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
             MaterialHelper.PrepareAttributesForInstances(attribs, defines);
             MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, defines);
+            MaterialHelper.PrepareAttributesForBakedVertexAnimation(attribs, mesh, defines);
 
             var shaderName = "default";
 
@@ -1267,9 +1254,6 @@ export class StandardMaterial extends PushMaterial {
 
             DetailMapConfiguration.AddUniforms(uniforms);
             DetailMapConfiguration.AddSamplers(samplers);
-
-            BakedVertexAnimationConfiguration.AddUniforms(uniforms);
-            BakedVertexAnimationConfiguration.AddSamplers(samplers);
 
             PrePassConfiguration.AddUniforms(uniforms);
             PrePassConfiguration.AddSamplers(samplers);
@@ -1393,7 +1377,6 @@ export class StandardMaterial extends PushMaterial {
         ubo.addUniform("vAmbientColor", 3);
 
         DetailMapConfiguration.PrepareUniformBuffer(ubo);
-        BakedVertexAnimationConfiguration.PrepareUniformBuffer(ubo);
 
         ubo.create();
     }
@@ -1643,7 +1626,6 @@ export class StandardMaterial extends PushMaterial {
             }
 
             this.detailMap.bindForSubMesh(ubo, scene, this.isFrozen);
-            this.bakedVertexAnimationMap.bindForSubMesh(ubo, scene, this.isFrozen, defines);
 
             // Clip plane
             MaterialHelper.BindClipPlane(effect, scene);
@@ -1672,6 +1654,10 @@ export class StandardMaterial extends PushMaterial {
             // Morph targets
             if (defines.NUM_MORPH_INFLUENCERS) {
                 MaterialHelper.BindMorphTargetParameters(mesh, effect);
+            }
+
+            if (defines.BAKED_VERTEX_ANIMATION_TEXTURE) {
+                mesh.bakedVertexAnimationManager?.bind(effect, defines.INSTANCES);
             }
 
             // Log. depth
@@ -1781,7 +1767,6 @@ export class StandardMaterial extends PushMaterial {
         }
 
         this.detailMap.getActiveTextures(activeTextures);
-        this.bakedVertexAnimationMap.getActiveTextures(activeTextures);
 
         return activeTextures;
     }
@@ -1836,10 +1821,6 @@ export class StandardMaterial extends PushMaterial {
             return true;
         }
 
-        if (this.bakedVertexAnimationMap.hasTexture(texture)) {
-            return true;
-        }
-
         return false;
     }
 
@@ -1862,7 +1843,6 @@ export class StandardMaterial extends PushMaterial {
         }
 
         this.detailMap.dispose(forceDisposeTextures);
-        this.bakedVertexAnimationMap.dispose(forceDisposeTextures);
 
         if (this._imageProcessingConfiguration && this._imageProcessingObserver) {
             this._imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingObserver);

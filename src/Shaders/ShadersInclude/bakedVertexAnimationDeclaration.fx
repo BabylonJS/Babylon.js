@@ -1,4 +1,7 @@
 #ifdef BAKED_VERTEX_ANIMATION_TEXTURE
+    uniform float bakedVertexAnimationTime;
+    uniform vec2 bakedVertexAnimationTextureSizeInverted;
+    uniform vec4 bakedVertexAnimationSettings;
     uniform sampler2D bakedVertexAnimationTexture;
 
     #ifdef INSTANCES
