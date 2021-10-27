@@ -44,14 +44,13 @@ export class KHR_materials_emissive_strength implements IGLTFLoaderExtension {
     /** @hidden */
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IKHRMaterialsEmissiveStrength>(context, material, this.name, (extensionContext, extension) => {
-            const promises = new Array<Promise<any>>();
-            promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
-            promises.push(this._loadEmissivePropertiesAsync(extensionContext, extension, babylonMaterial));
-            return Promise.all(promises).then(() => { });
+            return this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial).then(() => {
+                this._loadEmissiveProperties(extensionContext, extension, babylonMaterial);
+            });
         });
     }
 
-    private _loadEmissivePropertiesAsync(context: string, properties: IKHRMaterialsEmissiveStrength, babylonMaterial: Material): Promise<void> {
+    private _loadEmissiveProperties(context: string, properties: IKHRMaterialsEmissiveStrength, babylonMaterial: Material): void {
         if (!(babylonMaterial instanceof PBRMaterial)) {
             throw new Error(`${context}: Material type not supported`);
         }
@@ -59,8 +58,6 @@ export class KHR_materials_emissive_strength implements IGLTFLoaderExtension {
         if (properties.emissiveStrength !== undefined) {
             babylonMaterial.emissiveColor.scaleToRef(properties.emissiveStrength, babylonMaterial.emissiveColor);
         }
-
-        return Promise.resolve();
     }
 }
 
