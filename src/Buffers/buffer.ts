@@ -433,7 +433,7 @@ export class VertexBuffer {
         const count = totalVertices * this.getSize();
 
         if (this.type !== VertexBuffer.FLOAT || this.byteStride !== tightlyPackedByteStride) {
-            var copy = new Float32Array(count);
+            const copy = new Float32Array(count);
             this.forEach(count, (value, index) => copy[index] = value);
             return copy;
         }
