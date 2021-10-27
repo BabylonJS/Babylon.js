@@ -1,3 +1,4 @@
+import { Constants } from "../Engines/constants";
 import { Scene } from "../scene";
 import { SceneComponentConstants, ISceneComponent } from "../sceneComponent";
 import { Nullable } from "../types";
@@ -16,6 +17,8 @@ declare module "../scene" {
          * Flag to indicate if we want to use order independant transparency, despite the performance hit
          */
         useOrderIndependentTransparency: boolean;
+        /** @hidden */
+        _useOrderIndependentTransparency: boolean;
     }
 }
 
@@ -33,6 +36,22 @@ Object.defineProperty(Scene.prototype, "depthPeelingRenderer", {
     },
     set: function (this: Scene, value: DepthPeelingRenderer) {
         this._depthPeelingRenderer = value;
+    },
+    enumerable: true,
+    configurable: true,
+});
+
+Object.defineProperty(Scene.prototype, "useOrderIndependentTransparency", {
+    get: function (this: Scene) {
+        return this._useOrderIndependentTransparency;
+    },
+    set: function (this: Scene, value: boolean) {
+        if (this._useOrderIndependentTransparency === value) {
+            return;
+        }
+        this._useOrderIndependentTransparency = value;
+        this.markAllMaterialsAsDirty(Constants.MATERIAL_AllDirtyFlag);
+        this.prePassRenderer?.markAsDirty();
     },
     enumerable: true,
     configurable: true,
