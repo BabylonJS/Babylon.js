@@ -72,7 +72,7 @@ export class WebGPUCacheBindGroups {
 
         const cacheIsDisabled = this.disabled || materialContext.forceBindGroupCreation;
         if (!cacheIsDisabled) {
-            if (!drawContext.isDirty && !materialContext.isDirty) {
+            if (!drawContext.isDirty(materialContext.updateId) && !materialContext.isDirty) {
                 WebGPUCacheBindGroups._NumBindGroupsNoLookupCurrentFrame++;
                 return drawContext.bindGroups!;
             }
@@ -110,7 +110,7 @@ export class WebGPUCacheBindGroups {
             bindGroups = node.bindGroups;
         }
 
-        drawContext.isDirty = false;
+        drawContext.resetIsDirty(materialContext.updateId);
         materialContext.isDirty = false;
 
         if (bindGroups) {
@@ -145,7 +145,7 @@ export class WebGPUCacheBindGroups {
                         const sampler = bindingInfo.sampler;
                         if (!sampler) {
                             if (this._engine.dbgSanityChecks) {
-                                Logger.Error(`Trying to bind a null sampler! entry=${JSON.stringify(entry)}, bindingInfo=${JSON.stringify(bindingInfo, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}, materialContext.uniqueId=${materialContext.uniqueId}`, 50);
+                                Logger.Error(`Trying to bind a null sampler! entry=${JSON.stringify(entry)}, name=${name}, bindingInfo=${JSON.stringify(bindingInfo, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}, materialContext.uniqueId=${materialContext.uniqueId}`, 50);
                             }
                             continue;
                         }
@@ -163,7 +163,7 @@ export class WebGPUCacheBindGroups {
                         const hardwareTexture = (bindingInfo.texture as InternalTexture)._hardwareTexture as WebGPUHardwareTexture;
 
                         if (this._engine.dbgSanityChecks && (!hardwareTexture || !hardwareTexture.view)) {
-                            Logger.Error(`Trying to bind a null gpu texture! entry=${JSON.stringify(entry)}, bindingInfo=${JSON.stringify(bindingInfo, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}, isReady=${bindingInfo.texture?.isReady}, materialContext.uniqueId=${materialContext.uniqueId}`, 50);
+                            Logger.Error(`Trying to bind a null gpu texture! entry=${JSON.stringify(entry)}, name=${name}, bindingInfo=${JSON.stringify(bindingInfo, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}, isReady=${bindingInfo.texture?.isReady}, materialContext.uniqueId=${materialContext.uniqueId}`, 50);
                             continue;
                         }
 
@@ -175,13 +175,13 @@ export class WebGPUCacheBindGroups {
                     const bindingInfo = materialContext.textures[name];
                     if (bindingInfo) {
                         if (this._engine.dbgSanityChecks && bindingInfo.texture === null) {
-                            Logger.Error(`Trying to bind a null external texture! entry=${JSON.stringify(entry)}, bindingInfo=${JSON.stringify(bindingInfo, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}, materialContext.uniqueId=${materialContext.uniqueId}`, 50);
+                            Logger.Error(`Trying to bind a null external texture! entry=${JSON.stringify(entry)}, name=${name}, bindingInfo=${JSON.stringify(bindingInfo, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}, materialContext.uniqueId=${materialContext.uniqueId}`, 50);
                             continue;
                         }
                         const externalTexture = (bindingInfo.texture as ExternalTexture).underlyingResource;
 
                         if (this._engine.dbgSanityChecks && !externalTexture) {
-                            Logger.Error(`Trying to bind a null gpu external texture! entry=${JSON.stringify(entry)}, bindingInfo=${JSON.stringify(bindingInfo, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}, isReady=${bindingInfo.texture?.isReady}, materialContext.uniqueId=${materialContext.uniqueId}`, 50);
+                            Logger.Error(`Trying to bind a null gpu external texture! entry=${JSON.stringify(entry)}, name=${name}, bindingInfo=${JSON.stringify(bindingInfo, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}, isReady=${bindingInfo.texture?.isReady}, materialContext.uniqueId=${materialContext.uniqueId}`, 50);
                             continue;
                         }
 

@@ -141,22 +141,22 @@ ThinEngine.prototype.setAlphaEquation = function (equation: number): void {
 
     switch (equation) {
         case Constants.ALPHA_EQUATION_ADD:
-            this._alphaState.setAlphaEquationParameters(this._gl.FUNC_ADD, this._gl.FUNC_ADD);
+            this._alphaState.setAlphaEquationParameters(Constants.GL_ALPHA_EQUATION_ADD, Constants.GL_ALPHA_EQUATION_ADD);
             break;
         case Constants.ALPHA_EQUATION_SUBSTRACT:
-            this._alphaState.setAlphaEquationParameters(this._gl.FUNC_SUBTRACT, this._gl.FUNC_SUBTRACT);
+            this._alphaState.setAlphaEquationParameters(Constants.GL_ALPHA_EQUATION_SUBTRACT, Constants.GL_ALPHA_EQUATION_SUBTRACT);
             break;
         case Constants.ALPHA_EQUATION_REVERSE_SUBTRACT:
-            this._alphaState.setAlphaEquationParameters(this._gl.FUNC_REVERSE_SUBTRACT, this._gl.FUNC_REVERSE_SUBTRACT);
+            this._alphaState.setAlphaEquationParameters(Constants.GL_ALPHA_EQUATION_REVERSE_SUBTRACT, Constants.GL_ALPHA_EQUATION_REVERSE_SUBTRACT);
             break;
         case Constants.ALPHA_EQUATION_MAX:
-            this._alphaState.setAlphaEquationParameters(this._gl.MAX, this._gl.MAX);
+            this._alphaState.setAlphaEquationParameters(Constants.GL_ALPHA_EQUATION_MAX, Constants.GL_ALPHA_EQUATION_MAX);
             break;
         case Constants.ALPHA_EQUATION_MIN:
-            this._alphaState.setAlphaEquationParameters(this._gl.MIN, this._gl.MIN);
+            this._alphaState.setAlphaEquationParameters(Constants.GL_ALPHA_EQUATION_MIN, Constants.GL_ALPHA_EQUATION_MIN);
             break;
         case Constants.ALPHA_EQUATION_DARKEN:
-            this._alphaState.setAlphaEquationParameters(this._gl.MIN, this._gl.FUNC_ADD);
+            this._alphaState.setAlphaEquationParameters(Constants.GL_ALPHA_EQUATION_MIN, Constants.GL_ALPHA_EQUATION_ADD);
             break;
     }
     this._alphaEquation = equation;
