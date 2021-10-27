@@ -5,8 +5,8 @@ import { CommonControlPropertyGridComponent } from "../gui/commonControlProperty
 import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
 import { DisplayGrid } from "babylonjs-gui/2D/controls/displayGrid";
-import { TextInputLineComponent } from "../../../../sharedUiComponents/lines/textInputLineComponent";
 import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
+import { CssColor3LineComponent } from "../../../../sharedUiComponents/lines/cssColor3LineComponent";
 
 
 interface IDisplayGridPropertyGridComponentProps {
@@ -33,9 +33,9 @@ export class DisplayGridPropertyGridComponent extends React.Component<IDisplayGr
                 <FloatLineComponent min={1} isInteger={true} lockObject={this.props.lockObject} label="Cell Height" target={displayGrid} propertyName="cellHeight" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </div>
                 <FloatLineComponent min={1} isInteger={true} lockObject={this.props.lockObject} label="Minor Line Tickness" target={displayGrid} propertyName="minorLineTickness" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <TextInputLineComponent lockObject={this.props.lockObject} label="minorLineColor" target={displayGrid} propertyName="minorLineColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CssColor3LineComponent lockObject={this.props.lockObject} label="minorLineColor" target={displayGrid} propertyName="minorLineColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <FloatLineComponent min={1} isInteger={true} lockObject={this.props.lockObject} label="Major Line Tickness" target={displayGrid} propertyName="majorLineTickness" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <TextInputLineComponent lockObject={this.props.lockObject} label="Major Line Color" target={displayGrid} propertyName="majorLineColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CssColor3LineComponent lockObject={this.props.lockObject} label="Major Line Color" target={displayGrid} propertyName="majorLineColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <FloatLineComponent min={1} isInteger={true}  lockObject={this.props.lockObject} label="Major Line Frequency" target={displayGrid} propertyName="majorLineFrequency" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 
             </div>

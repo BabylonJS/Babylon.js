@@ -33,8 +33,8 @@ export class CssColor3LineComponent extends React.Component<ICssColor3LineCompon
         this.state = { isExpanded: false, color: colorConverted , colorText: this.props.target[this.props.propertyName]};       
     }
 
-    private convertToColor3(color: string) {
 
+    private convertToColor3(color: string) {
         if(color === "" || color === "transparent"){
             return new Color4(0,0,0,0);
         }
@@ -44,6 +44,7 @@ export class CssColor3LineComponent extends React.Component<ICssColor3LineCompon
             d.style.color = color;
             document.body.append(d);
             let rgb = window.getComputedStyle(d).color;
+            document.body.removeChild(d);
 
 
             let rgbArray = rgb.substring(4, rgb.length - 1)
@@ -61,15 +62,16 @@ export class CssColor3LineComponent extends React.Component<ICssColor3LineCompon
         return Color3.FromInts(r, g, b);
     }
 
-    shouldComponentUpdate(nextProps: ICssColor3LineComponentProps, nextState: { color: Color3 }) {
-        //const currentState = nextProps.target[nextProps.propertyName];
+    shouldComponentUpdate(nextProps: ICssColor3LineComponentProps, nextState: { color: Color3, colorText: string }) {
+        const currentState = this.convertToColor3(nextProps.target[nextProps.propertyName]);
 
-        /*if (!currentState.equals(nextState.color) || this._localChange) {
+        if (!currentState.equals(nextState.color) || this._localChange) {
             nextState.color = currentState.clone();
+            nextState.colorText = nextProps.target[nextProps.propertyName]
             this._localChange = false;
             return true;
-        }*/
-        return true;
+        }
+        return false;
     }
 
     setPropertyValue(newColor: string) {
