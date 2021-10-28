@@ -226,7 +226,12 @@ export class MaterialHelper {
         }
     }
 
-    public static PrepareDefinesForBakedVertexAnimation(mesh: AbstractMesh, defines: any) {
+    /**
+     * Prepares the defines for baked vertex animation
+     * @param mesh The mesh containing the geometry data we will draw
+     * @param defines The defines to update
+     */
+     public static PrepareDefinesForBakedVertexAnimation(mesh: AbstractMesh, defines: any) {
         const manager = (<Mesh>mesh).bakedVertexAnimationManager;
         defines["BAKED_VERTEX_ANIMATION_TEXTURE"] = manager && manager.isEnabled ? true : false;
     }
@@ -239,6 +244,7 @@ export class MaterialHelper {
      * @param useBones Precise whether bones should be used or not (override mesh info)
      * @param useMorphTargets Precise whether morph targets should be used or not (override mesh info)
      * @param useVertexAlpha Precise whether vertex alpha should be used or not (override mesh info)
+     * @param useBakedVertexAnimation Precise whether baked vertex animation should be used or not (override mesh info)
      * @returns false if defines are considered not dirty and have not been checked
      */
     public static PrepareDefinesForAttributes(mesh: AbstractMesh, defines: any, useVertexColor: boolean, useBones: boolean, useMorphTargets = false, useVertexAlpha = true, useBakedVertexAnimation = true): boolean {
@@ -761,6 +767,12 @@ export class MaterialHelper {
         }
     }
 
+    /**
+     * Prepares the list of attributes required for baked vertex animations according to the effect defines.
+     * @param attribs The current list of supported attribs
+     * @param mesh The mesh to prepare the morph targets attributes for
+     * @param defines The current Defines of the effect
+     */
     public static PrepareAttributesForBakedVertexAnimation(attribs: string[], mesh: AbstractMesh, defines: any): void {
         const enabled = defines["BAKED_VERTEX_ANIMATION_TEXTURE"] && defines["INSTANCES"];
 

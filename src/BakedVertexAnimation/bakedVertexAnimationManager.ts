@@ -5,6 +5,10 @@ import { BaseTexture } from '../Materials/Textures/baseTexture';
 import { Vector4 } from "../Maths/math.vector";
 import { Effect } from "../Materials/effect";
 
+/**
+ * This class is used to animate meshes using a baked vertex animation texture
+ * @see https://doc.babylonjs.com/divingDeeper/animation/baked_texture_animations
+ */
 export class BakedVertexAnimationManager {
     private _scene: Scene;
 
@@ -27,15 +31,17 @@ export class BakedVertexAnimationManager {
     /**
      * The animation parameters for the mesh. See setAnimationParameters()
      */
-    public animationParameters: Vector4;
+     @serialize()
+     public animationParameters: Vector4;
 
     /**
      * The time counter, to pick the correct animation frame.
      */
-    public time = 0;
+     @serialize()
+     public time = 0;
 
     /**
-     * Creates a new MorphTargetManager
+     * Creates a new BakedVertexAnimationManager
      * @param scene defines the current scene
      */
     constructor(scene: Scene) {
@@ -52,7 +58,8 @@ export class BakedVertexAnimationManager {
     }
 
     /**
-     * @param effect The effect to find to.
+     * Binds to the effect.
+     * @param effect The effect to bind to.
      * @param useInstances True when it's an instance.
      */
     public bind(effect: Effect, useInstances = false): void {
@@ -81,10 +88,7 @@ export class BakedVertexAnimationManager {
      */
      public clone(): BakedVertexAnimationManager {
         let copy = new BakedVertexAnimationManager(this._scene);
-
-        copy.texture = this.texture;
-        copy.isEnabled = this.isEnabled;
-
+        this.copyTo(copy);
         return copy;
     }
 

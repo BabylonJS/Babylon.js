@@ -125,10 +125,6 @@ uniform Material {
     vec3 vSphericalXY;
     vec3 vSphericalYZ;
     vec3 vSphericalZX;
-
-    vec4 bakedVertexAnimationSettings;
-    vec2 bakedVertexAnimationTextureSizeInverted;
-    float bakedVertexAnimationTime;
 };
 
 #include<sceneUboDeclaration>

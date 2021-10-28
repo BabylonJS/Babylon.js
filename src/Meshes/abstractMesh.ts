@@ -288,7 +288,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         this._syncGeometryWithMorphTargetManager();
     }
 
-    public get bakedVertexAnimationManager(): Nullable<BakedVertexAnimationManager> {
+    /**
+     * Gets or sets the baked vertex animation manager
+     * @see https://doc.babylonjs.com/divingDeeper/animation/baked_texture_animations
+     */
+     public get bakedVertexAnimationManager(): Nullable<BakedVertexAnimationManager> {
         return this._internalAbstractMeshDataInfo._bakedVertexAnimationManager;
     }
 

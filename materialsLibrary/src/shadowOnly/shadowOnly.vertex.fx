@@ -7,6 +7,7 @@ attribute vec3 normal;
 #endif
 
 #include<bonesDeclaration>
+#include<bakedVertexAnimationDeclaration>
 
 // Uniforms
 #include<instancesDeclaration>
