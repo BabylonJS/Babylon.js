@@ -93,6 +93,8 @@ export class NullEngine extends Engine {
 
         Engine.Instances.push(this);
 
+        (this.supportRenderPasses as any) = true;
+
         if (options.deterministicLockstep === undefined) {
             options.deterministicLockstep = false;
         }

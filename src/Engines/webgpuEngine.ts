@@ -536,6 +536,7 @@ export class WebGPUEngine extends Engine {
 
         (this.isNDCHalfZRange as any) = true;
         (this.hasOriginBottomLeft as any)  = false;
+        (this.supportRenderPasses as any) = true;
 
         options.deviceDescriptor = options.deviceDescriptor || {};
         options.swapChainFormat = options.swapChainFormat || WebGPUConstants.TextureFormat.BGRA8Unorm;
