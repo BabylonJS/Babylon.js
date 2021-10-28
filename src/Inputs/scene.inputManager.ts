@@ -179,10 +179,6 @@ export class InputManager {
         this._pointerX = evt.clientX - canvasRect.left;
         this._pointerY = evt.clientY - canvasRect.top;
 
-        if (this._usingNative) {
-            this._pointerY += canvasRect.height;
-        }
-
         this._unTranslatedPointerX = this._pointerX;
         this._unTranslatedPointerY = this._pointerY;
     }
