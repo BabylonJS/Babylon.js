@@ -60,10 +60,6 @@ export class VertexAnimationBaker {
             }
         }
 
-        // at this point we have the vertex data, so convert it to an actual texture
-        // and build a material
-        this._scene.stopAnimation(this._mesh);
-        this._mesh.skeleton.returnToRest();
         return vertexData;
     }
 
@@ -156,7 +152,7 @@ export class VertexAnimationBaker {
      * Loads previously baked data.
      * @returns self
      */
-    public loadBakedJSON(json: string): Float32Array {
+    public loadBakedVertexDataFromJSON(json: string): Float32Array {
         return this.loadBakedVertexDataFromObject(JSON.parse(json));
     }
 }

@@ -34,6 +34,10 @@ export class BakedVertexAnimationManager {
      */
     public time = 0;
 
+    /**
+     * Creates a new MorphTargetManager
+     * @param scene defines the current scene
+     */
     constructor(scene: Scene) {
         this._scene = scene;
     }
@@ -47,7 +51,11 @@ export class BakedVertexAnimationManager {
         }
     }
 
-    public bind(effect: Effect, useInstances = false) {
+    /**
+     * @param effect The effect to find to.
+     * @param useInstances True when it's an instance.
+     */
+    public bind(effect: Effect, useInstances = false): void {
         if (!this._texture || !this._isEnabled) {
             return;
         }
@@ -67,6 +75,18 @@ export class BakedVertexAnimationManager {
         effect.setTexture("bakedVertexAnimationTexture", this._texture);
     }
 
+    /**
+     * Clone the current manager
+     * @returns a new BakedVertexAnimationManager
+     */
+     public clone(): BakedVertexAnimationManager {
+        let copy = new BakedVertexAnimationManager(this._scene);
+
+        copy.texture = this.texture;
+        copy.isEnabled = this.isEnabled;
+
+        return copy;
+    }
 
     /**
      * Sets animation parameters.
