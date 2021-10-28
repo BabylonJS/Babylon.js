@@ -898,11 +898,11 @@ export class InputManager {
                         fireUp = true;
                     }
 
-                    if (fireDown) this._onPointerDown(evt as IPointerEvent);
-                    if (fireUp) this._onPointerUp(evt as IPointerEvent);
-                    if (fireMove) this._onPointerMove(evt as IPointerEvent);
-                    if (fireWheel) this._onPointerMove(evt as IWheelEvent);
-                };
+                    if (fireDown) { this._onPointerDown(evt as IPointerEvent); }
+                    if (fireUp) { this._onPointerUp(evt as IPointerEvent); }
+                    if (fireMove) { this._onPointerMove(evt as IPointerEvent); }
+                    if (fireWheel) { this._onPointerMove(evt as IWheelEvent); }
+                }
             }
         });
 
