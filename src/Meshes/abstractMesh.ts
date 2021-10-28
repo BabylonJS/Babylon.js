@@ -982,6 +982,19 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /**
+     * Resets the draw wrappers cache for all submeshes of this abstract mesh
+     */
+    public resetDrawCache(): void {
+        if (!this.subMeshes) {
+             return;
+        }
+
+        for (const subMesh of this.subMeshes) {
+            subMesh.resetDrawCache();
+        }
+    }
+
+    /**
      * Gets or sets a Vector3 depicting the mesh scaling along each local axis X, Y, Z.  Default is (1.0, 1.0, 1.0)
      */
     public get scaling(): Vector3 {
