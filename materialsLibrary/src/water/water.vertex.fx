@@ -16,6 +16,7 @@ attribute vec4 color;
 #endif
 
 #include<bonesDeclaration>
+#include<bakedVertexAnimationDeclaration>
 
 // Uniforms
 #include<instancesDeclaration>
@@ -74,6 +75,7 @@ void main(void) {
 
     #include<instancesVertex>
     #include<bonesVertex>
+    #include<bakedVertexAnimation>
 
 	vec4 worldPos = finalWorld * vec4(position, 1.0);
 	vPositionW = vec3(worldPos);
@@ -112,10 +114,10 @@ void main(void) {
 
 	// Fog
     #include<fogVertex>
-	
+
 	// Shadows
     #include<shadowsVertex>[0..maxSimultaneousLights]
-    
+
 	// Vertex color
 #ifdef VERTEXCOLOR
 	vColor = color;
@@ -132,19 +134,19 @@ void main(void) {
 	float newY = (sin(((p.x / finalWaveCount) + time * waveSpeed)) * waveHeight * windDirection.x * 5.0)
 			   + (cos(((p.z / finalWaveCount) +  time * waveSpeed)) * waveHeight * windDirection.y * 5.0);
 	p.y += abs(newY);
-	
+
 	gl_Position = viewProjection * finalWorld * vec4(p, 1.0);
 
 #ifdef REFLECTION
 	worldPos = viewProjection * finalWorld * vec4(p, 1.0);
-	
+
 	// Water
 	vPosition = position;
-	
+
 	vRefractionMapTexCoord.x = 0.5 * (worldPos.w + worldPos.x);
 	vRefractionMapTexCoord.y = 0.5 * (worldPos.w + worldPos.y);
 	vRefractionMapTexCoord.z = worldPos.w;
-	
+
 	worldPos = worldReflectionViewProjection * vec4(position, 1.0);
 	vReflectionMapTexCoord.x = 0.5 * (worldPos.w + worldPos.x);
 	vReflectionMapTexCoord.y = 0.5 * (worldPos.w + worldPos.y);

@@ -23,10 +23,10 @@ attribute vec4 color;
 
 #include<helperFunctions>
 #include<bonesDeclaration>
+#include<bakedVertexAnimationDeclaration>
 
 #include<instancesDeclaration>
 #include<prePassVertexDeclaration>
-#include<bakedVertexAnimationDeclaration>
 
 #include<samplerVertexDeclaration>(_DEFINENAME_,ALBEDO,_VARYINGNAME_,Albedo)
 #include<samplerVertexDeclaration>(_DEFINENAME_,DETAIL,_VARYINGNAME_,Detail)
