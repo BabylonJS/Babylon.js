@@ -110,6 +110,7 @@ export class VertexAnimationBaker {
     }
     /**
      * Serializes our vertexData to an object, with a nice string for the vertexData.
+     * @param vertexData The vertex array data.
      * @returns Object
      */
     public serializeBakedVertexDataToObject(vertexData: Float32Array): Record<string, any> {
@@ -131,6 +132,7 @@ export class VertexAnimationBaker {
     }
     /**
      * Loads previously baked data.
+     * @param data The object as serialized by serializeBakedVertexDataToObject()
      * @returns self
      */
     public loadBakedVertexDataFromObject(data: Record<string, any>): Float32Array {
@@ -143,6 +145,7 @@ export class VertexAnimationBaker {
      * Serializes our vertexData to a JSON string, with a nice string for the vertexData.
      * Should be called right after bakeVertexData(), since we release the vertexData
      * from memory on rebuild().
+     * @param vertexData The vertex array data.
      * @returns string
      */
     public serializeBakedVertexDataToJSON(vertexData: Float32Array): string {
@@ -150,6 +153,7 @@ export class VertexAnimationBaker {
     }
     /**
      * Loads previously baked data.
+     * @param json The json string.
      * @returns self
      */
     public loadBakedVertexDataFromJSON(json: string): Float32Array {
