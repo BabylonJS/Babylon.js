@@ -11,6 +11,8 @@ import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLi
 import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
 
+const fillColorIcon: string = require("../../../../sharedUiComponents/imgs/fillColorIcon.svg");
+
 interface IInputTextPropertyGridComponentProps {
     inputText: InputText;
     lockObject: LockObject;
