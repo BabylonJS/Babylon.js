@@ -74,7 +74,6 @@ void main(void) {
 
 	#include<instancesVertex>
     #include<bonesVertex>
-    #include<bakedVertexAnimation>
 
 //FUR
 float r = Rand(position);
@@ -84,7 +83,7 @@ float r = Rand(position);
 	#else
 	vfur_length = furLength * texture2D(heightTexture, uv).r;
 	#endif
-#else
+#else	
 	vfur_length = (furLength * r);
 #endif
 	vec3 tangent1 = vec3(normal.y, -normal.x, 0);
@@ -95,31 +94,31 @@ float r = Rand(position);
 	float K = (2.0 + 2.0 * r);
 	tangent1 = tangent1*J + tangent2 * K;
 	tangent1 = normalize(tangent1);
-
+	
     vec3 newPosition = position + normal * vfur_length*cos(furAngle) + tangent1 * vfur_length * sin(furAngle);
-
+    
 	#ifdef HIGHLEVEL
 	// Compute fur data passed to the pixel shader
 	vec3 forceDirection = vec3(0.0, 0.0, 0.0);
 	forceDirection.x = sin(furTime + position.x * 0.05) * 0.2;
 	forceDirection.y = cos(furTime * 0.7 + position.y * 0.04) * 0.2;
 	forceDirection.z = sin(furTime * 0.7 + position.z * 0.04) * 0.2;
-
+	
 	vec3 displacement = vec3(0.0, 0.0, 0.0);
 	displacement = furGravity + forceDirection;
-
+	
 	float displacementFactor = pow(furOffset, 3.0);
-
+	
 	vec3 aNormal = normal;
 	aNormal.xyz += displacement * displacementFactor;
-
+	
 	newPosition = vec3(newPosition.x, newPosition.y, newPosition.z) + (normalize(aNormal) * furOffset * furSpacing);
 	#endif
-
+	
 	#ifdef NORMAL
 	vNormalW = normalize(vec3(finalWorld * vec4(normal, 0.0)));
 	#endif
-
+	
 //END FUR
 	gl_Position = viewProjection * finalWorld * vec4(newPosition, 1.0);
 
@@ -143,7 +142,7 @@ float r = Rand(position);
 	{
 		vDiffuseUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));
 	}
-
+    
     #ifdef HIGHLEVEL
 	vFurUV = vDiffuseUV * furDensity;
 	#endif

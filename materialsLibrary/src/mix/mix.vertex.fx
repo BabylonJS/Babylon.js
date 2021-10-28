@@ -51,7 +51,6 @@ varying vec4 vColor;
 void main(void) {
 	#include<instancesVertex>
     #include<bonesVertex>
-    #include<bakedVertexAnimation>
 
 	vec4 worldPos = finalWorld * vec4(position, 1.0);
 
@@ -87,7 +86,7 @@ void main(void) {
 
 	// Fog
 	#include<fogVertex>
-
+	
 	// Shadows
     #include<shadowsVertex>[0..maxSimultaneousLights]
 

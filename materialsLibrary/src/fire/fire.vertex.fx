@@ -54,7 +54,6 @@ void main(void) {
 
 #include<instancesVertex>
 #include<bonesVertex>
-#include<bakedVertexAnimation>
 
 	vec4 worldPos = finalWorld * vec4(position, 1.0);
 
@@ -87,13 +86,13 @@ void main(void) {
 #ifdef DIFFUSE
 	// Fire
 	vec3 layerSpeed = vec3(-0.2, -0.52, -0.1) * speed;
-
+	
 	vDistortionCoords1.x = uv.x;
 	vDistortionCoords1.y = uv.y + layerSpeed.x * time / 1000.0;
-
+	
 	vDistortionCoords2.x = uv.x;
 	vDistortionCoords2.y = uv.y + layerSpeed.y * time / 1000.0;
-
+	
 	vDistortionCoords3.x = uv.x;
 	vDistortionCoords3.y = uv.y + layerSpeed.z * time / 1000.0;
 #endif
