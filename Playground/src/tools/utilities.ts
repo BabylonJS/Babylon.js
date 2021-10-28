@@ -26,27 +26,27 @@ export class Utilities {
     }
 
     public static ReadStringFromStore(key: string, defaultValue: string): string {
-        if (localStorage.getItem(key) === null) {
+        if (sessionStorage.getItem(key) === null) {
             return defaultValue;
         }
 
-        return localStorage.getItem(key)!;
+        return sessionStorage.getItem(key)!;
     }
 
     public static ReadBoolFromStore(key: string, defaultValue: boolean): boolean {
-        if (localStorage.getItem(key) === null) {
+        if (sessionStorage.getItem(key) === null) {
             return defaultValue;
         }
 
-        return localStorage.getItem(key) === "true";
+        return sessionStorage.getItem(key) === "true";
     }
 
     public static StoreStringToStore(key: string, value: string): void {
-        localStorage.setItem(key, value);
+        sessionStorage.setItem(key, value);
     }
 
     public static StoreBoolToStore(key: string, value: boolean): void {
-        localStorage.setItem(key, value ? "true" : "false");
+        sessionStorage.setItem(key, value ? "true" : "false");
     }
 
     public static CheckSafeMode(message: string) {
