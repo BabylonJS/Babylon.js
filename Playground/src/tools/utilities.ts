@@ -55,7 +55,7 @@ export class Utilities {
         }
 
         return true;
-    };
+    }
 
     public static SwitchLanguage(language: string, globalState: GlobalState, force?: boolean) {
         if (force || window.confirm("Are you sure you want to switch the language (You will lose your current project if it was not saved before)?")) {
