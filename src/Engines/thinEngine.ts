@@ -428,6 +428,11 @@ export class ThinEngine {
      */
     public disableVertexArrayObjects = false;
 
+    /**
+     * Indicates that this engine supports render passes
+     */
+    public readonly supportRenderPasses = false;
+
     // States
     /** @hidden */
     protected _colorWrite = true;

@@ -742,6 +742,7 @@ export class NativeEngine extends Engine {
 
         this._webGLVersion = 2;
         this.disableUniformBuffers = true;
+        (this.supportRenderPasses as any) = true;
 
         // TODO: Initialize this more correctly based on the hardware capabilities.
         // Init caps

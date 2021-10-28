@@ -546,6 +546,8 @@ export class Engine extends ThinEngine {
 
         Engine.Instances.push(this);
 
+        (this.supportRenderPasses as any) = true;
+
         if (!canvasOrContext) {
             return;
         }
