@@ -21,7 +21,6 @@ attribute vec4 color;
 #include<helperFunctions>
 
 #include<bonesDeclaration>
-
 #include<bakedVertexAnimationDeclaration>
 
 // Uniforms

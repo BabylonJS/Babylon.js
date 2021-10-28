@@ -166,6 +166,7 @@ void main(void) {
 
 #include<instancesVertex>
 #include<bonesVertex>
+#include<bakedVertexAnimation>
 
 #ifdef NORMAL
     // get a turbulent 3d noise using the normal, normal to high freq
