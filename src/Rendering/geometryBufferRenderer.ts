@@ -709,9 +709,10 @@ export class GeometryBufferRenderer {
                 if (this._enableVelocity) {
                     effect.setMatrix("previousWorld", this._previousTransformationMatrices[effectiveMesh.uniqueId].world);
                     effect.setMatrix("previousViewProjection", this._previousTransformationMatrices[effectiveMesh.uniqueId].viewProjection);
-                    if (hardwareInstancedRendering && renderingMesh.hasThinInstances) {
-                        effect.setMatrix("world", world);
-                    }
+                }
+
+                if (hardwareInstancedRendering && renderingMesh.hasThinInstances) {
+                    effect.setMatrix("world", world);
                 }
 
                 // Draw
