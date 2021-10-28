@@ -1,4 +1,5 @@
 #ifdef BAKED_VERTEX_ANIMATION_TEXTURE
+{
     #ifdef INSTANCES
         #define BVASNAME bakedVertexAnimationSettingsInstanced
     #else
@@ -46,4 +47,5 @@
     #endif
 
     finalWorld = finalWorld * VATInfluence;
+}
 #endif
