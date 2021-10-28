@@ -31,14 +31,14 @@ export class BakedVertexAnimationManager {
     /**
      * The animation parameters for the mesh. See setAnimationParameters()
      */
-     @serialize()
-     public animationParameters: Vector4;
+    @serialize()
+    public animationParameters: Vector4;
 
     /**
      * The time counter, to pick the correct animation frame.
      */
-     @serialize()
-     public time = 0;
+    @serialize()
+    public time = 0;
 
     /**
      * Creates a new BakedVertexAnimationManager
@@ -46,6 +46,7 @@ export class BakedVertexAnimationManager {
      */
     constructor(scene: Scene) {
         this._scene = scene;
+        this.animationParameters = new Vector4(0, 0, 0, 30);
     }
 
     /** @hidden */
@@ -76,7 +77,7 @@ export class BakedVertexAnimationManager {
         effect.setFloat("bakedVertexAnimationTime", this.time);
 
         if (!useInstances) {
-            effect.setVector4("bakedVertexAnimationSettings", this.animationParameters);
+            // effect.setVector4("bakedVertexAnimationSettings", this.animationParameters);
         }
 
         effect.setTexture("bakedVertexAnimationTexture", this._texture);
