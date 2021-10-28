@@ -9230,6 +9230,13 @@ declare module BABYLON {
         serialize(): any;
         private toNumberArray;
         /**
+         * Release any memory retained by the cached data on the Geometry.
+         *
+         * Call this function to reduce memory footprint of the mesh.
+         * Vertex buffers will not store CPU data anymore (this will prevent picking, collisions or physics to work correctly)
+         */
+        clearCachedData(): void;
+        /**
          * Serialize all vertices data into a JSON object
          * @returns a JSON representation of the current geometry data
          */
