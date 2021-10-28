@@ -10,7 +10,6 @@ import { ShadowGenerator } from '../Lights/Shadows/shadowGenerator';
 import { RandomGUID } from '../Misc/guid';
 import { DrawWrapper } from "./drawWrapper";
 import { Engine } from "../Engines/engine";
-import { Constants } from "../Engines/constants";
 
 /**
  * Options to be used when creating a shadow depth material
@@ -58,7 +57,7 @@ export class ShadowDepthWrapper {
     private _options?: IIOptionShadowDepthMaterial;
     private _baseMaterial: Material;
     private _onEffectCreatedObserver: Nullable<Observer<{ effect: Effect, subMesh: Nullable<SubMesh> }>>;
-    private _subMeshToEffect: Map<Nullable<SubMesh>, Effect>;
+    private _subMeshToEffect: Map<Nullable<SubMesh>, [Effect, number]>;
     private _subMeshToDepthWrapper: MapMap<Nullable<SubMesh>, ShadowGenerator, { drawWrapper: Array<Nullable<DrawWrapper>>, mainDrawWrapper: DrawWrapper, depthDefines: string, token: string }>; // key is (subMesh + shadowGenerator)
     private _meshes: Map<AbstractMesh, Nullable<Observer<Node>>>;
 
@@ -111,7 +110,7 @@ export class ShadowDepthWrapper {
                 );
             }
 
-            this._subMeshToEffect.set(params.subMesh, params.effect);
+            this._subMeshToEffect.set(params.subMesh, [params.effect, this._scene.getEngine().currentRenderPassId]);
             this._subMeshToDepthWrapper.mm.delete(params.subMesh); // trigger a depth effect recreation
         });
     }
@@ -174,17 +173,18 @@ export class ShadowDepthWrapper {
 
     private _makeEffect(subMesh: SubMesh, defines: string[], shadowGenerator: ShadowGenerator, passIdForDrawWrapper: number): Nullable<Effect> {
         const engine = this._scene.getEngine();
-        const origEffect = this._subMeshToEffect.get(subMesh);
+        const origEffectAndRenderPassId = this._subMeshToEffect.get(subMesh);
 
-        if (!origEffect) {
+        if (!origEffectAndRenderPassId) {
             return null;
         }
+
+        const [origEffect, origRenderPassId] = origEffectAndRenderPassId;
 
         let params = this._subMeshToDepthWrapper.get(subMesh, shadowGenerator);
         if (!params) {
             const mainDrawWrapper = new DrawWrapper(engine);
-            const renderPassId = this._scene.activeCameras?.[0]?.renderPassId ?? this._scene.activeCamera?.renderPassId ?? Constants.RENDERPASS_MAIN;
-            mainDrawWrapper.defines = subMesh._getDrawWrapper(renderPassId)?.defines ?? null;
+            mainDrawWrapper.defines = subMesh._getDrawWrapper(origRenderPassId)!.defines;
 
             params = {
                 drawWrapper: [],
