@@ -184,7 +184,7 @@ export class ShadowDepthWrapper {
         let params = this._subMeshToDepthWrapper.get(subMesh, shadowGenerator);
         if (!params) {
             const mainDrawWrapper = new DrawWrapper(engine);
-            mainDrawWrapper.defines = subMesh._getDrawWrapper(origRenderPassId)!.defines;
+            mainDrawWrapper.defines = subMesh._getDrawWrapper(origRenderPassId)?.defines ?? null;
 
             params = {
                 drawWrapper: [],
