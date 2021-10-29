@@ -74,7 +74,7 @@ export abstract class EffectLayer {
     private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
     private _indexBuffer: Nullable<DataBuffer>;
     private _effectLayerOptions: IEffectLayerOptions;
-    private _mergeDrawWrapper: DrawWrapper;
+    private _mergeDrawWrapper: DrawWrapper[];
 
     protected _scene: Scene;
     protected _engine: Engine;
@@ -187,7 +187,7 @@ export abstract class EffectLayer {
         this._maxSize = this._engine.getCaps().maxTextureSize;
         this._scene.effectLayers.push(this);
 
-        this._mergeDrawWrapper = new DrawWrapper(this._engine);
+        this._mergeDrawWrapper = [];
 
         // Generate Buffers
         this._generateIndexBuffer();
@@ -229,8 +229,9 @@ export abstract class EffectLayer {
     /**
      * Implementation specific of rendering the generating effect on the main canvas.
      * @param effect The effect used to render through
+     * @param renderNum Index of the _internalRender call (0 for the first time _internalRender is called, 1 for the second time, etc. _internalRender is called the number of times returned by _numInternalDraws())
      */
-    protected abstract _internalRender(effect: Effect): void;
+    protected abstract _internalRender(effect: Effect, renderIndex: number): void;
 
     /**
      * Sets the required values for both the emissive texture and and the main color.
@@ -250,6 +251,10 @@ export abstract class EffectLayer {
      */
     public abstract serialize?(): any;
 
+    protected _numInternalDraws(): number {
+        return 1;
+    }
+
     /**
      * Initializes the effect layer with the required options.
      * @param options Sets of none mandatory options to use with the layer (see IEffectLayerOptions for more information)
@@ -267,7 +272,6 @@ export abstract class EffectLayer {
         this._setMainTextureSize();
         this._createMainTexture();
         this._createTextureAndPostProcesses();
-        this._mergeDrawWrapper.setEffect(this._createMergeEffect());
     }
 
     /**
@@ -582,38 +586,50 @@ export abstract class EffectLayer {
      * Renders the glowing part of the scene by blending the blurred glowing meshes on top of the rendered scene.
      */
     public render(): void {
-        var currentEffect = this._mergeDrawWrapper;
-
-        // Check
-        if (!currentEffect.effect!.isReady()) {
-            return;
-        }
-
         for (var i = 0; i < this._postProcesses.length; i++) {
             if (!this._postProcesses[i].isReady()) {
                 return;
             }
         }
 
-        var engine = this._scene.getEngine();
+        const engine = this._scene.getEngine();
+        const numDraws = this._numInternalDraws();
+
+        // Check
+        let isReady = true;
+        for (let i = 0; i < numDraws; ++i) {
+            let currentEffect = this._mergeDrawWrapper[i];
+            if (!currentEffect) {
+                currentEffect = this._mergeDrawWrapper[i] = new DrawWrapper(this._engine);
+                currentEffect.setEffect(this._createMergeEffect());
+            }
+            isReady = isReady && currentEffect.effect!.isReady();
+        }
+
+        if (!isReady) {
+            return;
+        }
 
         this.onBeforeComposeObservable.notifyObservers(this);
 
-        // Render
-        engine.enableEffect(currentEffect);
-        engine.setState(false);
+        const previousAlphaMode = engine.getAlphaMode();
 
-        // VBOs
-        engine.bindBuffers(this._vertexBuffers, this._indexBuffer, currentEffect.effect!);
+        for (let i = 0; i < numDraws; ++i) {
+            const currentEffect = this._mergeDrawWrapper[i];
 
-        // Cache
-        var previousAlphaMode = engine.getAlphaMode();
+            // Render
+            engine.enableEffect(currentEffect);
+            engine.setState(false);
 
-        // Go Blend.
-        engine.setAlphaMode(this._effectLayerOptions.alphaBlendingMode);
+            // VBOs
+            engine.bindBuffers(this._vertexBuffers, this._indexBuffer, currentEffect.effect!);
 
-        // Blends the map on the main canvas.
-        this._internalRender(currentEffect.effect!);
+            // Go Blend.
+            engine.setAlphaMode(this._effectLayerOptions.alphaBlendingMode);
+
+            // Blends the map on the main canvas.
+            this._internalRender(currentEffect.effect!, i);
+        }
 
         // Restore Alpha
         engine.setAlphaMode(previousAlphaMode);
@@ -884,6 +900,11 @@ export abstract class EffectLayer {
             this._scene.getEngine()._releaseBuffer(this._indexBuffer);
             this._indexBuffer = null;
         }
+
+        for (const drawWrapper of this._mergeDrawWrapper) {
+            drawWrapper.dispose();
+        }
+        this._mergeDrawWrapper = [];
 
         // Clean textures and post processes
         this._disposeTextureAndPostProcesses();
