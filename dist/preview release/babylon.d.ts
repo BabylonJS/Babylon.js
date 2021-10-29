@@ -2048,6 +2048,45 @@ declare module BABYLON {
          * Maximum number of uv sets supported
          */
         static readonly MAX_SUPPORTED_UV_SETS: number;
+        /**
+         * GL constants
+         */
+        /** Alpha blend equation: ADD */
+        static readonly GL_ALPHA_EQUATION_ADD: number;
+        /** Alpha equation: MIN */
+        static readonly GL_ALPHA_EQUATION_MIN: number;
+        /** Alpha equation: MAX */
+        static readonly GL_ALPHA_EQUATION_MAX: number;
+        /** Alpha equation: SUBTRACT */
+        static readonly GL_ALPHA_EQUATION_SUBTRACT: number;
+        /** Alpha equation: REVERSE_SUBTRACT */
+        static readonly GL_ALPHA_EQUATION_REVERSE_SUBTRACT: number;
+        /** Alpha blend function: SRC */
+        static readonly GL_ALPHA_FUNCTION_SRC: number;
+        /** Alpha blend function: ONE_MINUS_SRC */
+        static readonly GL_ALPHA_FUNCTION_ONE_MINUS_SRC_COLOR: number;
+        /** Alpha blend function: SRC_ALPHA */
+        static readonly GL_ALPHA_FUNCTION_SRC_ALPHA: number;
+        /** Alpha blend function: ONE_MINUS_SRC_ALPHA */
+        static readonly GL_ALPHA_FUNCTION_ONE_MINUS_SRC_ALPHA: number;
+        /** Alpha blend function: DST_ALPHA */
+        static readonly GL_ALPHA_FUNCTION_DST_ALPHA: number;
+        /** Alpha blend function: ONE_MINUS_DST_ALPHA */
+        static readonly GL_ALPHA_FUNCTION_ONE_MINUS_DST_ALPHA: number;
+        /** Alpha blend function: ONE_MINUS_DST */
+        static readonly GL_ALPHA_FUNCTION_DST_COLOR: number;
+        /** Alpha blend function: ONE_MINUS_DST */
+        static readonly GL_ALPHA_FUNCTION_ONE_MINUS_DST_COLOR: number;
+        /** Alpha blend function: SRC_ALPHA_SATURATED */
+        static readonly GL_ALPHA_FUNCTION_SRC_ALPHA_SATURATED: number;
+        /** Alpha blend function: CONSTANT */
+        static readonly GL_ALPHA_FUNCTION_CONSTANT_COLOR: number;
+        /** Alpha blend function: ONE_MINUS_CONSTANT */
+        static readonly GL_ALPHA_FUNCTION_ONE_MINUS_CONSTANT_COLOR: number;
+        /** Alpha blend function: CONSTANT_ALPHA */
+        static readonly GL_ALPHA_FUNCTION_CONSTANT_ALPHA: number;
+        /** Alpha blend function: ONE_MINUS_CONSTANT_ALPHA */
+        static readonly GL_ALPHA_FUNCTION_ONE_MINUS_CONSTANT_ALPHA: number;
     }
 }
 declare module BABYLON {
@@ -8470,6 +8509,7 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export interface IDrawContext {
+        uniqueId: number;
         useInstancing: boolean;
         reset(): void;
         dispose(): void;
@@ -8478,6 +8518,7 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export interface IMaterialContext {
+        uniqueId: number;
         reset(): void;
     }
 }
@@ -9188,6 +9229,13 @@ declare module BABYLON {
          */
         serialize(): any;
         private toNumberArray;
+        /**
+         * Release any memory retained by the cached data on the Geometry.
+         *
+         * Call this function to reduce memory footprint of the mesh.
+         * Vertex buffers will not store CPU data anymore (this will prevent picking, collisions or physics to work correctly)
+         */
+        clearCachedData(): void;
         /**
          * Serialize all vertices data into a JSON object
          * @returns a JSON representation of the current geometry data
@@ -31644,6 +31692,7 @@ declare module BABYLON {
         IMAGEPROCESSINGPOSTPROCESS: boolean;
         MULTIVIEW: boolean;
         ORDER_INDEPENDENT_TRANSPARENCY: boolean;
+        ORDER_INDEPENDENT_TRANSPARENCY_16BITS: boolean;
         /**
          * If the reflection texture on this material is in linear color space
          * @hidden
@@ -43263,9 +43312,11 @@ declare module BABYLON {
          * @hidden
          * @param size defines the size of the texture
          * @param options defines the options used to create the texture
+         * @param delayGPUTextureCreation true to delay the texture creation the first time it is really needed. false to create it right away
+         * @param source source type of the texture
          * @returns a new render target texture stored in an InternalTexture
          */
-        _createInternalTexture(size: TextureSize, options: boolean | InternalTextureCreationOptions): InternalTexture;
+        _createInternalTexture(size: TextureSize, options: boolean | InternalTextureCreationOptions, delayGPUTextureCreation?: boolean, source?: InternalTextureSource): InternalTexture;
         /** @hidden */
         _getUseSRGBBuffer(useSRGBBuffer: boolean, noMipmap: boolean): boolean;
         protected _createTextureBase(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number | undefined, onLoad: Nullable<() => void> | undefined, onError: Nullable<(message: string, exception: any) => void> | undefined, prepareTexture: (texture: InternalTexture, extension: string, scene: Nullable<ISceneLike>, img: HTMLImageElement | ImageBitmap | {
@@ -64891,6 +64942,7 @@ declare module BABYLON {
         setCommandEncoder(encoder: GPUCommandEncoder): void;
         static IsCompressedFormat(format: GPUTextureFormat): boolean;
         static GetWebGPUTextureFormat(type: number, format: number, useSRGBBuffer?: boolean): GPUTextureFormat;
+        static GetNumChannelsFromWebGPUTextureFormat(format: GPUTextureFormat): number;
         invertYPreMultiplyAlpha(gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY?: boolean, premultiplyAlpha?: boolean, faceIndex?: number, mipLevel?: number, layers?: number, commandEncoder?: GPUCommandEncoder): void;
         copyWithInvertY(srcTextureView: GPUTextureView, format: GPUTextureFormat, renderPassDescriptor: GPURenderPassDescriptor, commandEncoder?: GPUCommandEncoder): void;
         createTexture(imageBitmap: ImageBitmap | {
@@ -65167,6 +65219,7 @@ declare module BABYLON {
     export class WebGPUMaterialContext implements IMaterialContext {
         private static _Counter;
         uniqueId: number;
+        updateId: number;
         isDirty: boolean;
         samplers: {
             [name: string]: Nullable<IWebGPUMaterialContextSamplerCache>;
@@ -65191,15 +65244,18 @@ declare module BABYLON {
         fastBundle?: GPURenderBundle;
         bindGroups?: GPUBindGroup[];
         uniqueId: number;
-        isDirty: boolean;
         buffers: {
             [name: string]: Nullable<WebGPUDataBuffer>;
         };
+        materialContextUpdateId: number;
         indirectDrawBuffer?: GPUBuffer;
         private _bufferManager;
         private _useInstancing;
         private _indirectDrawData?;
         private _currentInstanceCount;
+        private _isDirty;
+        isDirty(materialContextUpdateId: number): boolean;
+        resetIsDirty(materialContextUpdateId: number): void;
         get useInstancing(): boolean;
         set useInstancing(use: boolean);
         constructor(bufferManager: WebGPUBufferManager);
@@ -65864,6 +65920,16 @@ declare module BABYLON {
         _getRGBABufferInternalSizedFormat(type: number, format?: number): number;
         updateTextureComparisonFunction(texture: InternalTexture, comparisonFunction: number): void;
         /**
+         * Creates an internal texture without binding it to a framebuffer
+         * @hidden
+         * @param size defines the size of the texture
+         * @param options defines the options used to create the texture
+         * @param delayGPUTextureCreation true to delay the texture creation the first time it is really needed. false to create it right away
+         * @param source source type of the texture
+         * @returns a new render target texture stored in an InternalTexture
+         */
+        _createInternalTexture(size: TextureSize, options: boolean | InternalTextureCreationOptions, delayGPUTextureCreation?: boolean, source?: InternalTextureSource): InternalTexture;
+        /**
          * Usually called from Texture.ts.
          * Passed information to create a hardware texture
          * @param url defines a value which contains one of the following:
@@ -66095,6 +66161,8 @@ declare module BABYLON {
         _getUnpackAlignement(): number;
         /** @hidden */
         _unpackFlipY(value: boolean): void;
+        /** @hidden */
+        _bindUnboundFramebuffer(framebuffer: Nullable<WebGLFramebuffer>): void;
         /** @hidden */
         _getSamplingParameters(samplingMode: number, generateMipMaps: boolean): {
             min: number;
@@ -69282,6 +69350,7 @@ declare module BABYLON {
         EXPOSURE: boolean;
         MULTIVIEW: boolean;
         ORDER_INDEPENDENT_TRANSPARENCY: boolean;
+        ORDER_INDEPENDENT_TRANSPARENCY_16BITS: boolean;
         USEPHYSICALLIGHTFALLOFF: boolean;
         USEGLTFLIGHTFALLOFF: boolean;
         TWOSIDEDLIGHTING: boolean;
@@ -73740,6 +73809,7 @@ declare module BABYLON {
         private _tmpAmmoVectorRCB;
         private _raycastResult;
         private _tmpContactPoint;
+        private _tmpVec3;
         private static readonly DISABLE_COLLISION_FLAG;
         private static readonly KINEMATIC_FLAG;
         private static readonly DISABLE_DEACTIVATION_FLAG;
@@ -84928,17 +84998,31 @@ declare module BABYLON {
         private _colorMrts;
         private _blendBackMrt;
         private _blendBackEffectWrapper;
+        private _blendBackEffectWrapperPingPong;
         private _finalEffectWrapper;
         private _effectRenderer;
-        private _passCount;
         private _currentPingPongState;
         private _prePassEffectConfiguration;
         private _blendBackTexture;
+        private _layoutCacheFormat;
         private _layoutCache;
+        private _renderPassIds;
         private static _DEPTH_CLEAR_VALUE;
         private static _MIN_DEPTH;
         private static _MAX_DEPTH;
         private _colorCache;
+        private _passCount;
+        /**
+         * Number of depth peeling passes. As we are using dual depth peeling, each pass two levels of transparency are processed.
+         */
+        get passCount(): number;
+        set passCount(count: number);
+        private _useRenderPasses;
+        /**
+         * Instructs the renderer to use render passes. It is an optimization that makes the rendering faster for some engines (like WebGPU) but that consumes more memory, so it is disabled by default.
+         */
+        get useRenderPasses(): boolean;
+        set useRenderPasses(usePasses: boolean);
         /**
          * Instanciates the depth peeling renderer
          * @param scene Scene to attach to
@@ -84946,6 +85030,8 @@ declare module BABYLON {
          * @returns The depth peeling renderer
          */
         constructor(scene: Scene, passCount?: number);
+        private _createRenderPassIds;
+        private _releaseRenderPassIds;
         private _createTextures;
         private _disposeTextures;
         private _updateTextures;
@@ -84986,6 +85072,8 @@ declare module BABYLON {
              * Flag to indicate if we want to use order independant transparency, despite the performance hit
              */
             useOrderIndependentTransparency: boolean;
+            /** @hidden */
+            _useOrderIndependentTransparency: boolean;
         }
     /**
      * Scene component to render order independant transparency with depth peeling

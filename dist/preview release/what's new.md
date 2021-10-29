@@ -85,6 +85,7 @@
 - Added support for pure geometry files to OBJ loader ([Deltakosh](https://github.com/deltakosh))
 - Added an observable for when loader state changed. ([bghgary](https://github.com/bghgary))
 - Fixed an issue where errors for loading certain assets (e.g. <20-byte GLBs) are not catchable. ([bghgary](https://github.com/bghgary))
+- Added support for `KHR_materials_emissive_strength` for glTF loader. ([sebavan](https://github.com/sebavan))
 
 ### Navigation
 
@@ -234,6 +235,7 @@
 - Fix issue with the Promise polyfill where a return value was expected from resolve() ([Deltakosh](https://github.com/deltakosh))
 - Fix ArcRotateCamera panning with axis decomposition ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Fix negative scale support for physics impostors ([CedricGuillemet](https://github.com/CedricGuillemet))
+- Fix `deltaPosition` with ammoJS ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Fix an issue with keyboard control (re)attachment. ([#9411](https://github.com/BabylonJS/Babylon.js/issues/9411)) ([RaananW](https://github.com/RaananW))
 - Fix issue when scaling is reapplied with BoundingBoxGizmo and GizmoManager ([CedricGuillemet](https://github.com/CedricGuillemet)
 - Fix direct loading of a glTF string that has base64-encoded URI. ([bghgary](https://github.com/bghgary))
