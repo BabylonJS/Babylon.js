@@ -24,7 +24,7 @@ export class HamburgerMenuComponent extends React.Component<IHamburgerMenuCompon
             BABYLON.WebGPUEngine.IsSupportedAsync.then((result) => {
                 this.webGPUSupported = result;
                 if (location.search.indexOf("webgpu") !== -1 && this.webGPUSupported) {
-                    Utilities.StoreStringToStore("engineVersion", "WebGPU");
+                    Utilities.StoreStringToStore("engineVersion", "WebGPU", true);
                 }
                 this.forceUpdate();
             });
@@ -81,8 +81,8 @@ export class HamburgerMenuComponent extends React.Component<IHamburgerMenuCompon
     }
 
     public render() {
-        let activeVersion = Utilities.ReadStringFromStore("version", "Latest");
-        let activeEngineVersion = Utilities.ReadStringFromStore("engineVersion", "WebGL2");
+        let activeVersion = Utilities.ReadStringFromStore("version", "Latest", true);
+        let activeEngineVersion = Utilities.ReadStringFromStore("engineVersion", "WebGL2", true);
 
         var versionOptions = Object.keys(Versions).map((key) => {
             return {
@@ -91,7 +91,7 @@ export class HamburgerMenuComponent extends React.Component<IHamburgerMenuCompon
                 storeKey: "version",
                 isActive: activeVersion === key,
                 onClick: () => {
-                    Utilities.StoreStringToStore("version", key);
+                    Utilities.StoreStringToStore("version", key, true);
                     window.location.reload();
                 },
             };
@@ -104,7 +104,7 @@ export class HamburgerMenuComponent extends React.Component<IHamburgerMenuCompon
                 storeKey: "engineVersion",
                 isActive: activeEngineVersion === "WebGL2",
                 onClick: () => {
-                    Utilities.StoreStringToStore("engineVersion", "WebGL2");
+                    Utilities.StoreStringToStore("engineVersion", "WebGL2", true);
                     window.location.reload();
                 },
             },
@@ -114,7 +114,7 @@ export class HamburgerMenuComponent extends React.Component<IHamburgerMenuCompon
                 storeKey: "engineVersion",
                 isActive: activeEngineVersion === "WebGL",
                 onClick: () => {
-                    Utilities.StoreStringToStore("engineVersion", "WebGL");
+                    Utilities.StoreStringToStore("engineVersion", "WebGL", true);
                     window.location.reload();
                 },
             },
@@ -127,7 +127,7 @@ export class HamburgerMenuComponent extends React.Component<IHamburgerMenuCompon
                 storeKey: "engineVersion",
                 isActive: activeEngineVersion === "WebGPU",
                 onClick: () => {
-                    Utilities.StoreStringToStore("engineVersion", "WebGPU");
+                    Utilities.StoreStringToStore("engineVersion", "WebGPU", true);
                     window.location.reload();
                 },
             });
@@ -151,6 +151,7 @@ export class HamburgerMenuComponent extends React.Component<IHamburgerMenuCompon
                     <CommandDropdownComponent
                         globalState={this.props.globalState}
                         hamburgerMode={true}
+                        useSessionStorage={true}
                         icon="engineVersion"
                         defaultValue={activeEngineVersion}
                         tooltip="Engine"
@@ -160,6 +161,7 @@ export class HamburgerMenuComponent extends React.Component<IHamburgerMenuCompon
                     <CommandDropdownComponent
                         globalState={this.props.globalState}
                         hamburgerMode={true}
+                        useSessionStorage={true}
                         icon="renderer"
                         defaultValue={activeVersion}
                         tooltip="Versions"
