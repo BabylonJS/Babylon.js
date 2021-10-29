@@ -1008,7 +1008,7 @@
         },
         {
             "title": "Motion Blur",
-            "playgroundId": "#E5YGEL#2",
+            "playgroundId": "#E5YGEL#20",
             "referenceImage": "motionBlur.png",
             "renderCount": 10,
             "excludedEngines": ["webgl1"],
@@ -1283,7 +1283,7 @@
         {
             "title": "Thin instances + motion blur + manual",
             "renderCount": 30,
-            "playgroundId": "#HJGC2G#61",
+            "playgroundId": "#HJGC2G#132",
             "excludedEngines": ["webgl1"],
             "referenceImage": "thin-instances-mb-manual.png"
         },
@@ -1344,7 +1344,7 @@
         {
             "title": "Multi cameras and output render target",
             "renderCount": 2,
-            "playgroundId": "#BCYE7J#17",
+            "playgroundId": "#BCYE7J#31",
             "referenceImage": "multiCamerasOutputRenderTarget.png"
         },
         {
