@@ -34,8 +34,8 @@ declare module BABYLON {
         static OnLoadCompleteObservable: Observable<Engine>;
         /** Register asset manager progress event (engine.html) */
         static OnAssetManagerProgress: (event: ProgressEvent) => void;
-        /** Post a safe message to a browser window */
-        static PostWindowMessage(msg: BABYLON.IWindowMessage, targetOrigin: string, localWindow?: boolean, transfer?: Transferable[]): void;
+        /** Post a safe message to the top browser window */
+        static PostWindowMessage(msg: BABYLON.IWindowMessage, targetOrigin?: string, localWindow?: boolean): void;
         /** Loads a babylon gltf scene file (engine.html) */
         static LoadSceneFile(sceneFile: string, queryString?: string): void;
         private static SceneParsingEnabled;
@@ -121,7 +121,7 @@ declare module BABYLON {
         /** Get the total game time in seconds */
         static GetGameTime(): number;
         /** Get the current delta time in seconds */
-        static GetDeltaSeconds(scene: BABYLON.Scene): number;
+        static GetDeltaSeconds(scene: BABYLON.Scene, applyAnimationRatio?: boolean): number;
         /** Get the delta time animation ratio for 60 fps */
         static GetAnimationRatio(scene: BABYLON.Scene): number;
         /** Delays a function call using request animation frames. Returns a handle object */
