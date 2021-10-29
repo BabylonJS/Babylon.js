@@ -240,7 +240,7 @@
         },
         {
             "title": "Chibi Rex",
-            "playgroundId": "#QATUCH#11",
+            "playgroundId": "#QATUCH#18",
             "renderCount": 50,
             "referenceImage": "chibi_rex.png"
         },
@@ -1323,7 +1323,7 @@
         {
             "title": "Reverse depth buffer and shadows",
             "renderCount": 10,
-            "playgroundId": "#WL4Q8J#16",
+            "playgroundId": "#WL4Q8J#20",
             "excludedEngines": ["webgl1"],
             "referenceImage": "reverseDepthBufferShadows.png"
         },
@@ -1357,7 +1357,7 @@
         {
             "title": "Order independent transparency",
             "renderCount": 5,
-            "playgroundId": "#1PLV5Z#103",
+            "playgroundId": "#1PLV5Z#104",
             "excludedEngines": ["webgl1"],
             "referenceImage": "oit.png"
         },
