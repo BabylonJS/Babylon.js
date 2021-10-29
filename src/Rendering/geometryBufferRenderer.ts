@@ -529,6 +529,7 @@ export class GeometryBufferRenderer {
             this._resizeObserver = null;
         }
         this.getGBuffer().dispose();
+        this._drawWrapper.dispose();
     }
 
     private _assignRenderTargetIndices(): [number, string[]] {
