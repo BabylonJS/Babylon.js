@@ -893,7 +893,9 @@ export class InputText extends Control implements IFocusableControl {
             context.shadowOffsetY = 0;
         }
 
-        this._fontOffset = Control._GetFontOffset(context.font);
+        if (!this.fontOffset || this._wasDirty) {
+            this._fontOffset = Control._GetFontOffset(context.font);
+        }
 
         // Text
         let clipTextLeft = this._currentMeasure.left + this._margin.getValueInPixel(this._host, this._tempParentMeasure.width);

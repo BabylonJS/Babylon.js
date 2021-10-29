@@ -2072,7 +2072,7 @@ export class Control {
         this._fontOffset = Control._GetFontOffset(this._font);
 
         //children need to be refreshed
-        this.getDescendants().forEach(child => {
+        this.getDescendants().forEach((child) => {
             child._markAllAsDirty();
         });
     }
@@ -2201,7 +2201,7 @@ export class Control {
             throw new Error("Invalid engine. Unable to create a canvas.");
         }
 
-        var result = engine.getFontOffset(font);
+        var result = Tools.getFontOffset(font);
         Control._FontHeightSizes[font] = result;
 
         return result;

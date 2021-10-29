@@ -287,8 +287,9 @@ export class TextBlock extends Control {
     }
 
     protected _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext): void {
-        this._fontOffset = Control._GetFontOffset(context.font);
-
+        if (!this.fontOffset || this._wasDirty) {
+            this._fontOffset = Control._GetFontOffset(context.font);
+        }
         super._processMeasures(parentMeasure, context);
 
         // Prepare lines
