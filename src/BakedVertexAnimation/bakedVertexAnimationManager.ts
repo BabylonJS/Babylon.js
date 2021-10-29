@@ -77,7 +77,7 @@ export class BakedVertexAnimationManager {
         effect.setFloat("bakedVertexAnimationTime", this.time);
 
         if (!useInstances) {
-            // effect.setVector4("bakedVertexAnimationSettings", this.animationParameters);
+            effect.setVector4("bakedVertexAnimationSettings", this.animationParameters);
         }
 
         effect.setTexture("bakedVertexAnimationTexture", this._texture);

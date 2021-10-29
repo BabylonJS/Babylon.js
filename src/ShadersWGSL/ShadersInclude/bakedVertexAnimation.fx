@@ -1,26 +1,27 @@
 #ifdef BAKED_VERTEX_ANIMATION_TEXTURE
 {
+    // calculate the current frame for the VAT
     #ifdef INSTANCES
-        #define BVASNAME bakedVertexAnimationSettingsInstanced
+        let VATStartFrame: f32 = bakedVertexAnimationSettingsInstanced.x;
+        let VATEndFrame: f32 = bakedVertexAnimationSettingsInstanced.y;
+        let VATOffsetFrame: f32 = bakedVertexAnimationSettingsInstanced.z;
+        let VATSpeed: f32 = bakedVertexAnimationSettingsInstanced.w;
     #else
-        #define BVASNAME bakedVertexAnimationSettings
+        let VATStartFrame: f32 = uniforms.bakedVertexAnimationSettings.x;
+        let VATEndFrame: f32 = uniforms.bakedVertexAnimationSettings.y;
+        let VATOffsetFrame: f32 = uniforms.bakedVertexAnimationSettings.z;
+        let VATSpeed: f32 = uniforms.bakedVertexAnimationSettings.w;
     #endif
 
-    // calculate the current frame for the VAT
-    let VATStartFrame: f32 = BVASNAME.x;
-    let VATEndFrame: f32 = BVASNAME.y;
-    let VATOffsetFrame: f32 = BVASNAME.z;
-    let VATSpeed: f32 = BVASNAME.w;
-
     let totalFrames: f32 = VATEndFrame - VATStartFrame + 1.0;
-    let time: f32 = bakedVertexAnimationTime * VATSpeed / totalFrames;
+    let time: f32 = uniforms.bakedVertexAnimationTime * VATSpeed / totalFrames;
     // when you loop an animation after the first run (and for all subsequent loops), we wrap to frame #1, not to frame #0
-    let frameCorrection: f32 = time < 1.0 ? 0.0 : 1.0;
+    let frameCorrection: f32 = select(1.0, 0.0, time < 1.0);
     let numOfFrames: f32 = totalFrames - frameCorrection;
     var VATFrameNum: f32 = fract(time) * numOfFrames;
-    VATFrameNum = mod(VATFrameNum + VATOffsetFrame, numOfFrames);
+    VATFrameNum = (VATFrameNum + VATOffsetFrame) % numOfFrames;
     VATFrameNum = floor(VATFrameNum);
-    VATFrameNum += VATStartFrame + frameCorrection;
+    VATFrameNum = VATFrameNum + VATStartFrame + frameCorrection;
 
     var VATInfluence : mat4x4<f32>;
     VATInfluence = readMatrixFromRawSamplerVAT(bakedVertexAnimationTexture, matricesIndices[0], VATFrameNum) * matricesWeights[0];
