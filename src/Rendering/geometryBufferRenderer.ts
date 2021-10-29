@@ -236,7 +236,7 @@ export class GeometryBufferRenderer {
 
         // PrePass handles index and texture links
         if (!this._linkedWithPrePass) {
-            this.dispose();
+            this.dispose(false);
             this._createRenderTargets();
         }
     }
@@ -259,7 +259,7 @@ export class GeometryBufferRenderer {
         }
 
         if (!this._linkedWithPrePass) {
-            this.dispose();
+            this.dispose(false);
             this._createRenderTargets();
         }
 
@@ -280,7 +280,7 @@ export class GeometryBufferRenderer {
         this._enableReflectivity = enable;
 
         if (!this._linkedWithPrePass) {
-            this.dispose();
+            this.dispose(false);
             this._createRenderTargets();
         }
     }
@@ -521,15 +521,18 @@ export class GeometryBufferRenderer {
 
     /**
      * Disposes the renderer and frees up associated resources.
+     * @param disposeDrawWrapper true to also dispose the draw wrapper (default: true)
      */
-    public dispose(): void {
+    public dispose(disposeDrawWrapper = true): void {
         if (this._resizeObserver) {
             const engine = this._scene.getEngine();
             engine.onResizeObservable.remove(this._resizeObserver);
             this._resizeObserver = null;
         }
         this.getGBuffer().dispose();
-        this._drawWrapper.dispose();
+        if (disposeDrawWrapper) {
+            this._drawWrapper.dispose();
+        }
     }
 
     private _assignRenderTargetIndices(): [number, string[]] {
