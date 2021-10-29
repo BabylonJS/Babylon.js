@@ -264,6 +264,14 @@ export class BoundingBox implements ICullable {
         return true;
     }
 
+    /**
+     * Disposes the resources of the class
+     */
+    public dispose(): void {
+        this._drawWrapperFront?.dispose();
+        this._drawWrapperBack?.dispose();
+    }
+
     // Statics
 
     /**
