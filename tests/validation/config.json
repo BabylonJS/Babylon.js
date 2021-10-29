@@ -116,7 +116,7 @@
         },
         {
             "title": "Nested BBG",
-            "playgroundId": "#ZG0C8B#1",
+            "playgroundId": "#ZG0C8B#5",
             "renderCount": 10,
             "referenceImage": "nested_BBG.png"
         },
@@ -246,7 +246,7 @@
         },
         {
             "title": "Yeti",
-            "playgroundId": "#QATUCH#3",
+            "playgroundId": "#QATUCH#19",
             "renderCount": 150,
             "referenceImage": "yeti.png"
         },
@@ -382,10 +382,8 @@
         },
         {
             "title": "Bones",
-            "scriptToRun": "/Demos/Bones/bones.js",
-            "functionToCall": "CreateBonesTestScene",
-            "referenceImage": "bones.png",
-            "replace": "Dude.babylon, dude.babylon"
+            "playgroundId": "#7EC27T#3",
+            "referenceImage": "bones.png"
         },
         {
             "title": "LOD",
@@ -412,13 +410,13 @@
         {
             "title": "Advanced shadows",
             "renderCount": 20,
-            "playgroundId": "#SLV8LW#0",
+            "playgroundId": "#SLV8LW#3",
             "referenceImage": "advancedShadows.png"
         },
         {
             "title": "Advanced shadows (right handed)",
             "renderCount": 20,
-            "playgroundId": "#B48X7G#32",
+            "playgroundId": "#B48X7G#64",
             "referenceImage": "advancedShadows2.png"
         },
         {
@@ -687,7 +685,7 @@
         },
         {
             "title": "GLTF Serializer Morph Target Animation Group",
-            "playgroundId": "#T087A8#27",
+            "playgroundId": "#T087A8#29",
             "referenceImage": "gltfSerializerMorphTargetAnimationGroup.png"
         },
         {
