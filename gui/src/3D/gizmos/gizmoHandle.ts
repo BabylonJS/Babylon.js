@@ -1,5 +1,5 @@
 import { Scene } from "babylonjs/scene";
-import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
+import { CreateBox } from "babylonjs/Meshes/Builders/boxBuilder";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { Vector3 } from "babylonjs/Maths/math.vector";
 import { HandleMaterial } from "../materials/handle/handleMaterial";
@@ -181,7 +181,7 @@ export class SideHandle extends GizmoHandle {
      */
     public createNode() {
         // Create a simple vertical rectangle
-        const verticalBox = BoxBuilder.CreateBox("sideVert", { width: 1, height: 10, depth: 0.1 }, this._scene);
+        const verticalBox = CreateBox("sideVert", { width: 1, height: 10, depth: 0.1 }, this._scene);
         const sideNode = new TransformNode("side", this._scene);
         verticalBox.parent = sideNode;
 
@@ -204,8 +204,8 @@ export class CornerHandle extends GizmoHandle {
      */
     public createNode() {
         // Create 2 boxes making a bottom left corner
-        const horizontalBox = BoxBuilder.CreateBox("angleHor", { width: 3, height: 1, depth: 0.1 }, this._scene);
-        const verticalBox = BoxBuilder.CreateBox("angleVert", { width: 1, height: 3, depth: 0.1 }, this._scene);
+        const horizontalBox = CreateBox("angleHor", { width: 3, height: 1, depth: 0.1 }, this._scene);
+        const verticalBox = CreateBox("angleVert", { width: 1, height: 3, depth: 0.1 }, this._scene);
 
         const angleNode = new TransformNode("angle", this._scene);
         horizontalBox.parent = angleNode;

@@ -57,6 +57,11 @@ export class Constants {
    * Alpha will be set to DST ALPHA
    */
   public static readonly ALPHA_EXCLUSION = 16;
+    /**
+     * Defines that alpha blending is SRC * SRC ALPHA + DST * (1 - SRC ALPHA)
+     * Alpha will be set to SRC ALPHA + (1 - SRC ALPHA) * DST ALPHA
+     */
+    public static readonly ALPHA_LAYER_ACCUMULATE = 17;
 
   /** Defines that alpha blending equation a SUM */
   public static readonly ALPHA_EQUATION_ADD = 0;
@@ -561,9 +566,9 @@ export class Constants {
   public static readonly PREPASS_NORMAL_TEXTURE_TYPE = 6;
   /**
    * Constant used to retrieve albedo index in the textures array in the prepass
-   * using the getIndex(Constants.PREPASS_ALBEDO_TEXTURE_TYPE)
+   * using the getIndex(Constants.PREPASS_ALBEDO_SQRT_TEXTURE_TYPE)
    */
-  public static readonly PREPASS_ALBEDO_TEXTURE_TYPE = 7;
+  public static readonly PREPASS_ALBEDO_SQRT_TEXTURE_TYPE = 7;
 
   /** Flag to create a readable buffer (the buffer can be the source of a copy) */
   public static readonly BUFFER_CREATIONFLAG_READ = 1;
@@ -585,13 +590,7 @@ export class Constants {
    */
 
   /** @hidden */
-  public static readonly SUBMESH_DRAWWRAPPER_MAINPASS = "bjs_mainpass";
-  /** @hidden */
-  public static readonly SUBMESH_DRAWWRAPPER_SHADOWGENERATOR_PREFIX = "bjs_shadowgenerator_";
-  /** @hidden */
-  public static readonly SUBMESH_DRAWWRAPPER_DEPTHRENDERER_PREFIX = "bjs_depthrenderer_";
-  /** @hidden */
-  public static readonly SUBMESH_DRAWWRAPPER_OUTLINERENDERER_PREFIX = "bjs_outlinerenderer_";
+  public static readonly RENDERPASS_MAIN = 0;
 
   /**
    * Constant used as key code for Alt key
@@ -694,4 +693,45 @@ export class Constants {
    * Maximum number of uv sets supported
    */
   public static readonly MAX_SUPPORTED_UV_SETS = 6;
+
+  /**
+   * GL constants
+   */
+  /** Alpha blend equation: ADD */
+  public static readonly GL_ALPHA_EQUATION_ADD = 0x8006;
+  /** Alpha equation: MIN */
+  public static readonly GL_ALPHA_EQUATION_MIN = 0x8007;
+  /** Alpha equation: MAX */
+  public static readonly GL_ALPHA_EQUATION_MAX = 0x8008;
+  /** Alpha equation: SUBTRACT */
+  public static readonly GL_ALPHA_EQUATION_SUBTRACT = 0x800A;
+  /** Alpha equation: REVERSE_SUBTRACT */
+  public static readonly GL_ALPHA_EQUATION_REVERSE_SUBTRACT = 0x800B;
+
+  /** Alpha blend function: SRC */
+  public static readonly GL_ALPHA_FUNCTION_SRC = 0x0300;
+  /** Alpha blend function: ONE_MINUS_SRC */
+  public static readonly GL_ALPHA_FUNCTION_ONE_MINUS_SRC_COLOR = 0x0301;
+  /** Alpha blend function: SRC_ALPHA */
+  public static readonly GL_ALPHA_FUNCTION_SRC_ALPHA = 0x0302;
+  /** Alpha blend function: ONE_MINUS_SRC_ALPHA */
+  public static readonly GL_ALPHA_FUNCTION_ONE_MINUS_SRC_ALPHA = 0x0303;
+  /** Alpha blend function: DST_ALPHA */
+  public static readonly GL_ALPHA_FUNCTION_DST_ALPHA = 0x0304;
+  /** Alpha blend function: ONE_MINUS_DST_ALPHA */
+  public static readonly GL_ALPHA_FUNCTION_ONE_MINUS_DST_ALPHA = 0x0305;
+  /** Alpha blend function: ONE_MINUS_DST */
+  public static readonly GL_ALPHA_FUNCTION_DST_COLOR = 0x0306;
+  /** Alpha blend function: ONE_MINUS_DST */
+  public static readonly GL_ALPHA_FUNCTION_ONE_MINUS_DST_COLOR = 0x0307;
+  /** Alpha blend function: SRC_ALPHA_SATURATED */
+  public static readonly GL_ALPHA_FUNCTION_SRC_ALPHA_SATURATED = 0x0308;
+  /** Alpha blend function: CONSTANT */
+  public static readonly GL_ALPHA_FUNCTION_CONSTANT_COLOR = 0x8001;
+  /** Alpha blend function: ONE_MINUS_CONSTANT */
+  public static readonly GL_ALPHA_FUNCTION_ONE_MINUS_CONSTANT_COLOR = 0x8002;
+  /** Alpha blend function: CONSTANT_ALPHA */
+  public static readonly GL_ALPHA_FUNCTION_CONSTANT_ALPHA = 0x8003;
+  /** Alpha blend function: ONE_MINUS_CONSTANT_ALPHA */
+  public static readonly GL_ALPHA_FUNCTION_ONE_MINUS_CONSTANT_ALPHA = 0x8004;
 }

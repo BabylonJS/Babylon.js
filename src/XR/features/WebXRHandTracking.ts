@@ -18,7 +18,7 @@ import { NodeMaterial } from "../../Materials/Node/nodeMaterial";
 import { InputBlock } from "../../Materials/Node/Blocks/Input/inputBlock";
 import { Material } from "../../Materials/material";
 import { Engine } from "../../Engines/engine";
-import { IcoSphereBuilder } from "../../Meshes/Builders/icoSphereBuilder";
+import { CreateIcoSphere } from "../../Meshes/Builders/icoSphereBuilder";
 import { TransformNode } from "../../Meshes/transformNode";
 import { Axis } from "../../Maths/math.axis";
 
@@ -519,7 +519,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
         const meshes: { [handedness: string]: AbstractMesh[] } = {};
         ["left" as XRHandedness, "right" as XRHandedness].map((handedness) => {
             const trackedMeshes = [];
-            const originalMesh = featureOptions.jointMeshes?.sourceMesh || IcoSphereBuilder.CreateIcoSphere("jointParent", WebXRHandTracking._ICOSPHERE_PARAMS);
+            const originalMesh = featureOptions.jointMeshes?.sourceMesh || CreateIcoSphere("jointParent", WebXRHandTracking._ICOSPHERE_PARAMS);
             originalMesh.isVisible = !!featureOptions.jointMeshes?.keepOriginalVisible;
             for (let i = 0; i < handJointReferenceArray.length; ++i) {
                 let newInstance: AbstractMesh = originalMesh.createInstance(`${handedness}-handJoint-${i}`);

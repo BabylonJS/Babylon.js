@@ -200,6 +200,7 @@ export class Buffer {
         }
         if (this._engine._releaseBuffer(this._buffer)) {
             this._buffer = null;
+            this._data = null;
         }
     }
 }
@@ -327,9 +328,6 @@ export class VertexBuffer {
             this._buffer = data;
             this._ownsBuffer = takeBufferOwnership;
 
-            if (takeBufferOwnership) {
-                this._buffer._increaseReferences();
-            }
         } else {
             this._buffer = new Buffer(engine, data, updatable, stride, postponeInternalCreation, instanced, useBytes);
             this._ownsBuffer = true;
@@ -435,8 +433,8 @@ export class VertexBuffer {
         const count = totalVertices * this.getSize();
 
         if (this.type !== VertexBuffer.FLOAT || this.byteStride !== tightlyPackedByteStride) {
-            const copy: number[] = [];
-            this.forEach(count, (value) => copy.push(value));
+            const copy = new Float32Array(count);
+            this.forEach(count, (value, index) => copy[index] = value);
             return copy;
         }
 

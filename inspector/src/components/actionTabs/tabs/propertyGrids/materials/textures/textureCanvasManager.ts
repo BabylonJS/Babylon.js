@@ -4,7 +4,7 @@ import { Vector3, Vector2 } from 'babylonjs/Maths/math.vector';
 import { Color4, Color3 } from 'babylonjs/Maths/math.color';
 import { FreeCamera } from 'babylonjs/Cameras/freeCamera';
 import { Nullable } from 'babylonjs/types';
-import { PlaneBuilder } from 'babylonjs/Meshes/Builders/planeBuilder';
+import { CreatePlane } from 'babylonjs/Meshes/Builders/planeBuilder';
 import { Mesh } from 'babylonjs/Meshes/mesh';
 import { Camera } from 'babylonjs/Cameras/camera';
 
@@ -77,8 +77,11 @@ export class TextureCanvasManager {
     private _originalTexture: BaseTexture;
     /** This is a hidden texture which is only responsible for holding the actual texture memory in the original engine */
     private _target: HtmlElementTexture | RawCubeTexture;
-    /** The internal texture representation of the original texture */
-    private _originalInternalTexture: Nullable<InternalTexture> = null;
+    private _originalTextureProperties : {
+        _texture : Nullable<InternalTexture>,
+        url: Nullable<string>,
+        _forceSerialize: boolean
+    }
     /** Keeps track of whether we have modified the texture */
     private _didEdit: boolean = false;
 
@@ -154,7 +157,11 @@ export class TextureCanvasManager {
         this._setMipLevel = setMipLevel;
 
         this._originalTexture = texture;
-        this._originalInternalTexture = this._originalTexture._texture;
+        this._originalTextureProperties = {
+            _texture: this._originalTexture._texture,
+            url: (this._originalTexture as Texture).url,
+            _forceSerialize: this._originalTexture._forceSerialize
+        }
         this._engine = new Engine(this._UICanvas, true);
         this._scene = new Scene(this._engine, { virtual: true });
         this._scene.clearColor = new Color4(0.11, 0.11, 0.11, 1.0);
@@ -175,7 +182,7 @@ export class TextureCanvasManager {
         const cam = new FreeCamera('camera', new Vector3(0, 0, -1), this._3DScene);
         cam.mode = Camera.ORTHOGRAPHIC_CAMERA;
         [cam.orthoBottom, cam.orthoLeft, cam.orthoTop, cam.orthoRight] = [-0.5, -0.5, 0.5, 0.5];
-        this._3DPlane = PlaneBuilder.CreatePlane('texture', { width: 1, height: 1 }, this._3DScene);
+        this._3DPlane = CreatePlane('texture', { width: 1, height: 1 }, this._3DScene);
         this._3DPlane.hasVertexAlpha = true;
         const mat = new StandardMaterial('material', this._3DScene);
         mat.diffuseTexture = this._3DCanvasTexture;
@@ -348,7 +355,7 @@ export class TextureCanvasManager {
                         engine: this._originalTexture.getScene()?.getEngine()!,
                         scene: null,
                         samplingMode: (this._originalTexture as Texture).samplingMode,
-                        generateMipMaps: this._originalInternalTexture?.generateMipMaps
+                        generateMipMaps: this._originalTextureProperties._texture?.generateMipMaps
                     }
                 );
             } else {
@@ -357,6 +364,8 @@ export class TextureCanvasManager {
             this.pushTexture();
         }
         this._originalTexture._texture = this._target._texture;
+        (this._originalTexture as Texture).url = null;
+        this._originalTexture._forceSerialize = true;
         this._channelsTexture.element = element;
         this.updateDisplay();
         this._onUpdate();
@@ -364,7 +373,8 @@ export class TextureCanvasManager {
 
     private async pushTexture() {
         if (this._canPush) {
-            (this._target as HtmlElementTexture).update((this._originalTexture as Texture).invertY);
+            const invertY = (this._target.constructor.name === HtmlElementTexture.name ? false : (this._originalTexture as Texture).invertY);
+            (this._target as HtmlElementTexture).update(invertY);
             this._target._texture?.updateSize(this._size.width, this._size.height);
             if (this._editing3D) {
                 const bufferView = await this._3DEngine.readPixels(0, 0, this._size.width, this._size.height);
@@ -579,7 +589,7 @@ export class TextureCanvasManager {
 
     private makePlane() {
         if (this._plane) { this._plane.dispose(); }
-        this._plane = PlaneBuilder.CreatePlane("plane", { width: this._size.width, height: this._size.height }, this._scene);
+        this._plane = CreatePlane("plane", { width: this._size.width, height: this._size.height }, this._scene);
         this._plane.enableEdgesRendering();
         this._plane.edgesWidth = 4.0;
         this._plane.edgesColor = new Color4(1, 1, 1, 1);
@@ -591,7 +601,9 @@ export class TextureCanvasManager {
         if (this._tool && this._tool.instance.onReset) {
             this._tool.instance.onReset();
         }
-        this._originalTexture._texture = this._originalInternalTexture;
+        this._originalTexture._texture = this._originalTextureProperties._texture;
+        (this._originalTexture as Texture).url = this._originalTextureProperties.url;
+        this._originalTexture._forceSerialize = this._originalTextureProperties._forceSerialize;
         this.grabOriginalTexture();
         this.makePlane();
         this._didEdit = false;
@@ -681,7 +693,7 @@ export class TextureCanvasManager {
 
     public dispose() {
         if (this._didEdit) {
-            this._originalInternalTexture?.dispose();
+            this._originalTextureProperties._texture?.dispose();
         }
         if (this._tool) {
             this._tool.instance.cleanup();

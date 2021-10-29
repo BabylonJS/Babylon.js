@@ -81,10 +81,13 @@ import { ScreenSizeBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/screen
 import { MatrixBuilderBlock } from 'babylonjs/Materials/Node/Blocks/matrixBuilderBlock';
 import { SceneDepthBlock } from 'babylonjs/Materials/Node/Blocks/Dual/sceneDepthBlock';
 import { ImageSourceBlock } from 'babylonjs/Materials/Node/Blocks/Dual/imageSourceBlock';
+import { CloudBlock } from 'babylonjs/Materials/Node/Blocks/cloudBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
         switch (data) {
+            case "CloudBlock":
+                return new CloudBlock("Cloud");
             case "MatrixBuilderBlock":
                 return new MatrixBuilderBlock("MatrixBuilder");
             case "DesaturateBlock":

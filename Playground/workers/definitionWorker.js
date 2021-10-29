@@ -74,7 +74,7 @@ function relatedName(node) {
         return node.name.escapedText;
 
     if (node.parent)
-        return relatedName(parent);
+        return relatedName(node.parent);
 
     return undefined;
 }

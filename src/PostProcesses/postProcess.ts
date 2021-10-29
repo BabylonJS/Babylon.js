@@ -5,7 +5,7 @@ import { Vector2 } from "../Maths/math.vector";
 import { Camera } from "../Cameras/camera";
 import { Effect } from "../Materials/effect";
 import { Constants } from "../Engines/constants";
-import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
+import { RenderTargetCreationOptions } from "../Materials/Textures/textureCreationOptions";
 import "../Shaders/postprocess.vertex";
 import { IInspectable } from '../Misc/iInspectable';
 import { Engine } from '../Engines/engine';
@@ -177,6 +177,14 @@ export class PostProcess {
     private _renderId = 0;
     private _textureType: number;
     private _textureFormat: number;
+
+    /**
+     * if externalTextureSamplerBinding is true, the "apply" method won't bind the textureSampler texture, it is expected to be done by the "outside" (by the onApplyObservable observer most probably).
+     * counter-productive in some cases because if the texture bound by "apply" is different from the currently texture bound, (the one set by the onApplyObservable observer, for eg) some
+     * internal structures (materialContext) will be dirtified, which may impact performances
+     */
+    public externalTextureSamplerBinding = false;
+
     /**
     * Smart array of input and output textures for the post process.
     * @hidden
@@ -751,7 +759,9 @@ export class PostProcess {
             source = this.inputTexture;
         }
 
-        this._drawWrapper.effect._bindTexture("textureSampler", source?.texture);
+        if (!this.externalTextureSamplerBinding) {
+            this._drawWrapper.effect._bindTexture("textureSampler", source?.texture);
+        }
 
         // Parameters
         this._drawWrapper.effect.setVector2("scale", this._scaleRatio);

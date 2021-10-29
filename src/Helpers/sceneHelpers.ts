@@ -19,6 +19,7 @@ import "../Materials/Textures/Loaders/envTextureLoader";
 import "../Materials/Textures/Loaders/ktxTextureLoader";
 import "../Meshes/Builders/boxBuilder";
 import { WebXRDefaultExperience, WebXRDefaultExperienceOptions } from '../XR/webXRDefaultExperience';
+import { CreateBox } from "../Meshes/Builders/boxBuilder";
 
 /** @hidden */
 export var _forceSceneHelpersToBundle = true;
@@ -168,7 +169,7 @@ Scene.prototype.createDefaultSkybox = function (environmentTexture?: BaseTexture
     }
 
     // Skybox
-    const hdrSkybox = Mesh.CreateBox("hdrSkyBox", scale, this);
+    const hdrSkybox = CreateBox("hdrSkyBox", { size: scale }, this);
     if (pbr) {
         const hdrSkyboxMaterial = new PBRMaterial("skyBox", this);
         hdrSkyboxMaterial.backFaceCulling = false;

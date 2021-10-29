@@ -14,7 +14,7 @@ import { IFileRequest } from "babylonjs/Misc/fileRequest";
 import { Logger } from 'babylonjs/Misc/logger';
 import { DataReader, IDataBuffer } from 'babylonjs/Misc/dataReader';
 import { GLTFValidation } from './glTFValidation';
-import { FileTools, LoadFileError } from 'babylonjs/Misc/fileTools';
+import { DecodeBase64UrlToBinary, LoadFileError } from 'babylonjs/Misc/fileTools';
 import { StringTools } from 'babylonjs/Misc/stringTools';
 
 interface IFileRequestInfo extends IFileRequest {
@@ -648,7 +648,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
             StringTools.StartsWith(data, ";base64," + GLTFFileLoader.magicBase64Encoded) ||
             StringTools.StartsWith(data, "application/octet-stream;base64," + GLTFFileLoader.magicBase64Encoded) ||
             StringTools.StartsWith(data, "model/gltf-binary;base64," + GLTFFileLoader.magicBase64Encoded)) {
-            const arrayBuffer = FileTools.DecodeBase64UrlToBinary(data);
+            const arrayBuffer = DecodeBase64UrlToBinary(data);
 
             this._validate(scene, arrayBuffer);
             return this._unpackBinaryAsync(new DataReader({

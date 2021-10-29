@@ -9,6 +9,8 @@ import { TexturePropertyTabComponent } from './properties/texturePropertyTabComp
 import { TrigonometryPropertyTabComponent } from './properties/trigonometryNodePropertyComponent';
 import { ConditionalPropertyTabComponent } from './properties/conditionalNodePropertyComponent';
 import { ImageSourcePropertyTabComponent } from './properties/imageSourcePropertyTabComponent';
+import { VectorMergerPropertyTabComponent } from './properties/vectorMergerPropertyComponent';
+import { ColorMergerPropertyTabComponent } from './properties/colorMergerPropertyComponent';
 
 export class PropertyLedger {
     public static RegisteredControls: { [key: string]: ComponentClass<IPropertyComponentProps> } = {};
@@ -28,3 +30,5 @@ PropertyLedger.RegisteredControls["ParticleTextureBlock"] = TexturePropertyTabCo
 PropertyLedger.RegisteredControls["TrigonometryBlock"] = TrigonometryPropertyTabComponent;
 PropertyLedger.RegisteredControls["ConditionalBlock"] = ConditionalPropertyTabComponent;
 PropertyLedger.RegisteredControls["ImageSourceBlock"] = ImageSourcePropertyTabComponent;
+PropertyLedger.RegisteredControls["VectorMergerBlock"] = VectorMergerPropertyTabComponent;
+PropertyLedger.RegisteredControls["ColorMergerBlock"] = ColorMergerPropertyTabComponent;

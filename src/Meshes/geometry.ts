@@ -275,6 +275,10 @@ export class Geometry implements IGetSetVerticesData {
             this._vertexBuffers[kind].dispose();
         }
 
+        if (buffer._buffer) {
+            buffer._buffer._increaseReferences();
+        }
+
         this._vertexBuffers[kind] = buffer;
         var meshes = this._meshes;
         var numOfMeshes = meshes.length;
@@ -695,10 +699,6 @@ export class Geometry implements IGetSetVerticesData {
             if (numOfMeshes === 1) {
                 this._vertexBuffers[kind].create();
             }
-            var buffer = this._vertexBuffers[kind].getBuffer();
-            if (buffer) {
-                buffer.references = numOfMeshes;
-            }
 
             if (kind === VertexBuffer.PositionKind) {
                 if (!this._extend) {
@@ -716,9 +716,6 @@ export class Geometry implements IGetSetVerticesData {
         // indexBuffer
         if (numOfMeshes === 1 && this._indices && this._indices.length > 0) {
             this._indexBuffer = this._engine.createIndexBuffer(this._indices, this._updatable);
-        }
-        if (this._indexBuffer) {
-            this._indexBuffer.references = numOfMeshes;
         }
 
         // morphTargets
@@ -1015,6 +1012,24 @@ export class Geometry implements IGetSetVerticesData {
             return origin;
         } else {
             return Array.prototype.slice.call(origin);
+        }
+    }
+
+    /**
+     * Release any memory retained by the cached data on the Geometry.
+     *
+     * Call this function to reduce memory footprint of the mesh.
+     * Vertex buffers will not store CPU data anymore (this will prevent picking, collisions or physics to work correctly)
+     */
+    public clearCachedData(): void {
+        this._indices = [];
+        this._resetPointsArrayCache();
+
+        for (const vbName in this._vertexBuffers) {
+            if (!this._vertexBuffers.hasOwnProperty(vbName)) {
+                continue;
+            }
+            this._vertexBuffers[vbName]._buffer._data = null;
         }
     }
 

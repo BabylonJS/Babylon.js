@@ -4,8 +4,6 @@ import { Vector2 } from "babylonjs/Maths/math.vector";
 
 import { Rectangle } from "./rectangle";
 import { Control } from "./control";
-import { TextBlock } from "./textBlock";
-import { Image } from "./image";
 import { RegisterClass } from "babylonjs/Misc/typeStore";
 import { PointerInfoBase } from "babylonjs/Events/pointerEvents";
 
@@ -65,22 +63,6 @@ export class ToggleButton extends Rectangle {
      * Gets or sets a boolean indicating that the toggle button will let internal controls handle picking instead of doing it directly using its bounding info
      */
     public delegatePickingToChildren = false;
-
-    private _image: Nullable<Image>;
-    /**
-     * Returns the ToggleButton's image control if it exists
-     */
-    public get image(): Nullable<Image> {
-        return this._image;
-    }
-
-    private _textBlock: Nullable<TextBlock>;
-    /**
-     * Returns the ToggleButton's child TextBlock control if it exists
-     */
-    public get textBlock(): Nullable<TextBlock> {
-        return this._textBlock;
-    }
 
     private _group: string;
     /** Gets or sets group name this toggle button belongs to */

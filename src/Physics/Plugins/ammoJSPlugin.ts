@@ -8,8 +8,8 @@ import { VertexData } from "../../Meshes/mesh.vertexData";
 import { Nullable } from "../../types";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Mesh } from "../../Meshes/mesh";
-import { ShapeBuilder } from "../../Meshes/Builders/shapeBuilder";
-import { LinesBuilder } from "../../Meshes/Builders/linesBuilder";
+import { ExtrudeShape } from "../../Meshes/Builders/shapeBuilder";
+import { CreateLines } from "../../Meshes/Builders/linesBuilder";
 import { LinesMesh } from '../../Meshes/linesMesh';
 import { PhysicsRaycastResult } from "../physicsRaycastResult";
 import { Scalar } from "../../Maths/math.scalar";
@@ -57,6 +57,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     private _tmpAmmoVectorRCB: any;
     private _raycastResult: PhysicsRaycastResult;
     private _tmpContactPoint = new Vector3();
+    private _tmpVec3 = new Vector3();
 
     private static readonly DISABLE_COLLISION_FLAG = 4;
     private static readonly KINEMATIC_FLAG = 2;
@@ -275,10 +276,10 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         var object = impostor.object;
         var shape = impostor.getParam("shape");
         if (impostor._isFromLine) {
-            impostor.object = LinesBuilder.CreateLines("lines", { points: path, instance: <LinesMesh>object });
+            impostor.object = CreateLines("lines", { points: path, instance: <LinesMesh>object });
         }
         else {
-            impostor.object = ShapeBuilder.ExtrudeShape("ext", { shape: shape, path: path, instance: <Mesh>object });
+            impostor.object = ExtrudeShape("ext", { shape: shape, path: path, instance: <Mesh>object });
         }
 
     }
@@ -460,6 +461,16 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 if (impostor.type == PhysicsImpostor.NoImpostor && !colShape.getChildShape) {
                     body.setCollisionFlags(body.getCollisionFlags() | AmmoJSPlugin.DISABLE_COLLISION_FLAG);
                 }
+
+                // compute delta position: compensate the difference between shape center and mesh origin
+                impostor.object.computeWorldMatrix(true);
+                const boundingInfo = impostor.object.getBoundingInfo();
+                this._tmpVec3.copyFrom(impostor.object.getAbsolutePosition());
+                this._tmpVec3.subtractInPlace(boundingInfo.boundingBox.centerWorld);
+                this._tmpVec3.x /= impostor.object.scaling.x;
+                this._tmpVec3.y /= impostor.object.scaling.y;
+                this._tmpVec3.z /= impostor.object.scaling.z;
+                impostor.setDeltaPosition(this._tmpVec3);
 
                 let group = impostor.getParam("group");
                 let mask = impostor.getParam("mask");

@@ -30,7 +30,7 @@ import { Scalar } from 'babylonjs/Maths/math.scalar';
 import { SpotLight } from 'babylonjs/Lights/spotLight';
 import { PointLight } from 'babylonjs/Lights/pointLight';
 import { AbstractMesh } from 'babylonjs/Meshes/abstractMesh';
-import { Mesh } from 'babylonjs/Meshes/mesh';
+import { CreatePlane } from "babylonjs/Meshes/Builders/planeBuilder";
 import { Tags } from 'babylonjs/Misc/tags';
 import { Behavior } from 'babylonjs/Behaviors/behavior';
 import { FramingBehavior } from 'babylonjs/Behaviors/Cameras/framingBehavior';
@@ -1372,7 +1372,7 @@ export class SceneManager {
 
         if (!this._shadowGroundPlane) {
             if (shadowGenerator.useBlurCloseExponentialShadowMap) {
-                let shadowGroundPlane = Mesh.CreatePlane("shadowGroundPlane", 100, this.scene, false);
+                let shadowGroundPlane = CreatePlane("shadowGroundPlane", { size: 100 }, this.scene);
                 shadowGroundPlane.useVertexColors = false;
                 //material isn't ever used in rendering, just used to set back face culling
                 shadowGroundPlane.material = new PBRMaterial('shadowGroundPlaneMaterial', this.scene);

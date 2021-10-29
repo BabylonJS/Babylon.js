@@ -141,8 +141,6 @@ export interface IShadowGenerator {
  */
 export class ShadowGenerator implements IShadowGenerator {
 
-    private static _Counter = 0;
-
     /**
      * Name of the shadow generator class
      */
@@ -809,8 +807,6 @@ export class ShadowGenerator implements IShadowGenerator {
     protected _defaultTextureMatrix = Matrix.Identity();
     protected _storedUniqueId: Nullable<number>;
     protected _useUBO: boolean;
-    protected _nameForDrawWrapper: string[];
-    protected _nameForDrawWrapperCurrent: string;
 
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
@@ -847,14 +843,6 @@ export class ShadowGenerator implements IShadowGenerator {
         this.id = light.id;
         this._useUBO = this._scene.getEngine().supportsUniformBuffers;
 
-        this._nameForDrawWrapper = [Constants.SUBMESH_DRAWWRAPPER_SHADOWGENERATOR_PREFIX + ShadowGenerator._Counter++];
-        if (light.needCube()) {
-            const baseName = this._nameForDrawWrapper[0];
-            for (let i = 0; i < 6; ++i) {
-                this._nameForDrawWrapper[i] = baseName + "_" + i;
-            }
-        }
-
         ShadowGenerator._SceneComponentInitialization(this._scene);
 
         // Texture type fallback from float to int if not supported.
@@ -884,8 +872,6 @@ export class ShadowGenerator implements IShadowGenerator {
 
         this._initializeGenerator();
         this._applyFilterValues();
-
-        this._nameForDrawWrapperCurrent = this._nameForDrawWrapper[0];
     }
 
     protected _initializeGenerator(): void {
@@ -934,12 +920,11 @@ export class ShadowGenerator implements IShadowGenerator {
         let engine = this._scene.getEngine();
 
         this._shadowMap.onBeforeBindObservable.add(() => {
-            engine._debugPushGroup?.(`shadow map generation for ${this._nameForDrawWrapper}`, 1);
+            engine._debugPushGroup?.(`shadow map generation for pass id ${engine.currentRenderPassId}`, 1);
         });
 
         // Record Face Index before render.
         this._shadowMap.onBeforeRenderObservable.add((faceIndex: number) => {
-            this._nameForDrawWrapperCurrent = this._nameForDrawWrapper[faceIndex];
             this._currentFaceIndex = faceIndex;
             if (this._filter === ShadowGenerator.FILTER_PCF) {
                 engine.setColorWrite(false);
@@ -947,6 +932,7 @@ export class ShadowGenerator implements IShadowGenerator {
             this.getTransformMatrix(); // generate the view/projection matrix
             this._scene.setTransformMatrix(this._viewMatrix, this._projectionMatrix);
             if (this._useUBO) {
+                this._scene.getSceneUniformBuffer().unbindEffect();
                 this._scene.finalizeSceneUbo();
             }
         });
@@ -1016,6 +1002,7 @@ export class ShadowGenerator implements IShadowGenerator {
             this._kernelBlurXPostprocess = new BlurPostProcess(this._light.name + "KernelBlurX", new Vector2(1, 0), this.blurKernel, 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._textureType);
             this._kernelBlurXPostprocess.width = targetSize;
             this._kernelBlurXPostprocess.height = targetSize;
+            this._kernelBlurXPostprocess.externalTextureSamplerBinding = true;
             this._kernelBlurXPostprocess.onApplyObservable.add((effect) => {
                 effect.setTexture("textureSampler", this._shadowMap);
             });
@@ -1034,6 +1021,7 @@ export class ShadowGenerator implements IShadowGenerator {
         }
         else {
             this._boxBlurPostprocess = new PostProcess(this._light.name + "DepthBoxBlur", "depthBoxBlur", ["screenSize", "boxOffset"], [], 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, "#define OFFSET " + this._blurBoxOffset, this._textureType);
+            this._boxBlurPostprocess.externalTextureSamplerBinding = true;
             this._boxBlurPostprocess.onApplyObservable.add((effect) => {
                 effect.setFloat2("screenSize", targetSize, targetSize);
                 effect.setTexture("textureSampler", this._shadowMap);
@@ -1117,7 +1105,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
             const shadowDepthWrapper = material.shadowDepthWrapper;
 
-            const drawWrapper = shadowDepthWrapper?.getEffect(subMesh, this, this._nameForDrawWrapperCurrent) ?? subMesh._getDrawWrapper(this._nameForDrawWrapperCurrent)!;
+            const drawWrapper = shadowDepthWrapper?.getEffect(subMesh, this, engine.currentRenderPassId) ?? subMesh._getDrawWrapper()!;
             const effect = DrawWrapper.GetEffect(drawWrapper)!;
 
             engine.enableEffect(drawWrapper);
@@ -1197,6 +1185,7 @@ export class ShadowGenerator implements IShadowGenerator {
             }
 
             MaterialHelper.BindSceneUniformBuffer(effect, this._scene.getSceneUniformBuffer());
+            this._scene.getSceneUniformBuffer().bindUniformBuffer();
 
             const world = effectiveMesh.getWorldMatrix();
 
@@ -1363,11 +1352,11 @@ export class ShadowGenerator implements IShadowGenerator {
         this._prepareShadowDefines(subMesh, useInstances, defines, isTransparent);
 
         if (shadowDepthWrapper) {
-            if (!shadowDepthWrapper.isReadyForSubMesh(subMesh, defines, this, useInstances, this._nameForDrawWrapperCurrent)) {
+            if (!shadowDepthWrapper.isReadyForSubMesh(subMesh, defines, this, useInstances, this._scene.getEngine().currentRenderPassId)) {
                 return false;
             }
         } else {
-            const subMeshEffect = subMesh._getDrawWrapper(this._nameForDrawWrapperCurrent, true)!;
+            const subMeshEffect = subMesh._getDrawWrapper(undefined, true)!;
 
             let effect = subMeshEffect.effect!;
             let cachedDefines = subMeshEffect.defines;
