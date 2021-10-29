@@ -2201,9 +2201,40 @@ export class Control {
             throw new Error("Invalid engine. Unable to create a canvas.");
         }
 
-        var result = Tools.getFontOffset(font);
+        var result = Control._getFontOffsetHelper(font);
         Control._FontHeightSizes[font] = result;
 
+        return result;
+    }
+
+    private static _getFontOffsetHelper(font: string): { ascent: number, height: number, descent: number } {
+        var text = document.createElement("span");
+        text.innerHTML = "Hg";
+        text.setAttribute('style', `font: ${font} !important`);
+
+        var block = document.createElement("div");
+        block.style.display = "inline-block";
+        block.style.width = "1px";
+        block.style.height = "0px";
+        block.style.verticalAlign = "bottom";
+
+        var div = document.createElement("div");
+        div.style.whiteSpace = "nowrap";
+        div.appendChild(text);
+        div.appendChild(block);
+
+        document.body.appendChild(div);
+
+        var fontAscent = 0;
+        var fontHeight = 0;
+        try {
+            fontHeight = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
+            block.style.verticalAlign = "baseline";
+            fontAscent = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
+        } finally {
+            document.body.removeChild(div);
+        }
+        var result = { ascent: fontAscent, height: fontHeight, descent: fontHeight - fontAscent };
         return result;
     }
 
