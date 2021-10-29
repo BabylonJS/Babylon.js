@@ -3,8 +3,6 @@ import { RawTexture } from "../Materials/Textures/rawTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { Mesh } from "../Meshes/mesh";
 import { Scene } from "../scene";
-import { GenerateBase64StringFromPixelData } from "../Misc/copyTools";
-import { DecodeBase64ToBinary } from "../Misc/stringTools";
 
 /**
  * Class to bake vertex animation textures.
@@ -123,8 +121,12 @@ export class VertexAnimationBaker {
         const boneCount = this._mesh.skeleton.bones.length;
         const width = (boneCount + 1) * 4;
         const height = vertexData.length / ((boneCount + 1) * 4 * 4);
+        const pixelData: number[] = [];
+        for (let i = 0; i < vertexData.length; ++i) {
+            pixelData.push(vertexData[i]);
+        }
         const data = {
-            vertexData: GenerateBase64StringFromPixelData(vertexData, { width, height }),
+            vertexData: pixelData,
             width,
             height
         };
@@ -136,10 +138,7 @@ export class VertexAnimationBaker {
      * @returns self
      */
     public loadBakedVertexDataFromObject(data: Record<string, any>): Float32Array {
-        const vertexData = new Float32Array(
-            DecodeBase64ToBinary(data.vertexData)
-        );
-        return vertexData;
+        return new Float32Array(data.vertexData);
     }
     /**
      * Serializes our vertexData to a JSON string, with a nice string for the vertexData.
