@@ -25,12 +25,14 @@ export class Utilities {
         return query;
     }
 
-    public static ReadStringFromStore(key: string, defaultValue: string): string {
-        if (localStorage.getItem(key) === null) {
+    public static ReadStringFromStore(key: string, defaultValue: string, useSession = false): string {
+        const storage = useSession ? sessionStorage : localStorage;
+
+        if (storage.getItem(key) === null) {
             return defaultValue;
         }
 
-        return localStorage.getItem(key)!;
+        return storage.getItem(key)!;
     }
 
     public static ReadBoolFromStore(key: string, defaultValue: boolean): boolean {
@@ -41,8 +43,9 @@ export class Utilities {
         return localStorage.getItem(key) === "true";
     }
 
-    public static StoreStringToStore(key: string, value: string): void {
-        localStorage.setItem(key, value);
+    public static StoreStringToStore(key: string, value: string, useSession = false): void {
+        const storage = useSession ? sessionStorage : localStorage;
+        storage.setItem(key, value);
     }
 
     public static StoreBoolToStore(key: string, value: boolean): void {
@@ -55,7 +58,7 @@ export class Utilities {
         }
 
         return true;
-    };
+    }
 
     public static SwitchLanguage(language: string, globalState: GlobalState, force?: boolean) {
         if (force || window.confirm("Are you sure you want to switch the language (You will lose your current project if it was not saved before)?")) {

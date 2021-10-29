@@ -545,6 +545,11 @@ export class ArcRotateCamera extends TargetCamera {
     public panningAxis: Vector3 = new Vector3(1, 1, 0);
     protected _transformedDirection: Vector3 = new Vector3();
 
+    /**
+     * Defines if camera will eliminate transform on y axis.
+     */
+    public mapPanning: boolean = false;
+
     // Behaviors
     private _bouncingBehavior: Nullable<BouncingBehavior>;
 
@@ -933,6 +938,10 @@ export class ArcRotateCamera extends TargetCamera {
             this._viewMatrix.invertToRef(this._cameraTransformMatrix);
             localDirection.multiplyInPlace(this.panningAxis);
             Vector3.TransformNormalToRef(localDirection, this._cameraTransformMatrix, this._transformedDirection);
+            // Eliminate y if mapPanning is enabled
+            if (this.mapPanning) {
+                this._transformedDirection.y = 0;
+            }
 
             if (!this._targetHost) {
                 if (this.panningDistanceLimit) {

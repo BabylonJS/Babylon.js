@@ -44,11 +44,11 @@ export class LinePropertyGridComponent extends React.Component<ILinePropertyGrid
                 <hr/>
                 <TextLineComponent label="LINE" value=" " color="grey"></TextLineComponent>
                     <FloatLineComponent lockObject={this.props.lockObject} label="Line width" target={line} propertyName="lineWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <div className="divider">
+                    <div className="ge-divider">
                     <TextInputLineComponent lockObject={this.props.lockObject} label="X1" target={line} propertyName="x1" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Y1" target={line} propertyName="y1" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     </div>
-                    <div className="divider">
+                    <div className="ge-divider">
                     <TextInputLineComponent lockObject={this.props.lockObject} label="X2" target={line} propertyName="x2" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Y2" target={line} propertyName="y2" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     </div>

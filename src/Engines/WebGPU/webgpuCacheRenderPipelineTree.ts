@@ -37,6 +37,25 @@ export class WebGPUCacheRenderPipelineTree extends WebGPUCacheRenderPipeline {
         return { nodeCount: counts[0], pipelineCount: counts[1] };
     }
 
+    public static _GetPipelines(node: NodeState, pipelines: Array<Array<number>>, curPath: Array<number>, curPathLen: number): void {
+        if (node.pipeline) {
+            const path = curPath.slice();
+            path.length = curPathLen;
+            pipelines.push(path);
+        }
+        for (const value in node.values) {
+            const nnode = node.values[value];
+            curPath[curPathLen] = parseInt(value);
+            WebGPUCacheRenderPipelineTree._GetPipelines(nnode, pipelines, curPath, curPathLen + 1);
+        }
+    }
+
+    public static GetPipelines(): Array<Array<number>> {
+        const pipelines: Array<Array<number>> = [];
+        WebGPUCacheRenderPipelineTree._GetPipelines(WebGPUCacheRenderPipelineTree._Cache, pipelines, [], 0);
+        return pipelines;
+    }
+
     constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer, useTextureStage: boolean) {
         super(device, emptyVertexBuffer, useTextureStage);
         this._nodeStack = [];

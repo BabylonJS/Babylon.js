@@ -420,6 +420,8 @@ export abstract class Light extends Node implements ISortableLight {
 
         if (needUpdate) {
             this._uniformBuffer.update();
+        } else {
+            this._uniformBuffer.bindUniformBuffer();
         }
     }
 

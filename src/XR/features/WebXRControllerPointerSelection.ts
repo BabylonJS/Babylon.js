@@ -11,8 +11,8 @@ import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { Color3 } from "../../Maths/math.color";
 import { Axis } from "../../Maths/math.axis";
 import { StandardMaterial } from "../../Materials/standardMaterial";
-import { CylinderBuilder } from "../../Meshes/Builders/cylinderBuilder";
-import { TorusBuilder } from "../../Meshes/Builders/torusBuilder";
+import { CreateCylinder } from "../../Meshes/Builders/cylinderBuilder";
+import { CreateTorus } from "../../Meshes/Builders/torusBuilder";
 import { Ray } from "../../Culling/ray";
 import { PickingInfo } from "../../Collisions/pickingInfo";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
@@ -124,10 +124,10 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             xrController,
             laserPointer,
             selectionMesh,
-            xrControllerTransform: null,
             meshUnderPointer: null,
             pick: null,
             tmpRay: new Ray(new Vector3(), new Vector3()),
+            disabledByNearInteraction: false,
             id: WebXRControllerPointerSelection._idCounter++,
         };
 
@@ -158,7 +158,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
     private _controllers: {
         [controllerUniqueId: string]: {
             xrController?: WebXRInputSource;
-            xrControllerTransform: Nullable<AbstractMesh>;
             webXRCamera?: WebXRCamera;
             selectionComponent?: WebXRControllerComponent;
             onButtonChangedObserver?: Nullable<Observer<WebXRControllerComponent>>;
@@ -169,6 +168,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             pick: Nullable<PickingInfo>;
             id: number;
             tmpRay: Ray;
+            disabledByNearInteraction: boolean;
             // event support
             eventListeners?: { [event in XREventType]?: (event: XRInputSourceEvent) => void };
         };
@@ -267,10 +267,10 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 webXRCamera,
                 laserPointer,
                 selectionMesh,
-                xrControllerTransform: null,
                 meshUnderPointer: null,
                 pick: null,
                 tmpRay: new Ray(new Vector3(), new Vector3()),
+                disabledByNearInteraction: false,
                 id: WebXRControllerPointerSelection._idCounter++,
             };
             this._attachGazeMode();
@@ -328,6 +328,30 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         return null;
     }
 
+    /** @hidden */
+    public _getPointerSelectionDisabledByPointerId(id: number): boolean {
+        const keys = Object.keys(this._controllers);
+
+        for (let i = 0; i < keys.length; ++i) {
+            if (this._controllers[keys[i]].id === id) {
+                return this._controllers[keys[i]].disabledByNearInteraction;
+            }
+        }
+        return true;
+    }
+
+    /** @hidden */
+    public _setPointerSelectionDisabledByPointerId(id: number, state: boolean) {
+        const keys = Object.keys(this._controllers);
+
+        for (let i = 0; i < keys.length; ++i) {
+            if (this._controllers[keys[i]].id === id) {
+                this._controllers[keys[i]].disabledByNearInteraction = state;
+                return;
+            }
+        }
+    }
+
     private _identityMatrix = Matrix.Identity();
     private _screenCoordinatesRef = Vector3.Zero();
     private _viewportRef = new Viewport(0, 0, 0, 0);
@@ -336,7 +360,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         Object.keys(this._controllers).forEach((id) => {
             // only do this for the selected pointer
             const controllerData = this._controllers[id];
-            if (!this._options.enablePointerSelectionOnAllControllers && id !== this._attachedController) {
+            if ((!this._options.enablePointerSelectionOnAllControllers && id !== this._attachedController) || controllerData.disabledByNearInteraction) {
                 controllerData.selectionMesh.isVisible = false;
                 controllerData.laserPointer.isVisible = false;
                 controllerData.pick = null;
@@ -351,7 +375,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             if (controllerData.xrController) {
                 controllerGlobalPosition = controllerData.xrController.pointer.position;
                 controllerData.xrController.getWorldPointerRayToRef(controllerData.tmpRay);
-                controllerData.xrControllerTransform = controllerData.xrController.grip || null;
             } else if (controllerData.webXRCamera) {
                 controllerGlobalPosition = controllerData.webXRCamera.position;
                 controllerData.webXRCamera.getForwardRayToRef(controllerData.tmpRay);
@@ -395,8 +418,9 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 controllerData.pick = originalScenePick;
             }
 
-            if (controllerData.pick) {
-                controllerData.pick.originTransform = controllerData.xrControllerTransform;
+            if (controllerData.pick && controllerData.xrController) {
+                controllerData.pick.aimTransform = controllerData.xrController.pointer;
+                controllerData.pick.gripTransform = controllerData.xrController.grip || null;
             }
 
             const pick = controllerData.pick;
@@ -441,7 +465,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         const timeToSelect = this._options.timeToSelect || 3000;
         const sceneToRenderTo = this._options.useUtilityLayer ? this._utilityLayerScene : this._scene;
         let oldPick = new PickingInfo();
-        let discMesh = TorusBuilder.CreateTorus(
+        let discMesh = CreateTorus(
             "selection",
             {
                 diameter: 0.0035 * 15,
@@ -685,7 +709,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
     private _generateNewMeshPair(meshParent: Node) {
         const sceneToRenderTo = this._options.useUtilityLayer ? this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene : this._scene;
-        const laserPointer = CylinderBuilder.CreateCylinder(
+        const laserPointer = CreateCylinder(
             "laserPointer",
             {
                 height: 1,
@@ -706,7 +730,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         laserPointer.isPickable = false;
 
         // Create a gaze tracker for the  XR controller
-        const selectionMesh = TorusBuilder.CreateTorus(
+        const selectionMesh = CreateTorus(
             "gazeTracker",
             {
                 diameter: 0.0035 * 3,

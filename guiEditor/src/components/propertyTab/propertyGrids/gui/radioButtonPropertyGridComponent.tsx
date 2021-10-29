@@ -32,7 +32,7 @@ export class RadioButtonPropertyGridComponent extends React.Component<IRadioButt
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={radioButton} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <hr/>
                 <TextLineComponent label="RADIO BUTTON" value=" " color="grey"></TextLineComponent>
-                <div className="divider">
+                <div className="ge-divider">
                 <FloatLineComponent iconLabel="Stroke Weight" icon={strokeWeightIcon} lockObject={this.props.lockObject} label="" target={radioButton} propertyName="thickness" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <FloatLineComponent iconLabel="Check Size Ratio" icon={scaleIcon} lockObject={this.props.lockObject} label="" target={radioButton} propertyName="checkSizeRatio" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </div>

@@ -65,6 +65,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     public updateFunction: (particles: Particle[]) => void;
 
     private _emitterWorldMatrix: Matrix;
+    private _emitterInverseWorldMatrix: Matrix = Matrix.Identity();
 
     /**
      * This function can be defined to specify initial direction for every new particle.
@@ -111,7 +112,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     private _vertexBuffers: { [key: string]: VertexBuffer } = {};
     private _spriteBuffer: Nullable<Buffer>;
     private _indexBuffer: Nullable<DataBuffer>;
-    private _drawWrapper: DrawWrapper;
+    private _drawWrappers: { [blendMode: number]: DrawWrapper };
     private _customWrappers: { [blendMode: number]: Nullable<DrawWrapper> };
     private _scaledColorStep = new Color4(0, 0, 0, 0);
     private _colorDiff = new Color4(0, 0, 0, 0);
@@ -247,6 +248,9 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     public setCustomEffect(effect: Nullable<Effect>, blendMode: number = 0) {
         this._customWrappers[blendMode] = new DrawWrapper(this._engine);
         this._customWrappers[blendMode]!.effect = effect;
+        if (this._customWrappers[blendMode]!.drawContext) {
+            this._customWrappers[blendMode]!.drawContext!.useInstancing = this._useInstancing;
+        }
     }
 
     /** @hidden */
@@ -308,8 +312,11 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         this._customWrappers = { 0: new DrawWrapper(this._engine) };
         this._customWrappers[0]!.effect = customEffect;
 
-        this._drawWrapper = new DrawWrapper(this._engine);
+        this._drawWrappers = { 0: new DrawWrapper(this._engine) };
         this._useInstancing = this._engine.getCaps().instancedArrays;
+        if (this._drawWrappers[0].drawContext) {
+            this._drawWrappers[0].drawContext.useInstancing = this._useInstancing;
+        }
 
         this._createIndexBuffer();
         this._createVertexBuffers();
@@ -971,6 +978,16 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         return this;
     }
 
+    /**
+     * Resets the draw wrappers cache
+     */
+    public resetDrawCache(): void {
+        for (const blendMode in this._drawWrappers) {
+            const drawWrapper = this._drawWrappers[blendMode];
+            drawWrapper.drawContext?.reset();
+        }
+    }
+
     private _fetchR(u: number, v: number, width: number, height: number, pixels: Uint8Array): number {
         u = Math.abs(u) * 0.5 + 0.5;
         v = Math.abs(v) * 0.5 + 0.5;
@@ -1069,6 +1086,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         }
         this._vertexBuffers["offset"] = offsets;
 
+        this.resetDrawCache();
     }
 
     private _createIndexBuffer() {
@@ -1407,12 +1425,12 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         if ((<AbstractMesh>this.emitter).position) {
             var emitterMesh = (<AbstractMesh>this.emitter);
             this._emitterWorldMatrix = emitterMesh.getWorldMatrix();
-
         } else {
             var emitterPosition = (<Vector3>this.emitter);
             this._emitterWorldMatrix = Matrix.Translation(emitterPosition.x, emitterPosition.y, emitterPosition.z);
         }
 
+        this._emitterWorldMatrix.invertToRef(this._emitterInverseWorldMatrix);
         this.updateFunction(this._particles);
 
         // Add new ones
@@ -1464,7 +1482,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                 this.startDirectionFunction(this._emitterWorldMatrix, particle.direction, particle, this.isLocal);
             }
             else {
-                this.particleEmitterType.startDirectionFunction(this._emitterWorldMatrix, particle.direction, particle, this.isLocal);
+                this.particleEmitterType.startDirectionFunction(this._emitterWorldMatrix, particle.direction, particle, this.isLocal, this._emitterInverseWorldMatrix);
             }
 
             if (emitPower === 0) {
@@ -1745,24 +1763,34 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         this.fillDefines(defines, blendMode);
 
         // Effect
-        var join = defines.join("\n");
-        if (this._drawWrapper.defines !== join) {
-            this._drawWrapper.defines = join;
+        let drawWrapper = this._drawWrappers[blendMode];
+        if (!drawWrapper) {
+            drawWrapper = new DrawWrapper(this._engine);
+            if (drawWrapper.drawContext) {
+                drawWrapper.drawContext.useInstancing = this._useInstancing;
+            }
+            this._drawWrappers[blendMode] = drawWrapper;
+        }
 
+        var join = defines.join("\n");
+        if (drawWrapper.defines !== join) {
             var attributesNamesOrOptions: Array<string> = [];
             var effectCreationOption: Array<string> = [];
             var samplers: Array<string> = [];
 
             this.fillUniformsAttributesAndSamplerNames(effectCreationOption, attributesNamesOrOptions, samplers);
 
-            this._drawWrapper.effect = this._engine.createEffect(
-                "particles",
-                attributesNamesOrOptions,
-                effectCreationOption,
-                samplers, join);
+            drawWrapper.setEffect(
+                this._engine.createEffect(
+                    "particles",
+                    attributesNamesOrOptions,
+                    effectCreationOption,
+                    samplers, join
+                ),
+                join);
         }
 
-        return this._drawWrapper;
+        return drawWrapper;
     }
 
     /**
@@ -1891,6 +1919,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         for (var key in this._vertexBuffers) {
             this._vertexBuffers[key]._rebuild();
         }
+
+        this.resetDrawCache();
     }
 
     /**
@@ -2049,6 +2079,13 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      * @param disposeTexture defines if the particle texture must be disposed as well (true by default)
      */
     public dispose(disposeTexture = true): void {
+        for (const blendMode in this._drawWrappers) {
+            const drawWrapper = this._drawWrappers[blendMode];
+            drawWrapper.dispose();
+        }
+
+        this._drawWrappers = {};
+
         if (this._vertexBuffer) {
             this._vertexBuffer.dispose();
             this._vertexBuffer = null;
@@ -2189,7 +2226,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             for (var subs of this._subEmitters) {
                 let cell = [];
                 for (var sub of subs) {
-                    cell.push(sub.serialize());
+                    cell.push(sub.serialize(serializeTexture));
                 }
 
                 serializationObject.subEmitters.push(cell);
@@ -2766,9 +2803,10 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      * @param sceneOrEngine The scene or the engine to create the particle system in
      * @param rootUrl The root url to use to load external dependencies like texture
      * @param doNotStart Ignore the preventAutoStart attribute and does not start
+     * @param capacity defines the system capacity (if null or undefined the sotred capacity will be used)
      * @returns the Parsed particle system
      */
-    public static Parse(parsedParticleSystem: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart = false): ParticleSystem {
+    public static Parse(parsedParticleSystem: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart = false, capacity?: number): ParticleSystem {
         var name = parsedParticleSystem.name;
         var custom: Nullable<Effect> = null;
         var program: any = null;
@@ -2787,7 +2825,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             var defines: string = (program.shaderOptions.defines.length > 0) ? program.shaderOptions.defines.join("\n") : "";
             custom = (engine as any).createEffectForParticles(program.shaderPath.fragmentElement, program.shaderOptions.uniforms, program.shaderOptions.samplers, defines);
         }
-        var particleSystem = new ParticleSystem(name, parsedParticleSystem.capacity, sceneOrEngine, custom, parsedParticleSystem.isAnimationSheetEnabled);
+        var particleSystem = new ParticleSystem(name, capacity || parsedParticleSystem.capacity, sceneOrEngine, custom, parsedParticleSystem.isAnimationSheetEnabled);
         particleSystem.customShader = program;
         particleSystem._rootUrl = rootUrl;
 

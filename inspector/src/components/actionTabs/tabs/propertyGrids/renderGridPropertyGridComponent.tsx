@@ -1,16 +1,16 @@
 import * as React from "react";
 
 import { Nullable } from "babylonjs/types";
-import { Color3 } from 'babylonjs/Maths/math.color';
+import { Color3 } from "babylonjs/Maths/math.color";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-import { Mesh } from "babylonjs/Meshes/mesh";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { UtilityLayerRenderer } from "babylonjs/Rendering/utilityLayerRenderer";
 import { Scene } from "babylonjs/scene";
 import { GridMaterial } from "babylonjs-materials/grid/gridMaterial";
 
 import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
-import { GlobalState } from '../../../globalState';
+import { GlobalState } from "../../../globalState";
+import { CreateGround } from "babylonjs/Meshes/Builders/groundBuilder";
 
 interface IRenderGridPropertyGridComponentProps {
     globalState: GlobalState;
@@ -45,7 +45,7 @@ export class RenderGridPropertyGridComponent extends React.Component<IRenderGrid
             var width = (extend.max.x - extend.min.x) * 5.0;
             var depth = (extend.max.z - extend.min.z) * 5.0;
 
-            this._gridMesh = Mesh.CreateGround("grid", 1.0, 1.0, 1, scene);
+            this._gridMesh = CreateGround("grid", { width: 1.0, height: 1.0, subdivisions: 1 }, scene);
             if (!this._gridMesh.reservedDataStore) {
                 this._gridMesh.reservedDataStore = {};
             }
@@ -77,7 +77,6 @@ export class RenderGridPropertyGridComponent extends React.Component<IRenderGrid
     }
 
     render() {
-
         return (
             <div>
                 <CheckBoxLineComponent label="Render grid" isSelected={() => this.state.isEnabled} onSelect={() => this.addOrRemoveGrid()} />

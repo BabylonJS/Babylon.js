@@ -138,6 +138,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         rootElement.style.gridTemplateColumns = this.buildColumnLayout();
 
         this._startX = evt.clientX;
+        this.props.globalState.onWindowResizeObservable.notifyObservers();
     }
 
     buildColumnLayout() {

@@ -4,7 +4,7 @@ import { Vector3 } from "babylonjs/Maths/math.vector";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { Scene } from "babylonjs/scene";
 import { Control3D } from "./control3D";
-import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
+import { CreateBox } from "babylonjs/Meshes/Builders/boxBuilder";
 import { PointerDragBehavior } from "babylonjs/Behaviors/Meshes/pointerDragBehavior";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SceneLoader } from "babylonjs/Loading/sceneLoader";
@@ -169,7 +169,7 @@ export class Slider3D extends Control3D {
 
     // Mesh association
     protected _createNode(scene: Scene): TransformNode {
-        const sliderBackplate = BoxBuilder.CreateBox(`${this.name}_sliderbackplate`, {
+        const sliderBackplate = CreateBox(`${this.name}_sliderbackplate`, {
             width: 1.0,
             height: 1.0,
             depth: 1.0,

@@ -954,7 +954,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         }
 
         // Fragment
-        state.sharedData.bindableBlocks.push(this);
+        state.sharedData.forcedBindableBlocks.push(this);
         state.sharedData.blocksWithDefines.push(this);
         state.sharedData.blockingBlocks.push(this);
 
