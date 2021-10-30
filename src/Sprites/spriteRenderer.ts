@@ -87,6 +87,7 @@ export class SpriteRenderer {
     private _drawWrapperBase: DrawWrapper;
     private _drawWrapperFog: DrawWrapper;
     private _drawWrapperDepth: DrawWrapper;
+    private _drawWrapperFogDepth: DrawWrapper;
     private _vertexArrayObject: WebGLVertexArrayObject;
 
     /**
@@ -112,6 +113,7 @@ export class SpriteRenderer {
         this._drawWrapperBase = new DrawWrapper(engine);
         this._drawWrapperFog = new DrawWrapper(engine);
         this._drawWrapperDepth = new DrawWrapper(engine, false);
+        this._drawWrapperFogDepth = new DrawWrapper(engine, false);
 
         if (!this._useInstancing) {
             this._buildIndexBuffer();
@@ -125,6 +127,9 @@ export class SpriteRenderer {
         }
         if (this._drawWrapperDepth.drawContext) {
             this._drawWrapperDepth.drawContext.useInstancing = this._useInstancing;
+        }
+        if (this._drawWrapperFogDepth.drawContext) {
+            this._drawWrapperFogDepth.drawContext.useInstancing = this._useInstancing;
         }
 
         // VBO
@@ -174,6 +179,8 @@ export class SpriteRenderer {
                 [VertexBuffer.PositionKind, "options", "offsets", "inverts", "cellInfo", VertexBuffer.ColorKind],
                 ["view", "projection", "textureInfos", "alphaTest", "vFogInfos", "vFogColor"],
                 ["diffuseSampler"], "#define FOG");
+            this._drawWrapperFogDepth.effect = this._drawWrapperFog.effect;
+            this._drawWrapperFogDepth.materialContext = this._drawWrapperFog.materialContext;
         }
     }
 
@@ -191,9 +198,11 @@ export class SpriteRenderer {
         }
 
         let drawWrapper = this._drawWrapperBase;
+        let drawWrapperDepth = this._drawWrapperDepth;
         let shouldRenderFog = false;
         if (this.fogEnabled && this._scene && this._scene.fogEnabled && this._scene.fogMode !== 0) {
             drawWrapper = this._drawWrapperFog;
+            drawWrapperDepth = this._drawWrapperFogDepth;
             shouldRenderFog = true;
         }
 
@@ -274,7 +283,7 @@ export class SpriteRenderer {
         if (!this.disableDepthWrite) {
             effect.setBool("alphaTest", true);
             engine.setColorWrite(false);
-            engine.enableEffect(this._drawWrapperDepth);
+            engine.enableEffect(drawWrapperDepth);
             if (this._useInstancing) {
                 engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, offset);
             } else {
@@ -441,5 +450,9 @@ export class SpriteRenderer {
             this.texture.dispose();
             (<any>this.texture) = null;
         }
+        this._drawWrapperBase.dispose();
+        this._drawWrapperFog.dispose();
+        this._drawWrapperDepth.dispose();
+        this._drawWrapperFogDepth.dispose();
     }
 }
