@@ -660,8 +660,7 @@ class CommandBufferEncoder {
         }
 
         this._isCommandBufferScopeActive = false;
-        this._pending.length = 0;
-        this._engine.submitCommands();
+        this._submit();
     }
 
     public startEncodingCommand(command: NativeData) {
@@ -692,18 +691,20 @@ class CommandBufferEncoder {
         this._commandStream.writeFloat32Array(commandArg);
     }
 
-    public encodeCommandArgAsNativeData(commandArg: NativeData, pendingUntilFinished = false) {
+    public encodeCommandArgAsNativeData(commandArg: NativeData) {
         this._commandStream.writeNativeData(commandArg);
-        if (pendingUntilFinished) {
-            this._pending.push(commandArg);
-        }
+        this._pending.push(commandArg);
     }
 
     public finishEncodingCommand() {
         if (!this._isCommandBufferScopeActive) {
-            this._pending.length = 0;
-            this._engine.submitCommands();
+            this._submit();
         }
+    }
+
+    private _submit() {
+        this._engine.submitCommands();
+        this._pending.length = 0;
     }
 }
 
@@ -1171,7 +1172,7 @@ export class NativeEngine extends Engine {
         const nativePipelineContext = pipelineContext as NativePipelineContext;
         if (nativePipelineContext && nativePipelineContext.nativeProgram) {
             this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DELETEPROGRAM);
-            this._commandBufferEncoder.encodeCommandArgAsNativeData(nativePipelineContext.nativeProgram, true);
+            this._commandBufferEncoder.encodeCommandArgAsNativeData(nativePipelineContext.nativeProgram);
             this._commandBufferEncoder.finishEncodingCommand();
         }
     }
@@ -2172,7 +2173,7 @@ export class NativeEngine extends Engine {
     public _releaseFramebufferObjects(framebuffer: Nullable<WebGLFramebuffer>): void {
         if (framebuffer) {
             this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DELETEFRAMEBUFFER);
-            this._commandBufferEncoder.encodeCommandArgAsNativeData(framebuffer as NativeData, true);
+            this._commandBufferEncoder.encodeCommandArgAsNativeData(framebuffer as NativeData);
             this._commandBufferEncoder.finishEncodingCommand();
         }
     }
@@ -2602,14 +2603,14 @@ export class NativeEngine extends Engine {
     protected _deleteBuffer(buffer: NativeDataBuffer): void {
         if (buffer.nativeIndexBuffer) {
             this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DELETEINDEXBUFFER);
-            this._commandBufferEncoder.encodeCommandArgAsNativeData(buffer.nativeIndexBuffer, true);
+            this._commandBufferEncoder.encodeCommandArgAsNativeData(buffer.nativeIndexBuffer);
             this._commandBufferEncoder.finishEncodingCommand();
             delete buffer.nativeIndexBuffer;
         }
 
         if (buffer.nativeVertexBuffer) {
             this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DELETEVERTEXBUFFER);
-            this._commandBufferEncoder.encodeCommandArgAsNativeData(buffer.nativeVertexBuffer, true);
+            this._commandBufferEncoder.encodeCommandArgAsNativeData(buffer.nativeVertexBuffer);
             this._commandBufferEncoder.finishEncodingCommand();
             delete buffer.nativeVertexBuffer;
         }
