@@ -12553,6 +12553,7 @@ declare module BABYLON {
         private _drawWrapperBase;
         private _drawWrapperFog;
         private _drawWrapperDepth;
+        private _drawWrapperFogDepth;
         private _vertexArrayObject;
         /**
          * Creates a new sprite Renderer
@@ -74871,7 +74872,7 @@ declare module BABYLON {
      * @param basisFormat format chosen from GetSupportedTranscodeFormat
      * @returns internal format corresponding to the Basis format
      */
-    export const GetInternalFormatFromBasisFormat: (basisFormat: number) => number;
+    export const GetInternalFormatFromBasisFormat: (basisFormat: number, engine: Engine) => any;
     /**
      * Transcodes a loaded image file to compressed pixel data
      * @param data image data to transcode
@@ -74903,7 +74904,7 @@ declare module BABYLON {
          * @param basisFormat format chosen from GetSupportedTranscodeFormat
          * @returns internal format corresponding to the Basis format
          */
-        GetInternalFormatFromBasisFormat: (basisFormat: number) => number;
+        GetInternalFormatFromBasisFormat: (basisFormat: number, engine: Engine) => any;
         /**
          * Transcodes a loaded image file to compressed pixel data
          * @param data image data to transcode
