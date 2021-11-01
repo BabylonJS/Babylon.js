@@ -6,7 +6,7 @@ import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lo
 import { ScrollViewer } from "babylonjs-gui/2D/controls/scrollViewers/scrollViewer";
 import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
-import { CssColor3LineComponent } from "../../../../sharedUiComponents/lines/cssColor3LineComponent";
+import { Color3LineComponent } from "../../../../sharedUiComponents/lines/Color3LineComponent";
 
 interface IScrollViewerPropertyGridComponentProps {
     scrollViewer: ScrollViewer,
@@ -32,8 +32,8 @@ export class ScrollViewerPropertyGridComponent extends React.Component<IScrollVi
                 <hr />
                 <TextLineComponent label="SCROLLVIEWER" value=" " color="grey"></TextLineComponent>
                 <FloatLineComponent lockObject={this.props.lockObject} label="Bar size" target={scrollViewer} propertyName="barSize" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <CssColor3LineComponent lockObject={this.props.lockObject} label="Bar color" target={scrollViewer} propertyName="barColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <CssColor3LineComponent lockObject={this.props.lockObject} label="Bar background" target={scrollViewer} propertyName="barBackground" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <Color3LineComponent lockObject={this.props.lockObject} label="Bar color" target={scrollViewer} propertyName="barColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <Color3LineComponent lockObject={this.props.lockObject} label="Bar background" target={scrollViewer} propertyName="barBackground" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <FloatLineComponent lockObject={this.props.lockObject} label="Wheel precision" target={scrollViewer} propertyName="wheelPrecision" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
             </div>
         );

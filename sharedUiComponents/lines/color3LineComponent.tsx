@@ -20,9 +20,10 @@ export interface IColor3LineComponentProps {
     icon?: string;
     lockObject?: LockObject;
     iconLabel?: string;
+    onValueChange?: (value: string) => void;
 }
 
-export class Color3LineComponent extends React.Component<IColor3LineComponentProps, { isExpanded: boolean, color: Color3, colorText: string }> {
+export class Color3LineComponent extends React.Component<IColor3LineComponentProps, { isExpanded: boolean, color: Color3 | Color4, colorText: string }> {
     private _localChange = false;
     constructor(props: IColor3LineComponentProps) {
         super(props);
@@ -34,7 +35,6 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
         } else {
             this.state = { isExpanded: false, color: this.props.target[this.props.propertyName].clone(), colorText: this.props.target[this.props.propertyName].toHexString() };
         }
-
 
         if (props.isLinear) {
             this.state.color.toGammaSpaceToRef(this.state.color);
@@ -70,7 +70,7 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
         return Color3.FromInts(r, g, b);
     }
 
-    shouldComponentUpdate(nextProps: IColor3LineComponentProps, nextState: { color: Color3, colorText: string }) {
+    shouldComponentUpdate(nextProps: IColor3LineComponentProps, nextState: { color: Color3 | Color4, colorText: string }) {
 
         const isString = typeof (this.props.target[this.props.propertyName]) === "string";
 
@@ -86,7 +86,7 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
         return false;
     }
 
-    setPropertyValue(newColor: Color3, newColorText: string) {
+    setPropertyValue(newColor: Color3 | Color4, newColorText: string) {
         const isString = typeof (this.props.target[this.props.propertyName]) === "string";
         if (isString) {
             this.props.target[this.props.propertyName] = newColorText;
@@ -116,6 +116,10 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
         this.setPropertyValue(newColor, newValue);
 
         this.setState({ color: newColor, colorText: newValue });
+
+        if(this.props.onValueChange) {
+            this.props.onValueChange(newValue);
+        }
     }
 
     switchExpandState() {
@@ -123,7 +127,7 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
         this.setState({ isExpanded: !this.state.isExpanded });
     }
 
-    raiseOnPropertyChanged(previousValue: Color3) {
+    raiseOnPropertyChanged(previousValue: Color3 | Color4) {
         if (!this.props.onPropertyChangedObservable) {
             return;
         }
@@ -192,7 +196,7 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
     render() {
 
         const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />;
-        this._colorString = this.state.color.toHexString();
+        this._colorString = this.state.colorText;
 
         return (
             <div className="color3Line">
