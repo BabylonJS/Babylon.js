@@ -45,30 +45,26 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
     }
 
     private convertToColor3(color: string) {
-        if (color === "" || color === "transparent" || color === "Transparent") {
+        if (color === "" || color === "transparent") {
             return new Color4(0, 0, 0, 0);
         }
 
         if (color.substring(0, 1) !== "#" || color.length !== 7) {
-            let d = document.createElement("div");
+            const d = document.createElement("div");
             d.style.color = color;
             document.body.append(d);
-            let rgb = window.getComputedStyle(d).color;
+            const rgb = window.getComputedStyle(d).color;
             document.body.removeChild(d);
 
 
-            let rgbArray = rgb.substring(4, rgb.length - 1)
+            const rgbArray = rgb.substring(4, rgb.length - 1)
                 .replace(/ /g, '')
                 .split(',');
 
             return new Color3(parseInt(rgbArray[0]) / 255, parseInt(rgbArray[1]) / 255, parseInt(rgbArray[2]) / 255);
         }
 
-        var r = parseInt(color.substring(1, 3), 16);
-        var g = parseInt(color.substring(3, 5), 16);
-        var b = parseInt(color.substring(5, 7), 16);
-
-        return Color3.FromInts(r, g, b);
+        return Color3.FromHexString(color);
     }
 
     shouldComponentUpdate(nextProps: IColor3LineComponentProps, nextState: { color: Color3 | Color4, colorText: string }) {
@@ -151,7 +147,7 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
 
         const store = this.state.color.clone();
         this.state.color.r = value;
-        let hex = this.state.color.toHexString();
+        const hex = this.state.color.toHexString();
         this.setPropertyValue(this.state.color, hex);
         this.setState({ color: this.state.color, colorText: hex });
         this.raiseOnPropertyChanged(store);
@@ -162,7 +158,7 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
 
         const store = this.state.color.clone();
         this.state.color.g = value;
-        let hex = this.state.color.toHexString();
+        const hex = this.state.color.toHexString();
         this.setPropertyValue(this.state.color, hex);
         this.setState({ color: this.state.color, colorText: hex });
         this.raiseOnPropertyChanged(store);
@@ -173,19 +169,19 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
 
         const store = this.state.color.clone();
         this.state.color.b = value;
-        let hex = this.state.color.toHexString();
+        const hex = this.state.color.toHexString();
         this.setPropertyValue(this.state.color, hex);
         this.setState({ color: this.state.color, colorText: hex });
         this.raiseOnPropertyChanged(store);
     }
 
     copyToClipboard() {
-        var element = document.createElement('div');
+        const element = document.createElement('div');
         element.textContent = this.state.color.toHexString();
         document.body.appendChild(element);
 
         if (window.getSelection) {
-            var range = document.createRange();
+            const range = document.createRange();
             range.selectNode(element);
             window.getSelection()!.removeAllRanges();
             window.getSelection()!.addRange(range);
