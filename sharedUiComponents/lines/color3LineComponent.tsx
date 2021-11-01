@@ -41,10 +41,11 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
         }
 
         props.target._isLinearColor = props.isLinear; // so that replayRecorder can append toLinearSpace() as appropriate
+        this._colorPickerOpen = false;
     }
 
     private convertToColor3(color: string) {
-        if (color === "" || color === "transparent") {
+        if (color === "" || color === "transparent" || color === "Transparent") {
             return new Color4(0, 0, 0, 0);
         }
 
@@ -101,8 +102,14 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
 
     onChange(newValue: string) {
         this._localChange = true;
-
+        
         const newColor = this.convertToColor3(newValue);
+        if(this._colorPickerOpen) {
+            const savedColor = this.convertToColor3(this._colorStringSaved);
+            if(savedColor.equals(newColor)) {
+                newValue = this._colorStringSaved;
+            }
+        }
 
         if (this.props.onPropertyChangedObservable) {
             this.props.onPropertyChangedObservable.notifyObservers({
@@ -192,6 +199,8 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
         this.onChange(this._colorString);
     }
 
+    private _colorStringSaved: string;
+    private _colorPickerOpen : boolean;
     private _colorString: string;
     render() {
 
@@ -210,11 +219,16 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
                             linearHint={this.props.isLinear}
                             value={this.state.color}
                             onColorChanged={color => {
+                                if(!this._colorPickerOpen) {
+                                    this._colorStringSaved = this._colorString;
+                                }
+                                this._colorPickerOpen = true;
                                 this.onChange(color);
                             }} />
                     </div>
                     {(this.props.icon && this.props.lockObject) &&
-                        <TextInputLineComponent lockObject={this.props.lockObject} label="" target={this} propertyName="_colorString" onChange={newValue => this.convert(newValue)}
+                        <TextInputLineComponent lockObject={this.props.lockObject} label="" target={this} propertyName="_colorString" onChange={newValue => {
+                            this._colorPickerOpen = false; this.convert(newValue)} }
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     }
                     <div className="copy hoverIcon" onClick={() => this.copyToClipboard()} title="Copy to clipboard">

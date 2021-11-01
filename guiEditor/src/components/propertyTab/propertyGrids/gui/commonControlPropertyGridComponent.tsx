@@ -11,7 +11,6 @@ import { CommandButtonComponent } from "../../../commandButtonComponent";
 import { Image } from "babylonjs-gui/2D/controls/image";
 import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
 import { DataStorage } from "babylonjs/Misc/dataStorage";
-import { CssColor3LineComponent } from "../../../../sharedUiComponents/lines/cssColor3LineComponent";
 import { Color3LineComponent } from "../../../../sharedUiComponents/lines/color3LineComponent";
 
 const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");

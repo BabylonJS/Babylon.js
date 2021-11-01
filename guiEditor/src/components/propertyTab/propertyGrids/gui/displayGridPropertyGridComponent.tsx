@@ -37,7 +37,6 @@ export class DisplayGridPropertyGridComponent extends React.Component<IDisplayGr
                 <FloatLineComponent min={1} isInteger={true} lockObject={this.props.lockObject} label="Major Line Tickness" target={displayGrid} propertyName="majorLineTickness" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <Color3LineComponent lockObject={this.props.lockObject} label="Major Line Color" target={displayGrid} propertyName="majorLineColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <FloatLineComponent min={1} isInteger={true}  lockObject={this.props.lockObject} label="Major Line Frequency" target={displayGrid} propertyName="majorLineFrequency" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                
             </div>
         );
     }
