@@ -369,7 +369,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             this._currentPluginName = plugin.name;
             if (this._currentPluginName === "gltf") {
                 let loader = plugin as GLTFFileLoader;
-
+                loader.transparencyAsCoverage = this.props.globalState.commerceMode;
                 loader.validate = true;
 
                 loader.onExtensionLoadedObservable.add((extension: import("babylonjs-loaders/glTF/index").IGLTFLoaderExtension) => {
