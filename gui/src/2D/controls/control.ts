@@ -2072,9 +2072,7 @@ export class Control {
         this._fontOffset = Control._GetFontOffset(this._font);
 
         //children need to be refreshed
-        this.getDescendants().forEach((child) => {
-            child._markAllAsDirty();
-        });
+        this.getDescendants().forEach((child) => child._markAllAsDirty());
     }
 
     /**
