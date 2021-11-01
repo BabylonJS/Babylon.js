@@ -8,7 +8,10 @@ import { DisplayGrid } from "babylonjs-gui/2D/controls/displayGrid";
 import { TextInputLineComponent } from "../../../../sharedUiComponents/lines/textInputLineComponent";
 import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
 
-const fillColorIcon: string = require("../../../../sharedUiComponents/imgs/fillColorIcon.svg");
+const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");
+const colorIcon: string = require("../../../../sharedUiComponents/imgs/colorIcon.svg");
+const conerRadiusIcon: string = require("../../../../sharedUiComponents/imgs/conerRadiusIcon.svg");
+const strokeWeightIcon: string = require("../../../../sharedUiComponents/imgs/strokeWeightIcon.svg");
 
 interface IDisplayGridPropertyGridComponentProps {
     displayGrid: DisplayGrid,
@@ -30,14 +33,14 @@ export class DisplayGridPropertyGridComponent extends React.Component<IDisplayGr
                 <hr />
                 <TextLineComponent label="DISPLAY GRID" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">
-                <FloatLineComponent iconLabel={"Cell Size"} icon={fillColorIcon} min={1} isInteger={true} lockObject={this.props.lockObject} label="W" target={displayGrid} propertyName="cellWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <FloatLineComponent iconLabel={"Cell Size"} icon={sizeIcon} min={1} isInteger={true} lockObject={this.props.lockObject} label="W" target={displayGrid} propertyName="cellWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <FloatLineComponent min={1} isInteger={true} lockObject={this.props.lockObject} label="H" target={displayGrid} propertyName="cellHeight" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </div>
-                <FloatLineComponent iconLabel={"Minor Line Tickness"} icon={fillColorIcon} min={1} isInteger={true} lockObject={this.props.lockObject} label="" target={displayGrid} propertyName="minorLineTickness" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <TextInputLineComponent iconLabel={"Minor Line Color"} icon={fillColorIcon} lockObject={this.props.lockObject} label="" target={displayGrid} propertyName="minorLineColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <FloatLineComponent iconLabel={"Major Line Tickness"} icon={fillColorIcon} min={1} isInteger={true} lockObject={this.props.lockObject} label="" target={displayGrid} propertyName="majorLineTickness" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <TextInputLineComponent  iconLabel={"Major Line Color"} icon={fillColorIcon}lockObject={this.props.lockObject} label="" target={displayGrid} propertyName="majorLineColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <FloatLineComponent  iconLabel={"Major Line Frequency"} icon={fillColorIcon} min={1} isInteger={true}  lockObject={this.props.lockObject} label="" target={displayGrid} propertyName="majorLineFrequency" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <FloatLineComponent iconLabel={"Minor Line Tickness"} icon={strokeWeightIcon} min={1} isInteger={true} lockObject={this.props.lockObject} label="" target={displayGrid} propertyName="minorLineTickness" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <TextInputLineComponent iconLabel={"Minor Line Color"} icon={colorIcon} lockObject={this.props.lockObject} label="" target={displayGrid} propertyName="minorLineColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <FloatLineComponent iconLabel={"Major Line Tickness"} icon={strokeWeightIcon} min={1} isInteger={true} lockObject={this.props.lockObject} label="" target={displayGrid} propertyName="majorLineTickness" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <TextInputLineComponent  iconLabel={"Major Line Color"} icon={colorIcon}lockObject={this.props.lockObject} label="" target={displayGrid} propertyName="majorLineColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <FloatLineComponent  iconLabel={"Major Line Frequency"} icon={conerRadiusIcon} min={1} isInteger={true}  lockObject={this.props.lockObject} label="" target={displayGrid} propertyName="majorLineFrequency" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 
             </div>
         );
