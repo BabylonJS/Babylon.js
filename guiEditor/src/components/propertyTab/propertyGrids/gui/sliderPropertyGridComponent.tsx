@@ -16,7 +16,6 @@ const colorIcon: string = require("../../../../sharedUiComponents/imgs/colorIcon
 const vAlignCenterIcon: string = require("../../../../sharedUiComponents/imgs/vAlignCenterIcon.svg");
 const clipContentsIcon: string = require("../../../../sharedUiComponents/imgs/clipContentsIcon.svg");
 
-
 interface ISliderPropertyGridComponentProps {
     slider: Slider
     lockObject: LockObject,
