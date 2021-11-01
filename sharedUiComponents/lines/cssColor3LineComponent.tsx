@@ -146,7 +146,7 @@ export class CssColor3LineComponent extends React.Component<ICssColor3LineCompon
 
         const store = this.state.color.clone();
         this.state.color.b = value;
-;
+
         let hex = this.state.color.toHexString();
         this.setPropertyValue(hex);
         this.setState({ color: this.state.color, colorText: hex });
