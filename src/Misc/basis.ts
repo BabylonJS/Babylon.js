@@ -105,15 +105,24 @@ export const BasisToolsOptions = {
  * @returns internal format corresponding to the Basis format
  */
 export const GetInternalFormatFromBasisFormat = (basisFormat: number, engine: Engine) => {
-    if (basisFormat === BASIS_FORMATS.cTFETC1) {
-        return engine._caps.etc1?.COMPRESSED_RGB_ETC1_WEBGL;
-    } else if (basisFormat === BASIS_FORMATS.cTFBC1) {
-        return engine._caps.s3tc?.COMPRESSED_RGB_S3TC_DXT1_EXT;
-    } else if (basisFormat === BASIS_FORMATS.cTFBC3) {
-        return engine._caps.s3tc?.COMPRESSED_RGBA_S3TC_DXT5_EXT;
-    } else {
+    let format;
+    switch (basisFormat) {
+        case BASIS_FORMATS.cTFETC1:
+            format = engine.getCaps().etc1?.COMPRESSED_RGB_ETC1_WEBGL;
+            break;
+        case BASIS_FORMATS.cTFBC1:
+            format = engine.getCaps().s3tc?.COMPRESSED_RGB_S3TC_DXT1_EXT;
+            break;
+        case BASIS_FORMATS.cTFBC4:
+            format = engine.getCaps().s3tc?.COMPRESSED_RGBA_S3TC_DXT5_EXT;
+            break;
+    }
+
+    if (format === undefined) {
         throw "The chosen Basis transcoder format is not currently supported";
     }
+
+    return format;
 };
 
 let _WorkerPromise: Nullable<Promise<Worker>> = null;
@@ -153,7 +162,7 @@ const _CreateWorkerAsync = () => {
  * @param config configuration options for the transcoding
  * @returns a promise resulting in the transcoded image
  */
-export const TranscodeAsync = (data: ArrayBuffer | ArrayBufferView, config: BasisTranscodeConfiguration): Promise <TranscodeResult> => {
+export const TranscodeAsync = (data: ArrayBuffer | ArrayBufferView, config: BasisTranscodeConfiguration): Promise<TranscodeResult> => {
     const dataView = data instanceof ArrayBuffer ? new Uint8Array(data) : data;
 
     return new Promise((res, rej) => {
