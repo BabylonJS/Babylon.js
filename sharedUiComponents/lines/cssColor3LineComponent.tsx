@@ -51,7 +51,6 @@ export class CssColor3LineComponent extends React.Component<ICssColor3LineCompon
                 .replace(/ /g, '')
                 .split(',');
 
-            console.log(rgb);
             return new Color3(parseInt(rgbArray[0]) / 255, parseInt(rgbArray[1]) / 255, parseInt(rgbArray[2]) / 255);
         }
 

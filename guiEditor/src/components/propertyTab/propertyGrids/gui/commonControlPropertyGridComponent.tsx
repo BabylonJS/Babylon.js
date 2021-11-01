@@ -12,6 +12,7 @@ import { Image } from "babylonjs-gui/2D/controls/image";
 import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
 import { DataStorage } from "babylonjs/Misc/dataStorage";
 import { CssColor3LineComponent } from "../../../../sharedUiComponents/lines/cssColor3LineComponent";
+import { Color3LineComponent } from "../../../../sharedUiComponents/lines/color3LineComponent";
 
 const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");
 const verticalMarginIcon: string = require("../../../../sharedUiComponents/imgs/verticalMarginIcon.svg");
@@ -175,14 +176,14 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 <TextLineComponent tooltip="" label="APPEARANCE" value=" " color="grey"></TextLineComponent>
                 {
                     (control as any).color !== undefined &&
-                    <CssColor3LineComponent iconLabel={"Color"} icon={colorIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="color" onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
+                    <Color3LineComponent iconLabel={"Color"} icon={colorIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="color" onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                 }
                 {
                     (control as any).background !== undefined &&
-                    <CssColor3LineComponent iconLabel={"Background"} icon={fillColorIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="background" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Color3LineComponent iconLabel={"Background"} icon={fillColorIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="background" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 }
                 <SliderLineComponent lockObject={this.props.lockObject} iconLabel={"Alpha"} icon={alphaIcon} label="" target={control} propertyName="alpha" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <CssColor3LineComponent iconLabel={"Shadow Color"} icon={shadowColorIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="shadowColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <Color3LineComponent iconLabel={"Shadow Color"} icon={shadowColorIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="shadowColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <div className="ge-divider">
                     <FloatLineComponent iconLabel={"Shadow Offset X"} icon={shadowOffsetXIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="shadowOffsetX" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent iconLabel={"Shadow Offset Y"} icon={shadowOffsetYIcon} lockObject={this.props.lockObject} label="" target={control} propertyName="shadowOffsetY" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

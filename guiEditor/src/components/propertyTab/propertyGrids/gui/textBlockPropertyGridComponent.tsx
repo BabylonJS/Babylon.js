@@ -9,7 +9,7 @@ import { OptionsLineComponent } from "../../../../sharedUiComponents/lines/optio
 import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
-import { CssColor3LineComponent } from "../../../../sharedUiComponents/lines/cssColor3LineComponent";
+import { Color3LineComponent } from "../../../../sharedUiComponents/lines/Color3LineComponent";
 
 interface ITextBlockPropertyGridComponentProps {
     textBlock: TextBlock;
@@ -43,7 +43,7 @@ export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPr
                 <hr />
                 <TextLineComponent label="OUTLINE" value=" " color="grey"></TextLineComponent>
                 <FloatLineComponent lockObject={this.props.lockObject} label="Outline width" target={textBlock} propertyName="outlineWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <CssColor3LineComponent lockObject={this.props.lockObject} label="Outline color" target={textBlock} propertyName="outlineColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <Color3LineComponent lockObject={this.props.lockObject} label="Outline color" target={textBlock} propertyName="outlineColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
 
             </div>
         );
