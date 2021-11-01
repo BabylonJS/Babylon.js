@@ -9,6 +9,7 @@ import { TextInputLineComponent } from "../../../../sharedUiComponents/lines/tex
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
 
 const fillColorIcon: string = require("../../../../sharedUiComponents/imgs/fillColorIcon.svg");
+const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");
 const conerRadiusIcon: string = require("../../../../sharedUiComponents/imgs/conerRadiusIcon.svg");;
 const strokeWeightIcon: string = require("../../../../sharedUiComponents/imgs/strokeWeightIcon.svg");
 
@@ -38,8 +39,8 @@ export class ScrollViewerPropertyGridComponent extends React.Component<IScrollVi
                 <hr />
                 <TextLineComponent label="SCROLLVIEWER" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">
-                <FloatLineComponent iconLabel={"Wheel precision"} icon={fillColorIcon} lockObject={this.props.lockObject} label="" target={scrollViewer} propertyName="wheelPrecision" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <FloatLineComponent iconLabel={"Bar size"} icon={fillColorIcon}  lockObject={this.props.lockObject} label="" target={scrollViewer} propertyName="barSize" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <FloatLineComponent iconLabel={"Wheel precision"} icon={sizeIcon} lockObject={this.props.lockObject} label="" target={scrollViewer} propertyName="wheelPrecision" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <FloatLineComponent iconLabel={"Bar size"} icon={sizeIcon}  lockObject={this.props.lockObject} label="" target={scrollViewer} propertyName="barSize" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </div>
                 <TextInputLineComponent iconLabel={"Bar color"} icon={fillColorIcon}  lockObject={this.props.lockObject} label="" target={scrollViewer} propertyName="barColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <TextInputLineComponent iconLabel={"Bar background"} icon={fillColorIcon}  lockObject={this.props.lockObject} label="" target={scrollViewer} propertyName="barBackground" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
