@@ -104,18 +104,13 @@ export const BasisToolsOptions = {
  * @param basisFormat format chosen from GetSupportedTranscodeFormat
  * @returns internal format corresponding to the Basis format
  */
-export const GetInternalFormatFromBasisFormat = (basisFormat: number) => {
-    // Corresponding internal formats
-    var COMPRESSED_RGB_S3TC_DXT1_EXT = 0x83F0;
-    var COMPRESSED_RGBA_S3TC_DXT5_EXT = 0x83F3;
-    var RGB_ETC1_Format = 36196;
-
+export const GetInternalFormatFromBasisFormat = (basisFormat: number, engine: Engine) => {
     if (basisFormat === BASIS_FORMATS.cTFETC1) {
-        return RGB_ETC1_Format;
+        return engine._caps.etc1?.COMPRESSED_RGB_ETC1_WEBGL;
     } else if (basisFormat === BASIS_FORMATS.cTFBC1) {
-        return COMPRESSED_RGB_S3TC_DXT1_EXT;
+        return engine._caps.s3tc?.COMPRESSED_RGB_S3TC_DXT1_EXT;
     } else if (basisFormat === BASIS_FORMATS.cTFBC3) {
-        return COMPRESSED_RGBA_S3TC_DXT5_EXT;
+        return engine._caps.s3tc?.COMPRESSED_RGBA_S3TC_DXT5_EXT;
     } else {
         throw "The chosen Basis transcoder format is not currently supported";
     }
@@ -234,7 +229,7 @@ export const LoadTextureFromTranscodeResult = (texture: InternalTexture, transco
 
             // Upload all mip levels in the file
             transcodeResult.fileInfo.images[i].levels.forEach((level: any, index: number) => {
-                engine._uploadCompressedDataToTextureDirectly(texture, BasisTools.GetInternalFormatFromBasisFormat(transcodeResult.format!), level.width, level.height, level.transcodedPixels, i, index);
+                engine._uploadCompressedDataToTextureDirectly(texture, BasisTools.GetInternalFormatFromBasisFormat(transcodeResult.format!, engine), level.width, level.height, level.transcodedPixels, i, index);
             });
 
             if (engine._features.basisNeedsPOT && (Scalar.Log2(texture.width) % 1 !== 0 || Scalar.Log2(texture.height) % 1 !== 0)) {
