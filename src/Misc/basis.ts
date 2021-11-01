@@ -106,7 +106,7 @@ export const BasisToolsOptions = {
  */
 export const GetInternalFormatFromBasisFormat = (basisFormat: number) => {
     // Corresponding internal formats
-    var COMPRESSED_RGB_S3TC_DXT1_EXT = 0x83F1;
+    var COMPRESSED_RGB_S3TC_DXT1_EXT = 0x83F0;
     var COMPRESSED_RGBA_S3TC_DXT5_EXT = 0x83F3;
     var RGB_ETC1_Format = 36196;
 
