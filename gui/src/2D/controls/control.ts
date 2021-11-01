@@ -2232,8 +2232,7 @@ export class Control {
         } finally {
             document.body.removeChild(div);
         }
-        var result = { ascent: fontAscent, height: fontHeight, descent: fontHeight - fontAscent };
-        return result;
+        return { ascent: fontAscent, height: fontHeight, descent: fontHeight - fontAscent };
     }
 
     /**
