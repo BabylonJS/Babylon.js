@@ -100,6 +100,8 @@ export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: b
 
     checkUrl() {
         // Check URL
+        this._globalState.commerceMode = location.host.toLowerCase().indexOf("3d") === 0;
+
         const indexOf = location.href.indexOf("?");
         if (indexOf !== -1) {
             const params = location.href.substr(indexOf + 1).split("&");

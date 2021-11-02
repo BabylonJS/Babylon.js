@@ -25,28 +25,31 @@ export class Utilities {
         return query;
     }
 
-    public static ReadStringFromStore(key: string, defaultValue: string): string {
-        if (sessionStorage.getItem(key) === null) {
+    public static ReadStringFromStore(key: string, defaultValue: string, useSession = false): string {
+        const storage = useSession ? sessionStorage : localStorage;
+
+        if (storage.getItem(key) === null) {
             return defaultValue;
         }
 
-        return sessionStorage.getItem(key)!;
+        return storage.getItem(key)!;
     }
 
     public static ReadBoolFromStore(key: string, defaultValue: boolean): boolean {
-        if (sessionStorage.getItem(key) === null) {
+        if (localStorage.getItem(key) === null) {
             return defaultValue;
         }
 
-        return sessionStorage.getItem(key) === "true";
+        return localStorage.getItem(key) === "true";
     }
 
-    public static StoreStringToStore(key: string, value: string): void {
-        sessionStorage.setItem(key, value);
+    public static StoreStringToStore(key: string, value: string, useSession = false): void {
+        const storage = useSession ? sessionStorage : localStorage;
+        storage.setItem(key, value);
     }
 
     public static StoreBoolToStore(key: string, value: boolean): void {
-        sessionStorage.setItem(key, value ? "true" : "false");
+        localStorage.setItem(key, value ? "true" : "false");
     }
 
     public static CheckSafeMode(message: string) {
