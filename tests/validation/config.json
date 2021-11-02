@@ -1365,7 +1365,8 @@
             "title": "Show all procedural textures",
             "renderCount": 5,
             "playgroundId": "#4N0QRP#1",
-            "referenceImage": "allProcTextures.png"
+            "referenceImage": "allProcTextures.png",
+            "excludeFromAutomaticTesting": true
         }
     ]
 }
