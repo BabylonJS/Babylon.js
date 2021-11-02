@@ -37,7 +37,7 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
         }
 
         if (props.isLinear) {
-            this.state.color.toGammaSpaceToRef(this.state.color);
+            (this.state.color as Color3).toGammaSpaceToRef(this.state.color as Color3);
         }
 
         props.target._isLinearColor = props.isLinear; // so that replayRecorder can append toLinearSpace() as appropriate
@@ -98,11 +98,11 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
 
     onChange(newValue: string) {
         this._localChange = true;
-        
+
         const newColor = this.convertToColor3(newValue);
-        if(this._colorPickerOpen) {
+        if (this._colorPickerOpen && this.props.icon) {
             const savedColor = this.convertToColor3(this._colorStringSaved);
-            if(savedColor.equals(newColor)) {
+            if ((savedColor as Color3).equals(newColor as Color3)) {
                 newValue = this._colorStringSaved;
             }
         }
@@ -120,7 +120,7 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
 
         this.setState({ color: newColor, colorText: newValue });
 
-        if(this.props.onValueChange) {
+        if (this.props.onValueChange) {
             this.props.onValueChange(newValue);
         }
     }
@@ -196,7 +196,7 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
     }
 
     private _colorStringSaved: string;
-    private _colorPickerOpen : boolean;
+    private _colorPickerOpen: boolean;
     private _colorString: string;
     render() {
 
@@ -215,7 +215,7 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
                             linearHint={this.props.isLinear}
                             value={this.state.color}
                             onColorChanged={color => {
-                                if(!this._colorPickerOpen) {
+                                if (!this._colorPickerOpen) {
                                     this._colorStringSaved = this._colorString;
                                 }
                                 this._colorPickerOpen = true;
@@ -224,7 +224,8 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
                     </div>
                     {(this.props.icon && this.props.lockObject) &&
                         <TextInputLineComponent lockObject={this.props.lockObject} label="" target={this} propertyName="_colorString" onChange={newValue => {
-                            this._colorPickerOpen = false; this.convert(newValue)} }
+                            this._colorPickerOpen = false; this.convert(newValue)
+                        }}
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     }
                     <div className="copy hoverIcon" onClick={() => this.copyToClipboard()} title="Copy to clipboard">

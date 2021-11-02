@@ -6,7 +6,7 @@ import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lo
 import { ScrollViewer } from "babylonjs-gui/2D/controls/scrollViewers/scrollViewer";
 import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
-import { Color3LineComponent } from "../../../../sharedUiComponents/lines/Color3LineComponent";
+import { Color3LineComponent } from "../../../../sharedUiComponents/lines/color3LineComponent";
 
 interface IScrollViewerPropertyGridComponentProps {
     scrollViewer: ScrollViewer,
