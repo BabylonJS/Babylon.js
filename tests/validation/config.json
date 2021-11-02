@@ -1378,8 +1378,7 @@
         },
         {
             "title": "Baked Vertex Animation",
-            "playgroundId": "#14WJWW#7",
-            "excludedEngines": ["webgl1"],
+            "playgroundId": "#14WJWW#9",
             "referenceImage": "bakedVertexAnimation.png"
         }
     ]
