@@ -535,6 +535,13 @@ export class Engine extends ThinEngine {
     }
 
     /**
+     * Indicates if this engine supports render passes
+     */
+    public get supportRenderPasses() {
+        return true;
+    }
+
+    /**
      * Creates a new engine
      * @param canvasOrContext defines the canvas or WebGL context to use for rendering. If you provide a WebGL context, Babylon.js will not hook events on the canvas (like pointers, keyboards, etc...) so no event observables will be available. This is mostly used when Babylon.js is used as a plugin on a system which already used the WebGL context
      * @param antialias defines enable antialiasing (default: false)
@@ -545,8 +552,6 @@ export class Engine extends ThinEngine {
         super(canvasOrContext, antialias, options, adaptToDeviceRatio);
 
         Engine.Instances.push(this);
-
-        (this.supportRenderPasses as any) = true;
 
         if (!canvasOrContext) {
             return;

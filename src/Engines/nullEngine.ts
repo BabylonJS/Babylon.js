@@ -88,12 +88,14 @@ export class NullEngine extends Engine {
         return 1.0;
     }
 
+    public get supportRenderPasses() {
+        return true;
+    }
+
     public constructor(options: NullEngineOptions = new NullEngineOptions()) {
         super(null);
 
         Engine.Instances.push(this);
-
-        (this.supportRenderPasses as any) = true;
 
         if (options.deterministicLockstep === undefined) {
             options.deterministicLockstep = false;
