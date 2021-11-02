@@ -66,12 +66,14 @@ let loadScriptAsync = function(url) {
     });
 }
 
-let readStringFromStore = function(key, defaultValue) {
-    if (localStorage.getItem(key) === null) {
+let readStringFromStore = function(key, defaultValue, useSessionStorage) {
+    let storage = useSessionStorage ? sessionStorage : localStorage;
+
+    if (storage.getItem(key) === null) {
         return defaultValue;
     }
 
-    return localStorage.getItem(key);
+    return storage.getItem(key);
 }
 
 let loadInSequence = async function(versions, index, resolve) {
@@ -84,7 +86,7 @@ let loadInSequence = async function(versions, index, resolve) {
 }
 
 let checkBabylonVersionAsync= function () {
-    let activeVersion = readStringFromStore("version", "Latest");
+    let activeVersion = readStringFromStore("version", "Latest", true);
 
     if (activeVersion === "Latest") {
         return Promise.resolve();
