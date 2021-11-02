@@ -279,14 +279,8 @@ export class BoundingBoxRenderer implements ISceneComponent {
             if (boundingBox._tag !== renderingGroupId) {
                 continue;
             }
-            if (!boundingBox._drawWrapperFront) {
-                boundingBox._drawWrapperFront = new DrawWrapper(engine);
-                boundingBox._drawWrapperBack = new DrawWrapper(engine);
 
-                boundingBox._drawWrapperFront.setEffect(this._colorShader.getEffect());
-                boundingBox._drawWrapperBack.setEffect(this._colorShader.getEffect());
-            }
-
+            this._createWrappersForBoundingBox(boundingBox);
             this.onBeforeBoxRenderingObservable.notifyObservers(boundingBox);
 
             var min = boundingBox.minimum;
@@ -351,6 +345,18 @@ export class BoundingBoxRenderer implements ISceneComponent {
         engine.setDepthWrite(true);
     }
 
+    private _createWrappersForBoundingBox(boundingBox: BoundingBox): void {
+        if (!boundingBox._drawWrapperFront) {
+            const engine = this.scene.getEngine();
+
+            boundingBox._drawWrapperFront = new DrawWrapper(engine);
+            boundingBox._drawWrapperBack = new DrawWrapper(engine);
+
+            boundingBox._drawWrapperFront.setEffect(this._colorShader.getEffect());
+            boundingBox._drawWrapperBack.setEffect(this._colorShader.getEffect());
+        }
+    }
+
     /**
      * In case of occlusion queries, we can render the occlusion bounding box through this method
      * @param mesh Define the mesh to render the occlusion bounding box for
@@ -368,9 +374,10 @@ export class BoundingBoxRenderer implements ISceneComponent {
             this._fillIndexBuffer = engine.createIndexBuffer(this._fillIndexData!);
         }
 
+        const useReverseDepthBuffer = engine.useReverseDepthBuffer;
+
         engine.setDepthWrite(false);
         engine.setColorWrite(false);
-        this._colorShader._preBind();
 
         var boundingBox = mesh.getBoundingInfo().boundingBox;
         var min = boundingBox.minimum;
@@ -382,11 +389,26 @@ export class BoundingBoxRenderer implements ISceneComponent {
             .multiply(Matrix.Translation(median.x, median.y, median.z))
             .multiply(boundingBox.getWorldMatrix());
 
+        this._createWrappersForBoundingBox(boundingBox);
+
+        const drawWrapperFront = boundingBox._drawWrapperFront ?? this._colorShader._getDrawWrapper();
+
+        this._colorShader._preBind(drawWrapperFront);
+
         engine.bindBuffers(this._vertexBuffers, this._fillIndexBuffer, <Effect>this._colorShader.getEffect());
 
-        engine.setDepthFunctionToLess();
+        if (useReverseDepthBuffer) {
+            engine.setDepthFunctionToGreater();
+        } else {
+            engine.setDepthFunctionToLess();
+        }
+
         this.scene.resetCachedMaterial();
-        this._colorShader.bind(worldMatrix);
+
+        this._uniformBufferFront.bindToEffect(drawWrapperFront.effect!, "BoundingBoxRenderer");
+        this._uniformBufferFront.updateMatrix("world", worldMatrix);
+        this._uniformBufferFront.updateMatrix("viewProjection", this.scene.getTransformMatrix());
+        this._uniformBufferFront.update();
 
         engine.drawElementsType(Material.TriangleFillMode, 0, 36);
 
