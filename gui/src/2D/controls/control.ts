@@ -17,6 +17,7 @@ import { RegisterClass } from 'babylonjs/Misc/typeStore';
 import { SerializationHelper, serialize } from 'babylonjs/Misc/decorators';
 import { ICanvasRenderingContext } from 'babylonjs/Engines/ICanvas';
 import { Engine } from "babylonjs/Engines/engine";
+import { IsDocumentAvailable } from "babylonjs/Misc/domManagement";
 
 /**
  * Root class used for all 2D controls
@@ -2208,34 +2209,37 @@ export class Control {
     }
 
     private static _getFontOffsetHelper(font: string): { ascent: number, height: number, descent: number } {
-        var text = document.createElement("span");
-        text.innerHTML = "Hg";
-        text.setAttribute('style', `font: ${font} !important`);
+        if (IsDocumentAvailable()) {
+            var text = document.createElement("span");
+            text.innerHTML = "Hg";
+            text.setAttribute('style', `font: ${font} !important`);
 
-        var block = document.createElement("div");
-        block.style.display = "inline-block";
-        block.style.width = "1px";
-        block.style.height = "0px";
-        block.style.verticalAlign = "bottom";
+            var block = document.createElement("div");
+            block.style.display = "inline-block";
+            block.style.width = "1px";
+            block.style.height = "0px";
+            block.style.verticalAlign = "bottom";
 
-        var div = document.createElement("div");
-        div.style.whiteSpace = "nowrap";
-        div.appendChild(text);
-        div.appendChild(block);
+            var div = document.createElement("div");
+            div.style.whiteSpace = "nowrap";
+            div.appendChild(text);
+            div.appendChild(block);
 
-        document.body.appendChild(div);
+            document.body.appendChild(div);
 
-        var fontAscent = 0;
-        var fontHeight = 0;
-        try {
-            fontHeight = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
-            block.style.verticalAlign = "baseline";
-            fontAscent = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
-        } finally {
-            document.body.removeChild(div);
+            var fontAscent = 0;
+            var fontHeight = 0;
+            try {
+                fontHeight = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
+                block.style.verticalAlign = "baseline";
+                fontAscent = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
+            } finally {
+                document.body.removeChild(div);
+            }
+            var result = { ascent: fontAscent, height: fontHeight, descent: fontHeight - fontAscent };
+            return result;
         }
-        var result = { ascent: fontAscent, height: fontHeight, descent: fontHeight - fontAscent };
-        return result;
+        return { ascent: 0, height: 0, descent: 0 };
     }
 
     /**
