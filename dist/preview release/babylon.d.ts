@@ -9230,6 +9230,13 @@ declare module BABYLON {
         serialize(): any;
         private toNumberArray;
         /**
+         * Release any memory retained by the cached data on the Geometry.
+         *
+         * Call this function to reduce memory footprint of the mesh.
+         * Vertex buffers will not store CPU data anymore (this will prevent picking, collisions or physics to work correctly)
+         */
+        clearCachedData(): void;
+        /**
          * Serialize all vertices data into a JSON object
          * @returns a JSON representation of the current geometry data
          */
@@ -12546,6 +12553,7 @@ declare module BABYLON {
         private _drawWrapperBase;
         private _drawWrapperFog;
         private _drawWrapperDepth;
+        private _drawWrapperFogDepth;
         private _vertexArrayObject;
         /**
          * Creates a new sprite Renderer
@@ -74864,7 +74872,7 @@ declare module BABYLON {
      * @param basisFormat format chosen from GetSupportedTranscodeFormat
      * @returns internal format corresponding to the Basis format
      */
-    export const GetInternalFormatFromBasisFormat: (basisFormat: number) => number;
+    export const GetInternalFormatFromBasisFormat: (basisFormat: number, engine: Engine) => any;
     /**
      * Transcodes a loaded image file to compressed pixel data
      * @param data image data to transcode
@@ -74896,7 +74904,7 @@ declare module BABYLON {
          * @param basisFormat format chosen from GetSupportedTranscodeFormat
          * @returns internal format corresponding to the Basis format
          */
-        GetInternalFormatFromBasisFormat: (basisFormat: number) => number;
+        GetInternalFormatFromBasisFormat: (basisFormat: number, engine: Engine) => any;
         /**
          * Transcodes a loaded image file to compressed pixel data
          * @param data image data to transcode

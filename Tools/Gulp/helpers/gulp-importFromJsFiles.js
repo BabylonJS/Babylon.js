@@ -7,7 +7,7 @@ let fs = require("fs");
  * Add .js to all local imports
  */
 function processImports(sourceCode) {
-    return sourceCode.replace(/((import|export)(.*)('|")(@babylonjs|\.{1,2}\/)(.*))('|");/g, "$1.js$7;").replace(/(\.js){2,}/g, ".js");
+    return sourceCode.replace(/((import|export).*["'](@babylonjs\/.*\/|\.{1,2}\/).*)("|');/g, "$1.js$4;").replace(/(\.js){2,}/g, ".js");
 }
 
 /**

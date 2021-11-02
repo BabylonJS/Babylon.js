@@ -14,6 +14,8 @@ export class GlobalState {
     public filesInput: FilesInput;
     public isDebugLayerEnabled = false;
 
+    public commerceMode = false;
+
     public reflector?: {
         hostname: string;
         port: number;
