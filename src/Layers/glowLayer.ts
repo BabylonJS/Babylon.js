@@ -154,7 +154,6 @@ export class GlowLayer extends EffectLayer {
 
     private _includedOnlyMeshes: number[] = [];
     private _excludedMeshes: number[] = [];
-    private _meshesUsingTheirOwnMaterials: number[] = [];
 
     /**
      * Callback used to let the user override the color selection on a per mesh basis
@@ -518,22 +517,13 @@ export class GlowLayer extends EffectLayer {
     }
 
     /**
-     * Defines whether the current material of the mesh should be use to render the effect.
-     * @param mesh defines the current mesh to render
-     */
-    protected _useMeshMaterial(mesh: AbstractMesh): boolean {
-        if (this._meshesUsingTheirOwnMaterials.length == 0) {
-            return false;
-        }
-        return this._meshesUsingTheirOwnMaterials.indexOf(mesh.uniqueId) > -1;
-    }
-
-    /**
      * Add a mesh to be rendered through its own material and not with emissive only.
      * @param mesh The mesh for which we need to use its material
      */
     public referenceMeshToUseItsOwnMaterial(mesh: AbstractMesh): void {
-        this._meshesUsingTheirOwnMaterials.push(mesh.uniqueId);
+        if (mesh.material) {
+            this.setMaterialForRendering(mesh, mesh.material);
+        }
 
         mesh.onDisposeObservable.add(() => {
             this._disposeMesh(mesh as Mesh);
@@ -545,11 +535,7 @@ export class GlowLayer extends EffectLayer {
      * @param mesh The mesh for which we need to not use its material
      */
     public unReferenceMeshFromUsingItsOwnMaterial(mesh: AbstractMesh): void {
-        let index = this._meshesUsingTheirOwnMaterials.indexOf(mesh.uniqueId);
-        while (index >= 0) {
-            this._meshesUsingTheirOwnMaterials.splice(index, 1);
-            index = this._meshesUsingTheirOwnMaterials.indexOf(mesh.uniqueId);
-        }
+        this.setMaterialForRendering(mesh);
     }
 
     /**

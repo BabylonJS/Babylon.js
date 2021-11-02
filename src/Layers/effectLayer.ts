@@ -170,6 +170,15 @@ export abstract class EffectLayer {
     }
 
     /**
+     * Sets a specific material to be used to render a mesh/a list of meshes in the layer
+     * @param mesh mesh or array of meshes
+     * @param material material to use by the layer when rendering the mesh(es). If undefined is passed, the specific material created by the layer will be used.
+     */
+    public setMaterialForRendering(mesh: AbstractMesh | AbstractMesh[], material?: Material): void {
+        this._mainTexture.setMaterialForRendering(mesh, material);
+    }
+
+    /**
      * Instantiates a new effect Layer and references it in the scene.
      * @param name The name of the layer
      * @param scene The scene to use the layer in
@@ -251,6 +260,10 @@ export abstract class EffectLayer {
      */
     public abstract serialize?(): any;
 
+    /**
+     * Number of times _internalRender will be called. Some effect layers need to render the mesh several times, so they should override this method with the number of times the mesh should be rendered
+     * @returns Number of times a mesh must be rendered in the layer
+     */
     protected _numInternalDraws(): number {
         return 1;
     }
@@ -416,21 +429,24 @@ export abstract class EffectLayer {
      * @return true if ready otherwise, false
      */
     protected _isReady(subMesh: SubMesh, useInstances: boolean, emissiveTexture: Nullable<BaseTexture>): boolean {
-        let material = subMesh.getMaterial();
+        const engine = this._scene.getEngine();
+        const mesh = subMesh.getMesh();
 
-        if (!material) {
-            return false;
+        const renderingMaterial = mesh._internalAbstractMeshDataInfo._materialForRenderPass?.[engine.currentRenderPassId];
+
+        if (renderingMaterial) {
+            return renderingMaterial.isReadyForSubMesh(mesh, subMesh, useInstances);
         }
 
-        if (this._useMeshMaterial(subMesh.getRenderingMesh())) {
-            return material.isReadyForSubMesh(subMesh.getMesh(), subMesh, useInstances);
+        let material = subMesh.getMaterial();
+        if (!material) {
+            return false;
         }
 
         var defines: string[] = [];
 
         var attribs = [VertexBuffer.PositionKind];
 
-        var mesh = subMesh.getMesh();
         var uv1 = false;
         var uv2 = false;
 
@@ -750,11 +766,18 @@ export abstract class EffectLayer {
 
         this.onBeforeRenderMeshToEffect.notifyObservers(ownerMesh);
 
-        if (this._useMeshMaterial(renderingMesh)) {
-            renderingMesh.render(subMesh, hardwareInstancedRendering, replacementMesh || undefined);
-        }
-        else if (this._isReady(subMesh, hardwareInstancedRendering, this._emissiveTextureAndColor.texture)) {
-            const drawWrapper = subMesh._getDrawWrapper()!;
+        if (this._isReady(subMesh, hardwareInstancedRendering, this._emissiveTextureAndColor.texture)) {
+            const renderingMaterial = effectiveMesh._internalAbstractMeshDataInfo._materialForRenderPass?.[engine.currentRenderPassId];
+
+            let drawWrapper = subMesh._getDrawWrapper();
+            if (!drawWrapper && renderingMaterial) {
+                drawWrapper = renderingMaterial._getDrawWrapper();
+            }
+
+            if (!drawWrapper) {
+                return;
+            }
+
             const effect = drawWrapper.effect!;
 
             engine.enableEffect(drawWrapper);
@@ -763,73 +786,77 @@ export abstract class EffectLayer {
                 renderingMesh._bind(subMesh, effect, fillMode);
             }
 
-            effect.setMatrix("viewProjection", scene.getTransformMatrix());
-
-            effect.setMatrix("world", effectiveMesh.getWorldMatrix());
-
-            effect.setFloat4("glowColor",
-                this._emissiveTextureAndColor.color.r,
-                this._emissiveTextureAndColor.color.g,
-                this._emissiveTextureAndColor.color.b,
-                this._emissiveTextureAndColor.color.a);
-
-            const needAlphaTest = material.needAlphaTesting();
-
-            const diffuseTexture = material.getAlphaTestTexture();
-            const needAlphaBlendFromDiffuse = diffuseTexture && diffuseTexture.hasAlpha &&
-                ((material as any).useAlphaFromDiffuseTexture || (material as any)._useAlphaFromAlbedoTexture);
-
-            if (diffuseTexture && (needAlphaTest || needAlphaBlendFromDiffuse)) {
-                effect.setTexture("diffuseSampler", diffuseTexture);
-                const textureMatrix = diffuseTexture.getTextureMatrix();
-
-                if (textureMatrix) {
-                    effect.setMatrix("diffuseMatrix", textureMatrix);
-                }
+            if (!renderingMaterial) {
+                effect.setMatrix("viewProjection", scene.getTransformMatrix());
+                effect.setMatrix("world", effectiveMesh.getWorldMatrix());
+                effect.setFloat4("glowColor",
+                    this._emissiveTextureAndColor.color.r,
+                    this._emissiveTextureAndColor.color.g,
+                    this._emissiveTextureAndColor.color.b,
+                    this._emissiveTextureAndColor.color.a);
+            } else {
+                renderingMaterial.bindForSubMesh(effectiveMesh.getWorldMatrix(), effectiveMesh as Mesh, subMesh);
             }
 
-            const opacityTexture = (material as any).opacityTexture;
-            if (opacityTexture) {
-                effect.setTexture("opacitySampler", opacityTexture);
-                effect.setFloat("opacityIntensity", opacityTexture.level);
-                const textureMatrix = opacityTexture.getTextureMatrix();
-                if (textureMatrix) {
-                    effect.setMatrix("opacityMatrix", textureMatrix);
-                }
-            }
+            if (!renderingMaterial) {
+                const needAlphaTest = material.needAlphaTesting();
 
-            // Glow emissive only
-            if (this._emissiveTextureAndColor.texture) {
-                effect.setTexture("emissiveSampler", this._emissiveTextureAndColor.texture);
-                effect.setMatrix("emissiveMatrix", this._emissiveTextureAndColor.texture.getTextureMatrix());
-            }
+                const diffuseTexture = material.getAlphaTestTexture();
+                const needAlphaBlendFromDiffuse = diffuseTexture && diffuseTexture.hasAlpha &&
+                    ((material as any).useAlphaFromDiffuseTexture || (material as any)._useAlphaFromAlbedoTexture);
 
-            // Bones
-            if (renderingMesh.useBones && renderingMesh.computeBonesUsingShaders && renderingMesh.skeleton) {
-                const skeleton = renderingMesh.skeleton;
+                if (diffuseTexture && (needAlphaTest || needAlphaBlendFromDiffuse)) {
+                    effect.setTexture("diffuseSampler", diffuseTexture);
+                    const textureMatrix = diffuseTexture.getTextureMatrix();
 
-                if (skeleton.isUsingTextureForMatrices) {
-                    const boneTexture = skeleton.getTransformMatrixTexture(renderingMesh);
-                    if (!boneTexture) {
-                        return;
+                    if (textureMatrix) {
+                        effect.setMatrix("diffuseMatrix", textureMatrix);
                     }
-
-                    effect.setTexture("boneSampler", boneTexture);
-                    effect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
-                } else {
-                    effect.setMatrices("mBones", skeleton.getTransformMatrices((renderingMesh)));
                 }
-            }
 
-            // Morph targets
-            MaterialHelper.BindMorphTargetParameters(renderingMesh, effect);
-            if (renderingMesh.morphTargetManager && renderingMesh.morphTargetManager.isUsingTextureForTargets) {
-                renderingMesh.morphTargetManager._bind(effect);
-            }
+                const opacityTexture = (material as any).opacityTexture;
+                if (opacityTexture) {
+                    effect.setTexture("opacitySampler", opacityTexture);
+                    effect.setFloat("opacityIntensity", opacityTexture.level);
+                    const textureMatrix = opacityTexture.getTextureMatrix();
+                    if (textureMatrix) {
+                        effect.setMatrix("opacityMatrix", textureMatrix);
+                    }
+                }
 
-            // Alpha mode
-            if (enableAlphaMode) {
-                engine.setAlphaMode(material.alphaMode);
+                // Glow emissive only
+                if (this._emissiveTextureAndColor.texture) {
+                    effect.setTexture("emissiveSampler", this._emissiveTextureAndColor.texture);
+                    effect.setMatrix("emissiveMatrix", this._emissiveTextureAndColor.texture.getTextureMatrix());
+                }
+
+                // Bones
+                if (renderingMesh.useBones && renderingMesh.computeBonesUsingShaders && renderingMesh.skeleton) {
+                    const skeleton = renderingMesh.skeleton;
+
+                    if (skeleton.isUsingTextureForMatrices) {
+                        const boneTexture = skeleton.getTransformMatrixTexture(renderingMesh);
+                        if (!boneTexture) {
+                            return;
+                        }
+
+                        effect.setTexture("boneSampler", boneTexture);
+                        effect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
+                    } else {
+                        effect.setMatrices("mBones", skeleton.getTransformMatrices((renderingMesh)));
+                    }
+                }
+
+                // Morph targets
+                MaterialHelper.BindMorphTargetParameters(renderingMesh, effect);
+                if (renderingMesh.morphTargetManager && renderingMesh.morphTargetManager.isUsingTextureForTargets) {
+                    renderingMesh.morphTargetManager._bind(effect);
+                }
+
+                // Alpha mode
+                if (enableAlphaMode) {
+                    engine.setAlphaMode(material.alphaMode);
+                }
             }
 
             // Draw
@@ -841,14 +868,6 @@ export abstract class EffectLayer {
         }
 
         this.onAfterRenderMeshToEffect.notifyObservers(ownerMesh);
-    }
-
-    /**
-     * Defines whether the current material of the mesh should be use to render the effect.
-     * @param mesh defines the current mesh to render
-     */
-    protected _useMeshMaterial(mesh: AbstractMesh): boolean {
-        return false;
     }
 
     /**
