@@ -481,7 +481,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param deltaStep the step size (speed) to reach the target non overlapping position (default 0.1)
      * @param repelFactor how much is the control repelled by other controls
      */
-    public deoverlap(overlapGroup?: number | Control[], deltaStep = 1, repelFactor = 1) {
+    public moveToNonOverlappedPosition(overlapGroup?: number | Control[], deltaStep = 1, repelFactor = 1) {
         let controlsForGroup: Control[];
         if (Array.isArray(overlapGroup)) {
             controlsForGroup = overlapGroup;
@@ -499,7 +499,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             controlsForGroup.forEach((control2) => {
                 if (control1 !== control2 && AdvancedDynamicTexture._Overlaps(control1, control2)) {
                     // if the two controls overlaps get a direction vector from one control's center to another control's center
-                    let diff = center.subtract(new Vector2(control2.centerX, control2.centerY));
+                    const diff = center.subtract(new Vector2(control2.centerX, control2.centerY));
                     const diffLength = diff.length();
 
                     if (diffLength > 0) {
