@@ -9,7 +9,7 @@ import { OptionsLineComponent } from "../../../../sharedUiComponents/lines/optio
 import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
-import { Color3LineComponent } from "../../../../sharedUiComponents/lines/Color3LineComponent";
+import { Color3LineComponent } from "../../../../sharedUiComponents/lines/color3LineComponent";
 
 interface ITextBlockPropertyGridComponentProps {
     textBlock: TextBlock;
