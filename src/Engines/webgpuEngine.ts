@@ -527,6 +527,13 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
+     * Indicates if this engine supports render passes
+     */
+    public get supportRenderPasses() {
+        return true;
+    }
+
+    /**
      * Create a new instance of the gpu engine.
      * @param canvas Defines the canvas to use to display the result
      * @param options Defines the options passed to the engine to create the GPU context dependencies
@@ -536,7 +543,6 @@ export class WebGPUEngine extends Engine {
 
         (this.isNDCHalfZRange as any) = true;
         (this.hasOriginBottomLeft as any)  = false;
-        (this.supportRenderPasses as any) = true;
 
         options.deviceDescriptor = options.deviceDescriptor || {};
         options.swapChainFormat = options.swapChainFormat || WebGPUConstants.TextureFormat.BGRA8Unorm;

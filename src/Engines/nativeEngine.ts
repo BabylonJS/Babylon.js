@@ -740,6 +740,10 @@ export class NativeEngine extends Engine {
         this._engine.setHardwareScalingLevel(level);
     }
 
+    public get supportRenderPasses() {
+        return true;
+    }
+
     public constructor(options: NativeEngineOptions = {}) {
         super(null, false, undefined, options.adaptToDeviceRatio);
 
@@ -749,7 +753,6 @@ export class NativeEngine extends Engine {
 
         this._webGLVersion = 2;
         this.disableUniformBuffers = true;
-        (this.supportRenderPasses as any) = true;
 
         // TODO: Initialize this more correctly based on the hardware capabilities.
         // Init caps
