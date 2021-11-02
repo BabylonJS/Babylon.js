@@ -1110,7 +1110,7 @@ export class Control {
     constructor(
         /** defines the name of the control */
         public name?: string
-    ) {}
+    ) { }
 
     /** @hidden */
     protected _getTypeName(): string {
@@ -2027,7 +2027,7 @@ export class Control {
     }
 
     /** @hidden */
-    public _onCanvasBlur(): void {}
+    public _onCanvasBlur(): void { }
 
     /** @hidden */
     public _processObservables(type: number, x: number, y: number, pi: PointerInfoBase, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
@@ -2223,33 +2223,36 @@ export class Control {
     }
 
     private static _getFontOffsetHelper(font: string): { ascent: number, height: number, descent: number } {
-        var text = document.createElement("span");
-        text.innerHTML = "Hg";
-        text.setAttribute('style', `font: ${font} !important`);
+        if (IsDocumentAvailable()) {
+            var text = document.createElement("span");
+            text.innerHTML = "Hg";
+            text.setAttribute('style', `font: ${font} !important`);
 
-        var block = document.createElement("div");
-        block.style.display = "inline-block";
-        block.style.width = "1px";
-        block.style.height = "0px";
-        block.style.verticalAlign = "bottom";
+            var block = document.createElement("div");
+            block.style.display = "inline-block";
+            block.style.width = "1px";
+            block.style.height = "0px";
+            block.style.verticalAlign = "bottom";
 
-        var div = document.createElement("div");
-        div.style.whiteSpace = "nowrap";
-        div.appendChild(text);
-        div.appendChild(block);
+            var div = document.createElement("div");
+            div.style.whiteSpace = "nowrap";
+            div.appendChild(text);
+            div.appendChild(block);
 
-        document.body.appendChild(div);
+            document.body.appendChild(div);
 
-        var fontAscent = 0;
-        var fontHeight = 0;
-        try {
-            fontHeight = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
-            block.style.verticalAlign = "baseline";
-            fontAscent = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
-        } finally {
-            document.body.removeChild(div);
+            var fontAscent = 0;
+            var fontHeight = 0;
+            try {
+                fontHeight = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
+                block.style.verticalAlign = "baseline";
+                fontAscent = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
+            } finally {
+                document.body.removeChild(div);
+            }
+            return { ascent: fontAscent, height: fontHeight, descent: fontHeight - fontAscent };
         }
-        return { ascent: fontAscent, height: fontHeight, descent: fontHeight - fontAscent };
+        return { ascent: 0, height: 0, descent: 0 };
     }
 
     /**
@@ -2279,7 +2282,7 @@ export class Control {
      * @ignore
      * @hidden
      */
-    public static AddHeader: (control: Control, text: string, size: string | number, options: { isHorizontal: boolean; controlFirst: boolean }) => any = () => {};
+    public static AddHeader: (control: Control, text: string, size: string | number, options: { isHorizontal: boolean; controlFirst: boolean }) => any = () => { };
 
     /** @hidden */
     protected static drawEllipse(x: number, y: number, width: number, height: number, context: ICanvasRenderingContext): void {
