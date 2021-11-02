@@ -463,14 +463,16 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 }
 
                 // compute delta position: compensate the difference between shape center and mesh origin
-                impostor.object.computeWorldMatrix(true);
-                const boundingInfo = impostor.object.getBoundingInfo();
-                this._tmpVec3.copyFrom(impostor.object.getAbsolutePosition());
-                this._tmpVec3.subtractInPlace(boundingInfo.boundingBox.centerWorld);
-                this._tmpVec3.x /= impostor.object.scaling.x;
-                this._tmpVec3.y /= impostor.object.scaling.y;
-                this._tmpVec3.z /= impostor.object.scaling.z;
-                impostor.setDeltaPosition(this._tmpVec3);
+                if (mass !== 0) {
+                    impostor.object.computeWorldMatrix(true);
+                    const boundingInfo = impostor.object.getBoundingInfo();
+                    this._tmpVec3.copyFrom(impostor.object.getAbsolutePosition());
+                    this._tmpVec3.subtractInPlace(boundingInfo.boundingBox.centerWorld);
+                    this._tmpVec3.x /= impostor.object.scaling.x;
+                    this._tmpVec3.y /= impostor.object.scaling.y;
+                    this._tmpVec3.z /= impostor.object.scaling.z;
+                    impostor.setDeltaPosition(this._tmpVec3);
+                }
 
                 let group = impostor.getParam("group");
                 let mask = impostor.getParam("mask");
