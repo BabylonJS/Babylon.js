@@ -2090,9 +2090,7 @@ export class Control {
         this._fontOffset = Control._GetFontOffset(this._font);
 
         //children need to be refreshed
-        this.getDescendants().forEach((child) => {
-            child._markAllAsDirty();
-        });
+        this.getDescendants().forEach((child) => child._markAllAsDirty());
     }
 
     /**
@@ -2225,37 +2223,33 @@ export class Control {
     }
 
     private static _getFontOffsetHelper(font: string): { ascent: number, height: number, descent: number } {
-        if (IsDocumentAvailable()) {
-            var text = document.createElement("span");
-            text.innerHTML = "Hg";
-            text.setAttribute('style', `font: ${font} !important`);
+        var text = document.createElement("span");
+        text.innerHTML = "Hg";
+        text.setAttribute('style', `font: ${font} !important`);
 
-            var block = document.createElement("div");
-            block.style.display = "inline-block";
-            block.style.width = "1px";
-            block.style.height = "0px";
-            block.style.verticalAlign = "bottom";
+        var block = document.createElement("div");
+        block.style.display = "inline-block";
+        block.style.width = "1px";
+        block.style.height = "0px";
+        block.style.verticalAlign = "bottom";
 
-            var div = document.createElement("div");
-            div.style.whiteSpace = "nowrap";
-            div.appendChild(text);
-            div.appendChild(block);
+        var div = document.createElement("div");
+        div.style.whiteSpace = "nowrap";
+        div.appendChild(text);
+        div.appendChild(block);
 
-            document.body.appendChild(div);
+        document.body.appendChild(div);
 
-            var fontAscent = 0;
-            var fontHeight = 0;
-            try {
-                fontHeight = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
-                block.style.verticalAlign = "baseline";
-                fontAscent = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
-            } finally {
-                document.body.removeChild(div);
-            }
-            var result = { ascent: fontAscent, height: fontHeight, descent: fontHeight - fontAscent };
-            return result;
+        var fontAscent = 0;
+        var fontHeight = 0;
+        try {
+            fontHeight = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
+            block.style.verticalAlign = "baseline";
+            fontAscent = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
+        } finally {
+            document.body.removeChild(div);
         }
-        return { ascent: 0, height: 0, descent: 0 };
+        return { ascent: fontAscent, height: fontHeight, descent: fontHeight - fontAscent };
     }
 
     /**
