@@ -175,6 +175,7 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public MULTIVIEW = false;
     public ORDER_INDEPENDENT_TRANSPARENCY = false;
+    public ORDER_INDEPENDENT_TRANSPARENCY_16BITS = false;
 
     /**
      * If the reflection texture on this material is in linear color space
@@ -746,6 +747,8 @@ export class StandardMaterial extends PushMaterial {
     constructor(name: string, scene: Scene) {
         super(name, scene);
 
+        this.buildUniformLayout();
+
         // Setup the default processing configuration to the scene.
         this._attachImageProcessingConfiguration(null);
         this.prePassConfiguration = new PrePassConfiguration();
@@ -1307,7 +1310,6 @@ export class StandardMaterial extends PushMaterial {
                 } else {
                     scene.resetCachedMaterial();
                     subMesh.setEffect(effect, defines, this._materialContext);
-                    this.buildUniformLayout();
                 }
             }
         }

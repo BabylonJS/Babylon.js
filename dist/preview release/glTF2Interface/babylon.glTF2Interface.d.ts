@@ -1048,6 +1048,16 @@ declare module BABYLON.GLTF2 {
     }
 
     /**
+     * Interfaces from the KHR_materials_emissive_strength extension
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+
+    /** @hidden */
+    interface IKHRMaterialsEmissiveStrength extends IMaterialExtension {
+        emissiveStrength: number;
+    }
+
+    /**
      * Interfaces from the KHR_materials_pbrSpecularGlossiness extension
      */
 
