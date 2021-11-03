@@ -26,7 +26,8 @@
         },
         {
             "title": "sphere with custom shader to display wireframe using glow layer",
-            "playgroundId": "#Y05E2C#3"
+            "renderCount": 2,
+            "playgroundId": "#Y05E2C#6"
         },
         {
             "title": "blur cube with the effect renderer",
@@ -103,6 +104,7 @@
         },
         {
             "title": "dissolve effect with node material and glow layer",
+            "renderCount": 2,
             "playgroundId": "#F6PGMC"
         },
         {
