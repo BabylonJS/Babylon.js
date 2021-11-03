@@ -1367,6 +1367,12 @@
             "playgroundId": "#4N0QRP#1",
             "referenceImage": "allProcTextures.png",
             "excludeFromAutomaticTesting": true
+        },
+        {
+            "title": "Custom material with depth renderer",
+            "renderCount": 5,
+            "playgroundId": "#6GFJNR#152",
+            "referenceImage": "customMatDepthRenderer.png"
         }
     ]
 }
