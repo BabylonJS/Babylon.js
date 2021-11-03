@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!************************************************************************************!*\
-  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \************************************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -4136,11 +4136,12 @@ var TransmissionHelper = /** @class */ (function () {
             else {
                 opaqueRenderTarget.clearColor.copyFrom(_this._options.clearColor);
             }
-            _this._scene.imageProcessingConfiguration.applyByPostProcess = true;
+            // we do not use the applyByPostProcess setter to avoid flagging all the materials as "image processing dirty"!
+            _this._scene.imageProcessingConfiguration._applyByPostProcess = true;
         });
         this._opaqueRenderTarget.onAfterUnbindObservable.add(function () {
             _this._scene.environmentIntensity = saveSceneEnvIntensity;
-            _this._scene.imageProcessingConfiguration.applyByPostProcess = sceneImageProcessingapplyByPostProcess;
+            _this._scene.imageProcessingConfiguration._applyByPostProcess = sceneImageProcessingapplyByPostProcess;
         });
         this._transparentMeshesCache.forEach(function (mesh) {
             if (_this.shouldRenderAsTransmission(mesh.material)) {
