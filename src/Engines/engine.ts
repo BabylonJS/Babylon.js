@@ -544,13 +544,13 @@ export class Engine extends ThinEngine {
     constructor(canvasOrContext: Nullable<HTMLCanvasElement | OffscreenCanvas | WebGLRenderingContext | WebGL2RenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio: boolean = false) {
         super(canvasOrContext, antialias, options, adaptToDeviceRatio);
 
-        this._features.supportRenderPasses = true;
-
         Engine.Instances.push(this);
 
         if (!canvasOrContext) {
             return;
         }
+
+        this._features.supportRenderPasses = true;
 
         options = this._creationOptions;
 
