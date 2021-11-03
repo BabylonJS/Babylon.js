@@ -3,7 +3,8 @@
 This page will run through all of the tests required for [3D Commerce Viewer Certification Program](https://www.khronos.org/3dcommerce/certification) and create a download for a zip with the results for submission.
 
 ## Setup
-1. Download the [certification models](https://github.com/KhronosGroup/3DC-Certification/tree/main/models) and place them in a subfolder under this folder called `models`.
+1. Download the [certification models](https://github.com/KhronosGroup/3DC-Certification/tree/main/models) and place them in a subfolder under this folder called `models`.  
+   *A symbolic link to the directory works as well.*
 1. Launch the certification from vscode using the `Launch 3D Commerce Viewer Certification (Chrome)`.
 1. Wait a few minutes for the page to render all the models and capture screenshots.  
 _NOTE: The browser freezes a lot while loading these models. Please be patient._

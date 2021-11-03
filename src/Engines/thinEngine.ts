@@ -1282,6 +1282,7 @@ export class ThinEngine {
             useUBOBindingCache: true,
             needShaderCodeInlining: false,
             needToAlwaysBindUniformBuffers: false,
+            supportRenderPasses: false,
             _collectUbosUpdatedInFrame: false,
         };
     }

@@ -48,7 +48,7 @@ export class GUINodeTools {
             case "Rectangle":
                 element = new Rectangle("Rectangle");
                 element.color = "#cccccc";
-                element.background = "Transparent"
+                element.background = "transparent"
                 element.isPointerBlocker = true;
                 element.thickness = 1;
                 return element;
@@ -88,7 +88,7 @@ export class GUINodeTools {
                 element.width = "512px";
                 element.height = "512px";
                 element.autoScale = true;
-                element.color = "Transparent";
+                element.color = "transparent";
                 element.isPointerBlocker = true;
                 return element;
             case "InputText":

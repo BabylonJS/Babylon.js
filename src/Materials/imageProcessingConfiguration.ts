@@ -338,8 +338,9 @@ export class ImageProcessingConfiguration {
         this._updateParameters();
     }
 
+    /** @hidden */
     @serialize()
-    private _applyByPostProcess = false;
+    public _applyByPostProcess = false;
     /**
      * Gets whether the image processing is applied through a post process or not.
      */
