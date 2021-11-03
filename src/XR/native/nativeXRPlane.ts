@@ -1,5 +1,3 @@
-declare const _native: any;
-
 /** @hidden */
 export class NativeXRPlane implements XRPlane {
     private _nativeImpl: XRPlane;
@@ -41,5 +39,3 @@ export class NativeXRPlane implements XRPlane {
         return this._nativeImpl.parentSceneObject;
     }
 }
-
-_native.NativeXRPlane = NativeXRPlane;

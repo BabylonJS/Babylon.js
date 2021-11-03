@@ -30,6 +30,7 @@ import { IStencilState } from "../States/IStencilState";
 import { RenderTargetWrapper } from "./renderTargetWrapper";
 import { NativeData, NativeDataStream } from "./Native/nativeDataStream";
 import { INative, INativeCamera, INativeEngine } from "./Native/nativeInterfaces";
+import { NativeXRPlugin } from "../XR/native/nativeXRPlugin";
 
 declare const _native: INative;
 
@@ -812,6 +813,8 @@ export class NativeEngine extends Engine {
             needShaderCodeInlining: true,
             _collectUbosUpdatedInFrame: false,
         };
+
+        NativeXRPlugin.SupplyConstructors();
 
         Tools.Log("Babylon Native (v" + Engine.Version + ") launched");
 

@@ -1,7 +1,5 @@
 import { NativeXRPlane } from "./nativeXRPlane";
 
-declare const _native: any;
-
 /** @hidden */
 export class NativeXRFrame implements XRFrame {
     private _nativeImpl: XRFrame;
@@ -171,5 +169,3 @@ export class NativeXRFrame implements XRFrame {
         return this._nativeImpl.getLightEstimate(xrLightProbe);
     }
 }
-
-_native.NativeXRFrame = NativeXRFrame;
