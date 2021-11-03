@@ -740,10 +740,6 @@ export class NativeEngine extends Engine {
         this._engine.setHardwareScalingLevel(level);
     }
 
-    public get supportRenderPasses() {
-        return true;
-    }
-
     public constructor(options: NativeEngineOptions = {}) {
         super(null, false, undefined, options.adaptToDeviceRatio);
 
@@ -822,6 +818,7 @@ export class NativeEngine extends Engine {
             useUBOBindingCache: true,
             needShaderCodeInlining: true,
             needToAlwaysBindUniformBuffers: false,
+            supportRenderPasses: true,
             _collectUbosUpdatedInFrame: false,
         };
 

@@ -527,13 +527,6 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * Indicates if this engine supports render passes
-     */
-    public get supportRenderPasses() {
-        return true;
-    }
-
-    /**
      * Create a new instance of the gpu engine.
      * @param canvas Defines the canvas to use to display the result
      * @param options Defines the options passed to the engine to create the GPU context dependencies
@@ -847,6 +840,7 @@ export class WebGPUEngine extends Engine {
             useUBOBindingCache: false,
             needShaderCodeInlining: true,
             needToAlwaysBindUniformBuffers: true,
+            supportRenderPasses: true,
             _collectUbosUpdatedInFrame: false,
         };
     }
