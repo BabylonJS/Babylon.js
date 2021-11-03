@@ -1274,12 +1274,27 @@ export class SolidParticleSystem implements IDisposable {
         // if the VBO must be updated
         if (update) {
             if (this._computeParticleColor) {
-                mesh.updateVerticesData(VertexBuffer.ColorKind, colors32, false, false);
+                const vb = mesh.getVertexBuffer(VertexBuffer.ColorKind);
+                if (vb) {
+                    vb.updateDirectly(colors32, 0);
+                } else {
+                    mesh.updateVerticesData(VertexBuffer.ColorKind, colors32, false, false);
+                }
             }
             if (this._computeParticleTexture) {
-                mesh.updateVerticesData(VertexBuffer.UVKind, uvs32, false, false);
+                const vb = mesh.getVertexBuffer(VertexBuffer.UVKind);
+                if (vb) {
+                    vb.updateDirectly(uvs32, 0);
+                } else {
+                    mesh.updateVerticesData(VertexBuffer.UVKind, uvs32, false, false);
+                }
             }
-            mesh.updateVerticesData(VertexBuffer.PositionKind, positions32, false, false);
+            const vbp = mesh.getVertexBuffer(VertexBuffer.PositionKind);
+            if (vbp) {
+                vbp.updateDirectly(positions32, 0);
+            } else {
+                mesh.updateVerticesData(VertexBuffer.PositionKind, positions32, false, false);
+            }
             if (!mesh.areNormalsFrozen || mesh.isFacetDataEnabled) {
                 if (this._computeParticleVertex || mesh.isFacetDataEnabled) {
                     // recompute the normals only if the particles can be morphed, update then also the normal reference array _fixedNormal32[]
@@ -1290,7 +1305,12 @@ export class SolidParticleSystem implements IDisposable {
                     }
                 }
                 if (!mesh.areNormalsFrozen) {
-                    mesh.updateVerticesData(VertexBuffer.NormalKind, normals32, false, false);
+                    const vb = mesh.getVertexBuffer(VertexBuffer.NormalKind);
+                    if (vb) {
+                        vb.updateDirectly(normals32, 0);
+                    } else {
+                        mesh.updateVerticesData(VertexBuffer.NormalKind, normals32, false, false);
+                    }
                 }
             }
             if (this._depthSort && this._depthSortParticles) {

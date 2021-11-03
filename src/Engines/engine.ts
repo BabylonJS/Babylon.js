@@ -550,6 +550,8 @@ export class Engine extends ThinEngine {
             return;
         }
 
+        this._features.supportRenderPasses = true;
+
         options = this._creationOptions;
 
         if ((<any>canvasOrContext).getContext) {

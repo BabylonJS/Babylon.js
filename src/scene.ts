@@ -4177,6 +4177,19 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
+     * Resets the draw wrappers cache of all meshes
+     */
+    public resetDrawCache(): void {
+        if (!this.meshes) {
+             return;
+        }
+
+        for (const mesh of this.meshes) {
+            mesh.resetDrawCache();
+        }
+    }
+
+    /**
      * Render the scene
      * @param updateCameras defines a boolean indicating if cameras must update according to their inputs (true by default)
      * @param ignoreAnimations defines a boolean indicating if animations should not be executed (false by default)
