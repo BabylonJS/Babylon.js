@@ -12,6 +12,8 @@ import { CommandButtonComponent } from "../../../commandButtonComponent";
 const conerRadiusIcon: string = require("../../../../sharedUiComponents/imgs/conerRadiusIcon.svg");
 const clipContentsIcon: string = require("../../../../sharedUiComponents/imgs/clipContentsIcon.svg");
 const strokeWeightIcon: string = require("../../../../sharedUiComponents/imgs/strokeWeightIcon.svg");
+const addImageButtonIcon: string = require("../../../../sharedUiComponents/imgs/addImageButtonIcon.svg");
+const addTextButtonIcon: string = require("../../../../sharedUiComponents/imgs/addTextButtonIcon.svg");
 
 interface IButtonPropertyGridComponentProps {
     rectangle: Rectangle,
@@ -41,13 +43,13 @@ export class ButtonPropertyGridComponent extends React.Component<IButtonProperty
                 <hr />
                 <TextLineComponent label="BUTTON" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">
-                    <CommandButtonComponent tooltip="Add TextBlock" icon={conerRadiusIcon} shortcut="" isActive={false}
+                    <CommandButtonComponent tooltip="Add TextBlock" icon={addTextButtonIcon} shortcut="" isActive={false}
                         onClick={() => {
                             this.props.onAddComponent("Text");
                         }} />
-                    <CommandButtonComponent tooltip="Add Image" icon={conerRadiusIcon} shortcut="" isActive={false}
+                    <CommandButtonComponent tooltip="Add Image" icon={addImageButtonIcon} shortcut="" isActive={false}
                         onClick={() => {
-                            this.props.onAddComponent("Image");
+                            this.props.onAddComponent("ButtonImage");
                         }} />
                 </div>
             </div>
