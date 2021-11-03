@@ -882,7 +882,7 @@ export abstract class EffectLayer {
      * Defines whether the current material of the mesh should be use to render the effect.
      * @param mesh defines the current mesh to render
      */
-     protected _useMeshMaterial(mesh: AbstractMesh): boolean {
+    protected _useMeshMaterial(mesh: AbstractMesh): boolean {
         return false;
     }
 
