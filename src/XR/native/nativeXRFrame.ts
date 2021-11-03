@@ -1,3 +1,5 @@
+import { NativeXRPlane } from ".";
+
 declare const _native: any;
 
 /** @hidden */
@@ -60,7 +62,7 @@ export class NativeXRFrame implements XRFrame {
     
     // Scene understanding
     
-    private _trackedPlanes = new Map<number, XRPlane>();
+    private _trackedPlanes = new Map<number, NativeXRPlane>();
     private _newPlaneIds = new Array<number>();
     private _newPlanes = new Array<XRPlane>();
     private _detectedPlanes = new Set<XRPlane>();
@@ -69,8 +71,9 @@ export class NativeXRFrame implements XRFrame {
         if (updatedPlaneIds) {
             this._newPlaneIds.length = 0;
             updatedPlaneIds.forEach((planeId) => {
-                if (this._trackedPlanes.has(planeId)) {
-                    this._trackedPlanes.get(planeId)!.lastChangedTime = timestamp;
+                const trackedPlane = this._trackedPlanes.get(planeId);
+                if (!!trackedPlane) {
+                    trackedPlane.update(timestamp);
                 } else {
                     this._newPlaneIds.push(planeId);
                 }
@@ -80,8 +83,8 @@ export class NativeXRFrame implements XRFrame {
                 this._newPlanes.length = this._newPlaneIds.length;
                 this._nativeImpl.createPlanes!(this._newPlaneIds, this._newPlaneIds.length, this._newPlanes);
                 this._newPlaneIds.forEach((newPlaneId, planeIdIdx) => {
-                    const newPlane = this._newPlanes[planeIdIdx];
-                    newPlane.lastChangedTime = timestamp;
+                    const newPlane = this._newPlanes[planeIdIdx] as NativeXRPlane;
+                    newPlane.update(timestamp);
                     this._trackedPlanes.set(newPlaneId, newPlane);
                 });
             }
@@ -93,7 +96,7 @@ export class NativeXRFrame implements XRFrame {
             });
         }
 
-        this._detectedPlanes = new Set<XRPlane>(Array.from(this._trackedPlanes.values()));    
+        this._detectedPlanes = new Set<XRPlane>(Array.from(this._trackedPlanes.values()));
     }
 
     public get detectedPlanes(): XRPlaneSet | undefined {

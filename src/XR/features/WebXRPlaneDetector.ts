@@ -154,17 +154,15 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
 
         const detectedPlanes = frame.detectedPlanes;
         if (detectedPlanes) {
-            const toRemove = this._detectedPlanes
-                .filter((plane) => !detectedPlanes.has(plane.xrPlane))
-                .map((plane) => {
-                    return this._detectedPlanes.indexOf(plane);
-                });
-            let idxTracker = 0;
-            toRemove.forEach((index) => {
-                const plane = this._detectedPlanes.splice(index - idxTracker, 1)[0];
-                this.onPlaneRemovedObservable.notifyObservers(plane);
-                idxTracker++;
-            });
+            for (let planeIdx = 0; planeIdx < this._detectedPlanes.length; planeIdx++) {
+                const plane = this._detectedPlanes[planeIdx];
+                if (!detectedPlanes.has(plane.xrPlane)) {
+                    this._detectedPlanes.splice(planeIdx, 1);
+                    this.onPlaneRemovedObservable.notifyObservers(plane);
+                    planeIdx--;
+                }
+            }
+
             // now check for new ones
             detectedPlanes.forEach((xrPlane) => {
                 if (!this._lastFrameDetected.has(xrPlane)) {

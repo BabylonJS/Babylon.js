@@ -24,6 +24,7 @@ interface XRFrustum {
 
 interface XRPlane {
     parentSceneObject?: XRSceneObject;
+    polygonData: Float32Array;
 }
 
 interface XRMesh {
