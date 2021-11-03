@@ -254,11 +254,12 @@ class TransmissionHelper {
             } else {
                 opaqueRenderTarget.clearColor.copyFrom(this._options.clearColor);
             }
-            this._scene.imageProcessingConfiguration.applyByPostProcess = true;
+            // we do not use the applyByPostProcess setter to avoid flagging all the materials as "image processing dirty"!
+            this._scene.imageProcessingConfiguration._applyByPostProcess = true;
         });
         this._opaqueRenderTarget.onAfterUnbindObservable.add(() => {
             this._scene.environmentIntensity = saveSceneEnvIntensity;
-            this._scene.imageProcessingConfiguration.applyByPostProcess = sceneImageProcessingapplyByPostProcess;
+            this._scene.imageProcessingConfiguration._applyByPostProcess = sceneImageProcessingapplyByPostProcess;
         });
 
         this._transparentMeshesCache.forEach((mesh: AbstractMesh) => {
