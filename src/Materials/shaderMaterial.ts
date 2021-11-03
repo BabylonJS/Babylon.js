@@ -790,9 +790,9 @@ export class ShaderMaterial extends PushMaterial {
         }
 
         const drawWrapper = storeEffectOnSubMeshes ? subMesh._getDrawWrapper() : this._drawWrapper;
-        var previousEffect = drawWrapper?.effect ?? null;
-        var previousDefines = drawWrapper?.defines ?? null;
-        var join = defines.join("\n");
+        const previousEffect = drawWrapper?.effect ?? null;
+        const previousDefines = drawWrapper?.defines ?? null;
+        const join = defines.join("\n");
 
         let effect = previousEffect;
         if (previousDefines !== join) {
@@ -1448,9 +1448,9 @@ export class ShaderMaterial extends PushMaterial {
      * @returns a new material
      */
     public static Parse(source: any, scene: Scene, rootUrl: string): ShaderMaterial {
-        var material = SerializationHelper.Parse(() => new ShaderMaterial(source.name, scene, source.shaderPath, source.options, source.storeEffectOnSubMeshes), source, scene, rootUrl);
+        const material = SerializationHelper.Parse(() => new ShaderMaterial(source.name, scene, source.shaderPath, source.options, source.storeEffectOnSubMeshes), source, scene, rootUrl);
 
-        var name: string;
+        let name: string;
 
         // Stencil
         if (source.stencil) {
