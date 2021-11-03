@@ -65,7 +65,6 @@ export class InputManager {
     /** This is a defensive check to not allow control attachment prior to an already active one. If already attached, previous control is unattached before attaching the new one. */
     private _alreadyAttached = false;
     private _alreadyAttachedTo: HTMLElement;
-    private _usingNative = false;
 
     // Observer
     private _onInputObserver: Nullable<Observer<IDeviceEvent>>;
@@ -485,21 +484,15 @@ export class InputManager {
         let scene = this._scene;
         let engine = scene.getEngine();
 
-        if (!engine.getHostDocument()) this._usingNative = true;
-
         if (!elementToAttachTo) {
             elementToAttachTo = engine.getInputElement();
-        }
-
-        if (!elementToAttachTo && !this._usingNative) {
-            return;
         }
 
         if (this._alreadyAttached) {
             this.detachControl();
         }
 
-        if (elementToAttachTo) this._alreadyAttachedTo = elementToAttachTo;
+        if (elementToAttachTo) { this._alreadyAttachedTo = elementToAttachTo; }
 
         if (!this._deviceInputSystem) {
             this._deviceInputSystem = DeviceInputSystem.Create(engine);
@@ -903,7 +896,7 @@ export class InputManager {
      * Detaches all event handlers
      */
     public detachControl() {
-        if ((this._alreadyAttachedTo || this._usingNative) && this._alreadyAttached) {
+        if (this._alreadyAttached) {
 
             this._deviceInputSystem.onInputChangedObservable.remove(this._onInputObserver);
 
