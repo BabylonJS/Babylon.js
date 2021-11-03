@@ -1700,7 +1700,8 @@ export class WebGPUEngine extends Engine {
             }
         } else if (!effect.effect || effect.effect === this._currentEffect && effect.materialContext === this._currentMaterialContext && effect.drawContext === this._currentDrawContext && !this._forceEnableEffect) {
             if (!effect.effect && this.dbgShowEmptyEnableEffectCalls) {
-                console.warn("Invalid call to enableEffect: the effect property is empty! drawWrapper=", effect);
+                console.error("drawWrapper=", effect);
+                throw "Invalid call to enableEffect: the effect property is empty!";
             }
             return;
         } else {
