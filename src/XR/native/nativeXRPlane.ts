@@ -5,7 +5,7 @@ export class NativeXRPlane implements XRPlane {
     private _nativeImpl: XRPlane;
     public polygon: DOMPointReadOnly[] = [];
     public lastChangedTime: number;
-    
+
     public get polygonData() {
         return this._nativeImpl.polygonData;
     }
@@ -21,7 +21,7 @@ export class NativeXRPlane implements XRPlane {
     public update(timestamp: number) {
         const polygonData = this._nativeImpl.polygonData;
         const numPoints = polygonData.length / 3;
-        while(this.polygon.length < numPoints) {
+        while (this.polygon.length < numPoints) {
             this.polygon.push(<DOMPointReadOnly>{ x: 0, y: 0, z: 0, w: 1 });
         }
         this.polygon.length = numPoints;

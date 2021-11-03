@@ -1,4 +1,4 @@
-import { NativeXRPlane } from ".";
+import { NativeXRPlane } from "./nativeXRPlane";
 
 declare const _native: any;
 
@@ -39,29 +39,29 @@ export class NativeXRFrame implements XRFrame {
     public getViewerPose(referenceSpace: XRReferenceSpace): XRViewerPose | undefined {
         return this._nativeImpl.getViewerPose(referenceSpace);
     }
-    
+
     // AR
-    
+
     public getHitTestResults(hitTestSource: XRHitTestSource): XRHitTestResult[] {
         return this._nativeImpl.getHitTestResults(hitTestSource);
     }
-    
+
     public getHitTestResultsForTransientInput(hitTestSource: XRTransientInputHitTestSource): XRTransientInputHitTestResult[] {
         return this._nativeImpl.getHitTestResultsForTransientInput(hitTestSource);
     }
-    
+
     // Anchors
-    
+
     public get trackedAnchors(): XRAnchorSet | undefined {
         return this._nativeImpl.trackedAnchors;
     }
-    
+
     public createAnchor(pose: XRRigidTransform, space: XRSpace): Promise<XRAnchor> {
         return this._nativeImpl.createAnchor!(pose, space);
     }
-    
+
     // Scene understanding
-    
+
     private _trackedPlanes = new Map<number, NativeXRPlane>();
     private _newPlaneIds = new Array<number>();
     private _newPlanes = new Array<XRPlane>();
@@ -102,7 +102,7 @@ export class NativeXRFrame implements XRFrame {
     public get detectedPlanes(): XRPlaneSet | undefined {
         return this._detectedPlanes;
     }
-    
+
     private _trackedMeshes = new Map<number, XRMesh>();
     private _newMeshIds = new Array<number>();
     private _newMeshes = new Array<XRMesh>();
@@ -136,23 +136,23 @@ export class NativeXRFrame implements XRFrame {
             });
         }
 
-        this._detectedMeshes = new Set<XRMesh>(Array.from(this._trackedMeshes.values()));    
+        this._detectedMeshes = new Set<XRMesh>(Array.from(this._trackedMeshes.values()));
     }
-    
+
     public get detectedMeshes(): XRMeshSet | undefined {
         return this._detectedMeshes;
     }
-    
+
     public get featurePointCloud(): number[] | undefined {
         return this._nativeImpl.featurePointCloud;
     }
-    
+
     // Hand tracking
-    
+
     public getJointPose(joint: XRJointSpace, baseSpace: XRSpace): XRJointPose {
         return this._nativeImpl.getJointPose!(joint, baseSpace);
     }
-    
+
     public fillPoses(spaces: XRSpace[], baseSpace: XRSpace, transforms: Float32Array): boolean {
         return this._nativeImpl.fillJointPoseData!(spaces, baseSpace, spaces.length, transforms.buffer, transforms.byteOffset);
     }
@@ -162,7 +162,7 @@ export class NativeXRFrame implements XRFrame {
     }
 
     // Image tracking
-    
+
     public getImageTrackingResults?(): Array<XRImageTrackingResult> {
         return this._nativeImpl.getImageTrackingResults!();
     }
