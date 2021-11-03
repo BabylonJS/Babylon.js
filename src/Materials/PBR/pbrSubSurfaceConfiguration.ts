@@ -459,7 +459,7 @@ export class PBRSubSurfaceConfiguration {
     }
 
     /**
-     * Binds the material data.
+     * Binds the material data (this function is called even if mustRebind() returns false)
      * @param uniformBuffer defines the Uniform buffer to fill in.
      * @param scene defines the scene the material belongs to.
      * @param engine defines the engine the material belongs to.
