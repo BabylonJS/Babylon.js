@@ -1378,7 +1378,7 @@
         },
         {
             "title": "Baked Vertex Animation",
-            "playgroundId": "#14WJWW#9",
+            "playgroundId": "#14WJWW#11",
             "referenceImage": "bakedVertexAnimation.png",
             "excludeFromAutomaticTesting": true
         }
