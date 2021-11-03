@@ -91,6 +91,13 @@ export class GUINodeTools {
                 element.color = "transparent";
                 element.isPointerBlocker = true;
                 return element;
+            case "ButtonImage":
+                element = new Image("Image", "https://playground.babylonjs.com/textures/grass.png");
+                element.width = "100%";
+                element.height = "100%";
+                element.color = "transparent";
+                element.isPointerBlocker = true;
+                return element;
             case "InputText":
                 element = new InputText("InputText");
                 element.maxWidth = 0.6;

@@ -318,7 +318,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     let guiElement = GUINodeTools.CreateControlFromString(value);
                     let newGuiNode = this.props.globalState.workbench.createNewGuiNode(guiElement);
                     button.addControl(newGuiNode);
-                    this.props.globalState.onSelectionChangedObservable.notifyObservers(button);
+                    this.props.globalState.onSelectionChangedObservable.notifyObservers(newGuiNode);
                 }} />;
             }
         }
