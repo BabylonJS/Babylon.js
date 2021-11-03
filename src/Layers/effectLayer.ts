@@ -439,8 +439,13 @@ export abstract class EffectLayer {
         }
 
         let material = subMesh.getMaterial();
+
         if (!material) {
             return false;
+        }
+
+        if (this._useMeshMaterial(subMesh.getRenderingMesh())) {
+            return material.isReadyForSubMesh(subMesh.getMesh(), subMesh, useInstances);
         }
 
         var defines: string[] = [];
@@ -766,7 +771,10 @@ export abstract class EffectLayer {
 
         this.onBeforeRenderMeshToEffect.notifyObservers(ownerMesh);
 
-        if (this._isReady(subMesh, hardwareInstancedRendering, this._emissiveTextureAndColor.texture)) {
+        if (this._useMeshMaterial(renderingMesh)) {
+            renderingMesh.render(subMesh, hardwareInstancedRendering, replacementMesh || undefined);
+        }
+        else if (this._isReady(subMesh, hardwareInstancedRendering, this._emissiveTextureAndColor.texture)) {
             const renderingMaterial = effectiveMesh._internalAbstractMeshDataInfo._materialForRenderPass?.[engine.currentRenderPassId];
 
             let drawWrapper = subMesh._getDrawWrapper();
@@ -868,6 +876,14 @@ export abstract class EffectLayer {
         }
 
         this.onAfterRenderMeshToEffect.notifyObservers(ownerMesh);
+    }
+
+    /**
+     * Defines whether the current material of the mesh should be use to render the effect.
+     * @param mesh defines the current mesh to render
+     */
+     protected _useMeshMaterial(mesh: AbstractMesh): boolean {
+        return false;
     }
 
     /**
