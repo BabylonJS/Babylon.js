@@ -1943,7 +1943,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         mesh.getMeshUniformBuffer().bindToEffect(effect, "Mesh");
         mesh.transferToEffect(world);
 
-        var engine = scene.getEngine();
+        const engine = scene.getEngine();
 
         // Binding unconditionally
         this.subSurface.hardBindForSubMesh(this._uniformBuffer, scene, engine, this.isFrozen, defines.LODBASEDMICROSFURACE, this.realTimeFiltering, subMesh);
