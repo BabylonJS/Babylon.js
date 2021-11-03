@@ -521,7 +521,7 @@ export class GlowLayer extends EffectLayer {
      * Defines whether the current material of the mesh should be use to render the effect.
      * @param mesh defines the current mesh to render
      */
-     protected _useMeshMaterial(mesh: AbstractMesh): boolean {
+    protected _useMeshMaterial(mesh: AbstractMesh): boolean {
         if (this._meshesUsingTheirOwnMaterials.length == 0) {
             return false;
         }
@@ -544,7 +544,7 @@ export class GlowLayer extends EffectLayer {
      * Remove a mesh from being rendered through its own material and not with emissive only.
      * @param mesh The mesh for which we need to not use its material
      */
-     public unReferenceMeshFromUsingItsOwnMaterial(mesh: AbstractMesh): void {
+    public unReferenceMeshFromUsingItsOwnMaterial(mesh: AbstractMesh): void {
         let index = this._meshesUsingTheirOwnMaterials.indexOf(mesh.uniqueId);
         while (index >= 0) {
             this._meshesUsingTheirOwnMaterials.splice(index, 1);
