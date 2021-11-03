@@ -1709,6 +1709,8 @@ declare module BABYLON {
         static ConvertAmmoQuaternion(btVector: any): BABYLON.Quaternion;
         /** TODO */
         static ConvertAmmoQuaternionToRef(btQuaternion: any, result: BABYLON.Quaternion): void;
+        /** TODO */
+        static RemapValueToRange(value: number, a1: number, a2: number, b1: number, b2: number): number;
         static CloneSkeletonPrefab(scene: BABYLON.Scene, skeleton: BABYLON.Skeleton, name: string, id?: string, root?: BABYLON.TransformNode): BABYLON.Skeleton;
         /** Get all loaded scene transform nodes. */
         static GetSceneTransforms(scene: BABYLON.Scene): BABYLON.TransformNode[];
