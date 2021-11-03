@@ -5,8 +5,8 @@ import { CommonControlPropertyGridComponent } from "../gui/commonControlProperty
 import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { ScrollViewer } from "babylonjs-gui/2D/controls/scrollViewers/scrollViewer";
 import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
-import { TextInputLineComponent } from "../../../../sharedUiComponents/lines/textInputLineComponent";
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
+import { Color3LineComponent } from "../../../../sharedUiComponents/lines/color3LineComponent";
 
 const fillColorIcon: string = require("../../../../sharedUiComponents/imgs/fillColorIcon.svg");
 const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");
@@ -42,8 +42,8 @@ export class ScrollViewerPropertyGridComponent extends React.Component<IScrollVi
                 <FloatLineComponent iconLabel={"Wheel precision"} icon={sizeIcon} lockObject={this.props.lockObject} label="" target={scrollViewer} propertyName="wheelPrecision" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <FloatLineComponent iconLabel={"Bar size"} icon={sizeIcon}  lockObject={this.props.lockObject} label="" target={scrollViewer} propertyName="barSize" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </div>
-                <TextInputLineComponent iconLabel={"Bar color"} icon={fillColorIcon}  lockObject={this.props.lockObject} label="" target={scrollViewer} propertyName="barColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <TextInputLineComponent iconLabel={"Bar background"} icon={fillColorIcon}  lockObject={this.props.lockObject} label="" target={scrollViewer} propertyName="barBackground" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <Color3LineComponent iconLabel={"Bar color"} icon={fillColorIcon}  lockObject={this.props.lockObject} label="" target={scrollViewer} propertyName="barColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <Color3LineComponent iconLabel={"Bar background"} icon={fillColorIcon}  lockObject={this.props.lockObject} label="" target={scrollViewer} propertyName="barBackground" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
             </div>
         );
     }

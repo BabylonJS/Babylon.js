@@ -8,6 +8,7 @@ import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLi
 import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { TextInputLineComponent } from "../../../../sharedUiComponents/lines/textInputLineComponent";
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
+import { Color3LineComponent } from "../../../../sharedUiComponents/lines/color3LineComponent";
 
 const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");
 const scaleIcon: string = require("../../../../sharedUiComponents/imgs/scaleIcon.svg");
@@ -35,7 +36,7 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={slider} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <hr />
                 <TextLineComponent label="SLIDER" value=" " color="grey"></TextLineComponent>
-                <TextInputLineComponent iconLabel={"Border color"} icon={colorIcon} lockObject={this.props.lockObject} label="" target={slider} propertyName="borderColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <Color3LineComponent iconLabel={"Border color"} icon={colorIcon} lockObject={this.props.lockObject} label="" target={slider} propertyName="borderColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <CheckBoxLineComponent iconLabel={"Display thumb"} icon={clipContentsIcon} label="" target={slider} propertyName="displayThumb" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <CheckBoxLineComponent iconLabel={"Thumb circle"} icon={clipContentsIcon} label="" target={slider} propertyName="isThumbCircle" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <CheckBoxLineComponent iconLabel={"Vertical"} icon={vAlignCenterIcon} label="" target={slider} propertyName="isVertical" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
