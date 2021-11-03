@@ -1943,7 +1943,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         mesh.getMeshUniformBuffer().bindToEffect(effect, "Mesh");
         mesh.transferToEffect(world);
 
-        // PrePass
+        var engine = scene.getEngine();
+
+        // Binding unconditionally
+        this.subSurface.hardBindForSubMesh(this._uniformBuffer, scene, engine, this.isFrozen, defines.LODBASEDMICROSFURACE, this.realTimeFiltering, subMesh);
         this.prePassConfiguration.bindForSubMesh(this._activeEffect, scene, mesh, world, this.isFrozen);
 
         // Normal Matrix
@@ -1960,7 +1963,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         let reflectionTexture: Nullable<BaseTexture> = null;
         let ubo = this._uniformBuffer;
         if (mustRebind) {
-            var engine = scene.getEngine();
             ubo.bindToEffect(effect, "Material");
 
             this.bindViewProjection(effect);
