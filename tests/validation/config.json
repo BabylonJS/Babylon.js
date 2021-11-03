@@ -361,6 +361,7 @@
         },
         {
             "title": "Highlights",
+            "renderCount": 2,
             "scriptToRun": "/Demos/Highlights/highlights.js",
             "functionToCall": "CreateHighlightsScene",
             "referenceImage": "highlights.png",
@@ -907,6 +908,7 @@
         },
         {
             "title": "GlowLayer",
+            "renderCount": 2,
             "playgroundId": "#LRFB2D#1",
             "referenceImage": "GlowLayer.png"
         },
