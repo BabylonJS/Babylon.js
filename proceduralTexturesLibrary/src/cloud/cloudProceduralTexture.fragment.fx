@@ -19,7 +19,11 @@ float noise(vec2 n) {
 
 float fbm(vec2 n) {
 	float total = 0.0, ampl = amplitude;
+#ifdef WEBGL2
 	for (int i = 0; i < numOctaves; i++) {
+#else
+	for (int i = 0; i < 4; i++) {
+#endif
 		total += noise(n) * ampl;
 		n += n;
 		ampl *= 0.5;

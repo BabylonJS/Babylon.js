@@ -1189,8 +1189,11 @@ export class ShadowGenerator implements IShadowGenerator {
 
             const world = effectiveMesh.getWorldMatrix();
 
-            effectiveMesh.getMeshUniformBuffer().bindToEffect(effect, "Mesh");
-            effectiveMesh.transferToEffect(world);
+            // In the non hardware instanced mode, the Mesh ubo update is done by the callback passed to renderingMesh._processRendering (see below)
+            if (hardwareInstancedRendering) {
+                effectiveMesh.getMeshUniformBuffer().bindToEffect(effect, "Mesh");
+                effectiveMesh.transferToEffect(world);
+            }
 
             if (this.forceBackFacesOnly) {
                 engine.setState(true, 0, false, true, material.cullBackFaces);
@@ -1206,6 +1209,9 @@ export class ShadowGenerator implements IShadowGenerator {
                     if (effectiveMeshOverride && effectiveMesh !== effectiveMeshOverride) {
                         effectiveMeshOverride.getMeshUniformBuffer().bindToEffect(effect, "Mesh");
                         effectiveMeshOverride.transferToEffect(worldOverride);
+                    } else {
+                        effectiveMesh.getMeshUniformBuffer().bindToEffect(effect, "Mesh");
+                        effectiveMesh.transferToEffect(world);
                     }
                 });
 

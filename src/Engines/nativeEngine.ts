@@ -818,6 +818,7 @@ export class NativeEngine extends Engine {
             useUBOBindingCache: true,
             needShaderCodeInlining: true,
             needToAlwaysBindUniformBuffers: false,
+            supportRenderPasses: true,
             _collectUbosUpdatedInFrame: false,
         };
 
