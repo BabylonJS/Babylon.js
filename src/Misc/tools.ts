@@ -1048,12 +1048,33 @@ export class Tools {
     public static readonly PerformanceConsoleLogLevel = 2;
 
     private static _performance: Performance;
-    private static _nativeCounters: Map<string, unknown>;
+    private static _nativeCounters: Map<string, unknown> | undefined;
+    private static _nativeStartPerformanceCounter: ((name: string) => unknown) | undefined;
+    private static _nativeEndPerformanceCounter: ((counter: unknown) => void) | undefined;
 
     /**
      * Sets the current performance log level
      */
     public static set PerformanceLogLevel(level: number) {
+        {
+            let nativeEnablePerformanceLogging: (() => void) | undefined;
+            let nativeDisablePerformanceLogging: (() => void) | undefined;
+            if (typeof _native !== 'undefined') {
+                nativeEnablePerformanceLogging = _native.enablePerformanceLogging;
+                nativeDisablePerformanceLogging = _native.disablePerformanceLogging;
+
+                if (level === Tools.PerformanceNoneLogLevel) {
+                    if (nativeDisablePerformanceLogging) {
+                        nativeDisablePerformanceLogging();
+                    }
+                } else {
+                    if (nativeEnablePerformanceLogging) {
+                        nativeEnablePerformanceLogging();
+                    }
+                }
+            }
+        }
+
         if ((level & Tools.PerformanceUserMarkLogLevel) === Tools.PerformanceUserMarkLogLevel) {
             Tools.StartPerformanceCounter = Tools._StartUserMark;
             Tools.EndPerformanceCounter = Tools._EndUserMark;
@@ -1068,19 +1089,6 @@ export class Tools {
 
         Tools.StartPerformanceCounter = Tools._StartPerformanceCounterDisabled;
         Tools.EndPerformanceCounter = Tools._EndPerformanceCounterDisabled;
-
-        let nativeEnablePerformanceLogging: (() => void) | undefined;
-        let nativeDisablePerformanceLogging: (() => void) | undefined;
-        if (typeof _native !== 'undefined') {
-            nativeEnablePerformanceLogging = _native.enablePerformanceLogging;
-            nativeDisablePerformanceLogging = _native.disablePerformanceLogging;
-
-            if (level === Tools.PerformanceNoneLogLevel && nativeDisablePerformanceLogging) {
-                nativeDisablePerformanceLogging();
-            } else if ((level & Tools.PerformanceUserMarkLogLevel) === Tools.PerformanceUserMarkLogLevel && nativeEnablePerformanceLogging) {
-                nativeEnablePerformanceLogging();
-            }
-        }
     }
 
     private static _StartPerformanceCounterDisabled(counterName: string, condition?: boolean): void { }
@@ -1088,72 +1096,54 @@ export class Tools {
     private static _EndPerformanceCounterDisabled(counterName: string, condition?: boolean): void { }
 
     private static _StartUserMark(counterName: string, condition = true): void {
-        console.log(`Original StartUserMark: ${counterName}`);
         if (!Tools._performance) {
             if (IsWindowObjectExist()) {
                 Tools._performance = window.performance;
             }
         }
 
-        let nativeStartPerformanceCounter: ((name: string) => unknown) | undefined;
-        if (typeof _native !== 'undefined') {
-            nativeStartPerformanceCounter = _native.startPerformanceCounter;
-            console.log("Create _nativeCounters");
-            Tools._nativeCounters = new Map<string, unknown>();
-        }
-
-        const originalStartUserMark = Tools._StartUserMark;
-        Tools._StartUserMark = (counterName: string, condition: boolean) => {
-            if (condition) {
-                console.log(`New StartUserMark: ${counterName}`);
-                if (nativeStartPerformanceCounter) {
-                    console.log(`Start native counter: ${counterName} | ${Tools._nativeCounters.size} | ${Tools._nativeCounters.get(counterName)}`);
-                    Tools._nativeCounters.set(counterName, nativeStartPerformanceCounter(counterName));
-                }
-
-                if (!!Tools._performance?.mark) {
-                    Tools._performance.mark(counterName + "-Begin");
-                }
+        if (!Tools._nativeStartPerformanceCounter) {
+            if (typeof _native !== 'undefined') {
+                Tools._nativeStartPerformanceCounter = _native.startPerformanceCounter;
             }
-        };
-
-        if (Tools.StartPerformanceCounter === originalStartUserMark) {
-            Tools.StartPerformanceCounter = Tools._StartUserMark;
         }
 
-        Tools._StartUserMark(counterName, condition);
+        if (condition) {
+            if (!!Tools._nativeStartPerformanceCounter) {
+                if (!Tools._nativeCounters) {
+                    Tools._nativeCounters = new Map<string, unknown>();
+                }
+
+                Tools._nativeCounters.set(counterName, Tools._nativeStartPerformanceCounter(counterName));
+            }
+
+            if (!!Tools._performance?.mark) {
+                Tools._performance.mark(counterName + "-Begin");
+            }
+        }
     }
 
     private static _EndUserMark(counterName: string, condition = true): void {
-        console.log(`Original EndUserMark: ${counterName}`);
-        let nativeEndPerformanceCounter: ((counter: unknown) => void) | undefined;
-        if (typeof _native !== 'undefined') {
-            nativeEndPerformanceCounter = _native.endPerformanceCounter;
+        if (!Tools._nativeEndPerformanceCounter) {
+            if (typeof _native !== 'undefined') {
+                Tools._nativeEndPerformanceCounter = _native.endPerformanceCounter;
+            }
         }
 
-        const originalEndUserMark = Tools._EndUserMark;
-        Tools._EndUserMark = (counterName: string, condition: boolean) => {
-            console.log(`New EndUserMark? ${condition}`);
-            if (condition) {
-                console.log(`New EndUserMark: ${counterName}`);
-                if (!!Tools._performance.mark) {
-                    Tools._performance.mark(counterName + "-End");
-                    Tools._performance.measure(counterName, counterName + "-Begin", counterName + "-End");
-                }
+        if (condition) {
+            if (!!Tools._performance.mark) {
+                Tools._performance.mark(counterName + "-End");
+                Tools._performance.measure(counterName, counterName + "-Begin", counterName + "-End");
+            }
 
-                if (nativeEndPerformanceCounter) {
-                    console.log(`End native counter: ${counterName} | ${Tools._nativeCounters.size} | ${Tools._nativeCounters.get(counterName)}`);
-                    nativeEndPerformanceCounter(Tools._nativeCounters.get(counterName));
+            if (!!Tools._nativeEndPerformanceCounter && !!Tools._nativeCounters) {
+                const nativeCounter = Tools._nativeCounters.get(counterName);
+                if (nativeCounter) {
+                    Tools._nativeEndPerformanceCounter(nativeCounter);
                     Tools._nativeCounters.delete(counterName);
                 }
             }
-        };
-
-        if (Tools.EndPerformanceCounter === originalEndUserMark) {
-            Tools.EndPerformanceCounter = Tools._EndUserMark;
         }
-
-        Tools._EndUserMark(counterName, condition);
     }
 
     private static _StartPerformanceConsole(counterName: string, condition = true): void {
