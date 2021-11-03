@@ -428,13 +428,6 @@ export class ThinEngine {
      */
     public disableVertexArrayObjects = false;
 
-    /**
-     * Indicates if this engine supports render passes
-     */
-    public get supportRenderPasses() {
-        return false;
-    }
-
     // States
     /** @hidden */
     protected _colorWrite = true;
@@ -1289,6 +1282,7 @@ export class ThinEngine {
             useUBOBindingCache: true,
             needShaderCodeInlining: false,
             needToAlwaysBindUniformBuffers: false,
+            supportRenderPasses: false,
             _collectUbosUpdatedInFrame: false,
         };
     }

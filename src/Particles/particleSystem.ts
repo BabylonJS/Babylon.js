@@ -1766,7 +1766,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         this.fillDefines(defines, blendMode);
 
         // Effect
-        const currentRenderPassId = this._engine.supportRenderPasses ? (this._engine as Engine).currentRenderPassId : Constants.RENDERPASS_MAIN;
+        const currentRenderPassId = this._engine._features.supportRenderPasses ? (this._engine as Engine).currentRenderPassId : Constants.RENDERPASS_MAIN;
         let drawWrappers = this._drawWrappers[currentRenderPassId];
         if (!drawWrappers) {
             drawWrappers = this._drawWrappers[currentRenderPassId] = [];

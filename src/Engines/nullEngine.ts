@@ -88,10 +88,6 @@ export class NullEngine extends Engine {
         return 1.0;
     }
 
-    public get supportRenderPasses() {
-        return true;
-    }
-
     public constructor(options: NullEngineOptions = new NullEngineOptions()) {
         super(null);
 
@@ -177,6 +173,7 @@ export class NullEngine extends Engine {
             useUBOBindingCache: false,
             needShaderCodeInlining: false,
             needToAlwaysBindUniformBuffers: false,
+            supportRenderPasses: true,
             _collectUbosUpdatedInFrame: false,
         };
 
