@@ -145,19 +145,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         return `${this._leftWidth}px 4px ${this._toolBarIconSize}px calc(100% - ${this._leftWidth + this._toolBarIconSize + 8 + this._rightWidth}px) 4px ${this._rightWidth}px`;
     }
 
-    emitNewBlock(event: React.DragEvent<HTMLDivElement>) {
-        var data = event.dataTransfer.getData("babylonjs-gui-node") as string;
-
-        let guiElement = GUINodeTools.CreateControlFromString(data);
-
-        let newGuiNode = this._workbenchCanvas.appendBlock(guiElement);
-
-        this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-        this.props.globalState.onSelectionChangedObservable.notifyObservers(newGuiNode);
-
-        this.forceUpdate();
-    }
-
     handlePopUp = () => {
         this.setState({
             showPreviewPopUp: true,
@@ -396,6 +383,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
 
         ]
     }
+    
     onCreate(value: string): void {
         let guiElement = GUINodeTools.CreateControlFromString(value);
         let newGuiNode = this.props.globalState.workbench.appendBlock(guiElement);
