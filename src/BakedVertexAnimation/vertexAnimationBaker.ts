@@ -2,6 +2,7 @@ import { AnimationRange } from "../Animations/animationRange";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { Mesh } from "../Meshes/mesh";
+import { EncodeArrayBufferToBase64, DecodeBase64ToBinary } from "../Misc/stringTools";
 import { Scene } from "../scene";
 
 /**
@@ -121,12 +122,8 @@ export class VertexAnimationBaker {
         const boneCount = this._mesh.skeleton.bones.length;
         const width = (boneCount + 1) * 4;
         const height = vertexData.length / ((boneCount + 1) * 4 * 4);
-        const pixelData: number[] = [];
-        for (let i = 0; i < vertexData.length; ++i) {
-            pixelData.push(vertexData[i]);
-        }
         const data = {
-            vertexData: pixelData,
+            vertexData: EncodeArrayBufferToBase64(vertexData),
             width,
             height
         };
@@ -138,7 +135,7 @@ export class VertexAnimationBaker {
      * @returns self
      */
     public loadBakedVertexDataFromObject(data: Record<string, any>): Float32Array {
-        return new Float32Array(data.vertexData);
+        return new Float32Array(DecodeBase64ToBinary(data.vertexData));
     }
     /**
      * Serializes our vertexData to a JSON string, with a nice string for the vertexData.
