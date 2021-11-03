@@ -10,7 +10,6 @@ import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { MaterialHelper } from "./materialHelper";
 import { Effect, IEffectCreationOptions } from "./effect";
-import { Material } from "./material";
 import { RegisterClass } from '../Misc/typeStore';
 import { Color3, Color4 } from '../Maths/math.color';
 import { EffectFallbacks } from './effectFallbacks';
@@ -20,6 +19,7 @@ import { ShaderLanguage } from "./shaderLanguage";
 import { UniformBuffer } from "./uniformBuffer";
 import { TextureSampler } from "./Textures/textureSampler";
 import { StorageBuffer } from "../Buffers/storageBuffer";
+import { PushMaterial } from "./pushMaterial";
 
 declare type ExternalTexture = import("./Textures/externalTexture").ExternalTexture;
 
@@ -97,7 +97,7 @@ export interface IShaderMaterialOptions {
  *
  * @see https://doc.babylonjs.com/how_to/shader_material
  */
-export class ShaderMaterial extends Material {
+export class ShaderMaterial extends PushMaterial {
     private _shaderPath: any;
     private _options: IShaderMaterialOptions;
     private _textures: { [name: string]: BaseTexture } = {};
@@ -147,9 +147,10 @@ export class ShaderMaterial extends Material {
      *  * object: { vertexSource: "vertex shader code string", fragmentSource: "fragment shader code string" } using with strings containing the shaders code
      *  * string: "./COMMON_NAME", used with external files COMMON_NAME.vertex.fx and COMMON_NAME.fragment.fx in index.html folder.
      * @param options Define the options used to create the shader
+     * @param storeEffectOnSubMeshes true to store effect on submeshes, false to store the effect directly in the material class.
      */
-    constructor(name: string, scene: Scene, shaderPath: any, options: Partial<IShaderMaterialOptions> = {}) {
-        super(name, scene);
+    constructor(name: string, scene: Scene, shaderPath: any, options: Partial<IShaderMaterialOptions> = {}, storeEffectOnSubMeshes = true) {
+        super(name, scene, storeEffectOnSubMeshes);
         this._shaderPath = shaderPath;
 
         this._options = {
@@ -569,10 +570,18 @@ export class ShaderMaterial extends Material {
      * @returns true if ready, otherwise false
      */
     public isReady(mesh?: AbstractMesh, useInstances?: boolean, subMesh?: SubMesh): boolean {
-        let effect = this.getEffect();
-        if (effect && this.isFrozen) {
-            if (effect._wasPreviouslyReady && this._effectUsesInstances === useInstances) {
-                return true;
+        const storeEffectOnSubMeshes = subMesh && this._storeEffectOnSubMeshes;
+
+        if (this.isFrozen) {
+            if (storeEffectOnSubMeshes) {
+                if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
+                    return true;
+                }
+            } else {
+                const effect = this._drawWrapper.effect;
+                if (effect && effect._wasPreviouslyReady && this._effectUsesInstances === useInstances) {
+                    return true;
+                }
             }
         }
 
@@ -780,10 +789,13 @@ export class ShaderMaterial extends Material {
             shaderName = this.customShaderNameResolve(shaderName, uniforms, uniformBuffers, samplers, defines, attribs);
         }
 
-        var previousEffect = effect;
+        const drawWrapper = storeEffectOnSubMeshes ? subMesh._getDrawWrapper() : this._drawWrapper;
+        var previousEffect = drawWrapper?.effect ?? null;
+        var previousDefines = drawWrapper?.defines ?? null;
         var join = defines.join("\n");
 
-        if (this._drawWrapper.defines !== join) {
+        let effect = previousEffect;
+        if (previousDefines !== join) {
             effect = engine.createEffect(shaderName, <IEffectCreationOptions>{
                 attributes: attribs,
                 uniformsNames: uniforms,
@@ -797,7 +809,11 @@ export class ShaderMaterial extends Material {
                 shaderLanguage: this._options.shaderLanguage
             }, engine);
 
-            this._drawWrapper.setEffect(effect, join);
+            if (storeEffectOnSubMeshes) {
+                subMesh.setEffect(effect, join, this._materialContext);
+            } else if (drawWrapper) {
+                drawWrapper.setEffect(effect, join);
+            }
 
             if (this._onEffectCreatedObservable) {
                 onCreatedEffectParameters.effect = effect;
@@ -857,7 +873,7 @@ export class ShaderMaterial extends Material {
      * @param subMesh defines the submesh to bind the material to
      */
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
-        this.bind(world, mesh, subMesh._drawWrapperOverride?.effect);
+        this.bind(world, mesh, subMesh._drawWrapperOverride?.effect, subMesh);
     }
 
     /**
@@ -865,12 +881,20 @@ export class ShaderMaterial extends Material {
      * @param world defines the world transformation matrix
      * @param mesh defines the mesh to bind the material to
      * @param effectOverride - If provided, use this effect instead of internal effect
+     * @param subMesh defines the submesh to bind the material to
      */
-    public bind(world: Matrix, mesh?: Mesh, effectOverride?: Nullable<Effect>): void {
+    public bind(world: Matrix, mesh?: Mesh, effectOverride?: Nullable<Effect>, subMesh?: SubMesh): void {
         // Std values
-        this.bindOnlyWorldMatrix(world, effectOverride);
+        const storeEffectOnSubMeshes = subMesh && this._storeEffectOnSubMeshes;
+        const effect = effectOverride ?? (storeEffectOnSubMeshes ? subMesh.effect : this.getEffect());
 
-        const effect = effectOverride ?? this.getEffect();
+        if (!effect) {
+            return;
+        }
+
+        this._activeEffect = effect;
+
+        this.bindOnlyWorldMatrix(world, effectOverride);
 
         const uniformBuffers = this._options.uniformBuffers;
 
@@ -895,7 +919,7 @@ export class ShaderMaterial extends Material {
             }
         }
 
-        let mustRebind = this.getScene().getCachedMaterial() !== this;
+        let mustRebind = mesh && storeEffectOnSubMeshes ? this._mustRebind(this.getScene(), effect, mesh.visibility) : this.getScene().getCachedMaterial() !== this;
 
         if (effect && mustRebind) {
             if (!useSceneUBO && this._options.uniforms.indexOf("view") !== -1) {
@@ -1052,16 +1076,7 @@ export class ShaderMaterial extends Material {
             }
         }
 
-        const seffect = this.getEffect();
-
-        this._drawWrapper.effect = effect; // make sure the active effect is the right one if there are some observers for onBind that would need to get the current effect
         this._afterBind(mesh, effect);
-        this._drawWrapper.effect = seffect;
-    }
-
-    protected _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null): void {
-        super._afterBind(mesh, effect);
-        this.getScene()._cachedEffect = effect;
     }
 
     /**
@@ -1119,7 +1134,7 @@ export class ShaderMaterial extends Material {
      * @returns the cloned material
      */
     public clone(name: string): ShaderMaterial {
-        var result = SerializationHelper.Clone(() => new ShaderMaterial(name, this.getScene(), this._shaderPath, this._options), this);
+        var result = SerializationHelper.Clone(() => new ShaderMaterial(name, this.getScene(), this._shaderPath, this._options, this._storeEffectOnSubMeshes), this);
 
         result.name = name;
         result.id = name;
@@ -1297,6 +1312,7 @@ export class ShaderMaterial extends Material {
 
         serializationObject.options = this._options;
         serializationObject.shaderPath = this._shaderPath;
+        serializationObject.storeEffectOnSubMeshes = this._storeEffectOnSubMeshes;
 
         var name: string;
 
@@ -1432,7 +1448,7 @@ export class ShaderMaterial extends Material {
      * @returns a new material
      */
     public static Parse(source: any, scene: Scene, rootUrl: string): ShaderMaterial {
-        var material = SerializationHelper.Parse(() => new ShaderMaterial(source.name, scene, source.shaderPath, source.options), source, scene, rootUrl);
+        var material = SerializationHelper.Parse(() => new ShaderMaterial(source.name, scene, source.shaderPath, source.options, source.storeEffectOnSubMeshes), source, scene, rootUrl);
 
         var name: string;
 

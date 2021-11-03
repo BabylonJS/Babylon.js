@@ -216,7 +216,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
                 attributes: [VertexBuffer.PositionKind],
                 uniforms: ["world", "viewProjection", "color"],
                 uniformBuffers: ["BoundingBoxRenderer"]
-            });
+            }, false);
 
         this._colorShader.reservedDataStore = {
             hidden: true
