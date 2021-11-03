@@ -99,8 +99,22 @@ export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: b
     }
 
     checkUrl() {
-        // Check URL
-        this._globalState.commerceMode = location.host.toLowerCase().indexOf("3d") === 0;
+        const set3DCommerceMode = () => {
+            document.title = "Babylon.js Sandbox for 3D Commerce";
+            this._globalState.commerceMode = true;
+        }
+
+        const setReflectorMode = () => {
+            document.title = "Babylon.js Reflector";
+            this._globalState.reflector = { hostname: "localhost", port: 1234 };
+        }
+
+        const host = location.host.toLowerCase();
+        if (host.indexOf("3dcommerce") === 0) {
+            set3DCommerceMode();
+        } else if (host.toLowerCase().indexOf("reflector") === 0) {
+            setReflectorMode();
+        }
 
         const indexOf = location.href.indexOf("?");
         if (indexOf !== -1) {
@@ -127,8 +141,11 @@ export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: b
                         break;
                     }
                     case "reflector": {
-                        document.title = "Babylon.js Reflector";
-                        this._globalState.reflector = { hostname: "localhost", port: 1234 };
+                        setReflectorMode();
+                        break;
+                    }
+                    case "3dcommerce": {
+                        set3DCommerceMode();
                         break;
                     }
                     case "hostname": {

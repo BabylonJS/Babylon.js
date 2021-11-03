@@ -347,6 +347,8 @@ export class EdgesRenderer implements IEdgesRenderer {
             this._source.getScene().getEngine()._releaseBuffer(this._ib);
         }
         this._lineShader.dispose();
+
+        this._drawWrapper?.dispose();
     }
 
     protected _processEdgeForAdjacencies(pa: number, pb: number, p0: number, p1: number, p2: number): number {

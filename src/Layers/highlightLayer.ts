@@ -304,6 +304,10 @@ export class HighlightLayer extends EffectLayer {
         return HighlightLayer.EffectName;
     }
 
+    protected _numInternalDraws(): number {
+        return 2; // we need two rendering, one for the inner glow and the other for the outer glow
+    }
+
     /**
      * Create the merge effect. This is the shader use to blit the information back
      * to the main canvas at the end of the scene rendering.
@@ -451,7 +455,7 @@ export class HighlightLayer extends EffectLayer {
      * Implementation specific of rendering the generating effect on the main canvas.
      * @param effect The effect used to render through
      */
-    protected _internalRender(effect: Effect): void {
+    protected _internalRender(effect: Effect, renderIndex: number): void {
         // Texture
         effect.setTexture("textureSampler", this._blurTexture);
 
@@ -470,12 +474,12 @@ export class HighlightLayer extends EffectLayer {
         engine.setStencilFunctionReference(this._instanceGlowingMeshStencilReference);
 
         // 2 passes inner outer
-        if (this.outerGlow) {
+        if (this.outerGlow && renderIndex === 0) { // the outer glow is rendered the first time _internalRender is called, so when renderIndex == 0 (and only if outerGlow is enabled)
             effect.setFloat("offset", 0);
             engine.setStencilFunction(Constants.NOTEQUAL);
             engine.drawElementsType(Material.TriangleFillMode, 0, 6);
         }
-        if (this.innerGlow) {
+        if (this.innerGlow && renderIndex === 1) { // the inner glow is rendered the second time _internalRender is called, so when renderIndex == 1 (and only if innerGlow is enabled)
             effect.setFloat("offset", 1);
             engine.setStencilFunction(Constants.EQUAL);
             engine.drawElementsType(Material.TriangleFillMode, 0, 6);
