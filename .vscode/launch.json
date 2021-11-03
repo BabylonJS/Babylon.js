@@ -414,6 +414,19 @@
             ]
         },
         {
+            "name": "Launch sandbox for 3D Commerce (Chrome)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:1338/sandbox/public/index-local.html?3dcommerce=true",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
+            "preLaunchTask": "run",
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis"
+            ]
+        },
+        {
             "name": "Launch 3D Commerce Viewer Certification (Chrome)",
             "type": "chrome",
             "request": "launch",

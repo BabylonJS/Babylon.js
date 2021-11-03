@@ -8,6 +8,14 @@ import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLi
 import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { TextInputLineComponent } from "../../../../sharedUiComponents/lines/textInputLineComponent";
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
+import { Color3LineComponent } from "../../../../sharedUiComponents/lines/color3LineComponent";
+
+const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");
+const scaleIcon: string = require("../../../../sharedUiComponents/imgs/scaleIcon.svg");
+const horizontalMarginIcon: string = require("../../../../sharedUiComponents/imgs/horizontalMarginIcon.svg");;
+const colorIcon: string = require("../../../../sharedUiComponents/imgs/colorIcon.svg");
+const vAlignCenterIcon: string = require("../../../../sharedUiComponents/imgs/vAlignCenterIcon.svg");
+const clipContentsIcon: string = require("../../../../sharedUiComponents/imgs/clipContentsIcon.svg");
 
 interface ISliderPropertyGridComponentProps {
     slider: Slider
@@ -28,16 +36,16 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={slider} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <hr />
                 <TextLineComponent label="SLIDER" value=" " color="grey"></TextLineComponent>
-                <TextInputLineComponent lockObject={this.props.lockObject} label="Border color" target={slider} propertyName="borderColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <CheckBoxLineComponent label="Display thumb" target={slider} propertyName="displayThumb" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <CheckBoxLineComponent label="Thumb circle" target={slider} propertyName="isThumbCircle" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <CheckBoxLineComponent label="Vertical" target={slider} propertyName="isVertical" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <CheckBoxLineComponent label="Thumb clamped" target={slider} propertyName="isThumbClamped" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <TextInputLineComponent lockObject={this.props.lockObject} label="Bar offset" target={slider} propertyName="barOffset" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <TextInputLineComponent lockObject={this.props.lockObject} label="Thumb width" target={slider} propertyName="thumbWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <FloatLineComponent lockObject={this.props.lockObject} label="Minimum" target={slider} propertyName="minimum" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <FloatLineComponent lockObject={this.props.lockObject} label="Maximum" target={slider} propertyName="maximum" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <FloatLineComponent lockObject={this.props.lockObject} label="Value" target={slider} propertyName="value" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <Color3LineComponent iconLabel={"Border color"} icon={colorIcon} lockObject={this.props.lockObject} label="" target={slider} propertyName="borderColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CheckBoxLineComponent iconLabel={"Display thumb"} icon={clipContentsIcon} label="" target={slider} propertyName="displayThumb" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CheckBoxLineComponent iconLabel={"Thumb circle"} icon={clipContentsIcon} label="" target={slider} propertyName="isThumbCircle" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CheckBoxLineComponent iconLabel={"Vertical"} icon={vAlignCenterIcon} label="" target={slider} propertyName="isVertical" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CheckBoxLineComponent iconLabel={"Thumb clamped"} icon={clipContentsIcon} label="" target={slider} propertyName="isThumbClamped" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <TextInputLineComponent iconLabel={"Bar offset"} icon={clipContentsIcon} lockObject={this.props.lockObject} label="" target={slider} propertyName="barOffset" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <TextInputLineComponent iconLabel={"Thumb width"} icon={sizeIcon} lockObject={this.props.lockObject} label="" target={slider} propertyName="thumbWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <FloatLineComponent iconLabel={"Minimum"} icon={scaleIcon} lockObject={this.props.lockObject} label="" target={slider} propertyName="minimum" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <FloatLineComponent iconLabel={"Maximum"} icon={scaleIcon} lockObject={this.props.lockObject} label="" target={slider} propertyName="maximum" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <FloatLineComponent iconLabel={"Value"} icon={horizontalMarginIcon} lockObject={this.props.lockObject} label="" target={slider} propertyName="value" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
             </div>
         );
     }

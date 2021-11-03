@@ -7308,7 +7308,8 @@ declare module BABYLON {
          * Sets whether the vignette effect is enabled.
          */
         set vignetteEnabled(value: boolean);
-        private _applyByPostProcess;
+        /** @hidden */
+        _applyByPostProcess: boolean;
         /**
          * Gets whether the image processing is applied through a post process or not.
          */
@@ -8653,6 +8654,10 @@ declare module BABYLON {
          * @returns true if there is an intersection
          */
         intersectsMinMax(min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>): boolean;
+        /**
+         * Disposes the resources of the class
+         */
+        dispose(): void;
         /**
          * Tests if two bounding boxes are intersections
          * @param box0 defines the first box to test
@@ -12553,6 +12558,7 @@ declare module BABYLON {
         private _drawWrapperBase;
         private _drawWrapperFog;
         private _drawWrapperDepth;
+        private _drawWrapperFogDepth;
         private _vertexArrayObject;
         /**
          * Creates a new sprite Renderer
@@ -19060,7 +19066,6 @@ declare module BABYLON {
         private _prePassRenderer;
         private _attachments;
         private _useUbo;
-        protected _drawWrapper: DrawWrapper;
         protected _cachedDefines: string;
         /**
          * @hidden
@@ -33603,6 +33608,10 @@ declare module BABYLON {
         /** @hidden */
         _markSubMeshesAsMiscDirty(): void;
         /**
+         * Resets the draw wrappers cache for all submeshes of this abstract mesh
+         */
+        resetDrawCache(): void;
+        /**
          * Gets or sets a Vector3 depicting the mesh scaling along each local axis X, Y, Z.  Default is (1.0, 1.0, 1.0)
          */
         get scaling(): Vector3;
@@ -41930,6 +41939,8 @@ declare module BABYLON {
         needShaderCodeInlining: boolean;
         /** Indicates that even if we don't have to update the properties of a uniform buffer (because of some optimzations in the material) we still need to bind the uniform buffer themselves */
         needToAlwaysBindUniformBuffers: boolean;
+        /**  Indicates that the engine supports render passes */
+        supportRenderPasses: boolean;
         /** @hidden */
         _collectUbosUpdatedInFrame: boolean;
     }
@@ -48262,6 +48273,10 @@ declare module BABYLON {
         animate(): void;
         private _clear;
         private checkCameraRenderTarget;
+        /**
+         * Resets the draw wrappers cache of all meshes
+         */
+        resetDrawCache(): void;
         /**
          * Render the scene
          * @param updateCameras defines a boolean indicating if cameras must update according to their inputs (true by default)
@@ -71306,6 +71321,12 @@ declare module BABYLON {
         /** @hidden */
         static _SceneComponentInitialization: (scene: Scene) => void;
         /**
+         * Sets a specific material to be used to render a mesh/a list of meshes in the layer
+         * @param mesh mesh or array of meshes
+         * @param material material to use by the layer when rendering the mesh(es). If undefined is passed, the specific material created by the layer will be used.
+         */
+        setMaterialForRendering(mesh: AbstractMesh | AbstractMesh[], material?: Material): void;
+        /**
          * Instantiates a new effect Layer and references it in the scene.
          * @param name The name of the layer
          * @param scene The scene to use the layer in
@@ -71343,8 +71364,9 @@ declare module BABYLON {
         /**
          * Implementation specific of rendering the generating effect on the main canvas.
          * @param effect The effect used to render through
+         * @param renderNum Index of the _internalRender call (0 for the first time _internalRender is called, 1 for the second time, etc. _internalRender is called the number of times returned by _numInternalDraws())
          */
-        protected abstract _internalRender(effect: Effect): void;
+        protected abstract _internalRender(effect: Effect, renderIndex: number): void;
         /**
          * Sets the required values for both the emissive texture and and the main color.
          */
@@ -71360,6 +71382,11 @@ declare module BABYLON {
          * @returns a serialized layer object
          */
         abstract serialize?(): any;
+        /**
+         * Number of times _internalRender will be called. Some effect layers need to render the mesh several times, so they should override this method with the number of times the mesh should be rendered
+         * @returns Number of times a mesh must be rendered in the layer
+         */
+        protected _numInternalDraws(): number;
         /**
          * Initializes the effect layer with the required options.
          * @param options Sets of none mandatory options to use with the layer (see IEffectLayerOptions for more information)
@@ -71924,6 +71951,7 @@ declare module BABYLON {
          * @return The effect name
          */
         getEffectName(): string;
+        protected _numInternalDraws(): number;
         /**
          * Create the merge effect. This is the shader use to blit the information back
          * to the main canvas at the end of the scene rendering.
@@ -71949,7 +71977,7 @@ declare module BABYLON {
          * Implementation specific of rendering the generating effect on the main canvas.
          * @param effect The effect used to render through
          */
-        protected _internalRender(effect: Effect): void;
+        protected _internalRender(effect: Effect, renderIndex: number): void;
         /**
          * Returns true if the layer contains information to display, otherwise false.
          */
@@ -72574,7 +72602,7 @@ declare module BABYLON {
         /**
          * Sets a specific material to be used to render a mesh/a list of meshes by the depth renderer
          * @param mesh mesh or array of meshes
-         * @param material material or array of materials to use by the depth renderer. If undefined is passed, the specific material created by the depth renderer will be used.
+         * @param material material to use by the depth render when rendering the mesh(es). If undefined is passed, the specific material created by the depth renderer will be used.
          */
         setMaterialForRendering(mesh: AbstractMesh | AbstractMesh[], material?: Material): void;
         /**
@@ -74871,7 +74899,7 @@ declare module BABYLON {
      * @param basisFormat format chosen from GetSupportedTranscodeFormat
      * @returns internal format corresponding to the Basis format
      */
-    export const GetInternalFormatFromBasisFormat: (basisFormat: number) => number;
+    export const GetInternalFormatFromBasisFormat: (basisFormat: number, engine: Engine) => any;
     /**
      * Transcodes a loaded image file to compressed pixel data
      * @param data image data to transcode
@@ -74903,7 +74931,7 @@ declare module BABYLON {
          * @param basisFormat format chosen from GetSupportedTranscodeFormat
          * @returns internal format corresponding to the Basis format
          */
-        GetInternalFormatFromBasisFormat: (basisFormat: number) => number;
+        GetInternalFormatFromBasisFormat: (basisFormat: number, engine: Engine) => any;
         /**
          * Transcodes a loaded image file to compressed pixel data
          * @param data image data to transcode
@@ -84876,6 +84904,7 @@ declare module BABYLON {
         private _fillIndexData;
         private _uniformBufferFront;
         private _uniformBufferBack;
+        private _renderPassIdForOcclusionQuery;
         /**
          * Instantiates a new bounding box renderer in a scene.
          * @param scene the scene the  renderer renders in
@@ -84904,6 +84933,7 @@ declare module BABYLON {
          * @param renderingGroupId defines the rendering group to render
          */
         render(renderingGroupId: number): void;
+        private _createWrappersForBoundingBox;
         /**
          * In case of occlusion queries, we can render the occlusion bounding box through this method
          * @param mesh Define the mesh to render the occlusion bounding box for
