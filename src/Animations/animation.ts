@@ -1228,7 +1228,7 @@ export class Animation {
                     }
                     if (key.values[4]) {
                         outTangent = Color3.FromArray(key.values[4]);
-                    }    
+                    }
                     break;
                 case Animation.ANIMATIONTYPE_COLOR4:
                     data = Color4.FromArray(key.values);
@@ -1237,7 +1237,7 @@ export class Animation {
                     }
                     if (key.values[5]) {
                         outTangent = Color4.FromArray(key.values[5]);
-                    }                    
+                    }
                     break;
                 case Animation.ANIMATIONTYPE_VECTOR3:
                 default:
