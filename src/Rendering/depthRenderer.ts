@@ -54,7 +54,7 @@ export class DepthRenderer {
     /**
      * Sets a specific material to be used to render a mesh/a list of meshes by the depth renderer
      * @param mesh mesh or array of meshes
-     * @param material material or array of materials to use by the depth renderer. If undefined is passed, the specific material created by the depth renderer will be used.
+     * @param material material to use by the depth render when rendering the mesh(es). If undefined is passed, the specific material created by the depth renderer will be used.
      */
     public setMaterialForRendering(mesh: AbstractMesh | AbstractMesh[], material?: Material): void {
         this._depthMap.setMaterialForRendering(mesh, material);
@@ -285,8 +285,8 @@ export class DepthRenderer {
             return renderingMaterial.isReadyForSubMesh(mesh, subMesh, useInstances);
         }
 
-        var material: any = subMesh.getMaterial();
-        if (material.disableDepthWrite) {
+        var material = subMesh.getMaterial();
+        if (!material || material.disableDepthWrite) {
             return false;
         }
 

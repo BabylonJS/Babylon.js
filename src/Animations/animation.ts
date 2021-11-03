@@ -1223,13 +1223,31 @@ export class Animation {
                     break;
                 case Animation.ANIMATIONTYPE_COLOR3:
                     data = Color3.FromArray(key.values);
+                    if (key.values[3]) {
+                        inTangent = Color3.FromArray(key.values[3]);
+                    }
+                    if (key.values[4]) {
+                        outTangent = Color3.FromArray(key.values[4]);
+                    }
                     break;
                 case Animation.ANIMATIONTYPE_COLOR4:
                     data = Color4.FromArray(key.values);
+                    if (key.values[4]) {
+                        inTangent = Color4.FromArray(key.values[4]);
+                    }
+                    if (key.values[5]) {
+                        outTangent = Color4.FromArray(key.values[5]);
+                    }
                     break;
                 case Animation.ANIMATIONTYPE_VECTOR3:
                 default:
                     data = Vector3.FromArray(key.values);
+                    if (key.values[3]) {
+                        inTangent = Vector3.FromArray(key.values[3]);
+                    }
+                    if (key.values[4]) {
+                        outTangent = Vector3.FromArray(key.values[4]);
+                    }
                     break;
             }
 
