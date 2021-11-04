@@ -10,6 +10,7 @@ import { Vector2 } from "babylonjs/Maths/math.vector";
 import { Scene } from "babylonjs/scene";
 import { Control } from "babylonjs-gui/2D/controls/control";
 import { LockObject } from "./sharedUiComponents/tabs/propertyGrids/lockObject";
+import { GuiGizmoComponent } from "./diagram/guiGizmo";
 
 export enum DragOverLocation {
     ABOVE = 0,
@@ -40,6 +41,7 @@ export class GlobalState {
     controlCamera: boolean;
     selectionLock: boolean;
     workbench: WorkbenchComponent;
+    guiGizmo: GuiGizmoComponent;
     onPropertyChangedObservable = new Observable<PropertyChangedEvent>();
 
     onZoomObservable = new Observable<void>();
