@@ -30,14 +30,6 @@ export interface IWorkbenchComponentProps {
     globalState: GlobalState;
 }
 
-export type FramePortData = {};
-
-export const isFramePortData = (variableToCheck: any): variableToCheck is FramePortData => {
-    if (variableToCheck) {
-        return (variableToCheck as FramePortData) !== undefined;
-    } else return false;
-};
-
 export enum ConstraintDirection {
     NONE = 0,
     X = 2, // Horizontal constraint
@@ -747,7 +739,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         light.intensity = 0.9;
 
         let textureSize = 1024;
-        this._textureMesh = CreateGround("GuiCanvas", {width: 1, height: 1, subdivisions: 1}, this._scene);
+        this._textureMesh = CreateGround("GuiCanvas", { width: 1, height: 1, subdivisions: 1 }, this._scene);
         this._textureMesh.scaling.x = textureSize;
         this._textureMesh.scaling.z = textureSize;
         this.globalState.guiTexture = AdvancedDynamicTexture.CreateForMesh(this._textureMesh, textureSize, textureSize, true);
@@ -973,9 +965,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     render() {
         return (
+
             <canvas id="workbench-canvas" onPointerMove={(evt) => this.onMove(evt)} onPointerDown={(evt) => this.onDown(evt)} onPointerUp={(evt) => this.onUp(evt)}
                 ref={this._rootContainer}>
+
             </canvas>
+
         );
     }
 }

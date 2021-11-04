@@ -10,6 +10,7 @@ import { MessageDialogComponent } from "./sharedComponents/messageDialog";
 import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorerComponent";
 
 import { CommandBarComponent } from "./components/commandBarComponent";
+import { GuiGizmoComponent } from "./diagram/guiGizmo";
 
 require("./main.scss");
 require("./scss/header.scss");
@@ -272,9 +273,8 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                         this.createToolbar()
                     }
                     {/* The gui workbench diagram */}
-                    <div
-                        className="diagram-container"
-                    >
+                    <div className="diagram-container">
+                        <GuiGizmoComponent globalState={this.props.globalState} />
                         <WorkbenchComponent ref={"workbenchCanvas"} globalState={this.props.globalState} />
                     </div>
 
