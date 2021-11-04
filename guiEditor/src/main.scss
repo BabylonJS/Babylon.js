@@ -82,6 +82,7 @@
 }
 
 .diagram-container {
+    display: grid;
     grid-row: 1;
     grid-column: 4;
     background: #5f5b60;
@@ -92,6 +93,13 @@
         display: none;
         width: 100%;
         height: 100%;
+    }
+
+    .around {
+        position: absolute;
+        width: 30px;
+        height: 30px;
+        background: blue;
     }
 }
 
