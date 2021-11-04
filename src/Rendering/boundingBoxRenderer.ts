@@ -146,6 +146,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
     public renderList = new SmartArray<BoundingBox>(32);
 
     private _colorShader: ShaderMaterial;
+    private _colorShaderForOcclusionQuery: ShaderMaterial;
     private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
     private _indexBuffer: DataBuffer;
     private _fillIndexBuffer: Nullable<DataBuffer> = null;
@@ -221,6 +222,18 @@ export class BoundingBoxRenderer implements ISceneComponent {
         this._colorShader.reservedDataStore = {
             hidden: true
         };
+
+        this._colorShaderForOcclusionQuery = new ShaderMaterial("colorShaderOccQuery", this.scene, "boundingBoxRenderer",
+            {
+                attributes: [VertexBuffer.PositionKind],
+                uniforms: ["world", "viewProjection", "color"],
+                uniformBuffers: ["BoundingBoxRenderer"]
+            }, true);
+
+        this._colorShaderForOcclusionQuery.reservedDataStore = {
+            hidden: true
+        };
+
         var engine = this.scene.getEngine();
         var boxdata = CreateBoxVertexData({ size: 1.0 });
         this._vertexBuffers[VertexBuffer.PositionKind] = new VertexBuffer(engine, <FloatArray>boxdata.positions, VertexBuffer.PositionKind, false);
@@ -377,7 +390,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
 
         const subMesh = mesh.subMeshes[0];
 
-        if (!this._colorShader.isReady(mesh, undefined, subMesh) || !mesh.hasBoundingInfo) {
+        if (!this._colorShaderForOcclusionQuery.isReady(mesh, undefined, subMesh) || !mesh.hasBoundingInfo) {
             engine.currentRenderPassId = currentRenderPassId;
             return;
         }
@@ -403,7 +416,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
 
         const drawWrapper = subMesh._drawWrapper;
 
-        this._colorShader._preBind(drawWrapper);
+        this._colorShaderForOcclusionQuery._preBind(drawWrapper);
 
         engine.bindBuffers(this._vertexBuffers, this._fillIndexBuffer, <Effect>drawWrapper.effect);
 
@@ -422,7 +435,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
 
         engine.drawElementsType(Material.TriangleFillMode, 0, 36);
 
-        this._colorShader.unbind();
+        this._colorShaderForOcclusionQuery.unbind();
         engine.setDepthFunctionToLessOrEqual();
         engine.setDepthWrite(true);
         engine.setColorWrite(true);
@@ -450,6 +463,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
         this.renderList.dispose();
 
         this._colorShader.dispose();
+        this._colorShaderForOcclusionQuery.dispose();
 
         this._uniformBufferFront.dispose();
         this._uniformBufferBack.dispose();
