@@ -1319,10 +1319,11 @@ export class TransformNode extends Node {
     public serialize(currentSerializationObject?: any): any {
         let serializationObject = SerializationHelper.Serialize(this, currentSerializationObject);
         serializationObject.type = this.getClassName();
+        serializationObject.uniqueId = this.uniqueId;
 
         // Parent
         if (this.parent) {
-            serializationObject.parentId = this.parent.id;
+            serializationObject.parentId = this.parent.uniqueId;
         }
 
         serializationObject.localMatrix = this.getPivotMatrix().asArray();
@@ -1331,7 +1332,7 @@ export class TransformNode extends Node {
 
         // Parent
         if (this.parent) {
-            serializationObject.parentId = this.parent.id;
+            serializationObject.parentId = this.parent.uniqueId;
         }
 
         return serializationObject;
