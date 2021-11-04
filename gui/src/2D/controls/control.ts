@@ -2219,7 +2219,7 @@ export class Control {
         Control._FontHeightSizes[font] = result;
 
         return result;
-    }    
+    }
 
     /**
      * Creates a Control from parsed data
