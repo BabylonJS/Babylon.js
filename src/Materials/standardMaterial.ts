@@ -38,7 +38,9 @@ import { IMaterialDetailMapDefines, DetailMapConfiguration } from './material.de
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
 /** @hidden */
-export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines, IMaterialDetailMapDefines {
+export class StandardMaterialDefines extends MaterialDefines
+    implements IImageProcessingConfigurationDefines,
+    IMaterialDetailMapDefines {
     public MAINUV1 = false;
     public MAINUV2 = false;
     public MAINUV3 = false;
@@ -50,6 +52,7 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public DETAIL = false;
     public DETAILDIRECTUV = 0;
     public DETAIL_NORMALBLENDMETHOD = 0;
+    public BAKED_VERTEX_ANIMATION_TEXTURE = false;
     public AMBIENT = false;
     public AMBIENTDIRECTUV = 0;
     public OPACITY = false;
@@ -1227,6 +1230,7 @@ export class StandardMaterial extends PushMaterial {
             MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
             MaterialHelper.PrepareAttributesForInstances(attribs, defines);
             MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, defines);
+            MaterialHelper.PrepareAttributesForBakedVertexAnimation(attribs, mesh, defines);
 
             var shaderName = "default";
 
@@ -1652,6 +1656,10 @@ export class StandardMaterial extends PushMaterial {
                 MaterialHelper.BindMorphTargetParameters(mesh, effect);
             }
 
+            if (defines.BAKED_VERTEX_ANIMATION_TEXTURE) {
+                mesh.bakedVertexAnimationManager?.bind(effect, defines.INSTANCES);
+            }
+
             // Log. depth
             if (this.useLogarithmicDepth) {
                 MaterialHelper.BindLogDepth(defines, effect, scene);
@@ -1809,7 +1817,11 @@ export class StandardMaterial extends PushMaterial {
             return true;
         }
 
-        return this.detailMap.hasTexture(texture);
+        if (this.detailMap.hasTexture(texture)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

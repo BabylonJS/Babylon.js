@@ -21,6 +21,7 @@ attribute vec4 color;
 #endif
 
 #include<bonesDeclaration>
+#include<bakedVertexAnimationDeclaration>
 
 // Uniforms
 #include<instancesDeclaration>
@@ -166,6 +167,7 @@ void main(void) {
 
 #include<instancesVertex>
 #include<bonesVertex>
+#include<bakedVertexAnimation>
 
 #ifdef NORMAL
     // get a turbulent 3d noise using the normal, normal to high freq

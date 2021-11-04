@@ -9,6 +9,8 @@ import { RemoveComments } from "../../Misc/codeStringParsingTools";
 
 import "../../ShadersWGSL/ShadersInclude/bonesDeclaration";
 import "../../ShadersWGSL/ShadersInclude/bonesVertex";
+import "../../ShadersWGSL/ShadersInclude/bakedVertexAnimationDeclaration";
+import "../../ShadersWGSL/ShadersInclude/bakedVertexAnimation";
 import "../../ShadersWGSL/ShadersInclude/instancesDeclaration";
 import "../../ShadersWGSL/ShadersInclude/instancesVertex";
 import "../../ShadersWGSL/ShadersInclude/meshUboDeclaration";

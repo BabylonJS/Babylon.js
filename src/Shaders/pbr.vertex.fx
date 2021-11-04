@@ -23,6 +23,7 @@ attribute vec4 color;
 
 #include<helperFunctions>
 #include<bonesDeclaration>
+#include<bakedVertexAnimationDeclaration>
 
 #include<instancesDeclaration>
 #include<prePassVertexDeclaration>
@@ -133,6 +134,7 @@ void main(void) {
 #endif
 
 #include<bonesVertex>
+#include<bakedVertexAnimation>
 
     vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
     vPositionW = vec3(worldPos);
