@@ -80,19 +80,19 @@ void main(void)
 	// Compute tangent space (used for normal mapping + tri planar color mapping)
 	vec3 xtan = vec3(0,0,1);//tangent space for the X aligned plane
    	vec3 xbin = vec3(0,1,0);
-
+   
    	vec3 ytan = vec3(1,0,0);//tangent space for the Y aligned plane
    	vec3 ybin = vec3(0,0,1);
-
+   
    	vec3 ztan = vec3(1,0,0);//tangent space for the Z aligned plane
    	vec3 zbin = vec3(0,1,0);
-
+	   
 	vec3 normalizedNormal = normalize(normal);
    	normalizedNormal *= normalizedNormal;
 
 	vec3 worldBinormal = normalize(xbin * normalizedNormal.x + ybin * normalizedNormal.y + zbin * normalizedNormal.z);
    	vec3 worldTangent = normalize(xtan * normalizedNormal.x + ytan * normalizedNormal.y + ztan * normalizedNormal.z);
-
+	   
 	worldTangent = (world * vec4(worldTangent, 0.0)).xyz;
     worldBinormal = (world * vec4(worldBinormal, 0.0)).xyz;
 	vec3 worldNormal = (world * vec4(normalize(normal), 0.0)).xyz;

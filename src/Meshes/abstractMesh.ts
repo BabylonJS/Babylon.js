@@ -95,8 +95,8 @@ class _InternalAbstractMeshDataInfo {
     public _currentLODIsUpToDate: boolean = false;
     public _collisionRetryCount: number = 3;
     public _morphTargetManager: Nullable<MorphTargetManager> = null;
-    public _bakedVertexAnimationManager: Nullable<IBakedVertexAnimationManager> = null;
     public _renderingGroupId = 0;
+    public _bakedVertexAnimationManager: Nullable<IBakedVertexAnimationManager> = null;
     public _material: Nullable<Material> = null;
     public _materialForRenderPass: Array<Material | undefined>; // map a render pass id (index in the array) to a Material
     public _positions: Nullable<Vector3[]> = null;
