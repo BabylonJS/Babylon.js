@@ -982,6 +982,17 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /**
+    * Flag the AbstractMesh as dirty (Forcing it to update everything)
+    * @param property if set to "rotation" the objects rotationQuaternion will be set to null
+    * @returns this AbstractMesh
+    */
+     public markAsDirty(property?: string): AbstractMesh {
+        this._currentRenderId = Number.MAX_VALUE;
+        this._isDirty = true;
+        return this;
+     }
+
+     /**
      * Resets the draw wrappers cache for all submeshes of this abstract mesh
      */
     public resetDrawCache(): void {
