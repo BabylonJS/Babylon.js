@@ -315,8 +315,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 const button = this.state.currentNode as Button;
                 return <ButtonPropertyGridComponent key="buttonMenu" rectangle={button} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
                 onAddComponent={ (value) => { 
-                    let guiElement = GUINodeTools.CreateControlFromString(value);
-                    let newGuiNode = this.props.globalState.workbench.createNewGuiNode(guiElement);
+                    const guiElement = GUINodeTools.CreateControlFromString(value);
+                    const newGuiNode = this.props.globalState.workbench.createNewGuiNode(guiElement);
                     button.addControl(newGuiNode);
                     this.props.globalState.onSelectionChangedObservable.notifyObservers(newGuiNode);
                 }} />;
