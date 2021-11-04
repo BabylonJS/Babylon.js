@@ -122,23 +122,23 @@ export class _GLTFMaterialExporter {
      * @param mimeType texture mime type
      * @param images array of images
      * @param textures array of textures
-     * @param materials array of materials
+     * @param materials set of materials
      * @param imageData mapping of texture names to base64 textures
      * @param hasTextureCoords specifies if texture coordinates are present on the material
      */
-    public _convertMaterialsToGLTFAsync(babylonMaterials: Material[], mimeType: ImageMimeType, hasTextureCoords: boolean) {
+    public _convertMaterialsToGLTFAsync(exportMaterials: Set<Material>, mimeType: ImageMimeType, hasTextureCoords: boolean) {
         let promises: Promise<IMaterial>[] = [];
-        for (let babylonMaterial of babylonMaterials) {
-            if (babylonMaterial.getClassName() === "StandardMaterial") {
-                promises.push(this._convertStandardMaterialAsync(babylonMaterial as StandardMaterial, mimeType, hasTextureCoords));
+        exportMaterials.forEach((material) => {
+            if (material.getClassName() === "StandardMaterial") {
+                promises.push(this._convertStandardMaterialAsync(material as StandardMaterial, mimeType, hasTextureCoords));
             }
-            else if (babylonMaterial.getClassName().indexOf("PBR") !== -1) {
-                promises.push(this._convertPBRMaterialAsync(babylonMaterial as PBRMaterial, mimeType, hasTextureCoords));
+            else if (material.getClassName().indexOf("PBR") !== -1) {
+                promises.push(this._convertPBRMaterialAsync(material as PBRMaterial, mimeType, hasTextureCoords));
             }
             else {
-                Tools.Warn(`Unsupported material type: ${babylonMaterial.name}`);
+                Tools.Warn(`Unsupported material type: ${material.name}`);
             }
-        }
+        });
 
         return Promise.all(promises).then(() => { /* do nothing */ });
     }
