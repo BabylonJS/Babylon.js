@@ -2215,7 +2215,7 @@ export class Control {
             throw new Error("Invalid engine. Unable to create a canvas.");
         }
 
-        var result = Engine.getFontOffset(font);
+        var result = engine.getFontOffset(font);
         Control._FontHeightSizes[font] = result;
 
         return result;

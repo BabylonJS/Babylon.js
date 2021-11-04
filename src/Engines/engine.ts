@@ -2005,7 +2005,7 @@ export class Engine extends ThinEngine {
      * @param font font name
      * @return an object containing ascent, height and descent
      */
-    static getFontOffset(font: string): { ascent: number, height: number, descent: number } {
+    public getFontOffset(font: string): { ascent: number, height: number, descent: number } {
         var text = document.createElement("span");
         text.innerHTML = "Hg";
         text.setAttribute('style', `font: ${font} !important`);
