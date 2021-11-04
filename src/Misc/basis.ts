@@ -108,13 +108,13 @@ export const GetInternalFormatFromBasisFormat = (basisFormat: number, engine: En
     let format;
     switch (basisFormat) {
         case BASIS_FORMATS.cTFETC1:
-            format = engine.getCaps().etc1?.COMPRESSED_RGB_ETC1_WEBGL;
+            format = Constants.TEXTUREFORMAT_COMPRESSED_RGB_ETC1_WEBGL;
             break;
         case BASIS_FORMATS.cTFBC1:
-            format = engine.getCaps().s3tc?.COMPRESSED_RGB_S3TC_DXT1_EXT;
+            format = Constants.TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1;
             break;
         case BASIS_FORMATS.cTFBC4:
-            format = engine.getCaps().s3tc?.COMPRESSED_RGBA_S3TC_DXT5_EXT;
+            format = Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5;
             break;
     }
 
