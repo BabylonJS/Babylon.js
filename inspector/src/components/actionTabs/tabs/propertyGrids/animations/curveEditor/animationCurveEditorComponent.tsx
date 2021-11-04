@@ -41,15 +41,14 @@ export class AnimationCurveEditorComponent extends React.Component<
         this.props.context.onActiveAnimationChanged.notifyObservers();
     }
 
-    shouldComponentUpdate(newProps: IAnimationCurveEditorComponentProps, newState: IAnimationCurveEditorComponentState) {               
+    shouldComponentUpdate(newProps: IAnimationCurveEditorComponentProps, newState: IAnimationCurveEditorComponentState) {
         if (newState.isOpen !== this.state.isOpen) {
-
             if (newState.isOpen) {
                 this.props.context.prepare();
                 if (this.props.context.animations && this.props.context.animations.length) {
                     setTimeout(() => {
                         this.props.context.activeAnimations.push(this.props.context.useTargetAnimations ? (this.props.context.animations![0] as TargetedAnimation).animation : this.props.context.animations![0] as Animation);
-                        this.props.context.onActiveAnimationChanged.notifyObservers();    
+                        this.props.context.onActiveAnimationChanged.notifyObservers();
                     });
                 }
             }
@@ -75,7 +74,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                 break;
             case "a":
                 if (evt.ctrlKey) {
-                    this.props.context.onSelectAllKeys.notifyObservers();                    
+                    this.props.context.onSelectAllKeys.notifyObservers();
                     this.props.context.onActiveKeyPointChanged.notifyObservers();
                     evt.preventDefault();
                 }
@@ -97,7 +96,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                         size={{ width: 1024, height: 512 }}
                         onResize={() => this.props.context.onHostWindowResized.notifyObservers()}
                         onClose={(window: Window) => this.onCloseAnimationCurveEditor(window)}
-                        onKeyDown={evt => this._onKeyDown(evt)}
+                        onKeyDown={(evt) => this._onKeyDown(evt)}
                     >
                         <div id="curve-editor">
                             <TopBarComponent globalState={this.props.globalState} context={this.props.context}/>
