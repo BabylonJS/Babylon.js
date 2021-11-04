@@ -718,6 +718,11 @@ export class ShaderMaterial extends Material {
             defines.push("#define NUM_MORPH_INFLUENCERS 0");
         }
 
+        // Baked Vertex Animation
+        if (mesh) {
+            MaterialHelper.PrepareAttributesForBakedVertexAnimation(attribs, mesh, defines);
+        }
+
         // Textures
         for (var name in this._textures) {
             if (!this._textures[name].isReady()) {
@@ -1049,6 +1054,12 @@ export class ShaderMaterial extends Material {
             const manager = (<Mesh>mesh).morphTargetManager;
             if (manager && manager.numInfluencers > 0) {
                 MaterialHelper.BindMorphTargetParameters(<Mesh>mesh, effect);
+            }
+
+            const bvaManager = (<Mesh>mesh).bakedVertexAnimationManager;
+
+            if (bvaManager && bvaManager.isEnabled) {
+                mesh.bakedVertexAnimationManager?.bind(effect, this._effectUsesInstances);
             }
         }
 

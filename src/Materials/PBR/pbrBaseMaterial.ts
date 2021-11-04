@@ -85,6 +85,8 @@ export class PBRMaterialDefines extends MaterialDefines
     public DETAILDIRECTUV = 0;
     public DETAIL_NORMALBLENDMETHOD = 0;
 
+    public BAKED_VERTEX_ANIMATION_TEXTURE = false;
+
     public AMBIENT = false;
     public AMBIENTDIRECTUV = 0;
     public AMBIENTINGRAYSCALE = false;
@@ -1383,6 +1385,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
         MaterialHelper.PrepareAttributesForInstances(attribs, defines);
         MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, defines);
+        MaterialHelper.PrepareAttributesForBakedVertexAnimation(attribs, mesh, defines);
 
         var shaderName = "pbr";
 
@@ -2246,6 +2249,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             // Morph targets
             if (defines.NUM_MORPH_INFLUENCERS) {
                 MaterialHelper.BindMorphTargetParameters(mesh, this._activeEffect);
+            }
+
+            if (defines.BAKED_VERTEX_ANIMATION_TEXTURE) {
+                mesh.bakedVertexAnimationManager?.bind(effect, defines.INSTANCES);
             }
 
             // image processing
