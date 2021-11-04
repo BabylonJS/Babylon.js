@@ -82,6 +82,7 @@
 }
 
 .diagram-container {
+    position: relative;
     display: grid;
     grid-row: 1;
     grid-column: 4;
@@ -95,10 +96,9 @@
         height: 100%;
     }
 
-    .around {
-        position: absolute;
-        width: 30px;
-        height: 30px;
+    .ge-scalePoint {
+        width: 15px;
+        height: 15px;
         background: blue;
     }
 }

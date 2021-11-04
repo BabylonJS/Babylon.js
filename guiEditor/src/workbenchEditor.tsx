@@ -274,8 +274,8 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                     }
                     {/* The gui workbench diagram */}
                     <div className="diagram-container">
-                        <GuiGizmoComponent globalState={this.props.globalState} />
                         <WorkbenchComponent ref={"workbenchCanvas"} globalState={this.props.globalState} />
+                        <GuiGizmoComponent globalState={this.props.globalState} />
                     </div>
 
                     <div id="rightGrab" onPointerDown={(evt) => this.onPointerDown(evt)} onPointerUp={(evt) => this.onPointerUp(evt)} onPointerMove={(evt) => this.resizeColumns(evt, false)}></div>

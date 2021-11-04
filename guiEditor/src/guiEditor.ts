@@ -62,6 +62,7 @@ export class GUIEditor {
         // create the middle workbench canvas
         if (!globalState.guiTexture) {
             globalState.workbench.createGUICanvas();
+            globalState.guiGizmo.createBaseGizmo();
             if (options.currentSnippetToken) {
                 try {
                     globalState.workbench.loadFromSnippet(options.currentSnippetToken);
