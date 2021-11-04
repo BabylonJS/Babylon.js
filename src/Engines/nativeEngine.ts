@@ -2849,4 +2849,10 @@ export class NativeEngine extends Engine {
                 throw new Error(`Unsupported attribute type: ${type}.`);
         }
     }
+
+    public getFontOffset(font: string): { ascent: number, height: number, descent: number } {
+        // TODO
+        var result = { ascent: 0, height: 0, descent: 0 };
+        return result;
+    }
 }
