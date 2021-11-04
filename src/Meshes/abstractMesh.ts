@@ -18,7 +18,7 @@ import { MaterialDefines } from "../Materials/materialDefines";
 import { Light } from "../Lights/light";
 import { Skeleton } from "../Bones/skeleton";
 import { MorphTargetManager } from "../Morph/morphTargetManager";
-import { BakedVertexAnimationManager } from "../BakedVertexAnimation/bakedVertexAnimationManager";
+import { IBakedVertexAnimationManager } from "../BakedVertexAnimation/bakedVertexAnimationManager";
 import { IEdgesRenderer } from "../Rendering/edgesRenderer";
 import { SolidParticle } from "../Particles/solidParticle";
 import { Constants } from "../Engines/constants";
@@ -95,7 +95,7 @@ class _InternalAbstractMeshDataInfo {
     public _currentLODIsUpToDate: boolean = false;
     public _collisionRetryCount: number = 3;
     public _morphTargetManager: Nullable<MorphTargetManager> = null;
-    public _bakedVertexAnimationManager: Nullable<BakedVertexAnimationManager> = null;
+    public _bakedVertexAnimationManager: Nullable<IBakedVertexAnimationManager> = null;
     public _renderingGroupId = 0;
     public _material: Nullable<Material> = null;
     public _materialForRenderPass: Array<Material | undefined>; // map a render pass id (index in the array) to a Material
@@ -292,11 +292,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * Gets or sets the baked vertex animation manager
      * @see https://doc.babylonjs.com/divingDeeper/animation/baked_texture_animations
      */
-     public get bakedVertexAnimationManager(): Nullable<BakedVertexAnimationManager> {
+     public get bakedVertexAnimationManager(): Nullable<IBakedVertexAnimationManager> {
         return this._internalAbstractMeshDataInfo._bakedVertexAnimationManager;
     }
 
-    public set bakedVertexAnimationManager(value: Nullable<BakedVertexAnimationManager>) {
+    public set bakedVertexAnimationManager(value: Nullable<IBakedVertexAnimationManager>) {
         if (this._internalAbstractMeshDataInfo._bakedVertexAnimationManager === value) {
             return;
         }

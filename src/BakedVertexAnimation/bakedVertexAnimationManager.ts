@@ -5,12 +5,67 @@ import { BaseTexture } from '../Materials/Textures/baseTexture';
 import { Vector4 } from "../Maths/math.vector";
 import { Effect } from "../Materials/effect";
 
+export interface IBakedVertexAnimationManager {
+    /**
+     * The vertex animation texture
+     */
+    texture: Nullable<BaseTexture>;
+
+    /**
+     * Gets or sets a boolean indicating if the edgesRenderer is active
+     */
+    isEnabled: boolean;
+
+    /**
+     * The animation parameters for the mesh. See setAnimationParameters()
+     */
+    animationParameters: Vector4;
+
+    /**
+     * The time counter, to pick the correct animation frame.
+     */
+    time: number;
+
+    /**
+     * Binds to the effect.
+     * @param effect The effect to bind to.
+     * @param useInstances True when it's an instance.
+     */
+    bind(effect: Effect, useInstances: boolean): void;
+
+    /**
+     * Sets animation parameters.
+     * @param startFrame The first frame of the animation.
+     * @param endFrame The last frame of the animation.
+     * @param offset The offset when starting the animation.
+     * @param speedFramesPerSecond The frame rate.
+     */
+    setAnimationParameters(
+        startFrame: number,
+        endFrame: number,
+        offset: number,
+        speedFramesPerSecond: number
+    ): void;
+
+    /**
+     * Disposes the resources of the manager.
+     * @param forceDisposeTextures - Forces the disposal of all textures.
+     */
+    dispose(forceDisposeTextures?: boolean): void;
+
+    /**
+     * Get the current class name useful for serialization or dynamic coding.
+     * @returns "BakedVertexAnimationManager"
+     */
+    getClassName(): string;
+}
+
 /**
  * This class is used to animate meshes using a baked vertex animation texture
  * @see https://doc.babylonjs.com/divingDeeper/animation/baked_texture_animations
  * @since 5.0
  */
-export class BakedVertexAnimationManager {
+export class BakedVertexAnimationManager implements IBakedVertexAnimationManager {
     private _scene: Scene;
 
     private _texture: Nullable<BaseTexture> = null;
