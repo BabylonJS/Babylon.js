@@ -10,10 +10,6 @@ import { Texture } from "../Materials/Textures/texture";
 
 var serializedGeometries: Geometry[] = [];
 var serializeGeometry = (geometry: Geometry, serializationGeometries: any): any => {
-    if ((<any>serializedGeometries)[geometry.id]) {
-        return;
-    }
-
     if (geometry.doNotSerialize) {
         return;
     }
