@@ -17,7 +17,7 @@ import { ScrollViewer } from "babylonjs-gui/2D/controls/scrollViewers/scrollView
 import { RadioButton } from "babylonjs-gui/2D/controls/radioButton";
 import { ImageBasedSlider } from "babylonjs-gui/2D/controls/sliders/imageBasedSlider";
 
-const imageUrl = "https://playground.babylonjs.com/textures/grass.png";
+export let imageControlDefaultUrl = "https://playground.babylonjs.com/textures/grass.png";
 
 export class GUINodeTools {
     public static CreateControlFromString(data: string) {
@@ -74,7 +74,7 @@ export class GUINodeTools {
                 element.isPointerBlocker = true;
                 return element;
             case "ImageButton":
-                element = Button.CreateImageButton("Button", "Click Me", imageUrl);
+                element = Button.CreateImageButton("Button", "Click Me", imageControlDefaultUrl);
                 element.background = "#333333";
                 element.color = "#ffffff";
                 element.isPointerBlocker = true;
@@ -86,7 +86,7 @@ export class GUINodeTools {
                 element.addKeysRow(["1", "2", "3", "\u2190"]);
                 return element;
             case "Image":
-                element = new Image("Image", imageUrl);
+                element = new Image("Image", imageControlDefaultUrl);
                 element.width = "512px";
                 element.height = "512px";
                 element.autoScale = true;
@@ -94,7 +94,7 @@ export class GUINodeTools {
                 element.isPointerBlocker = true;
                 return element;
             case "ButtonImage":
-                element = new Image("Image", imageUrl);
+                element = new Image("Image", imageControlDefaultUrl);
                 element.width = "100%";
                 element.height = "100%";
                 element.color = "transparent";
