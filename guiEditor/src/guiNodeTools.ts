@@ -19,7 +19,7 @@ import { ImageBasedSlider } from "babylonjs-gui/2D/controls/sliders/imageBasedSl
 
 
 export class GUINodeTools {
-    static imageControlDefaultUrl = "https://playground.babylonjs.com/textures/grass.png";
+    public static imageControlDefaultUrl = "https://playground.babylonjs.com/textures/grass.png";
 
     public static CreateControlFromString(data: string) {
         let element;
