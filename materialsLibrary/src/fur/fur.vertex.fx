@@ -74,6 +74,7 @@ void main(void) {
 
 	#include<instancesVertex>
     #include<bonesVertex>
+    #include<bakedVertexAnimation>
 
 //FUR
 float r = Rand(position);

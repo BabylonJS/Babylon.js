@@ -4,9 +4,11 @@ import { Texture } from "../Materials/Textures/texture";
 import { Mesh } from "../Meshes/mesh";
 import { EncodeArrayBufferToBase64, DecodeBase64ToBinary } from "../Misc/stringTools";
 import { Scene } from "../scene";
+import { Constants } from "../Engines/constants";
 
 /**
  * Class to bake vertex animation textures.
+ * @since 5.0
  */
 export class VertexAnimationBaker {
     private _scene: Scene;
@@ -27,7 +29,7 @@ export class VertexAnimationBaker {
      * Bakes the animation into the texture. This should be called once, when the
      * scene starts, so the VAT is generated and associated to the mesh.
      * @param ranges Defines the ranges in the animation that will be baked.
-     * @returns Float32Array
+     * @returns The array of matrix transforms for each vertex (columns) and frame (rows), as a Float32Array.
      */
     public async bakeVertexData(ranges: AnimationRange[]): Promise<Float32Array> {
         if (!this._mesh.skeleton) {
@@ -68,7 +70,6 @@ export class VertexAnimationBaker {
      * @param vertexData The array to save data to.
      * @param frameIndex Current frame in the skeleton animation to render.
      * @param textureIndex Current index of the texture data.
-     * @returns
      */
     private async _executeAnimationFrame(vertexData: Float32Array, frameIndex: number, textureIndex: number): Promise<void> {
         return new Promise<void>((resolve, _reject) => {
@@ -86,7 +87,7 @@ export class VertexAnimationBaker {
     /**
      * Builds a vertex animation texture given the vertexData in an array.
      * @param vertexData The vertex animation data. You can generate it with bakeVertexData().
-     * @returns RawTexture
+     * @returns The vertex animation texture to be used with BakedVertexAnimationManager.
      */
     public textureFromBakedVertexData(vertexData: Float32Array): RawTexture {
         if (!this._mesh.skeleton) {
@@ -102,7 +103,7 @@ export class VertexAnimationBaker {
             false,
             false,
             Texture.NEAREST_NEAREST,
-            1
+            Constants.TEXTURETYPE_FLOAT
         );
         texture.name = "VAT" + this._mesh.skeleton.name;
         return texture;
@@ -110,7 +111,7 @@ export class VertexAnimationBaker {
     /**
      * Serializes our vertexData to an object, with a nice string for the vertexData.
      * @param vertexData The vertex array data.
-     * @returns Object
+     * @returns This object serialized to a JS dict.
      */
     public serializeBakedVertexDataToObject(vertexData: Float32Array): Record<string, any> {
         if (!this._mesh.skeleton) {
@@ -132,25 +133,24 @@ export class VertexAnimationBaker {
     /**
      * Loads previously baked data.
      * @param data The object as serialized by serializeBakedVertexDataToObject()
-     * @returns self
+     * @returns The array of matrix transforms for each vertex (columns) and frame (rows), as a Float32Array.
      */
     public loadBakedVertexDataFromObject(data: Record<string, any>): Float32Array {
         return new Float32Array(DecodeBase64ToBinary(data.vertexData));
     }
     /**
      * Serializes our vertexData to a JSON string, with a nice string for the vertexData.
-     * Should be called right after bakeVertexData(), since we release the vertexData
-     * from memory on rebuild().
+     * Should be called right after bakeVertexData().
      * @param vertexData The vertex array data.
-     * @returns string
+     * @returns This object serialized to a safe string.
      */
     public serializeBakedVertexDataToJSON(vertexData: Float32Array): string {
         return JSON.stringify(this.serializeBakedVertexDataToObject(vertexData));
     }
     /**
-     * Loads previously baked data.
-     * @param json The json string.
-     * @returns self
+     * Loads previously baked data in string format.
+     * @param json The json string as serialized by serializeBakedVertexDataToJSON().
+     * @returns The array of matrix transforms for each vertex (columns) and frame (rows), as a Float32Array.
      */
     public loadBakedVertexDataFromJSON(json: string): Float32Array {
         return this.loadBakedVertexDataFromObject(JSON.parse(json));
