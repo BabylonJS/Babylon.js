@@ -71,6 +71,34 @@ export class WebGPURenderItemBlendColor implements IWebGPURenderItem {
     }
 }
 
+/** @hidden */
+export class WebGPURenderItemBeginOcclusionQuery implements IWebGPURenderItem {
+    public constructor(public query: number) {
+    }
+
+    public run(renderPass: GPURenderPassEncoder) {
+        renderPass.beginOcclusionQuery(this.query);
+    }
+
+    public clone(): WebGPURenderItemBeginOcclusionQuery {
+        return new WebGPURenderItemBeginOcclusionQuery(this.query);
+    }
+}
+
+/** @hidden */
+export class WebGPURenderItemEndOcclusionQuery implements IWebGPURenderItem {
+    public constructor() {
+    }
+
+    public run(renderPass: GPURenderPassEncoder) {
+        renderPass.endOcclusionQuery();
+    }
+
+    public clone(): WebGPURenderItemEndOcclusionQuery {
+        return new WebGPURenderItemEndOcclusionQuery();
+    }
+}
+
 class WebGPURenderItemBundles implements IWebGPURenderItem {
     public bundles: GPURenderBundle[];
 
