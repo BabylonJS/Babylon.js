@@ -481,8 +481,8 @@ export class InputManager {
      * @param elementToAttachTo defines the target DOM element to attach to (will use the canvas by default)
      */
     public attachControl(attachUp = true, attachDown = true, attachMove = true, elementToAttachTo: Nullable<HTMLElement> = null): void {
-        let scene = this._scene;
-        let engine = scene.getEngine();
+        const scene = this._scene;
+        const engine = scene.getEngine();
 
         if (!elementToAttachTo) {
             elementToAttachTo = engine.getInputElement();
