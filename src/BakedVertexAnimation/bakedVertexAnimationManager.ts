@@ -5,6 +5,10 @@ import { BaseTexture } from '../Materials/Textures/baseTexture';
 import { Vector4 } from "../Maths/math.vector";
 import { Effect } from "../Materials/effect";
 
+/**
+ * Interface for baked vertex animation texture, see BakedVertexAnimationManager
+ * @since 5.0
+ */
 export interface IBakedVertexAnimationManager {
     /**
      * The vertex animation texture
