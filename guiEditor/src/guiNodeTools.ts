@@ -17,7 +17,6 @@ import { ScrollViewer } from "babylonjs-gui/2D/controls/scrollViewers/scrollView
 import { RadioButton } from "babylonjs-gui/2D/controls/radioButton";
 import { ImageBasedSlider } from "babylonjs-gui/2D/controls/sliders/imageBasedSlider";
 
-
 export class GUINodeTools {
     public static ImageControlDefaultUrl = "https://playground.babylonjs.com/textures/grass.png";
 
