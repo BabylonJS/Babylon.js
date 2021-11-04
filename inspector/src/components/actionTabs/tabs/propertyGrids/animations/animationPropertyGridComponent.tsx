@@ -36,7 +36,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
     private _onBeforeRenderObserver: Nullable<Observer<Scene>>;
     private _isPlaying = false;
     private timelineRef: React.RefObject<SliderLineComponent>;
-    private _animationCurveEditorContext: Context;
+    private _animationCurveEditorContext: Nullable<Context>;
     private _animationControl = {
         from: 0,
         to: 0,
@@ -134,6 +134,14 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
         if (this._isPlaying) {
             this.playOrPause();
         }
+    }
+
+    getSnapshotBeforeUpdate() {
+        this._animationCurveEditorContext = null;
+        return null;
+    }
+
+    componentDidUpdate() {
     }
 
     render() {
