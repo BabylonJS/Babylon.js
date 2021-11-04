@@ -1543,7 +1543,7 @@ export class _Exporter {
                     for (const attribute of attributeData) {
                         const attributeKind = attribute.kind;
                         if ((attributeKind === VertexBuffer.UVKind || attributeKind === VertexBuffer.UV2Kind) && !this._options.exportUnusedUVs) {
-                            if (glTFMaterial && !this._glTFMaterialExporter._hasTexturesPresent(glTFMaterial)) {
+                            if (!glTFMaterial || !this._glTFMaterialExporter._hasTexturesPresent(glTFMaterial)) {
                                 continue;
                             }
                         }
@@ -1701,74 +1701,114 @@ export class _Exporter {
             }
         });
 
-        return this._glTFMaterialExporter._convertMaterialsToGLTFAsync(babylonScene.materials, ImageMimeType.PNG, true).then(() => {
-            return this.createNodeMapAndAnimationsAsync(babylonScene, nodes, binaryWriter).then((nodeMap) => {
-                return this.createSkinsAsync(babylonScene, nodeMap, binaryWriter).then((skinMap) => {
-                    this._nodeMap = nodeMap;
+        return this.getExportNodes(nodes).then(([exportNodes, exportMaterials]) => {
+            return this._glTFMaterialExporter._convertMaterialsToGLTFAsync(exportMaterials, ImageMimeType.PNG, true).then(() => {
+                return this.createNodeMapAndAnimationsAsync(babylonScene, exportNodes, binaryWriter).then((nodeMap) => {
+                    return this.createSkinsAsync(babylonScene, nodeMap, binaryWriter).then((skinMap) => {
+                        this._nodeMap = nodeMap;
 
-                    this._totalByteLength = binaryWriter.getByteOffset();
-                    if (this._totalByteLength == undefined) {
-                        throw new Error("undefined byte length!");
-                    }
+                        this._totalByteLength = binaryWriter.getByteOffset();
+                        if (this._totalByteLength == undefined) {
+                            throw new Error("undefined byte length!");
+                        }
 
-                    // Build Hierarchy with the node map.
-                    for (let babylonNode of nodes) {
-                        glTFNodeIndex = this._nodeMap[babylonNode.uniqueId];
-                        if (glTFNodeIndex !== undefined) {
-                            glTFNode = this._nodes[glTFNodeIndex];
+                        // Build Hierarchy with the node map.
+                        for (let babylonNode of nodes) {
+                            glTFNodeIndex = this._nodeMap[babylonNode.uniqueId];
+                            if (glTFNodeIndex !== undefined) {
+                                glTFNode = this._nodes[glTFNodeIndex];
 
-                            if (babylonNode.metadata) {
-                                if (this._options.metadataSelector) {
-                                    glTFNode.extras = this._options.metadataSelector(babylonNode.metadata);
-                                } else if (babylonNode.metadata.gltf) {
-                                    glTFNode.extras = babylonNode.metadata.gltf.extras;
+                                if (babylonNode.metadata) {
+                                    if (this._options.metadataSelector) {
+                                        glTFNode.extras = this._options.metadataSelector(babylonNode.metadata);
+                                    } else if (babylonNode.metadata.gltf) {
+                                        glTFNode.extras = babylonNode.metadata.gltf.extras;
+                                    }
                                 }
-                            }
 
-                            if (!babylonNode.parent || rootNodesToLeftHanded.indexOf(babylonNode.parent) !== -1) {
-                                if (this._options.shouldExportNode && !this._options.shouldExportNode(babylonNode)) {
-                                    Tools.Log("Omitting " + babylonNode.name + " from scene.");
-                                }
-                                else {
-                                    let convertToRightHandedSystem = this._convertToRightHandedSystemMap[babylonNode.uniqueId];
-                                    if (convertToRightHandedSystem) {
-                                        if (glTFNode.translation) {
-                                            glTFNode.translation[2] *= -1;
-                                            glTFNode.translation[0] *= -1;
+                                if (!babylonNode.parent || rootNodesToLeftHanded.indexOf(babylonNode.parent) !== -1) {
+                                    if (this._options.shouldExportNode && !this._options.shouldExportNode(babylonNode)) {
+                                        Tools.Log("Omitting " + babylonNode.name + " from scene.");
+                                    }
+                                    else {
+                                        let convertToRightHandedSystem = this._convertToRightHandedSystemMap[babylonNode.uniqueId];
+                                        if (convertToRightHandedSystem) {
+                                            if (glTFNode.translation) {
+                                                glTFNode.translation[2] *= -1;
+                                                glTFNode.translation[0] *= -1;
+                                            }
+                                            glTFNode.rotation = glTFNode.rotation ? Quaternion.FromArray([0, 1, 0, 0]).multiply(Quaternion.FromArray(glTFNode.rotation)).asArray() : (Quaternion.FromArray([0, 1, 0, 0])).asArray();
                                         }
-                                        glTFNode.rotation = glTFNode.rotation ? Quaternion.FromArray([0, 1, 0, 0]).multiply(Quaternion.FromArray(glTFNode.rotation)).asArray() : (Quaternion.FromArray([0, 1, 0, 0])).asArray();
-                                    }
 
-                                    scene.nodes.push(glTFNodeIndex);
-                                }
-                            }
-
-                            if (babylonNode instanceof Mesh) {
-                                let babylonMesh: Mesh = babylonNode;
-                                if (babylonMesh.skeleton) {
-                                    glTFNode.skin = skinMap[babylonMesh.skeleton.uniqueId];
-                                }
-                            }
-
-                            directDescendents = babylonNode.getDescendants(true);
-                            if (!glTFNode.children && directDescendents && directDescendents.length) {
-                                const children: number[] = [];
-                                for (let descendent of directDescendents) {
-                                    if (this._nodeMap[descendent.uniqueId] != null) {
-                                        children.push(this._nodeMap[descendent.uniqueId]);
+                                        scene.nodes.push(glTFNodeIndex);
                                     }
                                 }
-                                if (children.length) {
-                                    glTFNode.children = children;
+
+                                if (babylonNode instanceof Mesh) {
+                                    let babylonMesh: Mesh = babylonNode;
+                                    if (babylonMesh.skeleton) {
+                                        glTFNode.skin = skinMap[babylonMesh.skeleton.uniqueId];
+                                    }
+                                }
+
+                                directDescendents = babylonNode.getDescendants(true);
+                                if (!glTFNode.children && directDescendents && directDescendents.length) {
+                                    const children: number[] = [];
+                                    for (let descendent of directDescendents) {
+                                        if (this._nodeMap[descendent.uniqueId] != null) {
+                                            children.push(this._nodeMap[descendent.uniqueId]);
+                                        }
+                                    }
+                                    if (children.length) {
+                                        glTFNode.children = children;
+                                    }
                                 }
                             }
                         }
-                    }
-                    if (scene.nodes.length) {
-                        this._scenes.push(scene);
-                    }
+                        if (scene.nodes.length) {
+                            this._scenes.push(scene);
+                        }
+                    });
                 });
             });
+        });
+    }
+
+    /**
+     * Getting the nodes and materials that would be exported.
+     * @param nodes Babylon transform nodes
+     * @returns Array of nodes which would be exported.
+     * @returns Set of materials which would be exported.
+     */
+    private getExportNodes(nodes: Node[]): Promise<[Node[], Set<Material>]> {
+        let promiseChain = Promise.resolve();
+        let exportNodes: Node[] = [];
+        let exportMaterials: Set<Material> = new Set<Material>();
+
+        for (let babylonNode of nodes) {
+            if (!this._options.shouldExportNode || this._options.shouldExportNode(babylonNode)) {
+                exportNodes.push(babylonNode);
+
+                if (babylonNode instanceof Mesh) {
+                    if (babylonNode.material) {
+                        exportMaterials.add(babylonNode.material);
+                    }
+                } else {
+                    let meshes: AbstractMesh[] = babylonNode.getChildMeshes(false);
+                    for (let mesh of meshes) {
+                        if (mesh.material) {
+                            exportMaterials.add(mesh.material);
+                        }
+                    }
+                }
+
+            } else {
+                `Excluding node ${babylonNode.name}`;
+            }
+        }
+
+        return promiseChain.then(() => {
+            return [exportNodes, exportMaterials];
         });
     }
 
@@ -1779,7 +1819,7 @@ export class _Exporter {
      * @param binaryWriter Buffer to write binary data to
      * @returns Node mapping of unique id to index
      */
-    private createNodeMapAndAnimationsAsync(babylonScene: Scene, nodes: Node[], binaryWriter: _BinaryWriter): Promise<{ [key: number]: number }> {
+    private createNodeMapAndAnimationsAsync(babylonScene: Scene, nodes: Node[], binaryWriter: _BinaryWriter): Promise<{ [key: number]: number }>  {
         let promiseChain = Promise.resolve();
         const nodeMap: { [key: number]: number } = {};
         let nodeIndex: number;
@@ -1791,38 +1831,33 @@ export class _Exporter {
         let idleGLTFAnimations: IAnimation[] = [];
 
         for (let babylonNode of nodes) {
-            if (!this._options.shouldExportNode || this._options.shouldExportNode(babylonNode)) {
-                promiseChain = promiseChain.then(() => {
-                    let convertToRightHandedSystem = this._convertToRightHandedSystemMap[babylonNode.uniqueId];
-                    return this.createNodeAsync(babylonNode, binaryWriter, convertToRightHandedSystem, nodeMap).then((node) => {
-                        const promise = this._extensionsPostExportNodeAsync("createNodeAsync", node, babylonNode, nodeMap);
-                        if (promise == null) {
-                            Tools.Warn(`Not exporting node ${babylonNode.name}`);
-                            return Promise.resolve();
-                        }
-                        else {
-                            return promise.then((node) => {
-                                if (!node) {
-                                    return;
-                                }
-                                this._nodes.push(node);
-                                nodeIndex = this._nodes.length - 1;
-                                nodeMap[babylonNode.uniqueId] = nodeIndex;
+            promiseChain = promiseChain.then(() => {
+                let convertToRightHandedSystem = this._convertToRightHandedSystemMap[babylonNode.uniqueId];
+                return this.createNodeAsync(babylonNode, binaryWriter, convertToRightHandedSystem, nodeMap).then((node) => {
+                    const promise = this._extensionsPostExportNodeAsync("createNodeAsync", node, babylonNode, nodeMap);
+                    if (promise == null) {
+                        Tools.Warn(`Not exporting node ${babylonNode.name}`);
+                        return Promise.resolve();
+                    }
+                    else {
+                        return promise.then((node) => {
+                            if (!node) {
+                                return;
+                            }
+                            this._nodes.push(node);
+                            nodeIndex = this._nodes.length - 1;
+                            nodeMap[babylonNode.uniqueId] = nodeIndex;
 
-                                if (!babylonScene.animationGroups.length) {
-                                    _GLTFAnimation._CreateMorphTargetAnimationFromMorphTargetAnimations(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, this._nodes, binaryWriter, this._bufferViews, this._accessors, convertToRightHandedSystem, this._animationSampleRate);
-                                    if (babylonNode.animations.length) {
-                                        _GLTFAnimation._CreateNodeAnimationFromNodeAnimations(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, this._nodes, binaryWriter, this._bufferViews, this._accessors, convertToRightHandedSystem, this._animationSampleRate);
-                                    }
+                            if (!babylonScene.animationGroups.length) {
+                                _GLTFAnimation._CreateMorphTargetAnimationFromMorphTargetAnimations(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, this._nodes, binaryWriter, this._bufferViews, this._accessors, convertToRightHandedSystem, this._animationSampleRate);
+                                if (babylonNode.animations.length) {
+                                    _GLTFAnimation._CreateNodeAnimationFromNodeAnimations(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, this._nodes, binaryWriter, this._bufferViews, this._accessors, convertToRightHandedSystem, this._animationSampleRate);
                                 }
-                            });
-                        }
-                    });
+                            }
+                        });
+                    }
                 });
-            }
-            else {
-                `Excluding node ${babylonNode.name}`;
-            }
+            });
         }
 
         return promiseChain.then(() => {

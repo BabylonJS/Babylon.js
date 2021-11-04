@@ -329,6 +329,7 @@
 - Fix for SkyMaterial sun position not working with non-default azimuth  ([AdversInc](https://github.com/adversinc))
 - Fix issue where default free camera rotation didn't work during pointer lock ([PolygonalSun](https://github.com/PolygonalSun))
 - Fix issue with wrong definition of a returned BASIS format ([RaananW](https://github.com/RaananW))
+- Fix glTF exporter exports unused materials from excluded meshes ([daoshengmu](https://github.com/daoshengmu))
 
 ## Breaking changes
 
