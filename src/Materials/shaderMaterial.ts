@@ -720,12 +720,6 @@ export class ShaderMaterial extends Material {
 
         // Baked Vertex Animation
         if (mesh) {
-            const bvaManager = (<Mesh>mesh).bakedVertexAnimationManager;
-
-            if (bvaManager && bvaManager.isEnabled) {
-                defines.push("#define BAKED_VERTEX_ANIMATION_TEXTURE");
-            }
-
             MaterialHelper.PrepareAttributesForBakedVertexAnimation(attribs, mesh, defines);
         }
 
