@@ -8,6 +8,7 @@ import { Effect } from "../Materials/effect";
 /**
  * This class is used to animate meshes using a baked vertex animation texture
  * @see https://doc.babylonjs.com/divingDeeper/animation/baked_texture_animations
+ * @since 5.0
  */
 export class BakedVertexAnimationManager {
     private _scene: Scene;
