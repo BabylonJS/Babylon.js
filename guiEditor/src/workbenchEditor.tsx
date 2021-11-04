@@ -41,7 +41,6 @@ interface IGraphEditorState {
 }
 
 export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEditorState> {
-    private _workbenchCanvas: WorkbenchComponent;
 
     private _startX: number;
     private _moveInProgress: boolean;
@@ -55,10 +54,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
 
 
     componentDidMount() {
-        if (this.props.globalState.hostDocument) {
-            this._workbenchCanvas = this.refs["workbenchCanvas"] as WorkbenchComponent;
-        }
-
         if (navigator.userAgent.indexOf("Mobile") !== -1) {
             ((this.props.globalState.hostDocument || document).querySelector(".blocker") as HTMLElement).style.visibility = "visible";
         }
