@@ -44,7 +44,6 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
     public _allowCameraRotation = true;
 
     private _currentActiveButton: number = -1;
-    private _usingSafari = Tools.IsSafari();
 
     /**
      * Manage the mouse inputs to control the movement of a free camera.
@@ -70,12 +69,13 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
         if (!this._pointerInput) {
             this._pointerInput = (p) => {
                 var evt = <IPointerEvent>p.event;
+                let isTouch = evt.pointerType === "touch";
 
                 if (engine.isInVRExclusivePointerMode) {
                     return;
                 }
 
-                if (!this.touchEnabled && evt.pointerType === "touch") {
+                if (!this.touchEnabled && isTouch) {
                     return;
                 }
 
@@ -85,7 +85,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
 
                 let srcElement = <HTMLElement>(evt.srcElement || evt.target);
 
-                if (p.type === PointerEventTypes.POINTERDOWN) {
+                if (p.type === PointerEventTypes.POINTERDOWN && (this._currentActiveButton === -1 || isTouch)) {
                     try {
                         srcElement?.setPointerCapture(evt.pointerId);
                     } catch (e) {
@@ -110,7 +110,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                     if (engine.isPointerLock && this._onMouseMove) {
                         this._onMouseMove(p.event);
                     }
-                } else if (p.type === PointerEventTypes.POINTERUP || (p.type === PointerEventTypes.POINTERMOVE && p.event.button === this._currentActiveButton && this._currentActiveButton !== -1 && !this._usingSafari)) {
+                } else if (p.type === PointerEventTypes.POINTERUP && (this._currentActiveButton === evt.button || isTouch)) {
                     try {
                         srcElement?.releasePointerCapture(evt.pointerId);
                     } catch (e) {
@@ -123,36 +123,34 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                         evt.preventDefault();
                     }
                 } else if (p.type === PointerEventTypes.POINTERMOVE) {
-                    if (!this.previousPosition) {
-                        if (engine.isPointerLock && this._onMouseMove) {
-                            this._onMouseMove(p.event);
+
+                    if (engine.isPointerLock && this._onMouseMove) {
+                        this._onMouseMove(p.event);
+                    }
+                    else if (this.previousPosition) {
+                        var offsetX = evt.clientX - this.previousPosition.x;
+                        var offsetY = evt.clientY - this.previousPosition.y;
+                        if (this.camera.getScene().useRightHandedSystem) {
+                            offsetX *= -1;
+                        }
+                        if (this.camera.parent && this.camera.parent._getWorldMatrixDeterminant() < 0) {
+                            offsetX *= -1;
                         }
 
-                        return;
-                    }
+                        if (this._allowCameraRotation) {
+                            this.camera.cameraRotation.y += offsetX / this.angularSensibility;
+                            this.camera.cameraRotation.x += offsetY / this.angularSensibility;
+                        }
+                        this.onPointerMovedObservable.notifyObservers({ offsetX: offsetX, offsetY: offsetY });
 
-                    var offsetX = evt.clientX - this.previousPosition.x;
-                    var offsetY = evt.clientY - this.previousPosition.y;
-                    if (this.camera.getScene().useRightHandedSystem) {
-                        offsetX *= -1;
-                    }
-                    if (this.camera.parent && this.camera.parent._getWorldMatrixDeterminant() < 0) {
-                        offsetX *= -1;
-                    }
+                        this.previousPosition = {
+                            x: evt.clientX,
+                            y: evt.clientY,
+                        };
 
-                    if (this._allowCameraRotation) {
-                        this.camera.cameraRotation.y += offsetX / this.angularSensibility;
-                        this.camera.cameraRotation.x += offsetY / this.angularSensibility;
-                    }
-                    this.onPointerMovedObservable.notifyObservers({ offsetX: offsetX, offsetY: offsetY });
-
-                    this.previousPosition = {
-                        x: evt.clientX,
-                        y: evt.clientY,
-                    };
-
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
+                        if (!noPreventDefault) {
+                            evt.preventDefault();
+                        }
                     }
                 }
             };

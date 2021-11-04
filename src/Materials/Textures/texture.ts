@@ -636,6 +636,8 @@ export class Texture extends BaseTexture {
             return this._cachedTextureMatrix;
         }
 
+        // We flag the materials that are using this texture as "texture dirty" because depending on the fact that the matrix is the identity or not, some defines
+        // will get different values (see MaterialHelper.PrepareDefinesForMergedUV), meaning we should regenerate the effect accordingly
         scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
             return mat.hasTexture(this);
         });
@@ -677,6 +679,8 @@ export class Texture extends BaseTexture {
             this._projectionModeMatrix = Matrix.Zero();
         }
 
+        const flagMaterialsAsTextureDirty = this._cachedCoordinatesMode !== this.coordinatesMode;
+
         this._cachedUOffset = this.uOffset;
         this._cachedVOffset = this.vOffset;
         this._cachedUScale = this.uScale;
@@ -709,9 +713,13 @@ export class Texture extends BaseTexture {
                 break;
         }
 
-        scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
-            return (mat.getActiveTextures().indexOf(this) !== -1);
-        });
+        if (flagMaterialsAsTextureDirty) {
+            // We flag the materials that are using this texture as "texture dirty" if the coordinatesMode has changed.
+            // Indeed, this property is used to set the value of some defines used to generate the effect (in material.isReadyForSubMesh), so we must make sure this code will be re-executed and the effect recreated if necessary
+            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+                return (mat.getActiveTextures().indexOf(this) !== -1);
+            });
+        }
 
         return this._cachedTextureMatrix;
     }
@@ -770,7 +778,7 @@ export class Texture extends BaseTexture {
                 serializationObject.name = serializationObject.name.replace("data:", "");
             } else if (this.url && StartsWith(this.url, "data:") && this._buffer instanceof Uint8Array) {
                 serializationObject.base64String = "data:image/png;base64," + EncodeArrayBufferToBase64(this._buffer);
-            } else if (Texture.ForceSerializeBuffers || (this.url && StartsWith(this.url, "blob:"))) {
+            } else if (Texture.ForceSerializeBuffers || (this.url && StartsWith(this.url, "blob:")) || this._forceSerialize) {
                 serializationObject.base64String = !this._engine || this._engine._features.supportSyncTextureRead ? GenerateBase64StringFromTexture(this) : GenerateBase64StringFromTextureAsync(this);
             }
         }

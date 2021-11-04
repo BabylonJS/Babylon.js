@@ -13,7 +13,7 @@ import { Tools } from "../Misc/tools";
 import { Observer } from "../Misc/observable";
 import { EnvironmentTextureSpecularInfoV1, CreateImageDataArrayBufferViews, GetEnvInfo, UploadEnvSpherical } from "../Misc/environmentTextureTools";
 import { Scene } from "../scene";
-import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
+import { RenderTargetCreationOptions, TextureSize, DepthTextureCreationOptions } from "../Materials/Textures/textureCreationOptions";
 import { IPipelineContext } from './IPipelineContext';
 import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IViewportLike } from '../Maths/math.like';
 import { Logger } from "../Misc/logger";
@@ -22,9 +22,7 @@ import { ThinEngine, ISceneLike } from './thinEngine';
 import { IWebRequest } from '../Misc/interfaces/iWebRequest';
 import { EngineStore } from './engineStore';
 import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
-import { RenderTargetTextureSize } from '../Engines/Extensions/engine.renderTarget';
 import { WebGL2ShaderProcessor } from '../Engines/WebGL/webGL2ShaderProcessors';
-import { DepthTextureCreationOptions } from '../Engines/depthTextureCreationOptions';
 import { IMaterialContext } from "./IMaterialContext";
 import { IDrawContext } from "./IDrawContext";
 import { ICanvas, IImage } from "./ICanvas";
@@ -592,7 +590,7 @@ class NativeRenderTargetWrapper extends RenderTargetWrapper {
     public _framebuffer: Nullable<WebGLFramebuffer> = null;
     public _framebufferDepthStencil: Nullable<WebGLFramebuffer> = null;
 
-    constructor(isMulti: boolean, isCube: boolean, size: RenderTargetTextureSize, engine: NativeEngine) {
+    constructor(isMulti: boolean, isCube: boolean, size: TextureSize, engine: NativeEngine) {
         super(isMulti, isCube, size, engine);
         this._engine = engine;
     }
@@ -640,6 +638,7 @@ export interface NativeEngineOptions {
 /** @hidden */
 class CommandBufferEncoder {
     private readonly _commandStream: NativeDataStream;
+    private readonly _pending = new Array<NativeData>();
     private _isCommandBufferScopeActive = false;
 
     public constructor(private readonly _engine: INativeEngine) {
@@ -661,31 +660,31 @@ class CommandBufferEncoder {
         }
 
         this._isCommandBufferScopeActive = false;
-        this._engine.submitCommands();
+        this._submit();
     }
 
     public startEncodingCommand(command: NativeData) {
         this._commandStream.writeNativeData(command);
     }
 
-    public encodeCommandArgAsUInt32(commandArg: unknown) {
-        this._commandStream.writeUint32(commandArg as number);
+    public encodeCommandArgAsUInt32(commandArg: number) {
+        this._commandStream.writeUint32(commandArg);
     }
 
     public encodeCommandArgAsUInt32s(commandArg: Uint32Array) {
         this._commandStream.writeUint32Array(commandArg);
     }
 
-    public encodeCommandArgAsInt32(commandArg: unknown) {
-        this._commandStream.writeInt32(commandArg as number);
+    public encodeCommandArgAsInt32(commandArg: number) {
+        this._commandStream.writeInt32(commandArg);
     }
 
     public encodeCommandArgAsInt32s(commandArg: Int32Array) {
         this._commandStream.writeInt32Array(commandArg);
     }
 
-    public encodeCommandArgAsFloat32(commandArg: unknown) {
-        this._commandStream.writeFloat32(commandArg as number);
+    public encodeCommandArgAsFloat32(commandArg: number) {
+        this._commandStream.writeFloat32(commandArg);
     }
 
     public encodeCommandArgAsFloat32s(commandArg: Float32Array) {
@@ -694,12 +693,18 @@ class CommandBufferEncoder {
 
     public encodeCommandArgAsNativeData(commandArg: NativeData) {
         this._commandStream.writeNativeData(commandArg);
+        this._pending.push(commandArg);
     }
 
     public finishEncodingCommand() {
         if (!this._isCommandBufferScopeActive) {
-            this._engine.submitCommands();
+            this._submit();
         }
+    }
+
+    private _submit() {
+        this._engine.submitCommands();
+        this._pending.length = 0;
     }
 }
 
@@ -812,6 +817,7 @@ export class NativeEngine extends Engine {
             needsInvertingBitmap: true,
             useUBOBindingCache: true,
             needShaderCodeInlining: true,
+            needToAlwaysBindUniformBuffers: false,
             _collectUbosUpdatedInFrame: false,
         };
 
@@ -933,14 +939,14 @@ export class NativeEngine extends Engine {
         }
 
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_CLEAR);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(Boolean(backBuffer && color));
-        this._commandBufferEncoder.encodeCommandArgAsFloat32(color?.r);
-        this._commandBufferEncoder.encodeCommandArgAsFloat32(color?.g);
-        this._commandBufferEncoder.encodeCommandArgAsFloat32(color?.b);
-        this._commandBufferEncoder.encodeCommandArgAsFloat32(color?.a ?? 1);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(depth);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(backBuffer && color ? 1 : 0);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(color ? color.r : 0);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(color ? color.g : 0);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(color ? color.b : 0);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(color ? color.a : 1);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(depth ? 1 : 0);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(1);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(stencil);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(stencil ? 1 : 0);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(0);
         this._commandBufferEncoder.finishEncodingCommand();
     }
@@ -1235,11 +1241,11 @@ export class NativeEngine extends Engine {
         this._zOffsetUnits = zOffsetUnits;
 
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETSTATE);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(culling);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(culling ? 1 : 0);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(zOffset);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(zOffsetUnits);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(this.cullBackFaces ?? cullBackFaces ?? true);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(reverseSide);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32((this.cullBackFaces ?? cullBackFaces ?? true) ? 1 : 0);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(reverseSide ? 1 : 0);
         this._commandBufferEncoder.finishEncodingCommand();
     }
 
@@ -2144,7 +2150,7 @@ export class NativeEngine extends Engine {
         return texture;
     }
 
-    public _createDepthStencilTexture(size: RenderTargetTextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
+    public _createDepthStencilTexture(size: TextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
         const nativeRTWrapper = rtWrapper as NativeRenderTargetWrapper;
         const texture = new InternalTexture(this, InternalTextureSource.DepthStencil);
 
@@ -2329,7 +2335,7 @@ export class NativeEngine extends Engine {
     }
 
     /** @hidden */
-    public _createHardwareRenderTargetWrapper(isMulti: boolean, isCube: boolean, size: RenderTargetTextureSize): RenderTargetWrapper {
+    public _createHardwareRenderTargetWrapper(isMulti: boolean, isCube: boolean, size: TextureSize): RenderTargetWrapper {
         const rtWrapper = new NativeRenderTargetWrapper(isMulti, isCube, size, this);
         this._renderTargetWrapperCache.push(rtWrapper);
         return rtWrapper;
@@ -2338,7 +2344,7 @@ export class NativeEngine extends Engine {
     public createRenderTargetTexture(size: number | { width: number, height: number }, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper {
         const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, size) as NativeRenderTargetWrapper;
 
-        const fullOptions = new RenderTargetCreationOptions();
+        const fullOptions: RenderTargetCreationOptions = {};
 
         if (options !== undefined && typeof options === "object") {
             fullOptions.generateMipMaps = options.generateMipMaps;

@@ -89,7 +89,7 @@
                             }
                         }
 
-                        await init(qs.engine || "webgl2", qs.useReverseDepthBuffer);
+                        await init(qs.engine || "webgl2", qs.useReverseDepthBuffer, qs.useNonCompatibilityMode);
 
                         var recursiveRunTest = function(i) {
                             runTest(i, function() {

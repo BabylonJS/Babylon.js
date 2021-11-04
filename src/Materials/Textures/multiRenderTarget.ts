@@ -5,6 +5,7 @@ import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTextur
 import { Constants } from "../../Engines/constants";
 
 import "../../Engines/Extensions/engine.multiRender";
+import { InternalTexture } from "./internalTexture";
 
 /**
  * Creation options of the multi render target texture.
@@ -252,18 +253,30 @@ export class MultiRenderTarget extends RenderTargetTexture {
     }
 
     /**
-     * Replaces a texture within the MRT.
-     * @param texture The new texture to insert in the MRT
+     * Replaces an internal texture within the MRT. Useful to share textures between MultiRenderTarget.
+     * @param texture The new texture to set in the MRT
      * @param index The index of the texture to replace
+     * @param disposePrevious Set to true if the previous internal texture should be disposed
      */
-    public replaceTexture(texture: Texture, index: number) {
-        if (texture._texture && this._renderTarget) {
-            const internalTextures = this._renderTarget.textures!;
-            this._textures[index] = texture;
-            internalTextures[index] = texture._texture;
-            if (index === 0) {
-                this._texture = internalTextures[index];
-            }
+    public setInternalTexture(texture: InternalTexture, index: number, disposePrevious: boolean = true) {
+        if (!this.renderTarget) {
+            return;
+        }
+
+        this.renderTarget.setTexture(texture, index, disposePrevious);
+
+        if (!this.textures[index]) {
+            this.textures[index] = new Texture(null, this.getScene());
+        }
+        this.textures[index]._texture = texture;
+
+        this._count = this.renderTarget.textures ? this.renderTarget.textures.length : 0;
+
+        if (this._multiRenderTargetOptions.types) {
+            this._multiRenderTargetOptions.types[index] = texture.type;
+        }
+        if (this._multiRenderTargetOptions.samplingModes) {
+            this._multiRenderTargetOptions.samplingModes[index] = texture.samplingMode;
         }
     }
 
@@ -324,9 +337,14 @@ export class MultiRenderTarget extends RenderTargetTexture {
     /**
      * Dispose the render targets and their associated resources
      */
-    public dispose(): void {
+    public dispose(doNotDisposeInternalTextures = false): void {
         this._releaseTextures();
-        this.releaseInternalTextures();
+        if (!doNotDisposeInternalTextures) {
+            this.releaseInternalTextures();
+        } else {
+            // Prevent internal texture dispose in super.dispose
+            this._texture = null;
+        }
         super.dispose();
     }
 

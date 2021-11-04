@@ -772,7 +772,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this._engine.resize();
         });
 
-        this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(`Please note: This editor is still a work in progress. You may submit feedback to msDestiny14 on GitHub.`);
+        this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(`Welcome to the GUI Editor Alpha. This editor is still a work in progress. Please submit feedback using the "Give feedback" button in the menu.`);
         this._engine.runRenderLoop(() => { this._scene.render() });
         this.globalState.onNewSceneObservable.notifyObservers(this.globalState.guiTexture.getScene());
         this.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();

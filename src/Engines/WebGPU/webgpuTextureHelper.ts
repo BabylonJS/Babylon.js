@@ -647,6 +647,77 @@ export class WebGPUTextureHelper {
         return useSRGBBuffer ? WebGPUConstants.TextureFormat.RGBA8UnormSRGB : WebGPUConstants.TextureFormat.RGBA8Unorm;
     }
 
+    public static GetNumChannelsFromWebGPUTextureFormat(format: GPUTextureFormat): number {
+        switch (format) {
+            case WebGPUConstants.TextureFormat.R8Unorm:
+            case WebGPUConstants.TextureFormat.R8Snorm:
+            case WebGPUConstants.TextureFormat.R8Uint:
+            case WebGPUConstants.TextureFormat.R8Sint:
+            case WebGPUConstants.TextureFormat.BC4RUnorm:
+            case WebGPUConstants.TextureFormat.BC4RSnorm:
+            case WebGPUConstants.TextureFormat.R16Uint:
+            case WebGPUConstants.TextureFormat.R16Sint:
+            case WebGPUConstants.TextureFormat.Depth16Unorm:
+            case WebGPUConstants.TextureFormat.R16Float:
+            case WebGPUConstants.TextureFormat.R32Uint:
+            case WebGPUConstants.TextureFormat.R32Sint:
+            case WebGPUConstants.TextureFormat.R32Float:
+            case WebGPUConstants.TextureFormat.Depth32Float:
+            case WebGPUConstants.TextureFormat.Stencil8:
+            case WebGPUConstants.TextureFormat.Depth24Plus:
+                return 1;
+
+            case WebGPUConstants.TextureFormat.RG8Unorm:
+            case WebGPUConstants.TextureFormat.RG8Snorm:
+            case WebGPUConstants.TextureFormat.RG8Uint:
+            case WebGPUConstants.TextureFormat.RG8Sint:
+            case WebGPUConstants.TextureFormat.Depth24UnormStencil8: // composite format - let's say it's byte...
+            case WebGPUConstants.TextureFormat.Depth32FloatStencil8: // composite format - let's say it's byte...
+            case WebGPUConstants.TextureFormat.BC5RGUnorm:
+            case WebGPUConstants.TextureFormat.BC5RGSnorm:
+            case WebGPUConstants.TextureFormat.RG16Uint:
+            case WebGPUConstants.TextureFormat.RG16Sint:
+            case WebGPUConstants.TextureFormat.RG16Float:
+            case WebGPUConstants.TextureFormat.RG32Uint:
+            case WebGPUConstants.TextureFormat.RG32Sint:
+            case WebGPUConstants.TextureFormat.RG32Float:
+            case WebGPUConstants.TextureFormat.Depth24PlusStencil8:
+                return 2;
+
+            case WebGPUConstants.TextureFormat.RGB9E5UFloat: // composite format - let's say it's byte...
+            case WebGPUConstants.TextureFormat.RG11B10UFloat: // composite format - let's say it's byte...
+            case WebGPUConstants.TextureFormat.BC6HRGBUFloat:
+            case WebGPUConstants.TextureFormat.BC6HRGBFloat:
+                return 3;
+
+            case WebGPUConstants.TextureFormat.RGBA8Unorm:
+            case WebGPUConstants.TextureFormat.RGBA8UnormSRGB:
+            case WebGPUConstants.TextureFormat.RGBA8Snorm:
+            case WebGPUConstants.TextureFormat.RGBA8Uint:
+            case WebGPUConstants.TextureFormat.RGBA8Sint:
+            case WebGPUConstants.TextureFormat.BGRA8Unorm:
+            case WebGPUConstants.TextureFormat.BGRA8UnormSRGB:
+            case WebGPUConstants.TextureFormat.RGB10A2Unorm: // composite format - let's say it's byte...
+            case WebGPUConstants.TextureFormat.BC7RGBAUnorm:
+            case WebGPUConstants.TextureFormat.BC7RGBAUnormSRGB:
+            case WebGPUConstants.TextureFormat.BC3RGBAUnorm:
+            case WebGPUConstants.TextureFormat.BC3RGBAUnormSRGB:
+            case WebGPUConstants.TextureFormat.BC2RGBAUnorm:
+            case WebGPUConstants.TextureFormat.BC2RGBAUnormSRGB:
+            case WebGPUConstants.TextureFormat.BC1RGBAUnorm:
+            case WebGPUConstants.TextureFormat.BC1RGBAUnormSRGB:
+            case WebGPUConstants.TextureFormat.RGBA16Uint:
+            case WebGPUConstants.TextureFormat.RGBA16Sint:
+            case WebGPUConstants.TextureFormat.RGBA16Float:
+            case WebGPUConstants.TextureFormat.RGBA32Uint:
+            case WebGPUConstants.TextureFormat.RGBA32Sint:
+            case WebGPUConstants.TextureFormat.RGBA32Float:
+                return 4;
+        }
+
+        throw `Unknown format ${format}!`;
+    }
+
     public invertYPreMultiplyAlpha(gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY = false, premultiplyAlpha = false, faceIndex = 0, mipLevel = 0, layers = 1, commandEncoder?: GPUCommandEncoder): void {
         const useOwnCommandEncoder = commandEncoder === undefined;
         const pipeline = this._getPipeline(format, PipelineType.InvertYPremultiplyAlpha, { invertY, premultiplyAlpha });
@@ -1138,7 +1209,7 @@ export class WebGPUTextureHelper {
                     }
 
                     // create a temp texture and copy the image to it
-                    const srcTexture = this.createTexture({ width, height, layers: 1 }, false, false, false, false, false, format, 1, commandEncoder, WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.Sampled);
+                    const srcTexture = this.createTexture({ width, height, layers: 1 }, false, false, false, false, false, format, 1, commandEncoder, WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.TextureBinding);
 
                     this._deferredReleaseTextures.push([srcTexture, null]);
 

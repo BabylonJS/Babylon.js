@@ -1,74 +1,34 @@
 import { InternalTexture, InternalTextureSource } from "../../../Materials/Textures/internalTexture";
-import { RenderTargetCreationOptions } from "../../../Materials/Textures/renderTargetCreationOptions";
+import { RenderTargetCreationOptions, DepthTextureCreationOptions, TextureSize } from "../../../Materials/Textures/textureCreationOptions";
 import { Nullable } from "../../../types";
 import { Constants } from "../../constants";
-import { DepthTextureCreationOptions } from "../../depthTextureCreationOptions";
-import { RenderTargetTextureSize } from "../../Extensions/engine.renderTarget";
 import { RenderTargetWrapper } from "../../renderTargetWrapper";
 import { WebGPUEngine } from "../../webgpuEngine";
 
-WebGPUEngine.prototype._createHardwareRenderTargetWrapper = function(isMulti: boolean, isCube: boolean, size: RenderTargetTextureSize): RenderTargetWrapper {
+WebGPUEngine.prototype._createHardwareRenderTargetWrapper = function(isMulti: boolean, isCube: boolean, size: TextureSize): RenderTargetWrapper {
     const rtWrapper = new RenderTargetWrapper(isMulti, isCube, size, this);
     this._renderTargetWrapperCache.push(rtWrapper);
     return rtWrapper;
 };
 
-WebGPUEngine.prototype.createRenderTargetTexture = function (size: RenderTargetTextureSize, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper {
+WebGPUEngine.prototype.createRenderTargetTexture = function (size: TextureSize, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper {
     const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, size) as RenderTargetWrapper;
 
-    let fullOptions = new RenderTargetCreationOptions();
+    const fullOptions: RenderTargetCreationOptions = {};
 
     if (options !== undefined && typeof options === "object") {
-        fullOptions.generateMipMaps = options.generateMipMaps;
         fullOptions.generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
         fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && options.generateStencilBuffer;
-        fullOptions.type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_INT : options.type;
-        fullOptions.samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
-        fullOptions.format = options.format === undefined ? Constants.TEXTUREFORMAT_RGBA : options.format;
-        fullOptions.samples = options.samples ?? 1;
-        fullOptions.creationFlags = options.creationFlags ?? 0;
     } else {
-        fullOptions.generateMipMaps = <boolean>options;
         fullOptions.generateDepthBuffer = true;
         fullOptions.generateStencilBuffer = false;
-        fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
-        fullOptions.samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
-        fullOptions.format = Constants.TEXTUREFORMAT_RGBA;
-        fullOptions.samples = 1;
-        fullOptions.creationFlags = 0;
     }
 
-    if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
-        fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
-    } else if (fullOptions.type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
-        fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
-    }
-
-    const texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
-
-    const width = (<{ width: number, height: number, layers?: number }>size).width || <number>size;
-    const height = (<{ width: number, height: number, layers?: number }>size).height || <number>size;
-    const layers = (<{ width: number, height: number, layers?: number }>size).layers || 0;
+    const texture = this._createInternalTexture(size, options, true, InternalTextureSource.RenderTarget);
 
     rtWrapper._generateDepthBuffer = fullOptions.generateDepthBuffer;
     rtWrapper._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
 
-    texture.baseWidth = width;
-    texture.baseHeight = height;
-    texture.width = width;
-    texture.height = height;
-    texture.depth = layers;
-    texture.isReady = true;
-    texture.samples = fullOptions.samples;
-    texture.generateMipMaps = fullOptions.generateMipMaps ? true : false;
-    texture.samplingMode = fullOptions.samplingMode;
-    texture.type = fullOptions.type;
-    texture.format = fullOptions.format;
-    texture.is2DArray = layers > 0;
-    texture._cachedWrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
-    texture._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
-
-    this._internalTexturesCache.push(texture);
     rtWrapper.setTextures(texture);
 
     if (rtWrapper._generateDepthBuffer || rtWrapper._generateStencilBuffer) {
@@ -96,7 +56,7 @@ WebGPUEngine.prototype.createRenderTargetTexture = function (size: RenderTargetT
     return rtWrapper;
 };
 
-WebGPUEngine.prototype._createDepthStencilTexture = function (size: RenderTargetTextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
+WebGPUEngine.prototype._createDepthStencilTexture = function (size: TextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
     const internalTexture = new InternalTexture(this, InternalTextureSource.DepthStencil);
 
     const internalOptions = {
@@ -122,7 +82,7 @@ WebGPUEngine.prototype._createDepthStencilTexture = function (size: RenderTarget
     return internalTexture;
 };
 
-WebGPUEngine.prototype._setupDepthStencilTexture = function (internalTexture: InternalTexture, size: RenderTargetTextureSize, generateStencil: boolean, bilinearFiltering: boolean, comparisonFunction: number, samples = 1): void {
+WebGPUEngine.prototype._setupDepthStencilTexture = function (internalTexture: InternalTexture, size: TextureSize, generateStencil: boolean, bilinearFiltering: boolean, comparisonFunction: number, samples = 1): void {
     const width = (<{ width: number, height: number, layers?: number }>size).width || <number>size;
     const height = (<{ width: number, height: number, layers?: number }>size).height || <number>size;
     const layers = (<{ width: number, height: number, layers?: number }>size).layers || 0;

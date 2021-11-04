@@ -130,11 +130,11 @@ export class TerrainMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh._materialDefines) {
+        if (!subMesh.materialDefines) {
             subMesh.materialDefines = new TerrainMaterialDefines();
         }
 
-        var defines = <TerrainMaterialDefines>subMesh._materialDefines;
+        var defines = <TerrainMaterialDefines>subMesh.materialDefines;
         var scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
@@ -284,7 +284,7 @@ export class TerrainMaterial extends PushMaterial {
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         var scene = this.getScene();
 
-        var defines = <TerrainMaterialDefines>subMesh._materialDefines;
+        var defines = <TerrainMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }

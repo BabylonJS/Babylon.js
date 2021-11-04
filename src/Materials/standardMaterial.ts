@@ -142,8 +142,8 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public PREPASS = false;
     public PREPASS_IRRADIANCE = false;
     public PREPASS_IRRADIANCE_INDEX = -1;
-    public PREPASS_ALBEDO = false;
-    public PREPASS_ALBEDO_INDEX = -1;
+    public PREPASS_ALBEDO_SQRT = false;
+    public PREPASS_ALBEDO_SQRT_INDEX = -1;
     public PREPASS_DEPTH = false;
     public PREPASS_DEPTH_INDEX = -1;
     public PREPASS_NORMAL = false;
@@ -174,6 +174,9 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public SAMPLER3DBGRMAP = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public MULTIVIEW = false;
+    public ORDER_INDEPENDENT_TRANSPARENCY = false;
+    public ORDER_INDEPENDENT_TRANSPARENCY_16BITS = false;
+
     /**
      * If the reflection texture on this material is in linear color space
      * @hidden
@@ -744,6 +747,8 @@ export class StandardMaterial extends PushMaterial {
     constructor(name: string, scene: Scene) {
         super(name, scene);
 
+        this.buildUniformLayout();
+
         // Setup the default processing configuration to the scene.
         this._attachImageProcessingConfiguration(null);
         this.prePassConfiguration = new PrePassConfiguration();
@@ -864,12 +869,12 @@ export class StandardMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh._materialDefines) {
+        if (!subMesh.materialDefines) {
             subMesh.materialDefines = new StandardMaterialDefines();
         }
 
         var scene = this.getScene();
-        var defines = <StandardMaterialDefines>subMesh._materialDefines;
+        var defines = <StandardMaterialDefines>subMesh.materialDefines;
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }
@@ -883,7 +888,11 @@ export class StandardMaterial extends PushMaterial {
         MaterialHelper.PrepareDefinesForMultiview(scene, defines);
 
         // PrePass
-        MaterialHelper.PrepareDefinesForPrePass(scene, defines, this.canRenderToMRT);
+        const oit = this.needAlphaBlendingForMesh(mesh) && this.getScene().useOrderIndependentTransparency;
+        MaterialHelper.PrepareDefinesForPrePass(scene, defines, this.canRenderToMRT && !oit);
+
+        // Order independant transparency
+        MaterialHelper.PrepareDefinesForOIT(scene, defines, oit);
 
         // Textures
         if (defines._areTexturesDirty) {
@@ -1234,7 +1243,8 @@ export class StandardMaterial extends PushMaterial {
 
             var samplers = ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler",
                 "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler",
-                "refractionCubeSampler", "refraction2DSampler", "boneSampler", "morphTargets"];
+                "refractionCubeSampler", "refraction2DSampler", "boneSampler", "morphTargets", "oitDepthSampler",
+                "oitFrontColorSampler"];
 
             var uniformBuffers = ["Material", "Scene", "Mesh"];
 
@@ -1300,7 +1310,6 @@ export class StandardMaterial extends PushMaterial {
                 } else {
                     scene.resetCachedMaterial();
                     subMesh.setEffect(effect, defines, this._materialContext);
-                    this.buildUniformLayout();
                 }
             }
         }
@@ -1372,7 +1381,7 @@ export class StandardMaterial extends PushMaterial {
      * Unbinds the material from the mesh
      */
     public unbind(): void {
-        if (this._activeEffect) {
+        if (this._activeEffect && !this.getScene().getEngine()._features.needToAlwaysBindUniformBuffers) {
             let needFlag = false;
             if (this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
                 this._activeEffect.setTexture("reflection2DSampler", null);
@@ -1401,7 +1410,7 @@ export class StandardMaterial extends PushMaterial {
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         var scene = this.getScene();
 
-        var defines = <StandardMaterialDefines>subMesh._materialDefines;
+        var defines = <StandardMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }
@@ -1607,6 +1616,11 @@ export class StandardMaterial extends PushMaterial {
                 }
             }
 
+            // OIT with depth peeling
+            if (this.getScene().useOrderIndependentTransparency && this.needAlphaBlendingForMesh(mesh)) {
+                this.getScene().depthPeelingRenderer!.bind(effect);
+            }
+
             this.detailMap.bindForSubMesh(ubo, scene, this.isFrozen);
 
             // Clip plane
@@ -1614,6 +1628,9 @@ export class StandardMaterial extends PushMaterial {
 
             // Colors
             this.bindEyePosition(effect);
+        } else if (scene.getEngine()._features.needToAlwaysBindUniformBuffers) {
+            ubo.bindToEffect(effect, "Material");
+            this._needToBindSceneUbo = true;
         }
 
         if (mustRebind || !this.isFrozen) {

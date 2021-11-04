@@ -60,7 +60,11 @@ describe('Babylon Geometry', () => {
             geometry.setIndices([0, 1, 2, 3], 4);
 
             var result = geometry.getVerticesData(BABYLON.VertexBuffer.ColorKind);
-            expect(result).to.have.ordered.members([0.4, 0.4, 0.4, 0.6, 0.6, 0.6, 0.8, 0.8, 0.8, 1, 1, 1]);
+            expect(result).to.be.a('float32array');
+            var expectedResult = new Float32Array([0.4, 0.4, 0.4, 0.6, 0.6, 0.6, 0.8, 0.8, 0.8, 1, 1, 1]);
+            for (let i = 0; i < data.length; i++) {
+                expect(result[i]).to.be.equal(expectedResult[i]);
+            }
         });
     });
 });
