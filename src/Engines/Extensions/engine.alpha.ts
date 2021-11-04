@@ -118,6 +118,11 @@ ThinEngine.prototype.setAlphaMode = function (mode: number, noDepthWriteChange: 
             this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE_MINUS_DST_COLOR, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ZERO, this._gl.ONE);
             this._alphaState.alphaBlend = true;
             break;
+        case Constants.ALPHA_LAYER_ACCUMULATE:
+            // Same as ALPHA_COMBINE but accumulates (1 - alpha) values in the alpha channel for a later readout in order independant transparency
+            this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA);
+            this._alphaState.alphaBlend = true;
+            break;
     }
     if (!noDepthWriteChange) {
         this.depthCullingState.depthMask = (mode === Constants.ALPHA_DISABLE);
@@ -136,22 +141,22 @@ ThinEngine.prototype.setAlphaEquation = function (equation: number): void {
 
     switch (equation) {
         case Constants.ALPHA_EQUATION_ADD:
-            this._alphaState.setAlphaEquationParameters(this._gl.FUNC_ADD, this._gl.FUNC_ADD);
+            this._alphaState.setAlphaEquationParameters(Constants.GL_ALPHA_EQUATION_ADD, Constants.GL_ALPHA_EQUATION_ADD);
             break;
         case Constants.ALPHA_EQUATION_SUBSTRACT:
-            this._alphaState.setAlphaEquationParameters(this._gl.FUNC_SUBTRACT, this._gl.FUNC_SUBTRACT);
+            this._alphaState.setAlphaEquationParameters(Constants.GL_ALPHA_EQUATION_SUBTRACT, Constants.GL_ALPHA_EQUATION_SUBTRACT);
             break;
         case Constants.ALPHA_EQUATION_REVERSE_SUBTRACT:
-            this._alphaState.setAlphaEquationParameters(this._gl.FUNC_REVERSE_SUBTRACT, this._gl.FUNC_REVERSE_SUBTRACT);
+            this._alphaState.setAlphaEquationParameters(Constants.GL_ALPHA_EQUATION_REVERSE_SUBTRACT, Constants.GL_ALPHA_EQUATION_REVERSE_SUBTRACT);
             break;
         case Constants.ALPHA_EQUATION_MAX:
-            this._alphaState.setAlphaEquationParameters(this._gl.MAX, this._gl.MAX);
+            this._alphaState.setAlphaEquationParameters(Constants.GL_ALPHA_EQUATION_MAX, Constants.GL_ALPHA_EQUATION_MAX);
             break;
         case Constants.ALPHA_EQUATION_MIN:
-            this._alphaState.setAlphaEquationParameters(this._gl.MIN, this._gl.MIN);
+            this._alphaState.setAlphaEquationParameters(Constants.GL_ALPHA_EQUATION_MIN, Constants.GL_ALPHA_EQUATION_MIN);
             break;
         case Constants.ALPHA_EQUATION_DARKEN:
-            this._alphaState.setAlphaEquationParameters(this._gl.MIN, this._gl.FUNC_ADD);
+            this._alphaState.setAlphaEquationParameters(Constants.GL_ALPHA_EQUATION_MIN, Constants.GL_ALPHA_EQUATION_ADD);
             break;
     }
     this._alphaEquation = equation;

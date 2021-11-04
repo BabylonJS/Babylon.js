@@ -211,10 +211,10 @@ export class DetailMapConfiguration {
 
     /**
     * Get the current class name useful for serialization or dynamic coding.
-    * @returns "DetailMap"
+    * @returns "DetailMapConfiguration"
     */
     public getClassName(): string {
-        return "DetailMap";
+        return "DetailMapConfiguration";
     }
 
     /**

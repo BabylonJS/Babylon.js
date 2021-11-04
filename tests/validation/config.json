@@ -1271,7 +1271,7 @@
         {
             "title": "Instances manual update + motion blur",
             "renderCount": 10,
-            "playgroundId": "#HJGC2G#50",
+            "playgroundId": "#HJGC2G#127",
             "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "instances-mb-manual.png"
         },
@@ -1355,6 +1355,13 @@
             "playgroundId": "#8RU8Q3#81",
             "excludedEngines": ["webgl1"],
             "referenceImage": "sampleDepthTexture.png"
+        },
+        {
+            "title": "Order independent transparency",
+            "renderCount": 5,
+            "playgroundId": "#1PLV5Z#103",
+            "excludedEngines": ["webgl1"],
+            "referenceImage": "oit.png"
         }
     ]
 }

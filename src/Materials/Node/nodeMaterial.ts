@@ -736,11 +736,11 @@ export class NodeMaterial extends PushMaterial {
                     continue;
                 }
 
-                if (!subMesh._materialDefines) {
+                if (!subMesh.materialDefines) {
                     continue;
                 }
 
-                let defines = subMesh._materialDefines;
+                let defines = subMesh.materialDefines;
                 defines.markAllAsDirty();
                 defines.reset();
             }
@@ -1159,11 +1159,11 @@ export class NodeMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh._materialDefines) {
+        if (!subMesh.materialDefines) {
             subMesh.materialDefines = new NodeMaterialDefines();
         }
 
-        var defines = <NodeMaterialDefines>subMesh._materialDefines;
+        var defines = <NodeMaterialDefines>subMesh.materialDefines;
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }
@@ -1287,12 +1287,16 @@ export class NodeMaterial extends PushMaterial {
         this.bindOnlyWorldMatrix(world);
 
         let mustRebind = this._mustRebind(scene, effect, mesh.visibility);
+        let sharedData = this._sharedData;
 
         if (mustRebind) {
-            let sharedData = this._sharedData;
             if (effect) {
                 // Bindable blocks
                 for (var block of sharedData.bindableBlocks) {
+                    block.bind(effect, this, mesh, subMesh);
+                }
+
+                for (var block of sharedData.forcedBindableBlocks) {
                     block.bind(effect, this, mesh, subMesh);
                 }
 
@@ -1300,6 +1304,10 @@ export class NodeMaterial extends PushMaterial {
                 for (var inputBlock of sharedData.inputBlocks) {
                     inputBlock._transmit(effect, scene);
                 }
+            }
+        } else if (!this.isFrozen) {
+            for (var block of sharedData.forcedBindableBlocks) {
+                block.bind(effect, this, mesh, subMesh);
             }
         }
 

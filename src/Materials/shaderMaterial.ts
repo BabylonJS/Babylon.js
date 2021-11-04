@@ -126,7 +126,7 @@ export class ShaderMaterial extends Material {
     private _cachedWorldViewMatrix = new Matrix();
     private _cachedWorldViewProjectionMatrix = new Matrix();
     private _multiview: boolean = false;
-    private _cachedDefines: string;
+    private _effectUsesInstances: boolean;
 
     /** Define the Url to load snippets */
     public static SnippetUrl = "https://snippet.babylonjs.com";
@@ -571,7 +571,7 @@ export class ShaderMaterial extends Material {
     public isReady(mesh?: AbstractMesh, useInstances?: boolean, subMesh?: SubMesh): boolean {
         let effect = this.getEffect();
         if (effect && this.isFrozen) {
-            if (effect._wasPreviouslyReady) {
+            if (effect._wasPreviouslyReady && this._effectUsesInstances === useInstances) {
                 return true;
             }
         }
@@ -783,9 +783,7 @@ export class ShaderMaterial extends Material {
         var previousEffect = effect;
         var join = defines.join("\n");
 
-        if (this._cachedDefines !== join) {
-            this._cachedDefines = join;
-
+        if (this._drawWrapper.defines !== join) {
             effect = engine.createEffect(shaderName, <IEffectCreationOptions>{
                 attributes: attribs,
                 uniformsNames: uniforms,
@@ -799,7 +797,7 @@ export class ShaderMaterial extends Material {
                 shaderLanguage: this._options.shaderLanguage
             }, engine);
 
-            this._drawWrapper.effect = effect;
+            this._drawWrapper.setEffect(effect, join);
 
             if (this._onEffectCreatedObservable) {
                 onCreatedEffectParameters.effect = effect;
@@ -807,6 +805,8 @@ export class ShaderMaterial extends Material {
                 this._onEffectCreatedObservable.notifyObservers(onCreatedEffectParameters);
             }
         }
+
+        this._effectUsesInstances = !!useInstances;
 
         if (!effect?.isReady() ?? true) {
             return false;
@@ -887,8 +887,8 @@ export class ShaderMaterial extends Material {
                         }
                         break;
                     case "Scene":
-                        this.getScene().finalizeSceneUbo();
                         MaterialHelper.BindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
+                        this.getScene().finalizeSceneUbo();
                         useSceneUBO = true;
                         break;
                 }

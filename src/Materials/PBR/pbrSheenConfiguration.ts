@@ -213,7 +213,7 @@ export class PBRSheenConfiguration {
             return;
         }
 
-        const defines = subMesh!._materialDefines as unknown as IMaterialSheenDefines;
+        const defines = subMesh!.materialDefines as unknown as IMaterialSheenDefines;
 
         const identicalTextures = defines.SHEEN_TEXTURE_ROUGHNESS_IDENTICAL;
 

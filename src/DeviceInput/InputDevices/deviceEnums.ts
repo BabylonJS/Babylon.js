@@ -47,8 +47,6 @@ export enum PointerInput {
     DeltaHorizontal = 10,
     /** Delta Y */
     DeltaVertical = 11,
-    /** MoveBeing Hijack for simultaneous buttons pressed for instance */
-    FakeMove = 12,
 }
 
 /**

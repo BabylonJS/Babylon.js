@@ -1200,15 +1200,21 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Shadows
+        const currentRenderPassId = engine.currentRenderPassId;
         for (var light of this.lightSources) {
             let generator = light.getShadowGenerator();
 
             if (generator && (!generator.getShadowMap()?.renderList || (generator.getShadowMap()?.renderList && generator.getShadowMap()?.renderList?.indexOf(this) !== -1))) {
+                if (generator.getShadowMap()) {
+                    engine.currentRenderPassId = generator.getShadowMap()!.renderPassId;
+                }
                 for (var subMesh of this.subMeshes) {
                     if (!generator.isReady(subMesh, hardwareInstancedRendering, subMesh.getMaterial()?.needAlphaBlendingForMesh(this) ?? false)) {
+                        engine.currentRenderPassId = currentRenderPassId;
                         return false;
                     }
                 }
+                engine.currentRenderPassId = currentRenderPassId;
             }
         }
 
@@ -1927,6 +1933,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         this.getScene()._activeIndices.addCount(subMesh.indexCount * instancesCount, false);
 
         // Draw
+        if (engine._currentDrawContext) {
+            engine._currentDrawContext.useInstancing = true;
+        }
         this._bind(subMesh, effect, fillMode);
         this._draw(subMesh, fillMode, instancesCount);
 
@@ -1955,6 +1964,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         this.getScene()._activeIndices.addCount(subMesh.indexCount * instancesCount, false);
 
         // Draw
+        if (engine._currentDrawContext) {
+            engine._currentDrawContext.useInstancing = true;
+        }
         this._bind(subMesh, effect, fillMode);
         this._draw(subMesh, fillMode, instancesCount);
 
@@ -1999,6 +2011,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (hardwareInstancedRendering) {
             this._renderWithInstances(subMesh, fillMode, batch, effect, engine);
         } else {
+            if (engine._currentDrawContext) {
+                engine._currentDrawContext.useInstancing = false;
+            }
+
             let instanceCount = 0;
             if (batch.renderSelf[subMesh._id]) {
                 // Draw
@@ -4437,4 +4453,4 @@ RegisterClass("BABYLON.Mesh", Mesh);
 
 // LTS
 import { _injectLTSMesh } from "./mesh.lts";
-_injectLTSMesh();
+_injectLTSMesh(Mesh);
