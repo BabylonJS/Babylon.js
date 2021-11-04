@@ -57,11 +57,11 @@ export class Constants {
    * Alpha will be set to DST ALPHA
    */
   public static readonly ALPHA_EXCLUSION = 16;
-    /**
-     * Defines that alpha blending is SRC * SRC ALPHA + DST * (1 - SRC ALPHA)
-     * Alpha will be set to SRC ALPHA + (1 - SRC ALPHA) * DST ALPHA
-     */
-    public static readonly ALPHA_LAYER_ACCUMULATE = 17;
+  /**
+   * Defines that alpha blending is SRC * SRC ALPHA + DST * (1 - SRC ALPHA)
+   * Alpha will be set to SRC ALPHA + (1 - SRC ALPHA) * DST ALPHA
+   */
+  public static readonly ALPHA_LAYER_ACCUMULATE = 17;
 
   /** Defines that alpha blending equation a SUM */
   public static readonly ALPHA_EQUATION_ADD = 0;
@@ -188,6 +188,8 @@ export class Constants {
   public static readonly TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1 = 33776;
   /** Compressed ASTC 4x4 */
   public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4 = 37808;
+  /**  Compressed ETC1 (RGB) */
+  public static readonly TEXTUREFORMAT_COMPRESSED_RGB_ETC1_WEBGL = 36196;
 
   /** UNSIGNED_BYTE */
   public static readonly TEXTURETYPE_UNSIGNED_BYTE = 0;
