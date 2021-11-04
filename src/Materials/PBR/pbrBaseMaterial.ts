@@ -1946,6 +1946,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         const engine = scene.getEngine();
 
         // Binding unconditionally
+        this._uniformBuffer.bindToEffect(effect, "Material");
+
         this.subSurface.hardBindForSubMesh(this._uniformBuffer, scene, engine, this.isFrozen, defines.LODBASEDMICROSFURACE, this.realTimeFiltering, subMesh);
         this.prePassConfiguration.bindForSubMesh(this._activeEffect, scene, mesh, world, this.isFrozen);
 
@@ -1963,8 +1965,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         let reflectionTexture: Nullable<BaseTexture> = null;
         let ubo = this._uniformBuffer;
         if (mustRebind) {
-            ubo.bindToEffect(effect, "Material");
-
             this.bindViewProjection(effect);
             reflectionTexture = this._getReflectionTexture();
 
@@ -2227,7 +2227,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
             this.bindEyePosition(effect);
         } else if (scene.getEngine()._features.needToAlwaysBindUniformBuffers) {
-            ubo.bindToEffect(effect, "Material");
             this._needToBindSceneUbo = true;
         }
 
