@@ -26,7 +26,7 @@ uniform vec2 vLightmapInfos;
 uniform mat4 lightmapMatrix;
 #endif
 
-#ifdef REFLECTIVITY
+#ifdef REFLECTIVITY 
 uniform vec3 vReflectivityInfos;
 uniform mat4 reflectivityMatrix;
 #endif
