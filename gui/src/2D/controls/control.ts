@@ -1109,7 +1109,7 @@ export class Control {
     constructor(
         /** defines the name of the control */
         public name?: string
-    ) {}
+    ) { }
 
     /** @hidden */
     protected _getTypeName(): string {
@@ -2026,7 +2026,7 @@ export class Control {
     }
 
     /** @hidden */
-    public _onCanvasBlur(): void {}
+    public _onCanvasBlur(): void { }
 
     /** @hidden */
     public _processObservables(type: number, x: number, y: number, pi: PointerInfoBase, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
@@ -2087,6 +2087,9 @@ export class Control {
         }
 
         this._fontOffset = Control._GetFontOffset(this._font);
+
+        //children need to be refreshed
+        this.getDescendants().forEach((child) => child._markAllAsDirty());
     }
 
     /**
@@ -2245,7 +2248,7 @@ export class Control {
      * @ignore
      * @hidden
      */
-    public static AddHeader: (control: Control, text: string, size: string | number, options: { isHorizontal: boolean; controlFirst: boolean }) => any = () => {};
+    public static AddHeader: (control: Control, text: string, size: string | number, options: { isHorizontal: boolean; controlFirst: boolean }) => any = () => { };
 
     /** @hidden */
     protected static drawEllipse(x: number, y: number, width: number, height: number, context: ICanvasRenderingContext): void {
