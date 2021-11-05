@@ -1,5 +1,6 @@
 import { OcclusionQuery } from "../../Extensions/engine.query";
 import { WebGPUEngine } from "../../webgpuEngine";
+import { WebGPURenderItemBeginOcclusionQuery, WebGPURenderItemEndOcclusionQuery } from "../webgpuBundleList";
 
 declare type PerfCounter = import("../../../Misc/perfCounter").PerfCounter;
 
@@ -30,8 +31,15 @@ WebGPUEngine.prototype.getQueryResult = function (query: OcclusionQuery): number
 };
 
 WebGPUEngine.prototype.beginOcclusionQuery = function (algorithmType: number, query: OcclusionQuery): boolean {
-    if (this._occlusionQuery.canBeginQuery) {
-        this._currentRenderPass?.beginOcclusionQuery(query as number);
+    if (this.compatibilityMode) {
+        if (this._occlusionQuery.canBeginQuery) {
+            this._currentRenderPass?.beginOcclusionQuery(query as number);
+            return true;
+        }
+    } else {
+        const renderPassIndex = this._getCurrentRenderPassIndex();
+        const bundleList = renderPassIndex === 0 ? this._bundleList : this._bundleListRenderTarget;
+        bundleList.addItem(new WebGPURenderItemBeginOcclusionQuery(query as number));
         return true;
     }
 
@@ -39,6 +47,12 @@ WebGPUEngine.prototype.beginOcclusionQuery = function (algorithmType: number, qu
 };
 
 WebGPUEngine.prototype.endOcclusionQuery = function (algorithmType: number): WebGPUEngine {
-    this._currentRenderPass?.endOcclusionQuery();
+    if (this.compatibilityMode) {
+        this._currentRenderPass?.endOcclusionQuery();
+    } else {
+        const renderPassIndex = this._getCurrentRenderPassIndex();
+        const bundleList = renderPassIndex === 0 ? this._bundleList : this._bundleListRenderTarget;
+        bundleList.addItem(new WebGPURenderItemEndOcclusionQuery());
+    }
     return this;
 };
