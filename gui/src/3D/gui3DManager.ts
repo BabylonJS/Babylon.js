@@ -23,7 +23,7 @@ export class GUI3DManager implements IDisposable {
     private _rootContainer: Container3D;
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
     private _pointerOutObserver: Nullable<Observer<number>>;
-    private _customControlsScale = 1.0;
+    private _customControlScaling = 1.0;
     /** @hidden */
     public _lastPickedControl: Control3D;
     /** @hidden */
@@ -60,14 +60,14 @@ export class GUI3DManager implements IDisposable {
 
     /** Gets the scaling for all UI elements owned by this manager */
     public get controlScaling() {
-        return this._customControlsScale;
+        return this._customControlScaling;
     }
 
     /** Sets the scaling adjustment for all UI elements owned by this manager */
     public set controlScaling(newScale: number) {
-        if (this._customControlsScale !== newScale && newScale > 0) {
-            let scaleRatio = newScale / this._customControlsScale;
-            this._customControlsScale = newScale;
+        if (this._customControlScaling !== newScale && newScale > 0) {
+            let scaleRatio = newScale / this._customControlScaling;
+            this._customControlScaling = newScale;
 
             this._rootContainer.children.forEach((control: Control3D) => {
                 control.scaling.scaleInPlace(scaleRatio);
@@ -81,12 +81,12 @@ export class GUI3DManager implements IDisposable {
 
     /** Gets if controls attached to this manager are realistically sized, based on the fact that 1 unit length is 1 meter */
     public get useRealisticScaling() {
-        return this.controlScaling === 0.1;
+        return this.controlScaling === 0.32;
     }
 
     /** Sets if controls attached to this manager are realistically sized, based on the fact that 1 unit length is 1 meter */
     public set useRealisticScaling(newValue: boolean) {
-        this.controlScaling = newValue ? 0.1 : 1;
+        this.controlScaling = newValue ? 0.32 : 1;
     }
 
     /**
@@ -217,7 +217,7 @@ export class GUI3DManager implements IDisposable {
      */
     public addControl(control: Control3D): GUI3DManager {
         this._rootContainer.addControl(control);
-        control.scaling.scaleInPlace(this._customControlsScale);
+        control.scaling.scaleInPlace(this._customControlScaling);
         control._isScaledByManager = true;
         return this;
     }
@@ -230,7 +230,7 @@ export class GUI3DManager implements IDisposable {
     public removeControl(control: Control3D): GUI3DManager {
         this._rootContainer.removeControl(control);
         if (control._isScaledByManager) {
-            control.scaling.scaleInPlace(1 / this._customControlsScale);
+            control.scaling.scaleInPlace(1 / this._customControlScaling);
             control._isScaledByManager = false;
         }
         return this;
