@@ -1,4 +1,10 @@
+import { Matrix2D } from "babylonjs-gui/2D/math2D";
+import { Camera } from "babylonjs/Cameras/camera";
+import { Frustum } from "babylonjs/Maths/math.frustum";
+import { Plane } from "babylonjs/Maths/math.plane";
+import { Vector2, Vector3 } from "babylonjs/Maths/math.vector";
 import * as React from "react";
+import { restore } from "sinon";
 import { GlobalState } from "../globalState";
 
 require("./workbenchCanvas.scss");
@@ -30,6 +36,11 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                     scalePoint.style.display = "none";
                 });
             }
+            this.updateGizmo();
+        });
+
+        this.props.globalState.onPropertyGridUpdateRequiredObservable.add(() => {
+            this.updateGizmo();
         });
 
     }
@@ -51,11 +62,38 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             console.log("selected");
 
             this.scalePoints.forEach(scalePoint => {
-                scalePoint.style.left = node._currentMeasure.left + "px";
-                scalePoint.style.top = node._currentMeasure.top + "px";
+                //scalePoint.style.left = node._currentMeasure.left + "px";
+                //scalePoint.style.top = node._currentMeasure.top + "px";
 
-                console.log(node._currentMeasure.left.toString());
-                console.log(node._currentMeasure.top.toString());
+                let view = this.props.globalState.workbench._camera._viewMatrix;
+                let cameraPos = this.props.globalState.workbench._camera.position;
+
+                
+                let res = new Vector3(node._currentMeasure.left, node._currentMeasure.top,1);
+                let p = Frustum.GetPlanes(view)[0];
+                res.projectOnPlane(p,cameraPos);
+                
+
+                scalePoint.style.left = res.x + "px";
+                scalePoint.style.top = res.y + "px";
+
+
+                //let result = new Vector2(controlPoint.leftInPixels, controlPoint.topInPixels);
+                //let m2d = Matrix2D.Identity();
+                /*let translateBack = Matrix2D.Identity();
+                let translateTo = Matrix2D.Identity();
+                let resultMatrix = Matrix2D.Identity();
+
+                Matrix2D.TranslationToRef(control.leftInPixels, control.topInPixels, translateBack);
+                Matrix2D.TranslationToRef(-control.leftInPixels, -control.topInPixels, translateTo);
+                Matrix2D.RotationToRef(control.rotation, m2d);
+                translateTo.multiplyToRef(m2d, resultMatrix);
+                resultMatrix.multiplyToRef(translateBack, resultMatrix);
+                resultMatrix.transformCoordinates(result.x, result.y, result);
+
+                controlPoint.left = result.x;
+                controlPoint.top = result.y;*/
+
 
 
             });

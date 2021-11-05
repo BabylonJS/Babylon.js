@@ -59,7 +59,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _isOverGUINode: Control[] = [];
     private _clipboard: Control[] = [];
     private _selectAll: boolean = false;
-    private _camera: ArcRotateCamera;
+    public _camera: ArcRotateCamera;
     private _cameraRadias: number;
     private _cameraMaxRadiasFactor = 16384; // 2^13
     private _pasted: boolean;
