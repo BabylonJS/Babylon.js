@@ -61,7 +61,7 @@ export class AnimationCurveEditorComponent extends React.Component<
     private _onKeyDown(evt: KeyboardEvent) {
         switch (evt.key) {
             case "Delete":
-                if (this.props.context.activeKeyPoints?.length) {
+                if (this.props.context.activeKeyPoints?.length && !this.props.context.focusedInput) {
                     this.props.context.onDeleteKeyActiveKeyPoints.notifyObservers();
                 }
                 break;
@@ -79,6 +79,27 @@ export class AnimationCurveEditorComponent extends React.Component<
                     evt.preventDefault();
                 }
                 break;
+            case "ArrowLeft":
+                if (!this.props.context.focusedInput) {
+                    this.props.context.onMoveToFrameRequired.notifyObservers(Math.max(0, this.props.context.activeFrame - 1));
+                }
+                break;
+            case "ArrowRight":
+                if (!this.props.context.focusedInput) {
+                    this.props.context.onMoveToFrameRequired.notifyObservers(Math.min(this.props.context.clipLength, this.props.context.activeFrame + 1));
+                }
+                break;
+            case "ArrowDown":
+                const prevKey = this.props.context.getPrevKey();
+                if (prevKey !== null) {
+                    this.props.context.onMoveToFrameRequired.notifyObservers(prevKey);
+                }
+                break;
+            case "ArrowUp":
+                const nextKey = this.props.context.getNextKey();
+                if (nextKey !== null) {
+                    this.props.context.onMoveToFrameRequired.notifyObservers(nextKey);
+                }
         }
     }
 

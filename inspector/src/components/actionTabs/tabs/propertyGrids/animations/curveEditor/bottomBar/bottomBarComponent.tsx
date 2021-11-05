@@ -3,6 +3,7 @@ import { Nullable } from "babylonjs/types";
 import * as React from "react";
 import { GlobalState } from "../../../../../../globalState";
 import { Context } from "../context";
+import { TextInputComponent } from "../controls/textInputComponent";
 import { MediaPlayerComponent } from "./mediaPlayerComponent";
 import { RangeSelectorComponent } from "./rangeSelectorComponent";
 
@@ -14,6 +15,7 @@ interface IBottomBarComponentProps {
 }
 
 interface IBottomBarComponentState {
+    clipLength: string;
 }
 
 export class BottomBarComponent extends React.Component<
@@ -22,11 +24,15 @@ IBottomBarComponentState
 > {
     private _onAnimationsLoadedObserver: Nullable<Observer<void>>;
     private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
+    private _onFrameSetObserver: Nullable<Observer<number>>;
+    private _onFrameManuallyEnteredObserver: Nullable<Observer<number>>;
+    private _onClipLengthIncreasedObserver: Nullable<Observer<number>>;
+    private _onClipLengthDecreasedObserver: Nullable<Observer<number>>;
 
     constructor(props: IBottomBarComponentProps) {
         super(props);
 
-        this.state = { };
+        this.state = { clipLength: this.props.context.clipLength ? this.props.context.clipLength.toFixed(0) : this.props.context.referenceMaxFrame.toFixed(0) };
 
         this._onAnimationsLoadedObserver = this.props.context.onAnimationsLoaded.add(() => {
             this.forceUpdate();
@@ -35,11 +41,65 @@ IBottomBarComponentState
         this._onActiveAnimationChangedObserver = this.props.context.onActiveAnimationChanged.add(() => {
             this.forceUpdate();
         });
-    }
 
-    private _renderMaxFrame() {
+        this._onFrameSetObserver = this.props.context.onFrameSet.add((newFrameValue) => {
+            this.props.context.clipLength = this._computeClipLengthFromKeys();
+
+            this.setState({clipLength: this.props.context.clipLength.toFixed(0)});
+        });
+
+        this._onFrameManuallyEnteredObserver = this.props.context.onFrameManuallyEntered.add((newFrameValue) => {
+            this.props.context.clipLength = this._computeClipLengthFromKeys();
+
+            this.setState({clipLength: this.props.context.clipLength.toFixed(0)});
+        });
+
+        this._onClipLengthIncreasedObserver = this.props.context.onClipLengthIncreased.add((newClipLength) => {
+            // New clip length is greater than current clip length: add a key frame at the new clip length location with the same value as the previous frame
+            this.props.context.clipLength = newClipLength;
+
+            this.props.context.onMoveToFrameRequired.notifyObservers(newClipLength);
+            this.props.context.onNewKeyPointRequired.notifyObservers();
+
+            this.setState({clipLength: newClipLength.toFixed(0)});
+        });
+
+        this._onClipLengthIncreasedObserver = this.props.context.onClipLengthDecreased.add((newClipLength) => {
+            // New clip length is smaller than current clip length: move the playing range to the new clip length
+            this.props.context.clipLength = newClipLength;
+
+            this.props.context.onMoveToFrameRequired.notifyObservers(newClipLength);
+            this.props.context.onNewKeyPointRequired.notifyObservers();
+            
+            this.props.context.toKey = Math.min(this.props.context.toKey, this.props.context.clipLength);
+            this.props.context.onRangeUpdated.notifyObservers();
+
+            this.setState({clipLength: newClipLength.toFixed(0)});
+        });
+    }
+    
+    /*private _renderMaxFrame() {
         const keys = this.props.context.activeAnimations[0].getKeys();
         return Math.round(keys[keys.length - 1].frame);
+    }*/
+    
+    private _computeClipLengthFromKeys() {
+        if (this.props.context.activeAnimations.length > 0) {
+            const keys = this.props.context.activeAnimations[0].getKeys();
+            return Math.round(keys[keys.length - 1].frame);
+        } else {
+            return this.props.context.referenceMaxFrame;
+        }
+    }
+    
+    private _changeClipLength(newClipLength : number) {
+        const currClipLength = this.props.context.clipLength || this.props.context.referenceMaxFrame;
+        if (currClipLength < newClipLength) {
+            this.props.context.onClipLengthIncreased.notifyObservers(newClipLength);    
+        } else if (currClipLength > newClipLength) {
+            this.props.context.onClipLengthDecreased.notifyObservers(newClipLength);
+        }
+        this.setState({clipLength: newClipLength.toFixed(0)});
     }
 
     componentWillUnmount() {
@@ -49,6 +109,22 @@ IBottomBarComponentState
 
         if (this._onActiveAnimationChangedObserver) {
             this.props.context.onActiveAnimationChanged.remove(this._onActiveAnimationChangedObserver)
+        }
+
+        if (this._onFrameSetObserver) {
+            this.props.context.onFrameSet.remove(this._onFrameSetObserver);
+        }
+
+        if (this._onFrameManuallyEnteredObserver) {
+            this.props.context.onFrameManuallyEntered.remove(this._onFrameManuallyEnteredObserver);
+        }
+
+        if (this._onClipLengthDecreasedObserver) {
+            this.props.context.onClipLengthDecreased.remove(this._onClipLengthDecreasedObserver)
+        }
+
+        if (this._onClipLengthIncreasedObserver) {
+            this.props.context.onClipLengthDecreased.remove(this._onClipLengthIncreasedObserver)
         }
     }
 
@@ -60,7 +136,16 @@ IBottomBarComponentState
                 {
                     this.props.context.activeAnimations.length > 0 &&
                     <div id="bottom-bar-total">
-                        {this._renderMaxFrame()}
+                        {/*this._renderMaxFrame()*/}
+                        <TextInputComponent 
+                        isNumber={true}
+                        value={this.state.clipLength}
+                        tooltip="Clip Length"
+                        id="clip-range"
+                        onValueAsNumberChanged={(newValue, isFocused) => {
+                            !isFocused && this._changeClipLength(newValue)
+                        }}
+                        globalState={this.props.globalState} context={this.props.context} />
                     </div>
                 }
             </div>
