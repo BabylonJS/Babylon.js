@@ -2,7 +2,7 @@ import { Matrix2D } from "babylonjs-gui/2D/math2D";
 import { Camera } from "babylonjs/Cameras/camera";
 import { Frustum } from "babylonjs/Maths/math.frustum";
 import { Plane } from "babylonjs/Maths/math.plane";
-import { Vector2, Vector3 } from "babylonjs/Maths/math.vector";
+import { Matrix, Vector2, Vector3 } from "babylonjs/Maths/math.vector";
 import * as React from "react";
 import { restore } from "sinon";
 import { GlobalState } from "../globalState";
@@ -59,24 +59,24 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         const selectedGuiNodes = this.props.globalState.workbench.selectedGuiNodes;
         if (selectedGuiNodes.length > 0) {
             const node = selectedGuiNodes[0];
-            console.log("selected");
+           // console.log("selected");
 
             this.scalePoints.forEach(scalePoint => {
-                //scalePoint.style.left = node._currentMeasure.left + "px";
-                //scalePoint.style.top = node._currentMeasure.top + "px";
 
-                let view = this.props.globalState.workbench._camera._viewMatrix;
-                let cameraPos = this.props.globalState.workbench._camera.position;
+                let camera = this.props.globalState.workbench._camera;
 
-                
-                let res = new Vector3(node._currentMeasure.left, node._currentMeasure.top,1);
-                let p = Frustum.GetPlanes(view)[0];
-                res.projectOnPlane(p,cameraPos);
-                
+                let res = new Vector3(node.leftInPixels, 0,-node.topInPixels);
+                //console.log(res);
+                const scene = this.props.globalState.workbench._scene;
+                const engine = scene.getEngine();
+                let result = Vector3.Project(res,
+                    Matrix.Identity(),
+                    scene.getTransformMatrix(),
+                    camera.viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight()));
 
-                scalePoint.style.left = res.x + "px";
-                scalePoint.style.top = res.y + "px";
-
+                scalePoint.style.left = result.x + "px";
+                scalePoint.style.top = result.y + "px";
+                //console.log(result);
 
                 //let result = new Vector2(controlPoint.leftInPixels, controlPoint.topInPixels);
                 //let m2d = Matrix2D.Identity();
@@ -93,8 +93,6 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
 
                 controlPoint.left = result.x;
                 controlPoint.top = result.y;*/
-
-
 
             });
         }
