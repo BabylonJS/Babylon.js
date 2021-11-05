@@ -431,11 +431,14 @@ export class Bone extends Node {
 
     /**
      * Flag the bone as dirty (Forcing it to update everything)
+     * @param property helps children apply precise "dirtyfication"
+     * @returns this bone
      */
-    public markAsDirty(): void {
+    public markAsDirty(property?: string): Bone {
         this._currentRenderId++;
         this._childUpdateId++;
         this._skeleton._markAsDirty();
+        return this;
     }
 
     /** @hidden */
