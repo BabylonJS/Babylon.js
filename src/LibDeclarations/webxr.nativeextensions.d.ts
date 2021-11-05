@@ -74,7 +74,7 @@ interface XRFrame {
     fillJointPoseData?: (spaces: XRJointSpace[], baseSpace: XRSpace, numSpaces: number, transformsBuffer: ArrayBuffer, transformsBufferOffset: number) => boolean;
     fillJointPoseRadiiData?: (spaces: XRJointSpace[], numSpaces: number, radiiBuffer: ArrayBuffer, radiiBufferOffset: number) => boolean;
     createPlanes?: (planeIds: Array<number>, numPlaneIds: number, newPlanes: Array<XRPlane>) => void;
-    createMeshes?: (meshIds: Array<number>, numMeshIds: number, newMeshes: Array<XRMesh>) => void;
+    createMeshes?: (meshIds: Array<number>, numMeshIds: number, newMeshes: Array<XRMesh>, timestamp: number) => void;
 }
 
 type XRMeshSet = Set<XRMesh>;

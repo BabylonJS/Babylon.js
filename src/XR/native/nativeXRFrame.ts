@@ -119,7 +119,7 @@ export class NativeXRFrame implements XRFrame {
 
             if (this._newMeshIds.length > 0) {
                 this._newMeshes.length = this._newMeshIds.length;
-                this._nativeImpl.createMeshes!(this._newMeshIds, this._newMeshIds.length, this._newMeshes);
+                this._nativeImpl.createMeshes!(this._newMeshIds, this._newMeshIds.length, this._newMeshes, timestamp);
                 this._newMeshIds.forEach((newMeshId, meshIdIdx) => {
                     const newMesh = this._newMeshes[meshIdIdx];
                     newMesh.lastChangedTime = timestamp;
