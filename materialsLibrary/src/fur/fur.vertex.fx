@@ -15,6 +15,7 @@ attribute vec4 color;
 #endif
 
 #include<bonesDeclaration>
+#include<bakedVertexAnimationDeclaration>
 
 // Uniforms
 uniform float furLength;
@@ -73,6 +74,7 @@ void main(void) {
 
 	#include<instancesVertex>
     #include<bonesVertex>
+    #include<bakedVertexAnimation>
 
 //FUR
 float r = Rand(position);

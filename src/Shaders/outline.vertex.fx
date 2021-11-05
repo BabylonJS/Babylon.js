@@ -3,6 +3,7 @@ attribute vec3 position;
 attribute vec3 normal;
 
 #include<bonesDeclaration>
+#include<bakedVertexAnimationDeclaration>
 
 #include<morphTargetsVertexGlobalDeclaration>
 #include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]
@@ -32,7 +33,7 @@ void main(void)
     vec3 normalUpdated = normal;
 #ifdef UV1
     vec2 uvUpdated = uv;
-#endif    
+#endif
     #include<morphTargetsVertexGlobal>
     #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
 
@@ -40,6 +41,7 @@ void main(void)
 
 #include<instancesVertex>
 #include<bonesVertex>
+#include<bakedVertexAnimation>
 
 	gl_Position = viewProjection * finalWorld * vec4(offsetPosition, 1.0);
 

@@ -893,7 +893,7 @@ export class InputText extends Control implements IFocusableControl {
             context.shadowOffsetY = 0;
         }
 
-        if (!this._fontOffset) {
+        if (!this._fontOffset || this._wasDirty) {
             this._fontOffset = Control._GetFontOffset(context.font);
         }
 
