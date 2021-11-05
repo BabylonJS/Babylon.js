@@ -112,7 +112,7 @@ export class LinesMesh extends Mesh {
         if (material) {
             this.material = material;
         } else {
-            this._lineMaterial = new ShaderMaterial("colorShader", this.getScene(), "color", options);
+            this._lineMaterial = new ShaderMaterial("colorShader", this.getScene(), "color", options, false);
         }
     }
 
