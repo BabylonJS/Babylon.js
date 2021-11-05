@@ -1,4 +1,5 @@
 import { Animation } from "babylonjs/Animations/animation";
+import { AnimationKeyInterpolation } from "babylonjs/Animations/animationKey";
 import { Observable } from "babylonjs/Misc/observable";
 
 export interface KeyEntry {
@@ -7,6 +8,7 @@ export interface KeyEntry {
     inTangent?: number;
     outTangent?: number;
     lockedTangent: boolean;
+    interpolation?: AnimationKeyInterpolation;
 }
 
 export class Curve {
@@ -31,12 +33,11 @@ export class Curve {
         this.setDefaultOutTangent = setDefaultOutTangent;
     }
 
-    public gePathData(convertX: (x: number) => number, convertY: (y: number) => number,) {
+    public getPathData(convertX: (x: number) => number, convertY: (y: number) => number,) {
         const keys = this.keys;
         if (keys.length < 2) {
             return "";
         }
-
         let pathData = `M${convertX(keys[0].frame)} ${convertY(keys[0].value)}`;
 
         for (var keyIndex = 1; keyIndex < keys.length; keyIndex++) {
@@ -45,7 +46,15 @@ export class Curve {
             const currentFrame = keys[keyIndex].frame;
             const currentValue = keys[keyIndex].value;
             const prevFrame = keys[keyIndex - 1].frame;
+            const prevValue = keys[keyIndex - 1].value;
             const frameDist = currentFrame - prevFrame;
+            const prevInterpolation = keys[keyIndex - 1].interpolation;
+
+            if (prevInterpolation === AnimationKeyInterpolation.STEP) { // Draw a stepped curve
+                pathData += `L ${convertX(currentFrame)} ${convertY(prevValue)}`;
+                pathData += `L ${convertX(currentFrame)} ${convertY(currentValue)}`;
+                continue;
+            }
 
             if (outTangent === undefined && inTangent === undefined) { // Draw a straight line
                 pathData += ` L${convertX(currentFrame)} ${convertY(currentValue)}`;
@@ -70,6 +79,16 @@ export class Curve {
 
         const animationKeys = this.animation.getKeys();
         animationKeys[keyIndex].lockedTangent = enabled;
+    }
+
+    public updateInterpolationMode(keyIndex: number, interpolationMode: AnimationKeyInterpolation) {
+        const keys = this.keys;
+        keys[keyIndex].interpolation = interpolationMode;
+
+        const animationKeys = this.animation.getKeys();
+        animationKeys[keyIndex].interpolation = interpolationMode;
+
+        this.onDataUpdatedObservable.notifyObservers();
     }
 
     public getInControlPoint(keyIndex: number) {

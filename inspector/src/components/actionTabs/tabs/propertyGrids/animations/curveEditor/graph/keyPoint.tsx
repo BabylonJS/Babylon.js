@@ -1,3 +1,4 @@
+import { AnimationKeyInterpolation } from "babylonjs/Animations/animationKey";
 import { TmpVectors, Vector2 } from "babylonjs/Maths/math.vector";
 import { Observer } from "babylonjs/Misc/observable";
 import { Nullable } from "babylonjs/types";
@@ -63,6 +64,7 @@ IKeyPointComponentState
     private _onLinearTangentRequiredObserver: Nullable<Observer<void>>;
     private _onBreakTangentRequiredObserver: Nullable<Observer<void>>;
     private _onUnifyTangentRequiredObserver: Nullable<Observer<void>>;
+    private _onStepTangentRequiredObserver: Nullable<Observer<void>>;
     private _onSelectAllKeysObserver: Nullable<Observer<void>>;
 
     private _pointerIsDown: boolean;
@@ -145,6 +147,15 @@ IKeyPointComponentState
             }
 
             this._linearTangent();
+        });
+
+        this._onStepTangentRequiredObserver = this.props.context.onStepTangentRequired.add(() => {
+            const isSelected = this.props.context.activeKeyPoints?.indexOf(this) !== -1;
+            if (!isSelected) {  
+                return;
+            }
+
+            this._stepTangent();
         });
 
         this._onSelectionRectangleMovedObserver = this.props.context.onSelectionRectangleMoved.add(rect1 => {
@@ -296,6 +307,10 @@ IKeyPointComponentState
             this.props.context.onLinearTangentRequired.remove(this._onLinearTangentRequiredObserver);
         }
 
+        if (this._onStepTangentRequiredObserver) {
+            this.props.context.onStepTangentRequired.remove(this._onStepTangentRequiredObserver);
+        }
+
         if (this._onSelectionRectangleMovedObserver) {
             this.props.context.onSelectionRectangleMoved.remove(this._onSelectionRectangleMovedObserver);
         }
@@ -374,6 +389,12 @@ IKeyPointComponentState
         }
 
         this.props.curve.onDataUpdatedObservable.notifyObservers();
+        this.forceUpdate();
+    }
+
+    private _stepTangent() {
+        this.props.curve.updateInterpolationMode(this.props.keyId, AnimationKeyInterpolation.STEP);
+
         this.forceUpdate();
     }
 
@@ -607,6 +628,8 @@ IKeyPointComponentState
         const keys = this.props.curve.keys;
 
         const isLockedTangent = keys[this.props.keyId].lockedTangent ?? true;
+        const hasStepTangentIn = keys[this.props.keyId-1]?.interpolation ?? false; 
+        const hasStepTangentOut = keys[this.props.keyId]?.interpolation ?? false; 
 
         const convertedX = this.props.invertX(this.state.x);
         const convertedY = this.props.invertY(this.state.y);
@@ -647,7 +670,7 @@ IKeyPointComponentState
                 this.state.selectedState === SelectionState.Selected && 
                 <g>
                     {
-                        this.props.keyId !== 0 &&
+                        this.props.keyId !== 0 && !hasStepTangentIn &&
                         <>
                             <line
                                 x1={0}
@@ -672,7 +695,7 @@ IKeyPointComponentState
                         </>
                     }
                     {
-                        this.props.keyId !== keys.length - 1 &&
+                        this.props.keyId !== keys.length - 1 && !hasStepTangentOut &&
                         <>
                             <line
                                 x1={0}

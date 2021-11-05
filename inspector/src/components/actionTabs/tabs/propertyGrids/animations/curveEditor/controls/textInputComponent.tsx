@@ -11,7 +11,7 @@ interface ITextInputComponentProps {
     value: string;
     isNumber?: boolean;
     complement?: string;
-    onValueAsNumberChanged?: (value: number) => void;
+    onValueAsNumberChanged?: (value: number, isFocused: boolean) => void;
 }
 
 interface ITextInputComponentState {
@@ -34,28 +34,30 @@ ITextInputComponentState
     private _onChange(value: string) {
         if (this.props.isNumber) {
             let valueAsNumber = parseFloat(value);
-
+            
             if (!isNaN(valueAsNumber)) {
                 if (this.props.onValueAsNumberChanged) {
-                    this.props.onValueAsNumberChanged(valueAsNumber);
+                    this.props.onValueAsNumberChanged(valueAsNumber, true);
                 }
                 this._lastKnownGoodValue = valueAsNumber.toString();
-            } else if (value !== "-") {
+            } else if (value !== "-" && value !== "") {
                 return;
             }
         }
 
-        this.setState({value: value});
         this._lastKnownGoodValue = value;
+        this.setState({value: value});
     }
 
     private _onBlur() {
+        this.props.context.focusedInput = false;
+
         if (this.props.isNumber) {
             let valueAsNumber = parseFloat(this.state.value);
 
             if (!isNaN(valueAsNumber)) {
                 if (this.props.onValueAsNumberChanged) {
-                    this.props.onValueAsNumberChanged(valueAsNumber);
+                    this.props.onValueAsNumberChanged(valueAsNumber, false);
                 }
                 this.setState({value: valueAsNumber.toString(), isFocused: false});
             } else {
@@ -68,6 +70,7 @@ ITextInputComponentState
     }
 
     private _onFocus() {
+        this.props.context.focusedInput = true;
         this.setState({isFocused: true});
     }
 

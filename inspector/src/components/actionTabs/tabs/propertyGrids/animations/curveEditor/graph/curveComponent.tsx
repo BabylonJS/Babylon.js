@@ -65,7 +65,7 @@ ICurveComponentState
             <svg
                 style={{ cursor: "pointer", overflow: "auto" }}>            
             <path
-                d={this.props.curve.gePathData(this.props.convertX, this.props.convertY)}
+                d={this.props.curve.getPathData(this.props.convertX, this.props.convertY)}
                 style={{
                     stroke: this.props.curve.color,
                     fill: "none",
