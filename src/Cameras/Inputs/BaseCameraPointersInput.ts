@@ -97,9 +97,9 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                 this.onTouch(null, offsetX, offsetY);
                 this.pointA = null;
                 this.pointB = null;
-            } else if (p.type === PointerEventTypes.POINTERDOWN && srcElement && (this._currentActiveButton === -1 || isTouch)) {
+            } else if (p.type === PointerEventTypes.POINTERDOWN && (this._currentActiveButton === -1 || isTouch)) {
                 try {
-                    srcElement.setPointerCapture(evt.pointerId);
+                    srcElement?.setPointerCapture(evt.pointerId);
                 } catch (e) {
                     //Nothing to do with the error. Execution will continue.
                 }
@@ -131,11 +131,9 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                 }
             } else if (p.type === PointerEventTypes.POINTERDOUBLETAP) {
                 this.onDoubleTap(evt.pointerType);
-            } else if (srcElement && p.type === PointerEventTypes.POINTERUP && (this._currentActiveButton === evt.button || isTouch)) {
+            } else if (p.type === PointerEventTypes.POINTERUP && (this._currentActiveButton === evt.button || isTouch)) {
                 try {
-                    if (evt.buttons === 0) {
-                        srcElement.releasePointerCapture(evt.pointerId);
-                    }
+                    srcElement?.releasePointerCapture(evt.pointerId);
                 } catch (e) {
                     //Nothing to do with the error.
                 }
