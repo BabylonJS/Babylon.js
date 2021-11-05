@@ -1715,6 +1715,8 @@ declare module INSPECTOR {
         componentWillUnmount(): void;
         onCurrentFrameChange(value: number): void;
         onChangeFromOrTo(): void;
+        getSnapshotBeforeUpdate(): null;
+        componentDidUpdate(): void;
         render(): JSX.Element;
     }
 }
