@@ -44,7 +44,7 @@ declare module "../scene" {
 
         /**
          * Creates a default camera and a default light.
-         * @see https://doc.babylonjs.com/how_to/Fast_Build#create-default-camera-or-light
+         * @see https://doc.babylonjs.com/divingDeeper/scene/fastBuildWorld#create-default-camera-or-light
          * @param createArcRotateCamera has the default false which creates a free camera, when true creates an arc rotate camera
          * @param replace has the default false, when true replaces the active camera/light in the scene
          * @param attachCameraControls has the default false, when true attaches camera controls to the canvas.
@@ -53,7 +53,7 @@ declare module "../scene" {
 
         /**
          * Creates a new sky box
-         * @see https://doc.babylonjs.com/how_to/Fast_Build#create-default-skybox
+         * @see https://doc.babylonjs.com/divingDeeper/scene/fastBuildWorld#create-default-skybox
          * @param environmentTexture defines the texture to use as environment texture
          * @param pbr has default false which requires the StandardMaterial to be used, when true PBRMaterial must be used
          * @param scale defines the overall scale of the skybox
@@ -73,7 +73,7 @@ declare module "../scene" {
 
         /**
          * Creates a new VREXperienceHelper
-         * @see https://doc.babylonjs.com/how_to/webvr_helper
+         * @see https://doc.babylonjs.com/divingDeeper/cameras/webVRHelper
          * @param webVROptions defines the options used to create the new VREXperienceHelper
          * @returns a new VREXperienceHelper
          */
@@ -143,8 +143,7 @@ Scene.prototype.createDefaultCamera = function (createArcRotateCamera = false, r
         camera.speed = radius * 0.2;
         this.activeCamera = camera;
 
-        const canvas = this.getEngine().getInputElement();
-        if (attachCameraControls && canvas) {
+        if (attachCameraControls) {
             camera.attachControl();
         }
     }

@@ -1579,6 +1579,8 @@ declare module BABYLON {
         static readonly TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1: number;
         /** Compressed ASTC 4x4 */
         static readonly TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4: number;
+        /**  Compressed ETC1 (RGB) */
+        static readonly TEXTUREFORMAT_COMPRESSED_RGB_ETC1_WEBGL: number;
         /** UNSIGNED_BYTE */
         static readonly TEXTURETYPE_UNSIGNED_BYTE: number;
         /** UNSIGNED_BYTE (2nd reference) */
@@ -8973,6 +8975,8 @@ declare module BABYLON {
         private _meshes;
         private _totalVertices;
         /** @hidden */
+        _loadedUniqueId: string;
+        /** @hidden */
         _indices: IndicesArray;
         /** @hidden */
         _vertexBuffers: {
@@ -9261,6 +9265,7 @@ declare module BABYLON {
          * @returns a string containing a new GUID
          */
         static RandomId(): string;
+        private static _GetGeometryByLoadedUniqueId;
         /** @hidden */
         static _ImportGeometry(parsedGeometry: any, mesh: Mesh): void;
         private static _CleanMatricesWeights;
@@ -10632,6 +10637,12 @@ declare module BABYLON {
          */
         static PrepareDefinesForMorphTargets(mesh: AbstractMesh, defines: any): void;
         /**
+         * Prepares the defines for baked vertex animation
+         * @param mesh The mesh containing the geometry data we will draw
+         * @param defines The defines to update
+         */
+        static PrepareDefinesForBakedVertexAnimation(mesh: AbstractMesh, defines: any): void;
+        /**
          * Prepares the defines used in the shader depending on the attributes data available in the mesh
          * @param mesh The mesh containing the geometry data we will draw
          * @param defines The defines to update
@@ -10639,9 +10650,10 @@ declare module BABYLON {
          * @param useBones Precise whether bones should be used or not (override mesh info)
          * @param useMorphTargets Precise whether morph targets should be used or not (override mesh info)
          * @param useVertexAlpha Precise whether vertex alpha should be used or not (override mesh info)
+         * @param useBakedVertexAnimation Precise whether baked vertex animation should be used or not (override mesh info)
          * @returns false if defines are considered not dirty and have not been checked
          */
-        static PrepareDefinesForAttributes(mesh: AbstractMesh, defines: any, useVertexColor: boolean, useBones: boolean, useMorphTargets?: boolean, useVertexAlpha?: boolean): boolean;
+        static PrepareDefinesForAttributes(mesh: AbstractMesh, defines: any, useVertexColor: boolean, useBones: boolean, useMorphTargets?: boolean, useVertexAlpha?: boolean, useBakedVertexAnimation?: boolean): boolean;
         /**
          * Prepares the defines related to multiview
          * @param scene The scene we are intending to draw
@@ -10732,6 +10744,13 @@ declare module BABYLON {
          * @param defines The current Defines of the effect
          */
         static PrepareAttributesForMorphTargets(attribs: string[], mesh: AbstractMesh, defines: any): void;
+        /**
+         * Prepares the list of attributes required for baked vertex animations according to the effect defines.
+         * @param attribs The current list of supported attribs
+         * @param mesh The mesh to prepare the morph targets attributes for
+         * @param defines The current Defines of the effect
+         */
+        static PrepareAttributesForBakedVertexAnimation(attribs: string[], mesh: AbstractMesh, defines: any): void;
         /**
          * Prepares the list of attributes required for bones according to the effect defines.
          * @param attribs The current list of supported attribs
@@ -16306,6 +16325,35 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Base class of materials working in push mode in babylon JS
+     * @hidden
+     */
+    export class PushMaterial extends Material {
+        protected _activeEffect: Effect;
+        protected _normalMatrix: Matrix;
+        constructor(name: string, scene: Scene, storeEffectOnSubMeshes?: boolean);
+        getEffect(): Effect;
+        isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean;
+        protected _isReadyForSubMesh(subMesh: SubMesh): boolean;
+        /**
+        * Binds the given world matrix to the active effect
+        *
+        * @param world the matrix to bind
+        */
+        bindOnlyWorldMatrix(world: Matrix): void;
+        /**
+         * Binds the given normal matrix to the active effect
+         *
+         * @param normalMatrix the matrix to bind
+         */
+        bindOnlyNormalMatrix(normalMatrix: Matrix): void;
+        bind(world: Matrix, mesh?: Mesh): void;
+        protected _afterBind(mesh?: Mesh, effect?: Nullable<Effect>): void;
+        protected _mustRebind(scene: Scene, effect: Effect, visibility?: number): boolean;
+    }
+}
+declare module BABYLON {
+    /**
      * Class used to store an external texture (like GPUExternalTexture in WebGPU)
      */
     export class ExternalTexture {
@@ -16414,7 +16462,7 @@ declare module BABYLON {
      *
      * @see https://doc.babylonjs.com/how_to/shader_material
      */
-    export class ShaderMaterial extends Material {
+    export class ShaderMaterial extends PushMaterial {
         private _shaderPath;
         private _options;
         private _textures;
@@ -16461,8 +16509,9 @@ declare module BABYLON {
          *  * object: { vertexSource: "vertex shader code string", fragmentSource: "fragment shader code string" } using with strings containing the shaders code
          *  * string: "./COMMON_NAME", used with external files COMMON_NAME.vertex.fx and COMMON_NAME.fragment.fx in index.html folder.
          * @param options Define the options used to create the shader
+         * @param storeEffectOnSubMeshes true to store effect on submeshes, false to store the effect directly in the material class.
          */
-        constructor(name: string, scene: Scene, shaderPath: any, options?: Partial<IShaderMaterialOptions>);
+        constructor(name: string, scene: Scene, shaderPath: any, options?: Partial<IShaderMaterialOptions>, storeEffectOnSubMeshes?: boolean);
         /**
          * Gets the shader path used to define the shader code
          * It can be modified to trigger a new compilation
@@ -16690,9 +16739,9 @@ declare module BABYLON {
          * @param world defines the world transformation matrix
          * @param mesh defines the mesh to bind the material to
          * @param effectOverride - If provided, use this effect instead of internal effect
+         * @param subMesh defines the submesh to bind the material to
          */
-        bind(world: Matrix, mesh?: Mesh, effectOverride?: Nullable<Effect>): void;
-        protected _afterBind(mesh?: Mesh, effect?: Nullable<Effect>): void;
+        bind(world: Matrix, mesh?: Mesh, effectOverride?: Nullable<Effect>, subMesh?: SubMesh): void;
         /**
          * Gets the active textures from the material
          * @returns an array of textures
@@ -16765,6 +16814,13 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var bakedVertexAnimationDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
     export var instancesDeclaration: {
         name: string;
         shader: string;
@@ -16780,6 +16836,13 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export var bonesVertex: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var bakedVertexAnimation: {
         name: string;
         shader: string;
     };
@@ -21270,35 +21333,6 @@ declare module BABYLON {
          * Release resources
          */
         dispose(): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Base class of materials working in push mode in babylon JS
-     * @hidden
-     */
-    export class PushMaterial extends Material {
-        protected _activeEffect: Effect;
-        protected _normalMatrix: Matrix;
-        constructor(name: string, scene: Scene);
-        getEffect(): Effect;
-        isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean;
-        protected _isReadyForSubMesh(subMesh: SubMesh): boolean;
-        /**
-        * Binds the given world matrix to the active effect
-        *
-        * @param world the matrix to bind
-        */
-        bindOnlyWorldMatrix(world: Matrix): void;
-        /**
-         * Binds the given normal matrix to the active effect
-         *
-         * @param normalMatrix the matrix to bind
-         */
-        bindOnlyNormalMatrix(normalMatrix: Matrix): void;
-        bind(world: Matrix, mesh?: Mesh): void;
-        protected _afterBind(mesh: Mesh, effect?: Nullable<Effect>): void;
-        protected _mustRebind(scene: Scene, effect: Effect, visibility?: number): boolean;
     }
 }
 declare module BABYLON {
@@ -26198,8 +26232,10 @@ declare module BABYLON {
         _updateDifferenceMatrix(rootMatrix?: Matrix, updateChildren?: boolean): void;
         /**
          * Flag the bone as dirty (Forcing it to update everything)
+         * @param property helps children apply precise "dirtyfication"
+         * @returns this bone
          */
-        markAsDirty(): void;
+        markAsDirty(property?: string): Bone;
         /** @hidden */
         _markAsDirtyAndCompose(): void;
         private _markAsDirtyAndDecompose;
@@ -31067,6 +31103,133 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Interface for baked vertex animation texture, see BakedVertexAnimationManager
+     * @since 5.0
+     */
+    export interface IBakedVertexAnimationManager {
+        /**
+         * The vertex animation texture
+         */
+        texture: Nullable<BaseTexture>;
+        /**
+         * Gets or sets a boolean indicating if the edgesRenderer is active
+         */
+        isEnabled: boolean;
+        /**
+         * The animation parameters for the mesh. See setAnimationParameters()
+         */
+        animationParameters: Vector4;
+        /**
+         * The time counter, to pick the correct animation frame.
+         */
+        time: number;
+        /**
+         * Binds to the effect.
+         * @param effect The effect to bind to.
+         * @param useInstances True when it's an instance.
+         */
+        bind(effect: Effect, useInstances: boolean): void;
+        /**
+         * Sets animation parameters.
+         * @param startFrame The first frame of the animation.
+         * @param endFrame The last frame of the animation.
+         * @param offset The offset when starting the animation.
+         * @param speedFramesPerSecond The frame rate.
+         */
+        setAnimationParameters(startFrame: number, endFrame: number, offset: number, speedFramesPerSecond: number): void;
+        /**
+         * Disposes the resources of the manager.
+         * @param forceDisposeTextures - Forces the disposal of all textures.
+         */
+        dispose(forceDisposeTextures?: boolean): void;
+        /**
+         * Get the current class name useful for serialization or dynamic coding.
+         * @returns "BakedVertexAnimationManager"
+         */
+        getClassName(): string;
+    }
+    /**
+     * This class is used to animate meshes using a baked vertex animation texture
+     * @see https://doc.babylonjs.com/divingDeeper/animation/baked_texture_animations
+     * @since 5.0
+     */
+    export class BakedVertexAnimationManager implements IBakedVertexAnimationManager {
+        private _scene;
+        private _texture;
+        /**
+         * The vertex animation texture
+         */
+        texture: Nullable<BaseTexture>;
+        private _isEnabled;
+        /**
+         * Enable or disable the vertex animation manager
+         */
+        isEnabled: boolean;
+        /**
+         * The animation parameters for the mesh. See setAnimationParameters()
+         */
+        animationParameters: Vector4;
+        /**
+         * The time counter, to pick the correct animation frame.
+         */
+        time: number;
+        /**
+         * Creates a new BakedVertexAnimationManager
+         * @param scene defines the current scene
+         */
+        constructor(scene: Scene);
+        /** @hidden */
+        _markSubMeshesAsAttributesDirty(): void;
+        /**
+         * Binds to the effect.
+         * @param effect The effect to bind to.
+         * @param useInstances True when it's an instance.
+         */
+        bind(effect: Effect, useInstances?: boolean): void;
+        /**
+         * Clone the current manager
+         * @returns a new BakedVertexAnimationManager
+         */
+        clone(): BakedVertexAnimationManager;
+        /**
+         * Sets animation parameters.
+         * @param startFrame The first frame of the animation.
+         * @param endFrame The last frame of the animation.
+         * @param offset The offset when starting the animation.
+         * @param speedFramesPerSecond The frame rate.
+         */
+        setAnimationParameters(startFrame: number, endFrame: number, offset?: number, speedFramesPerSecond?: number): void;
+        /**
+         * Disposes the resources of the manager.
+         * @param forceDisposeTextures - Forces the disposal of all textures.
+         */
+        dispose(forceDisposeTextures?: boolean): void;
+        /**
+         * Get the current class name useful for serialization or dynamic coding.
+         * @returns "BakedVertexAnimationManager"
+         */
+        getClassName(): string;
+        /**
+         * Makes a duplicate of the current instance into another one.
+         * @param vatMap define the instance where to copy the info
+         */
+        copyTo(vatMap: BakedVertexAnimationManager): void;
+        /**
+         * Serializes this vertex animation instance
+         * @returns - An object with the serialized instance.
+         */
+        serialize(): any;
+        /**
+         * Parses a vertex animation setting from a serialized object.
+         * @param source - Serialized object.
+         * @param scene Defines the scene we are parsing for
+         * @param rootUrl Defines the rootUrl to load from
+         */
+        parse(source: any, scene: Scene, rootUrl: string): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Creates a plane polygonal mesh.  By default, this is a disc
      * * The parameter `radius` sets the radius size (float) of the polygon (default 0.5)
      * * The parameter `tessellation` sets the number of polygon sides (positive integer, default 64). So a tessellation valued to 3 will build a triangle, to 4 a square, etc
@@ -31575,6 +31738,7 @@ declare module BABYLON {
         DETAIL: boolean;
         DETAILDIRECTUV: number;
         DETAIL_NORMALBLENDMETHOD: number;
+        BAKED_VERTEX_ANIMATION_TEXTURE: boolean;
         AMBIENT: boolean;
         AMBIENTDIRECTUV: number;
         OPACITY: boolean;
@@ -33186,6 +33350,7 @@ declare module BABYLON {
         _collisionRetryCount: number;
         _morphTargetManager: Nullable<MorphTargetManager>;
         _renderingGroupId: number;
+        _bakedVertexAnimationManager: Nullable<IBakedVertexAnimationManager>;
         _material: Nullable<Material>;
         _materialForRenderPass: Array<Material | undefined>;
         _positions: Nullable<Vector3[]>;
@@ -33314,6 +33479,12 @@ declare module BABYLON {
          */
         get morphTargetManager(): Nullable<MorphTargetManager>;
         set morphTargetManager(value: Nullable<MorphTargetManager>);
+        /**
+         * Gets or sets the baked vertex animation manager
+         * @see https://doc.babylonjs.com/divingDeeper/animation/baked_texture_animations
+         */
+        get bakedVertexAnimationManager(): Nullable<IBakedVertexAnimationManager>;
+        set bakedVertexAnimationManager(value: Nullable<IBakedVertexAnimationManager>);
         /** @hidden */
         _syncGeometryWithMorphTargetManager(): void;
         /** @hidden */
@@ -33608,8 +33779,14 @@ declare module BABYLON {
         /** @hidden */
         _markSubMeshesAsMiscDirty(): void;
         /**
-         * Resets the draw wrappers cache for all submeshes of this abstract mesh
-         */
+        * Flag the AbstractMesh as dirty (Forcing it to update everything)
+        * @param property if set to "rotation" the objects rotationQuaternion will be set to null
+        * @returns this AbstractMesh
+        */
+        markAsDirty(property?: string): AbstractMesh;
+        /**
+        * Resets the draw wrappers cache for all submeshes of this abstract mesh
+        */
         resetDrawCache(): void;
         /**
          * Gets or sets a Vector3 depicting the mesh scaling along each local axis X, Y, Z.  Default is (1.0, 1.0, 1.0)
@@ -34273,6 +34450,7 @@ declare module BABYLON {
      * Node is the basic class for all scene objects (Mesh, Light, Camera.)
      */
     export class Node implements IBehaviorAware<Node> {
+        protected _isDirty: boolean;
         /** @hidden */
         static _AnimationRangeFactory: (name: string, from: number, to: number) => AnimationRange;
         private static _NodeConstructors;
@@ -34351,7 +34529,8 @@ declare module BABYLON {
         /** @hidden */
         _cache: any;
         private _parentNode;
-        private _children;
+        /** @hidden */
+        protected _children: Nullable<Node[]>;
         /** @hidden */
         _worldMatrix: Matrix;
         /** @hidden */
@@ -34481,6 +34660,12 @@ declare module BABYLON {
          * @return true if the node is ready
          */
         isReady(completeCheck?: boolean): boolean;
+        /**
+        * Flag the  node as dirty (Forcing it to update everything)
+        * @param property helps children apply precise "dirtyfication"
+        * @returns this node
+        */
+        markAsDirty(property?: string): Node;
         /**
          * Is this node enabled?
          * If the node has a parent, all ancestors will be checked and false will be returned if any are false (not enabled), otherwise will return true
@@ -34644,7 +34829,6 @@ declare module BABYLON {
         private _rotation;
         private _rotationQuaternion;
         protected _scaling: Vector3;
-        protected _isDirty: boolean;
         private _transformToBoneReferal;
         private _currentParentWhenAttachingToBone;
         private _isAbsoluteSynced;
@@ -34768,12 +34952,6 @@ declare module BABYLON {
         _isSynchronized(): boolean;
         /** @hidden */
         _initCache(): void;
-        /**
-        * Flag the transform node as dirty (Forcing it to update everything)
-        * @param property if set to "rotation" the objects rotationQuaternion will be set to null
-        * @returns this transform node
-        */
-        markAsDirty(property: string): TransformNode;
         /**
          * Returns the current mesh absolute position.
          * Returns a Vector3.
@@ -34927,6 +35105,12 @@ declare module BABYLON {
          * @returns this TransformNode.
          */
         getAbsolutePivotPointToRef(result: Vector3): TransformNode;
+        /**
+        * Flag the transform node as dirty (Forcing it to update everything)
+        * @param property if set to "rotation" the objects rotationQuaternion will be set to null
+        * @returns this  node
+        */
+        markAsDirty(property?: string): Node;
         /**
          * Defines the passed node as the parent of the current node.
          * The node will remain exactly where it is and its position / rotation will be updated accordingly
@@ -41591,6 +41775,16 @@ declare module BABYLON {
          * Asks the browser to exit fullscreen mode
          */
         static _ExitFullscreen(): void;
+        /**
+         * Get Font size information
+         * @param font font name
+         * @return an object containing ascent, height and descent
+         */
+        getFontOffset(font: string): {
+            ascent: number;
+            height: number;
+            descent: number;
+        };
     }
 }
 declare module BABYLON {
@@ -43613,16 +43807,6 @@ declare module BABYLON {
          * @returns the host document object
          */
         getHostDocument(): Nullable<Document>;
-        /**
-         * Get Font size information
-         * @param font font name
-         * @return an object containing ascent, height and descent
-         */
-        getFontOffset(font: string): {
-            ascent: number;
-            height: number;
-            descent: number;
-        };
     }
 }
 declare module BABYLON {
@@ -49688,6 +49872,69 @@ declare module BABYLON {
          * @param startOffset Position the clip head at a specific time in seconds.
          */
         play(startOffset?: number): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class to bake vertex animation textures.
+     * @since 5.0
+     */
+    export class VertexAnimationBaker {
+        private _scene;
+        private _mesh;
+        /**
+         * Create a new VertexAnimationBaker object which can help baking animations into a texture.
+         * @param scene Defines the scene the VAT belongs to
+         * @param mesh Defines the mesh the VAT belongs to
+         * @param skeleton Defines the skeleton the VAT belongs to
+         */
+        constructor(scene: Scene, mesh: Mesh);
+        /**
+         * Bakes the animation into the texture. This should be called once, when the
+         * scene starts, so the VAT is generated and associated to the mesh.
+         * @param ranges Defines the ranges in the animation that will be baked.
+         * @returns The array of matrix transforms for each vertex (columns) and frame (rows), as a Float32Array.
+         */
+        bakeVertexData(ranges: AnimationRange[]): Promise<Float32Array>;
+        /**
+         * Runs an animation frame and stores its vertex data
+         *
+         * @param vertexData The array to save data to.
+         * @param frameIndex Current frame in the skeleton animation to render.
+         * @param textureIndex Current index of the texture data.
+         */
+        private _executeAnimationFrame;
+        /**
+         * Builds a vertex animation texture given the vertexData in an array.
+         * @param vertexData The vertex animation data. You can generate it with bakeVertexData().
+         * @returns The vertex animation texture to be used with BakedVertexAnimationManager.
+         */
+        textureFromBakedVertexData(vertexData: Float32Array): RawTexture;
+        /**
+         * Serializes our vertexData to an object, with a nice string for the vertexData.
+         * @param vertexData The vertex array data.
+         * @returns This object serialized to a JS dict.
+         */
+        serializeBakedVertexDataToObject(vertexData: Float32Array): Record<string, any>;
+        /**
+         * Loads previously baked data.
+         * @param data The object as serialized by serializeBakedVertexDataToObject()
+         * @returns The array of matrix transforms for each vertex (columns) and frame (rows), as a Float32Array.
+         */
+        loadBakedVertexDataFromObject(data: Record<string, any>): Float32Array;
+        /**
+         * Serializes our vertexData to a JSON string, with a nice string for the vertexData.
+         * Should be called right after bakeVertexData().
+         * @param vertexData The vertex array data.
+         * @returns This object serialized to a safe string.
+         */
+        serializeBakedVertexDataToJSON(vertexData: Float32Array): string;
+        /**
+         * Loads previously baked data in string format.
+         * @param json The json string as serialized by serializeBakedVertexDataToJSON().
+         * @returns The array of matrix transforms for each vertex (columns) and frame (rows), as a Float32Array.
+         */
+        loadBakedVertexDataFromJSON(json: string): Float32Array;
     }
 }
 declare module BABYLON {
@@ -64695,6 +64942,20 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var bakedVertexAnimationDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var bakedVertexAnimation: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
     export var instancesDeclaration: {
         name: string;
         shader: string;
@@ -64854,6 +65115,19 @@ declare module BABYLON {
         constructor(color: Nullable<number>[]);
         run(renderPass: GPURenderPassEncoder): void;
         clone(): WebGPURenderItemBlendColor;
+    }
+    /** @hidden */
+    export class WebGPURenderItemBeginOcclusionQuery implements IWebGPURenderItem {
+        query: number;
+        constructor(query: number);
+        run(renderPass: GPURenderPassEncoder): void;
+        clone(): WebGPURenderItemBeginOcclusionQuery;
+    }
+    /** @hidden */
+    export class WebGPURenderItemEndOcclusionQuery implements IWebGPURenderItem {
+        constructor();
+        run(renderPass: GPURenderPassEncoder): void;
+        clone(): WebGPURenderItemEndOcclusionQuery;
     }
     /** @hidden */
     export class WebGPUBundleList {
@@ -65616,8 +65890,10 @@ declare module BABYLON {
         _rttRenderPassWrapper: WebGPURenderPassWrapper;
         /** @hidden */
         _pendingDebugCommands: Array<[string, Nullable<string>]>;
-        private _bundleList;
-        private _bundleListRenderTarget;
+        /** @hidden */
+        _bundleList: WebGPUBundleList;
+        /** @hidden */
+        _bundleListRenderTarget: WebGPUBundleList;
         /** @hidden */
         _onAfterUnbindFrameBufferObservable: Observable<WebGPUEngine>;
         private _defaultDrawContext;
@@ -68834,6 +69110,17 @@ declare module BABYLON {
          */
         prepareDefines(defines: IMaterialSubSurfaceDefines, scene: Scene): void;
         /**
+         * Binds the material data (this function is called even if mustRebind() returns false)
+         * @param uniformBuffer defines the Uniform buffer to fill in.
+         * @param scene defines the scene the material belongs to.
+         * @param engine defines the engine the material belongs to.
+         * @param isFrozen defines whether the material is frozen or not.
+         * @param lodBasedMicrosurface defines whether the material relies on lod based microsurface or not.
+         * @param realTimeFiltering defines whether the textures should be filtered on the fly.
+         * @param subMesh the submesh to bind data for
+        */
+        hardBindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, isFrozen: boolean, lodBasedMicrosurface: boolean, realTimeFiltering: boolean, subMesh: SubMesh): void;
+        /**
          * Binds the material data.
          * @param uniformBuffer defines the Uniform buffer to fill in.
          * @param scene defines the scene the material belongs to.
@@ -69240,6 +69527,7 @@ declare module BABYLON {
         DETAIL: boolean;
         DETAILDIRECTUV: number;
         DETAIL_NORMALBLENDMETHOD: number;
+        BAKED_VERTEX_ANIMATION_TEXTURE: boolean;
         AMBIENT: boolean;
         AMBIENTDIRECTUV: number;
         AMBIENTINGRAYSCALE: boolean;
@@ -70934,7 +71222,7 @@ declare module BABYLON {
             createDefaultCamera(createArcRotateCamera?: boolean, replace?: boolean, attachCameraControls?: boolean): void;
             /**
              * Creates a default camera and a default light.
-             * @see https://doc.babylonjs.com/how_to/Fast_Build#create-default-camera-or-light
+             * @see https://doc.babylonjs.com/divingDeeper/scene/fastBuildWorld#create-default-camera-or-light
              * @param createArcRotateCamera has the default false which creates a free camera, when true creates an arc rotate camera
              * @param replace has the default false, when true replaces the active camera/light in the scene
              * @param attachCameraControls has the default false, when true attaches camera controls to the canvas.
@@ -70942,7 +71230,7 @@ declare module BABYLON {
             createDefaultCameraOrLight(createArcRotateCamera?: boolean, replace?: boolean, attachCameraControls?: boolean): void;
             /**
              * Creates a new sky box
-             * @see https://doc.babylonjs.com/how_to/Fast_Build#create-default-skybox
+             * @see https://doc.babylonjs.com/divingDeeper/scene/fastBuildWorld#create-default-skybox
              * @param environmentTexture defines the texture to use as environment texture
              * @param pbr has default false which requires the StandardMaterial to be used, when true PBRMaterial must be used
              * @param scale defines the overall scale of the skybox
@@ -70960,7 +71248,7 @@ declare module BABYLON {
             createDefaultEnvironment(options?: Partial<IEnvironmentHelperOptions>): Nullable<EnvironmentHelper>;
             /**
              * Creates a new VREXperienceHelper
-             * @see https://doc.babylonjs.com/how_to/webvr_helper
+             * @see https://doc.babylonjs.com/divingDeeper/cameras/webVRHelper
              * @param webVROptions defines the options used to create the new VREXperienceHelper
              * @returns a new VREXperienceHelper
              */
@@ -74899,7 +75187,7 @@ declare module BABYLON {
      * @param basisFormat format chosen from GetSupportedTranscodeFormat
      * @returns internal format corresponding to the Basis format
      */
-    export const GetInternalFormatFromBasisFormat: (basisFormat: number, engine: Engine) => any;
+    export const GetInternalFormatFromBasisFormat: (basisFormat: number, engine: Engine) => number;
     /**
      * Transcodes a loaded image file to compressed pixel data
      * @param data image data to transcode
@@ -74931,7 +75219,7 @@ declare module BABYLON {
          * @param basisFormat format chosen from GetSupportedTranscodeFormat
          * @returns internal format corresponding to the Basis format
          */
-        GetInternalFormatFromBasisFormat: (basisFormat: number, engine: Engine) => any;
+        GetInternalFormatFromBasisFormat: (basisFormat: number, engine: Engine) => number;
         /**
          * Transcodes a loaded image file to compressed pixel data
          * @param data image data to transcode
@@ -84898,6 +85186,7 @@ declare module BABYLON {
          */
         renderList: SmartArray<BoundingBox>;
         private _colorShader;
+        private _colorShaderForOcclusionQuery;
         private _vertexBuffers;
         private _indexBuffer;
         private _fillIndexBuffer;

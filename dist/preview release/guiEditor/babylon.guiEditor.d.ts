@@ -814,6 +814,24 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
+    interface IButtonPropertyGridComponentProps {
+        rectangle: Rectangle;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        onAddComponent: (newComponent: string) => void;
+    }
+    export class ButtonPropertyGridComponent extends React.Component<IButtonPropertyGridComponentProps> {
+        constructor(props: IButtonPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    export class GUINodeTools {
+        static ImageControlDefaultUrl: string;
+        static CreateControlFromString(data: string): Grid | Rectangle | Line | TextBlock | Image | Slider | RadioButton | InputText | ColorPicker | ImageBasedSlider | StackPanel | Ellipse | Checkbox | DisplayGrid;
+    }
+}
+declare module GUIEDITOR {
     interface IPropertyTabComponentProps {
         globalState: GlobalState;
     }
@@ -845,11 +863,6 @@ declare module GUIEDITOR {
     }
     export class Portal extends React.Component<IPortalProps> {
         render(): React.ReactPortal;
-    }
-}
-declare module GUIEDITOR {
-    export class GUINodeTools {
-        static CreateControlFromString(data: string): Grid | Rectangle | Line | TextBlock | Image | Slider | RadioButton | InputText | ColorPicker | ImageBasedSlider | StackPanel | Ellipse | Checkbox | DisplayGrid;
     }
 }
 declare module GUIEDITOR {
@@ -1071,7 +1084,6 @@ declare module GUIEDITOR {
         showPreviewPopUp: boolean;
     }
     export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEditorState> {
-        private _workbenchCanvas;
         private _startX;
         private _moveInProgress;
         private _leftWidth;
@@ -1088,7 +1100,6 @@ declare module GUIEDITOR {
         onPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
         resizeColumns(evt: React.PointerEvent<HTMLDivElement>, forLeft?: boolean): void;
         buildColumnLayout(): string;
-        emitNewBlock(event: React.DragEvent<HTMLDivElement>): void;
         handlePopUp: () => void;
         handleClosingPopUp: () => void;
         createPopupWindow: (title: string, windowVariableName: string, width?: number, height?: number) => Window | null;

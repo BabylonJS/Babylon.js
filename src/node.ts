@@ -38,6 +38,8 @@ class _InternalNodeDataInfo {
  * Node is the basic class for all scene objects (Mesh, Light, Camera.)
  */
 export class Node implements IBehaviorAware<Node> {
+    protected _isDirty = false;
+
     /** @hidden */
     public static _AnimationRangeFactory = (name: string, from: number, to: number): AnimationRange => {
         throw _WarnImport("AnimationRange");
@@ -162,7 +164,9 @@ export class Node implements IBehaviorAware<Node> {
     public _cache: any = {};
 
     private _parentNode: Nullable<Node> = null;
-    private _children: Nullable<Node[]> = null;
+
+    /** @hidden */
+    protected _children: Nullable<Node[]> = null;
 
     /** @hidden */
     public _worldMatrix = Matrix.Identity();
@@ -514,6 +518,17 @@ export class Node implements IBehaviorAware<Node> {
      */
     public isReady(completeCheck = false): boolean {
         return this._nodeDataStorage._isReady;
+    }
+
+    /**
+    * Flag the  node as dirty (Forcing it to update everything)
+    * @param property helps children apply precise "dirtyfication"
+    * @returns this node
+    */
+    public markAsDirty(property?: string): Node {
+        this._currentRenderId = Number.MAX_VALUE;
+        this._isDirty = true;
+        return this;
     }
 
     /**
