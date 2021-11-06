@@ -493,6 +493,7 @@ export class WebGPUTextureHelper {
             case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3:
                 return useSRGBBuffer ? WebGPUConstants.TextureFormat.BC2RGBAUnormSRGB : WebGPUConstants.TextureFormat.BC2RGBAUnorm;
             case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1:
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1:
                 return useSRGBBuffer ? WebGPUConstants.TextureFormat.BC1RGBAUnormSRGB : WebGPUConstants.TextureFormat.BC1RGBAUnorm;
         }
 
