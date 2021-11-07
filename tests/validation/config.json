@@ -1332,7 +1332,7 @@
         {
             "title": "Reverse depth buffer and CSM shadows",
             "renderCount": 10,
-            "playgroundId": "#IIZ9UU#180",
+            "playgroundId": "#IIZ9UU#248",
             "excludedEngines": ["webgl1"],
             "referenceImage": "reverseDepthBufferCSMShadows.png"
         },
