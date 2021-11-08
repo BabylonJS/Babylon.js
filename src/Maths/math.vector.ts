@@ -4784,7 +4784,6 @@ export class Matrix {
 
         scale = scale || MathTmp.Vector3[0];
         if (preserveScalingNode) {
-            
             const signX = preserveScalingNode.scaling.x < 0 ? -1 : 1;
             const signY = preserveScalingNode.scaling.y < 0 ? -1 : 1;
             const signZ = preserveScalingNode.scaling.z < 0 ? -1 : 1;
@@ -4797,7 +4796,6 @@ export class Matrix {
             scale.y *= signY;
             scale.z *= signZ;
         } else {
-            scale = scale || MathTmp.Vector3[0];
             scale.x = Math.sqrt(m[0] * m[0] + m[1] * m[1] + m[2] * m[2]);
             scale.y = Math.sqrt(m[4] * m[4] + m[5] * m[5] + m[6] * m[6]);
             scale.z = Math.sqrt(m[8] * m[8] + m[9] * m[9] + m[10] * m[10]);
