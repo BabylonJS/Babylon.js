@@ -758,7 +758,7 @@ export class TransformNode extends Node {
 
         if (!node) {
             this.computeWorldMatrix(true);
-            this.getWorldMatrix().decompose(scale, quatRotation, position, preserveScalingSign? this : undefined);
+            this.getWorldMatrix().decompose(scale, quatRotation, position, preserveScalingSign ? this : undefined);
         } else {
             var diffMatrix = TmpVectors.Matrix[0];
             var invParentMatrix = TmpVectors.Matrix[1];
@@ -768,7 +768,7 @@ export class TransformNode extends Node {
 
             node.getWorldMatrix().invertToRef(invParentMatrix);
             this.getWorldMatrix().multiplyToRef(invParentMatrix, diffMatrix);
-            diffMatrix.decompose(scale, quatRotation, position, preserveScalingSign? this : undefined);
+            diffMatrix.decompose(scale, quatRotation, position, preserveScalingSign ? this : undefined);
         }
 
         if (this.rotationQuaternion) {

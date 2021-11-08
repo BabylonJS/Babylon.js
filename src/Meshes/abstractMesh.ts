@@ -2003,6 +2003,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     /**
      * Removes the passed mesh from the current mesh children list
      * @param mesh defines the child mesh
+     * @param preserveScalingSign if true, keep scaling sign of child. Otherwise, scaling sign might change.
      * @returns the current mesh
      */
     public removeChild(mesh: AbstractMesh, preserveScalingSign: boolean = false): AbstractMesh {
