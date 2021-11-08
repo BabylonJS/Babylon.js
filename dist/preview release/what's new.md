@@ -39,6 +39,7 @@
 - Added check for duplicates in `ShadowGenerator.addShadowCaster` ([ivankoleda](https://github.com/ivankoleda))
 - Added observable for `PointerDragBehavior` enable state ([cedricguillemet](https://github.com/cedricguillemet))
 - Added `targetHost` to query and set targeted mesh with `ArcRotateCamera` ([cedricguillemet](https://github.com/cedricguillemet))
+- Added optional `preserveScalingSign` to `addChild` and `setParent` to keep scaling sign ([cedricguillemet](https://github.com/cedricguillemet))
 - Spelling of function/variables `xxxByID` renamed to `xxxById` to be consistent over the project. Old `xxxByID` reamain as deprecated that forward to the corresponding `xxxById` ([barroij](https://github.com/barroij))
 - Added new reflector tool that enable remote inspection of scenes. ([bghgary](https://github.com/bghgary))
 - Update `createPickingRay` and `createPickingRayToRef` matrix parameter to be nullable. ([jlivak](https://github.com/jlivak))
