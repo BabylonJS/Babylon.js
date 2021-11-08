@@ -3260,7 +3260,7 @@ var _Exporter = /** @class */ (function () {
                         var attribute = attributeData_2[_d];
                         var attributeKind = attribute.kind;
                         if ((attributeKind === babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].UVKind || attributeKind === babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].UV2Kind) && !this._options.exportUnusedUVs) {
-                            if (glTFMaterial && !this._glTFMaterialExporter._hasTexturesPresent(glTFMaterial)) {
+                            if (!glTFMaterial || !this._glTFMaterialExporter._hasTexturesPresent(glTFMaterial)) {
                                 continue;
                             }
                         }
@@ -3406,8 +3406,9 @@ var _Exporter = /** @class */ (function () {
                 });
             }
         });
-        return this._glTFMaterialExporter._convertMaterialsToGLTFAsync(babylonScene.materials, "image/png" /* PNG */, true).then(function () {
-            return _this.createNodeMapAndAnimationsAsync(babylonScene, nodes, binaryWriter).then(function (nodeMap) {
+        var _a = this.getExportNodes(nodes), exportNodes = _a[0], exportMaterials = _a[1];
+        return this._glTFMaterialExporter._convertMaterialsToGLTFAsync(exportMaterials, "image/png" /* PNG */, true).then(function () {
+            return _this.createNodeMapAndAnimationsAsync(babylonScene, exportNodes, binaryWriter).then(function (nodeMap) {
                 return _this.createSkinsAsync(babylonScene, nodeMap, binaryWriter).then(function (skinMap) {
                     _this._nodeMap = nodeMap;
                     _this._totalByteLength = binaryWriter.getByteOffset();
@@ -3473,6 +3474,41 @@ var _Exporter = /** @class */ (function () {
         });
     };
     /**
+     * Getting the nodes and materials that would be exported.
+     * @param nodes Babylon transform nodes
+     * @returns Array of nodes which would be exported.
+     * @returns Set of materials which would be exported.
+     */
+    _Exporter.prototype.getExportNodes = function (nodes) {
+        var exportNodes = [];
+        var exportMaterials = new Set();
+        for (var _i = 0, nodes_2 = nodes; _i < nodes_2.length; _i++) {
+            var babylonNode = nodes_2[_i];
+            if (!this._options.shouldExportNode || this._options.shouldExportNode(babylonNode)) {
+                exportNodes.push(babylonNode);
+                if (babylonNode.getClassName() === "Mesh") {
+                    var mesh = babylonNode;
+                    if (mesh.material) {
+                        exportMaterials.add(mesh.material);
+                    }
+                }
+                else {
+                    var meshes = babylonNode.getChildMeshes(false);
+                    for (var _a = 0, meshes_1 = meshes; _a < meshes_1.length; _a++) {
+                        var mesh = meshes_1[_a];
+                        if (mesh.material) {
+                            exportMaterials.add(mesh.material);
+                        }
+                    }
+                }
+            }
+            else {
+                "Excluding node " + babylonNode.name;
+            }
+        }
+        return [exportNodes, exportMaterials];
+    };
+    /**
      * Creates a mapping of Node unique id to node index and handles animations
      * @param babylonScene Babylon Scene
      * @param nodes Babylon transform nodes
@@ -3491,41 +3527,35 @@ var _Exporter = /** @class */ (function () {
         };
         var idleGLTFAnimations = [];
         var _loop_1 = function (babylonNode) {
-            if (!this_1._options.shouldExportNode || this_1._options.shouldExportNode(babylonNode)) {
-                promiseChain = promiseChain.then(function () {
-                    var convertToRightHandedSystem = _this._convertToRightHandedSystemMap[babylonNode.uniqueId];
-                    return _this.createNodeAsync(babylonNode, binaryWriter, convertToRightHandedSystem, nodeMap).then(function (node) {
-                        var promise = _this._extensionsPostExportNodeAsync("createNodeAsync", node, babylonNode, nodeMap);
-                        if (promise == null) {
-                            babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Not exporting node " + babylonNode.name);
-                            return Promise.resolve();
-                        }
-                        else {
-                            return promise.then(function (node) {
-                                if (!node) {
-                                    return;
+            promiseChain = promiseChain.then(function () {
+                var convertToRightHandedSystem = _this._convertToRightHandedSystemMap[babylonNode.uniqueId];
+                return _this.createNodeAsync(babylonNode, binaryWriter, convertToRightHandedSystem, nodeMap).then(function (node) {
+                    var promise = _this._extensionsPostExportNodeAsync("createNodeAsync", node, babylonNode, nodeMap);
+                    if (promise == null) {
+                        babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Not exporting node " + babylonNode.name);
+                        return Promise.resolve();
+                    }
+                    else {
+                        return promise.then(function (node) {
+                            if (!node) {
+                                return;
+                            }
+                            _this._nodes.push(node);
+                            nodeIndex = _this._nodes.length - 1;
+                            nodeMap[babylonNode.uniqueId] = nodeIndex;
+                            if (!babylonScene.animationGroups.length) {
+                                _glTFAnimation__WEBPACK_IMPORTED_MODULE_5__["_GLTFAnimation"]._CreateMorphTargetAnimationFromMorphTargetAnimations(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, _this._nodes, binaryWriter, _this._bufferViews, _this._accessors, convertToRightHandedSystem, _this._animationSampleRate);
+                                if (babylonNode.animations.length) {
+                                    _glTFAnimation__WEBPACK_IMPORTED_MODULE_5__["_GLTFAnimation"]._CreateNodeAnimationFromNodeAnimations(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, _this._nodes, binaryWriter, _this._bufferViews, _this._accessors, convertToRightHandedSystem, _this._animationSampleRate);
                                 }
-                                _this._nodes.push(node);
-                                nodeIndex = _this._nodes.length - 1;
-                                nodeMap[babylonNode.uniqueId] = nodeIndex;
-                                if (!babylonScene.animationGroups.length) {
-                                    _glTFAnimation__WEBPACK_IMPORTED_MODULE_5__["_GLTFAnimation"]._CreateMorphTargetAnimationFromMorphTargetAnimations(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, _this._nodes, binaryWriter, _this._bufferViews, _this._accessors, convertToRightHandedSystem, _this._animationSampleRate);
-                                    if (babylonNode.animations.length) {
-                                        _glTFAnimation__WEBPACK_IMPORTED_MODULE_5__["_GLTFAnimation"]._CreateNodeAnimationFromNodeAnimations(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, _this._nodes, binaryWriter, _this._bufferViews, _this._accessors, convertToRightHandedSystem, _this._animationSampleRate);
-                                    }
-                                }
-                            });
-                        }
-                    });
+                            }
+                        });
+                    }
                 });
-            }
-            else {
-                "Excluding node " + babylonNode.name;
-            }
+            });
         };
-        var this_1 = this;
-        for (var _i = 0, nodes_2 = nodes; _i < nodes_2.length; _i++) {
-            var babylonNode = nodes_2[_i];
+        for (var _i = 0, nodes_3 = nodes; _i < nodes_3.length; _i++) {
+            var babylonNode = nodes_3[_i];
             _loop_1(babylonNode);
         }
         return promiseChain.then(function () {
@@ -3918,24 +3948,24 @@ var _GLTFMaterialExporter = /** @class */ (function () {
      * @param mimeType texture mime type
      * @param images array of images
      * @param textures array of textures
-     * @param materials array of materials
+     * @param materials set of materials
      * @param imageData mapping of texture names to base64 textures
      * @param hasTextureCoords specifies if texture coordinates are present on the material
      */
-    _GLTFMaterialExporter.prototype._convertMaterialsToGLTFAsync = function (babylonMaterials, mimeType, hasTextureCoords) {
+    _GLTFMaterialExporter.prototype._convertMaterialsToGLTFAsync = function (exportMaterials, mimeType, hasTextureCoords) {
+        var _this = this;
         var promises = [];
-        for (var _i = 0, babylonMaterials_1 = babylonMaterials; _i < babylonMaterials_1.length; _i++) {
-            var babylonMaterial = babylonMaterials_1[_i];
-            if (babylonMaterial.getClassName() === "StandardMaterial") {
-                promises.push(this._convertStandardMaterialAsync(babylonMaterial, mimeType, hasTextureCoords));
+        exportMaterials.forEach(function (material) {
+            if (material.getClassName() === "StandardMaterial") {
+                promises.push(_this._convertStandardMaterialAsync(material, mimeType, hasTextureCoords));
             }
-            else if (babylonMaterial.getClassName().indexOf("PBR") !== -1) {
-                promises.push(this._convertPBRMaterialAsync(babylonMaterial, mimeType, hasTextureCoords));
+            else if (material.getClassName().indexOf("PBR") !== -1) {
+                promises.push(_this._convertPBRMaterialAsync(material, mimeType, hasTextureCoords));
             }
             else {
-                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Unsupported material type: " + babylonMaterial.name);
+                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Unsupported material type: " + material.name);
             }
-        }
+        });
         return Promise.all(promises).then(function () { });
     };
     /**
