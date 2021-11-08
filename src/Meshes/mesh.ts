@@ -3458,15 +3458,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Parent
         if (this.parent) {
-            serializationObject.parentId = this.parent.id;
+            serializationObject.parentId = this.parent.uniqueId;
         }
 
         // Geometry
         serializationObject.isUnIndexed = this.isUnIndexed;
         var geometry = this._geometry;
         if (geometry && this.subMeshes) {
-            var geometryId = geometry.id;
-            serializationObject.geometryId = geometryId;
+            serializationObject.geometryUniqueId = geometry.uniqueId;
+            serializationObject.geometryId = geometry.id;
 
             // SubMeshes
             serializationObject.subMeshes = [];
@@ -3541,7 +3541,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             };
 
             if (instance.parent) {
-                serializationInstance.parentId = instance.parent.id;
+                serializationInstance.parentId = instance.parent.uniqueId;
             }
 
             if (instance.rotationQuaternion) {

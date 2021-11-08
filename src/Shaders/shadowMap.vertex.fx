@@ -6,6 +6,7 @@ attribute vec3 position;
 #endif
 
 #include<bonesDeclaration>
+#include<bakedVertexAnimationDeclaration>
 
 #include<morphTargetsVertexGlobalDeclaration>
 #include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]
@@ -43,8 +44,8 @@ void main(void)
 vec3 positionUpdated = position;
 #ifdef UV1
     vec2 uvUpdated = uv;
-#endif  
-#ifdef NORMAL	
+#endif
+#ifdef NORMAL
 	vec3 normalUpdated = normal;
 #endif
 
@@ -53,6 +54,7 @@ vec3 positionUpdated = position;
 
 #include<instancesVertex>
 #include<bonesVertex>
+#include<bakedVertexAnimation>
 
 vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
 

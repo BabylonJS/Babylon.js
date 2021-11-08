@@ -64,6 +64,7 @@ export class SkeletonViewer {
             attribute vec4 matricesIndices;
             attribute vec4 matricesWeights;
         #endif
+        #include<bakedVertexAnimationDeclaration>
 
         #include<instancesDeclaration>
 
@@ -82,6 +83,7 @@ export class SkeletonViewer {
 
             #include<instancesVertex>
             #include<bonesVertex>
+            #include<bakedVertexAnimation>
 
             vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
 
@@ -204,6 +206,7 @@ export class SkeletonViewer {
                 attribute vec4 matricesIndices;
                 attribute vec4 matricesWeights;
             #endif
+            #include<bakedVertexAnimationDeclaration>
             #include<instancesDeclaration>
 
             varying vec3 vColor;
@@ -213,6 +216,7 @@ export class SkeletonViewer {
 
                 #include<instancesVertex>
                 #include<bonesVertex>
+                #include<bakedVertexAnimation>
 
                 vec3 color = vec3(0.);
                 bool first = true;

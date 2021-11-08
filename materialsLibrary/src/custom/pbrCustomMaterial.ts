@@ -64,7 +64,7 @@ export class PBRCustomMaterial extends PBRMaterial {
     public FragmentShader: string;
     public VertexShader: string;
 
-    public AttachAfterBind(mesh: Mesh, effect: Effect) {
+    public AttachAfterBind(mesh: Mesh | undefined, effect: Effect) {
         if (this._newUniformInstances) {
             for (let el in this._newUniformInstances) {
                 const ea = el.toString().split('-');
