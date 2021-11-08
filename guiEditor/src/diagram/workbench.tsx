@@ -211,6 +211,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         );
 
         props.globalState.onWindowResizeObservable.add(() => {
+            this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
             this._engine.resize();
         });
 
@@ -786,6 +787,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         const panningFn = () => {
             const pos = this.getPosition(scene, camera, plane);
             this.panning(pos, initialPos, camera.inertia, inertialPanning);
+            this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
         };
 
         const inertialPanningFn = () => {
@@ -948,6 +950,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         ref.addInPlace(offset);
 
         camera.inertialRadiusOffset += delta;
+        this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
     }
 
     //Sets x y or z of passed in vector to zero if less than Epsilon

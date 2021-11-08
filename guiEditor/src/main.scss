@@ -99,7 +99,9 @@
     .ge-scalePoint {
         width: 15px;
         height: 15px;
-        background: blue;
+        background: transparent;
+        outline: rgb(0, 204, 255) 2px solid;
+        border-radius: 50%;
     }
 }
 

@@ -1,18 +1,15 @@
+import { Control } from "babylonjs-gui/2D/controls/control";
 import { Matrix2D } from "babylonjs-gui/2D/math2D";
-import { Camera } from "babylonjs/Cameras/camera";
-import { Frustum } from "babylonjs/Maths/math.frustum";
-import { Plane } from "babylonjs/Maths/math.plane";
 import { Matrix, Vector2, Vector3 } from "babylonjs/Maths/math.vector";
 import * as React from "react";
-import { restore } from "sinon";
 import { GlobalState } from "../globalState";
+import { PropertyChangedEvent } from "../sharedUiComponents/propertyChangedEvent";
 
 require("./workbenchCanvas.scss");
 
 export interface IGuiGizmoProps {
     globalState: GlobalState;
 }
-
 
 export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
 
@@ -39,9 +36,23 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             this.updateGizmo();
         });
 
-        this.props.globalState.onPropertyGridUpdateRequiredObservable.add(() => {
+        /*this.props.globalState.onPropertyGridUpdateRequiredObservable.add(() => {
             this.updateGizmo();
         });
+
+        this.props.globalState.onGizmoUpdateRequireObservable.add(() => {
+            this.updateGizmo();
+        });
+
+        this.props.globalState.onPropertyChangedObservable.add((event: PropertyChangedEvent) => {
+            ;
+            if (event.property === "rotation" ||
+                event.property === "position" ||
+                event.property === "scale") {
+                this.updateGizmo();
+            }
+        });*/
+
 
     }
 
@@ -56,43 +67,94 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
 
 
     updateGizmo() {
+
+        setTimeout(() => {
+            this.updateGizmo();
+        }, 10);
+
+        if (this.scalePoints[0].style.display === "none") return;
         const selectedGuiNodes = this.props.globalState.workbench.selectedGuiNodes;
         if (selectedGuiNodes.length > 0) {
             const node = selectedGuiNodes[0];
-           // console.log("selected");
 
+            let startingPositions = [new Vector3(node.leftInPixels, 0, node.topInPixels),
+            new Vector3(node.leftInPixels, 0, node.topInPixels),
+            new Vector3(node.leftInPixels, 0, node.topInPixels),
+            new Vector3(node.leftInPixels, 0, node.topInPixels),]
+
+            let size = this.props.globalState.guiTexture.getSize();
+            //calcualte allignments
+            let offsetX = 0;
+            let offsetY = 0;
+            switch (node.horizontalAlignment) {
+                case Control.HORIZONTAL_ALIGNMENT_LEFT:
+                    offsetX = ((-size.width / 2) + node.widthInPixels / 2);
+                    break;
+                case Control.HORIZONTAL_ALIGNMENT_RIGHT:
+                    offsetX = ((size.width / 2) - node.widthInPixels / 2);
+                    break;
+                default:
+                    break;
+            }
+            switch (node.verticalAlignment) {
+                case Control.VERTICAL_ALIGNMENT_BOTTOM:
+                    break;
+                case Control.VERTICAL_ALIGNMENT_TOP:
+                    break;
+                default:
+                    break;
+            }
+
+            startingPositions[0].x -= node.widthInPixels / 2;
+            startingPositions[0].z += node.heightInPixels / 2;
+
+            startingPositions[1].x -= node.widthInPixels / 2;
+            startingPositions[1].z -= node.heightInPixels / 2;
+
+            startingPositions[2].x += node.widthInPixels / 2;
+            startingPositions[2].z -= node.heightInPixels / 2;
+
+            startingPositions[3].x += node.widthInPixels / 2;
+            startingPositions[3].z += node.heightInPixels / 2;
+
+            let index = 0;
             this.scalePoints.forEach(scalePoint => {
 
-                let camera = this.props.globalState.workbench._camera;
+                //we get the corner of the control with rotation 0
+                let res = startingPositions[index++];
+                res.x += offsetX;
+                res.y += offsetY;
 
-                let res = new Vector3(node.leftInPixels, 0,-node.topInPixels);
-                //console.log(res);
-                const scene = this.props.globalState.workbench._scene;
-                const engine = scene.getEngine();
-                let result = Vector3.Project(res,
-                    Matrix.Identity(),
-                    scene.getTransformMatrix(),
-                    camera.viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight()));
-
-                scalePoint.style.left = result.x + "px";
-                scalePoint.style.top = result.y + "px";
-                //console.log(result);
-
-                //let result = new Vector2(controlPoint.leftInPixels, controlPoint.topInPixels);
-                //let m2d = Matrix2D.Identity();
-                /*let translateBack = Matrix2D.Identity();
+                let result = new Vector2(res.x, res.z);
+                let m2d = Matrix2D.Identity();
+                let translateBack = Matrix2D.Identity();
                 let translateTo = Matrix2D.Identity();
                 let resultMatrix = Matrix2D.Identity();
 
-                Matrix2D.TranslationToRef(control.leftInPixels, control.topInPixels, translateBack);
-                Matrix2D.TranslationToRef(-control.leftInPixels, -control.topInPixels, translateTo);
-                Matrix2D.RotationToRef(control.rotation, m2d);
+                Matrix2D.TranslationToRef(node.leftInPixels, node.topInPixels, translateBack);
+                Matrix2D.TranslationToRef(-node.leftInPixels, -node.topInPixels, translateTo);
+                Matrix2D.RotationToRef(node.rotation, m2d);
                 translateTo.multiplyToRef(m2d, resultMatrix);
                 resultMatrix.multiplyToRef(translateBack, resultMatrix);
                 resultMatrix.transformCoordinates(result.x, result.y, result);
 
-                controlPoint.left = result.x;
-                controlPoint.top = result.y;*/
+                //v (x,0,y); 
+                res.x = result.x;
+                res.z = result.y;
+
+                //project to screen space
+                res.z *= -1;
+                let camera = this.props.globalState.workbench._camera;
+                const scene = this.props.globalState.workbench._scene;
+                const engine = scene.getEngine();
+                let finalResult = Vector3.Project(res,
+                    Matrix.Identity(),
+                    scene.getTransformMatrix(),
+                    camera.viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight()));
+
+                scalePoint.style.left = finalResult.x + "px";
+                scalePoint.style.top = finalResult.y + "px";
+
 
             });
         }
@@ -110,6 +172,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             scalePoint.className = "ge-scalePoint";
             canvas.parentElement?.appendChild(scalePoint);
             scalePoint.style.position = "absolute";
+            scalePoint.style.display = "none";
             scalePoint.style.left = i * 100 + 'px';
             scalePoint.style.top = i * 100 + 'px';
             scalePoint.style.transform = "translate(-50%, -50%)";
@@ -171,7 +234,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         bottomLeftCornerHandle.className = "handle left-handle bottom-left-corner-handle";
         this.element.appendChild(bottomLeftCornerHandle);
         bottomLeftCornerHandle.addEventListener("pointerdown", this._onBottomLeftHandlePointerDown);*/
-
+        this.updateGizmo();
     }
     private _onRightHandlePointerDown(arg0: string, _onRightHandlePointerDown: any) {
         throw new Error("Method not implemented.");
