@@ -151,6 +151,7 @@ IKeyPointComponentState
 
         this._onStepTangentRequiredObserver = this.props.context.onStepTangentRequired.add(() => {
             const isSelected = this.props.context.activeKeyPoints?.indexOf(this) !== -1;
+
             if (!isSelected) {  
                 return;
             }
@@ -393,7 +394,7 @@ IKeyPointComponentState
     }
 
     private _stepTangent() {
-        this.props.curve.updateInterpolationMode(this.props.keyId, AnimationKeyInterpolation.STEP);
+        this.props.context.onInterpolationModeSet.notifyObservers({keyId: this.props.keyId, value: AnimationKeyInterpolation.STEP});
 
         this.forceUpdate();
     }

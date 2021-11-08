@@ -21,9 +21,9 @@ export class Curve {
     public tangentBuilder?: () => any;
     public setDefaultInTangent?: (keyId: number) => any;
     public setDefaultOutTangent?: (keyId: number) => any;
-
+    
     public static readonly TangentLength = 50;
-
+    
     public constructor(color: string, animation: Animation, property?: string, tangentBuilder?: () => any, setDefaultInTangent?: (keyId: number) => any, setDefaultOutTangent?: (keyId: number) => any) {
         this.color = color;
         this.animation = animation;
