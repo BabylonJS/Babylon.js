@@ -14,6 +14,8 @@ declare module BABYLON {
         static RenderLoopReady: boolean;
         /** Pauses the main page render loop */
         static PauseRenderLoop: boolean;
+        /** The webgl render context has been lost flag */
+        static LostRenderContext: boolean;
         /** Set the preload auto update progress flag */
         static AutoUpdateProgress: boolean;
         /** Set the capsule collider shape type */
@@ -32,6 +34,8 @@ declare module BABYLON {
         static OnEngineResizeObservable: Observable<Engine>;
         /** Register handler that is triggered when the scene has been loaded (engine.html) */
         static OnLoadCompleteObservable: Observable<Engine>;
+        /** Register handler that is triggered when then webgl context need to be rebuilt (engine.html) */
+        static OnRebuildContextObservable: Observable<Engine>;
         /** Register asset manager progress event (engine.html) */
         static OnAssetManagerProgress: (event: ProgressEvent) => void;
         /** Post a safe message to the top browser window */
@@ -1460,8 +1464,19 @@ declare module BABYLON {
         static GetAngle(from: BABYLON.Vector3, to: BABYLON.Vector3): number;
         /** Returns the angle in radians between the from and to vectors. */
         static GetAngleRadians(from: BABYLON.Vector3, to: BABYLON.Vector3): number;
-        /** TODO */
+        /** Default Unity style angle clamping */
         static ClampAngle(angle: number, min: number, max: number): number;
+        /**
+        * Expects angle in the range 0 to 360
+        * Expects min and max in the range -180 to 180
+        * Returns the clamped angle in the range 0 to 360
+        */
+        static ClampAngle180(angle: number, min: number, max: number): number;
+        /**
+        * Expects all angles in the range 0 to 360
+        * Returns the clamped angle in the range 0 to 360
+        */
+        static ClampAngle360(angle: number, min: number, max: number): number;
         /** Gradually changes a number towards a desired goal over time. (Note: Uses currentVelocity.x as output variable) */
         static SmoothDamp(current: number, target: number, smoothTime: number, maxSpeed: number, deltaTime: number, currentVelocity: BABYLON.Vector2): number;
         /** Gradually changes an angle given in degrees towards a desired goal angle over time. (Note: Uses currentVelocity.x as output variable) */
