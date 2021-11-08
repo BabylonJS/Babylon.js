@@ -1312,7 +1312,7 @@
         },
         {
             "title": "Basic GPU particle system",
-            "playgroundId": "#PU4WYI#241",
+            "playgroundId": "#PU4WYI#262",
             "excludedEngines": ["webgl1"],
             "referenceImage": "gpuparticle-basic.png",
             "excludeFromAutomaticTesting": true
