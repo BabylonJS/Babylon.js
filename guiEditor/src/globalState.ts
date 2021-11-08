@@ -60,6 +60,7 @@ export class GlobalState {
     onDraggingEndObservable = new Observable<void>();
     onDraggingStartObservable = new Observable<void>();
     onWindowResizeObservable = new Observable<void>();
+    onGizmoUpdateRequireObservable = new Observable<void>();
     draggedControl: Nullable<Control> = null;
     draggedControlDirection: DragOverLocation;
     isSaving = false;
