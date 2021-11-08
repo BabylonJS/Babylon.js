@@ -2005,8 +2005,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @param mesh defines the child mesh
      * @returns the current mesh
      */
-    public removeChild(mesh: AbstractMesh): AbstractMesh {
-        mesh.setParent(null);
+    public removeChild(mesh: AbstractMesh, preserveScalingSign: boolean = false): AbstractMesh {
+        mesh.setParent(null, preserveScalingSign);
         return this;
     }
 
