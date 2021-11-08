@@ -19,6 +19,7 @@ declare module "babylonjs-materials/cell/cell.fragment" {
 }
 declare module "babylonjs-materials/cell/cell.vertex" {
     import "babylonjs/Shaders/ShadersInclude/bonesDeclaration";
+    import "babylonjs/Shaders/ShadersInclude/bakedVertexAnimationDeclaration";
     import "babylonjs/Shaders/ShadersInclude/instancesDeclaration";
     import "babylonjs/Shaders/ShadersInclude/clipPlaneVertexDeclaration";
     import "babylonjs/Shaders/ShadersInclude/fogVertexDeclaration";
@@ -26,6 +27,7 @@ declare module "babylonjs-materials/cell/cell.vertex" {
     import "babylonjs/Shaders/ShadersInclude/lightUboDeclaration";
     import "babylonjs/Shaders/ShadersInclude/instancesVertex";
     import "babylonjs/Shaders/ShadersInclude/bonesVertex";
+    import "babylonjs/Shaders/ShadersInclude/bakedVertexAnimation";
     import "babylonjs/Shaders/ShadersInclude/clipPlaneVertex";
     import "babylonjs/Shaders/ShadersInclude/fogVertex";
     import "babylonjs/Shaders/ShadersInclude/shadowsVertex";
@@ -123,7 +125,7 @@ declare module "babylonjs-materials/custom/customMaterial" {
         _customAttributes: string[];
         FragmentShader: string;
         VertexShader: string;
-        AttachAfterBind(mesh: Mesh, effect: Effect): void;
+        AttachAfterBind(mesh: Mesh | undefined, effect: Effect): void;
         ReviewUniform(name: string, arr: string[]): string[];
         Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines | string[], attributes?: string[]): string;
         constructor(name: string, scene: Scene);
@@ -191,7 +193,7 @@ declare module "babylonjs-materials/custom/pbrCustomMaterial" {
         _customAttributes: string[];
         FragmentShader: string;
         VertexShader: string;
-        AttachAfterBind(mesh: Mesh, effect: Effect): void;
+        AttachAfterBind(mesh: Mesh | undefined, effect: Effect): void;
         ReviewUniform(name: string, arr: string[]): string[];
         Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines | string[], attributes?: string[], options?: ICustomShaderNameResolveOptions): string;
         constructor(name: string, scene: Scene);
@@ -236,11 +238,13 @@ declare module "babylonjs-materials/fire/fire.fragment" {
 }
 declare module "babylonjs-materials/fire/fire.vertex" {
     import "babylonjs/Shaders/ShadersInclude/bonesDeclaration";
+    import "babylonjs/Shaders/ShadersInclude/bakedVertexAnimationDeclaration";
     import "babylonjs/Shaders/ShadersInclude/instancesDeclaration";
     import "babylonjs/Shaders/ShadersInclude/clipPlaneVertexDeclaration";
     import "babylonjs/Shaders/ShadersInclude/fogVertexDeclaration";
     import "babylonjs/Shaders/ShadersInclude/instancesVertex";
     import "babylonjs/Shaders/ShadersInclude/bonesVertex";
+    import "babylonjs/Shaders/ShadersInclude/bakedVertexAnimation";
     import "babylonjs/Shaders/ShadersInclude/clipPlaneVertex";
     import "babylonjs/Shaders/ShadersInclude/fogVertex";
     /** @hidden */
@@ -313,6 +317,7 @@ declare module "babylonjs-materials/fur/fur.fragment" {
 }
 declare module "babylonjs-materials/fur/fur.vertex" {
     import "babylonjs/Shaders/ShadersInclude/bonesDeclaration";
+    import "babylonjs/Shaders/ShadersInclude/bakedVertexAnimationDeclaration";
     import "babylonjs/Shaders/ShadersInclude/instancesDeclaration";
     import "babylonjs/Shaders/ShadersInclude/clipPlaneVertexDeclaration";
     import "babylonjs/Shaders/ShadersInclude/fogVertexDeclaration";
@@ -320,6 +325,7 @@ declare module "babylonjs-materials/fur/fur.vertex" {
     import "babylonjs/Shaders/ShadersInclude/lightUboDeclaration";
     import "babylonjs/Shaders/ShadersInclude/instancesVertex";
     import "babylonjs/Shaders/ShadersInclude/bonesVertex";
+    import "babylonjs/Shaders/ShadersInclude/bakedVertexAnimation";
     import "babylonjs/Shaders/ShadersInclude/clipPlaneVertex";
     import "babylonjs/Shaders/ShadersInclude/fogVertex";
     import "babylonjs/Shaders/ShadersInclude/shadowsVertex";
@@ -411,6 +417,7 @@ declare module "babylonjs-materials/gradient/gradient.fragment" {
 }
 declare module "babylonjs-materials/gradient/gradient.vertex" {
     import "babylonjs/Shaders/ShadersInclude/bonesDeclaration";
+    import "babylonjs/Shaders/ShadersInclude/bakedVertexAnimationDeclaration";
     import "babylonjs/Shaders/ShadersInclude/instancesDeclaration";
     import "babylonjs/Shaders/ShadersInclude/clipPlaneVertexDeclaration";
     import "babylonjs/Shaders/ShadersInclude/fogVertexDeclaration";
@@ -418,6 +425,7 @@ declare module "babylonjs-materials/gradient/gradient.vertex" {
     import "babylonjs/Shaders/ShadersInclude/lightUboDeclaration";
     import "babylonjs/Shaders/ShadersInclude/instancesVertex";
     import "babylonjs/Shaders/ShadersInclude/bonesVertex";
+    import "babylonjs/Shaders/ShadersInclude/bakedVertexAnimation";
     import "babylonjs/Shaders/ShadersInclude/clipPlaneVertex";
     import "babylonjs/Shaders/ShadersInclude/fogVertex";
     import "babylonjs/Shaders/ShadersInclude/shadowsVertex";
@@ -589,6 +597,7 @@ declare module "babylonjs-materials/lava/lava.fragment" {
 }
 declare module "babylonjs-materials/lava/lava.vertex" {
     import "babylonjs/Shaders/ShadersInclude/bonesDeclaration";
+    import "babylonjs/Shaders/ShadersInclude/bakedVertexAnimationDeclaration";
     import "babylonjs/Shaders/ShadersInclude/instancesDeclaration";
     import "babylonjs/Shaders/ShadersInclude/clipPlaneVertexDeclaration";
     import "babylonjs/Shaders/ShadersInclude/fogVertexDeclaration";
@@ -596,6 +605,7 @@ declare module "babylonjs-materials/lava/lava.vertex" {
     import "babylonjs/Shaders/ShadersInclude/lightUboDeclaration";
     import "babylonjs/Shaders/ShadersInclude/instancesVertex";
     import "babylonjs/Shaders/ShadersInclude/bonesVertex";
+    import "babylonjs/Shaders/ShadersInclude/bakedVertexAnimation";
     import "babylonjs/Shaders/ShadersInclude/clipPlaneVertex";
     import "babylonjs/Shaders/ShadersInclude/fogVertex";
     import "babylonjs/Shaders/ShadersInclude/shadowsVertex";
@@ -676,6 +686,7 @@ declare module "babylonjs-materials/mix/mix.fragment" {
 }
 declare module "babylonjs-materials/mix/mix.vertex" {
     import "babylonjs/Shaders/ShadersInclude/bonesDeclaration";
+    import "babylonjs/Shaders/ShadersInclude/bakedVertexAnimationDeclaration";
     import "babylonjs/Shaders/ShadersInclude/instancesDeclaration";
     import "babylonjs/Shaders/ShadersInclude/clipPlaneVertexDeclaration";
     import "babylonjs/Shaders/ShadersInclude/fogVertexDeclaration";
@@ -683,6 +694,7 @@ declare module "babylonjs-materials/mix/mix.vertex" {
     import "babylonjs/Shaders/ShadersInclude/lightUboDeclaration";
     import "babylonjs/Shaders/ShadersInclude/instancesVertex";
     import "babylonjs/Shaders/ShadersInclude/bonesVertex";
+    import "babylonjs/Shaders/ShadersInclude/bakedVertexAnimation";
     import "babylonjs/Shaders/ShadersInclude/clipPlaneVertex";
     import "babylonjs/Shaders/ShadersInclude/fogVertex";
     import "babylonjs/Shaders/ShadersInclude/shadowsVertex";
@@ -783,6 +795,7 @@ declare module "babylonjs-materials/normal/normal.fragment" {
 }
 declare module "babylonjs-materials/normal/normal.vertex" {
     import "babylonjs/Shaders/ShadersInclude/bonesDeclaration";
+    import "babylonjs/Shaders/ShadersInclude/bakedVertexAnimationDeclaration";
     import "babylonjs/Shaders/ShadersInclude/instancesDeclaration";
     import "babylonjs/Shaders/ShadersInclude/clipPlaneVertexDeclaration";
     import "babylonjs/Shaders/ShadersInclude/fogVertexDeclaration";
@@ -790,6 +803,7 @@ declare module "babylonjs-materials/normal/normal.vertex" {
     import "babylonjs/Shaders/ShadersInclude/lightUboDeclaration";
     import "babylonjs/Shaders/ShadersInclude/instancesVertex";
     import "babylonjs/Shaders/ShadersInclude/bonesVertex";
+    import "babylonjs/Shaders/ShadersInclude/bakedVertexAnimation";
     import "babylonjs/Shaders/ShadersInclude/clipPlaneVertex";
     import "babylonjs/Shaders/ShadersInclude/fogVertex";
     import "babylonjs/Shaders/ShadersInclude/shadowsVertex";
@@ -860,6 +874,7 @@ declare module "babylonjs-materials/shadowOnly/shadowOnly.fragment" {
 }
 declare module "babylonjs-materials/shadowOnly/shadowOnly.vertex" {
     import "babylonjs/Shaders/ShadersInclude/bonesDeclaration";
+    import "babylonjs/Shaders/ShadersInclude/bakedVertexAnimationDeclaration";
     import "babylonjs/Shaders/ShadersInclude/instancesDeclaration";
     import "babylonjs/Shaders/ShadersInclude/clipPlaneVertexDeclaration";
     import "babylonjs/Shaders/ShadersInclude/fogVertexDeclaration";
@@ -867,6 +882,7 @@ declare module "babylonjs-materials/shadowOnly/shadowOnly.vertex" {
     import "babylonjs/Shaders/ShadersInclude/lightUboDeclaration";
     import "babylonjs/Shaders/ShadersInclude/instancesVertex";
     import "babylonjs/Shaders/ShadersInclude/bonesVertex";
+    import "babylonjs/Shaders/ShadersInclude/bakedVertexAnimation";
     import "babylonjs/Shaders/ShadersInclude/clipPlaneVertex";
     import "babylonjs/Shaders/ShadersInclude/fogVertex";
     import "babylonjs/Shaders/ShadersInclude/shadowsVertex";
@@ -932,6 +948,7 @@ declare module "babylonjs-materials/simple/simple.fragment" {
 }
 declare module "babylonjs-materials/simple/simple.vertex" {
     import "babylonjs/Shaders/ShadersInclude/bonesDeclaration";
+    import "babylonjs/Shaders/ShadersInclude/bakedVertexAnimationDeclaration";
     import "babylonjs/Shaders/ShadersInclude/instancesDeclaration";
     import "babylonjs/Shaders/ShadersInclude/clipPlaneVertexDeclaration";
     import "babylonjs/Shaders/ShadersInclude/fogVertexDeclaration";
@@ -939,6 +956,7 @@ declare module "babylonjs-materials/simple/simple.vertex" {
     import "babylonjs/Shaders/ShadersInclude/lightUboDeclaration";
     import "babylonjs/Shaders/ShadersInclude/instancesVertex";
     import "babylonjs/Shaders/ShadersInclude/bonesVertex";
+    import "babylonjs/Shaders/ShadersInclude/bakedVertexAnimation";
     import "babylonjs/Shaders/ShadersInclude/clipPlaneVertex";
     import "babylonjs/Shaders/ShadersInclude/fogVertex";
     import "babylonjs/Shaders/ShadersInclude/shadowsVertex";
@@ -1184,6 +1202,7 @@ declare module "babylonjs-materials/terrain/terrain.fragment" {
 }
 declare module "babylonjs-materials/terrain/terrain.vertex" {
     import "babylonjs/Shaders/ShadersInclude/bonesDeclaration";
+    import "babylonjs/Shaders/ShadersInclude/bakedVertexAnimationDeclaration";
     import "babylonjs/Shaders/ShadersInclude/instancesDeclaration";
     import "babylonjs/Shaders/ShadersInclude/clipPlaneVertexDeclaration";
     import "babylonjs/Shaders/ShadersInclude/fogVertexDeclaration";
@@ -1191,6 +1210,7 @@ declare module "babylonjs-materials/terrain/terrain.vertex" {
     import "babylonjs/Shaders/ShadersInclude/lightUboDeclaration";
     import "babylonjs/Shaders/ShadersInclude/instancesVertex";
     import "babylonjs/Shaders/ShadersInclude/bonesVertex";
+    import "babylonjs/Shaders/ShadersInclude/bakedVertexAnimation";
     import "babylonjs/Shaders/ShadersInclude/clipPlaneVertex";
     import "babylonjs/Shaders/ShadersInclude/fogVertex";
     import "babylonjs/Shaders/ShadersInclude/shadowsVertex";
@@ -1276,6 +1296,7 @@ declare module "babylonjs-materials/triPlanar/triplanar.fragment" {
 }
 declare module "babylonjs-materials/triPlanar/triplanar.vertex" {
     import "babylonjs/Shaders/ShadersInclude/bonesDeclaration";
+    import "babylonjs/Shaders/ShadersInclude/bakedVertexAnimationDeclaration";
     import "babylonjs/Shaders/ShadersInclude/instancesDeclaration";
     import "babylonjs/Shaders/ShadersInclude/clipPlaneVertexDeclaration";
     import "babylonjs/Shaders/ShadersInclude/fogVertexDeclaration";
@@ -1283,6 +1304,7 @@ declare module "babylonjs-materials/triPlanar/triplanar.vertex" {
     import "babylonjs/Shaders/ShadersInclude/lightUboDeclaration";
     import "babylonjs/Shaders/ShadersInclude/instancesVertex";
     import "babylonjs/Shaders/ShadersInclude/bonesVertex";
+    import "babylonjs/Shaders/ShadersInclude/bakedVertexAnimation";
     import "babylonjs/Shaders/ShadersInclude/clipPlaneVertex";
     import "babylonjs/Shaders/ShadersInclude/fogVertex";
     import "babylonjs/Shaders/ShadersInclude/shadowsVertex";
@@ -1369,6 +1391,7 @@ declare module "babylonjs-materials/water/water.fragment" {
 }
 declare module "babylonjs-materials/water/water.vertex" {
     import "babylonjs/Shaders/ShadersInclude/bonesDeclaration";
+    import "babylonjs/Shaders/ShadersInclude/bakedVertexAnimationDeclaration";
     import "babylonjs/Shaders/ShadersInclude/instancesDeclaration";
     import "babylonjs/Shaders/ShadersInclude/clipPlaneVertexDeclaration";
     import "babylonjs/Shaders/ShadersInclude/fogVertexDeclaration";
@@ -1377,6 +1400,7 @@ declare module "babylonjs-materials/water/water.vertex" {
     import "babylonjs/Shaders/ShadersInclude/logDepthDeclaration";
     import "babylonjs/Shaders/ShadersInclude/instancesVertex";
     import "babylonjs/Shaders/ShadersInclude/bonesVertex";
+    import "babylonjs/Shaders/ShadersInclude/bakedVertexAnimation";
     import "babylonjs/Shaders/ShadersInclude/clipPlaneVertex";
     import "babylonjs/Shaders/ShadersInclude/fogVertex";
     import "babylonjs/Shaders/ShadersInclude/shadowsVertex";
@@ -1673,7 +1697,7 @@ declare module BABYLON {
         _customAttributes: string[];
         FragmentShader: string;
         VertexShader: string;
-        AttachAfterBind(mesh: BABYLON.Mesh, effect: BABYLON.Effect): void;
+        AttachAfterBind(mesh: BABYLON.Mesh | undefined, effect: BABYLON.Effect): void;
         ReviewUniform(name: string, arr: string[]): string[];
         Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: BABYLON.MaterialDefines | string[], attributes?: string[]): string;
         constructor(name: string, scene: BABYLON.Scene);
@@ -1734,7 +1758,7 @@ declare module BABYLON {
         _customAttributes: string[];
         FragmentShader: string;
         VertexShader: string;
-        AttachAfterBind(mesh: BABYLON.Mesh, effect: BABYLON.Effect): void;
+        AttachAfterBind(mesh: BABYLON.Mesh | undefined, effect: BABYLON.Effect): void;
         ReviewUniform(name: string, arr: string[]): string[];
         Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: BABYLON.MaterialDefines | string[], attributes?: string[], options?: BABYLON.ICustomShaderNameResolveOptions): string;
         constructor(name: string, scene: BABYLON.Scene);

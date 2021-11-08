@@ -79,7 +79,7 @@ declare module BABYLON {
         _customAttributes: string[];
         FragmentShader: string;
         VertexShader: string;
-        AttachAfterBind(mesh: BABYLON.Mesh, effect: BABYLON.Effect): void;
+        AttachAfterBind(mesh: BABYLON.Mesh | undefined, effect: BABYLON.Effect): void;
         ReviewUniform(name: string, arr: string[]): string[];
         Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: BABYLON.MaterialDefines | string[], attributes?: string[]): string;
         constructor(name: string, scene: BABYLON.Scene);
@@ -140,7 +140,7 @@ declare module BABYLON {
         _customAttributes: string[];
         FragmentShader: string;
         VertexShader: string;
-        AttachAfterBind(mesh: BABYLON.Mesh, effect: BABYLON.Effect): void;
+        AttachAfterBind(mesh: BABYLON.Mesh | undefined, effect: BABYLON.Effect): void;
         ReviewUniform(name: string, arr: string[]): string[];
         Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: BABYLON.MaterialDefines | string[], attributes?: string[], options?: BABYLON.ICustomShaderNameResolveOptions): string;
         constructor(name: string, scene: BABYLON.Scene);

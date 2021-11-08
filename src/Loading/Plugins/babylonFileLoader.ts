@@ -7,6 +7,7 @@ import { Color3, Color4 } from "../../Maths/math.color";
 import { Mesh } from "../../Meshes/mesh";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Geometry } from "../../Meshes/geometry";
+import { Node } from "../../node";
 import { TransformNode } from "../../Meshes/transformNode";
 import { Material } from "../../Materials/material";
 import { MultiMaterial } from "../../Materials/multiMaterial";
@@ -45,6 +46,8 @@ export class BabylonFileLoaderConfiguration {
      */
     public static LoaderInjectedPhysicsEngine: any = undefined;
 }
+
+var tempIndexContainer: {[key: string]: Node} = {};
 
 var parseMaterialById = (id: string, parsedData: any, scene: Scene, rootUrl: string) => {
     if (!parsedData.materials) {
@@ -114,6 +117,16 @@ var loadDetailLevels = (scene: Scene, mesh: AbstractMesh) => {
     }
 };
 
+var findParent = (parentId: any, scene: Scene) => {
+    if (isNaN(parentId)) {
+        return scene.getLastEntryById(parentId);
+    }
+
+    let parent = tempIndexContainer[parentId];
+
+    return parent;
+};
+
 var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void, addToScene = false): AssetContainer => {
     var container = new AssetContainer(scene);
 
@@ -175,6 +188,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
                 var parsedLight = parsedData.lights[index];
                 var light = Light.Parse(parsedLight, scene);
                 if (light) {
+                    tempIndexContainer[parsedLight.uniqueId] = light;
                     container.lights.push(light);
                     light._parentContainer = container;
                     log += (index === 0 ? "\n\tLights:" : "");
@@ -304,6 +318,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
             for (index = 0, cache = parsedData.transformNodes.length; index < cache; index++) {
                 var parsedTransformNode = parsedData.transformNodes[index];
                 var node = TransformNode.Parse(parsedTransformNode, scene, rootUrl);
+                tempIndexContainer[parsedTransformNode.uniqueId] = node;
                 container.transformNodes.push(node);
                 node._parentContainer = container;
             }
@@ -314,6 +329,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
             for (index = 0, cache = parsedData.meshes.length; index < cache; index++) {
                 var parsedMesh = parsedData.meshes[index];
                 var mesh = <AbstractMesh>Mesh.Parse(parsedMesh, scene, rootUrl);
+                tempIndexContainer[parsedMesh.uniqueId] = mesh;
                 container.meshes.push(mesh);
                 mesh._parentContainer = container;
                 if (mesh.hasInstances) {
@@ -332,6 +348,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
             for (index = 0, cache = parsedData.cameras.length; index < cache; index++) {
                 var parsedCamera = parsedData.cameras[index];
                 var camera = Camera.Parse(parsedCamera, scene);
+                tempIndexContainer[parsedCamera.uniqueId] = camera;
                 container.cameras.push(camera);
                 camera._parentContainer = container;
                 log += (index === 0 ? "\n\tCameras:" : "");
@@ -369,7 +386,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
         for (index = 0, cache = scene.cameras.length; index < cache; index++) {
             var camera = scene.cameras[index];
             if (camera._waitingParentId) {
-                camera.parent = scene.getLastEntryById(camera._waitingParentId);
+                camera.parent = findParent(camera._waitingParentId, scene);
                 camera._waitingParentId = null;
             }
         }
@@ -377,7 +394,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
         for (index = 0, cache = scene.lights.length; index < cache; index++) {
             let light = scene.lights[index];
             if (light && light._waitingParentId) {
-                light.parent = scene.getLastEntryById(light._waitingParentId);
+                light.parent = findParent(light._waitingParentId, scene);
                 light._waitingParentId = null;
             }
         }
@@ -386,14 +403,14 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
         for (index = 0, cache = scene.transformNodes.length; index < cache; index++) {
             var transformNode = scene.transformNodes[index];
             if (transformNode._waitingParentId) {
-                transformNode.parent = scene.getLastEntryById(transformNode._waitingParentId);
+                transformNode.parent = findParent(transformNode._waitingParentId, scene);
                 transformNode._waitingParentId = null;
             }
         }
         for (index = 0, cache = scene.meshes.length; index < cache; index++) {
             var mesh = scene.meshes[index];
             if (mesh._waitingParentId) {
-                mesh.parent = scene.getLastEntryById(mesh._waitingParentId);
+                mesh.parent = findParent(mesh._waitingParentId, scene);
                 mesh._waitingParentId = null;
             }
             if (mesh._waitingData.lods) {
@@ -488,6 +505,8 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
             throw err;
         }
     } finally {
+        tempIndexContainer = {};
+
         if (!addToScene) {
             container.removeAllFromScene();
         }

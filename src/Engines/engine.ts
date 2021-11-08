@@ -2001,4 +2001,39 @@ export class Engine extends ThinEngine {
             anyDoc.msCancelFullScreen();
         }
     }
+
+    /**
+     * Get Font size information
+     * @param font font name
+     * @return an object containing ascent, height and descent
+     */
+    public getFontOffset(font: string): { ascent: number, height: number, descent: number } {
+        var text = document.createElement("span");
+        text.innerHTML = "Hg";
+        text.setAttribute('style', `font: ${font} !important`);
+
+        var block = document.createElement("div");
+        block.style.display = "inline-block";
+        block.style.width = "1px";
+        block.style.height = "0px";
+        block.style.verticalAlign = "bottom";
+
+        var div = document.createElement("div");
+        div.style.whiteSpace = "nowrap";
+        div.appendChild(text);
+        div.appendChild(block);
+
+        document.body.appendChild(div);
+
+        var fontAscent = 0;
+        var fontHeight = 0;
+        try {
+            fontHeight = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
+            block.style.verticalAlign = "baseline";
+            fontAscent = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
+        } finally {
+            document.body.removeChild(div);
+        }
+        return { ascent: fontAscent, height: fontHeight, descent: fontHeight - fontAscent };
+    }
 }

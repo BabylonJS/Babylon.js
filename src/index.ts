@@ -3,6 +3,7 @@ export * from "./Actions/index";
 export * from "./Animations/index";
 export * from "./assetContainer";
 export * from "./Audio/index";
+export * from "./BakedVertexAnimation/index";
 export * from "./Behaviors/index";
 export * from "./Bones/index";
 export * from "./Buffers/index";

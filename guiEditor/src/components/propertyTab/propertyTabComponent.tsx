@@ -50,6 +50,8 @@ import { ParentingPropertyGridComponent } from "../parentingPropertyGridComponen
 import { DisplayGridPropertyGridComponent } from "./propertyGrids/gui/displayGridPropertyGridComponent";
 import { DisplayGrid } from "babylonjs-gui/2D/controls/displayGrid";
 import { Button } from "babylonjs-gui/2D/controls/button";
+import { ButtonPropertyGridComponent } from "./propertyGrids/gui/buttonPropertyGridComponent";
+import { GUINodeTools } from "../../guiNodeTools";
 
 require("./propertyTab.scss");
 const adtIcon: string = require("../../../public/imgs/adtIcon.svg");
@@ -311,7 +313,13 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             }
             case "Button": {
                 const button = this.state.currentNode as Button;
-                return <RectanglePropertyGridComponent key="buttonMenu" rectangle={button} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
+                return <ButtonPropertyGridComponent key="buttonMenu" rectangle={button} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
+                onAddComponent={ (value) => { 
+                    const guiElement = GUINodeTools.CreateControlFromString(value);
+                    const newGuiNode = this.props.globalState.workbench.createNewGuiNode(guiElement);
+                    button.addControl(newGuiNode);
+                    this.props.globalState.onSelectionChangedObservable.notifyObservers(newGuiNode);
+                }} />;
             }
         }
 

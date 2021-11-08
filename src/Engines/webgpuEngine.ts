@@ -309,8 +309,10 @@ export class WebGPUEngine extends Engine {
     public _rttRenderPassWrapper: WebGPURenderPassWrapper = new WebGPURenderPassWrapper();
     /** @hidden */
     public _pendingDebugCommands: Array<[string, Nullable<string>]> = [];
-    private _bundleList: WebGPUBundleList;
-    private _bundleListRenderTarget: WebGPUBundleList;
+    /** @hidden */
+    public _bundleList: WebGPUBundleList;
+    /** @hidden */
+    public _bundleListRenderTarget: WebGPUBundleList;
     /** @hidden */
     public _onAfterUnbindFrameBufferObservable = new Observable<WebGPUEngine>();
 

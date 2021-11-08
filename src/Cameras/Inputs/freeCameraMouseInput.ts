@@ -85,9 +85,9 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
 
                 let srcElement = <HTMLElement>(evt.srcElement || evt.target);
 
-                if (p.type === PointerEventTypes.POINTERDOWN && srcElement && (this._currentActiveButton === -1 || isTouch)) {
+                if (p.type === PointerEventTypes.POINTERDOWN && (this._currentActiveButton === -1 || isTouch)) {
                     try {
-                        srcElement.setPointerCapture(evt.pointerId);
+                        srcElement?.setPointerCapture(evt.pointerId);
                     } catch (e) {
                         //Nothing to do with the error. Execution will continue.
                     }
@@ -110,9 +110,9 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                     if (engine.isPointerLock && this._onMouseMove) {
                         this._onMouseMove(p.event);
                     }
-                } else if (srcElement && p.type === PointerEventTypes.POINTERUP && (this._currentActiveButton === evt.button || isTouch)) {
+                } else if (p.type === PointerEventTypes.POINTERUP && (this._currentActiveButton === evt.button || isTouch)) {
                     try {
-                        srcElement.releasePointerCapture(evt.pointerId);
+                        srcElement?.releasePointerCapture(evt.pointerId);
                     } catch (e) {
                         //Nothing to do with the error.
                     }

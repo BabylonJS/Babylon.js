@@ -965,6 +965,43 @@ declare module "babylonjs-gui-editor/components/propertyTab/propertyGrids/gui/di
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-gui-editor/components/propertyTab/propertyGrids/gui/buttonPropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
+    import { LockObject } from "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject";
+    import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
+    interface IButtonPropertyGridComponentProps {
+        rectangle: Rectangle;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+        onAddComponent: (newComponent: string) => void;
+    }
+    export class ButtonPropertyGridComponent extends React.Component<IButtonPropertyGridComponentProps> {
+        constructor(props: IButtonPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-gui-editor/guiNodeTools" {
+    import { Checkbox } from "babylonjs-gui/2D/controls/checkbox";
+    import { ColorPicker } from "babylonjs-gui/2D/controls/colorpicker";
+    import { Ellipse } from "babylonjs-gui/2D/controls/ellipse";
+    import { Line } from "babylonjs-gui/2D/controls/line";
+    import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
+    import { Slider } from "babylonjs-gui/2D/controls/sliders/slider";
+    import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
+    import { Image } from "babylonjs-gui/2D/controls/image";
+    import { InputText } from "babylonjs-gui/2D/controls/inputText";
+    import { Grid } from "babylonjs-gui/2D/controls/grid";
+    import { DisplayGrid } from "babylonjs-gui/2D/controls/displayGrid";
+    import { StackPanel } from "babylonjs-gui/2D/controls/stackPanel";
+    import { RadioButton } from "babylonjs-gui/2D/controls/radioButton";
+    import { ImageBasedSlider } from "babylonjs-gui/2D/controls/sliders/imageBasedSlider";
+    export class GUINodeTools {
+        static ImageControlDefaultUrl: string;
+        static CreateControlFromString(data: string): Grid | Rectangle | Line | TextBlock | Image | Slider | RadioButton | InputText | ColorPicker | ImageBasedSlider | StackPanel | Ellipse | Checkbox | DisplayGrid;
+    }
+}
 declare module "babylonjs-gui-editor/components/propertyTab/propertyTabComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-gui-editor/globalState";
@@ -1004,25 +1041,6 @@ declare module "babylonjs-gui-editor/portal" {
     }
     export class Portal extends React.Component<IPortalProps> {
         render(): React.ReactPortal;
-    }
-}
-declare module "babylonjs-gui-editor/guiNodeTools" {
-    import { Checkbox } from "babylonjs-gui/2D/controls/checkbox";
-    import { ColorPicker } from "babylonjs-gui/2D/controls/colorpicker";
-    import { Ellipse } from "babylonjs-gui/2D/controls/ellipse";
-    import { Line } from "babylonjs-gui/2D/controls/line";
-    import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
-    import { Slider } from "babylonjs-gui/2D/controls/sliders/slider";
-    import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
-    import { Image } from "babylonjs-gui/2D/controls/image";
-    import { InputText } from "babylonjs-gui/2D/controls/inputText";
-    import { Grid } from "babylonjs-gui/2D/controls/grid";
-    import { DisplayGrid } from "babylonjs-gui/2D/controls/displayGrid";
-    import { StackPanel } from "babylonjs-gui/2D/controls/stackPanel";
-    import { RadioButton } from "babylonjs-gui/2D/controls/radioButton";
-    import { ImageBasedSlider } from "babylonjs-gui/2D/controls/sliders/imageBasedSlider";
-    export class GUINodeTools {
-        static CreateControlFromString(data: string): Grid | Rectangle | Line | TextBlock | Image | Slider | RadioButton | InputText | ColorPicker | ImageBasedSlider | StackPanel | Ellipse | Checkbox | DisplayGrid;
     }
 }
 declare module "babylonjs-gui-editor/sharedComponents/messageDialog" {
@@ -1272,7 +1290,6 @@ declare module "babylonjs-gui-editor/workbenchEditor" {
         showPreviewPopUp: boolean;
     }
     export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEditorState> {
-        private _workbenchCanvas;
         private _startX;
         private _moveInProgress;
         private _leftWidth;
@@ -1289,7 +1306,6 @@ declare module "babylonjs-gui-editor/workbenchEditor" {
         onPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
         resizeColumns(evt: React.PointerEvent<HTMLDivElement>, forLeft?: boolean): void;
         buildColumnLayout(): string;
-        emitNewBlock(event: React.DragEvent<HTMLDivElement>): void;
         handlePopUp: () => void;
         handleClosingPopUp: () => void;
         createPopupWindow: (title: string, windowVariableName: string, width?: number, height?: number) => Window | null;
@@ -2985,6 +3001,24 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
+    interface IButtonPropertyGridComponentProps {
+        rectangle: Rectangle;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        onAddComponent: (newComponent: string) => void;
+    }
+    export class ButtonPropertyGridComponent extends React.Component<IButtonPropertyGridComponentProps> {
+        constructor(props: IButtonPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    export class GUINodeTools {
+        static ImageControlDefaultUrl: string;
+        static CreateControlFromString(data: string): Grid | Rectangle | Line | TextBlock | Image | Slider | RadioButton | InputText | ColorPicker | ImageBasedSlider | StackPanel | Ellipse | Checkbox | DisplayGrid;
+    }
+}
+declare module GUIEDITOR {
     interface IPropertyTabComponentProps {
         globalState: GlobalState;
     }
@@ -3016,11 +3050,6 @@ declare module GUIEDITOR {
     }
     export class Portal extends React.Component<IPortalProps> {
         render(): React.ReactPortal;
-    }
-}
-declare module GUIEDITOR {
-    export class GUINodeTools {
-        static CreateControlFromString(data: string): Grid | Rectangle | Line | TextBlock | Image | Slider | RadioButton | InputText | ColorPicker | ImageBasedSlider | StackPanel | Ellipse | Checkbox | DisplayGrid;
     }
 }
 declare module GUIEDITOR {
@@ -3242,7 +3271,6 @@ declare module GUIEDITOR {
         showPreviewPopUp: boolean;
     }
     export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEditorState> {
-        private _workbenchCanvas;
         private _startX;
         private _moveInProgress;
         private _leftWidth;
@@ -3259,7 +3287,6 @@ declare module GUIEDITOR {
         onPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
         resizeColumns(evt: React.PointerEvent<HTMLDivElement>, forLeft?: boolean): void;
         buildColumnLayout(): string;
-        emitNewBlock(event: React.DragEvent<HTMLDivElement>): void;
         handlePopUp: () => void;
         handleClosingPopUp: () => void;
         createPopupWindow: (title: string, windowVariableName: string, width?: number, height?: number) => Window | null;
