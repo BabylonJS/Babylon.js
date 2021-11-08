@@ -137,8 +137,8 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
     }
 
     componentDidUpdate(prevProps : IAnimationGridComponentProps) {
-        const prevId = (prevProps.animatable as any).id;
-        const currId = (this.props.animatable as any).id;
+        const prevId = (prevProps.animatable as any).uniqueId;
+        const currId = (this.props.animatable as any).uniqueId;
         if (prevId !== currId) {
             this._animationCurveEditorContext = null;
         }
