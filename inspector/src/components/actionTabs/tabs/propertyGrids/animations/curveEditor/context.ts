@@ -6,6 +6,7 @@ import { Scene } from "babylonjs/scene";
 import { IAnimatable } from "babylonjs/Animations/animatable.interface";
 import { AnimationGroup, TargetedAnimation } from "babylonjs/Animations/animationGroup";
 import { Animatable } from "babylonjs/Animations/animatable";
+import { AnimationKeyInterpolation } from "babylonjs/Animations/animationKey";
 
 export class Context {
     title: string;
@@ -79,6 +80,8 @@ export class Context {
     onClipLengthIncreased = new Observable<number>();
     onClipLengthDecreased = new Observable<number>();
 
+    onInterpolationModeSet = new Observable<{keyId: number, value: AnimationKeyInterpolation}>();
+
     onSelectToActivated = new Observable<{from:number, to:number}>();
 
     public prepare() {
@@ -95,6 +98,8 @@ export class Context {
         this.referenceMinFrame = 0;
         this.referenceMaxFrame = this.toKey;
         this.snippetId = animation.snippetId;
+
+        this.clipLength = this.referenceMaxFrame;
 
         if (!animation || !animation.hasRunningRuntimeAnimations) {
             return;
