@@ -518,6 +518,29 @@ export class Color3 {
     }
 
     /**
+     * Returns a new Color3 located for "amount" (float) on the Hermite interpolation spline defined by the vectors "value1", "tangent1", "value2", "tangent2"
+     * @param value1 defines the first control point
+     * @param tangent1 defines the first tangent Color3
+     * @param value2 defines the second control point
+     * @param tangent2 defines the second tangent Color3
+     * @param amount defines the amount on the interpolation spline (between 0 and 1)
+     * @returns the new Color3
+     */
+     public static Hermite(value1: DeepImmutable<Color3>, tangent1: DeepImmutable<Color3>, value2: DeepImmutable<Color3>, tangent2: DeepImmutable<Color3>, amount: number): Color3 {
+        const squared = amount * amount;
+        const cubed = amount * squared;
+        const part1 = ((2.0 * cubed) - (3.0 * squared)) + 1.0;
+        const part2 = (-2.0 * cubed) + (3.0 * squared);
+        const part3 = (cubed - (2.0 * squared)) + amount;
+        const part4 = cubed - squared;
+
+        const r = (((value1.r * part1) + (value2.r * part2)) + (tangent1.r * part3)) + (tangent2.r * part4);
+        const g = (((value1.g * part1) + (value2.g * part2)) + (tangent1.g * part3)) + (tangent2.g * part4);
+        const b = (((value1.b * part1) + (value2.b * part2)) + (tangent1.b * part3)) + (tangent2.b * part4);
+        return new Color3(r, g, b);
+    }
+
+    /**
      * Returns a new Color3 which is the 1st derivative of the Hermite spline defined by the colors "value1", "value2", "tangent1", "tangent2".
      * @param value1 defines the first control point
      * @param tangent1 defines the first tangent
@@ -998,6 +1021,30 @@ export class Color4 {
         result.g = left.g + (right.g - left.g) * amount;
         result.b = left.b + (right.b - left.b) * amount;
         result.a = left.a + (right.a - left.a) * amount;
+    }
+
+    /**
+     * Interpolate between two Color4 using Hermite interpolation
+     * @param value1 defines first Color4
+     * @param tangent1 defines the incoming tangent
+     * @param value2 defines second Color4
+     * @param tangent2 defines the outgoing tangent
+     * @param amount defines the target Color4
+     * @returns the new interpolated Color4
+     */
+     public static Hermite(value1: DeepImmutable<Color4>, tangent1: DeepImmutable<Color4>, value2: DeepImmutable<Color4>, tangent2: DeepImmutable<Color4>, amount: number): Color4 {
+        const squared = amount * amount;
+        const cubed = amount * squared;
+        const part1 = ((2.0 * cubed) - (3.0 * squared)) + 1.0;
+        const part2 = (-2.0 * cubed) + (3.0 * squared);
+        const part3 = (cubed - (2.0 * squared)) + amount;
+        const part4 = cubed - squared;
+
+        const r = (((value1.r * part1) + (value2.r * part2)) + (tangent1.r * part3)) + (tangent2.r * part4);
+        const g = (((value1.g * part1) + (value2.g * part2)) + (tangent1.g * part3)) + (tangent2.g * part4);
+        const b = (((value1.b * part1) + (value2.b * part2)) + (tangent1.b * part3)) + (tangent2.b * part4);
+        const a = (((value1.a * part1) + (value2.a * part2)) + (tangent1.a * part3)) + (tangent2.a * part4);
+        return new Color4(r, g, b, a);
     }
 
     /**
