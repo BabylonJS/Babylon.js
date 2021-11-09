@@ -32,6 +32,7 @@ export interface IAnimationKey {
  * Enum for the animation key frame interpolation type
  */
 export enum AnimationKeyInterpolation {
+    NONE = 0,
     /**
      * Do not interpolate between keys and use the start key value only. Tangents are ignored
      */

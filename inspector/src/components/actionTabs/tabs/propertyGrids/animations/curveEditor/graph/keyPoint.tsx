@@ -351,16 +351,19 @@ IKeyPointComponentState
     }
 
     private _breakTangent() {
+        this.props.context.onInterpolationModeSet.notifyObservers({keyId: this.props.keyId, value: AnimationKeyInterpolation.NONE});
         this.props.curve.updateLockedTangentMode(this.props.keyId, false);
         this.forceUpdate();
     }
 
     private _unifyTangent() {
+        this.props.context.onInterpolationModeSet.notifyObservers({keyId: this.props.keyId, value: AnimationKeyInterpolation.NONE});
         this.props.curve.updateLockedTangentMode(this.props.keyId, true);
         this.forceUpdate();
     }
 
     private _flattenTangent() {
+        this.props.context.onInterpolationModeSet.notifyObservers({keyId: this.props.keyId, value: AnimationKeyInterpolation.NONE});
         if (this.state.tangentSelectedIndex === -1 || this.state.tangentSelectedIndex === 0) {
             if (this.props.keyId !== 0) {
                 this.props.curve.updateInTangentFromControlPoint(this.props.keyId, 0);
@@ -377,6 +380,8 @@ IKeyPointComponentState
     }
 
     private _linearTangent() {
+        this.props.context.onInterpolationModeSet.notifyObservers({keyId: this.props.keyId, value: AnimationKeyInterpolation.NONE});
+        
         if (this.state.tangentSelectedIndex === -1 || this.state.tangentSelectedIndex === 0) {
             if (this.props.keyId !== 0) {
                 this.props.curve.storeDefaultInTangent(this.props.keyId);
