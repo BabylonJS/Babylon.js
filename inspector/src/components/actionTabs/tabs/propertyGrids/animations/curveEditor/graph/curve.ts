@@ -143,22 +143,24 @@ export class Curve {
     public updateInTangentFromControlPoint(keyId: number, slope: number) {
         const keys = this.keys;
         keys[keyId].inTangent = slope;
+        
+        let animationKeys = this.animation.getKeys();
 
         if (this.property) {
-            if (!this.animation.getKeys()[keyId].inTangent) {
-                this.animation.getKeys()[keyId].inTangent = this.tangentBuilder!();
+            if (!animationKeys[keyId].inTangent) {
+                animationKeys[keyId].inTangent = this.tangentBuilder!();
                 this.setDefaultInTangent!(keyId);
             }
-            if (!this.animation.getKeys()[keyId - 1].outTangent) {
-                this.animation.getKeys()[keyId - 1].outTangent = this.tangentBuilder!();
+            if (!animationKeys[keyId - 1].outTangent) {
+                animationKeys[keyId - 1].outTangent = this.tangentBuilder!();
                 this.setDefaultOutTangent!(keyId - 1);
             }
 
-            this.animation.getKeys()[keyId].inTangent[this.property] = keys[keyId].inTangent;
+            animationKeys[keyId].inTangent[this.property] = keys[keyId].inTangent;
         } else {
-            this.animation.getKeys()[keyId].inTangent = keys[keyId].inTangent;
+            animationKeys[keyId].inTangent = keys[keyId].inTangent;
 
-            if (this.animation.getKeys()[keyId - 1].outTangent === undefined) {
+            if (animationKeys[keyId - 1].outTangent === undefined) {
                 this.storeDefaultOutTangent(keyId - 1);
             }
         }
@@ -170,20 +172,22 @@ export class Curve {
         const keys = this.keys;
         keys[keyId].outTangent = slope;
 
+        let animationKeys = this.animation.getKeys();
+
         if (this.property) {
-            if (!this.animation.getKeys()[keyId + 1].inTangent) {
-                this.animation.getKeys()[keyId + 1].inTangent = this.tangentBuilder!();
+            if (!animationKeys[keyId + 1].inTangent) {
+                animationKeys[keyId + 1].inTangent = this.tangentBuilder!();
                 this.setDefaultInTangent!(keyId + 1);
             }
-            if (!this.animation.getKeys()[keyId].outTangent) {
-                this.animation.getKeys()[keyId].outTangent = this.tangentBuilder!();
+            if (!animationKeys[keyId].outTangent) {
+                animationKeys[keyId].outTangent = this.tangentBuilder!();
                 this.setDefaultOutTangent!(keyId);
             }
 
-            this.animation.getKeys()[keyId].outTangent[this.property] = keys[keyId].outTangent;
+            animationKeys[keyId].outTangent[this.property] = keys[keyId].outTangent;
         } else {
-            this.animation.getKeys()[keyId].outTangent = keys[keyId].outTangent;
-            if (this.animation.getKeys()[keyId + 1].inTangent === undefined) {
+            animationKeys[keyId].outTangent = keys[keyId].outTangent;
+            if (animationKeys[keyId + 1].inTangent === undefined) {
                 this.storeDefaultInTangent(keyId + 1);
             }
         }

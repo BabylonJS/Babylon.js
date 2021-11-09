@@ -1193,8 +1193,8 @@ export class Animation {
 
         for (index = 0; index < parsedAnimation.keys.length; index++) {
             var key = parsedAnimation.keys[index];
-            var inTangent: any;
-            var outTangent: any;
+            let inTangent: any = undefined;
+            let outTangent: any = undefined;
 
             switch (dataType) {
                 case Animation.ANIMATIONTYPE_FLOAT:

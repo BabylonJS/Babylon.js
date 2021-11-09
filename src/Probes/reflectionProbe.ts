@@ -6,6 +6,7 @@ import { Nullable } from "../types";
 import { AbstractScene } from "../abstractScene";
 import { Scene } from "../scene";
 import { Constants } from "../Engines/constants";
+import { UniformBuffer } from "../Materials/uniformBuffer";
 
 declare module "../abstractScene" {
     export interface AbstractScene {
@@ -66,6 +67,8 @@ export class ReflectionProbe {
     private _attachedMesh: Nullable<AbstractMesh>;
 
     private _invertYAxis = false;
+    private _sceneUBOs: UniformBuffer[];
+    private _currentSceneUBO: UniformBuffer;
 
     /** Gets or sets probe position (center of the cube map) */
     @serializeAsVector3()
@@ -89,6 +92,13 @@ export class ReflectionProbe {
         size: number, scene: Scene, generateMipMaps = true, useFloat = false, linearSpace = false) {
         this._scene = scene;
 
+        if (scene.getEngine().supportsUniformBuffers) {
+            this._sceneUBOs = [];
+            for (let i = 0; i < 6; ++i) {
+                this._sceneUBOs.push(scene.createSceneUniformBuffer(`Scene for Reflection Probe (name "${name}") face #${i}`));
+            }
+        }
+
         // Create the scene field if not exist.
         if (!this._scene.reflectionProbes) {
             this._scene.reflectionProbes = new Array<ReflectionProbe>();
@@ -111,6 +121,10 @@ export class ReflectionProbe {
         const useReverseDepthBuffer = scene.getEngine().useReverseDepthBuffer;
 
         this._renderTargetTexture.onBeforeRenderObservable.add((faceIndex: number) => {
+            if (this._sceneUBOs) {
+                scene.setSceneUniformBuffer(this._sceneUBOs[faceIndex]);
+                scene.getSceneUniformBuffer().unbindEffect();
+            }
             switch (faceIndex) {
                 case 0:
                     this._add.copyFromFloats(1, 0, 0);
@@ -157,6 +171,7 @@ export class ReflectionProbe {
         let currentApplyByPostProcess: boolean;
 
         this._renderTargetTexture.onBeforeBindObservable.add(() => {
+            this._currentSceneUBO = scene.getSceneUniformBuffer();
             scene.getEngine()._debugPushGroup?.(`reflection probe generation for ${name}`, 1);
             currentApplyByPostProcess = this._scene.imageProcessingConfiguration.applyByPostProcess;
             if (linearSpace) {
@@ -167,6 +182,9 @@ export class ReflectionProbe {
         this._renderTargetTexture.onAfterUnbindObservable.add(() => {
             scene.imageProcessingConfiguration.applyByPostProcess = currentApplyByPostProcess;
             scene._forcedViewPosition = null;
+            if (this._sceneUBOs) {
+                scene.setSceneUniformBuffer(this._currentSceneUBO);
+            }
             scene.updateTransformMatrix(true);
             scene.getEngine()._debugPopGroup?.(1);
         });
@@ -247,6 +265,13 @@ export class ReflectionProbe {
         if (this._renderTargetTexture) {
             this._renderTargetTexture.dispose();
             (<any>this._renderTargetTexture) = null;
+        }
+
+        if (this._sceneUBOs) {
+            for (const ubo of this._sceneUBOs) {
+                ubo.dispose();
+            }
+            this._sceneUBOs = [];
         }
     }
 
