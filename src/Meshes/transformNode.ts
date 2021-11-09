@@ -749,9 +749,10 @@ export class TransformNode extends Node {
      * The node will remain exactly where it is and its position / rotation will be updated accordingly
      * @see https://doc.babylonjs.com/how_to/parenting
      * @param node the node ot set as the parent
+     * @param preserveScalingSign if true, keep scaling sign of child. Otherwise, scaling sign might change.
      * @returns this TransformNode.
      */
-    public setParent(node: Nullable<Node>): TransformNode {
+    public setParent(node: Nullable<Node>, preserveScalingSign: boolean = false): TransformNode {
         if (!node && !this.parent) {
             return this;
         }
@@ -762,7 +763,7 @@ export class TransformNode extends Node {
 
         if (!node) {
             this.computeWorldMatrix(true);
-            this.getWorldMatrix().decompose(scale, quatRotation, position);
+            this.getWorldMatrix().decompose(scale, quatRotation, position, preserveScalingSign ? this : undefined);
         } else {
             var diffMatrix = TmpVectors.Matrix[0];
             var invParentMatrix = TmpVectors.Matrix[1];
@@ -772,7 +773,7 @@ export class TransformNode extends Node {
 
             node.getWorldMatrix().invertToRef(invParentMatrix);
             this.getWorldMatrix().multiplyToRef(invParentMatrix, diffMatrix);
-            diffMatrix.decompose(scale, quatRotation, position);
+            diffMatrix.decompose(scale, quatRotation, position, preserveScalingSign ? this : undefined);
         }
 
         if (this.rotationQuaternion) {

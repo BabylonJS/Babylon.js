@@ -16907,8 +16907,6 @@ declare module BABYLON {
          * If vertex alpha should be applied to the mesh
          */
         useVertexAlpha?: boolean | undefined, material?: Material);
-        private _addClipPlaneDefine;
-        private _removeClipPlaneDefine;
         isReady(): boolean;
         /**
          * Returns the string "LineMesh"
@@ -34097,15 +34095,17 @@ declare module BABYLON {
         /**
          * Adds the passed mesh as a child to the current mesh
          * @param mesh defines the child mesh
+         * @param preserveScalingSign if true, keep scaling sign of child. Otherwise, scaling sign might change.
          * @returns the current mesh
          */
-        addChild(mesh: AbstractMesh): AbstractMesh;
+        addChild(mesh: AbstractMesh, preserveScalingSign?: boolean): AbstractMesh;
         /**
          * Removes the passed mesh from the current mesh children list
          * @param mesh defines the child mesh
+         * @param preserveScalingSign if true, keep scaling sign of child. Otherwise, scaling sign might change.
          * @returns the current mesh
          */
-        removeChild(mesh: AbstractMesh): AbstractMesh;
+        removeChild(mesh: AbstractMesh, preserveScalingSign?: boolean): AbstractMesh;
         /** @hidden */
         private _initFacetData;
         /**
@@ -35116,9 +35116,10 @@ declare module BABYLON {
          * The node will remain exactly where it is and its position / rotation will be updated accordingly
          * @see https://doc.babylonjs.com/how_to/parenting
          * @param node the node ot set as the parent
+         * @param preserveScalingSign if true, keep scaling sign of child. Otherwise, scaling sign might change.
          * @returns this TransformNode.
          */
-        setParent(node: Nullable<Node>): TransformNode;
+        setParent(node: Nullable<Node>, preserveScalingSign?: boolean): TransformNode;
         private _nonUniformScaling;
         /**
          * True if the scaling property of this object is non uniform eg. (1,2,1)
@@ -37717,9 +37718,10 @@ declare module BABYLON {
          * @param scale defines the scale vector3 given as a reference to update
          * @param rotation defines the rotation quaternion given as a reference to update
          * @param translation defines the translation vector3 given as a reference to update
+         * @param preserveScalingNode Use scaling sign coming from this node. Otherwise scaling sign might change.
          * @returns true if operation was successful
          */
-        decompose(scale?: Vector3, rotation?: Quaternion, translation?: Vector3): boolean;
+        decompose(scale?: Vector3, rotation?: Quaternion, translation?: Vector3, preserveScalingNode?: TransformNode): boolean;
         /**
          * Gets specific row of the matrix
          * @param index defines the number of the row to get
