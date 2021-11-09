@@ -107,6 +107,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
 
         this._numCascades = value;
         this.recreateShadowMap();
+        this._recreateSceneUBOs();
     }
 
     /**
@@ -697,6 +698,15 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         }
     }
 
+    protected _recreateSceneUBOs(): void {
+        this._disposeSceneUBOs();
+        if (this._sceneUBOs) {
+            for (let i = 0; i < this._numCascades; ++i) {
+                this._sceneUBOs.push(this._scene.createSceneUniformBuffer(`Scene for CSM Shadow Generator (light "${this._light.name}" cascade #${i})`));
+            }
+        }
+    }
+
     /**
     *  Support test.
     */
@@ -752,6 +762,8 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         this._cascadeBlendPercentage = this._cascadeBlendPercentage ?? 0.1;
         this._lambda = this._lambda ?? 0.5;
         this._autoCalcDepthBounds = this._autoCalcDepthBounds ?? false;
+
+        this._recreateSceneUBOs();
 
         super._initializeGenerator();
     }
@@ -812,6 +824,9 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         this._shadowMap.onBeforeRenderObservable.clear();
 
         this._shadowMap.onBeforeRenderObservable.add((layer: number) => {
+            if (this._sceneUBOs) {
+                this._scene.setSceneUniformBuffer(this._sceneUBOs[layer]);
+            }
             this._currentLayer = layer;
             if (this._filter === ShadowGenerator.FILTER_PCF) {
                 engine.setColorWrite(false);
@@ -824,6 +839,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         });
 
         this._shadowMap.onBeforeBindObservable.add(() => {
+            this._currentSceneUBO = this._scene.getSceneUniformBuffer();
             engine._debugPushGroup?.(`cascaded shadow map generation for pass id ${engine.currentRenderPassId}`, 1);
             if (this._breaksAreDirty) {
                 this._splitFrustum();
