@@ -928,7 +928,7 @@ export class ThinEngine {
         console.log(versionToLog + ` - ${this.description}`);
 
         if (this._renderingCanvas) {
-            this._renderingCanvas.setAttribute( 'data-engine', versionToLog);
+            this._renderingCanvas.setAttribute('data-engine', versionToLog);
         }
     }
 
