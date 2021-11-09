@@ -578,7 +578,7 @@ export class UniformBuffer {
             return;
         }
 
-        if (this._buffers?.[this._bufferIndex][1]) {
+        if (this._buffers && this._buffers.length > 1 && this._buffers[this._bufferIndex][1]) {
             if (this._buffersEqual(this._bufferData, this._buffers[this._bufferIndex][1]!)) {
                 this._needSync = false;
                 this._createBufferOnWrite = this._engine._features.trackUbosInFrame;

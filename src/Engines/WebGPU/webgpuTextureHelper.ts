@@ -148,7 +148,7 @@ export class WebGPUTextureHelper {
     private _tintWASM: Nullable<WebGPUTintWASM>;
     private _bufferManager: WebGPUBufferManager;
     private _mipmapSampler: GPUSampler;
-    private _pipelines: { [format: string]: Array<GPURenderPipeline> } = {};
+    private _pipelines: { [format: string]: Array<[GPURenderPipeline, GPUBindGroupLayout]> } = {};
     private _compiledShaders: GPUShaderModule[][] = [];
     private _deferredReleaseTextures: Array<[Nullable<HardwareTextureWrapper | GPUTexture>, Nullable<BaseTexture>]> = [];
     private _commandEncoderForCreation: GPUCommandEncoder;
@@ -172,7 +172,7 @@ export class WebGPUTextureHelper {
         this._getPipeline(WebGPUConstants.TextureFormat.RGBA8Unorm);
     }
 
-    private _getPipeline(format: GPUTextureFormat, type: PipelineType = PipelineType.MipMap, params?: pipelineParameters): GPURenderPipeline {
+    private _getPipeline(format: GPUTextureFormat, type: PipelineType = PipelineType.MipMap, params?: pipelineParameters): [GPURenderPipeline, GPUBindGroupLayout] {
         const index =
             type === PipelineType.MipMap ? 1 << 0 :
                 type === PipelineType.InvertYPremultiplyAlpha ? ((params!.invertY ? 1 : 0) << 1) + ((params!.premultiplyAlpha ? 1 : 0) << 2) :
@@ -182,8 +182,8 @@ export class WebGPUTextureHelper {
             this._pipelines[format] = [];
         }
 
-        let pipeline = this._pipelines[format][index];
-        if (!pipeline) {
+        let pipelineAndBGL = this._pipelines[format][index];
+        if (!pipelineAndBGL) {
             let defines = "#version 450\r\n";
             if (type === PipelineType.InvertYPremultiplyAlpha) {
                 if (params!.invertY) {
@@ -213,7 +213,7 @@ export class WebGPUTextureHelper {
                 modules = this._compiledShaders[index] = [vertexModule, fragmentModule];
             }
 
-            pipeline = this._pipelines[format][index] = this._device.createRenderPipeline({
+            const pipeline = this._device.createRenderPipeline({
                 vertex: {
                     module: modules[0],
                     entryPoint: 'main',
@@ -230,9 +230,11 @@ export class WebGPUTextureHelper {
                     stripIndexFormat: WebGPUConstants.IndexFormat.Uint16,
                 },
             });
+
+            pipelineAndBGL = this._pipelines[format][index] = [pipeline, pipeline.getBindGroupLayout(0)];
         }
 
-        return pipeline;
+        return pipelineAndBGL;
     }
 
     private static _GetTextureTypeFromFormat(format: GPUTextureFormat): number {
@@ -493,6 +495,7 @@ export class WebGPUTextureHelper {
             case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3:
                 return useSRGBBuffer ? WebGPUConstants.TextureFormat.BC2RGBAUnormSRGB : WebGPUConstants.TextureFormat.BC2RGBAUnorm;
             case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1:
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1:
                 return useSRGBBuffer ? WebGPUConstants.TextureFormat.BC1RGBAUnormSRGB : WebGPUConstants.TextureFormat.BC1RGBAUnorm;
         }
 
@@ -720,8 +723,7 @@ export class WebGPUTextureHelper {
 
     public invertYPreMultiplyAlpha(gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY = false, premultiplyAlpha = false, faceIndex = 0, mipLevel = 0, layers = 1, commandEncoder?: GPUCommandEncoder): void {
         const useOwnCommandEncoder = commandEncoder === undefined;
-        const pipeline = this._getPipeline(format, PipelineType.InvertYPremultiplyAlpha, { invertY, premultiplyAlpha });
-        const bindGroupLayout = pipeline.getBindGroupLayout(0);
+        const [pipeline, bindGroupLayout] = this._getPipeline(format, PipelineType.InvertYPremultiplyAlpha, { invertY, premultiplyAlpha });
 
         if (useOwnCommandEncoder) {
             commandEncoder = this._device.createCommandEncoder({});
@@ -795,8 +797,7 @@ export class WebGPUTextureHelper {
 
     public copyWithInvertY(srcTextureView: GPUTextureView, format: GPUTextureFormat, renderPassDescriptor: GPURenderPassDescriptor, commandEncoder?: GPUCommandEncoder): void {
         const useOwnCommandEncoder = commandEncoder === undefined;
-        const pipeline = this._getPipeline(format, PipelineType.InvertYPremultiplyAlpha, { invertY: true, premultiplyAlpha: false });
-        const bindGroupLayout = pipeline.getBindGroupLayout(0);
+        const [pipeline, bindGroupLayout] = this._getPipeline(format, PipelineType.InvertYPremultiplyAlpha, { invertY: true, premultiplyAlpha: false });
 
         if (useOwnCommandEncoder) {
             commandEncoder = this._device.createCommandEncoder({});
@@ -919,7 +920,7 @@ export class WebGPUTextureHelper {
         return gpuTexture;
     }
 
-    public generateCubeMipmaps(gpuTexture: GPUTexture, format: GPUTextureFormat, mipLevelCount: number, commandEncoder?: GPUCommandEncoder): void {
+    public generateCubeMipmaps(gpuTexture: GPUTexture | WebGPUHardwareTexture, format: GPUTextureFormat, mipLevelCount: number, commandEncoder?: GPUCommandEncoder): void {
         const useOwnCommandEncoder = commandEncoder === undefined;
 
         if (useOwnCommandEncoder) {
@@ -940,10 +941,11 @@ export class WebGPUTextureHelper {
         }
     }
 
-    public generateMipmaps(gpuTexture: GPUTexture, format: GPUTextureFormat, mipLevelCount: number, faceIndex = 0, commandEncoder?: GPUCommandEncoder): void {
+    public generateMipmaps(gpuOrHdwTexture: GPUTexture | WebGPUHardwareTexture, format: GPUTextureFormat, mipLevelCount: number, faceIndex = 0, commandEncoder?: GPUCommandEncoder): void {
         const useOwnCommandEncoder = commandEncoder === undefined;
-        const pipeline = this._getPipeline(format);
-        const bindGroupLayout = pipeline.getBindGroupLayout(0);
+        const [pipeline, bindGroupLayout] = this._getPipeline(format);
+
+        faceIndex = Math.max(faceIndex, 0);
 
         if (useOwnCommandEncoder) {
             commandEncoder = this._device.createCommandEncoder({});
@@ -951,8 +953,22 @@ export class WebGPUTextureHelper {
 
         commandEncoder!.pushDebugGroup?.(`create mipmaps for face #${faceIndex} - ${mipLevelCount} levels`);
 
+        let gpuTexture: Nullable<GPUTexture>;
+        if (WebGPUTextureHelper._IsHardwareTexture(gpuOrHdwTexture)) {
+            gpuTexture = gpuOrHdwTexture.underlyingResource;
+            gpuOrHdwTexture._mipmapGenRenderPassDescr = gpuOrHdwTexture._mipmapGenRenderPassDescr || [];
+            gpuOrHdwTexture._mipmapGenBindGroup = gpuOrHdwTexture._mipmapGenBindGroup || [];
+        } else {
+            gpuTexture = gpuOrHdwTexture;
+            gpuOrHdwTexture = undefined as any;
+        }
+        if (!gpuTexture) {
+            return;
+        }
+
+        const webgpuHardwareTexture = gpuOrHdwTexture as WebGPUHardwareTexture;
         for (let i = 1; i < mipLevelCount; ++i) {
-            const passEncoder = commandEncoder!.beginRenderPass({
+            const renderPassDescriptor = webgpuHardwareTexture?._mipmapGenRenderPassDescr[faceIndex]?.[i - 1] ?? {
                 colorAttachments: [{
                     view: gpuTexture.createView({
                         format,
@@ -960,14 +976,19 @@ export class WebGPUTextureHelper {
                         baseMipLevel: i,
                         mipLevelCount: 1,
                         arrayLayerCount: 1,
-                        baseArrayLayer: Math.max(faceIndex, 0),
+                        baseArrayLayer: faceIndex,
                     }),
                     loadValue: WebGPUConstants.LoadOp.Load,
                     storeOp: WebGPUConstants.StoreOp.Store,
                 }],
-            });
+            };
+            if (webgpuHardwareTexture) {
+                webgpuHardwareTexture._mipmapGenRenderPassDescr[faceIndex] = webgpuHardwareTexture._mipmapGenRenderPassDescr[faceIndex] || [];
+                webgpuHardwareTexture._mipmapGenRenderPassDescr[faceIndex][i - 1] = renderPassDescriptor;
+            }
+            const passEncoder = commandEncoder!.beginRenderPass(renderPassDescriptor);
 
-            const bindGroup = this._device.createBindGroup({
+            const bindGroup = webgpuHardwareTexture?._mipmapGenBindGroup[faceIndex]?.[i - 1] ?? this._device.createBindGroup({
                 layout: bindGroupLayout,
                 entries: [{
                     binding: 0,
@@ -980,10 +1001,14 @@ export class WebGPUTextureHelper {
                         baseMipLevel: i - 1,
                         mipLevelCount: 1,
                         arrayLayerCount: 1,
-                        baseArrayLayer: Math.max(faceIndex, 0),
+                        baseArrayLayer: faceIndex,
                     }),
                 }],
             });
+            if (webgpuHardwareTexture) {
+                webgpuHardwareTexture._mipmapGenBindGroup[faceIndex] = webgpuHardwareTexture._mipmapGenBindGroup[faceIndex] || [];
+                webgpuHardwareTexture._mipmapGenBindGroup[faceIndex][i - 1] = bindGroup;
+            }
 
             passEncoder.setPipeline(pipeline);
             passEncoder.setBindGroup(0, bindGroup);

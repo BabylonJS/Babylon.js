@@ -862,11 +862,14 @@ export class Animation {
                 state.key = key;
                 var startKey = keys[key];
                 var startValue = this._getKeyValue(startKey.value);
-                if (startKey.interpolation === AnimationKeyInterpolation.STEP) {
-                    return startValue;
-                }
-
                 var endValue = this._getKeyValue(endKey.value);
+                if (startKey.interpolation === AnimationKeyInterpolation.STEP) {
+                    if (endKey.frame > currentFrame) {
+                        return startValue;
+                    } else {
+                        return endValue;
+                    }
+                }
 
                 var useTangent = startKey.outTangent !== undefined && endKey.inTangent !== undefined;
                 var frameDelta = endKey.frame - startKey.frame;
@@ -1190,8 +1193,8 @@ export class Animation {
 
         for (index = 0; index < parsedAnimation.keys.length; index++) {
             var key = parsedAnimation.keys[index];
-            var inTangent: any;
-            var outTangent: any;
+            let inTangent: any = undefined;
+            let outTangent: any = undefined;
 
             switch (dataType) {
                 case Animation.ANIMATIONTYPE_FLOAT:

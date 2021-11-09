@@ -13,6 +13,10 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
     public _bundleLists: WebGPUBundleList[];
     /** @hidden */
     public _currentLayer: number;
+    /** @hidden */
+    public _mipmapGenRenderPassDescr: GPURenderPassDescriptor[][];
+    /** @hidden */
+    public _mipmapGenBindGroup: GPUBindGroup[][];
 
     private _webgpuTexture: Nullable<GPUTexture>;
     private _webgpuMSAATexture: Nullable<GPUTexture>;
