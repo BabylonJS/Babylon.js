@@ -1045,7 +1045,7 @@ export class Color4 {
         const b = (((value1.b * part1) + (value2.b * part2)) + (tangent1.b * part3)) + (tangent2.b * part4);
         const a = (((value1.a * part1) + (value2.a * part2)) + (tangent1.a * part3)) + (tangent2.a * part4);
         return new Color4(r, g, b, a);
-    }    
+    }
 
     /**
      * Returns a new Color4 which is the 1st derivative of the Hermite spline defined by the colors "value1", "value2", "tangent1", "tangent2".
