@@ -4760,9 +4760,10 @@ export class Matrix {
      * @param scale defines the scale vector3 given as a reference to update
      * @param rotation defines the rotation quaternion given as a reference to update
      * @param translation defines the translation vector3 given as a reference to update
+     * @param preserveScalingNode Use scaling sign coming from this node. Otherwise scaling sign might change.
      * @returns true if operation was successful
      */
-    public decompose(scale?: Vector3, rotation?: Quaternion, translation?: Vector3): boolean {
+    public decompose(scale?: Vector3, rotation?: Quaternion, translation?: Vector3, preserveScalingNode?: TransformNode): boolean {
         if (this._isIdentity) {
             if (translation) {
                 translation.setAll(0);
@@ -4782,12 +4783,23 @@ export class Matrix {
         }
 
         scale = scale || MathTmp.Vector3[0];
+
         scale.x = Math.sqrt(m[0] * m[0] + m[1] * m[1] + m[2] * m[2]);
         scale.y = Math.sqrt(m[4] * m[4] + m[5] * m[5] + m[6] * m[6]);
         scale.z = Math.sqrt(m[8] * m[8] + m[9] * m[9] + m[10] * m[10]);
 
-        if (this.determinant() <= 0) {
-            scale.y *= -1;
+        if (preserveScalingNode) {
+            const signX = preserveScalingNode.scaling.x < 0 ? -1 : 1;
+            const signY = preserveScalingNode.scaling.y < 0 ? -1 : 1;
+            const signZ = preserveScalingNode.scaling.z < 0 ? -1 : 1;
+
+            scale.x *= signX;
+            scale.y *= signY;
+            scale.z *= signZ;
+        } else {
+            if (this.determinant() <= 0) {
+                scale.y *= -1;
+            }
         }
 
         if (scale._x === 0 || scale._y === 0 || scale._z === 0) {

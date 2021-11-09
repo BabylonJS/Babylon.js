@@ -1312,7 +1312,7 @@
         },
         {
             "title": "Basic GPU particle system",
-            "playgroundId": "#PU4WYI#241",
+            "playgroundId": "#PU4WYI#262",
             "excludedEngines": ["webgl1"],
             "referenceImage": "gpuparticle-basic.png",
             "excludeFromAutomaticTesting": true
@@ -1332,7 +1332,7 @@
         {
             "title": "Reverse depth buffer and CSM shadows",
             "renderCount": 10,
-            "playgroundId": "#IIZ9UU#180",
+            "playgroundId": "#IIZ9UU#248",
             "excludedEngines": ["webgl1"],
             "referenceImage": "reverseDepthBufferCSMShadows.png"
         },
@@ -1379,8 +1379,7 @@
         {
             "title": "Baked Vertex Animation",
             "playgroundId": "#14WJWW#11",
-            "referenceImage": "bakedVertexAnimation.png",
-            "excludeFromAutomaticTesting": true
+            "referenceImage": "bakedVertexAnimation.png"
         }
     ]
 }

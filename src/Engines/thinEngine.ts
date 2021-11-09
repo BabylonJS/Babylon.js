@@ -17,7 +17,7 @@ import { IViewportLike, IColor4Like } from '../Maths/math.like';
 import { DataBuffer } from '../Buffers/dataBuffer';
 import { IFileRequest } from '../Misc/fileRequest';
 import { Logger } from '../Misc/logger';
-import { IsWindowObjectExist } from '../Misc/domManagement';
+import { IsDocumentAvailable, IsWindowObjectExist } from '../Misc/domManagement';
 import { WebGLShaderProcessor } from './WebGL/webGLShaderProcessors';
 import { WebGL2ShaderProcessor } from './WebGL/webGL2ShaderProcessors';
 import { WebGLDataBuffer } from '../Meshes/WebGL/webGLDataBuffer';
@@ -761,7 +761,7 @@ export class ThinEngine {
                     let currentUA = navigator.userAgent;
                     this.hostInformation.isMobile = currentUA.indexOf("Mobile") !== -1 ||
                         // Needed for iOS 13+ detection on iPad (inspired by solution from https://stackoverflow.com/questions/9038625/detect-if-device-is-ios)
-                        (currentUA.indexOf("Mac") !== -1 && document !== undefined && "ontouchend" in document);
+                        (currentUA.indexOf("Mac") !== -1 && IsDocumentAvailable() && "ontouchend" in document);
                 };
 
                 // Set initial isMobile value
@@ -924,7 +924,12 @@ export class ThinEngine {
         // }
 
         this._creationOptions = options;
-        console.log(`Babylon.js v${ThinEngine.Version} - ${this.description}`);
+        const versionToLog = `Babylon.js v${ThinEngine.Version}`;
+        console.log(versionToLog + ` - ${this.description}`);
+
+        if (this._renderingCanvas) {
+            this._renderingCanvas.setAttribute( 'data-engine', versionToLog);
+        }
     }
 
     protected _restoreEngineAfterContextLost(initEngine: () => void): void {
