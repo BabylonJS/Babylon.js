@@ -27,7 +27,7 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
     /**
      * An event triggered when the animation to zoom on target mesh has ended
      */
-    public onTargetFramingAnimationEndObservable = new Observable<Nullable<AbstractMesh>>();
+    public onTargetFramingAnimationEndObservable = new Observable<void>();
 
     private _mode = FramingBehavior.FitFrustumSidesMode;
     private _radiusScale = 1.0;
@@ -208,7 +208,9 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
 
         this._onMeshTargetChangedObserver = camera.onMeshTargetChangedObservable.add((mesh) => {
             if (mesh) {
-                this.zoomOnMesh(mesh, undefined, () => this.onTargetFramingAnimationEndObservable.notifyObservers(null));
+                this.zoomOnMesh(mesh, undefined, () => {
+                    this.onTargetFramingAnimationEndObservable.notifyObservers();
+                });
             }
         });
 
