@@ -810,7 +810,7 @@ export class Animation {
      */
     public color3InterpolateFunctionWithTangents(startValue: Color3, outTangent: Color3, endValue: Color3, inTangent: Color3, gradient: number): Color3 {
         return Color3.Hermite(startValue, outTangent, endValue, inTangent, gradient);
-    }    
+    }
 
     /**
      * Interpolates a Color4 linearly
@@ -834,7 +834,7 @@ export class Animation {
      */
      public color4InterpolateFunctionWithTangents(startValue: Color4, outTangent: Color4, endValue: Color4, inTangent: Color4, gradient: number): Color4 {
         return Color4.Hermite(startValue, outTangent, endValue, inTangent, gradient);
-    }      
+    }
 
     /**
      * @hidden Internal use only
