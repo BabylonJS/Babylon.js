@@ -139,8 +139,12 @@ export class Curve {
         const keys = this.keys;
         const animationKeys = this.animation.getKeys();
         keys[keyIndex].inTangent = this.evaluateInTangent(keyIndex);
-
+        
         if (this.property) {
+            if (!animationKeys[keyIndex].inTangent) {
+                animationKeys[keyIndex].inTangent = this.tangentBuilder!();
+                this.setDefaultInTangent!(keyIndex);
+            }
             animationKeys[keyIndex].inTangent[this.property] = keys[keyIndex].inTangent;
         } else {
             animationKeys[keyIndex].inTangent = keys[keyIndex].inTangent;
@@ -153,6 +157,10 @@ export class Curve {
         keys[keyIndex].outTangent = this.evaluateOutTangent(keyIndex);
 
         if (this.property) {
+            if (!animationKeys[keyIndex].outTangent) {
+                animationKeys[keyIndex].outTangent = this.tangentBuilder!();
+                this.setDefaultOutTangent!(keyIndex);
+            }
             animationKeys[keyIndex].outTangent[this.property] = keys[keyIndex].outTangent;
         } else {
             animationKeys[keyIndex].outTangent = keys[keyIndex].outTangent;
