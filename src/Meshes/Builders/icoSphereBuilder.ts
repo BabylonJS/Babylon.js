@@ -290,7 +290,7 @@ export function CreateIcoSphereVertexData(options: { radius?: number, radiusX?: 
  * @returns the icosahedron mesh
  * @see https://doc.babylonjs.com/how_to/polyhedra_shapes#icosphere
  */
-export function CreateIcoSphere(name: string, options: { radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean }, scene: Nullable<Scene> = null): Mesh {
+export function CreateIcoSphere(name: string, options: { radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean } = {}, scene: Nullable<Scene> = null): Mesh {
     var sphere = new Mesh(name, scene);
 
     options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);

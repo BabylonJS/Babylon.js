@@ -124,7 +124,7 @@ export function CreateTorusKnotVertexData(options: { radius?: number, tube?: num
  * @returns the torus knot mesh
  * @see  https://doc.babylonjs.com/how_to/set_shapes#torus-knot
  */
-export function CreateTorusKnot(name: string, options: { radius?: number, tube?: number, radialSegments?: number, tubularSegments?: number, p?: number, q?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: any): Mesh {
+export function CreateTorusKnot(name: string, options: { radius?: number, tube?: number, radialSegments?: number, tubularSegments?: number, p?: number, q?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 } = {}, scene: any): Mesh {
     var torusKnot = new Mesh(name, scene);
 
     options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
