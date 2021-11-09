@@ -95,7 +95,7 @@ export function CreateTorusVertexData(options: { diameter?: number, thickness?: 
  * @returns the torus mesh
  * @see https://doc.babylonjs.com/how_to/set_shapes#torus
  */
-export function CreateTorus(name: string, options: { diameter?: number, thickness?: number, tessellation?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: any): Mesh {
+export function CreateTorus(name: string, options: { diameter?: number, thickness?: number, tessellation?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 } = {}, scene: any): Mesh {
     var torus = new Mesh(name, scene);
 
     options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);

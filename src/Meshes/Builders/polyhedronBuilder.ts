@@ -175,7 +175,7 @@ export function CreatePolyhedronVertexData(options: { type?: number, size?: numb
  * @returns the polyhedron mesh
  * @see https://doc.babylonjs.com/how_to/polyhedra_shapes
  */
-export function CreatePolyhedron(name: string, options: { type?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Nullable<Scene> = null): Mesh {
+export function CreatePolyhedron(name: string, options: { type?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 } = {}, scene: Nullable<Scene> = null): Mesh {
     var polyhedron = new Mesh(name, scene);
 
     options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);

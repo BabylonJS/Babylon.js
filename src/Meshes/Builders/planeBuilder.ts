@@ -83,7 +83,7 @@ export function CreatePlaneVertexData(options: { size?: number, width?: number, 
  * @returns the plane mesh
  * @see https://doc.babylonjs.com/how_to/set_shapes#plane
  */
-export function CreatePlane(name: string, options: { size?: number, width?: number, height?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean, sourcePlane?: Plane }, scene: Nullable<Scene> = null): Mesh {
+export function CreatePlane(name: string, options: { size?: number, width?: number, height?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean, sourcePlane?: Plane } = {}, scene: Nullable<Scene> = null): Mesh {
     var plane = new Mesh(name, scene);
 
     options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
