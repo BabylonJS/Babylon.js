@@ -1221,13 +1221,14 @@ export class Camera extends Node {
      */
     public serialize(): any {
         var serializationObject = SerializationHelper.Serialize(this);
+        serializationObject.uniqueId = this.uniqueId;
 
         // Type
         serializationObject.type = this.getClassName();
 
         // Parent
         if (this.parent) {
-            serializationObject.parentId = this.parent.id;
+            serializationObject.parentId = this.parent.uniqueId;
         }
 
         if (this.inputs) {

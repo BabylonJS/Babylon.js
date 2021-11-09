@@ -170,11 +170,11 @@ declare module "babylonjs-serializers/glTF/2.0/glTFMaterialExporter" {
          * @param mimeType texture mime type
          * @param images array of images
          * @param textures array of textures
-         * @param materials array of materials
+         * @param materials set of materials
          * @param imageData mapping of texture names to base64 textures
          * @param hasTextureCoords specifies if texture coordinates are present on the material
          */
-        _convertMaterialsToGLTFAsync(babylonMaterials: Material[], mimeType: ImageMimeType, hasTextureCoords: boolean): Promise<void>;
+        _convertMaterialsToGLTFAsync(exportMaterials: Set<Material>, mimeType: ImageMimeType, hasTextureCoords: boolean): Promise<void>;
         /**
          * Makes a copy of the glTF material without the texture parameters
          * @param originalMaterial original glTF material
@@ -871,6 +871,13 @@ declare module "babylonjs-serializers/glTF/2.0/glTFExporter" {
          */
         private createSceneAsync;
         /**
+         * Getting the nodes and materials that would be exported.
+         * @param nodes Babylon transform nodes
+         * @returns Array of nodes which would be exported.
+         * @returns Set of materials which would be exported.
+         */
+        private getExportNodes;
+        /**
          * Creates a mapping of Node unique id to node index and handles animations
          * @param babylonScene Babylon Scene
          * @param nodes Babylon transform nodes
@@ -1546,11 +1553,11 @@ declare module BABYLON.GLTF2.Exporter {
          * @param mimeType texture mime type
          * @param images array of images
          * @param textures array of textures
-         * @param materials array of materials
+         * @param materials set of materials
          * @param imageData mapping of texture names to base64 textures
          * @param hasTextureCoords specifies if texture coordinates are present on the material
          */
-        _convertMaterialsToGLTFAsync(babylonMaterials: Material[], mimeType: ImageMimeType, hasTextureCoords: boolean): Promise<void>;
+        _convertMaterialsToGLTFAsync(exportMaterials: Set<Material>, mimeType: ImageMimeType, hasTextureCoords: boolean): Promise<void>;
         /**
          * Makes a copy of the glTF material without the texture parameters
          * @param originalMaterial original glTF material
@@ -2225,6 +2232,13 @@ declare module BABYLON.GLTF2.Exporter {
          * @param binaryWriter Buffer to write binary data to
          */
         private createSceneAsync;
+        /**
+         * Getting the nodes and materials that would be exported.
+         * @param nodes Babylon transform nodes
+         * @returns Array of nodes which would be exported.
+         * @returns Set of materials which would be exported.
+         */
+        private getExportNodes;
         /**
          * Creates a mapping of Node unique id to node index and handles animations
          * @param babylonScene Babylon Scene

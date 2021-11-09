@@ -1896,6 +1896,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         componentWillUnmount(): void;
         onCurrentFrameChange(value: number): void;
         onChangeFromOrTo(): void;
+        getSnapshotBeforeUpdate(): null;
+        componentDidUpdate(): void;
         render(): JSX.Element;
     }
 }
@@ -6613,6 +6615,8 @@ declare module INSPECTOR {
         componentWillUnmount(): void;
         onCurrentFrameChange(value: number): void;
         onChangeFromOrTo(): void;
+        getSnapshotBeforeUpdate(): null;
+        componentDidUpdate(): void;
         render(): JSX.Element;
     }
 }

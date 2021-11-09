@@ -2,6 +2,7 @@
 attribute vec3 position;
 
 #include<bonesDeclaration>
+#include<bakedVertexAnimationDeclaration>
 
 #include<morphTargetsVertexGlobalDeclaration>
 #include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]
@@ -53,6 +54,7 @@ void main(void)
 
 #include<instancesVertex>
 #include<bonesVertex>
+#include<bakedVertexAnimation>
 
 #ifdef CUBEMAP
 	vPosition = finalWorld * vec4(positionUpdated, 1.0);

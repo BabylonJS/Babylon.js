@@ -18,6 +18,7 @@ import { MaterialDefines } from "../Materials/materialDefines";
 import { Light } from "../Lights/light";
 import { Skeleton } from "../Bones/skeleton";
 import { MorphTargetManager } from "../Morph/morphTargetManager";
+import { IBakedVertexAnimationManager } from "../BakedVertexAnimation/bakedVertexAnimationManager";
 import { IEdgesRenderer } from "../Rendering/edgesRenderer";
 import { SolidParticle } from "../Particles/solidParticle";
 import { Constants } from "../Engines/constants";
@@ -95,6 +96,7 @@ class _InternalAbstractMeshDataInfo {
     public _collisionRetryCount: number = 3;
     public _morphTargetManager: Nullable<MorphTargetManager> = null;
     public _renderingGroupId = 0;
+    public _bakedVertexAnimationManager: Nullable<IBakedVertexAnimationManager> = null;
     public _material: Nullable<Material> = null;
     public _materialForRenderPass: Array<Material | undefined>; // map a render pass id (index in the array) to a Material
     public _positions: Nullable<Vector3[]> = null;
@@ -284,6 +286,22 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         }
         this._internalAbstractMeshDataInfo._morphTargetManager = value;
         this._syncGeometryWithMorphTargetManager();
+    }
+
+    /**
+     * Gets or sets the baked vertex animation manager
+     * @see https://doc.babylonjs.com/divingDeeper/animation/baked_texture_animations
+     */
+     public get bakedVertexAnimationManager(): Nullable<IBakedVertexAnimationManager> {
+        return this._internalAbstractMeshDataInfo._bakedVertexAnimationManager;
+    }
+
+    public set bakedVertexAnimationManager(value: Nullable<IBakedVertexAnimationManager>) {
+        if (this._internalAbstractMeshDataInfo._bakedVertexAnimationManager === value) {
+            return;
+        }
+        this._internalAbstractMeshDataInfo._bakedVertexAnimationManager = value;
+        this._markSubMeshesAsAttributesDirty();
     }
 
     /** @hidden */
@@ -982,6 +1000,17 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /**
+    * Flag the AbstractMesh as dirty (Forcing it to update everything)
+    * @param property if set to "rotation" the objects rotationQuaternion will be set to null
+    * @returns this AbstractMesh
+    */
+     public markAsDirty(property?: string): AbstractMesh {
+        this._currentRenderId = Number.MAX_VALUE;
+        this._isDirty = true;
+        return this;
+     }
+
+     /**
      * Resets the draw wrappers cache for all submeshes of this abstract mesh
      */
     public resetDrawCache(): void {
@@ -1992,20 +2021,22 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     /**
      * Adds the passed mesh as a child to the current mesh
      * @param mesh defines the child mesh
+     * @param preserveScalingSign if true, keep scaling sign of child. Otherwise, scaling sign might change.
      * @returns the current mesh
      */
-    public addChild(mesh: AbstractMesh): AbstractMesh {
-        mesh.setParent(this);
+    public addChild(mesh: AbstractMesh, preserveScalingSign: boolean = false): AbstractMesh {
+        mesh.setParent(this, preserveScalingSign);
         return this;
     }
 
     /**
      * Removes the passed mesh from the current mesh children list
      * @param mesh defines the child mesh
+     * @param preserveScalingSign if true, keep scaling sign of child. Otherwise, scaling sign might change.
      * @returns the current mesh
      */
-    public removeChild(mesh: AbstractMesh): AbstractMesh {
-        mesh.setParent(null);
+    public removeChild(mesh: AbstractMesh, preserveScalingSign: boolean = false): AbstractMesh {
+        mesh.setParent(null, preserveScalingSign);
         return this;
     }
 

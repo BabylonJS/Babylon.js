@@ -251,7 +251,7 @@ export class EdgesRenderer implements IEdgesRenderer {
                 {
                     attributes: ["position", "normal"],
                     uniforms: ["world", "viewProjection", "color", "width", "aspectRatio"]
-                });
+                }, false);
 
             shader.disableDepthWrite = true;
             shader.backFaceCulling = false;
