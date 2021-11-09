@@ -800,6 +800,19 @@ export class Animation {
     }
 
     /**
+     * Interpolates a Color3 cubically
+     * @param startValue Start value of the animation curve
+     * @param outTangent End tangent of the animation
+     * @param endValue End value of the animation curve
+     * @param inTangent Start tangent of the animation curve
+     * @param gradient Scalar amount to interpolate
+     * @returns interpolated value
+     */
+    public color3InterpolateFunctionWithTangents(startValue: Color3, outTangent: Color3, endValue: Color3, inTangent: Color3, gradient: number): Color3 {
+        return Color3.Hermite(startValue, outTangent, endValue, inTangent, gradient);
+    }    
+
+    /**
      * Interpolates a Color4 linearly
      * @param startValue Start value of the animation curve
      * @param endValue End value of the animation curve
@@ -809,6 +822,19 @@ export class Animation {
     public color4InterpolateFunction(startValue: Color4, endValue: Color4, gradient: number): Color4 {
         return Color4.Lerp(startValue, endValue, gradient);
     }
+
+    /**
+     * Interpolates a Color4 cubically
+     * @param startValue Start value of the animation curve
+     * @param outTangent End tangent of the animation
+     * @param endValue End value of the animation curve
+     * @param inTangent Start tangent of the animation curve
+     * @param gradient Scalar amount to interpolate
+     * @returns interpolated value
+     */
+     public color4InterpolateFunctionWithTangents(startValue: Color4, outTangent: Color4, endValue: Color4, inTangent: Color4, gradient: number): Color4 {
+        return Color4.Hermite(startValue, outTangent, endValue, inTangent, gradient);
+    }      
 
     /**
      * @hidden Internal use only
@@ -938,21 +964,23 @@ export class Animation {
                         }
                     // Color3
                     case Animation.ANIMATIONTYPE_COLOR3:
+                        var color3Value = useTangent ? this.color3InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this.color3InterpolateFunction(startValue, endValue, gradient);
                         switch (state.loopMode) {
                             case Animation.ANIMATIONLOOPMODE_CYCLE:
                             case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                return this.color3InterpolateFunction(startValue, endValue, gradient);
+                                return color3Value;
                             case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                return this.color3InterpolateFunction(startValue, endValue, gradient).add(state.offsetValue.scale(state.repeatCount));
+                                return color3Value.add(state.offsetValue.scale(state.repeatCount));
                         }
                     // Color4
                     case Animation.ANIMATIONTYPE_COLOR4:
+                        var color4Value = useTangent ? this.color4InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this.color4InterpolateFunction(startValue, endValue, gradient);
                         switch (state.loopMode) {
                             case Animation.ANIMATIONLOOPMODE_CYCLE:
                             case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                return this.color4InterpolateFunction(startValue, endValue, gradient);
+                                return color4Value;
                             case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                return this.color4InterpolateFunction(startValue, endValue, gradient).add(state.offsetValue.scale(state.repeatCount));
+                                return color4Value.add(state.offsetValue.scale(state.repeatCount));
                         }
                     // Matrix
                     case Animation.ANIMATIONTYPE_MATRIX:
