@@ -22,6 +22,7 @@ IAnimationListComponentState
 > {
     private _onEditAnimationRequiredObserver: Nullable<Observer<Animation>>;
     private _onEditAnimationUIClosedObserver: Nullable<Observer<void>>;
+    private _onDeleteAnimationObserver: Nullable<Observer<Animation>>;
 
     constructor(props: IAnimationListComponentProps) {
         super(props);
@@ -39,6 +40,10 @@ IAnimationListComponentState
                 isVisible: true
             })
         });
+
+        this._onDeleteAnimationObserver = this.props.context.onDeleteAnimation.add(() => {
+            this.forceUpdate();
+        });
     }
 
     componentWillUnmount() {
@@ -48,6 +53,10 @@ IAnimationListComponentState
 
         if (this._onEditAnimationUIClosedObserver) {
             this.props.context.onEditAnimationUIClosed.remove(this._onEditAnimationUIClosedObserver);
+        }
+
+        if (this._onDeleteAnimationObserver) {
+            this.props.context.onDeleteAnimation.remove(this._onDeleteAnimationObserver);
         }
     }    
 

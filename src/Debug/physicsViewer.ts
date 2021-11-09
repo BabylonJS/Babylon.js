@@ -225,8 +225,8 @@ export class PhysicsViewer {
 
     private _getDebugMeshMesh(mesh: Mesh, scene: Scene): AbstractMesh {
         var wireframeOver = new Mesh(mesh.name, scene, null, mesh);
-        wireframeOver.position = Vector3.Zero();
         wireframeOver.setParent(mesh);
+        wireframeOver.position = Vector3.Zero();
         wireframeOver.material = this._getDebugMaterial(scene);
 
         this._debugMeshMeshes.push(wireframeOver);

@@ -16907,8 +16907,6 @@ declare module BABYLON {
          * If vertex alpha should be applied to the mesh
          */
         useVertexAlpha?: boolean | undefined, material?: Material);
-        private _addClipPlaneDefine;
-        private _removeClipPlaneDefine;
         isReady(): boolean;
         /**
          * Returns the string "LineMesh"
@@ -18095,6 +18093,8 @@ declare module BABYLON {
         protected _defaultTextureMatrix: Matrix;
         protected _storedUniqueId: Nullable<number>;
         protected _useUBO: boolean;
+        protected _sceneUBOs: UniformBuffer[];
+        protected _currentSceneUBO: UniformBuffer;
         /** @hidden */
         static _SceneComponentInitialization: (scene: Scene) => void;
         /**
@@ -18172,6 +18172,7 @@ declare module BABYLON {
         recreateShadowMap(): void;
         protected _disposeBlurPostProcesses(): void;
         protected _disposeRTTandPostProcesses(): void;
+        protected _disposeSceneUBOs(): void;
         /**
          * Disposes the ShadowGenerator.
          * Returns nothing.
@@ -25076,6 +25077,8 @@ declare module BABYLON {
         private _blurKernelX;
         private _blurKernelY;
         private _blurRatio;
+        private _sceneUBO;
+        private _currentSceneUBO;
         /**
          * Instantiates a Mirror Texture.
          * Mirror texture can be used to simulate the view from a mirror in a scene.
@@ -34097,15 +34100,17 @@ declare module BABYLON {
         /**
          * Adds the passed mesh as a child to the current mesh
          * @param mesh defines the child mesh
+         * @param preserveScalingSign if true, keep scaling sign of child. Otherwise, scaling sign might change.
          * @returns the current mesh
          */
-        addChild(mesh: AbstractMesh): AbstractMesh;
+        addChild(mesh: AbstractMesh, preserveScalingSign?: boolean): AbstractMesh;
         /**
          * Removes the passed mesh from the current mesh children list
          * @param mesh defines the child mesh
+         * @param preserveScalingSign if true, keep scaling sign of child. Otherwise, scaling sign might change.
          * @returns the current mesh
          */
-        removeChild(mesh: AbstractMesh): AbstractMesh;
+        removeChild(mesh: AbstractMesh, preserveScalingSign?: boolean): AbstractMesh;
         /** @hidden */
         private _initFacetData;
         /**
@@ -35116,9 +35121,10 @@ declare module BABYLON {
          * The node will remain exactly where it is and its position / rotation will be updated accordingly
          * @see https://doc.babylonjs.com/how_to/parenting
          * @param node the node ot set as the parent
+         * @param preserveScalingSign if true, keep scaling sign of child. Otherwise, scaling sign might change.
          * @returns this TransformNode.
          */
-        setParent(node: Nullable<Node>): TransformNode;
+        setParent(node: Nullable<Node>, preserveScalingSign?: boolean): TransformNode;
         private _nonUniformScaling;
         /**
          * True if the scaling property of this object is non uniform eg. (1,2,1)
@@ -37717,9 +37723,10 @@ declare module BABYLON {
          * @param scale defines the scale vector3 given as a reference to update
          * @param rotation defines the rotation quaternion given as a reference to update
          * @param translation defines the translation vector3 given as a reference to update
+         * @param preserveScalingNode Use scaling sign coming from this node. Otherwise scaling sign might change.
          * @returns true if operation was successful
          */
-        decompose(scale?: Vector3, rotation?: Quaternion, translation?: Vector3): boolean;
+        decompose(scale?: Vector3, rotation?: Quaternion, translation?: Vector3, preserveScalingNode?: TransformNode): boolean;
         /**
          * Gets specific row of the matrix
          * @param index defines the number of the row to get
@@ -50028,6 +50035,10 @@ declare module BABYLON {
          * Gets the name of the behavior.
          */
         get name(): string;
+        /**
+         * An event triggered when the animation to zoom on target mesh has ended
+         */
+        onTargetFramingAnimationEndObservable: Observable<void>;
         private _mode;
         private _radiusScale;
         private _positionScale;
@@ -58109,6 +58120,24 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+        interface SubMesh {
+            /** @hidden */
+            _projectOnTrianglesToRef(vector: Vector3, positions: Vector3[], indices: IndicesArray, step: number, checkStopper: boolean, ref: Vector3): number;
+            /** @hidden */
+            _projectOnUnIndexedTrianglesToRef(vector: Vector3, positions: Vector3[], indices: IndicesArray, ref: Vector3): number;
+            /**
+             * Projects a point on this submesh and stores the result in "ref"
+             *
+             * @param vector point to project
+             * @param positions defines mesh's positions array
+             * @param indices defines mesh's indices array
+             * @param ref vector that will store the result
+             * @returns distance from the point and the submesh, or -1 if the mesh rendering mode doesn't support projections
+             */
+            projectToRef(vector: Vector3, positions: Vector3[], indices: IndicesArray, ref: Vector3): number;
+        }
+}
+declare module BABYLON {
     /**
      * Options interface for the near interaction module
      */
@@ -64956,6 +64985,34 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var clipPlaneFragment: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var clipPlaneFragmentDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var clipPlaneVertex: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var clipPlaneVertexDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
     export var instancesDeclaration: {
         name: string;
         shader: string;
@@ -65156,6 +65213,10 @@ declare module BABYLON {
         _bundleLists: WebGPUBundleList[];
         /** @hidden */
         _currentLayer: number;
+        /** @hidden */
+        _mipmapGenRenderPassDescr: GPURenderPassDescriptor[][];
+        /** @hidden */
+        _mipmapGenBindGroup: GPUBindGroup[][];
         private _webgpuTexture;
         private _webgpuMSAATexture;
         get underlyingResource(): Nullable<GPUTexture>;
@@ -65243,8 +65304,8 @@ declare module BABYLON {
             width: number;
             height: number;
         }, hasMipmaps?: boolean, generateMipmaps?: boolean, invertY?: boolean, premultiplyAlpha?: boolean, format?: GPUTextureFormat, sampleCount?: number, commandEncoder?: GPUCommandEncoder, usage?: number, additionalUsages?: number): GPUTexture;
-        generateCubeMipmaps(gpuTexture: GPUTexture, format: GPUTextureFormat, mipLevelCount: number, commandEncoder?: GPUCommandEncoder): void;
-        generateMipmaps(gpuTexture: GPUTexture, format: GPUTextureFormat, mipLevelCount: number, faceIndex?: number, commandEncoder?: GPUCommandEncoder): void;
+        generateCubeMipmaps(gpuTexture: GPUTexture | WebGPUHardwareTexture, format: GPUTextureFormat, mipLevelCount: number, commandEncoder?: GPUCommandEncoder): void;
+        generateMipmaps(gpuOrHdwTexture: GPUTexture | WebGPUHardwareTexture, format: GPUTextureFormat, mipLevelCount: number, faceIndex?: number, commandEncoder?: GPUCommandEncoder): void;
         createGPUTextureForInternalTexture(texture: InternalTexture, width?: number, height?: number, depth?: number, creationFlags?: number): WebGPUHardwareTexture;
         createMSAATexture(texture: InternalTexture, samples: number): void;
         updateCubeTextures(imageBitmaps: ImageBitmap[] | Uint8Array[], gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY?: boolean, premultiplyAlpha?: boolean, offsetX?: number, offsetY?: number, commandEncoder?: GPUCommandEncoder): void;
@@ -73253,6 +73314,7 @@ declare module BABYLON {
         private _computeMatrices;
         private _computeFrustumInWorldSpace;
         private _computeCascadeFrustum;
+        protected _recreateSceneUBOs(): void;
         /**
         *  Support test.
         */
@@ -74498,6 +74560,8 @@ declare module BABYLON {
         private _add;
         private _attachedMesh;
         private _invertYAxis;
+        private _sceneUBOs;
+        private _currentSceneUBO;
         /** Gets or sets probe position (center of the cube map) */
         position: Vector3;
         /** @hidden */
@@ -79755,24 +79819,6 @@ declare module BABYLON {
         dispose(): void;
         private _beforeCameraUpdate;
     }
-}
-declare module BABYLON {
-        interface SubMesh {
-            /** @hidden */
-            _projectOnTrianglesToRef(vector: Vector3, positions: Vector3[], indices: IndicesArray, step: number, checkStopper: boolean, ref: Vector3): number;
-            /** @hidden */
-            _projectOnUnIndexedTrianglesToRef(vector: Vector3, positions: Vector3[], indices: IndicesArray, ref: Vector3): number;
-            /**
-             * Projects a point on this submesh and stores the result in "ref"
-             *
-             * @param vector point to project
-             * @param positions defines mesh's positions array
-             * @param indices defines mesh's indices array
-             * @param ref vector that will store the result
-             * @returns distance from the point and the submesh, or -1 if the mesh rendering mode doesn't support projections
-             */
-            projectToRef(vector: Vector3, positions: Vector3[], indices: IndicesArray, ref: Vector3): number;
-        }
 }
 declare module BABYLON {
         interface Mesh {
