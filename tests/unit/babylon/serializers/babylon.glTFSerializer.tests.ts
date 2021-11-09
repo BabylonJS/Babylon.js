@@ -80,8 +80,8 @@ describe('Babylon glTF Serializer', () => {
                     const jsonString = glTFData.glTFFiles['test.gltf'] as string;
                     const jsonData = JSON.parse(jsonString);
 
-                    // accessors, asset, buffers, bufferViews, meshes, nodes, scene, scenes, materials
-                    Object.keys(jsonData).length.should.be.equal(9);
+                    // accessors, asset, buffers, bufferViews, meshes, nodes, scene, scenes
+                    Object.keys(jsonData).length.should.be.equal(8);
 
                     // positions, normals, indices
                     jsonData.accessors.length.should.be.equal(3);
@@ -133,8 +133,8 @@ describe('Babylon glTF Serializer', () => {
                 animation.channels[0].target.node.should.be.equal(0);
                 animation.channels[0].target.path.should.be.equal('translation');
                 jsonData.animations[0].samplers.length.should.be.equal(1);
-                // accessors, asset, buffers, bufferViews, meshes, nodes, scene, scenes, materials, animations
-                Object.keys(jsonData).length.should.be.equal(10);
+                // accessors, asset, buffers, bufferViews, meshes, nodes, scene, scenes, animations
+                Object.keys(jsonData).length.should.be.equal(9);
                 // positions, normals, indices, animation keyframe data, animation data
                 jsonData.accessors.length.should.be.equal(5);
                 // generator, version
@@ -182,8 +182,8 @@ describe('Babylon glTF Serializer', () => {
                 animation.samplers[0].input.should.be.equal(3);
                 animation.samplers[0].output.should.be.equal(4);
                 jsonData.animations[0].samplers.length.should.be.equal(1);
-                // accessors, asset, buffers, bufferViews, meshes, nodes, scene, scenes, materials, animations
-                Object.keys(jsonData).length.should.be.equal(10);
+                // accessors, asset, buffers, bufferViews, meshes, nodes, scene, scenes, animations
+                Object.keys(jsonData).length.should.be.equal(9);
                 // positions, normals, indices, animation keyframe data, animation data
                 jsonData.accessors.length.should.be.equal(5);
                 // generator, version
@@ -231,8 +231,8 @@ describe('Babylon glTF Serializer', () => {
                 animation.samplers[0].input.should.be.equal(3);
                 animation.samplers[0].output.should.be.equal(4);
                 jsonData.animations[0].samplers.length.should.be.equal(1);
-                // accessors, asset, buffers, bufferViews, meshes, nodes, scene, scenes, materials, animations
-                Object.keys(jsonData).length.should.be.equal(10);
+                // accessors, asset, buffers, bufferViews, meshes, nodes, scene, scenes, animations
+                Object.keys(jsonData).length.should.be.equal(9);
                 // positions, normals, indices, animation keyframe data, animation data
                 jsonData.accessors.length.should.be.equal(5);
                 // generator, version
@@ -280,8 +280,8 @@ describe('Babylon glTF Serializer', () => {
                 animation.samplers[0].input.should.be.equal(3);
                 animation.samplers[0].output.should.be.equal(4);
                 jsonData.animations[0].samplers.length.should.be.equal(1);
-                // accessors, asset, buffers, bufferViews, meshes, nodes, scene, scenes, materials, animations
-                Object.keys(jsonData).length.should.be.equal(10);
+                // accessors, asset, buffers, bufferViews, meshes, nodes, scene, scenes, animations
+                Object.keys(jsonData).length.should.be.equal(9);
                 // positions, normals, indices, animation keyframe data, animation data
                 jsonData.accessors.length.should.be.equal(5);
                 // generator, version
@@ -353,8 +353,8 @@ describe('Babylon glTF Serializer', () => {
                 animation.samplers[0].interpolation.should.be.equal('LINEAR');
                 animation.samplers[0].input.should.be.equal(5);
                 animation.samplers[0].output.should.be.equal(6);
-                // accessors, asset, buffers, bufferViews, meshes, nodes, scene, scenes, materials, animations
-                Object.keys(jsonData).length.should.be.equal(10);
+                // accessors, asset, buffers, bufferViews, meshes, nodes, scene, scenes, animations
+                Object.keys(jsonData).length.should.be.equal(9);
                 // positions, normals, indices, rotation animation keyframe data, rotation animation data, scale animation keyframe data, scale animation data
                 jsonData.accessors.length.should.be.equal(7);
                 // generator, version

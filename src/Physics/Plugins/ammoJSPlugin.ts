@@ -439,6 +439,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             else {
                 var localInertia = new this.bjsAMMO.btVector3(0, 0, 0);
                 var startTransform = new this.bjsAMMO.btTransform();
+                impostor.object.computeWorldMatrix(true);
                 startTransform.setIdentity();
                 if (mass !== 0) {
                     colShape.calculateLocalInertia(mass, localInertia);
@@ -463,8 +464,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 }
 
                 // compute delta position: compensate the difference between shape center and mesh origin
-                if (mass !== 0) {
-                    impostor.object.computeWorldMatrix(true);
+                if (impostor.type !== PhysicsImpostor.MeshImpostor) {
                     const boundingInfo = impostor.object.getBoundingInfo();
                     this._tmpVec3.copyFrom(impostor.object.getAbsolutePosition());
                     this._tmpVec3.subtractInPlace(boundingInfo.boundingBox.centerWorld);

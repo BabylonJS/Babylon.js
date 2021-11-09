@@ -21,6 +21,7 @@ attribute vec4 color;
 #include<helperFunctions>
 
 #include<bonesDeclaration>
+#include<bakedVertexAnimationDeclaration>
 
 // Uniforms
 #include<instancesDeclaration>
@@ -105,6 +106,7 @@ void main(void) {
 #endif
 
 #include<bonesVertex>
+#include<bakedVertexAnimation>
 
 	vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
 

@@ -444,7 +444,7 @@
         {
             "title": "Custom render target",
             "renderCount": 20,
-            "playgroundId": "#TQCEBF#1",
+            "playgroundId": "#TQCEBF#3",
             "referenceImage": "customRTT.png"
         },
         {
@@ -1375,6 +1375,12 @@
             "renderCount": 5,
             "playgroundId": "#6GFJNR#152",
             "referenceImage": "customMatDepthRenderer.png"
+        },
+        {
+            "title": "Baked Vertex Animation",
+            "playgroundId": "#14WJWW#11",
+            "referenceImage": "bakedVertexAnimation.png",
+            "excludeFromAutomaticTesting": true
         }
     ]
 }

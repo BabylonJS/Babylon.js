@@ -1275,7 +1275,7 @@ export class SolidParticleSystem implements IDisposable {
         if (update) {
             if (this._computeParticleColor) {
                 const vb = mesh.getVertexBuffer(VertexBuffer.ColorKind);
-                if (vb) {
+                if (vb && !mesh.isPickable) {
                     vb.updateDirectly(colors32, 0);
                 } else {
                     mesh.updateVerticesData(VertexBuffer.ColorKind, colors32, false, false);
@@ -1283,14 +1283,14 @@ export class SolidParticleSystem implements IDisposable {
             }
             if (this._computeParticleTexture) {
                 const vb = mesh.getVertexBuffer(VertexBuffer.UVKind);
-                if (vb) {
+                if (vb && !mesh.isPickable) {
                     vb.updateDirectly(uvs32, 0);
                 } else {
                     mesh.updateVerticesData(VertexBuffer.UVKind, uvs32, false, false);
                 }
             }
             const vbp = mesh.getVertexBuffer(VertexBuffer.PositionKind);
-            if (vbp) {
+            if (vbp && !mesh.isPickable) {
                 vbp.updateDirectly(positions32, 0);
             } else {
                 mesh.updateVerticesData(VertexBuffer.PositionKind, positions32, false, false);
@@ -1306,7 +1306,7 @@ export class SolidParticleSystem implements IDisposable {
                 }
                 if (!mesh.areNormalsFrozen) {
                     const vb = mesh.getVertexBuffer(VertexBuffer.NormalKind);
-                    if (vb) {
+                    if (vb && !mesh.isPickable) {
                         vb.updateDirectly(normals32, 0);
                     } else {
                         mesh.updateVerticesData(VertexBuffer.NormalKind, normals32, false, false);
