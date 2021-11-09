@@ -924,7 +924,12 @@ export class ThinEngine {
         // }
 
         this._creationOptions = options;
-        console.log(`Babylon.js v${ThinEngine.Version} - ${this.description}`);
+        const versionToLog = `Babylon.js v${ThinEngine.Version}`;
+        console.log(versionToLog + ` - ${this.description}`);
+
+        if (this._renderingCanvas) {
+            this._renderingCanvas.setAttribute( 'data-engine', versionToLog);
+        }
     }
 
     protected _restoreEngineAfterContextLost(initEngine: () => void): void {
