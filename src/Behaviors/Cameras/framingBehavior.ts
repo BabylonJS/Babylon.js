@@ -2,6 +2,7 @@ import { Behavior } from "../../Behaviors/behavior";
 import { Camera } from "../../Cameras/camera";
 import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { ExponentialEase, EasingFunction } from "../../Animations/easing";
+import { Observable } from "../../Misc/observable";
 import { Nullable } from "../../types";
 import { PointerInfoPre, PointerEventTypes } from "../../Events/pointerEvents";
 import { PrecisionDate } from "../../Misc/precisionDate";
@@ -23,6 +24,11 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
         return "Framing";
     }
 
+    /**
+     * An event triggered when the animation to zoom on target mesh has ended
+     */
+    public onTargetFramingAnimationEndObservable = new Observable<Nullable<AbstractMesh>>();
+
     private _mode = FramingBehavior.FitFrustumSidesMode;
     private _radiusScale = 1.0;
     private _positionScale = 0.5;
@@ -30,8 +36,7 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
     private _elevationReturnTime = 1500;
     private _elevationReturnWaitTime = 1000;
     private _zoomStopsAnimation = false;
-    private _framingTime = 1500;
-    private _onTargetFramingAnimationEnd: Nullable<() => void>;
+    private _framingTime = 1500;    
 
     /**
      * The easing function used by animations
@@ -160,20 +165,6 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
     }
 
     /**
-     * Sets the onTargetFramingAnimationEnd callback
-    */
-    public set onTargetFramingAnimationEnd(onTargetFramingAnimationEnd: Nullable<() => void>) {
-        this._onTargetFramingAnimationEnd = onTargetFramingAnimationEnd;
-    }
-
-    /**
-     * Gets the onTargetFramingAnimationEnd callback
-    */
-    public get onTargetFramingAnimationEnd() {
-        return this._onTargetFramingAnimationEnd;
-    }
-
-    /**
      * Define if the behavior should automatically change the configured
      * camera limits and sensibilities.
      */
@@ -217,7 +208,7 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
 
         this._onMeshTargetChangedObserver = camera.onMeshTargetChangedObservable.add((mesh) => {
             if (mesh) {
-                this.zoomOnMesh(mesh, undefined, this._onTargetFramingAnimationEnd);
+                this.zoomOnMesh(mesh, undefined, () => this.onTargetFramingAnimationEndObservable.notifyObservers(null));
             }
         });
 
