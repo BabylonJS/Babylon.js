@@ -527,16 +527,16 @@ export class Color3 {
      * @returns the new Color3
      */
      public static Hermite(value1: DeepImmutable<Color3>, tangent1: DeepImmutable<Color3>, value2: DeepImmutable<Color3>, tangent2: DeepImmutable<Color3>, amount: number): Color3 {
-        var squared = amount * amount;
-        var cubed = amount * squared;
-        var part1 = ((2.0 * cubed) - (3.0 * squared)) + 1.0;
-        var part2 = (-2.0 * cubed) + (3.0 * squared);
-        var part3 = (cubed - (2.0 * squared)) + amount;
-        var part4 = cubed - squared;
+        const squared = amount * amount;
+        const cubed = amount * squared;
+        const part1 = ((2.0 * cubed) - (3.0 * squared)) + 1.0;
+        const part2 = (-2.0 * cubed) + (3.0 * squared);
+        const part3 = (cubed - (2.0 * squared)) + amount;
+        const part4 = cubed - squared;
 
-        var r = (((value1.r * part1) + (value2.r * part2)) + (tangent1.r * part3)) + (tangent2.r * part4);
-        var g = (((value1.g * part1) + (value2.g * part2)) + (tangent1.g * part3)) + (tangent2.g * part4);
-        var b = (((value1.b * part1) + (value2.b * part2)) + (tangent1.b * part3)) + (tangent2.b * part4);
+        const r = (((value1.r * part1) + (value2.r * part2)) + (tangent1.r * part3)) + (tangent2.r * part4);
+        const g = (((value1.g * part1) + (value2.g * part2)) + (tangent1.g * part3)) + (tangent2.g * part4);
+        const b = (((value1.b * part1) + (value2.b * part2)) + (tangent1.b * part3)) + (tangent2.b * part4);
         return new Color3(r, g, b);
     }
 
@@ -1033,17 +1033,17 @@ export class Color4 {
      * @returns the new interpolated Color4
      */
      public static Hermite(value1: DeepImmutable<Color4>, tangent1: DeepImmutable<Color4>, value2: DeepImmutable<Color4>, tangent2: DeepImmutable<Color4>, amount: number): Color4 {
-        var squared = amount * amount;
-        var cubed = amount * squared;
-        var part1 = ((2.0 * cubed) - (3.0 * squared)) + 1.0;
-        var part2 = (-2.0 * cubed) + (3.0 * squared);
-        var part3 = (cubed - (2.0 * squared)) + amount;
-        var part4 = cubed - squared;
+        const squared = amount * amount;
+        const cubed = amount * squared;
+        const part1 = ((2.0 * cubed) - (3.0 * squared)) + 1.0;
+        const part2 = (-2.0 * cubed) + (3.0 * squared);
+        const part3 = (cubed - (2.0 * squared)) + amount;
+        const part4 = cubed - squared;
 
-        var r = (((value1.r * part1) + (value2.r * part2)) + (tangent1.r * part3)) + (tangent2.r * part4);
-        var g = (((value1.g * part1) + (value2.g * part2)) + (tangent1.g * part3)) + (tangent2.g * part4);
-        var b = (((value1.b * part1) + (value2.b * part2)) + (tangent1.b * part3)) + (tangent2.b * part4);
-        var a = (((value1.a * part1) + (value2.a * part2)) + (tangent1.a * part3)) + (tangent2.a * part4);
+        const r = (((value1.r * part1) + (value2.r * part2)) + (tangent1.r * part3)) + (tangent2.r * part4);
+        const g = (((value1.g * part1) + (value2.g * part2)) + (tangent1.g * part3)) + (tangent2.g * part4);
+        const b = (((value1.b * part1) + (value2.b * part2)) + (tangent1.b * part3)) + (tangent2.b * part4);
+        const a = (((value1.a * part1) + (value2.a * part2)) + (tangent1.a * part3)) + (tangent2.a * part4);
         return new Color4(r, g, b, a);
     }    
 
