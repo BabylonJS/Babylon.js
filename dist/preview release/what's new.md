@@ -160,7 +160,7 @@
 
 ### Behaviors
 
-- Added `onTargetFramingAnimationEnd` callback to `FramingBehavior` ([BlakeOne](https://github.com/BlakeOne))
+- Added `onTargetFramingAnimationEndObservable` to `FramingBehavior` ([BlakeOne](https://github.com/BlakeOne))
 - Added `FollowBehavior`, a behavior that makes the assigned mesh hover around a camera, while facing it ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Added `SurfaceMagnetismBehavior`, a behavior that makes the assigned mesh stick on surfaces of other meshes ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Added `DefaultBehavior`, a behavior that will be common to several 3D GUI controls, orchestrating `SixDoFDragBehavior`, `FollowBehavior` and `SurfaceMagnetismBehavior` ([CraigFeldspar](https://github.com/CraigFeldspar))
