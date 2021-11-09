@@ -375,7 +375,6 @@ export class WebGPUEngine extends Engine {
 
     public set snapshotRendering(activate) {
         this._snapshotRendering.enabled = activate;
-        this._snapshotRenderingEnabled = activate; // keep this property in sync
     }
 
     /**
