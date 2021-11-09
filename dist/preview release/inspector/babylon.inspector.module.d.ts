@@ -1713,6 +1713,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     export class AnimationListComponent extends React.Component<IAnimationListComponentProps, IAnimationListComponentState> {
         private _onEditAnimationRequiredObserver;
         private _onEditAnimationUIClosedObserver;
+        private _onDeleteAnimationObserver;
         constructor(props: IAnimationListComponentProps);
         componentWillUnmount(): void;
         render(): JSX.Element | null;
@@ -6459,6 +6460,7 @@ declare module INSPECTOR {
     export class AnimationListComponent extends React.Component<IAnimationListComponentProps, IAnimationListComponentState> {
         private _onEditAnimationRequiredObserver;
         private _onEditAnimationUIClosedObserver;
+        private _onDeleteAnimationObserver;
         constructor(props: IAnimationListComponentProps);
         componentWillUnmount(): void;
         render(): JSX.Element | null;

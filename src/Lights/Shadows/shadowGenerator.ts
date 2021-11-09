@@ -24,6 +24,7 @@ import { _WarnImport } from '../../Misc/devTools';
 import { EffectFallbacks } from '../../Materials/effectFallbacks';
 import { RenderingManager } from '../../Rendering/renderingManager';
 import { DrawWrapper } from "../../Materials/drawWrapper";
+import { UniformBuffer } from "../../Materials/uniformBuffer";
 
 import "../../Shaders/shadowMap.fragment";
 import "../../Shaders/shadowMap.vertex";
@@ -807,6 +808,8 @@ export class ShadowGenerator implements IShadowGenerator {
     protected _defaultTextureMatrix = Matrix.Identity();
     protected _storedUniqueId: Nullable<number>;
     protected _useUBO: boolean;
+    protected _sceneUBOs: UniformBuffer[];
+    protected _currentSceneUBO: UniformBuffer;
 
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
@@ -842,6 +845,11 @@ export class ShadowGenerator implements IShadowGenerator {
         light._shadowGenerator = this;
         this.id = light.id;
         this._useUBO = this._scene.getEngine().supportsUniformBuffers;
+
+        if (this._useUBO) {
+            this._sceneUBOs = [];
+            this._sceneUBOs.push(this._scene.createSceneUniformBuffer(`Scene for Shadow Generator (light "${this._light.name}")`));
+        }
 
         ShadowGenerator._SceneComponentInitialization(this._scene);
 
@@ -920,11 +928,15 @@ export class ShadowGenerator implements IShadowGenerator {
         let engine = this._scene.getEngine();
 
         this._shadowMap.onBeforeBindObservable.add(() => {
+            this._currentSceneUBO = this._scene.getSceneUniformBuffer();
             engine._debugPushGroup?.(`shadow map generation for pass id ${engine.currentRenderPassId}`, 1);
         });
 
         // Record Face Index before render.
         this._shadowMap.onBeforeRenderObservable.add((faceIndex: number) => {
+            if (this._sceneUBOs) {
+                this._scene.setSceneUniformBuffer(this._sceneUBOs[0]);
+            }
             this._currentFaceIndex = faceIndex;
             if (this._filter === ShadowGenerator.FILTER_PCF) {
                 engine.setColorWrite(false);
@@ -939,6 +951,9 @@ export class ShadowGenerator implements IShadowGenerator {
 
         // Blur if required after render.
         this._shadowMap.onAfterUnbindObservable.add(() => {
+            if (this._sceneUBOs) {
+                this._scene.setSceneUniformBuffer(this._currentSceneUBO);
+            }
             this._scene.updateTransformMatrix(); // restore the view/projection matrices of the active camera
 
             if (this._filter === ShadowGenerator.FILTER_PCF) {
@@ -1777,12 +1792,23 @@ export class ShadowGenerator implements IShadowGenerator {
         this._disposeBlurPostProcesses();
     }
 
+    protected _disposeSceneUBOs(): void {
+        if (this._sceneUBOs) {
+            for (const ubo of this._sceneUBOs) {
+                ubo.dispose();
+            }
+            this._sceneUBOs = [];
+        }
+    }
+
     /**
      * Disposes the ShadowGenerator.
      * Returns nothing.
      */
     public dispose(): void {
         this._disposeRTTandPostProcesses();
+
+        this._disposeSceneUBOs();
 
         if (this._light) {
             this._light._shadowGenerator = null;
