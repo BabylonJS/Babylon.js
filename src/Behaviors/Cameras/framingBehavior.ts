@@ -31,6 +31,7 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
     private _elevationReturnWaitTime = 1000;
     private _zoomStopsAnimation = false;
     private _framingTime = 1500;
+    private _onTargetFramingAnimationEnd: Nullable<() => void>;
 
     /**
      * The easing function used by animations
@@ -159,6 +160,20 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
     }
 
     /**
+     * Sets the onTargetFramingAnimationEnd callback
+    */
+    public set onTargetFramingAnimationEnd(onTargetFramingAnimationEnd: Nullable<() => void>) {
+        this._onTargetFramingAnimationEnd = onTargetFramingAnimationEnd;
+    }
+
+    /**
+     * Gets the onTargetFramingAnimationEnd callback
+    */
+    public get onTargetFramingAnimationEnd() {
+        return this._onTargetFramingAnimationEnd;
+    }
+
+    /**
      * Define if the behavior should automatically change the configured
      * camera limits and sensibilities.
      */
@@ -202,7 +217,7 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
 
         this._onMeshTargetChangedObserver = camera.onMeshTargetChangedObservable.add((mesh) => {
             if (mesh) {
-                this.zoomOnMesh(mesh);
+                this.zoomOnMesh(mesh, undefined, this._onTargetFramingAnimationEnd);
             }
         });
 
