@@ -1892,7 +1892,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             }
 
             if (this._vertexBuffer) {
-                this._vertexBuffer.update(this._vertexData);
+                this._vertexBuffer.updateDirectly(this._vertexData, 0, this._particles.length);
             }
         }
 

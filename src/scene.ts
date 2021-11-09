@@ -2191,6 +2191,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public setSceneUniformBuffer(ubo: UniformBuffer): void {
         this._sceneUbo = ubo;
+        this._viewUpdateFlag = -1;
+        this._projectionUpdateFlag = -1;
     }
 
     /**

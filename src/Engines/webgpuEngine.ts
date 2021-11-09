@@ -2141,9 +2141,9 @@ export class WebGPUEngine extends Engine {
 
     /** @hidden */
     public _generateMipmaps(texture: InternalTexture, commandEncoder?: GPUCommandEncoder) {
-        const gpuTexture = texture._hardwareTexture?.underlyingResource;
+        const gpuHardwareTexture = texture._hardwareTexture as Nullable<WebGPUHardwareTexture>;
 
-        if (!gpuTexture) {
+        if (!gpuHardwareTexture) {
             return;
         }
 
@@ -2162,9 +2162,9 @@ export class WebGPUEngine extends Engine {
         }
 
         if (texture.isCube) {
-            this._textureHelper.generateCubeMipmaps(gpuTexture, format, mipmapCount, commandEncoder);
+            this._textureHelper.generateCubeMipmaps(gpuHardwareTexture, format, mipmapCount, commandEncoder);
         } else {
-            this._textureHelper.generateMipmaps(gpuTexture, format, mipmapCount, 0, commandEncoder);
+            this._textureHelper.generateMipmaps(gpuHardwareTexture, format, mipmapCount, 0, commandEncoder);
         }
     }
 
