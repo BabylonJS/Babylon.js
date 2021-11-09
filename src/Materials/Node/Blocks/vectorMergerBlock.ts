@@ -295,10 +295,10 @@ export class VectorMergerBlock extends NodeMaterialBlock {
 
     protected _dumpPropertiesCode() {
         var codeString = super._dumpPropertiesCode();
-        codeString += `${this._codeVariableName}.xSwizzle = ${this.xSwizzle}};\r\n`;
-        codeString += `${this._codeVariableName}.ySwizzle = ${this.ySwizzle}};\r\n`;
-        codeString += `${this._codeVariableName}.zSwizzle = ${this.zSwizzle}};\r\n`;
-        codeString += `${this._codeVariableName}.wSwizzle = ${this.wSwizzle}};\r\n`;
+        codeString += `${this._codeVariableName}.xSwizzle = "${this.xSwizzle}";\r\n`;
+        codeString += `${this._codeVariableName}.ySwizzle = "${this.ySwizzle}";\r\n`;
+        codeString += `${this._codeVariableName}.zSwizzle = "${this.zSwizzle}";\r\n`;
+        codeString += `${this._codeVariableName}.wSwizzle = "${this.wSwizzle}";\r\n`;
 
         return codeString;
     }

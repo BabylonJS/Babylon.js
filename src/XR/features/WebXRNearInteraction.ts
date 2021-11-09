@@ -19,6 +19,8 @@ import { BoundingSphere } from "../../Culling/boundingSphere";
 import { TransformNode } from "../../Meshes/transformNode";
 import { StandardMaterial } from "../../Materials/standardMaterial";
 import { Color3 } from "../../Maths/math.color";
+// side effects
+import "../../Meshes/subMesh.project";
 
 type ControllerData = {
     xrController?: WebXRInputSource;
