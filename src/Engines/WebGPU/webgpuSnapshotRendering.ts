@@ -58,7 +58,7 @@ export class WebGPUSnapshotRendering {
             this._mode = mode;
         }
     }
-    
+
     public endMainRenderPass(): void {
         if (this._record) {
             this._mainPassBundleList.push(this._bundleList.clone());
