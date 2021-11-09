@@ -36,7 +36,7 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
     private _elevationReturnTime = 1500;
     private _elevationReturnWaitTime = 1000;
     private _zoomStopsAnimation = false;
-    private _framingTime = 1500;    
+    private _framingTime = 1500;
 
     /**
      * The easing function used by animations
