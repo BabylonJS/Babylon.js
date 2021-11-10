@@ -47,7 +47,10 @@ IBottomBarComponentState
             this.props.context.clipLength = newClipLength;
 
             this.props.context.onMoveToFrameRequired.notifyObservers(newClipLength);
-            this.props.context.onNewKeyPointRequired.notifyObservers();
+            const keyAlreadyExists = this._getKeyAtFrame(newClipLength) !== null;
+            if (!keyAlreadyExists) {
+                this.props.context.onNewKeyPointRequired.notifyObservers();
+            }
 
             this.setState({clipLength: newClipLength.toFixed(0)});
         });
@@ -57,8 +60,11 @@ IBottomBarComponentState
             this.props.context.clipLength = newClipLength;
 
             this.props.context.onMoveToFrameRequired.notifyObservers(newClipLength);
-            this.props.context.onNewKeyPointRequired.notifyObservers();
-            
+            const keyAlreadyExists = this._getKeyAtFrame(newClipLength) !== null;
+            if (!keyAlreadyExists) {
+                this.props.context.onNewKeyPointRequired.notifyObservers();
+            }
+
             this.props.context.toKey = Math.min(this.props.context.toKey, this.props.context.clipLength);
             this.props.context.onRangeUpdated.notifyObservers();
 
@@ -74,6 +80,16 @@ IBottomBarComponentState
             this.props.context.onClipLengthDecreased.notifyObservers(newClipLength);
         }
         this.setState({clipLength: newClipLength.toFixed(0)});
+    }
+
+    private _getKeyAtFrame(frameNumber : number) {
+        const keys = this.props.context.activeAnimations[0].getKeys();
+        for (let key of keys) {
+            if (Math.floor(frameNumber - key.frame) === 0) {
+                return key;
+            }
+        }
+        return null;
     }
 
     componentWillUnmount() {
