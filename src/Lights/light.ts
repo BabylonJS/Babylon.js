@@ -633,6 +633,9 @@ export abstract class Light extends Node implements ISortableLight {
         SerializationHelper.AppendSerializedAnimations(this, serializationObject);
         serializationObject.ranges = this.serializeAnimationRanges();
 
+        // isEnabled
+        serializationObject.isEnabled = this.isEnabled();
+
         return serializationObject;
     }
 
