@@ -23,3 +23,5 @@ export * from "./Node/index";
 export * from "./effectRenderer";
 export * from "./shadowDepthWrapper";
 export * from "./drawWrapper";
+export * from "./IMaterialPlugin";
+export * from "./materialPluginManager";

@@ -1010,6 +1010,10 @@ export class UniformBuffer {
         this._currentEffectName = undefined as any;
     }
 
+    public getEffect(): Effect {
+        return this._currentEffect;
+    }
+
     /**
      * Disposes the uniform buffer.
      */

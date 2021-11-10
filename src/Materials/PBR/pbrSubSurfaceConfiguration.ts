@@ -14,53 +14,67 @@ import { Scalar } from "../../Maths/math.scalar";
 import { CubeTexture } from "../Textures/cubeTexture";
 import { TmpVectors } from "../../Maths/math.vector";
 import { SubMesh } from "../../Meshes/subMesh";
+import { IMaterialPlugin } from "../IMaterialPlugin";
+import { Constants } from "../../Engines/constants";
+import { MaterialPluginManager } from "../materialPluginManager";
+import { PBRBaseMaterial } from "./pbrBaseMaterial";
+import { MaterialDefines } from "../materialDefines";
 
 declare type Engine = import("../../Engines/engine").Engine;
 declare type Scene = import("../../scene").Scene;
+declare type Material = import("../material").Material;
+
+MaterialPluginManager.RegisterPlugin("subSurface", (material: Material) => {
+    if (material instanceof PBRBaseMaterial) {
+        return new PBRSubSurfaceConfiguration(material);
+    }
+    return null;
+});
 
 /**
  * @hidden
  */
-export interface IMaterialSubSurfaceDefines {
-    SUBSURFACE: boolean;
+class IMaterialSubSurfaceDefines extends MaterialDefines {
+    public SUBSURFACE = false;
 
-    SS_REFRACTION: boolean;
-    SS_REFRACTION_USE_INTENSITY_FROM_TEXTURE: boolean;
-    SS_TRANSLUCENCY: boolean;
-    SS_TRANSLUCENCY_USE_INTENSITY_FROM_TEXTURE: boolean;
-    SS_SCATTERING: boolean;
+    public SS_REFRACTION = false;
+    public SS_REFRACTION_USE_INTENSITY_FROM_TEXTURE = false;
+    public SS_TRANSLUCENCY = false;
+    public SS_TRANSLUCENCY_USE_INTENSITY_FROM_TEXTURE = false;
+    public SS_SCATTERING = false;
 
-    SS_THICKNESSANDMASK_TEXTURE: boolean;
-    SS_THICKNESSANDMASK_TEXTUREDIRECTUV: number;
-    SS_HAS_THICKNESS: boolean;
-    SS_REFRACTIONINTENSITY_TEXTURE: boolean;
-    SS_REFRACTIONINTENSITY_TEXTUREDIRECTUV: number;
-    SS_TRANSLUCENCYINTENSITY_TEXTURE: boolean;
-    SS_TRANSLUCENCYINTENSITY_TEXTUREDIRECTUV: number;
+    public SS_THICKNESSANDMASK_TEXTURE = false;
+    public SS_THICKNESSANDMASK_TEXTUREDIRECTUV = 0;
+    public SS_HAS_THICKNESS = false;
+    public SS_REFRACTIONINTENSITY_TEXTURE = false;
+    public SS_REFRACTIONINTENSITY_TEXTUREDIRECTUV = 0;
+    public SS_TRANSLUCENCYINTENSITY_TEXTURE = false;
+    public SS_TRANSLUCENCYINTENSITY_TEXTUREDIRECTUV = 0;
 
-    SS_REFRACTIONMAP_3D: boolean;
-    SS_REFRACTIONMAP_OPPOSITEZ: boolean;
-    SS_LODINREFRACTIONALPHA: boolean;
-    SS_GAMMAREFRACTION: boolean;
-    SS_RGBDREFRACTION: boolean;
-    SS_LINEARSPECULARREFRACTION: boolean;
-    SS_LINKREFRACTIONTOTRANSPARENCY: boolean;
-    SS_ALBEDOFORREFRACTIONTINT: boolean;
-    SS_ALBEDOFORTRANSLUCENCYTINT: boolean;
-    SS_USE_LOCAL_REFRACTIONMAP_CUBIC: boolean;
-    SS_USE_THICKNESS_AS_DEPTH: boolean;
+    public SS_REFRACTIONMAP_3D = false;
+    public SS_REFRACTIONMAP_OPPOSITEZ = false;
+    public SS_LODINREFRACTIONALPHA = false;
+    public SS_GAMMAREFRACTION = false;
+    public SS_RGBDREFRACTION = false;
+    public SS_LINEARSPECULARREFRACTION = false;
+    public SS_LINKREFRACTIONTOTRANSPARENCY = false;
+    public SS_ALBEDOFORREFRACTIONTINT = false;
+    public SS_ALBEDOFORTRANSLUCENCYTINT = false;
+    public SS_USE_LOCAL_REFRACTIONMAP_CUBIC = false;
+    public SS_USE_THICKNESS_AS_DEPTH = false;
 
-    SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
-    SS_USE_GLTF_TEXTURES: boolean;
-
-    /** @hidden */
-    _areTexturesDirty: boolean;
+    public SS_MASK_FROM_THICKNESS_TEXTURE = false;
+    public SS_USE_GLTF_TEXTURES = false;
 }
+
+const modelDefines = new IMaterialSubSurfaceDefines();
 
 /**
  * Define the code related to the sub surface parameters of the pbr material.
  */
-export class PBRSubSurfaceConfiguration {
+export class PBRSubSurfaceConfiguration implements IMaterialPlugin {
+
+    private _material: PBRBaseMaterial;
 
     private _isRefractionEnabled = false;
     /**
@@ -311,15 +325,13 @@ export class PBRSubSurfaceConfiguration {
         this._internalMarkScenePrePassDirty();
     }
 
-    /**
-     * Instantiate a new instance of sub surface configuration.
-     * @param markAllSubMeshesAsTexturesDirty Callback to flag the material to dirty
-     * @param markScenePrePassDirty Callback to flag the scene as prepass dirty
-     * @param scene The scene
-     */
-    constructor(markAllSubMeshesAsTexturesDirty: () => void, markScenePrePassDirty: () => void, scene: Scene) {
-        this._internalMarkAllSubMeshesAsTexturesDirty = markAllSubMeshesAsTexturesDirty;
-        this._internalMarkScenePrePassDirty = markScenePrePassDirty;
+    constructor(material: PBRBaseMaterial) {
+        this._material = material;
+    }
+
+    public initialize(scene: Scene, dirtyCallbacks: { [code: number]: () => void }): void {
+        this._internalMarkAllSubMeshesAsTexturesDirty = dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
+        this._internalMarkScenePrePassDirty = dirtyCallbacks[Constants.MATERIAL_PrePassDirtyFlag];
         this._scene = scene;
     }
 
@@ -329,7 +341,7 @@ export class PBRSubSurfaceConfiguration {
      * @param scene defines the scene the material belongs to.
      * @returns - boolean indicating that the submesh is ready or not.
      */
-    public isReadyForSubMesh(defines: IMaterialSubSurfaceDefines, scene: Scene): boolean {
+    public isReadyForSubMesh(defines: IMaterialSubSurfaceDefines, scene: Scene, engine: Engine): boolean {
         if (!this._isRefractionEnabled && !this._isTranslucencyEnabled && !this._isScatteringEnabled) {
             return true;
         }
@@ -352,6 +364,16 @@ export class PBRSubSurfaceConfiguration {
         }
 
         return true;
+    }
+
+    public collectDefineNames(names: string[]): void {
+        for (const key of Object.keys(modelDefines)) {
+            if (key[0] === "_") {
+                continue;
+            }
+
+            names.push(key);
+        }
     }
 
     /**
@@ -468,7 +490,7 @@ export class PBRSubSurfaceConfiguration {
      * @param realTimeFiltering defines whether the textures should be filtered on the fly.
      * @param subMesh the submesh to bind data for
     */
-    public hardBindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, isFrozen: boolean, lodBasedMicrosurface: boolean, realTimeFiltering: boolean, subMesh: SubMesh): void {
+    public hardBindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {
         if (!this._isRefractionEnabled && !this._isTranslucencyEnabled && !this._isScatteringEnabled) {
             return;
         }
@@ -490,12 +512,16 @@ export class PBRSubSurfaceConfiguration {
      * @param realTimeFiltering defines whether the textures should be filtered on the fly.
      * @param subMesh the submesh to bind data for
     */
-    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, isFrozen: boolean, lodBasedMicrosurface: boolean, realTimeFiltering: boolean, subMesh: SubMesh): void {
+    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {
         if (!this._isRefractionEnabled && !this._isTranslucencyEnabled && !this._isScatteringEnabled) {
             return;
         }
 
         const defines = subMesh!.materialDefines as unknown as IMaterialSubSurfaceDefines;
+
+        const isFrozen = this._material.isFrozen;
+        const realTimeFiltering = this._material.realTimeFiltering;
+        const lodBasedMicrosurface = defines.LODBASEDMICROSFURACE;
 
         var refractionTexture = this._getRefractionTexture(scene);
 
@@ -723,7 +749,7 @@ export class PBRSubSurfaceConfiguration {
      * @param currentRank defines the current fallback rank.
      * @returns the new fallback rank.
      */
-    public static AddFallbacks(defines: IMaterialSubSurfaceDefines, fallbacks: EffectFallbacks, currentRank: number): number {
+    public addFallbacks(defines: IMaterialSubSurfaceDefines, fallbacks: EffectFallbacks, currentRank: number): number {
         if (defines.SS_SCATTERING) {
             fallbacks.addFallback(currentRank++, "SS_SCATTERING");
         }
@@ -737,7 +763,7 @@ export class PBRSubSurfaceConfiguration {
      * Add the required uniforms to the current list.
      * @param uniforms defines the current uniform list.
      */
-    public static AddUniforms(uniforms: string[]): void {
+    public addUniforms(uniforms: string[]): void {
         uniforms.push(
             "vDiffusionDistance", "vTintColor", "vSubSurfaceIntensity",
             "vRefractionMicrosurfaceInfos", "vRefractionFilteringInfo",
@@ -750,7 +776,7 @@ export class PBRSubSurfaceConfiguration {
      * Add the required samplers to the current list.
      * @param samplers defines the current sampler list.
      */
-    public static AddSamplers(samplers: string[]): void {
+    public addSamplers(samplers: string[]): void {
         samplers.push("thicknessSampler", "refractionIntensitySampler", "translucencyIntensitySampler",
             "refractionSampler", "refractionSamplerLow", "refractionSamplerHigh");
     }
@@ -759,7 +785,7 @@ export class PBRSubSurfaceConfiguration {
      * Add the required uniforms to the current buffer.
      * @param uniformBuffer defines the current uniform buffer.
      */
-    public static PrepareUniformBuffer(uniformBuffer: UniformBuffer): void {
+    public prepareUniformBuffer(uniformBuffer: UniformBuffer): void {
         uniformBuffer.addUniform("vRefractionMicrosurfaceInfos", 4);
         uniformBuffer.addUniform("vRefractionFilteringInfo", 2);
         uniformBuffer.addUniform("vTranslucencyIntensityInfos", 2);

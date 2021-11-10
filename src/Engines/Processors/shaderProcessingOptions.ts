@@ -20,4 +20,5 @@ export interface ProcessingOptions {
     processingContext: Nullable<ShaderProcessingContext>;
     isNDCHalfZRange: boolean;
     useReverseDepthBuffer: boolean;
+    processCodeAfterIncludes?: (shaderType: string, code: string) => string;
 }

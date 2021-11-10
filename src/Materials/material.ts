@@ -25,6 +25,8 @@ import { DrawWrapper } from "./drawWrapper";
 import { MaterialStencilState } from "./materialStencilState";
 import { Scene } from "../scene";
 import { AbstractScene } from "../abstractScene";
+import { MaterialPluginManager } from "./materialPluginManager";
+import { IMaterialPlugin } from "./IMaterialPlugin";
 
 declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
 declare type Mesh = import("../Meshes/mesh").Mesh;
@@ -353,7 +355,7 @@ export class Material implements IAnimatable {
      * Gets a boolean indicating that current material needs to register RTT
      */
     public get hasRenderTargetTextures(): boolean {
-        return false;
+        return MaterialPluginManager.HasRenderTargetTextures(this);
     }
 
     /**
@@ -714,6 +716,15 @@ export class Material implements IAnimatable {
     /** @hidden */
     public _parentContainer: Nullable<AbstractScene> = null;
 
+    /** @hidden */
+    public _dirtyCallbacks: { [code: number]: () => void };
+    /** @hidden */
+    public _plugins: Array<IMaterialPlugin> = [];
+    /** @hidden */
+    public _codeInjectionPoints: { [shaderType: string]: { [codeName: string]: boolean } };
+    
+    protected _defineNamesFromPlugins?: string[];
+
     /**
      * Creates a material instance
      * @param name defines the name of the material
@@ -723,6 +734,12 @@ export class Material implements IAnimatable {
     constructor(name: string, scene: Scene, doNotAdd?: boolean) {
         this.name = name;
         this._scene = scene || EngineStore.LastCreatedScene;
+        this._dirtyCallbacks = {};
+
+        this._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag] = this._markAllSubMeshesAsTexturesDirty.bind(this);
+        this._dirtyCallbacks[Constants.MATERIAL_PrePassDirtyFlag] = this._markAllSubMeshesAsPrePassDirty.bind(this);
+        this._dirtyCallbacks[Constants.MATERIAL_AllDirtyFlag] = this._markAllSubMeshesAsAllDirty.bind(this);
+        // TODO: need to add all dirty callbacks
 
         this.id = name || Tools.RandomId();
         this.uniqueId = this._scene.getUniqueId();
@@ -746,6 +763,9 @@ export class Material implements IAnimatable {
         if (this._scene.useMaterialMeshMap) {
             this.meshMap = {};
         }
+
+        MaterialPluginManager.InjectPlugins(this);
+        this._defineNamesFromPlugins = MaterialPluginManager.CollectDefineNames(this);
     }
 
     /**
@@ -874,7 +894,8 @@ export class Material implements IAnimatable {
      */
     protected get _disableAlphaBlending(): boolean {
         return (this._transparencyMode === Material.MATERIAL_OPAQUE ||
-            this._transparencyMode === Material.MATERIAL_ALPHATEST);
+            this._transparencyMode === Material.MATERIAL_ALPHATEST ||
+            MaterialPluginManager.DisableAlphaBlending(this));
     }
 
     /**
@@ -909,6 +930,10 @@ export class Material implements IAnimatable {
     public needAlphaTesting(): boolean {
         if (this._forceAlphaTest) {
             return true;
+        }
+
+        if (MaterialPluginManager.DisableAlphaBlending(this)) {
+            return false;
         }
 
         return false;
@@ -1440,6 +1465,8 @@ export class Material implements IAnimatable {
 
         // Remove from scene
         scene.removeMaterial(this);
+
+        MaterialPluginManager.Dispose(this, forceDisposeTextures);
 
         if (this._parentContainer) {
             const index = this._parentContainer.materials.indexOf(this);

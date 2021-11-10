@@ -33,6 +33,9 @@ export class ShaderProcessor {
             sourceCode = options.processor.preProcessShaderCode(sourceCode);
         }
         this._ProcessIncludes(sourceCode, options, (codeWithIncludes) => {
+            if (options.processCodeAfterIncludes) {
+                codeWithIncludes = options.processCodeAfterIncludes(options.isFragment ? "fragment" : "vertex", codeWithIncludes);
+            }
             let migratedCode = this._ProcessShaderConversion(codeWithIncludes, options, engine);
             callback(migratedCode);
         });
@@ -43,6 +46,9 @@ export class ShaderProcessor {
             sourceCode = options.processor.preProcessShaderCode(sourceCode);
         }
         this._ProcessIncludes(sourceCode, options, (codeWithIncludes) => {
+            if (options.processCodeAfterIncludes) {
+                codeWithIncludes = options.processCodeAfterIncludes(options.isFragment ? "fragment" : "vertex", codeWithIncludes);
+            }
             let migratedCode = this._ApplyPreProcessing(codeWithIncludes, options, engine);
             callback(migratedCode);
         });

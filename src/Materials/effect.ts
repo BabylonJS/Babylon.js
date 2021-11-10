@@ -73,6 +73,10 @@ export interface IEffectCreationOptions {
      */
     processFinalCode?: Nullable<(shaderType: string, code: string) => string>;
     /**
+     * If provided, will be called two times with the vertex and fragment code so that this code can be updated after the #include have been processed
+     */
+    processCodeAfterIncludes?: Nullable<(shaderType: string, code: string) => string>;
+    /**
      * Is this effect rendering to several color attachments ?
      */
     multiTarget?: boolean;
@@ -226,6 +230,7 @@ export class Effect implements IDisposable {
         this.name = baseName;
         this._key = key;
 
+        let processCodeAfterIncludes: ((shaderType: string, code: string) => string) | undefined = undefined;
         let processFinalCode: Nullable<(shaderType: string, code: string) => string> = null;
 
         if ((<IEffectCreationOptions>attributesNamesOrOptions).attributes) {
@@ -252,6 +257,7 @@ export class Effect implements IDisposable {
             }
 
             processFinalCode = options.processFinalCode ?? null;
+            processCodeAfterIncludes = options.processCodeAfterIncludes ?? undefined;
         } else {
             this._engine = <Engine>engine;
             this.defines = (defines == null ? "" : defines);
@@ -317,6 +323,7 @@ export class Effect implements IDisposable {
             processingContext: this._processingContext,
             isNDCHalfZRange: this._engine.isNDCHalfZRange,
             useReverseDepthBuffer: this._engine.useReverseDepthBuffer,
+            processCodeAfterIncludes,
         };
 
         let shaderCodes: [string | undefined, string | undefined] = [undefined, undefined];
