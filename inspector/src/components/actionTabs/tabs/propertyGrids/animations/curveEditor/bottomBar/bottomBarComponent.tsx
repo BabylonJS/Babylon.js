@@ -24,8 +24,6 @@ IBottomBarComponentState
 > {
     private _onAnimationsLoadedObserver: Nullable<Observer<void>>;
     private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
-    private _onFrameSetObserver: Nullable<Observer<number>>;
-    private _onFrameManuallyEnteredObserver: Nullable<Observer<number>>;
     private _onClipLengthIncreasedObserver: Nullable<Observer<number>>;
     private _onClipLengthDecreasedObserver: Nullable<Observer<number>>;
 
@@ -99,14 +97,6 @@ IBottomBarComponentState
 
         if (this._onActiveAnimationChangedObserver) {
             this.props.context.onActiveAnimationChanged.remove(this._onActiveAnimationChangedObserver)
-        }
-
-        if (this._onFrameSetObserver) {
-            this.props.context.onFrameSet.remove(this._onFrameSetObserver);
-        }
-
-        if (this._onFrameManuallyEnteredObserver) {
-            this.props.context.onFrameManuallyEntered.remove(this._onFrameManuallyEnteredObserver);
         }
 
         if (this._onClipLengthDecreasedObserver) {

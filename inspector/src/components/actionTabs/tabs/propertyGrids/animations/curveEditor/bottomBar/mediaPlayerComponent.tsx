@@ -70,25 +70,6 @@ IMediaPlayerComponentState
     }
 
     private _onPrevKey() {
-        /*if (!this.props.context.animations || !this.props.context.animations.length || this.props.context.activeAnimations.length === 0) {
-            return;
-        }
-
-        let prevKey = -Number.MAX_VALUE;
-
-        for (var animation of this.props.context.activeAnimations) {
-            const keys = animation.getKeys();
-
-            for (var key of keys) {
-                if (key.frame < this.props.context.activeFrame && key.frame > prevKey) {
-                    prevKey = key.frame;
-                }
-            }
-        }
-
-        if (prevKey === -Number.MAX_VALUE) {
-            prevKey = this.props.context.fromKey;
-        }*/
         const prevKey = this.props.context.getPrevKey();
 
         if (prevKey !== null) {
@@ -115,25 +96,6 @@ IMediaPlayerComponentState
     }
 
     private _onNextKey() {
-        /*if (!this.props.context.animations || !this.props.context.animations.length) {
-            return;
-        }
-
-        let nextKey = Number.MAX_VALUE;
-
-        for (var animation of this.props.context.activeAnimations) {
-            const keys = animation.getKeys();
-
-            for (var key of keys) {
-                if (key.frame > this.props.context.activeFrame && key.frame < nextKey) {
-                    nextKey = key.frame;
-                }
-            }
-        }
-
-        if (nextKey === Number.MAX_VALUE) {
-            nextKey = this.props.context.toKey;
-        }*/
         const nextKey = this.props.context.getNextKey();
 
         if (nextKey !== null) {
