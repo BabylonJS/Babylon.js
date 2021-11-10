@@ -1238,6 +1238,9 @@ export class Camera extends Node {
         SerializationHelper.AppendSerializedAnimations(this, serializationObject);
         serializationObject.ranges = this.serializeAnimationRanges();
 
+        // isEnabled
+        serializationObject.isEnabled = this.isEnabled();
+
         return serializationObject;
     }
 
