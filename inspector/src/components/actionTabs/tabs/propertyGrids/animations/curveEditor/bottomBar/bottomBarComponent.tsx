@@ -42,18 +42,6 @@ IBottomBarComponentState
             this.forceUpdate();
         });
 
-        this._onFrameSetObserver = this.props.context.onFrameSet.add((newFrameValue) => {
-            this.props.context.clipLength = this._computeClipLengthFromKeys();
-
-            this.setState({clipLength: this.props.context.clipLength.toFixed(0)});
-        });
-
-        this._onFrameManuallyEnteredObserver = this.props.context.onFrameManuallyEntered.add((newFrameValue) => {
-            this.props.context.clipLength = this._computeClipLengthFromKeys();
-
-            this.setState({clipLength: this.props.context.clipLength.toFixed(0)});
-        });
-
         this._onClipLengthIncreasedObserver = this.props.context.onClipLengthIncreased.add((newClipLength) => {
             // New clip length is greater than current clip length: add a key frame at the new clip length location with the same value as the previous frame
             this.props.context.clipLength = newClipLength;
@@ -76,20 +64,6 @@ IBottomBarComponentState
 
             this.setState({clipLength: newClipLength.toFixed(0)});
         });
-    }
-    
-    /*private _renderMaxFrame() {
-        const keys = this.props.context.activeAnimations[0].getKeys();
-        return Math.round(keys[keys.length - 1].frame);
-    }*/
-    
-    private _computeClipLengthFromKeys() {
-        if (this.props.context.activeAnimations.length > 0) {
-            const keys = this.props.context.activeAnimations[0].getKeys();
-            return Math.round(keys[keys.length - 1].frame);
-        } else {
-            return this.props.context.referenceMaxFrame;
-        }
     }
     
     private _changeClipLength(newClipLength : number) {
@@ -136,7 +110,6 @@ IBottomBarComponentState
                 {
                     this.props.context.activeAnimations.length > 0 &&
                     <div id="bottom-bar-total">
-                        {/*this._renderMaxFrame()*/}
                         <TextInputComponent 
                         isNumber={true}
                         value={this.state.clipLength}
