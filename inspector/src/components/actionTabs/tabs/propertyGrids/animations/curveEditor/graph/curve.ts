@@ -99,7 +99,7 @@ export class Curve {
         const keys = this.keys;
         let inTangent = keys[keyIndex].inTangent;
 
-        if (inTangent === undefined) {
+        if (inTangent === undefined && this.hasDefinedInTangent(keyIndex)) {
             inTangent = this.evaluateInTangent(keyIndex);
         }
 
@@ -114,11 +114,19 @@ export class Curve {
 
         let outTangent = keys[keyIndex].outTangent;
 
-        if (outTangent === undefined) {
+        if (outTangent === undefined && this.hasDefinedOutTangent(keyIndex)) {
             outTangent = this.evaluateOutTangent(keyIndex);
         }
 
         return outTangent;
+    }
+
+    public hasDefinedOutTangent(keyIndex: number) {
+        const keys = this.keys;
+        if (keyIndex === this.keys.length - 1) return false;
+        const prevFrame = keys[keyIndex].frame;
+        const currentFrame = keys[keyIndex + 1].frame;
+        return prevFrame !== currentFrame;
     }
 
     public evaluateOutTangent(keyIndex: number) {
@@ -126,6 +134,14 @@ export class Curve {
         const prevFrame = keys[keyIndex].frame;
         const currentFrame = keys[keyIndex + 1].frame;
         return (keys[keyIndex + 1].value - keys[keyIndex].value) / (currentFrame - prevFrame);
+    }
+
+    public hasDefinedInTangent(keyIndex: number) {
+        if (keyIndex === 0) return false;
+        const keys = this.keys;
+        const prevFrame = keys[keyIndex - 1].frame;
+        const currentFrame = keys[keyIndex].frame;
+        return prevFrame !== currentFrame;
     }
 
     public evaluateInTangent(keyIndex: number) {
@@ -138,7 +154,9 @@ export class Curve {
     public storeDefaultInTangent(keyIndex: number) {
         const keys = this.keys;
         const animationKeys = this.animation.getKeys();
-        keys[keyIndex].inTangent = this.evaluateInTangent(keyIndex);
+        if (this.hasDefinedInTangent(keyIndex)) {
+            keys[keyIndex].inTangent = this.evaluateInTangent(keyIndex);
+        }
         
         if (this.property) {
             if (!animationKeys[keyIndex].inTangent) {
@@ -154,7 +172,9 @@ export class Curve {
     public storeDefaultOutTangent(keyIndex: number) {
         const keys = this.keys;
         const animationKeys = this.animation.getKeys();
-        keys[keyIndex].outTangent = this.evaluateOutTangent(keyIndex);
+        if (this.hasDefinedOutTangent(keyIndex)) {
+            keys[keyIndex].outTangent = this.evaluateOutTangent(keyIndex);
+        }
 
         if (this.property) {
             if (!animationKeys[keyIndex].outTangent) {
@@ -172,7 +192,6 @@ export class Curve {
         keys[keyId].inTangent = slope;
         
         let animationKeys = this.animation.getKeys();
-
         if (this.property) {
             if (!animationKeys[keyId].inTangent) {
                 animationKeys[keyId].inTangent = this.tangentBuilder!();
