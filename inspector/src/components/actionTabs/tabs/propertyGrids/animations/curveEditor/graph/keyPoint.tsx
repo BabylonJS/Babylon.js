@@ -1,3 +1,4 @@
+import { Animation } from "babylonjs/Animations/animation";
 import { AnimationKeyInterpolation } from "babylonjs/Animations/animationKey";
 import { TmpVectors, Vector2 } from "babylonjs/Maths/math.vector";
 import { Observer } from "babylonjs/Misc/observable";
@@ -630,6 +631,9 @@ IKeyPointComponentState
             return null;
         }
 
+        const animationType = this.props.curve.animation.dataType;
+        const isColorAnimation = animationType === Animation.ANIMATIONTYPE_COLOR3 || animationType === Animation.ANIMATIONTYPE_COLOR4;
+
         const svgImageIcon = this.state.selectedState === SelectionState.Selected ? keySelected : (this.state.selectedState === SelectionState.Siblings ? keyActive : keyInactive);
         const keys = this.props.curve.keys;
 
@@ -676,7 +680,7 @@ IKeyPointComponentState
                 this.state.selectedState === SelectionState.Selected && 
                 <g>
                     {
-                        this.props.keyId !== 0 && !hasStepTangentIn &&
+                        this.props.keyId !== 0 && !hasStepTangentIn && !isColorAnimation &&
                         <>
                             <line
                                 x1={0}
@@ -701,7 +705,7 @@ IKeyPointComponentState
                         </>
                     }
                     {
-                        this.props.keyId !== keys.length - 1 && !hasStepTangentOut &&
+                        this.props.keyId !== keys.length - 1 && !hasStepTangentOut && !isColorAnimation &&
                         <>
                             <line
                                 x1={0}
