@@ -243,12 +243,9 @@ export class PBRMaterial extends PBRBaseMaterial {
      * Stores the refracted light information in a texture.
      */
     public get refractionTexture(): Nullable<BaseTexture> {
-        return this.subSurface?.refractionTexture ?? null;
+        return this.subSurface.refractionTexture;
     }
     public set refractionTexture(value: Nullable<BaseTexture>) {
-        if (!this.subSurface) {
-            return;
-        }
         this.subSurface.refractionTexture = value;
         if (value) {
             this.subSurface.isRefractionEnabled = true;
@@ -309,24 +306,20 @@ export class PBRMaterial extends PBRBaseMaterial {
      * From dielectric fresnel rules: F0 = square((iorT - iorI) / (iorT + iorI))
      */
     public get indexOfRefraction(): number {
-        return this.subSurface?.indexOfRefraction ?? 1.5;
+        return this.subSurface.indexOfRefraction;
     }
     public set indexOfRefraction(value: number) {
-        if (this.subSurface) {
-            this.subSurface.indexOfRefraction = value;
-        }
+        this.subSurface.indexOfRefraction = value;
     }
 
     /**
      * Controls if refraction needs to be inverted on Y. This could be useful for procedural texture.
      */
     public get invertRefractionY(): boolean {
-        return this.subSurface?.invertRefractionY ?? false;
+        return this.subSurface.invertRefractionY;
     }
     public set invertRefractionY(value: boolean) {
-        if (this.subSurface) {
-            this.subSurface.invertRefractionY = value;
-        }
+        this.subSurface.invertRefractionY = value;
     }
 
     /**
@@ -334,12 +327,9 @@ export class PBRMaterial extends PBRBaseMaterial {
      * Materials half opaque for instance using refraction could benefit from this control.
      */
     public get linkRefractionWithTransparency(): boolean {
-        return this.subSurface?.linkRefractionWithTransparency ?? false;
+        return this.subSurface.linkRefractionWithTransparency;
     }
     public set linkRefractionWithTransparency(value: boolean) {
-        if (!this.subSurface) {
-            return;
-        }
         this.subSurface.linkRefractionWithTransparency = value;
         if (value) {
             this.subSurface.isRefractionEnabled = true;
@@ -787,7 +777,7 @@ export class PBRMaterial extends PBRBaseMaterial {
         this.anisotropy.copyTo(clone.anisotropy);
         this.brdf.copyTo(clone.brdf);
         this.sheen.copyTo(clone.sheen);
-        //this.subSurface.copyTo(clone.subSurface);
+        this.subSurface.copyTo(clone.subSurface);
 
         return clone;
     }
@@ -805,7 +795,7 @@ export class PBRMaterial extends PBRBaseMaterial {
         serializationObject.anisotropy = this.anisotropy.serialize();
         serializationObject.brdf = this.brdf.serialize();
         serializationObject.sheen = this.sheen.serialize();
-        //serializationObject.subSurface = this.subSurface.serialize();
+        serializationObject.subSurface = this.subSurface.serialize();
 
         return serializationObject;
     }
@@ -835,9 +825,9 @@ export class PBRMaterial extends PBRBaseMaterial {
         if (source.sheen) {
             material.sheen.parse(source.sheen, scene, rootUrl);
         }
-        /*if (source.subSurface) {
+        if (source.subSurface) {
             material.subSurface.parse(source.subSurface, scene, rootUrl);
-        }*/
+        }
         return material;
     }
 }
