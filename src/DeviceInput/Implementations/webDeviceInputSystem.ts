@@ -43,7 +43,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     private _wheelEventName: string;
 
     private _mouseId = -1;
-    private _isUsingFirefox = navigator.userAgent.indexOf("Firefox") !== -1;
+    private _isUsingFirefox = navigator && navigator.userAgent && navigator.userAgent.indexOf("Firefox") !== -1;
 
     // Array to store active Pointer ID values; prevents issues with negative pointerIds
     private _activeTouchIds: Array<number> = [];
