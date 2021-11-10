@@ -3,3 +3,4 @@ export * from "./pbrBaseSimpleMaterial";
 export * from "./pbrMaterial";
 export * from "./pbrMetallicRoughnessMaterial";
 export * from "./pbrSpecularGlossinessMaterial";
+export * from "./pbrSubSurfaceConfiguration";

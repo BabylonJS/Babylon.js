@@ -14,7 +14,6 @@ import { IMaterialClearCoatDefines, PBRClearCoatConfiguration } from "./pbrClear
 import { IMaterialAnisotropicDefines, PBRAnisotropicConfiguration } from "./pbrAnisotropicConfiguration";
 import { IMaterialBRDFDefines, PBRBRDFConfiguration } from "./pbrBRDFConfiguration";
 import { IMaterialSheenDefines, PBRSheenConfiguration } from "./pbrSheenConfiguration";
-import { IMaterialSubSurfaceDefines, PBRSubSurfaceConfiguration } from "./pbrSubSurfaceConfiguration";
 import { PrePassConfiguration } from "../prePassConfiguration";
 import { Color3, TmpColors } from '../../Maths/math.color';
 import { Scalar } from "../../Maths/math.scalar";
@@ -41,6 +40,7 @@ import "../../Shaders/pbr.vertex";
 
 import { EffectFallbacks } from '../effectFallbacks';
 import { IMaterialDetailMapDefines, DetailMapConfiguration } from '../material.detailMapConfiguration';
+import { MaterialPluginManager } from "../materialPluginManager";
 
 declare type PrePassRenderer = import("../../Rendering/prePassRenderer").PrePassRenderer;
 
@@ -56,7 +56,6 @@ export class PBRMaterialDefines extends MaterialDefines
     IMaterialAnisotropicDefines,
     IMaterialBRDFDefines,
     IMaterialSheenDefines,
-    IMaterialSubSurfaceDefines,
     IMaterialDetailMapDefines {
     public PBR = true;
 
@@ -284,47 +283,26 @@ export class PBRMaterialDefines extends MaterialDefines
     public SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE = false;
     public SHEEN_TEXTURE_ROUGHNESS_IDENTICAL = false;
 
-    public SUBSURFACE = false;
-
-    public SS_REFRACTION = false;
-    public SS_REFRACTION_USE_INTENSITY_FROM_TEXTURE = false;
-    public SS_TRANSLUCENCY = false;
-    public SS_TRANSLUCENCY_USE_INTENSITY_FROM_TEXTURE = false;
-    public SS_SCATTERING = false;
-
-    public SS_THICKNESSANDMASK_TEXTURE = false;
-    public SS_THICKNESSANDMASK_TEXTUREDIRECTUV = 0;
-    public SS_HAS_THICKNESS = false;
-    public SS_REFRACTIONINTENSITY_TEXTURE = false;
-    public SS_REFRACTIONINTENSITY_TEXTUREDIRECTUV = 0;
-    public SS_TRANSLUCENCYINTENSITY_TEXTURE = false;
-    public SS_TRANSLUCENCYINTENSITY_TEXTUREDIRECTUV = 0;
-
-    public SS_REFRACTIONMAP_3D = false;
-    public SS_REFRACTIONMAP_OPPOSITEZ = false;
-    public SS_LODINREFRACTIONALPHA = false;
-    public SS_GAMMAREFRACTION = false;
-    public SS_RGBDREFRACTION = false;
-    public SS_LINEARSPECULARREFRACTION = false;
-    public SS_LINKREFRACTIONTOTRANSPARENCY = false;
-    public SS_ALBEDOFORREFRACTIONTINT = false;
-    public SS_ALBEDOFORTRANSLUCENCYTINT = false;
-    public SS_USE_LOCAL_REFRACTIONMAP_CUBIC = false;
-    public SS_USE_THICKNESS_AS_DEPTH = false;
-
-    public SS_MASK_FROM_THICKNESS_TEXTURE = false;
-    public SS_USE_GLTF_TEXTURES = false;
-
     public UNLIT = false;
 
     public DEBUGMODE = 0;
 
+    protected _keysFromPlugins?: string[];
+
     /**
      * Initializes the PBR Material defines.
      */
-    constructor() {
+    constructor(keysFromPlugins?: string[]) {
         super();
+        this._keysFromPlugins = keysFromPlugins;
         this.rebuild();
+    }
+
+    public rebuild() {
+        super.rebuild();
+        if (this._keysFromPlugins) {
+            this._keys.push(...this._keysFromPlugins);
+        }
     }
 
     /**
@@ -939,10 +917,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      */
     public readonly sheen = new PBRSheenConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
 
-    /**
-     * Defines the SubSurface parameters for the material.
-     */
-    public readonly subSurface: PBRSubSurfaceConfiguration;
+    protected _subSurface: any;
 
     /**
      * Defines additional PrePass parameters for the material.
@@ -975,13 +950,13 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 this._renderTargets.push(<RenderTargetTexture>this._reflectionTexture);
             }
 
-            this.subSurface.fillRenderTargetTextures(this._renderTargets);
+            MaterialPluginManager.FillRenderTargetTextures(this, this._renderTargets);
 
             return this._renderTargets;
         };
 
         this._environmentBRDFTexture = GetEnvironmentBRDFTexture(scene);
-        this.subSurface = new PBRSubSurfaceConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this), this._markScenePrePassDirty.bind(this), scene);
+        this._subSurface = (this as any).subSurface;
         this.prePassConfiguration = new PrePassConfiguration();
     }
 
@@ -993,7 +968,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             return true;
         }
 
-        return this.subSurface.hasRenderTargetTextures();
+        return MaterialPluginManager.HasRenderTargetTextures(this);
     }
 
     /**
@@ -1026,15 +1001,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     }
 
     /**
-     * Returns true if alpha blending should be disabled.
-     */
-    protected get _disableAlphaBlending(): boolean {
-        return (this.subSurface.disableAlphaBlending ||
-            this._transparencyMode === PBRBaseMaterial.PBRMATERIAL_OPAQUE ||
-            this._transparencyMode === PBRBaseMaterial.PBRMATERIAL_ALPHATEST);
-    }
-
-    /**
      * Specifies whether or not this material should be rendered in alpha blend mode.
      */
     public needAlphaBlending(): boolean {
@@ -1053,7 +1019,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             return true;
         }
 
-        if (this.subSurface.disableAlphaBlending) {
+        if (MaterialPluginManager.DisableAlphaBlending(this)) {
             return false;
         }
 
@@ -1096,7 +1062,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         if (!subMesh.materialDefines) {
-            subMesh.materialDefines = new PBRMaterialDefines();
+            subMesh.materialDefines = new PBRMaterialDefines(this._defineNamesFromPlugins);
         }
 
         const defines = <PBRMaterialDefines>subMesh.materialDefines;
@@ -1196,7 +1162,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             }
         }
 
-        if (!this.subSurface.isReadyForSubMesh(defines, scene) ||
+        if (!MaterialPluginManager.IsReadyForSubMesh(this, defines, scene, engine) ||
             !this.clearCoat.isReadyForSubMesh(defines, scene, engine, this._disableBumpMap) ||
             !this.sheen.isReadyForSubMesh(defines, scene) ||
             !this.anisotropy.isReadyForSubMesh(defines, scene) ||
@@ -1304,8 +1270,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         fallbackRank = PBRClearCoatConfiguration.AddFallbacks(defines, fallbacks, fallbackRank);
+        fallbackRank = MaterialPluginManager.AddFallbacks(this, defines, fallbacks, fallbackRank);
         fallbackRank = PBRAnisotropicConfiguration.AddFallbacks(defines, fallbacks, fallbackRank);
-        fallbackRank = PBRSubSurfaceConfiguration.AddFallbacks(defines, fallbacks, fallbackRank);
+        fallbackRank = PBRAnisotropicConfiguration.AddFallbacks(defines, fallbacks, fallbackRank);
         fallbackRank = PBRSheenConfiguration.AddFallbacks(defines, fallbacks, fallbackRank);
 
         if (defines.ENVIRONMENTBRDF) {
@@ -1418,11 +1385,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         var uniformBuffers = ["Material", "Scene", "Mesh"];
 
+        MaterialPluginManager.AddUniforms(this, uniforms);
+        MaterialPluginManager.AddSamplers(this, samplers);
+        
         DetailMapConfiguration.AddUniforms(uniforms);
         DetailMapConfiguration.AddSamplers(samplers);
-
-        PBRSubSurfaceConfiguration.AddUniforms(uniforms);
-        PBRSubSurfaceConfiguration.AddSamplers(samplers);
 
         PBRClearCoatConfiguration.AddUniforms(uniforms);
         PBRClearCoatConfiguration.AddSamplers(samplers);
@@ -1467,6 +1434,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             onError: onError,
             indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS },
             processFinalCode: csnrOptions.processFinalCode,
+            processCodeAfterIncludes: MaterialPluginManager.InjectCustomCode(this),
             multiTarget: defines.PREPASS
         }, engine);
     }
@@ -1777,8 +1745,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         // External config
+        MaterialPluginManager.PrepareDefines(this, defines, scene);
         this.detailMap.prepareDefines(defines, scene);
-        this.subSurface.prepareDefines(defines, scene);
         this.clearCoat.prepareDefines(defines, scene);
         this.anisotropy.prepareDefines(defines, mesh, scene);
         this.brdf.prepareDefines(defines);
@@ -1801,7 +1769,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             ...options
         };
 
-        const defines = new PBRMaterialDefines();
+        const defines = new PBRMaterialDefines(this._defineNamesFromPlugins);
         const effect = this._prepareEffect(mesh, defines, undefined, undefined, localOptions.useInstances, localOptions.clipPlane, mesh.hasThinInstances)!;
         if (this._onEffectCreatedObservable) {
             onCreatedEffectParameters.effect = effect;
@@ -1872,7 +1840,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         PBRClearCoatConfiguration.PrepareUniformBuffer(ubo);
         PBRAnisotropicConfiguration.PrepareUniformBuffer(ubo);
         PBRSheenConfiguration.PrepareUniformBuffer(ubo);
-        PBRSubSurfaceConfiguration.PrepareUniformBuffer(ubo);
+        MaterialPluginManager.PrepareUniformBuffer(this, ubo);
         DetailMapConfiguration.PrepareUniformBuffer(ubo);
 
         ubo.addUniform("vSphericalL00", 3);
@@ -1909,9 +1877,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 needFlag = true;
             }
 
-            if (this.subSurface.unbind(this._activeEffect)) {
-                needFlag = true;
-            }
+            needFlag = needFlag || MaterialPluginManager.Unbind(this, this._activeEffect);
 
             if (needFlag) {
                 this._markAllSubMeshesAsTexturesDirty();
@@ -1952,7 +1918,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         // Binding unconditionally
         this._uniformBuffer.bindToEffect(effect, "Material");
 
-        this.subSurface.hardBindForSubMesh(this._uniformBuffer, scene, engine, this.isFrozen, defines.LODBASEDMICROSFURACE, this.realTimeFiltering, subMesh);
+        MaterialPluginManager.HardBindForSubMesh(this, this._uniformBuffer, scene, engine, subMesh);
         this.prePassConfiguration.bindForSubMesh(this._activeEffect, scene, mesh, world, this.isFrozen);
 
         // Normal Matrix
@@ -2105,7 +2071,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     TmpColors.Color3[0].g = (this._roughness === undefined || this._roughness === null) ? 1 : this._roughness;
                     ubo.updateColor4("vReflectivityColor", TmpColors.Color3[0], 1);
 
-                    const ior = this.subSurface.indexOfRefraction;
+                    const ior = this._subSurface.indexOfRefraction ?? 1.5;
                     const outside_ior = 1; // consider air as clear coat and other layers would remap in the shader.
 
                     // We are here deriving our default reflectance from a common value for none metallic surface.
@@ -2125,7 +2091,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                 ubo.updateColor3("vEmissiveColor", MaterialFlags.EmissiveTextureEnabled ? this._emissiveColor : Color3.BlackReadOnly);
                 ubo.updateColor3("vReflectionColor", this._reflectionColor);
-                if (!defines.SS_REFRACTION && this.subSurface.linkRefractionWithTransparency) {
+                if (!defines.SS_REFRACTION && this._subSurface?.linkRefractionWithTransparency) {
                     ubo.updateColor4("vAlbedoColor", this._albedoColor, 1);
                 }
                 else {
@@ -2220,8 +2186,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 this.getScene().depthPeelingRenderer!.bind(effect);
             }
 
+            MaterialPluginManager.BindForSubMesh(this, this._uniformBuffer, scene, engine, subMesh);
             this.detailMap.bindForSubMesh(ubo, scene, this.isFrozen);
-            this.subSurface.bindForSubMesh(ubo, scene, engine, this.isFrozen, defines.LODBASEDMICROSFURACE, this.realTimeFiltering, subMesh);
             this.clearCoat.bindForSubMesh(ubo, scene, engine, this._disableBumpMap, this.isFrozen, this._invertNormalMapX, this._invertNormalMapY, subMesh);
             this.anisotropy.bindForSubMesh(ubo, scene, this.isFrozen);
             this.sheen.bindForSubMesh(ubo, scene, this.isFrozen, subMesh);
@@ -2311,8 +2277,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             results.push(this._lightmapTexture);
         }
 
+        MaterialPluginManager.GetAnimatables(this, results);
         this.detailMap.getAnimatables(results);
-        this.subSurface.getAnimatables(results);
         this.clearCoat.getAnimatables(results);
         this.sheen.getAnimatables(results);
         this.anisotropy.getAnimatables(results);
@@ -2387,8 +2353,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             activeTextures.push(this._lightmapTexture);
         }
 
+        MaterialPluginManager.GetActiveTextures(this, activeTextures);
         this.detailMap.getActiveTextures(activeTextures);
-        this.subSurface.getActiveTextures(activeTextures);
         this.clearCoat.getActiveTextures(activeTextures);
         this.sheen.getActiveTextures(activeTextures);
         this.anisotropy.getActiveTextures(activeTextures);
@@ -2450,8 +2416,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             return true;
         }
 
-        return this.detailMap.hasTexture(texture) ||
-            this.subSurface.hasTexture(texture) ||
+        return MaterialPluginManager.HasTexture(this, texture) ||
+            this.detailMap.hasTexture(texture) ||
             this.clearCoat.hasTexture(texture) ||
             this.sheen.hasTexture(texture) ||
             this.anisotropy.hasTexture(texture);
@@ -2462,7 +2428,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * @param prePassRenderer defines the prepass renderer to setup
      */
     public setPrePassRenderer(prePassRenderer: PrePassRenderer): boolean {
-        if (this.subSurface.isScatteringEnabled) {
+        if (this._subSurface?.isScatteringEnabled) {
             let subSurfaceConfiguration = this.getScene().enableSubSurfaceForPrePass();
             if (subSurfaceConfiguration) {
                 subSurfaceConfiguration.enabled = true;
@@ -2500,7 +2466,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         this.detailMap.dispose(forceDisposeTextures);
-        this.subSurface.dispose(forceDisposeTextures);
         this.clearCoat.dispose(forceDisposeTextures);
         this.sheen.dispose(forceDisposeTextures);
         this.anisotropy.dispose(forceDisposeTextures);

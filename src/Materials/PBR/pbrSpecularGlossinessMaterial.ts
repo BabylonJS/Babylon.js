@@ -88,7 +88,7 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
         this.anisotropy.copyTo(clone.anisotropy);
         this.brdf.copyTo(clone.brdf);
         this.sheen.copyTo(clone.sheen);
-        this.subSurface.copyTo(clone.subSurface);
+        //this.subSurface.copyTo(clone.subSurface);
 
         return clone;
     }
@@ -104,7 +104,7 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
         serializationObject.anisotropy = this.anisotropy.serialize();
         serializationObject.brdf = this.brdf.serialize();
         serializationObject.sheen = this.sheen.serialize();
-        serializationObject.subSurface = this.subSurface.serialize();
+        //serializationObject.subSurface = this.subSurface.serialize();
 
         return serializationObject;
     }
@@ -126,9 +126,9 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
         if (source.sheen) {
             material.sheen.parse(source.sheen, scene, rootUrl);
         }
-        if (source.subSurface) {
+        /*if (source.subSurface) {
             material.subSurface.parse(source.subSurface, scene, rootUrl);
-        }
+        }*/
         return material;
     }
 }
