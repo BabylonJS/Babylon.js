@@ -43,6 +43,7 @@ import { IMaterialDetailMapDefines, DetailMapConfiguration } from '../material.d
 import { MaterialPluginManager } from "../materialPluginManager";
 
 declare type PrePassRenderer = import("../../Rendering/prePassRenderer").PrePassRenderer;
+declare type PBRSubSurfaceConfiguration = import("./pbrSubSurfaceConfiguration").PBRSubSurfaceConfiguration;
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -917,7 +918,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      */
     public readonly sheen = new PBRSheenConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
 
-    protected _subSurface: any;
+    /**
+     * Defines the SubSurface parameters for the material.
+     */
+    public readonly subSurface: PBRSubSurfaceConfiguration | undefined;
 
     /**
      * Defines additional PrePass parameters for the material.
@@ -956,7 +960,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         };
 
         this._environmentBRDFTexture = GetEnvironmentBRDFTexture(scene);
-        this._subSurface = (this as any).subSurface;
+        //this._subSurface = (this as any).subSurface;
         this.prePassConfiguration = new PrePassConfiguration();
     }
 
@@ -2071,7 +2075,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     TmpColors.Color3[0].g = (this._roughness === undefined || this._roughness === null) ? 1 : this._roughness;
                     ubo.updateColor4("vReflectivityColor", TmpColors.Color3[0], 1);
 
-                    const ior = this._subSurface.indexOfRefraction ?? 1.5;
+                    const ior = this.subSurface?.indexOfRefraction ?? 1.5;
                     const outside_ior = 1; // consider air as clear coat and other layers would remap in the shader.
 
                     // We are here deriving our default reflectance from a common value for none metallic surface.
@@ -2091,7 +2095,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                 ubo.updateColor3("vEmissiveColor", MaterialFlags.EmissiveTextureEnabled ? this._emissiveColor : Color3.BlackReadOnly);
                 ubo.updateColor3("vReflectionColor", this._reflectionColor);
-                if (!defines.SS_REFRACTION && this._subSurface?.linkRefractionWithTransparency) {
+                if (!defines.SS_REFRACTION && this.subSurface?.linkRefractionWithTransparency) {
                     ubo.updateColor4("vAlbedoColor", this._albedoColor, 1);
                 }
                 else {
@@ -2428,7 +2432,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * @param prePassRenderer defines the prepass renderer to setup
      */
     public setPrePassRenderer(prePassRenderer: PrePassRenderer): boolean {
-        if (this._subSurface?.isScatteringEnabled) {
+        if (this.subSurface?.isScatteringEnabled) {
             let subSurfaceConfiguration = this.getScene().enableSubSurfaceForPrePass();
             if (subSurfaceConfiguration) {
                 subSurfaceConfiguration.enabled = true;
