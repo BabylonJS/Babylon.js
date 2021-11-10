@@ -921,7 +921,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     /**
      * Defines the SubSurface parameters for the material.
      */
-    public readonly subSurface: PBRSubSurfaceConfiguration | undefined;
+    public readonly subSurface: PBRSubSurfaceConfiguration;
 
     /**
      * Defines additional PrePass parameters for the material.
