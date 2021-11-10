@@ -938,11 +938,10 @@ export class Tools {
      * @param url the input url
      * @return the absolute url
      */
-    public static GetAbsoluteUrl(url: string): string {
-        const a = document.createElement("a");
-        a.href = url;
-        return a.href;
-    }
+    public static GetAbsoluteUrl: (url: string) => string =
+        (typeof document === "object") ? (url) => { const a = document.createElement("a"); a.href = url; return a.href; } :
+        (typeof URL === "function") ? (url) => new URL(url, location.origin).href :
+        (url) => `${location.origin}/${url}`;
 
     // Logs
     /**
