@@ -38,7 +38,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         });
 
         this.props.globalState.onGizmoUpdateRequireObservable.add(() => {
-             this.updateGizmo();
+            this.updateGizmo();
         })
 
     }
@@ -53,16 +53,29 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         const selectedGuiNodes = this.props.globalState.workbench.selectedGuiNodes;
         if (selectedGuiNodes.length > 0) {
             const node = selectedGuiNodes[0];
+            let size = this.props.globalState.guiTexture.getSize();
 
-            var ox = node.leftInPixels;
-            var oy = node.topInPixels;
+            var ox = node._currentMeasure.left + (-size.width / 2) + (node._currentMeasure.width * node.scaleX / 2);
+            var oy = node._currentMeasure.top + (-size.height / 2) + (node._currentMeasure.height * node.scaleY / 2);
 
+            //var ox = node._currentMeasure.left - node._currentMeasure.width / 2;
+            //var oy = node._currentMeasure.top  - node._currentMeasure.height / 2;
+
+            // var ox = node.leftInPixels;
+            //var oy = node.topInPixels;
+
+            console.log("x:" + ox);
+            console.log("y:" + oy);
+
+
+
+            //#5CIRDF
             let startingPositions = [new Vector3(ox, 0, oy),
             new Vector3(ox, 0, oy),
             new Vector3(ox, 0, oy),
             new Vector3(ox, 0, oy),];
 
-            let size = this.props.globalState.guiTexture.getSize();
+
             //calcualte allignments
             let offsetX = 0;
             let offsetY = 0;
@@ -103,48 +116,59 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
 
             let index = 0;
             this.scalePoints.forEach(scalePoint => {
-                    //we get the corner of the control with rotation 0
-                    let res = startingPositions[index];
-                    res.x += offsetX;
-                    res.z += offsetY;
+                //we get the corner of the control with rotation 0
+                let res = startingPositions[index];
+                res.x += offsetX;
+                res.z += offsetY;
 
-                    let result = new Vector2(res.x, res.z);
-                    let m2d = Matrix2D.Identity();
-                    let translateBack = Matrix2D.Identity();
-                    let translateTo = Matrix2D.Identity();
-                    let resultMatrix = Matrix2D.Identity();
+                let result = new Vector2(res.x, res.z);
+                let m2d = Matrix2D.Identity();
+                let m2dP = Matrix2D.Identity();
+                let translateBack = Matrix2D.Identity();
+                let translateTo = Matrix2D.Identity();
+                let resultMatrix = Matrix2D.Identity();
 
 
-                    var oox = node.leftInPixels + offsetX;
-                    var ooy = node.topInPixels + offsetY;
+                var oox = ox + offsetX;
+                var ooy = oy + offsetY;
 
-                    Matrix2D.TranslationToRef(oox, ooy, translateBack);
-                    Matrix2D.TranslationToRef(-oox, -ooy, translateTo);
-                    Matrix2D.RotationToRef(node.rotation, m2d);
-                    translateTo.multiplyToRef(m2d, resultMatrix);
-                    resultMatrix.multiplyToRef(translateBack, resultMatrix);
-                    resultMatrix.transformCoordinates(result.x, result.y, result);
+                Matrix2D.TranslationToRef(oox, ooy, translateBack);
+                Matrix2D.TranslationToRef(-oox, -ooy, translateTo);
+                Matrix2D.RotationToRef(node.rotation, m2d);
+                let parentM = node.parent?.rotation;
+                if (parentM) {
+                    Matrix2D.RotationToRef(parentM, m2dP);
+                    m2d.multiplyToRef(m2dP, m2d);
+                }
+                translateTo.multiplyToRef(m2d, resultMatrix);
+                resultMatrix.multiplyToRef(translateBack, resultMatrix);
 
-                    //node._transformMatrix.transformCoordinates(result.x, result.y, result);
+                /*let parentM = node.parent?._transformMatrix;
+                if (parentM) {
+                      resultMatrix.multiplyToRef(parentM, resultMatrix);
+                }*/
 
-                    //v (x,0,y); 
-                    res.x = result.x;
-                    res.z = result.y;
-                    this._previousPositions[index].x = result.x;
-                    this._previousPositions[index].y = -result.y;
+                resultMatrix.transformCoordinates(result.x, result.y, result);
+                //node._transformMatrix.transformCoordinates(result.x, result.y, result);
 
-                    //project to screen space
-                    res.z *= -1;
-                    let camera = this.props.globalState.workbench._camera;
-                    const scene = this.props.globalState.workbench._scene;
-                    const engine = scene.getEngine();
-                    let finalResult = Vector3.Project(res,
-                        Matrix.Identity(),
-                        scene.getTransformMatrix(),
-                        camera.viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight()));
+                //v (x,0,y); 
+                res.x = result.x;
+                res.z = result.y;
+                this._previousPositions[index].x = result.x;
+                this._previousPositions[index].y = -result.y;
 
-                    scalePoint.style.left = finalResult.x + "px";
-                    scalePoint.style.top = finalResult.y + "px";
+                //project to screen space
+                res.z *= -1;
+                let camera = this.props.globalState.workbench._camera;
+                const scene = this.props.globalState.workbench._scene;
+                const engine = scene.getEngine();
+                let finalResult = Vector3.Project(res,
+                    Matrix.Identity(),
+                    scene.getTransformMatrix(),
+                    camera.viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight()));
+
+                scalePoint.style.left = finalResult.x + "px";
+                scalePoint.style.top = finalResult.y + "px";
                 ++index;
 
             });
