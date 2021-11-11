@@ -319,6 +319,11 @@ export class Camera extends Node {
      */
     public rigParent?: Camera;
 
+    /**
+     * Render pass id used by the camera to render into the main framebuffer
+     */
+    public renderPassId: number;
+
     /** @hidden */
     public _cameraRigParams: any;
     /** @hidden */
@@ -370,6 +375,7 @@ export class Camera extends Node {
         }
 
         this.position = position;
+        this.renderPassId = this.getScene().getEngine().createRenderPassId(`Camera ${name}`);
     }
 
     /**
@@ -1021,6 +1027,8 @@ export class Camera extends Node {
         // Active Meshes
         this._activeMeshes.dispose();
 
+        this.getScene().getEngine().releaseRenderPassId(this.renderPassId);
+
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
     }
 
@@ -1213,13 +1221,14 @@ export class Camera extends Node {
      */
     public serialize(): any {
         var serializationObject = SerializationHelper.Serialize(this);
+        serializationObject.uniqueId = this.uniqueId;
 
         // Type
         serializationObject.type = this.getClassName();
 
         // Parent
         if (this.parent) {
-            serializationObject.parentId = this.parent.id;
+            serializationObject.parentId = this.parent.uniqueId;
         }
 
         if (this.inputs) {

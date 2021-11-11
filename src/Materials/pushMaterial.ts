@@ -16,18 +16,22 @@ export class PushMaterial extends Material {
 
     protected _normalMatrix: Matrix = new Matrix();
 
-    constructor(name: string, scene: Scene) {
+    constructor(name: string, scene: Scene, storeEffectOnSubMeshes = true) {
         super(name, scene);
-        this._storeEffectOnSubMeshes = true;
+        this._storeEffectOnSubMeshes = storeEffectOnSubMeshes;
     }
 
     public getEffect(): Effect {
-        return this._activeEffect;
+        return this._storeEffectOnSubMeshes ? this._activeEffect : super.getEffect()!;
     }
 
     public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
         if (!mesh) {
             return false;
+        }
+
+        if (!this._storeEffectOnSubMeshes) {
+            return true;
         }
 
         if (!mesh.subMeshes || mesh.subMeshes.length === 0) {
@@ -38,7 +42,7 @@ export class PushMaterial extends Material {
     }
 
     protected _isReadyForSubMesh(subMesh: SubMesh) {
-        const defines = subMesh._materialDefines;
+        const defines = subMesh.materialDefines;
         if (!this.checkReadyOnEveryCall && subMesh.effect && defines) {
             if (defines._renderId === this.getScene().getRenderId()) {
                 return true;
@@ -74,7 +78,7 @@ export class PushMaterial extends Material {
         this.bindForSubMesh(world, mesh, mesh.subMeshes[0]);
     }
 
-    protected _afterBind(mesh: Mesh, effect: Nullable<Effect> = null): void {
+    protected _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null): void {
         super._afterBind(mesh, effect);
         this.getScene()._cachedEffect = effect;
     }

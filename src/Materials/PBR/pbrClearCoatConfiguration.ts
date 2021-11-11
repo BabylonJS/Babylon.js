@@ -303,7 +303,7 @@ export class PBRClearCoatConfiguration {
             return;
         }
 
-        const defines = subMesh!._materialDefines as unknown as IMaterialClearCoatDefines;
+        const defines = subMesh!.materialDefines as unknown as IMaterialClearCoatDefines;
 
         const identicalTextures = defines.CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL;
 

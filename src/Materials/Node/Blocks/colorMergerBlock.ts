@@ -4,11 +4,29 @@ import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
 import { RegisterClass } from '../../../Misc/typeStore';
+import { Scene } from '../../../scene';
 
 /**
  * Block used to create a Color3/4 out of individual inputs (one for each component)
  */
 export class ColorMergerBlock extends NodeMaterialBlock {
+    /**
+     * Gets or sets the swizzle for r (meaning which compoent to affect to the output.r)
+     */
+     public rSwizzle: "r" | "g" | "b" | "a" = "r";
+     /**
+      * Gets or sets the swizzle for g (meaning which compoent to affect to the output.g)
+      */
+      public gSwizzle: "r" | "g" | "b" | "a"  = "g";
+     /**
+      * Gets or sets the swizzle for b (meaning which compoent to affect to the output.b)
+      */
+      public bSwizzle: "r" | "g" | "b" | "a"  = "b";
+     /**
+      * Gets or sets the swizzle for a (meaning which compoent to affect to the output.a)
+      */
+      public aSwizzle: "r" | "g" | "b" | "a"  = "a";
+
     /**
      * Create a new ColorMergerBlock
      * @param name defines the block name
@@ -98,6 +116,11 @@ export class ColorMergerBlock extends NodeMaterialBlock {
         return name;
     }
 
+    private _buildSwizzle(len: number) {
+        let swizzle = this.rSwizzle + this.gSwizzle + this.bSwizzle + this.aSwizzle;
+        return "." + swizzle.substr(0, len);
+    }
+
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
@@ -112,23 +135,53 @@ export class ColorMergerBlock extends NodeMaterialBlock {
 
         if (rgbInput.isConnected) {
             if (color4Output.hasEndpoints) {
-                state.compilationString += this._declareOutput(color4Output, state) + ` = vec4(${rgbInput.associatedVariableName}, ${aInput.isConnected ? this._writeVariable(aInput) : "0.0"});\r\n`;
+                state.compilationString += this._declareOutput(color4Output, state) + ` = vec4(${rgbInput.associatedVariableName}, ${aInput.isConnected ? this._writeVariable(aInput) : "0.0"})${this._buildSwizzle(4)};\r\n`;
             }
 
             if (color3Output.hasEndpoints) {
-                state.compilationString += this._declareOutput(color3Output, state) + ` = ${rgbInput.associatedVariableName};\r\n`;
+                state.compilationString += this._declareOutput(color3Output, state) + ` = ${rgbInput.associatedVariableName}${this._buildSwizzle(3)};\r\n`;
             }
         } else {
             if (color4Output.hasEndpoints) {
-                state.compilationString += this._declareOutput(color4Output, state) + ` = vec4(${rInput.isConnected ? this._writeVariable(rInput) : "0.0"}, ${gInput.isConnected ? this._writeVariable(gInput) : "0.0"}, ${bInput.isConnected ? this._writeVariable(bInput) : "0.0"}, ${aInput.isConnected ? this._writeVariable(aInput) : "0.0"});\r\n`;
+                state.compilationString += this._declareOutput(color4Output, state) + ` = vec4(${rInput.isConnected ? this._writeVariable(rInput) : "0.0"}, ${gInput.isConnected ? this._writeVariable(gInput) : "0.0"}, ${bInput.isConnected ? this._writeVariable(bInput) : "0.0"}, ${aInput.isConnected ? this._writeVariable(aInput) : "0.0"})${this._buildSwizzle(4)};\r\n`;
             }
 
             if (color3Output.hasEndpoints) {
-                state.compilationString += this._declareOutput(color3Output, state) + ` = vec3(${rInput.isConnected ? this._writeVariable(rInput) : "0.0"}, ${gInput.isConnected ? this._writeVariable(gInput) : "0.0"}, ${bInput.isConnected ? this._writeVariable(bInput) : "0.0"});\r\n`;
+                state.compilationString += this._declareOutput(color3Output, state) + ` = vec3(${rInput.isConnected ? this._writeVariable(rInput) : "0.0"}, ${gInput.isConnected ? this._writeVariable(gInput) : "0.0"}, ${bInput.isConnected ? this._writeVariable(bInput) : "0.0"})${this._buildSwizzle(3)};\r\n`;
             }
         }
 
         return this;
+    }
+
+    public serialize(): any {
+        let serializationObject = super.serialize();
+
+        serializationObject.rSwizzle = this.rSwizzle;
+        serializationObject.gSwizzle = this.gSwizzle;
+        serializationObject.bSwizzle = this.bSwizzle;
+        serializationObject.aSwizzle = this.aSwizzle;
+
+        return serializationObject;
+    }
+
+    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+        super._deserialize(serializationObject, scene, rootUrl);
+
+        this.rSwizzle = serializationObject.rSwizzle ?? "r";
+        this.gSwizzle = serializationObject.gSwizzle ?? "g";
+        this.bSwizzle = serializationObject.bSwizzle ?? "b";
+        this.aSwizzle = serializationObject.aSwizzle ?? "a";
+    }
+
+    protected _dumpPropertiesCode() {
+        var codeString = super._dumpPropertiesCode();
+        codeString += `${this._codeVariableName}.rSwizzle = ${this.rSwizzle}};\r\n`;
+        codeString += `${this._codeVariableName}.gSwizzle = ${this.gSwizzle}};\r\n`;
+        codeString += `${this._codeVariableName}.bSwizzle = ${this.bSwizzle}};\r\n`;
+        codeString += `${this._codeVariableName}.aSwizzle = ${this.aSwizzle}};\r\n`;
+
+        return codeString;
     }
 }
 

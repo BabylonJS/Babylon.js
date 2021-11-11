@@ -522,15 +522,15 @@ export abstract class WebGPUCacheRenderPipeline {
 
     private static _GetAphaBlendOperation(operation: Nullable<number>): GPUBlendOperation {
         switch (operation) {
-            case 0x8006:
+            case Constants.GL_ALPHA_EQUATION_ADD:
                 return WebGPUConstants.BlendOperation.Add;
-            case 0x800A:
+            case Constants.GL_ALPHA_EQUATION_SUBTRACT:
                 return WebGPUConstants.BlendOperation.Subtract;
-            case 0x800B:
+            case Constants.GL_ALPHA_EQUATION_REVERSE_SUBTRACT:
                 return WebGPUConstants.BlendOperation.ReverseSubtract;
-            case 0x8007:
+            case Constants.GL_ALPHA_EQUATION_MIN:
                 return WebGPUConstants.BlendOperation.Min;
-            case 0x8008:
+            case Constants.GL_ALPHA_EQUATION_MAX:
                 return WebGPUConstants.BlendOperation.Max;
             default:
                 return WebGPUConstants.BlendOperation.Add;
@@ -543,31 +543,31 @@ export abstract class WebGPUCacheRenderPipeline {
                 return WebGPUConstants.BlendFactor.Zero;
             case 1:
                 return WebGPUConstants.BlendFactor.One;
-            case 0x0300:
+            case Constants.GL_ALPHA_FUNCTION_SRC:
                 return WebGPUConstants.BlendFactor.Src;
-            case 0x0301:
+            case Constants.GL_ALPHA_FUNCTION_ONE_MINUS_SRC_COLOR:
                 return WebGPUConstants.BlendFactor.OneMinusSrc;
-            case 0x0302:
+            case Constants.GL_ALPHA_FUNCTION_SRC_ALPHA:
                 return WebGPUConstants.BlendFactor.SrcAlpha;
-            case 0x0303:
+            case Constants.GL_ALPHA_FUNCTION_ONE_MINUS_SRC_ALPHA:
                 return WebGPUConstants.BlendFactor.OneMinusSrcAlpha;
-            case 0x0304:
+            case Constants.GL_ALPHA_FUNCTION_DST_ALPHA:
                 return WebGPUConstants.BlendFactor.DstAlpha;
-            case 0x0305:
+            case Constants.GL_ALPHA_FUNCTION_ONE_MINUS_DST_ALPHA:
                 return WebGPUConstants.BlendFactor.OneMinusDstAlpha;
-            case 0x0306:
+            case Constants.GL_ALPHA_FUNCTION_DST_COLOR:
                 return WebGPUConstants.BlendFactor.Dst;
-            case 0x0307:
+            case Constants.GL_ALPHA_FUNCTION_ONE_MINUS_DST_COLOR:
                 return WebGPUConstants.BlendFactor.OneMinusDst;
-            case 0x0308:
+            case Constants.GL_ALPHA_FUNCTION_SRC_ALPHA_SATURATED:
                 return WebGPUConstants.BlendFactor.SrcAlphaSaturated;
-            case 0x8001:
+            case Constants.GL_ALPHA_FUNCTION_CONSTANT_COLOR:
                 return WebGPUConstants.BlendFactor.Constant;
-            case 0x8002:
+            case Constants.GL_ALPHA_FUNCTION_ONE_MINUS_CONSTANT_COLOR:
                 return WebGPUConstants.BlendFactor.OneMinusConstant;
-            case 0x8003:
+            case Constants.GL_ALPHA_FUNCTION_CONSTANT_ALPHA:
                 return WebGPUConstants.BlendFactor.Constant;
-            case 0x8004:
+            case Constants.GL_ALPHA_FUNCTION_ONE_MINUS_CONSTANT_ALPHA:
                 return WebGPUConstants.BlendFactor.OneMinusConstant;
             default:
                 return WebGPUConstants.BlendFactor.One;

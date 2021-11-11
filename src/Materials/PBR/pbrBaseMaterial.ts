@@ -85,6 +85,8 @@ export class PBRMaterialDefines extends MaterialDefines
     public DETAILDIRECTUV = 0;
     public DETAIL_NORMALBLENDMETHOD = 0;
 
+    public BAKED_VERTEX_ANIMATION_TEXTURE = false;
+
     public AMBIENT = false;
     public AMBIENTDIRECTUV = 0;
     public AMBIENTINGRAYSCALE = false;
@@ -225,6 +227,7 @@ export class PBRMaterialDefines extends MaterialDefines
     public EXPOSURE = false;
     public MULTIVIEW = false;
     public ORDER_INDEPENDENT_TRANSPARENCY = false;
+    public ORDER_INDEPENDENT_TRANSPARENCY_16BITS = false;
 
     public USEPHYSICALLIGHTFALLOFF = false;
     public USEGLTFLIGHTFALLOFF = false;
@@ -959,6 +962,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     constructor(name: string, scene: Scene) {
         super(name, scene);
 
+        this.buildUniformLayout();
+
         // Setup the default processing configuration to the scene.
         this._attachImageProcessingConfiguration(null);
 
@@ -1089,11 +1094,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh._materialDefines) {
+        if (!subMesh.materialDefines) {
             subMesh.materialDefines = new PBRMaterialDefines();
         }
 
-        const defines = <PBRMaterialDefines>subMesh._materialDefines;
+        const defines = <PBRMaterialDefines>subMesh.materialDefines;
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }
@@ -1233,7 +1238,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             } else {
                 scene.resetCachedMaterial();
                 subMesh.setEffect(effect, defines, this._materialContext);
-                this.buildUniformLayout();
             }
         }
 
@@ -1381,6 +1385,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
         MaterialHelper.PrepareAttributesForInstances(attribs, defines);
         MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, defines);
+        MaterialHelper.PrepareAttributesForBakedVertexAnimation(attribs, mesh, defines);
 
         var shaderName = "pbr";
 
@@ -1896,7 +1901,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * Unbinds the material from the mesh
      */
     public unbind(): void {
-        if (this._activeEffect) {
+        if (this._activeEffect && !this.getScene().getEngine()._features.needToAlwaysBindUniformBuffers) {
             let needFlag = false;
             if (this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
                 this._activeEffect.setTexture("reflection2DSampler", null);
@@ -1924,7 +1929,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         var scene = this.getScene();
 
-        var defines = <PBRMaterialDefines>subMesh._materialDefines;
+        var defines = <PBRMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }
@@ -1941,7 +1946,12 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         mesh.getMeshUniformBuffer().bindToEffect(effect, "Mesh");
         mesh.transferToEffect(world);
 
-        // PrePass
+        const engine = scene.getEngine();
+
+        // Binding unconditionally
+        this._uniformBuffer.bindToEffect(effect, "Material");
+
+        this.subSurface.hardBindForSubMesh(this._uniformBuffer, scene, engine, this.isFrozen, defines.LODBASEDMICROSFURACE, this.realTimeFiltering, subMesh);
         this.prePassConfiguration.bindForSubMesh(this._activeEffect, scene, mesh, world, this.isFrozen);
 
         // Normal Matrix
@@ -1958,9 +1968,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         let reflectionTexture: Nullable<BaseTexture> = null;
         let ubo = this._uniformBuffer;
         if (mustRebind) {
-            var engine = scene.getEngine();
-            ubo.bindToEffect(effect, "Material");
-
             this.bindViewProjection(effect);
             reflectionTexture = this._getReflectionTexture();
 
@@ -2222,6 +2229,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             MaterialHelper.BindClipPlane(this._activeEffect, scene);
 
             this.bindEyePosition(effect);
+        } else if (scene.getEngine()._features.needToAlwaysBindUniformBuffers) {
+            this._needToBindSceneUbo = true;
         }
 
         if (mustRebind || !this.isFrozen) {
@@ -2241,6 +2250,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             // Morph targets
             if (defines.NUM_MORPH_INFLUENCERS) {
                 MaterialHelper.BindMorphTargetParameters(mesh, this._activeEffect);
+            }
+
+            if (defines.BAKED_VERTEX_ANIMATION_TEXTURE) {
+                mesh.bakedVertexAnimationManager?.bind(effect, defines.INSTANCES);
             }
 
             // image processing

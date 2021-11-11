@@ -38,6 +38,8 @@ class _InternalNodeDataInfo {
  * Node is the basic class for all scene objects (Mesh, Light, Camera.)
  */
 export class Node implements IBehaviorAware<Node> {
+    protected _isDirty = false;
+
     /** @hidden */
     public static _AnimationRangeFactory = (name: string, from: number, to: number): AnimationRange => {
         throw _WarnImport("AnimationRange");
@@ -162,7 +164,9 @@ export class Node implements IBehaviorAware<Node> {
     public _cache: any = {};
 
     private _parentNode: Nullable<Node> = null;
-    private _children: Nullable<Node[]> = null;
+
+    /** @hidden */
+    protected _children: Nullable<Node[]> = null;
 
     /** @hidden */
     public _worldMatrix = Matrix.Identity();
@@ -517,6 +521,17 @@ export class Node implements IBehaviorAware<Node> {
     }
 
     /**
+    * Flag the  node as dirty (Forcing it to update everything)
+    * @param property helps children apply precise "dirtyfication"
+    * @returns this node
+    */
+    public markAsDirty(property?: string): Node {
+        this._currentRenderId = Number.MAX_VALUE;
+        this._isDirty = true;
+        return this;
+    }
+
+    /**
      * Is this node enabled?
      * If the node has a parent, all ancestors will be checked and false will be returned if any are false (not enabled), otherwise will return true
      * @param checkAncestors indicates if this method should check the ancestors. The default is to check the ancestors. If set to false, the method will return the value of this node without checking ancestors
@@ -602,6 +617,22 @@ export class Node implements IBehaviorAware<Node> {
      * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
      * @return all children nodes of all types
      */
+    public getDescendants<T extends Node>(directDescendantsOnly?: boolean, predicate?: (node: Node) => node is T): T[];
+
+    /**
+     * Will return all nodes that have this node as ascendant
+     * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
+     * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+     * @return all children nodes of all types
+     */
+    public getDescendants(directDescendantsOnly?: boolean, predicate?: (node: Node) => boolean): Node[];
+
+    /**
+     * Will return all nodes that have this node as ascendant
+     * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
+     * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+     * @return all children nodes of all types
+     */
     public getDescendants(directDescendantsOnly?: boolean, predicate?: (node: Node) => boolean): Node[] {
         var results = new Array<Node>();
 
@@ -616,6 +647,22 @@ export class Node implements IBehaviorAware<Node> {
      * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
      * @returns an array of AbstractMesh
      */
+    public getChildMeshes<T extends AbstractMesh>(directDescendantsOnly?: boolean, predicate?: (node: Node) => node is T): T[];
+
+    /**
+     * Get all child-meshes of this node
+     * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered (Default: false)
+     * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+     * @returns an array of AbstractMesh
+     */
+    public getChildMeshes(directDescendantsOnly?: boolean, predicate?: (node: Node) => boolean): AbstractMesh[];
+
+    /**
+     * Get all child-meshes of this node
+     * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered (Default: false)
+     * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+     * @returns an array of AbstractMesh
+     */
     public getChildMeshes(directDescendantsOnly?: boolean, predicate?: (node: Node) => boolean): AbstractMesh[] {
         var results: Array<AbstractMesh> = [];
         this._getDescendants(results, directDescendantsOnly, (node: Node) => {
@@ -623,6 +670,22 @@ export class Node implements IBehaviorAware<Node> {
         });
         return results;
     }
+
+    /**
+     * Get all direct children of this node
+     * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+     * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered (Default: true)
+     * @returns an array of Node
+     */
+    public getChildren<T extends Node>(predicate?: (node: Node) => node is T, directDescendantsOnly?: boolean): T[];
+
+    /**
+     * Get all direct children of this node
+     * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+     * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered (Default: true)
+     * @returns an array of Node
+     */
+    public getChildren(predicate?: (node: Node) => boolean, directDescendantsOnly?: boolean): Node[];
 
     /**
      * Get all direct children of this node

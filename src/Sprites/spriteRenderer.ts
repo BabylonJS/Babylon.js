@@ -86,6 +86,8 @@ export class SpriteRenderer {
     private _indexBuffer: DataBuffer;
     private _drawWrapperBase: DrawWrapper;
     private _drawWrapperFog: DrawWrapper;
+    private _drawWrapperDepth: DrawWrapper;
+    private _drawWrapperFogDepth: DrawWrapper;
     private _vertexArrayObject: WebGLVertexArrayObject;
 
     /**
@@ -110,9 +112,24 @@ export class SpriteRenderer {
         this._scene = scene;
         this._drawWrapperBase = new DrawWrapper(engine);
         this._drawWrapperFog = new DrawWrapper(engine);
+        this._drawWrapperDepth = new DrawWrapper(engine, false);
+        this._drawWrapperFogDepth = new DrawWrapper(engine, false);
 
         if (!this._useInstancing) {
             this._buildIndexBuffer();
+        }
+
+        if (this._drawWrapperBase.drawContext) {
+            this._drawWrapperBase.drawContext.useInstancing = this._useInstancing;
+        }
+        if (this._drawWrapperFog.drawContext) {
+            this._drawWrapperFog.drawContext.useInstancing = this._useInstancing;
+        }
+        if (this._drawWrapperDepth.drawContext) {
+            this._drawWrapperDepth.drawContext.useInstancing = this._useInstancing;
+        }
+        if (this._drawWrapperFogDepth.drawContext) {
+            this._drawWrapperFogDepth.drawContext.useInstancing = this._useInstancing;
         }
 
         // VBO
@@ -154,11 +171,16 @@ export class SpriteRenderer {
             ["view", "projection", "textureInfos", "alphaTest"],
             ["diffuseSampler"], "");
 
+        this._drawWrapperDepth.effect = this._drawWrapperBase.effect;
+        this._drawWrapperDepth.materialContext = this._drawWrapperBase.materialContext;
+
         if (this._scene) {
             this._drawWrapperFog.effect = this._scene.getEngine().createEffect("sprites",
                 [VertexBuffer.PositionKind, "options", "offsets", "inverts", "cellInfo", VertexBuffer.ColorKind],
                 ["view", "projection", "textureInfos", "alphaTest", "vFogInfos", "vFogColor"],
                 ["diffuseSampler"], "#define FOG");
+            this._drawWrapperFogDepth.effect = this._drawWrapperFog.effect;
+            this._drawWrapperFogDepth.materialContext = this._drawWrapperFog.materialContext;
         }
     }
 
@@ -176,9 +198,11 @@ export class SpriteRenderer {
         }
 
         let drawWrapper = this._drawWrapperBase;
+        let drawWrapperDepth = this._drawWrapperDepth;
         let shouldRenderFog = false;
         if (this.fogEnabled && this._scene && this._scene.fogEnabled && this._scene.fogMode !== 0) {
             drawWrapper = this._drawWrapperFog;
+            drawWrapperDepth = this._drawWrapperFogDepth;
             shouldRenderFog = true;
         }
 
@@ -259,11 +283,13 @@ export class SpriteRenderer {
         if (!this.disableDepthWrite) {
             effect.setBool("alphaTest", true);
             engine.setColorWrite(false);
+            engine.enableEffect(drawWrapperDepth);
             if (this._useInstancing) {
                 engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, offset);
             } else {
                 engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, (offset / 4) * 6);
             }
+            engine.enableEffect(drawWrapper);
             engine.setColorWrite(true);
             effect.setBool("alphaTest", false);
         }
@@ -424,5 +450,9 @@ export class SpriteRenderer {
             this.texture.dispose();
             (<any>this.texture) = null;
         }
+        this._drawWrapperBase.dispose();
+        this._drawWrapperFog.dispose();
+        this._drawWrapperDepth.dispose();
+        this._drawWrapperFogDepth.dispose();
     }
 }

@@ -14,6 +14,8 @@ declare module BABYLON {
         static RenderLoopReady: boolean;
         /** Pauses the main page render loop */
         static PauseRenderLoop: boolean;
+        /** The webgl render context has been lost flag */
+        static LostRenderContext: boolean;
         /** Set the preload auto update progress flag */
         static AutoUpdateProgress: boolean;
         /** Set the capsule collider shape type */
@@ -28,14 +30,16 @@ declare module BABYLON {
         static HasAudioContext(): boolean;
         /** Returns a Promise that resolves after the specfied time */
         static WaitForSeconds: (seconds: number) => Promise<void>;
-        /** Post a safe message to top parent window */
-        static PostWindowMessage(msg: BABYLON.IWindowMessage, targetOrigin: string, transfer?: Transferable[]): void;
         /** Register handler that is triggered when then engine has been resized (engine.html) */
         static OnEngineResizeObservable: Observable<Engine>;
         /** Register handler that is triggered when the scene has been loaded (engine.html) */
         static OnLoadCompleteObservable: Observable<Engine>;
+        /** Register handler that is triggered when then webgl context need to be rebuilt (engine.html) */
+        static OnRebuildContextObservable: Observable<Engine>;
         /** Register asset manager progress event (engine.html) */
         static OnAssetManagerProgress: (event: ProgressEvent) => void;
+        /** Post a safe message to the top browser window */
+        static PostWindowMessage(msg: BABYLON.IWindowMessage, targetOrigin?: string, localWindow?: boolean): void;
         /** Loads a babylon gltf scene file (engine.html) */
         static LoadSceneFile(sceneFile: string, queryString?: string): void;
         private static SceneParsingEnabled;
@@ -121,7 +125,7 @@ declare module BABYLON {
         /** Get the total game time in seconds */
         static GetGameTime(): number;
         /** Get the current delta time in seconds */
-        static GetDeltaSeconds(scene: BABYLON.Scene): number;
+        static GetDeltaSeconds(scene: BABYLON.Scene, applyAnimationRatio?: boolean): number;
         /** Get the delta time animation ratio for 60 fps */
         static GetAnimationRatio(scene: BABYLON.Scene): number;
         /** Delays a function call using request animation frames. Returns a handle object */
@@ -822,9 +826,9 @@ declare module BABYLON {
         private _attachAfterBind;
     }
     /**
-    * Babylon universal shader material pro class
-    * @class UniversalShaderMaterial
-    */
+     * Babylon universal shader material pro class
+     * @class UniversalShaderMaterial
+     */
     class UniversalShaderMaterial extends BABYLON.ShaderMaterial {
         private _enableTime;
         constructor(name: string, scene?: BABYLON.Scene, options?: Partial<BABYLON.IShaderMaterialOptions>);
@@ -1460,8 +1464,19 @@ declare module BABYLON {
         static GetAngle(from: BABYLON.Vector3, to: BABYLON.Vector3): number;
         /** Returns the angle in radians between the from and to vectors. */
         static GetAngleRadians(from: BABYLON.Vector3, to: BABYLON.Vector3): number;
-        /** TODO */
+        /** Default Unity style angle clamping */
         static ClampAngle(angle: number, min: number, max: number): number;
+        /**
+        * Expects angle in the range 0 to 360
+        * Expects min and max in the range -180 to 180
+        * Returns the clamped angle in the range 0 to 360
+        */
+        static ClampAngle180(angle: number, min: number, max: number): number;
+        /**
+        * Expects all angles in the range 0 to 360
+        * Returns the clamped angle in the range 0 to 360
+        */
+        static ClampAngle360(angle: number, min: number, max: number): number;
         /** Gradually changes a number towards a desired goal over time. (Note: Uses currentVelocity.x as output variable) */
         static SmoothDamp(current: number, target: number, smoothTime: number, maxSpeed: number, deltaTime: number, currentVelocity: BABYLON.Vector2): number;
         /** Gradually changes an angle given in degrees towards a desired goal angle over time. (Note: Uses currentVelocity.x as output variable) */
@@ -1709,6 +1724,8 @@ declare module BABYLON {
         static ConvertAmmoQuaternion(btVector: any): BABYLON.Quaternion;
         /** TODO */
         static ConvertAmmoQuaternionToRef(btQuaternion: any, result: BABYLON.Quaternion): void;
+        /** TODO */
+        static RemapValueToRange(value: number, a1: number, a2: number, b1: number, b2: number): number;
         static CloneSkeletonPrefab(scene: BABYLON.Scene, skeleton: BABYLON.Skeleton, name: string, id?: string, root?: BABYLON.TransformNode): BABYLON.Skeleton;
         /** Get all loaded scene transform nodes. */
         static GetSceneTransforms(scene: BABYLON.Scene): BABYLON.TransformNode[];

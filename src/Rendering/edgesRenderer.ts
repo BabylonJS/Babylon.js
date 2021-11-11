@@ -18,6 +18,7 @@ import "../Shaders/line.vertex";
 import { DataBuffer } from '../Buffers/dataBuffer';
 import { SmartArray } from '../Misc/smartArray';
 import { Tools } from '../Misc/tools';
+import { DrawWrapper } from "../Materials/drawWrapper";
 
 declare module "../scene" {
     export interface Scene {
@@ -198,6 +199,7 @@ export class EdgesRenderer implements IEdgesRenderer {
     protected _linesIndices = new Array<number>();
     protected _epsilon: number;
     protected _indicesCount: number;
+    protected _drawWrapper?: DrawWrapper;
 
     protected _lineShader: ShaderMaterial;
     protected _ib: DataBuffer;
@@ -249,10 +251,11 @@ export class EdgesRenderer implements IEdgesRenderer {
                 {
                     attributes: ["position", "normal"],
                     uniforms: ["world", "viewProjection", "color", "width", "aspectRatio"]
-                });
+                }, false);
 
             shader.disableDepthWrite = true;
             shader.backFaceCulling = false;
+            shader.checkReadyOnEveryCall = scene.getEngine().isWebGPU;
 
             scene._edgeRenderLineShader = shader;
         }
@@ -275,6 +278,9 @@ export class EdgesRenderer implements IEdgesRenderer {
         this._options = options ?? null;
 
         this._epsilon = epsilon;
+        if (this._source.getScene().getEngine().isWebGPU) {
+            this._drawWrapper = new DrawWrapper(source.getEngine());
+        }
 
         this._prepareRessources();
         if (generateEdgesLines) {
@@ -341,6 +347,8 @@ export class EdgesRenderer implements IEdgesRenderer {
             this._source.getScene().getEngine()._releaseBuffer(this._ib);
         }
         this._lineShader.dispose();
+
+        this._drawWrapper?.dispose();
     }
 
     protected _processEdgeForAdjacencies(pa: number, pb: number, p0: number, p1: number, p2: number): number {
@@ -872,9 +880,15 @@ export class EdgesRenderer implements IEdgesRenderer {
      * Renders the edges of the attached mesh,
      */
     public render(): void {
-        var scene = this._source.getScene();
+        const scene = this._source.getScene();
+
+        let currentDrawWrapper = this._lineShader._getDrawWrapper();
+        if (this._drawWrapper) {
+            this._lineShader._setDrawWrapper(this._drawWrapper);
+        }
 
         if (!this.isReady() || !scene.activeCamera) {
+            this._lineShader._setDrawWrapper(currentDrawWrapper);
             return;
         }
 
@@ -951,6 +965,8 @@ export class EdgesRenderer implements IEdgesRenderer {
         if (!this._source.getScene()._activeMeshesFrozen) {
             this.customInstances.reset();
         }
+
+        this._lineShader._setDrawWrapper(currentDrawWrapper);
     }
 }
 

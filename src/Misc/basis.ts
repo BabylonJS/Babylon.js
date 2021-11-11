@@ -104,21 +104,25 @@ export const BasisToolsOptions = {
  * @param basisFormat format chosen from GetSupportedTranscodeFormat
  * @returns internal format corresponding to the Basis format
  */
-export const GetInternalFormatFromBasisFormat = (basisFormat: number) => {
-    // Corresponding internal formats
-    var COMPRESSED_RGB_S3TC_DXT1_EXT = 0x83F1;
-    var COMPRESSED_RGBA_S3TC_DXT5_EXT = 0x83F3;
-    var RGB_ETC1_Format = 36196;
+export const GetInternalFormatFromBasisFormat = (basisFormat: number, engine: Engine) => {
+    let format;
+    switch (basisFormat) {
+        case BASIS_FORMATS.cTFETC1:
+            format = Constants.TEXTUREFORMAT_COMPRESSED_RGB_ETC1_WEBGL;
+            break;
+        case BASIS_FORMATS.cTFBC1:
+            format = Constants.TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1;
+            break;
+        case BASIS_FORMATS.cTFBC4:
+            format = Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5;
+            break;
+    }
 
-    if (basisFormat === BASIS_FORMATS.cTFETC1) {
-        return RGB_ETC1_Format;
-    } else if (basisFormat === BASIS_FORMATS.cTFBC1) {
-        return COMPRESSED_RGB_S3TC_DXT1_EXT;
-    } else if (basisFormat === BASIS_FORMATS.cTFBC3) {
-        return COMPRESSED_RGBA_S3TC_DXT5_EXT;
-    } else {
+    if (format === undefined) {
         throw "The chosen Basis transcoder format is not currently supported";
     }
+
+    return format;
 };
 
 let _WorkerPromise: Nullable<Promise<Worker>> = null;
@@ -158,7 +162,7 @@ const _CreateWorkerAsync = () => {
  * @param config configuration options for the transcoding
  * @returns a promise resulting in the transcoded image
  */
-export const TranscodeAsync = (data: ArrayBuffer | ArrayBufferView, config: BasisTranscodeConfiguration): Promise <TranscodeResult> => {
+export const TranscodeAsync = (data: ArrayBuffer | ArrayBufferView, config: BasisTranscodeConfiguration): Promise<TranscodeResult> => {
     const dataView = data instanceof ArrayBuffer ? new Uint8Array(data) : data;
 
     return new Promise((res, rej) => {
@@ -234,7 +238,7 @@ export const LoadTextureFromTranscodeResult = (texture: InternalTexture, transco
 
             // Upload all mip levels in the file
             transcodeResult.fileInfo.images[i].levels.forEach((level: any, index: number) => {
-                engine._uploadCompressedDataToTextureDirectly(texture, BasisTools.GetInternalFormatFromBasisFormat(transcodeResult.format!), level.width, level.height, level.transcodedPixels, i, index);
+                engine._uploadCompressedDataToTextureDirectly(texture, BasisTools.GetInternalFormatFromBasisFormat(transcodeResult.format!, engine), level.width, level.height, level.transcodedPixels, i, index);
             });
 
             if (engine._features.basisNeedsPOT && (Scalar.Log2(texture.width) % 1 !== 0 || Scalar.Log2(texture.height) % 1 !== 0)) {
@@ -489,3 +493,21 @@ function workerFunc(): void {
         return dst;
     }
 }
+
+Object.defineProperty(BasisTools, "JSModuleURL", {
+    get: function (this: null) {
+        return BasisToolsOptions.JSModuleURL;
+    },
+    set: function (this: null, value: string) {
+        BasisToolsOptions.JSModuleURL = value;
+    }
+});
+
+Object.defineProperty(BasisTools, "WasmModuleURL", {
+    get: function (this: null) {
+        return BasisToolsOptions.WasmModuleURL;
+    },
+    set: function (this: null, value: string) {
+        BasisToolsOptions.WasmModuleURL = value;
+    }
+});

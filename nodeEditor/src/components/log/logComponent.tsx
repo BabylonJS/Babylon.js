@@ -33,7 +33,7 @@ export class LogComponent extends React.Component<ILogComponentProps, { logs: Lo
     }
 
     componentDidUpdate() {
-        const logConsole = ReactDOM.findDOMNode(this.refs["log-console"]) as HTMLElement;
+        const logConsole = ReactDOM.findDOMNode(this.refs["nme-log-console"]) as HTMLElement;
         if (!logConsole) {
             return;
         }
@@ -48,7 +48,7 @@ export class LogComponent extends React.Component<ILogComponentProps, { logs: Lo
         var s = today.getSeconds();
 
         return (
-            <div id="log-console" ref={"log-console"} >
+            <div id="nme-log-console" ref={"log-console"} >
                 {
                     this.state.logs.map((l, i) => {
                         return (

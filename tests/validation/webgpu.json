@@ -26,7 +26,8 @@
         },
         {
             "title": "sphere with custom shader to display wireframe using glow layer",
-            "playgroundId": "#Y05E2C#3"
+            "renderCount": 2,
+            "playgroundId": "#Y05E2C#6"
         },
         {
             "title": "blur cube with the effect renderer",
@@ -99,10 +100,11 @@
         {
             "title": "custom handling of materials for render target pass",
             "renderCount": 30,
-            "playgroundId": "#FIVL25#3"
+            "playgroundId": "#FIVL25#17"
         },
         {
             "title": "dissolve effect with node material and glow layer",
+            "renderCount": 2,
             "playgroundId": "#F6PGMC"
         },
         {
@@ -124,7 +126,7 @@
         {
             "title": "depth renderer",
             "renderCount": 5,
-            "playgroundId": "#1PHYB0#86"
+            "playgroundId": "#1PHYB0#112"
         },
         {
             "title": "particle system with custom nme shader",
@@ -133,7 +135,7 @@
         },
         {
             "title": "create environment texture",
-            "playgroundId": "#L4RXKN#4",
+            "playgroundId": "#L4RXKN#7",
             "excludedEngines": ["webgl1"]
         },
         {
@@ -152,13 +154,20 @@
         },
         {
             "title": "wgsl in shadermaterial",
-            "renderCount": 15,
-            "playgroundId": "#8RU8Q3#79"
+            "renderCount": 30,
+            "playgroundId": "#8RU8Q3#79",
+            "excludedEngines": ["webgl1", "webgl2"]
         },
         {
             "title": "terrain erosion",
             "renderCount": 15,
-            "playgroundId": "#C90R62#6"
+            "playgroundId": "#C90R62#8",
+            "excludedEngines": ["webgl1", "webgl2"]
+        },
+        {
+            "title": "change texture of material",
+            "renderCount": 10,
+            "playgroundId": "#7PN9PH#2"
         }
     ]
 }

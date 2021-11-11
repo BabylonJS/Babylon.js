@@ -459,6 +459,28 @@ export class PBRSubSurfaceConfiguration {
     }
 
     /**
+     * Binds the material data (this function is called even if mustRebind() returns false)
+     * @param uniformBuffer defines the Uniform buffer to fill in.
+     * @param scene defines the scene the material belongs to.
+     * @param engine defines the engine the material belongs to.
+     * @param isFrozen defines whether the material is frozen or not.
+     * @param lodBasedMicrosurface defines whether the material relies on lod based microsurface or not.
+     * @param realTimeFiltering defines whether the textures should be filtered on the fly.
+     * @param subMesh the submesh to bind data for
+    */
+    public hardBindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, isFrozen: boolean, lodBasedMicrosurface: boolean, realTimeFiltering: boolean, subMesh: SubMesh): void {
+        if (!this._isRefractionEnabled && !this._isTranslucencyEnabled && !this._isScatteringEnabled) {
+            return;
+        }
+
+        subMesh.getRenderingMesh().getWorldMatrix().decompose(TmpVectors.Vector3[0]);
+
+        const thicknessScale = Math.max(Math.abs(TmpVectors.Vector3[0].x), Math.abs(TmpVectors.Vector3[0].y), Math.abs(TmpVectors.Vector3[0].z));
+
+        uniformBuffer.updateFloat2("vThicknessParam", this.minimumThickness * thicknessScale, (this.maximumThickness - this.minimumThickness) * thicknessScale);
+    }
+
+    /**
      * Binds the material data.
      * @param uniformBuffer defines the Uniform buffer to fill in.
      * @param scene defines the scene the material belongs to.
@@ -473,7 +495,7 @@ export class PBRSubSurfaceConfiguration {
             return;
         }
 
-        const defines = subMesh!._materialDefines as unknown as IMaterialSubSurfaceDefines;
+        const defines = subMesh!.materialDefines as unknown as IMaterialSubSurfaceDefines;
 
         var refractionTexture = this._getRefractionTexture(scene);
 
@@ -492,12 +514,6 @@ export class PBRSubSurfaceConfiguration {
                 uniformBuffer.updateFloat2("vTranslucencyIntensityInfos", this._translucencyIntensityTexture.coordinatesIndex, this._translucencyIntensityTexture.level);
                 MaterialHelper.BindTextureMatrix(this._translucencyIntensityTexture, uniformBuffer, "translucencyIntensity");
             }
-
-            subMesh.getRenderingMesh().getWorldMatrix().decompose(TmpVectors.Vector3[0]);
-
-            const thicknessScale = Math.max(Math.abs(TmpVectors.Vector3[0].x), Math.abs(TmpVectors.Vector3[0].y), Math.abs(TmpVectors.Vector3[0].z));
-
-            uniformBuffer.updateFloat2("vThicknessParam", this.minimumThickness * thicknessScale, (this.maximumThickness - this.minimumThickness) * thicknessScale);
 
             if (refractionTexture && MaterialFlags.RefractionTextureEnabled) {
                 uniformBuffer.updateMatrix("refractionMatrix", refractionTexture.getReflectionTextureMatrix());

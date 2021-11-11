@@ -25,7 +25,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
             BABYLON.WebGPUEngine.IsSupportedAsync.then((result) => {
                 this.webGPUSupported = result;
                 if (location.search.indexOf("webgpu") !== -1 && this.webGPUSupported) {
-                    Utilities.StoreStringToStore("engineVersion", "WebGPU");
+                    Utilities.StoreStringToStore("engineVersion", "WebGPU", true);
                 }
                 this.forceUpdate();
             });
@@ -61,8 +61,8 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
     }
 
     public render() {
-        let activeVersion = Utilities.ReadStringFromStore("version", "Latest");
-        let activeEngineVersion = Utilities.ReadStringFromStore("engineVersion", "WebGL2");
+        let activeVersion = Utilities.ReadStringFromStore("version", "Latest", true);
+        let activeEngineVersion = Utilities.ReadStringFromStore("engineVersion", "WebGL2", true);
 
         var versionOptions = Object.keys(Versions).map((key) => {
             return {
@@ -71,7 +71,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                 storeKey: "version",
                 isActive: activeVersion === key,
                 onClick: () => {
-                    Utilities.StoreStringToStore("version", key);
+                    Utilities.StoreStringToStore("version", key, true);
                     window.location.reload();
                 },
             };
@@ -84,7 +84,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                 storeKey: "engineVersion",
                 isActive: activeEngineVersion === "WebGL2",
                 onClick: () => {
-                    Utilities.StoreStringToStore("engineVersion", "WebGL2");
+                    Utilities.StoreStringToStore("engineVersion", "WebGL2", true);
                     if (location.search.indexOf("webgpu") !== -1) {
                         location.search = location.search.replace("webgpu", "");
                     } else {
@@ -101,7 +101,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                     if (location.search.indexOf("webgpu") !== -1) {
                         location.search = location.search.replace("webgpu", "");
                     }
-                    Utilities.StoreStringToStore("engineVersion", "WebGL");
+                    Utilities.StoreStringToStore("engineVersion", "WebGL", true);
                     if (location.search.indexOf("webgpu") !== -1) {
                         location.search = location.search.replace("webgpu", "");
                     } else {
@@ -118,7 +118,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                 storeKey: "engineVersion",
                 isActive: activeEngineVersion === "WebGPU",
                 onClick: () => {
-                    Utilities.StoreStringToStore("engineVersion", "WebGPU");
+                    Utilities.StoreStringToStore("engineVersion", "WebGPU", true);
                     window.location.reload();
                 },
             });
@@ -248,13 +248,15 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                         storeKey={"engineVersion"}
                         defaultValue={activeEngineVersion}
                         tooltip="Engine"
+                        useSessionStorage={true}
                         toRight={true}
                         items={engineOptions}
                     />
                     <CommandDropdownComponent
                         globalState={this.props.globalState}
                         storeKey={"version"}
-                        defaultValue={activeVersion}
+                        defaultValue={activeVersion}                        
+                        useSessionStorage={true}
                         tooltip="Versions"
                         toRight={true}
                         items={versionOptions}

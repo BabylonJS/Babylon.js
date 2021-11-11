@@ -50,7 +50,7 @@
 #ifdef BUMP
 	#ifdef OBJECTSPACE_NORMALMAP
 		normalW = normalize(texture2D(bumpSampler, vBumpUV).xyz  * 2.0 - 1.0);
-		normalW = normalize(mat3(normalMatrix) * normalW);	
+		normalW = normalize(mat3(normalMatrix) * normalW);
 	#elif !defined(DETAIL)
 		normalW = perturbNormal(TBN, texture2D(bumpSampler, vBumpUV + uvOffset).xyz, vBumpInfos.y);
     #else

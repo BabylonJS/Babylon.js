@@ -1,7 +1,7 @@
 import { Nullable } from "babylonjs/types";
 import { Observable, Observer } from "babylonjs/Misc/observable";
 import { Vector2, Vector3, Matrix } from "babylonjs/Maths/math.vector";
-import { PointerEventTypes, PointerInfoBase } from 'babylonjs/Events/pointerEvents';
+import { PointerEventTypes, PointerInfoBase } from "babylonjs/Events/pointerEvents";
 import { Logger } from "babylonjs/Misc/logger";
 import { Tools } from "babylonjs/Misc/tools";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
@@ -13,9 +13,9 @@ import { ValueAndUnit } from "../valueAndUnit";
 import { Measure } from "../measure";
 import { Style } from "../style";
 import { Matrix2D, Vector2WithInfo } from "../math2D";
-import { RegisterClass } from 'babylonjs/Misc/typeStore';
-import { SerializationHelper, serialize } from 'babylonjs/Misc/decorators';
-import { ICanvasRenderingContext } from 'babylonjs/Engines/ICanvas';
+import { RegisterClass } from "babylonjs/Misc/typeStore";
+import { SerializationHelper, serialize } from "babylonjs/Misc/decorators";
+import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
 import { Engine } from "babylonjs/Engines/engine";
 
 /**
@@ -47,7 +47,7 @@ export class Control {
     /** @hidden */
     public _height = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
     /** @hidden */
-    protected _fontOffset: { ascent: number, height: number, descent: number };
+    protected _fontOffset: { ascent: number; height: number; descent: number };
     private _color = "";
     private _style: Nullable<Style> = null;
     private _styleObserver: Nullable<Observer<Style>>;
@@ -224,7 +224,7 @@ export class Control {
         this._markAsDirty();
     }
 
-    private _shadowColor = 'black';
+    private _shadowColor = "black";
     /** Gets or sets a value indicating the color of the shadow (black by default ie. "#000") */
     @serialize()
     public get shadowColor() {
@@ -265,42 +265,42 @@ export class Control {
     }
 
     /**
-    * An event triggered when pointer wheel is scrolled
-    */
+     * An event triggered when pointer wheel is scrolled
+     */
     public onWheelObservable = new Observable<Vector2>();
     /**
-    * An event triggered when the pointer moves over the control.
-    */
+     * An event triggered when the pointer moves over the control.
+     */
     public onPointerMoveObservable = new Observable<Vector2>();
 
     /**
-    * An event triggered when the pointer moves out of the control.
-    */
+     * An event triggered when the pointer moves out of the control.
+     */
     public onPointerOutObservable = new Observable<Control>();
 
     /**
-    * An event triggered when the pointer taps the control
-    */
+     * An event triggered when the pointer taps the control
+     */
     public onPointerDownObservable = new Observable<Vector2WithInfo>();
 
     /**
-    * An event triggered when pointer up
-    */
+     * An event triggered when pointer up
+     */
     public onPointerUpObservable = new Observable<Vector2WithInfo>();
 
     /**
-    * An event triggered when a control is clicked on
-    */
+     * An event triggered when a control is clicked on
+     */
     public onPointerClickObservable = new Observable<Vector2WithInfo>();
 
     /**
-    * An event triggered when pointer enters the control
-    */
+     * An event triggered when pointer enters the control
+     */
     public onPointerEnterObservable = new Observable<Control>();
 
     /**
-    * An event triggered when the control is marked as dirty
-    */
+     * An event triggered when the control is marked as dirty
+     */
     public onDirtyObservable = new Observable<Control>();
 
     /**
@@ -314,8 +314,8 @@ export class Control {
     public onAfterDrawObservable = new Observable<Control>();
 
     /**
-    * An event triggered when the control has been disposed
-    */
+     * An event triggered when the control has been disposed
+     */
     public onDisposeObservable = new Observable<Control>();
 
     /**
@@ -327,11 +327,11 @@ export class Control {
 
     /** Gets or set information about font offsets (used to render and align text) */
     @serialize()
-    public get fontOffset(): { ascent: number, height: number, descent: number } {
+    public get fontOffset(): { ascent: number; height: number; descent: number } {
         return this._fontOffset;
     }
 
-    public set fontOffset(offset: { ascent: number, height: number, descent: number }) {
+    public set fontOffset(offset: { ascent: number; height: number; descent: number }) {
         this._fontOffset = offset;
     }
 
@@ -400,7 +400,7 @@ export class Control {
 
     /** Gets or sets a value indicating the scale factor on X axis (1 by default)
      * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
-    */
+     */
     @serialize()
     public get scaleX(): number {
         return this._scaleX;
@@ -418,7 +418,7 @@ export class Control {
 
     /** Gets or sets a value indicating the scale factor on Y axis (1 by default)
      * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
-    */
+     */
     @serialize()
     public get scaleY(): number {
         return this._scaleY;
@@ -436,7 +436,7 @@ export class Control {
 
     /** Gets or sets the rotation angle (0 by default)
      * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
-    */
+     */
     @serialize()
     public get rotation(): number {
         return this._rotation;
@@ -454,7 +454,7 @@ export class Control {
 
     /** Gets or sets the transformation center on Y axis (0 by default)
      * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
-    */
+     */
     @serialize()
     public get transformCenterY(): number {
         return this._transformCenterY;
@@ -472,7 +472,7 @@ export class Control {
 
     /** Gets or sets the transformation center on X axis (0 by default)
      * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
-    */
+     */
     @serialize()
     public get transformCenterX(): number {
         return this._transformCenterX;
@@ -1085,6 +1085,21 @@ export class Control {
         this._disabledColorItem = value;
         this._markAsDirty();
     }
+
+    /**
+     * Gets/sets the overlap group of the control.
+     * Controls with overlapGroup set to a number can be deoverlapped.
+     * Controls with overlapGroup set to undefined are not deoverlapped.
+     * @see https://doc.babylonjs.com/how_to/gui#deoverlapping
+     */
+    @serialize()
+    public overlapGroup?: number;
+    /**
+     * Gets/sets the deoverlap movement multiplier
+     */
+    @serialize()
+    public overlapDeltaMultiplier?: number;
+
     // Functions
 
     /**
@@ -1093,8 +1108,8 @@ export class Control {
      */
     constructor(
         /** defines the name of the control */
-        public name?: string) {
-    }
+        public name?: string
+    ) { }
 
     /** @hidden */
     protected _getTypeName(): string {
@@ -1236,7 +1251,7 @@ export class Control {
      * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
      */
     public linkWithMesh(mesh: Nullable<TransformNode>): void {
-        if (!this._host || this.parent && this.parent !== this._host._rootContainer) {
+        if (!this._host || (this.parent && this.parent !== this._host._rootContainer)) {
             if (mesh) {
                 Tools.Error("Cannot link a control to a mesh if the control is not at root level");
             }
@@ -1261,19 +1276,14 @@ export class Control {
     }
 
     /**
-    * Shorthand funtion to set the top, right, bottom, and left padding values on the control.
-    * @param { string | number} paddingTop - The value of the top padding.
-    * @param { string | number} paddingRight - The value of the right padding. If omitted, top is used.
-    * @param { string | number} paddingBottom - The value of the bottom padding. If omitted, top is used.
-    * @param { string | number} paddingLeft - The value of the left padding. If omitted, right is used.
-    * @see https://doc.babylonjs.com/how_to/gui#position-and-size
-    */
-    public setPadding(
-        paddingTop: string | number,
-        paddingRight?: string | number,
-        paddingBottom?: string | number,
-        paddingLeft?: string | number
-    ) {
+     * Shorthand funtion to set the top, right, bottom, and left padding values on the control.
+     * @param { string | number} paddingTop - The value of the top padding.
+     * @param { string | number} paddingRight - The value of the right padding. If omitted, top is used.
+     * @param { string | number} paddingBottom - The value of the bottom padding. If omitted, top is used.
+     * @param { string | number} paddingLeft - The value of the left padding. If omitted, right is used.
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     */
+    public setPadding(paddingTop: string | number, paddingRight?: string | number, paddingBottom?: string | number, paddingLeft?: string | number) {
         const top = paddingTop;
         const right = paddingRight ?? top;
         const bottom = paddingBottom ?? top;
@@ -1293,12 +1303,7 @@ export class Control {
      * @param { number} paddingLeft - The value in pixels of the left padding. If omitted, right is used.
      * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
-    public setPaddingInPixels(
-        paddingTop: number,
-        paddingRight?: number,
-        paddingBottom?: number,
-        paddingLeft?: number
-    ) {
+    public setPaddingInPixels(paddingTop: number, paddingRight?: number, paddingBottom?: number, paddingLeft?: number) {
         const top = paddingTop;
         const right = paddingRight ?? top;
         const bottom = paddingBottom ?? top;
@@ -1322,8 +1327,8 @@ export class Control {
             }
         }
 
-        var newLeft = ((projectedPosition.x + this._linkOffsetX.getValue(this._host)) - this._currentMeasure.width / 2);
-        var newTop = ((projectedPosition.y + this._linkOffsetY.getValue(this._host)) - this._currentMeasure.height / 2);
+        var newLeft = projectedPosition.x + this._linkOffsetX.getValue(this._host) - this._currentMeasure.width / 2;
+        var newTop = projectedPosition.y + this._linkOffsetY.getValue(this._host) - this._currentMeasure.height / 2;
 
         if (this._left.ignoreAdaptiveScaling && this._top.ignoreAdaptiveScaling) {
             if (Math.abs(newLeft - oldLeft) < 0.5) {
@@ -1426,7 +1431,7 @@ export class Control {
                 Math.floor(this._tmpMeasureA.left + leftShadowOffset - offsetX),
                 Math.floor(this._tmpMeasureA.top + topShadowOffset - offsetY),
                 Math.ceil(this._tmpMeasureA.left + this._tmpMeasureA.width + rightShadowOffset + offsetX),
-                Math.ceil(this._tmpMeasureA.top + this._tmpMeasureA.height + bottomShadowOffset + offsetY),
+                Math.ceil(this._tmpMeasureA.top + this._tmpMeasureA.height + bottomShadowOffset + offsetY)
             );
         }
     }
@@ -1537,7 +1542,7 @@ export class Control {
         if (Control.AllowAlphaInheritance) {
             context.globalAlpha *= this._alpha;
         } else if (this._alphaSet) {
-            context.globalAlpha = (this.parent && !this.parent.renderToIntermediateTexture) ? this.parent.alpha * this._alpha : this._alpha;
+            context.globalAlpha = this.parent && !this.parent.renderToIntermediateTexture ? this.parent.alpha * this._alpha : this._alpha;
         }
     }
 
@@ -1550,12 +1555,14 @@ export class Control {
         if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
             this.host._numLayoutCalls++;
 
-            this._currentMeasure.addAndTransformToRef(this._transformMatrix,
+            this._currentMeasure.addAndTransformToRef(
+                this._transformMatrix,
                 -this.paddingLeftInPixels | 0,
                 -this.paddingTopInPixels | 0,
                 this.paddingRightInPixels | 0,
                 this.paddingBottomInPixels | 0,
-                this._prevCurrentMeasureTransformedIntoGlobalSpace);
+                this._prevCurrentMeasureTransformedIntoGlobalSpace
+            );
 
             context.save();
 
@@ -1566,8 +1573,7 @@ export class Control {
                 this._rebuildLayout = false;
                 this._processMeasures(parentMeasure, context);
                 rebuildCount++;
-            }
-            while (this._rebuildLayout && rebuildCount < 3);
+            } while (this._rebuildLayout && rebuildCount < 3);
 
             if (rebuildCount >= 3) {
                 Logger.Error(`Layout cycle detected in GUI (Control name=${this.name}, uniqueId=${this.uniqueId})`);
@@ -1906,7 +1912,9 @@ export class Control {
     public _onPointerMove(target: Control, coordinates: Vector2, pointerId: number, pi: PointerInfoBase): void {
         var canNotify: boolean = this.onPointerMoveObservable.notifyObservers(coordinates, -1, target, this, pi);
 
-        if (canNotify && this.parent != null) { this.parent._onPointerMove(target, coordinates, pointerId, pi); }
+        if (canNotify && this.parent != null) {
+            this.parent._onPointerMove(target, coordinates, pointerId, pi);
+        }
     }
 
     /** @hidden */
@@ -1918,14 +1926,17 @@ export class Control {
             return false;
         }
 
-        if (this._enterCount === -1) { // -1 is for touch input, we are now sure we are with a mouse or pencil
+        if (this._enterCount === -1) {
+            // -1 is for touch input, we are now sure we are with a mouse or pencil
             this._enterCount = 0;
         }
         this._enterCount++;
 
         var canNotify: boolean = this.onPointerEnterObservable.notifyObservers(this, -1, target, this, pi);
 
-        if (canNotify && this.parent != null) { this.parent._onPointerEnter(target, pi); }
+        if (canNotify && this.parent != null) {
+            this.parent._onPointerEnter(target, pi);
+        }
 
         return true;
     }
@@ -1964,7 +1975,9 @@ export class Control {
 
         var canNotify: boolean = this.onPointerDownObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this, pi);
 
-        if (canNotify && this.parent != null) { this.parent._onPointerDown(target, coordinates, pointerId, buttonIndex, pi); }
+        if (canNotify && this.parent != null) {
+            this.parent._onPointerDown(target, coordinates, pointerId, buttonIndex, pi);
+        }
 
         return true;
     }
@@ -1984,7 +1997,9 @@ export class Control {
         }
         var canNotify: boolean = this.onPointerUpObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this, pi);
 
-        if (canNotify && this.parent != null) { this.parent._onPointerUp(target, coordinates, pointerId, buttonIndex, canNotifyClick, pi); }
+        if (canNotify && this.parent != null) {
+            this.parent._onPointerUp(target, coordinates, pointerId, buttonIndex, canNotifyClick, pi);
+        }
     }
 
     /** @hidden */
@@ -2005,7 +2020,9 @@ export class Control {
         }
         var canNotify: boolean = this.onWheelObservable.notifyObservers(new Vector2(deltaX, deltaY));
 
-        if (canNotify && this.parent != null) { this.parent._onWheelScroll(deltaX, deltaY); }
+        if (canNotify && this.parent != null) {
+            this.parent._onWheelScroll(deltaX, deltaY);
+        }
     }
 
     /** @hidden */
@@ -2070,6 +2087,9 @@ export class Control {
         }
 
         this._fontOffset = Control._GetFontOffset(this._font);
+
+        //children need to be refreshed
+        this.getDescendants().forEach((child) => child._markAllAsDirty());
     }
 
     /**
@@ -2182,11 +2202,10 @@ export class Control {
         return Control._VERTICAL_ALIGNMENT_CENTER;
     }
 
-    private static _FontHeightSizes: { [key: string]: { ascent: number, height: number, descent: number } } = {};
+    private static _FontHeightSizes: { [key: string]: { ascent: number; height: number; descent: number } } = {};
 
     /** @hidden */
-    public static _GetFontOffset(font: string): { ascent: number, height: number, descent: number } {
-
+    public static _GetFontOffset(font: string): { ascent: number; height: number; descent: number } {
         if (Control._FontHeightSizes[font]) {
             return Control._FontHeightSizes[font];
         }
@@ -2229,7 +2248,7 @@ export class Control {
      * @ignore
      * @hidden
      */
-    public static AddHeader: (control: Control, text: string, size: string | number, options: { isHorizontal: boolean, controlFirst: boolean }) => any = () => { };
+    public static AddHeader: (control: Control, text: string, size: string | number, options: { isHorizontal: boolean; controlFirst: boolean }) => any = () => { };
 
     /** @hidden */
     protected static drawEllipse(x: number, y: number, width: number, height: number, context: ICanvasRenderingContext): void {
