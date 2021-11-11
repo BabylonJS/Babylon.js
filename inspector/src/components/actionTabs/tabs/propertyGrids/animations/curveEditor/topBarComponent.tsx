@@ -71,6 +71,38 @@ export class TopBarComponent extends React.Component<ITopBarComponentProps, ITop
         }
     }
 
+    private _onNewKeyButton() {
+        // Check if there is already a key on that frame, if not, create a new one.
+        const currentFrame = this.props.context.activeFrame;
+        const keyAlreadyExists = this.props.context.getKeyAtFrame(currentFrame) !== null;
+
+        if (!keyAlreadyExists) {
+            this.props.context.onNewKeyPointRequired.notifyObservers();
+        } else {
+            if (this.props.context.activeAnimations.length === 0) {
+                return;
+            }
+            const currentAnimation = this.props.context.activeAnimations[0];
+            let value: any;
+                
+            if (this.props.context.target) {
+                value = this.props.context.target as any;
+                for (let path of currentAnimation.targetPropertyPath) {
+                    value = value[path];
+                }
+
+                if (value.clone) {
+                    value = value.clone();
+                }
+            } else {
+                value = currentAnimation.evaluate(currentFrame);
+            }
+
+            //this.props.context.onValueSet.notifyObservers(value);
+            this.props.context.onValueManuallyEntered.notifyObservers(value);
+        }
+    }
+
     public render() {
         const hasActiveAnimations = this.props.context.activeAnimations.length > 0;
         return (
@@ -100,13 +132,9 @@ export class TopBarComponent extends React.Component<ITopBarComponentProps, ITop
                 <ActionButtonComponent
                     className={hasActiveAnimations ? "" : "disabled"}
                     tooltip="New key"
-                    id="new-key"
-                    globalState={this.props.globalState}
-                    context={this.props.context}
-                    icon={newKeyIcon}
-                    onClick={() => this.props.context.onNewKeyPointRequired.notifyObservers()}
-                />
-                <ActionButtonComponent
+                    id="new-key" globalState={this.props.globalState} context={this.props.context} 
+                    icon={newKeyIcon} onClick={() => this._onNewKeyButton()}/>                
+                <ActionButtonComponent 
                     tooltip="Frame canvas"
                     id="frame-canvas"
                     globalState={this.props.globalState}
