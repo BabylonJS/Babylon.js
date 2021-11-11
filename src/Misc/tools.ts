@@ -940,8 +940,8 @@ export class Tools {
      */
     public static GetAbsoluteUrl: (url: string) => string =
         (typeof document === "object") ? (url) => { const a = document.createElement("a"); a.href = url; return a.href; } :
-        (typeof URL === "function") ? (url) => new URL(url, location.origin).href :
-        (url) => `${location.origin}/${url}`;
+        (typeof URL === "function" && typeof location === "object") ? (url) => new URL(url, location.origin).href :
+        (url) => { throw new Error("Unable to get absolute URL. Override BABYLON.Tools.GetAbsoluteUrl to a custom implementation for the current context."); };
 
     // Logs
     /**
