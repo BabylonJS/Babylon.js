@@ -125,6 +125,7 @@
 - Added support for the material stencil properties ([Popov72](https://github.com/Popov72))
 - Added space + LMB panning to texture inspector to improve accessibility ([darraghjburke](https://github.com/darraghjburke))
 - Add support to export .env environment textures using WebP ([simonihmig](https://github.com/simonihmig))
+- ACE usability improvements and addition of new Step Tangent interpolation. ([carolhmj](https://github.com/carolhmj))
 
 ### Playground
 
