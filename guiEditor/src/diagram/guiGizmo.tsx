@@ -1,5 +1,7 @@
 import { Control } from "babylonjs-gui/2D/controls/control";
 import { Matrix2D } from "babylonjs-gui/2D/math2D";
+import { Axis } from "babylonjs/Maths/math.axis";
+import { Plane } from "babylonjs/Maths/math.plane";
 import { Matrix, Vector2, Vector3 } from "babylonjs/Maths/math.vector";
 import * as React from "react";
 import { GlobalState } from "../globalState";
@@ -13,10 +15,9 @@ export interface IGuiGizmoProps {
 export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
 
     scalePoints: HTMLDivElement[] = [];
-    private _mouseX: number | undefined;
-    private _mouseY: number | undefined;
     private _mouseDown: boolean = false;
-    private _scalePointIndex: number;
+    private _scalePointIndex: number = -1;
+    private _previousPositions: Vector2[] = [];
 
     constructor(props: IGuiGizmoProps) {
         super(props);
@@ -37,7 +38,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         });
 
         this.props.globalState.onGizmoUpdateRequireObservable.add(() => {
-           // this.updateGizmo();
+             this.updateGizmo();
         })
 
     }
@@ -52,9 +53,6 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         const selectedGuiNodes = this.props.globalState.workbench.selectedGuiNodes;
         if (selectedGuiNodes.length > 0) {
             const node = selectedGuiNodes[0];
-
-            //var ox = node._currentMeasure.width * node.transformCenterX + node._currentMeasure.left;
-            //var oy = node._currentMeasure.height * node.transformCenterY + node._currentMeasure.top;
 
             var ox = node.leftInPixels;
             var oy = node.topInPixels;
@@ -105,48 +103,49 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
 
             let index = 0;
             this.scalePoints.forEach(scalePoint => {
+                    //we get the corner of the control with rotation 0
+                    let res = startingPositions[index];
+                    res.x += offsetX;
+                    res.z += offsetY;
 
-                //we get the corner of the control with rotation 0
-                let res = startingPositions[index++];
-                res.x += offsetX;
-                res.z += offsetY;
-
-                let result = new Vector2(res.x, res.z);
-                let m2d = Matrix2D.Identity();
-                let translateBack = Matrix2D.Identity();
-                let translateTo = Matrix2D.Identity();
-                let resultMatrix = Matrix2D.Identity();
+                    let result = new Vector2(res.x, res.z);
+                    let m2d = Matrix2D.Identity();
+                    let translateBack = Matrix2D.Identity();
+                    let translateTo = Matrix2D.Identity();
+                    let resultMatrix = Matrix2D.Identity();
 
 
-                var oox = node.leftInPixels + offsetX;
-                var ooy = node.topInPixels + offsetY;
+                    var oox = node.leftInPixels + offsetX;
+                    var ooy = node.topInPixels + offsetY;
 
-                Matrix2D.TranslationToRef(oox, ooy, translateBack);
-                Matrix2D.TranslationToRef(-oox, -ooy, translateTo);
-                Matrix2D.RotationToRef(node.rotation, m2d);
-                translateTo.multiplyToRef(m2d, resultMatrix);
-                resultMatrix.multiplyToRef(translateBack, resultMatrix);
-                resultMatrix.transformCoordinates(result.x, result.y, result);
+                    Matrix2D.TranslationToRef(oox, ooy, translateBack);
+                    Matrix2D.TranslationToRef(-oox, -ooy, translateTo);
+                    Matrix2D.RotationToRef(node.rotation, m2d);
+                    translateTo.multiplyToRef(m2d, resultMatrix);
+                    resultMatrix.multiplyToRef(translateBack, resultMatrix);
+                    resultMatrix.transformCoordinates(result.x, result.y, result);
 
-                //node._transformMatrix.transformCoordinates(result.x, result.y, result);
+                    //node._transformMatrix.transformCoordinates(result.x, result.y, result);
 
-                //v (x,0,y); 
-                res.x = result.x;
-                res.z = result.y;
+                    //v (x,0,y); 
+                    res.x = result.x;
+                    res.z = result.y;
+                    this._previousPositions[index].x = result.x;
+                    this._previousPositions[index].y = -result.y;
 
-                //project to screen space
-                res.z *= -1;
-                let camera = this.props.globalState.workbench._camera;
-                const scene = this.props.globalState.workbench._scene;
-                const engine = scene.getEngine();
-                let finalResult = Vector3.Project(res,
-                    Matrix.Identity(),
-                    scene.getTransformMatrix(),
-                    camera.viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight()));
+                    //project to screen space
+                    res.z *= -1;
+                    let camera = this.props.globalState.workbench._camera;
+                    const scene = this.props.globalState.workbench._scene;
+                    const engine = scene.getEngine();
+                    let finalResult = Vector3.Project(res,
+                        Matrix.Identity(),
+                        scene.getTransformMatrix(),
+                        camera.viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight()));
 
-                scalePoint.style.left = finalResult.x + "px";
-                scalePoint.style.top = finalResult.y + "px";
-
+                    scalePoint.style.left = finalResult.x + "px";
+                    scalePoint.style.top = finalResult.y + "px";
+                ++index;
 
             });
         }
@@ -154,7 +153,6 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
     }
 
     createBaseGizmo() {
-
         // Get the canvas element from the DOM.
         const canvas = document.getElementById("workbench-canvas") as HTMLCanvasElement;
 
@@ -168,8 +166,8 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             scalePoint.style.top = i * 100 + 'px';
             scalePoint.style.transform = "translate(-50%, -50%)";
             this.scalePoints.push(scalePoint);
+            this._previousPositions.push(new Vector2(0, 0));
         }
-
 
         this.scalePoints[0].addEventListener("pointerdown", this._onLeftBottomDown);
         this.scalePoints[1].addEventListener("pointerdown", this._onLeftTopDown);
@@ -185,33 +183,65 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
     }
 
     public onMove(evt: React.PointerEvent) {
-        if (this._mouseDown && this._mouseX && this._mouseY) {
-            const x = this.props.globalState.workbench._scene.pointerX;
-            const y = this.props.globalState.workbench._scene.pointerY;
-            const deltaX = x - this._mouseX;
-            const deltaY = y - this._mouseY;
+        if (this._mouseDown) {
+            this._updateScale();
+        }
+    }
 
-            const left = parseInt(this.scalePoints[this._scalePointIndex].style.left.substring(0, this.scalePoints[this._scalePointIndex].style.left.length - 2));
-            const top = parseInt(this.scalePoints[this._scalePointIndex].style.top.substring(0, this.scalePoints[this._scalePointIndex].style.top.length - 2));
+    private _updateScale() {
+        const selectedGuiNodes = this.props.globalState.workbench.selectedGuiNodes;
+        if (selectedGuiNodes.length > 0) {
+            const node = selectedGuiNodes[0];
 
-            this.scalePoints[this._scalePointIndex].style.left = left + deltaX + "px";
-            this.scalePoints[this._scalePointIndex].style.top = top + deltaY + "px";
 
-            this._mouseX = x;
-            this._mouseY = y;
+            let camera = this.props.globalState.workbench._camera;
+            const scene = this.props.globalState.workbench._scene;
+            const plane = Plane.FromPositionAndNormal(Vector3.Zero(), Axis.Y);
+            let newPosition = this.props.globalState.workbench.getPosition(scene, camera, plane);
+
+
+            let dx = newPosition.x - this._previousPositions[this._scalePointIndex].x;
+            let dy = newPosition.z - this._previousPositions[this._scalePointIndex].y;
+
+            switch (this._scalePointIndex) {
+                case 0:
+                    node.widthInPixels -= dx * 2;
+                    node.heightInPixels -= dy * 2;
+                    break;
+                case 1:
+                    node.widthInPixels -= dx * 2;
+                    node.heightInPixels += dy * 2;
+                    break;
+                case 2:
+                    node.widthInPixels += dx * 2;
+                    node.heightInPixels += dy * 2;
+                    break;
+                case 3:
+                    node.widthInPixels += dx * 2;
+                    node.heightInPixels -= dy * 2;
+                    break;
+                default:
+                    break;
+            }
+
+            //this.props.globalState.workbench.testControl.leftInPixels = newPosition.x;
+            //this.props.globalState.workbench.testControl.topInPixels = -newPosition.z;
+
+            this._previousPositions[this._scalePointIndex].x = newPosition.x;
+            this._previousPositions[this._scalePointIndex].y = newPosition.z;
+            this.updateGizmo();
+
         }
     }
 
     public onUp(evt: React.PointerEvent<HTMLElement>) {
-        this._mouseX = undefined;
-        this._mouseY = undefined;
         this._mouseDown = false;
+        this._scalePointIndex = -1;
     }
 
     private _onUp = (evt: PointerEvent) => {
-        this._mouseX = undefined;
-        this._mouseY = undefined;
         this._mouseDown = false;
+        this._scalePointIndex = -1;
     }
 
     private _onLeftBottomDown = (evt: PointerEvent) => {
@@ -221,7 +251,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
     private _onLeftTopDown = (evt: PointerEvent) => {
         this._setMousePosition(1);
     }
-    
+
     private _onRightTopDown = (evt: PointerEvent) => {
         this._setMousePosition(2);
     }
@@ -230,11 +260,9 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         this._setMousePosition(3);
     }
 
-    private _setMousePosition = (index : number) => {
-        this._mouseX = this.props.globalState.workbench._scene.pointerX;
-        this._mouseY = this.props.globalState.workbench._scene.pointerY;
+    private _setMousePosition = (index: number) => {
         this._mouseDown = true;
-        this._scalePointIndex = index; 
+        this._scalePointIndex = index;
     }
 
     render() {
