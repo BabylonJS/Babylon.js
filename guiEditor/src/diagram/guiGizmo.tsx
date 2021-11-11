@@ -3,7 +3,6 @@ import { Matrix2D } from "babylonjs-gui/2D/math2D";
 import { Matrix, Vector2, Vector3 } from "babylonjs/Maths/math.vector";
 import * as React from "react";
 import { GlobalState } from "../globalState";
-import { PropertyChangedEvent } from "../sharedUiComponents/propertyChangedEvent";
 
 require("./workbenchCanvas.scss");
 
@@ -14,9 +13,10 @@ export interface IGuiGizmoProps {
 export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
 
     scalePoints: HTMLDivElement[] = [];
-    private _headerElement: any;
-    private _borderElement: any;
-    private _canvas: HTMLCanvasElement;
+    private _mouseX: number | undefined;
+    private _mouseY: number | undefined;
+    private _mouseDown: boolean = false;
+    private _scalePointIndex: number;
 
     constructor(props: IGuiGizmoProps) {
         super(props);
@@ -36,51 +36,33 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             this.updateGizmo();
         });
 
-        /*this.props.globalState.onPropertyGridUpdateRequiredObservable.add(() => {
-            this.updateGizmo();
-        });
-
         this.props.globalState.onGizmoUpdateRequireObservable.add(() => {
-            this.updateGizmo();
-        });
-
-        this.props.globalState.onPropertyChangedObservable.add((event: PropertyChangedEvent) => {
-            ;
-            if (event.property === "rotation" ||
-                event.property === "position" ||
-                event.property === "scale") {
-                this.updateGizmo();
-            }
-        });*/
-
+           // this.updateGizmo();
+        })
 
     }
 
     componentDidMount() {
     }
 
-    onMove(evt: React.PointerEvent) {
-    }
-
-    onDown(evt: React.PointerEvent<HTMLElement>) {
-    }
-
 
     updateGizmo() {
-
-        setTimeout(() => {
-            this.updateGizmo();
-        }, 10);
 
         if (this.scalePoints[0].style.display === "none") return;
         const selectedGuiNodes = this.props.globalState.workbench.selectedGuiNodes;
         if (selectedGuiNodes.length > 0) {
             const node = selectedGuiNodes[0];
 
-            let startingPositions = [new Vector3(node.leftInPixels, 0, node.topInPixels),
-            new Vector3(node.leftInPixels, 0, node.topInPixels),
-            new Vector3(node.leftInPixels, 0, node.topInPixels),
-            new Vector3(node.leftInPixels, 0, node.topInPixels),]
+            //var ox = node._currentMeasure.width * node.transformCenterX + node._currentMeasure.left;
+            //var oy = node._currentMeasure.height * node.transformCenterY + node._currentMeasure.top;
+
+            var ox = node.leftInPixels;
+            var oy = node.topInPixels;
+
+            let startingPositions = [new Vector3(ox, 0, oy),
+            new Vector3(ox, 0, oy),
+            new Vector3(ox, 0, oy),
+            new Vector3(ox, 0, oy),];
 
             let size = this.props.globalState.guiTexture.getSize();
             //calcualte allignments
@@ -88,34 +70,38 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             let offsetY = 0;
             switch (node.horizontalAlignment) {
                 case Control.HORIZONTAL_ALIGNMENT_LEFT:
-                    offsetX = ((-size.width / 2) + node.widthInPixels / 2);
+                    offsetX = ((-size.width / 2) + node._currentMeasure.width * node.scaleX / 2);
                     break;
                 case Control.HORIZONTAL_ALIGNMENT_RIGHT:
-                    offsetX = ((size.width / 2) - node.widthInPixels / 2);
+                    offsetX = ((size.width / 2) - node._currentMeasure.width * node.scaleX / 2);
                     break;
                 default:
                     break;
             }
             switch (node.verticalAlignment) {
                 case Control.VERTICAL_ALIGNMENT_BOTTOM:
+                    offsetY = ((size.height / 2) - node._currentMeasure.height * node.scaleY / 2);
                     break;
                 case Control.VERTICAL_ALIGNMENT_TOP:
+                    offsetY = ((-size.height / 2) + node._currentMeasure.height * node.scaleY / 2);
                     break;
                 default:
                     break;
             }
 
-            startingPositions[0].x -= node.widthInPixels / 2;
-            startingPositions[0].z += node.heightInPixels / 2;
 
-            startingPositions[1].x -= node.widthInPixels / 2;
-            startingPositions[1].z -= node.heightInPixels / 2;
+            startingPositions[0].x -= node._currentMeasure.width * node.scaleX / 2;
+            startingPositions[0].z += node._currentMeasure.height * node.scaleY / 2;
 
-            startingPositions[2].x += node.widthInPixels / 2;
-            startingPositions[2].z -= node.heightInPixels / 2;
+            startingPositions[1].x -= node._currentMeasure.width * node.scaleX / 2;
+            startingPositions[1].z -= node._currentMeasure.height * node.scaleY / 2;
 
-            startingPositions[3].x += node.widthInPixels / 2;
-            startingPositions[3].z += node.heightInPixels / 2;
+            startingPositions[2].x += node._currentMeasure.width * node.scaleX / 2;
+            startingPositions[2].z -= node._currentMeasure.height * node.scaleY / 2;
+
+            startingPositions[3].x += node._currentMeasure.width * node.scaleX / 2;
+            startingPositions[3].z += node._currentMeasure.height * node.scaleY / 2;
+
 
             let index = 0;
             this.scalePoints.forEach(scalePoint => {
@@ -123,7 +109,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                 //we get the corner of the control with rotation 0
                 let res = startingPositions[index++];
                 res.x += offsetX;
-                res.y += offsetY;
+                res.z += offsetY;
 
                 let result = new Vector2(res.x, res.z);
                 let m2d = Matrix2D.Identity();
@@ -131,12 +117,18 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                 let translateTo = Matrix2D.Identity();
                 let resultMatrix = Matrix2D.Identity();
 
-                Matrix2D.TranslationToRef(node.leftInPixels, node.topInPixels, translateBack);
-                Matrix2D.TranslationToRef(-node.leftInPixels, -node.topInPixels, translateTo);
+
+                var oox = node.leftInPixels + offsetX;
+                var ooy = node.topInPixels + offsetY;
+
+                Matrix2D.TranslationToRef(oox, ooy, translateBack);
+                Matrix2D.TranslationToRef(-oox, -ooy, translateTo);
                 Matrix2D.RotationToRef(node.rotation, m2d);
                 translateTo.multiplyToRef(m2d, resultMatrix);
                 resultMatrix.multiplyToRef(translateBack, resultMatrix);
                 resultMatrix.transformCoordinates(result.x, result.y, result);
+
+                //node._transformMatrix.transformCoordinates(result.x, result.y, result);
 
                 //v (x,0,y); 
                 res.x = result.x;
@@ -165,7 +157,6 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
 
         // Get the canvas element from the DOM.
         const canvas = document.getElementById("workbench-canvas") as HTMLCanvasElement;
-        this._canvas = canvas;
 
         for (let i = 0; i < 4; ++i) {
             let scalePoint = canvas.ownerDocument!.createElement("div");
@@ -178,68 +169,73 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             scalePoint.style.transform = "translate(-50%, -50%)";
             this.scalePoints.push(scalePoint);
         }
-        /*const root = canvas;
-        this.element = root.ownerDocument!.createElement("div");
-        this.element.classList.add("frame-box");
-        root.appendChild(this.element);
 
-        this._headerElement = root.ownerDocument!.createElement("div");
-        this._headerElement.classList.add("frame-box-header");
 
-        this.element.appendChild(this._headerElement);
+        this.scalePoints[0].addEventListener("pointerdown", this._onLeftBottomDown);
+        this.scalePoints[1].addEventListener("pointerdown", this._onLeftTopDown);
+        this.scalePoints[2].addEventListener("pointerdown", this._onRightTopDown);
+        this.scalePoints[3].addEventListener("pointerdown", this._onRightBottomDown);
 
-        this._borderElement = root.ownerDocument!.createElement("div");
-        this._borderElement.classList.add("frame-box-border");
+        this.scalePoints[0].addEventListener("pointerup", this._onUp);
+        this.scalePoints[1].addEventListener("pointerup", this._onUp);
+        this.scalePoints[2].addEventListener("pointerup", this._onUp);
+        this.scalePoints[3].addEventListener("pointerup", this._onUp);
 
-        this.element.appendChild(this._borderElement);*/
-
-        // add resizing side handles
-
-        /*const rightHandle: HTMLDivElement = root.ownerDocument!.createElement("div");
-        rightHandle.className = "handle right-handle";
-        this.element.appendChild(rightHandle);
-        rightHandle.addEventListener("pointerdown", this._onRightHandlePointerDown);
-
-        const leftHandle: HTMLDivElement = root.ownerDocument!.createElement("div");
-        leftHandle.className = "handle left-handle";
-        this.element.appendChild(leftHandle);
-        leftHandle.addEventListener("pointerdown", this._onLeftHandlePointerDown);
-
-        const bottomHandle: HTMLDivElement = root.ownerDocument!.createElement("div");
-        bottomHandle.className = "handle bottom-handle";
-        this.element.appendChild(bottomHandle);
-        bottomHandle.addEventListener("pointerdown", this._onBottomHandlePointerDown);
-
-        const topHandle: HTMLDivElement = root.ownerDocument!.createElement("div");
-        topHandle.className = "handle top-handle";
-        this.element.appendChild(topHandle);
-        topHandle.addEventListener("pointerdown", this._onTopHandlePointerDown);
-
-        const topRightCornerHandle: HTMLDivElement = root.ownerDocument!.createElement("div");
-        topRightCornerHandle.className = "handle right-handle top-right-corner-handle";
-        this.element.appendChild(topRightCornerHandle);
-        topRightCornerHandle.addEventListener("pointerdown", this._onTopRightHandlePointerDown);
-
-        const bottomRightCornerHandle: HTMLDivElement = root.ownerDocument!.createElement("div");
-        bottomRightCornerHandle.className = "handle right-handle bottom-right-corner-handle";
-        this.element.appendChild(bottomRightCornerHandle);
-        bottomRightCornerHandle.addEventListener("pointerdown", this._onBottomRightHandlePointerDown);
-
-        const topLeftCornerHandle: HTMLDivElement = root.ownerDocument!.createElement("div");
-        topLeftCornerHandle.className = "handle left-handle top-left-corner-handle";
-        this.element.appendChild(topLeftCornerHandle);
-        topLeftCornerHandle.addEventListener("pointerdown", this._onTopLeftHandlePointerDown);
-
-        const bottomLeftCornerHandle: HTMLDivElement = root.ownerDocument!.createElement("div");
-        bottomLeftCornerHandle.className = "handle left-handle bottom-left-corner-handle";
-        this.element.appendChild(bottomLeftCornerHandle);
-        bottomLeftCornerHandle.addEventListener("pointerdown", this._onBottomLeftHandlePointerDown);*/
         this.updateGizmo();
     }
-    private _onRightHandlePointerDown(arg0: string, _onRightHandlePointerDown: any) {
-        throw new Error("Method not implemented.");
+
+    public onMove(evt: React.PointerEvent) {
+        if (this._mouseDown && this._mouseX && this._mouseY) {
+            const x = this.props.globalState.workbench._scene.pointerX;
+            const y = this.props.globalState.workbench._scene.pointerY;
+            const deltaX = x - this._mouseX;
+            const deltaY = y - this._mouseY;
+
+            const left = parseInt(this.scalePoints[this._scalePointIndex].style.left.substring(0, this.scalePoints[this._scalePointIndex].style.left.length - 2));
+            const top = parseInt(this.scalePoints[this._scalePointIndex].style.top.substring(0, this.scalePoints[this._scalePointIndex].style.top.length - 2));
+
+            this.scalePoints[this._scalePointIndex].style.left = left + deltaX + "px";
+            this.scalePoints[this._scalePointIndex].style.top = top + deltaY + "px";
+
+            this._mouseX = x;
+            this._mouseY = y;
+        }
     }
 
+    public onUp(evt: React.PointerEvent<HTMLElement>) {
+        this._mouseX = undefined;
+        this._mouseY = undefined;
+        this._mouseDown = false;
+    }
+
+    private _onUp = (evt: PointerEvent) => {
+        this._mouseX = undefined;
+        this._mouseY = undefined;
+        this._mouseDown = false;
+    }
+
+    private _onLeftBottomDown = (evt: PointerEvent) => {
+        this._setMousePosition(0);
+    }
+
+    private _onLeftTopDown = (evt: PointerEvent) => {
+        this._setMousePosition(1);
+    }
+    
+    private _onRightTopDown = (evt: PointerEvent) => {
+        this._setMousePosition(2);
+    }
+
+    private _onRightBottomDown = (evt: PointerEvent) => {
+        this._setMousePosition(3);
+    }
+
+    private _setMousePosition = (index : number) => {
+        this._mouseX = this.props.globalState.workbench._scene.pointerX;
+        this._mouseY = this.props.globalState.workbench._scene.pointerY;
+        this._mouseDown = true;
+        this._scalePointIndex = index; 
+    }
 
     render() {
         return (
