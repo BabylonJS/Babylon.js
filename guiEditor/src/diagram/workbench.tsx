@@ -26,6 +26,7 @@ import { Tools } from "../tools";
 import { CreateGround } from "babylonjs/Meshes/Builders/groundBuilder";
 import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial";
 import { TextureBlock } from "babylonjs/Materials/Node/Blocks/Dual/textureBlock";
+import { Camera } from "babylonjs";
 require("./workbenchCanvas.scss");
 
 export interface IWorkbenchComponentProps {
@@ -762,7 +763,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         this.globalState.guiTexture.addControl(this.artBoardBackground);
 
-        let nodeMaterial = new NodeMaterial("nm", this._scene);
+        let nodeMaterial = new NodeMaterial("NodeMaterial", this._scene);
         nodeMaterial.loadAsync("GUIEditorNodeMaterial.json").then(() => {
             nodeMaterial.build(true);
             this._textureMesh.material = nodeMaterial;
@@ -772,7 +773,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             }
         });
 
-        /*NodeMaterial.ParseFromSnippetAsync("#GZI99M#14", this._scene).then(nodeMaterial => {
+        //Included For future debuging sessions //#GZI99M#14//
+        /*NodeMaterial.ParseFromSnippetAsync("#8VNE5G#11", this._scene).then(nodeMaterial => {
             this._textureMesh.material = nodeMaterial;
             if (nodeMaterial) {
                 let block = nodeMaterial.getBlockByName("Texture") as TextureBlock;
@@ -783,6 +785,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.setCameraRadius();
         this._camera = new ArcRotateCamera("Camera", -Math.PI / 2, 0, this._cameraRadias, Vector3.Zero(), this._scene);
         this._camera.maxZ = this._cameraMaxRadiasFactor * 2;
+        // This attaches the camera to the canvas
         this.addControls(this._scene, this._camera);
 
         this._scene.getEngine().onCanvasPointerOutObservable.clear();
