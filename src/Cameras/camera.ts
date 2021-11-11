@@ -1385,10 +1385,7 @@ export class Camera extends Node {
         if (parsedCamera.isEnabled !== undefined) {
             camera.setEnabled(parsedCamera.isEnabled);
         }
-        else {
-            camera.setEnabled(true);
-        }
-
+        
         return camera;
     }
 }

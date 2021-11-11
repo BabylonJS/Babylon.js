@@ -716,10 +716,7 @@ export abstract class Light extends Node implements ISortableLight {
         if (parsedLight.isEnabled !== undefined) {
             light.setEnabled(parsedLight.isEnabled);
         }
-        else {
-            light.setEnabled(true);
-        }
-
+        
         return light;
     }
 
