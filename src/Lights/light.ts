@@ -713,6 +713,13 @@ export abstract class Light extends Node implements ISortableLight {
             scene.beginAnimation(light, parsedLight.autoAnimateFrom, parsedLight.autoAnimateTo, parsedLight.autoAnimateLoop, parsedLight.autoAnimateSpeed || 1.0);
         }
 
+        if ("isEnabled" in parsedLight) {
+            light.setEnabled(parsedLight.isEnabled);
+        }
+        else {
+            light.setEnabled(true);
+        }
+
         return light;
     }
 

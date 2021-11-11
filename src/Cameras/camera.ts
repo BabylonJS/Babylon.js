@@ -1382,6 +1382,13 @@ export class Camera extends Node {
             scene.beginAnimation(camera, parsedCamera.autoAnimateFrom, parsedCamera.autoAnimateTo, parsedCamera.autoAnimateLoop, parsedCamera.autoAnimateSpeed || 1.0);
         }
 
+        if ("isEnabled" in parsedCamera) {
+            camera.setEnabled(parsedCamera.isEnabled);
+        }
+        else {
+            camera.setEnabled(true);
+        }
+
         return camera;
     }
 }
