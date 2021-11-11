@@ -495,6 +495,7 @@
 
                     border: 4px solid black;
                     border-radius: 12px;
+                    transform: scale(1);
                 }
 
                 &.selected {
@@ -514,6 +515,8 @@
                     border-top-left-radius: 7px;
                     background: black;
                     color: white;
+                    transform: scaleX(1.01) translateY(-0.5px);
+                    transform-origin: center;
 
                     &.constant {
                         border-color: #464348;
@@ -556,7 +559,8 @@
                     grid-column: 1;
 
                     display: grid;
-                    grid-template-columns: 50% 50%;                  
+                    grid-template-columns: 50% 50%; 
+                    transform: scale(1);                 
                 }
 
                 .content {
