@@ -24,6 +24,12 @@ const endKeyHoverIcon = require("../assets/animationEndHoverIcon.svg");
 const stopIcon = require("../assets/animationStopIcon.svg");
 const stopHoverIcon = require("../assets/animationStopHoverIcon.svg");
 
+const nextFrameIcon = require("../assets/animationNextFrameIcon.svg");
+const nextFrameHoverIcon = require("../assets/animationNextFrameHoverIcon.svg");
+
+const lastFrameIcon = require("../assets/animationLastFrameIcon.svg");
+const lastFrameHoverIcon = require("../assets/animationLastFrameHoverIcon.svg");
+
 interface IMediaPlayerComponentProps {
     globalState: GlobalState;
     context: Context;
@@ -64,27 +70,11 @@ IMediaPlayerComponentState
     }
 
     private _onPrevKey() {
-        if (!this.props.context.animations || !this.props.context.animations.length || this.props.context.activeAnimations.length === 0) {
-            return;
+        const prevKey = this.props.context.getPrevKey();
+
+        if (prevKey !== null) {
+            this.props.context.onMoveToFrameRequired.notifyObservers(prevKey);
         }
-
-        let prevKey = -Number.MAX_VALUE;
-
-        for (var animation of this.props.context.activeAnimations) {
-            const keys = animation.getKeys();
-
-            for (var key of keys) {
-                if (key.frame < this.props.context.activeFrame && key.frame > prevKey) {
-                    prevKey = key.frame;
-                }
-            }
-        }
-
-        if (prevKey === -Number.MAX_VALUE) {
-            prevKey = this.props.context.fromKey;
-        }
-
-        this.props.context.onMoveToFrameRequired.notifyObservers(prevKey);
     }
     
     private _onRewind() {
@@ -97,28 +87,20 @@ IMediaPlayerComponentState
         this.forceUpdate();
     }
 
+    private _onPrevFrame() {
+        this.props.context.onMoveToFrameRequired.notifyObservers(Math.max(0, this.props.context.activeFrame - 1));
+    }
+
+    private _onNextFrame() {
+        this.props.context.onMoveToFrameRequired.notifyObservers(this.props.context.activeFrame + 1);
+    }
+
     private _onNextKey() {
-        if (!this.props.context.animations || !this.props.context.animations.length) {
-            return;
+        const nextKey = this.props.context.getNextKey();
+
+        if (nextKey !== null) {
+            this.props.context.onMoveToFrameRequired.notifyObservers(nextKey);
         }
-
-        let nextKey = Number.MAX_VALUE;
-
-        for (var animation of this.props.context.activeAnimations) {
-            const keys = animation.getKeys();
-
-            for (var key of keys) {
-                if (key.frame > this.props.context.activeFrame && key.frame < nextKey) {
-                    nextKey = key.frame;
-                }
-            }
-        }
-
-        if (nextKey === Number.MAX_VALUE) {
-            nextKey = this.props.context.toKey;
-        }
-
-        this.props.context.onMoveToFrameRequired.notifyObservers(nextKey);
     }
 
     private _onEndKey() {
@@ -134,6 +116,7 @@ IMediaPlayerComponentState
         return (
             <div id="media-player">
                 <ControlButtonComponent tooltip="Rewind to the first frame of the selected timeline"  id="start-key" context={this.props.context} globalState={this.props.globalState} icon={startKeyIcon}  hoverIcon={startKeyHoverIcon} onClick={() => this._onFirstKey()}/>
+                <ControlButtonComponent tooltip="Rewind to the previous frame" id="prev-frame" context={this.props.context} globalState={this.props.globalState} icon={lastFrameIcon} hoverIcon={lastFrameHoverIcon} onClick={() => this._onPrevFrame()}/>
                 <ControlButtonComponent tooltip="Rewind to the previous key frame" id="first-key" context={this.props.context} globalState={this.props.globalState} icon={firstKeyIcon} hoverIcon={firstKeyHoverIcon} onClick={() => this._onPrevKey()}/>
                 { (this.props.context.isPlaying && this.props.context.forwardAnimation || !this.props.context.isPlaying) && 
                     <ControlButtonComponent tooltip="Play backwards" id="rev-key" context={this.props.context} globalState={this.props.globalState} icon={revKeyIcon} hoverIcon={revKeyHoverIcon} onClick={() => this._onRewind()}/>
@@ -148,6 +131,7 @@ IMediaPlayerComponentState
                     <ControlButtonComponent tooltip="Stop" id="stop-key" context={this.props.context} globalState={this.props.globalState} icon={stopIcon} hoverIcon={stopHoverIcon} onClick={() => this._onStop()}/>
                 }
                 <ControlButtonComponent tooltip="Advance to the next key frame" id="next-key" context={this.props.context} globalState={this.props.globalState} icon={nextKeyIcon} hoverIcon={nextKeyHoverIcon} onClick={() => this._onNextKey()}/>
+                <ControlButtonComponent tooltip="Advance to the next frame" id="next-frame" context={this.props.context} globalState={this.props.globalState} icon={nextFrameIcon} hoverIcon={nextFrameHoverIcon} onClick={() => this._onNextFrame()}/>
                 <ControlButtonComponent tooltip="Advance to the last frame of the selected timeline" id="end-key" context={this.props.context} globalState={this.props.globalState} icon={endKeyIcon}  hoverIcon={endKeyHoverIcon} onClick={() => this._onEndKey()}/>
             </div>
         );

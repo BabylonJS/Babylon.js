@@ -6,6 +6,7 @@ import { Scene } from "babylonjs/scene";
 import { IAnimatable } from "babylonjs/Animations/animatable.interface";
 import { AnimationGroup, TargetedAnimation } from "babylonjs/Animations/animationGroup";
 import { Animatable } from "babylonjs/Animations/animatable";
+import { AnimationKeyInterpolation } from "babylonjs/Animations/animationKey";
 
 export class Context {
     title: string;
@@ -25,9 +26,12 @@ export class Context {
     toKey: number;
     forwardAnimation = true;
     isPlaying: boolean;
+    clipLength: number;
 
     referenceMinFrame = 0;
     referenceMaxFrame = 100;
+
+    focusedInput = false;
 
     onActiveAnimationChanged = new Observable<void>();
     onActiveKeyPointChanged = new Observable<void>();
@@ -51,6 +55,7 @@ export class Context {
     onLinearTangentRequired = new Observable<void>();
     onBreakTangentRequired = new Observable<void>();
     onUnifyTangentRequired = new Observable<void>();
+    onStepTangentRequired = new Observable<void>();
 
     onDeleteAnimation = new Observable<Animation>();
 
@@ -72,6 +77,11 @@ export class Context {
     onEditAnimationRequired = new Observable<Animation>();
     onEditAnimationUIClosed = new Observable<void>();
 
+    onClipLengthIncreased = new Observable<number>();
+    onClipLengthDecreased = new Observable<number>();
+
+    onInterpolationModeSet = new Observable<{keyId: number, value: AnimationKeyInterpolation}>();
+
     onSelectToActivated = new Observable<{from:number, to:number}>();
 
     public prepare() {
@@ -88,6 +98,8 @@ export class Context {
         this.referenceMinFrame = 0;
         this.referenceMaxFrame = this.toKey;
         this.snippetId = animation.snippetId;
+
+        this.clipLength = this.referenceMaxFrame;
 
         if (!animation || !animation.hasRunningRuntimeAnimations) {
             return;
@@ -152,7 +164,6 @@ export class Context {
 
         for (var animationEntry of this.animations) {
             const animation = this.useTargetAnimations ? (animationEntry as TargetedAnimation).animation : animationEntry as Animation;
-
             if (!animation.hasRunningRuntimeAnimations) {
                 return;
             }
@@ -214,5 +225,53 @@ export class Context {
         }
 
         return -1;
+    }
+
+    public getPrevKey() : Nullable<number> {
+        if (!this.animations || !this.animations.length || this.activeAnimations.length === 0) {
+            return null;
+        }
+
+        let prevKey = -Number.MAX_VALUE;
+
+        for (var animation of this.activeAnimations) {
+            const keys = animation.getKeys();
+
+            for (var key of keys) {
+                if (key.frame < this.activeFrame && key.frame > prevKey) {
+                    prevKey = key.frame;
+                }
+            }
+        }
+
+        if (prevKey === -Number.MAX_VALUE) {
+            prevKey = this.fromKey;
+        }
+
+        return prevKey;
+    }
+
+    public getNextKey() : Nullable<number> {
+        if (!this.animations || !this.animations.length) {
+            return null;
+        }
+
+        let nextKey = Number.MAX_VALUE;
+
+        for (var animation of this.activeAnimations) {
+            const keys = animation.getKeys();
+
+            for (var key of keys) {
+                if (key.frame > this.activeFrame && key.frame < nextKey) {
+                    nextKey = key.frame;
+                }
+            }
+        }
+
+        if (nextKey === Number.MAX_VALUE) {
+            nextKey = this.toKey;
+        }
+
+        return nextKey;
     }
 }

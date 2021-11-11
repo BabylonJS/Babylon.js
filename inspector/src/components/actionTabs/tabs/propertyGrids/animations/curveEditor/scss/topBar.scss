@@ -1,6 +1,6 @@
 #top-bar {
     display:grid;
-    grid-template-columns: 40px 200px 75px 8px 75px 8px 40px 40px 40px 40px 40px 40px 40px 1fr 40px;
+    grid-template-columns: 40px 200px 75px 8px 75px 8px 40px 40px 40px 40px 40px 40px 40px 40px 1fr 40px;
     grid-template-rows: 100%;
 
     .disabled {
@@ -68,5 +68,10 @@
     #unify-tangent {
         grid-row: 1;
         grid-column: 12;
+    }
+
+    #step-tangent {
+        grid-row: 1;
+        grid-column: 13;
     }
 }

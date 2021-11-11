@@ -10,10 +10,11 @@
         background: #222222;
         height: 25px;
         align-self: center;
-        display: grid;
-        align-content: center;
-        justify-content: center;font-family: 'acumin-pro-condensed';
         font-size: 12pt;
+
+        #clip-range {
+            width: 100%;
+        }
     }
 
     .control-button {
@@ -51,36 +52,46 @@
         align-self: center;
         justify-self: center;
         grid-template-rows: 100%;
-        grid-template-columns: 23px 23px 23px 23px 23px 23px;
+        grid-template-columns: 23px 23px 23px 23px 23px 23px 23px;
 
         #start-key {            
             grid-row: 1;
             grid-column: 1;
         }
-
-        #first-key {            
+        
+        #prev-frame {
             grid-row: 1;
             grid-column: 2;
         }
 
-        #rev-key {            
+        #first-key {            
             grid-row: 1;
             grid-column: 3;
         }
 
-        #fwd-key {            
+        #rev-key {            
             grid-row: 1;
             grid-column: 4;
         }
 
-        #next-key {            
+        #fwd-key {            
             grid-row: 1;
             grid-column: 5;
         }
 
-        #end-key {            
+        #next-key {            
             grid-row: 1;
             grid-column: 6;
+        }
+
+        #next-frame {
+            grid-row: 1;
+            grid-column: 7;
+        }
+
+        #end-key {            
+            grid-row: 1;
+            grid-column: 8;
         }
     }
 
