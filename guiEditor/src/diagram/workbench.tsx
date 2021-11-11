@@ -749,7 +749,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         light.intensity = 0.9;
 
         let textureSize = 1024;
-        this._textureMesh = CreateGround("GuiCanvas", {width: 1, height: 1, subdivisions: 1}, this._scene);
+        this._textureMesh = CreateGround("GuiCanvas", { width: 1, height: 1, subdivisions: 1 }, this._scene);
         this._textureMesh.scaling.x = textureSize;
         this._textureMesh.scaling.z = textureSize;
         this.globalState.guiTexture = AdvancedDynamicTexture.CreateForMesh(this._textureMesh, textureSize, textureSize, true);
@@ -762,13 +762,23 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         this.globalState.guiTexture.addControl(this.artBoardBackground);
 
-        NodeMaterial.ParseFromSnippetAsync("#GZI99M#6", this._scene).then(nodeMaterial => {
+        let nodeMaterial = new NodeMaterial("nm", this._scene);
+        nodeMaterial.loadAsync("GUIEditorNodeMaterial.json").then(() => {
+            nodeMaterial.build(true);
             this._textureMesh.material = nodeMaterial;
-            if(nodeMaterial) {
+            if (nodeMaterial) {
                 let block = nodeMaterial.getBlockByName("Texture") as TextureBlock;
                 block.texture = this.globalState.guiTexture;
             }
         });
+
+        /*NodeMaterial.ParseFromSnippetAsync("#GZI99M#14", this._scene).then(nodeMaterial => {
+            this._textureMesh.material = nodeMaterial;
+            if (nodeMaterial) {
+                let block = nodeMaterial.getBlockByName("Texture") as TextureBlock;
+                block.texture = this.globalState.guiTexture;
+            }
+        });*/
 
         this.setCameraRadius();
         this._camera = new ArcRotateCamera("Camera", -Math.PI / 2, 0, this._cameraRadias, Vector3.Zero(), this._scene);
