@@ -315,11 +315,11 @@ export class WaterMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh._materialDefines) {
+        if (!subMesh.materialDefines) {
             subMesh.materialDefines = new WaterMaterialDefines();
         }
 
-        var defines = <WaterMaterialDefines>subMesh._materialDefines;
+        var defines = <WaterMaterialDefines>subMesh.materialDefines;
         var scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
@@ -497,7 +497,7 @@ export class WaterMaterial extends PushMaterial {
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         var scene = this.getScene();
 
-        var defines = <WaterMaterialDefines>subMesh._materialDefines;
+        var defines = <WaterMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }

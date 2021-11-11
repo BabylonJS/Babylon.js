@@ -1,4 +1,4 @@
-import { DeepImmutable } from "../types";
+import { DeepImmutable, Nullable } from "../types";
 import { ArrayTools } from "../Misc/arrayTools";
 import { Matrix, Vector3 } from "../Maths/math.vector";
 import { BoundingSphere } from "../Culling/boundingSphere";
@@ -6,6 +6,8 @@ import { BoundingSphere } from "../Culling/boundingSphere";
 import { ICullable } from "./boundingInfo";
 import { Epsilon } from '../Maths/math.constants';
 import { Plane } from '../Maths/math.plane';
+
+declare type DrawWrapper = import("../Materials/drawWrapper").DrawWrapper;
 
 /**
  * Class used to store bounding box information
@@ -63,6 +65,11 @@ export class BoundingBox implements ICullable {
      * @hidden
      */
     public _tag: number;
+
+    /** @hidden */
+    public _drawWrapperFront: Nullable<DrawWrapper> = null;
+    /** @hidden */
+    public _drawWrapperBack: Nullable<DrawWrapper> = null;
 
     /**
      * Creates a new bounding box
@@ -255,6 +262,14 @@ export class BoundingBox implements ICullable {
         }
 
         return true;
+    }
+
+    /**
+     * Disposes the resources of the class
+     */
+    public dispose(): void {
+        this._drawWrapperFront?.dispose();
+        this._drawWrapperBack?.dispose();
     }
 
     // Statics

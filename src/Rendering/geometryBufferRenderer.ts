@@ -7,7 +7,6 @@ import { SmartArray } from "../Misc/smartArray";
 import { Texture } from "../Materials/Textures/texture";
 import { InternalTexture } from "../Materials/Textures/internalTexture";
 import { MultiRenderTarget } from "../Materials/Textures/multiRenderTarget";
-import { DrawWrapper } from "../Materials/drawWrapper";
 import { PrePassRenderer } from "../Rendering/prePassRenderer";
 import { MaterialHelper } from "../Materials/materialHelper";
 import { Scene } from "../scene";
@@ -99,7 +98,6 @@ export class GeometryBufferRenderer {
     private _attachments: number[];
     private _useUbo: boolean;
 
-    protected _drawWrapper: DrawWrapper;
     protected _cachedDefines: string;
 
     /**
@@ -314,7 +312,6 @@ export class GeometryBufferRenderer {
         this._scene = scene;
         this._ratio = ratio;
         this._useUbo = scene.getEngine().supportsUniformBuffers;
-        this._drawWrapper = new DrawWrapper(scene.getEngine());
 
         GeometryBufferRenderer._SceneComponentInitialization(this._scene);
 
@@ -458,10 +455,11 @@ export class GeometryBufferRenderer {
         }
 
         // Get correct effect
-        var join = defines.join("\n");
-        if (this._cachedDefines !== join) {
-            this._cachedDefines = join;
-            this._drawWrapper.effect = this._scene.getEngine().createEffect(
+        const drawWrapper = subMesh._getDrawWrapper(undefined, true)!;
+        const cachedDefines = drawWrapper.defines;
+        const join = defines.join("\n");
+        if (cachedDefines !== join) {
+            drawWrapper.setEffect(this._scene.getEngine().createEffect(
                 "geometry",
                 {
                     attributes: attribs,
@@ -491,10 +489,10 @@ export class GeometryBufferRenderer {
                     indexParameters: { buffersCount: this._multiRenderTarget.textures.length - 1, maxSimultaneousMorphTargets: numMorphInfluencers },
                 },
                 this._scene.getEngine()
-            );
+            ), join);
         }
 
-        return this._drawWrapper.effect!.isReady();
+        return drawWrapper.effect!.isReady();
     }
 
     /**
@@ -628,9 +626,15 @@ export class GeometryBufferRenderer {
             var world = effectiveMesh.getWorldMatrix();
 
             if (this.isReady(subMesh, hardwareInstancedRendering)) {
-                const effect = this._drawWrapper.effect!;
+                const drawWrapper = subMesh._getDrawWrapper();
 
-                engine.enableEffect(this._drawWrapper);
+                if (!drawWrapper) {
+                    return;
+                }
+
+                const effect = drawWrapper.effect!;
+
+                engine.enableEffect(drawWrapper);
                 if (!hardwareInstancedRendering) {
                     renderingMesh._bind(subMesh, effect, material.fillMode);
                 }
@@ -639,8 +643,8 @@ export class GeometryBufferRenderer {
                     effect.setMatrix("viewProjection", scene.getTransformMatrix());
                     effect.setMatrix("view", scene.getViewMatrix());
                 } else {
-                    this._scene.finalizeSceneUbo();
                     MaterialHelper.BindSceneUniformBuffer(effect, this._scene.getSceneUniformBuffer());
+                    this._scene.finalizeSceneUbo();
                 }
 
                 if (material) {
@@ -660,7 +664,7 @@ export class GeometryBufferRenderer {
                         sideOrientation = instanceDataStorage.sideOrientation;
                     }
 
-                    material._preBind(this._drawWrapper, sideOrientation);
+                    material._preBind(drawWrapper, sideOrientation);
 
                     // Alpha test
                     if (material.needAlphaTesting()) {
@@ -709,9 +713,10 @@ export class GeometryBufferRenderer {
                 if (this._enableVelocity) {
                     effect.setMatrix("previousWorld", this._previousTransformationMatrices[effectiveMesh.uniqueId].world);
                     effect.setMatrix("previousViewProjection", this._previousTransformationMatrices[effectiveMesh.uniqueId].viewProjection);
-                    if (hardwareInstancedRendering && renderingMesh.hasThinInstances) {
-                        effect.setMatrix("world", world);
-                    }
+                }
+
+                if (hardwareInstancedRendering && renderingMesh.hasThinInstances) {
+                    effect.setMatrix("world", world);
                 }
 
                 // Draw

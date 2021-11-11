@@ -9,7 +9,7 @@ uniform Material
 	vec4 reflectionRightColor;
 	vec4 refractionLeftColor;
 	vec4 refractionRightColor;
-	vec4 emissiveLeftColor; 
+	vec4 emissiveLeftColor;
 	vec4 emissiveRightColor;
 	vec2 vDiffuseInfos;
 	vec2 vAmbientInfos;
@@ -28,7 +28,7 @@ uniform Material
 	mat4 emissiveMatrix;
 	mat4 lightmapMatrix;
 	mat4 specularMatrix;
-	mat4 bumpMatrix; 
+	mat4 bumpMatrix;
 	vec2 vTangentSpaceParams;
 	float pointSize;
     float alphaCutOff;

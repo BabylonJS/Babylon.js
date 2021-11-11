@@ -10,22 +10,21 @@ import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { MaterialHelper } from "../Materials/materialHelper";
 import { Camera } from "../Cameras/camera";
 import { Constants } from "../Engines/constants";
-import { DrawWrapper } from "../Materials/drawWrapper";
 
 import "../Shaders/depth.fragment";
 import "../Shaders/depth.vertex";
 import { _WarnImport } from '../Misc/devTools';
+
+declare type Material = import("../Materials/material").Material;
+declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 
 /**
  * This represents a depth renderer in Babylon.
  * A depth renderer will render to it's depth map every frame which can be displayed or used in post processing
  */
 export class DepthRenderer {
-    private static _Counter = 0;
-
     private _scene: Scene;
     private _depthMap: RenderTargetTexture;
-    private _nameForDrawWrapper: string;
     private readonly _storeNonLinearDepth: boolean;
     private readonly _clearColor: Color4;
 
@@ -53,6 +52,15 @@ export class DepthRenderer {
     }
 
     /**
+     * Sets a specific material to be used to render a mesh/a list of meshes by the depth renderer
+     * @param mesh mesh or array of meshes
+     * @param material material to use by the depth render when rendering the mesh(es). If undefined is passed, the specific material created by the depth renderer will be used.
+     */
+    public setMaterialForRendering(mesh: AbstractMesh | AbstractMesh[], material?: Material): void {
+        this._depthMap.setMaterialForRendering(mesh, material);
+    }
+
+    /**
      * Instantiates a depth renderer
      * @param scene The scene the renderer belongs to
      * @param type The texture type of the depth map (default: Engine.TEXTURETYPE_FLOAT)
@@ -73,9 +81,9 @@ export class DepthRenderer {
 
         DepthRenderer._SceneComponentInitialization(this._scene);
 
-        this._nameForDrawWrapper = Constants.SUBMESH_DRAWWRAPPER_DEPTHRENDERER_PREFIX + DepthRenderer._Counter++;
-        this._camera = camera;
         var engine = scene.getEngine();
+
+        this._camera = camera;
 
         if (samplingMode !== Texture.NEAREST_SAMPLINGMODE) {
             if (type === Constants.TEXTURETYPE_FLOAT && !engine._caps.textureFloatLinearFiltering) {
@@ -88,7 +96,7 @@ export class DepthRenderer {
 
         // Render target
         var format = (this.isPacked || !engine._features.supportExtendedTextureFormats) ? Constants.TEXTUREFORMAT_RGBA : Constants.TEXTUREFORMAT_R;
-        this._depthMap = new RenderTargetTexture("depthMap", { width: engine.getRenderWidth(), height: engine.getRenderHeight() }, this._scene, false, true, type,
+        this._depthMap = new RenderTargetTexture("DepthRenderer", { width: engine.getRenderWidth(), height: engine.getRenderHeight() }, this._scene, false, true, type,
             false, samplingMode, undefined, undefined, undefined,
             format);
         this._depthMap.wrapU = Texture.CLAMP_ADDRESSMODE;
@@ -152,9 +160,19 @@ export class DepthRenderer {
             if (this.isReady(subMesh, hardwareInstancedRendering) && camera) {
                 subMesh._renderId = scene.getRenderId();
 
-                const drawWrapper = subMesh._getDrawWrapper(this._nameForDrawWrapper)!;
-                const effect = DrawWrapper.GetEffect(drawWrapper)!;
+                const renderingMaterial = effectiveMesh._internalAbstractMeshDataInfo._materialForRenderPass?.[engine.currentRenderPassId];
+
+                let drawWrapper = subMesh._getDrawWrapper();
+                if (!drawWrapper && renderingMaterial) {
+                    drawWrapper = renderingMaterial._getDrawWrapper();
+                }
                 const cameraIsOrtho = camera.mode === Camera.ORTHOGRAPHIC_CAMERA;
+
+                if (!drawWrapper) {
+                    return;
+                }
+
+                const effect = drawWrapper.effect!;
 
                 engine.enableEffect(drawWrapper);
 
@@ -162,8 +180,12 @@ export class DepthRenderer {
                     renderingMesh._bind(subMesh, effect, material.fillMode);
                 }
 
-                effect.setMatrix("viewProjection", scene.getTransformMatrix());
-                effect.setMatrix("world", effectiveMesh.getWorldMatrix());
+                if (!renderingMaterial) {
+                    effect.setMatrix("viewProjection", scene.getTransformMatrix());
+                    effect.setMatrix("world", effectiveMesh.getWorldMatrix());
+                } else {
+                    renderingMaterial.bindForSubMesh(effectiveMesh.getWorldMatrix(), effectiveMesh as Mesh, subMesh);
+                }
 
                 let minZ: number, maxZ: number;
 
@@ -177,37 +199,39 @@ export class DepthRenderer {
 
                 effect.setFloat2("depthValues", minZ, minZ + maxZ);
 
-                // Alpha test
-                if (material && material.needAlphaTesting()) {
-                    var alphaTexture = material.getAlphaTestTexture();
+                if (!renderingMaterial) {
+                    // Alpha test
+                    if (material && material.needAlphaTesting()) {
+                        var alphaTexture = material.getAlphaTestTexture();
 
-                    if (alphaTexture) {
-                        effect.setTexture("diffuseSampler", alphaTexture);
-                        effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
-                    }
-                }
-
-                // Bones
-                if (renderingMesh.useBones && renderingMesh.computeBonesUsingShaders && renderingMesh.skeleton) {
-                    const skeleton = renderingMesh.skeleton;
-
-                    if (skeleton.isUsingTextureForMatrices) {
-                        const boneTexture = skeleton.getTransformMatrixTexture(renderingMesh);
-                        if (!boneTexture) {
-                            return;
+                        if (alphaTexture) {
+                            effect.setTexture("diffuseSampler", alphaTexture);
+                            effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
                         }
-
-                        effect.setTexture("boneSampler", boneTexture);
-                        effect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
-                    } else {
-                        effect.setMatrices("mBones", skeleton.getTransformMatrices((renderingMesh)));
                     }
-                }
 
-                // Morph targets
-                MaterialHelper.BindMorphTargetParameters(renderingMesh, effect);
-                if (renderingMesh.morphTargetManager && renderingMesh.morphTargetManager.isUsingTextureForTargets) {
-                    renderingMesh.morphTargetManager._bind(effect);
+                    // Bones
+                    if (renderingMesh.useBones && renderingMesh.computeBonesUsingShaders && renderingMesh.skeleton) {
+                        const skeleton = renderingMesh.skeleton;
+
+                        if (skeleton.isUsingTextureForMatrices) {
+                            const boneTexture = skeleton.getTransformMatrixTexture(renderingMesh);
+                            if (!boneTexture) {
+                                return;
+                            }
+
+                            effect.setTexture("boneSampler", boneTexture);
+                            effect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
+                        } else {
+                            effect.setMatrices("mBones", skeleton.getTransformMatrices((renderingMesh)));
+                        }
+                    }
+
+                    // Morph targets
+                    MaterialHelper.BindMorphTargetParameters(renderingMesh, effect);
+                    if (renderingMesh.morphTargetManager && renderingMesh.morphTargetManager.isUsingTextureForTargets) {
+                        renderingMesh.morphTargetManager._bind(effect);
+                    }
                 }
 
                 // Draw
@@ -252,22 +276,23 @@ export class DepthRenderer {
      * @returns if the depth renderer is ready to render the depth map
      */
     public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
-        var material: any = subMesh.getMaterial();
-        if (material.disableDepthWrite) {
+        const engine = this._scene.getEngine();
+        const mesh = subMesh.getMesh();
+
+        const renderingMaterial = mesh._internalAbstractMeshDataInfo._materialForRenderPass?.[engine.currentRenderPassId];
+
+        if (renderingMaterial) {
+            return renderingMaterial.isReadyForSubMesh(mesh, subMesh, useInstances);
+        }
+
+        var material = subMesh.getMaterial();
+        if (!material || material.disableDepthWrite) {
             return false;
         }
 
         var defines = [];
 
-        const subMeshEffect = subMesh._getDrawWrapper(this._nameForDrawWrapper, true)!;
-        const engine = this._scene.getEngine();
-
-        let effect = subMeshEffect.effect!;
-        let cachedDefines = subMeshEffect.defines;
-
         var attribs = [VertexBuffer.PositionKind];
-
-        var mesh = subMesh.getMesh();
 
         // Alpha test
         if (material && material.needAlphaTesting() && material.getAlphaTestTexture()) {
@@ -340,19 +365,19 @@ export class DepthRenderer {
         }
 
         // Get correct effect
-        var join = defines.join("\n");
+        const drawWrapper = subMesh._getDrawWrapper(undefined, true)!;
+        const cachedDefines = drawWrapper.defines;
+        const join = defines.join("\n");
         if (cachedDefines !== join) {
-            cachedDefines = join;
-            effect = engine.createEffect("depth",
+            drawWrapper.setEffect(engine.createEffect("depth",
                 attribs,
                 ["world", "mBones", "boneTextureWidth", "viewProjection", "diffuseMatrix", "depthValues", "morphTargetInfluences", "morphTargetTextureInfo", "morphTargetTextureIndices"],
                 ["diffuseSampler", "morphTargets", "boneSampler"], join,
-                undefined, undefined, undefined, { maxSimultaneousMorphTargets: numMorphInfluencers });
+                undefined, undefined, undefined, { maxSimultaneousMorphTargets: numMorphInfluencers }),
+                join);
         }
 
-        subMeshEffect.setEffect(effect, cachedDefines);
-
-        return effect.isReady();
+        return drawWrapper.effect!.isReady();
     }
 
     /**
@@ -367,6 +392,20 @@ export class DepthRenderer {
      * Disposes of the depth renderer.
      */
     public dispose(): void {
-        this._depthMap.dispose();
+        const keysToDelete = [];
+        for (var key in this._scene._depthRenderer) {
+            const depthRenderer = this._scene._depthRenderer[key];
+            if (depthRenderer === this) {
+                keysToDelete.push(key);
+            }
+        }
+
+        if (keysToDelete.length > 0) {
+            this._depthMap.dispose();
+
+            for (const key of keysToDelete) {
+                delete this._scene._depthRenderer[key];
+            }
+        }
     }
 }

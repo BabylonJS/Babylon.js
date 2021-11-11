@@ -1379,6 +1379,22 @@ declare module "babylonjs-node-editor/diagram/properties/imageSourcePropertyTabC
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-node-editor/diagram/properties/vectorMergerPropertyComponent" {
+    import * as React from "react";
+    import { IPropertyComponentProps } from "babylonjs-node-editor/diagram/properties/propertyComponentProps";
+    export class VectorMergerPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        constructor(props: IPropertyComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/diagram/properties/colorMergerPropertyComponent" {
+    import * as React from "react";
+    import { IPropertyComponentProps } from "babylonjs-node-editor/diagram/properties/propertyComponentProps";
+    export class ColorMergerPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        constructor(props: IPropertyComponentProps);
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-node-editor/diagram/propertyLedger" {
     import { ComponentClass } from 'react';
     import { IPropertyComponentProps } from "babylonjs-node-editor/diagram/properties/propertyComponentProps";
@@ -2255,7 +2271,7 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/color3LineCompone
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-node-editor/sharedUiComponents/propertyChangedEvent";
-    import { Color3 } from 'babylonjs/Maths/math.color';
+    import { Color3, Color4 } from 'babylonjs/Maths/math.color';
     import { LockObject } from "babylonjs-node-editor/sharedUiComponents/tabs/propertyGrids/lockObject";
     export interface IColor3LineComponentProps {
         label: string;
@@ -2266,25 +2282,31 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/color3LineCompone
         icon?: string;
         lockObject?: LockObject;
         iconLabel?: string;
+        onValueChange?: (value: string) => void;
     }
     export class Color3LineComponent extends React.Component<IColor3LineComponentProps, {
         isExpanded: boolean;
-        color: Color3;
+        color: Color3 | Color4;
+        colorText: string;
     }> {
         private _localChange;
         constructor(props: IColor3LineComponentProps);
+        private convertToColor3;
         shouldComponentUpdate(nextProps: IColor3LineComponentProps, nextState: {
-            color: Color3;
+            color: Color3 | Color4;
+            colorText: string;
         }): boolean;
-        setPropertyValue(newColor: Color3): void;
+        setPropertyValue(newColor: Color3 | Color4, newColorText: string): void;
         onChange(newValue: string): void;
         switchExpandState(): void;
-        raiseOnPropertyChanged(previousValue: Color3): void;
+        raiseOnPropertyChanged(previousValue: Color3 | Color4): void;
         updateStateR(value: number): void;
         updateStateG(value: number): void;
         updateStateB(value: number): void;
         copyToClipboard(): void;
         convert(colorString: string): void;
+        private _colorStringSaved;
+        private _colorPickerOpen;
         private _colorString;
         render(): JSX.Element;
     }
@@ -4185,6 +4207,18 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export class VectorMergerPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        constructor(props: IPropertyComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export class ColorMergerPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        constructor(props: IPropertyComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
     export class PropertyLedger {
         static RegisteredControls: {
             [key: string]: React.ComponentClass<IPropertyComponentProps>;
@@ -4953,25 +4987,31 @@ declare module NODEEDITOR {
         icon?: string;
         lockObject?: LockObject;
         iconLabel?: string;
+        onValueChange?: (value: string) => void;
     }
     export class Color3LineComponent extends React.Component<IColor3LineComponentProps, {
         isExpanded: boolean;
-        color: BABYLON.Color3;
+        color: BABYLON.Color3 | BABYLON.Color4;
+        colorText: string;
     }> {
         private _localChange;
         constructor(props: IColor3LineComponentProps);
+        private convertToColor3;
         shouldComponentUpdate(nextProps: IColor3LineComponentProps, nextState: {
-            color: BABYLON.Color3;
+            color: BABYLON.Color3 | BABYLON.Color4;
+            colorText: string;
         }): boolean;
-        setPropertyValue(newColor: BABYLON.Color3): void;
+        setPropertyValue(newColor: BABYLON.Color3 | BABYLON.Color4, newColorText: string): void;
         onChange(newValue: string): void;
         switchExpandState(): void;
-        raiseOnPropertyChanged(previousValue: BABYLON.Color3): void;
+        raiseOnPropertyChanged(previousValue: BABYLON.Color3 | BABYLON.Color4): void;
         updateStateR(value: number): void;
         updateStateG(value: number): void;
         updateStateB(value: number): void;
         copyToClipboard(): void;
         convert(colorString: string): void;
+        private _colorStringSaved;
+        private _colorPickerOpen;
         private _colorString;
         render(): JSX.Element;
     }

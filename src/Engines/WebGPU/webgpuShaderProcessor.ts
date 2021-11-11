@@ -8,6 +8,7 @@ import { WebGPUSamplerDescription, WebGPUShaderProcessingContext, WebGPUTextureD
 export abstract class WebGPUShaderProcessor implements IShaderProcessor {
 
     public static readonly AutoSamplerSuffix = "Sampler";
+    public static readonly LeftOvertUBOName = "LeftOver";
 
     public static UniformSizes: { [type: string]: number } = {
         // GLSL types
@@ -101,7 +102,7 @@ export abstract class WebGPUShaderProcessor implements IShaderProcessor {
         if (!this.webgpuProcessingContext.leftOverUniforms.length) {
             return "";
         }
-        const name = "LeftOver";
+        const name = WebGPUShaderProcessor.LeftOvertUBOName;
         let availableUBO = this.webgpuProcessingContext.availableBuffers[name];
         if (!availableUBO) {
             availableUBO = {

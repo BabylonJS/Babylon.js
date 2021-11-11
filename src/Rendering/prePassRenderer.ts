@@ -151,6 +151,7 @@ export class PrePassRenderer {
         } else {
             this._currentTarget = this.defaultRT;
         }
+        this._engine.currentRenderPassId = this._currentTarget.renderPassId;
     }
 
     /**
@@ -226,7 +227,7 @@ export class PrePassRenderer {
 
         PrePassRenderer._SceneComponentInitialization(this._scene);
         this.defaultRT = this._createRenderTarget("sceneprePassRT", null);
-        this._setRenderTarget(null);
+        this._currentTarget = this.defaultRT;
     }
 
     /**
@@ -692,7 +693,7 @@ export class PrePassRenderer {
         let enablePrePass = false;
         this._scene.imageProcessingConfiguration.applyByPostProcess = false;
 
-        if (this._scene._depthPeelingRenderer) {
+        if (this._scene._depthPeelingRenderer && this._scene.useOrderIndependentTransparency) {
             this._scene._depthPeelingRenderer.setPrePassRenderer(this);
             enablePrePass = true;
         }

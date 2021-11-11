@@ -35,6 +35,7 @@ import "../Engines/Extensions/engine.alpha";
 declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 declare type ProceduralTexture = import("../Materials/Textures/Procedurals/proceduralTexture").ProceduralTexture;
 declare type Scene = import("../scene").Scene;
+declare type Engine = import("../Engines/engine").Engine;
 
 /**
  * This represents a particle system in Babylon.
@@ -112,7 +113,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     private _vertexBuffers: { [key: string]: VertexBuffer } = {};
     private _spriteBuffer: Nullable<Buffer>;
     private _indexBuffer: Nullable<DataBuffer>;
-    private _drawWrapper: DrawWrapper;
+    private _drawWrappers: DrawWrapper[][]; // first index is render pass id, second index is blend mode
     private _customWrappers: { [blendMode: number]: Nullable<DrawWrapper> };
     private _scaledColorStep = new Color4(0, 0, 0, 0);
     private _colorDiff = new Color4(0, 0, 0, 0);
@@ -248,6 +249,9 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     public setCustomEffect(effect: Nullable<Effect>, blendMode: number = 0) {
         this._customWrappers[blendMode] = new DrawWrapper(this._engine);
         this._customWrappers[blendMode]!.effect = effect;
+        if (this._customWrappers[blendMode]!.drawContext) {
+            this._customWrappers[blendMode]!.drawContext!.useInstancing = this._useInstancing;
+        }
     }
 
     /** @hidden */
@@ -309,7 +313,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         this._customWrappers = { 0: new DrawWrapper(this._engine) };
         this._customWrappers[0]!.effect = customEffect;
 
-        this._drawWrapper = new DrawWrapper(this._engine);
+        this._drawWrappers = [];
         this._useInstancing = this._engine.getCaps().instancedArrays;
 
         this._createIndexBuffer();
@@ -972,6 +976,21 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         return this;
     }
 
+    /**
+     * Resets the draw wrappers cache
+     */
+    public resetDrawCache(): void {
+        for (const drawWrappers of this._drawWrappers) {
+            if (drawWrappers) {
+                for (const drawWrapper of drawWrappers) {
+                    drawWrapper?.dispose();
+                }
+            }
+        }
+
+        this._drawWrappers = [];
+    }
+
     private _fetchR(u: number, v: number, width: number, height: number, pixels: Uint8Array): number {
         u = Math.abs(u) * 0.5 + 0.5;
         v = Math.abs(v) * 0.5 + 0.5;
@@ -1070,6 +1089,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         }
         this._vertexBuffers["offset"] = offsets;
 
+        this.resetDrawCache();
     }
 
     private _createIndexBuffer() {
@@ -1746,24 +1766,39 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         this.fillDefines(defines, blendMode);
 
         // Effect
-        var join = defines.join("\n");
-        if (this._drawWrapper.defines !== join) {
-            this._drawWrapper.defines = join;
+        const currentRenderPassId = this._engine._features.supportRenderPasses ? (this._engine as Engine).currentRenderPassId : Constants.RENDERPASS_MAIN;
+        let drawWrappers = this._drawWrappers[currentRenderPassId];
+        if (!drawWrappers) {
+            drawWrappers = this._drawWrappers[currentRenderPassId] = [];
+        }
+        let drawWrapper = drawWrappers[blendMode];
+        if (!drawWrapper) {
+            drawWrapper = new DrawWrapper(this._engine);
+            if (drawWrapper.drawContext) {
+                drawWrapper.drawContext.useInstancing = this._useInstancing;
+            }
+            drawWrappers[blendMode] = drawWrapper;
+        }
 
+        var join = defines.join("\n");
+        if (drawWrapper.defines !== join) {
             var attributesNamesOrOptions: Array<string> = [];
             var effectCreationOption: Array<string> = [];
             var samplers: Array<string> = [];
 
             this.fillUniformsAttributesAndSamplerNames(effectCreationOption, attributesNamesOrOptions, samplers);
 
-            this._drawWrapper.effect = this._engine.createEffect(
-                "particles",
-                attributesNamesOrOptions,
-                effectCreationOption,
-                samplers, join);
+            drawWrapper.setEffect(
+                this._engine.createEffect(
+                    "particles",
+                    attributesNamesOrOptions,
+                    effectCreationOption,
+                    samplers, join
+                ),
+                join);
         }
 
-        return this._drawWrapper;
+        return drawWrapper;
     }
 
     /**
@@ -1857,7 +1892,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             }
 
             if (this._vertexBuffer) {
-                this._vertexBuffer.update(this._vertexData);
+                this._vertexBuffer.updateDirectly(this._vertexData, 0, this._particles.length);
             }
         }
 
@@ -1892,6 +1927,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         for (var key in this._vertexBuffers) {
             this._vertexBuffers[key]._rebuild();
         }
+
+        this.resetDrawCache();
     }
 
     /**
@@ -2050,6 +2087,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      * @param disposeTexture defines if the particle texture must be disposed as well (true by default)
      */
     public dispose(disposeTexture = true): void {
+        this.resetDrawCache();
+
         if (this._vertexBuffer) {
             this._vertexBuffer.dispose();
             this._vertexBuffer = null;

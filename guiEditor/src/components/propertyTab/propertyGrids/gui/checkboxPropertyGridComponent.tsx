@@ -8,6 +8,9 @@ import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLi
 import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
 
+const fillColorIcon: string = require("../../../../sharedUiComponents/imgs/fillColorIcon.svg");
+const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");
+
 interface ICheckboxPropertyGridComponentProps {
     checkbox: Checkbox;
     lockObject: LockObject;
@@ -27,8 +30,8 @@ export class CheckboxPropertyGridComponent extends React.Component<ICheckboxProp
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={checkbox} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <hr/>
                 <TextLineComponent label="CHECKBOX" value=" " color="grey"></TextLineComponent>
-                <FloatLineComponent lockObject={this.props.lockObject} label="Check size ratio" target={checkbox} propertyName="checkSizeRatio" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <CheckBoxLineComponent label="Checked" target={checkbox} propertyName="isChecked" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <FloatLineComponent iconLabel={"Check size ratio"} icon={sizeIcon} lockObject={this.props.lockObject} label="" target={checkbox} propertyName="checkSizeRatio" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CheckBoxLineComponent iconLabel={"Checked"} icon={fillColorIcon} label="" target={checkbox} propertyName="isChecked" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
             </div>
         );
     }

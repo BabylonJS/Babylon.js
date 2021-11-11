@@ -638,6 +638,7 @@ export interface NativeEngineOptions {
 /** @hidden */
 class CommandBufferEncoder {
     private readonly _commandStream: NativeDataStream;
+    private readonly _pending = new Array<NativeData>();
     private _isCommandBufferScopeActive = false;
 
     public constructor(private readonly _engine: INativeEngine) {
@@ -659,31 +660,31 @@ class CommandBufferEncoder {
         }
 
         this._isCommandBufferScopeActive = false;
-        this._engine.submitCommands();
+        this._submit();
     }
 
     public startEncodingCommand(command: NativeData) {
         this._commandStream.writeNativeData(command);
     }
 
-    public encodeCommandArgAsUInt32(commandArg: unknown) {
-        this._commandStream.writeUint32(commandArg as number);
+    public encodeCommandArgAsUInt32(commandArg: number) {
+        this._commandStream.writeUint32(commandArg);
     }
 
     public encodeCommandArgAsUInt32s(commandArg: Uint32Array) {
         this._commandStream.writeUint32Array(commandArg);
     }
 
-    public encodeCommandArgAsInt32(commandArg: unknown) {
-        this._commandStream.writeInt32(commandArg as number);
+    public encodeCommandArgAsInt32(commandArg: number) {
+        this._commandStream.writeInt32(commandArg);
     }
 
     public encodeCommandArgAsInt32s(commandArg: Int32Array) {
         this._commandStream.writeInt32Array(commandArg);
     }
 
-    public encodeCommandArgAsFloat32(commandArg: unknown) {
-        this._commandStream.writeFloat32(commandArg as number);
+    public encodeCommandArgAsFloat32(commandArg: number) {
+        this._commandStream.writeFloat32(commandArg);
     }
 
     public encodeCommandArgAsFloat32s(commandArg: Float32Array) {
@@ -692,12 +693,18 @@ class CommandBufferEncoder {
 
     public encodeCommandArgAsNativeData(commandArg: NativeData) {
         this._commandStream.writeNativeData(commandArg);
+        this._pending.push(commandArg);
     }
 
     public finishEncodingCommand() {
         if (!this._isCommandBufferScopeActive) {
-            this._engine.submitCommands();
+            this._submit();
         }
+    }
+
+    private _submit() {
+        this._engine.submitCommands();
+        this._pending.length = 0;
     }
 }
 
@@ -810,6 +817,8 @@ export class NativeEngine extends Engine {
             needsInvertingBitmap: true,
             useUBOBindingCache: true,
             needShaderCodeInlining: true,
+            needToAlwaysBindUniformBuffers: false,
+            supportRenderPasses: true,
             _collectUbosUpdatedInFrame: false,
         };
 
@@ -931,14 +940,14 @@ export class NativeEngine extends Engine {
         }
 
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_CLEAR);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(Boolean(backBuffer && color));
-        this._commandBufferEncoder.encodeCommandArgAsFloat32(color?.r);
-        this._commandBufferEncoder.encodeCommandArgAsFloat32(color?.g);
-        this._commandBufferEncoder.encodeCommandArgAsFloat32(color?.b);
-        this._commandBufferEncoder.encodeCommandArgAsFloat32(color?.a ?? 1);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(depth);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(backBuffer && color ? 1 : 0);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(color ? color.r : 0);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(color ? color.g : 0);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(color ? color.b : 0);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(color ? color.a : 1);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(depth ? 1 : 0);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(1);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(stencil);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(stencil ? 1 : 0);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(0);
         this._commandBufferEncoder.finishEncodingCommand();
     }
@@ -1233,11 +1242,11 @@ export class NativeEngine extends Engine {
         this._zOffsetUnits = zOffsetUnits;
 
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETSTATE);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(culling);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(culling ? 1 : 0);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(zOffset);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(zOffsetUnits);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(this.cullBackFaces ?? cullBackFaces ?? true);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(reverseSide);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32((this.cullBackFaces ?? cullBackFaces ?? true) ? 1 : 0);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(reverseSide ? 1 : 0);
         this._commandBufferEncoder.finishEncodingCommand();
     }
 

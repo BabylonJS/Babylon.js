@@ -420,6 +420,8 @@ export abstract class Light extends Node implements ISortableLight {
 
         if (needUpdate) {
             this._uniformBuffer.update();
+        } else {
+            this._uniformBuffer.bindUniformBuffer();
         }
     }
 
@@ -602,13 +604,14 @@ export abstract class Light extends Node implements ISortableLight {
      */
     public serialize(): any {
         var serializationObject = SerializationHelper.Serialize(this);
+        serializationObject.uniqueId = this.uniqueId;
 
         // Type
         serializationObject.type = this.getTypeID();
 
         // Parent
         if (this.parent) {
-            serializationObject.parentId = this.parent.id;
+            serializationObject.parentId = this.parent.uniqueId;
         }
 
         // Inclusion / exclusions

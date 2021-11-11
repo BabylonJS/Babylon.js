@@ -89,7 +89,7 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
      */
     constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false, forceGeometryBuffer = false) {
         super(name, "screenSpaceReflection", [
-            "projection", "view", "threshold", "reflectionSpecularFalloffExponent", "strength", "step", "roughnessFactor"
+            "projection", "view", "threshold", "reflectionSpecularFalloffExponent", "strength", "stepSize", "roughnessFactor"
         ], [
             "textureSampler", "normalSampler", "positionSampler", "reflectivitySampler"
         ], options, camera, samplingMode, engine, reusable,

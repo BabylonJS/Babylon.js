@@ -1200,15 +1200,21 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Shadows
+        const currentRenderPassId = engine.currentRenderPassId;
         for (var light of this.lightSources) {
             let generator = light.getShadowGenerator();
 
             if (generator && (!generator.getShadowMap()?.renderList || (generator.getShadowMap()?.renderList && generator.getShadowMap()?.renderList?.indexOf(this) !== -1))) {
+                if (generator.getShadowMap()) {
+                    engine.currentRenderPassId = generator.getShadowMap()!.renderPassId;
+                }
                 for (var subMesh of this.subMeshes) {
                     if (!generator.isReady(subMesh, hardwareInstancedRendering, subMesh.getMaterial()?.needAlphaBlendingForMesh(this) ?? false)) {
+                        engine.currentRenderPassId = currentRenderPassId;
                         return false;
                     }
                 }
+                engine.currentRenderPassId = currentRenderPassId;
             }
         }
 
@@ -1927,6 +1933,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         this.getScene()._activeIndices.addCount(subMesh.indexCount * instancesCount, false);
 
         // Draw
+        if (engine._currentDrawContext) {
+            engine._currentDrawContext.useInstancing = true;
+        }
         this._bind(subMesh, effect, fillMode);
         this._draw(subMesh, fillMode, instancesCount);
 
@@ -1955,6 +1964,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         this.getScene()._activeIndices.addCount(subMesh.indexCount * instancesCount, false);
 
         // Draw
+        if (engine._currentDrawContext) {
+            engine._currentDrawContext.useInstancing = true;
+        }
         this._bind(subMesh, effect, fillMode);
         this._draw(subMesh, fillMode, instancesCount);
 
@@ -1999,6 +2011,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (hardwareInstancedRendering) {
             this._renderWithInstances(subMesh, fillMode, batch, effect, engine);
         } else {
+            if (engine._currentDrawContext) {
+                engine._currentDrawContext.useInstancing = false;
+            }
+
             let instanceCount = 0;
             if (batch.renderSelf[subMesh._id]) {
                 // Draw
@@ -3442,15 +3458,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Parent
         if (this.parent) {
-            serializationObject.parentId = this.parent.id;
+            serializationObject.parentId = this.parent.uniqueId;
         }
 
         // Geometry
         serializationObject.isUnIndexed = this.isUnIndexed;
         var geometry = this._geometry;
         if (geometry && this.subMeshes) {
-            var geometryId = geometry.id;
-            serializationObject.geometryId = geometryId;
+            serializationObject.geometryUniqueId = geometry.uniqueId;
+            serializationObject.geometryId = geometry.id;
 
             // SubMeshes
             serializationObject.subMeshes = [];
@@ -3525,7 +3541,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             };
 
             if (instance.parent) {
-                serializationInstance.parentId = instance.parent.id;
+                serializationInstance.parentId = instance.parent.uniqueId;
             }
 
             if (instance.rotationQuaternion) {
