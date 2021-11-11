@@ -430,6 +430,10 @@ export class GraphNode {
         this._promotionWarning.appendChild(img);
         this._headerContainer.appendChild(this._promotionWarning);
 
+        var selectionBorder = root.ownerDocument!.createElement("div");
+        selectionBorder.classList.add("selection-border");
+        this._visual.appendChild(selectionBorder);
+
         this._connections = root.ownerDocument!.createElement("div");
         this._connections.classList.add("connections");
         this._visual.appendChild(this._connections);
@@ -445,10 +449,6 @@ export class GraphNode {
         this._content = root.ownerDocument!.createElement("div");
         this._content.classList.add("content");
         this._visual.appendChild(this._content);
-
-        var selectionBorder = root.ownerDocument!.createElement("div");
-        selectionBorder.classList.add("selection-border");
-        this._visual.appendChild(selectionBorder);
 
         root.appendChild(this._visual);
 
