@@ -15,6 +15,7 @@ const flatTangentIcon = require("./assets/flatTangentIcon.svg");
 const linearTangentIcon = require("./assets/linearTangentIcon.svg");
 const breakTangentIcon = require("./assets/breakTangentIcon.svg");
 const unifyTangentIcon = require("./assets/unifyTangentIcon.svg");
+const stepTangentIcon = require("./assets/stepTangentIcon.svg");
 
 interface ITopBarComponentProps {
     globalState: GlobalState;
@@ -125,7 +126,13 @@ ITopBarComponentState
                     className={this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 0 ? "" : "disabled"}
                     tooltip="Unify tangent"
                     id="unify-tangent" globalState={this.props.globalState} context={this.props.context} 
-                    icon={unifyTangentIcon} onClick={() => this.props.context.onUnifyTangentRequired.notifyObservers()}/>                            
+                    icon={unifyTangentIcon} onClick={() => this.props.context.onUnifyTangentRequired.notifyObservers()}/>
+                <ActionButtonComponent
+                    className={this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 0 ? "" : "disabled"}
+                    tooltip="Step tangent"
+                    id="step-tangent" globalState={this.props.globalState} context={this.props.context}
+                    icon={stepTangentIcon} onClick={() => this.props.context.onStepTangentRequired.notifyObservers()}
+                />                            
             </div>
         );
     }

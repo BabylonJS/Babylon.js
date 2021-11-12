@@ -1238,6 +1238,8 @@ export class Camera extends Node {
         SerializationHelper.AppendSerializedAnimations(this, serializationObject);
         serializationObject.ranges = this.serializeAnimationRanges();
 
+        serializationObject.isEnabled = this.isEnabled();
+
         return serializationObject;
     }
 
@@ -1377,6 +1379,11 @@ export class Camera extends Node {
 
         if (parsedCamera.autoAnimate) {
             scene.beginAnimation(camera, parsedCamera.autoAnimateFrom, parsedCamera.autoAnimateTo, parsedCamera.autoAnimateLoop, parsedCamera.autoAnimateSpeed || 1.0);
+        }
+
+        // Check if isEnabled is defined to be back compatible with prior serialized versions.
+        if (parsedCamera.isEnabled !== undefined) {
+            camera.setEnabled(parsedCamera.isEnabled);
         }
 
         return camera;

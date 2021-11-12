@@ -3,6 +3,7 @@ import { Nullable } from "babylonjs/types";
 import * as React from "react";
 import { Context } from "../context";
 import { Curve } from "./curve";
+import { AnimationKeyInterpolation } from "babylonjs/Animations/animationKey";
 
 interface ICurveComponentProps {
     curve: Curve;
@@ -21,6 +22,7 @@ ICurveComponentState
 > {    
     private _onDataUpdatedObserver: Nullable<Observer<void>>;
     private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
+    private _onInterpolationModeSetObserver : Nullable<Observer<{keyId: number, value: AnimationKeyInterpolation}>>;
 
     constructor(props: ICurveComponentProps) {
         super(props);
@@ -35,7 +37,11 @@ ICurveComponentState
             }
             this._onDataUpdatedObserver = null;
             this.forceUpdate();
-        });        
+        });
+        
+        this._onInterpolationModeSetObserver = props.context.onInterpolationModeSet.add(({keyId, value}) => {
+            this.props.curve.updateInterpolationMode(keyId, value);
+        });
     }
 
     componentWillUnmount() {
@@ -45,6 +51,10 @@ ICurveComponentState
 
         if (this._onActiveAnimationChangedObserver) {
             this.props.context.onActiveAnimationChanged.remove(this._onActiveAnimationChangedObserver);
+        }
+
+        if (this._onInterpolationModeSetObserver) {
+            this.props.context.onInterpolationModeSet.remove(this._onInterpolationModeSetObserver);
         }
     }
 
@@ -65,7 +75,7 @@ ICurveComponentState
             <svg
                 style={{ cursor: "pointer", overflow: "auto" }}>            
             <path
-                d={this.props.curve.gePathData(this.props.convertX, this.props.convertY)}
+                d={this.props.curve.getPathData(this.props.convertX, this.props.convertY)}
                 style={{
                     stroke: this.props.curve.color,
                     fill: "none",

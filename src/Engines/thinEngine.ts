@@ -618,18 +618,16 @@ export class ThinEngine {
         return this._shaderPlatformName;
     }
 
-    protected _snapshotRenderingEnabled = false;
     /**
      * Enables or disables the snapshot rendering mode
      * Note that the WebGL engine does not support snapshot rendering so setting the value won't have any effect for this engine
      */
     public get snapshotRendering(): boolean {
-        return this._snapshotRenderingEnabled;
+        return false;
     }
 
     public set snapshotRendering(activate) {
         // WebGL engine does not support snapshot rendering
-        this._snapshotRenderingEnabled = false;
     }
 
     protected _snapshotRenderingMode = Constants.SNAPSHOTRENDERING_STANDARD;

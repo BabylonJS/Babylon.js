@@ -136,12 +136,12 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
         }
     }
 
-    getSnapshotBeforeUpdate() {
-        this._animationCurveEditorContext = null;
-        return null;
-    }
-
-    componentDidUpdate() {
+    componentDidUpdate(prevProps : IAnimationGridComponentProps) {
+        const prevId = (prevProps.animatable as any).uniqueId;
+        const currId = (this.props.animatable as any).uniqueId;
+        if (prevId !== currId) {
+            this._animationCurveEditorContext = null;
+        }
     }
 
     render() {

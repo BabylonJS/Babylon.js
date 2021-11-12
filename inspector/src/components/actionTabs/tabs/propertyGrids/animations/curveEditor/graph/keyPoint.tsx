@@ -1,3 +1,5 @@
+import { Animation } from "babylonjs/Animations/animation";
+import { AnimationKeyInterpolation } from "babylonjs/Animations/animationKey";
 import { TmpVectors, Vector2 } from "babylonjs/Maths/math.vector";
 import { Observer } from "babylonjs/Misc/observable";
 import { Nullable } from "babylonjs/types";
@@ -63,6 +65,7 @@ IKeyPointComponentState
     private _onLinearTangentRequiredObserver: Nullable<Observer<void>>;
     private _onBreakTangentRequiredObserver: Nullable<Observer<void>>;
     private _onUnifyTangentRequiredObserver: Nullable<Observer<void>>;
+    private _onStepTangentRequiredObserver: Nullable<Observer<void>>;
     private _onSelectAllKeysObserver: Nullable<Observer<void>>;
 
     private _pointerIsDown: boolean;
@@ -147,6 +150,16 @@ IKeyPointComponentState
             this._linearTangent();
         });
 
+        this._onStepTangentRequiredObserver = this.props.context.onStepTangentRequired.add(() => {
+            const isSelected = this.props.context.activeKeyPoints?.indexOf(this) !== -1;
+
+            if (!isSelected) {  
+                return;
+            }
+
+            this._stepTangent();
+        });
+
         this._onSelectionRectangleMovedObserver = this.props.context.onSelectionRectangleMoved.add(rect1 => {
             if (!this._svgHost.current) {
                 return;
@@ -189,10 +202,8 @@ IKeyPointComponentState
             if (mainKeyPoint === this || !mainKeyPoint) {
                 return;
             }
-
             if (this.state.selectedState !== SelectionState.None && this.props.keyId !== 0) { // Move frame for every selected or siblins
                 let newFrameValue = mainKeyPoint.state.x + this._offsetXToMain;
-
                 this.setState({x: newFrameValue});
                 this.props.onFrameValueChanged(this.props.invertX(newFrameValue));
             }
@@ -296,6 +307,10 @@ IKeyPointComponentState
             this.props.context.onLinearTangentRequired.remove(this._onLinearTangentRequiredObserver);
         }
 
+        if (this._onStepTangentRequiredObserver) {
+            this.props.context.onStepTangentRequired.remove(this._onStepTangentRequiredObserver);
+        }
+
         if (this._onSelectionRectangleMovedObserver) {
             this.props.context.onSelectionRectangleMoved.remove(this._onSelectionRectangleMovedObserver);
         }
@@ -335,16 +350,19 @@ IKeyPointComponentState
     }
 
     private _breakTangent() {
+        this.props.context.onInterpolationModeSet.notifyObservers({keyId: this.props.keyId, value: AnimationKeyInterpolation.NONE});
         this.props.curve.updateLockedTangentMode(this.props.keyId, false);
         this.forceUpdate();
     }
 
     private _unifyTangent() {
+        this.props.context.onInterpolationModeSet.notifyObservers({keyId: this.props.keyId, value: AnimationKeyInterpolation.NONE});
         this.props.curve.updateLockedTangentMode(this.props.keyId, true);
         this.forceUpdate();
     }
 
     private _flattenTangent() {
+        this.props.context.onInterpolationModeSet.notifyObservers({keyId: this.props.keyId, value: AnimationKeyInterpolation.NONE});
         if (this.state.tangentSelectedIndex === -1 || this.state.tangentSelectedIndex === 0) {
             if (this.props.keyId !== 0) {
                 this.props.curve.updateInTangentFromControlPoint(this.props.keyId, 0);
@@ -361,6 +379,8 @@ IKeyPointComponentState
     }
 
     private _linearTangent() {
+        this.props.context.onInterpolationModeSet.notifyObservers({keyId: this.props.keyId, value: AnimationKeyInterpolation.NONE});
+        
         if (this.state.tangentSelectedIndex === -1 || this.state.tangentSelectedIndex === 0) {
             if (this.props.keyId !== 0) {
                 this.props.curve.storeDefaultInTangent(this.props.keyId);
@@ -374,6 +394,12 @@ IKeyPointComponentState
         }
 
         this.props.curve.onDataUpdatedObservable.notifyObservers();
+        this.forceUpdate();
+    }
+
+    private _stepTangent() {
+        this.props.context.onInterpolationModeSet.notifyObservers({keyId: this.props.keyId, value: AnimationKeyInterpolation.STEP});
+
         this.forceUpdate();
     }
 
@@ -474,7 +500,6 @@ IKeyPointComponentState
         if (!this._pointerIsDown || this.state.selectedState !==  SelectionState.Selected) {
             return;
         }
-
         if (this._controlMode === ControlMode.Key) {
             const diffX = evt.nativeEvent.offsetX - this._sourcePointerX;
             const diffY = evt.nativeEvent.offsetY - this._sourcePointerY;
@@ -503,7 +528,6 @@ IKeyPointComponentState
             let previousX = this.props.getPreviousX();
             let nextX = this.props.getNextX();
             const epsilon = 0.01;
-
             if (previousX !== null) {
                 newX = Math.max(previousX + epsilon, newX);
             }
@@ -511,7 +535,6 @@ IKeyPointComponentState
             if (nextX !== null) {
                 newX = Math.min(nextX - epsilon, newX);
             }
-
             if (this.props.keyId !== 0) {
                 let frame = this.props.invertX(newX);
                 this.props.onFrameValueChanged(frame);
@@ -603,22 +626,36 @@ IKeyPointComponentState
             return null;
         }
 
+        const animationType = this.props.curve.animation.dataType;
+        const isColorAnimation = animationType === Animation.ANIMATIONTYPE_COLOR3 || animationType === Animation.ANIMATIONTYPE_COLOR4;
+
         const svgImageIcon = this.state.selectedState === SelectionState.Selected ? keySelected : (this.state.selectedState === SelectionState.Siblings ? keyActive : keyInactive);
         const keys = this.props.curve.keys;
 
         const isLockedTangent = keys[this.props.keyId].lockedTangent ?? true;
-
+        const hasStepTangentIn = keys[this.props.keyId-1]?.interpolation ?? false; 
+        const hasStepTangentOut = keys[this.props.keyId]?.interpolation ?? false;
+        const hasDefinedInTangent = this.props.curve.hasDefinedInTangent(this.props.keyId);
+        const hasDefinedOutTangent = this.props.curve.hasDefinedOutTangent(this.props.keyId); 
+        
         const convertedX = this.props.invertX(this.state.x);
         const convertedY = this.props.invertY(this.state.y);
-        const inControlPointValue = convertedY - this.props.curve.getInControlPoint(this.props.keyId);
-        const outControlPointValue = convertedY + this.props.curve.getOutControlPoint(this.props.keyId);
-       
-        // We want to store the delta in the key local space
-        this._outVec = new Vector2(this.props.convertX(convertedX + 1) - this.state.x, this.props.convertY(outControlPointValue) - this.state.y);
-        this._inVec = new Vector2(this.props.convertX(convertedX - 1) - this.state.x, this.props.convertY(inControlPointValue) - this.state.y);
+        
+        if (hasDefinedInTangent) {
+            const inControlPointValue = convertedY - this.props.curve.getInControlPoint(this.props.keyId)!;
+            this._inVec = new Vector2(this.props.convertX(convertedX - 1) - this.state.x, this.props.convertY(inControlPointValue) - this.state.y);
+        } else {
+            this._inVec = new Vector2();
+        }
+        if (hasDefinedOutTangent) {
+            const outControlPointValue = convertedY + this.props.curve.getOutControlPoint(this.props.keyId)!;
+            this._outVec = new Vector2(this.props.convertX(convertedX + 1) - this.state.x, this.props.convertY(outControlPointValue) - this.state.y);
+        } else {
+            this._outVec = new Vector2();
+        }
+        
         this._storedLengthIn = this._inVec.length();
         this._storedLengthOut = this._outVec.length();
-
         this._inVec.normalize();
         this._inVec.scaleInPlace(100 * this.props.scale);
 
@@ -647,7 +684,7 @@ IKeyPointComponentState
                 this.state.selectedState === SelectionState.Selected && 
                 <g>
                     {
-                        this.props.keyId !== 0 &&
+                        this.props.keyId !== 0 && !hasStepTangentIn && !isColorAnimation && hasDefinedInTangent &&
                         <>
                             <line
                                 x1={0}
@@ -672,7 +709,7 @@ IKeyPointComponentState
                         </>
                     }
                     {
-                        this.props.keyId !== keys.length - 1 &&
+                        this.props.keyId !== keys.length - 1 && !hasStepTangentOut && !isColorAnimation && hasDefinedOutTangent &&
                         <>
                             <line
                                 x1={0}

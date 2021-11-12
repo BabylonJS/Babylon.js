@@ -119,7 +119,7 @@ export function CreateSphereVertexData(options: { segments?: number, diameter?: 
  * @returns the sphere mesh
  * @see https://doc.babylonjs.com/how_to/set_shapes#sphere
  */
-export function CreateSphere(name: string, options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, arc?: number, slice?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean }, scene: Nullable<Scene> = null): Mesh {
+export function CreateSphere(name: string, options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, arc?: number, slice?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean } = {}, scene: Nullable<Scene> = null): Mesh {
     var sphere = new Mesh(name, scene);
 
     options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);

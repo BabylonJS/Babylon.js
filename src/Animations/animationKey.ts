@@ -33,7 +33,11 @@ export interface IAnimationKey {
  */
 export enum AnimationKeyInterpolation {
     /**
+     * Use tangents to interpolate between start and end values.
+     */
+    NONE = 0,
+    /**
      * Do not interpolate between keys and use the start key value only. Tangents are ignored
      */
-    STEP = 1
+    STEP = 1,
 }
