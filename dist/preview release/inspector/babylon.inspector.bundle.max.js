@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/@fortawesome/fontawesome-svg-core/index.es.js":
-/*!********************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/@fortawesome/fontawesome-svg-core/index.es.js ***!
-  \********************************************************************************************/
+/*!***************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/@fortawesome/fontawesome-svg-core/index.es.js ***!
+  \***************************************************************************************************************/
 /*! exports provided: icon, noAuto, config, toHtml, layer, text, counter, library, dom, parse, findIconDefinition */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -2557,9 +2557,9 @@ var autoReplace = function autoReplace() {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/free-regular-svg-icons/index.es.js":
-/*!**********************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/@fortawesome/free-regular-svg-icons/index.es.js ***!
-  \**********************************************************************************************/
+/*!*****************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/@fortawesome/free-regular-svg-icons/index.es.js ***!
+  \*****************************************************************************************************************/
 /*! exports provided: far, prefix, faAddressBook, faAddressCard, faAngry, faArrowAltCircleDown, faArrowAltCircleLeft, faArrowAltCircleRight, faArrowAltCircleUp, faBell, faBellSlash, faBookmark, faBuilding, faCalendar, faCalendarAlt, faCalendarCheck, faCalendarMinus, faCalendarPlus, faCalendarTimes, faCaretSquareDown, faCaretSquareLeft, faCaretSquareRight, faCaretSquareUp, faChartBar, faCheckCircle, faCheckSquare, faCircle, faClipboard, faClock, faClone, faClosedCaptioning, faComment, faCommentAlt, faCommentDots, faComments, faCompass, faCopy, faCopyright, faCreditCard, faDizzy, faDotCircle, faEdit, faEnvelope, faEnvelopeOpen, faEye, faEyeSlash, faFile, faFileAlt, faFileArchive, faFileAudio, faFileCode, faFileExcel, faFileImage, faFilePdf, faFilePowerpoint, faFileVideo, faFileWord, faFlag, faFlushed, faFolder, faFolderOpen, faFontAwesomeLogoFull, faFrown, faFrownOpen, faFutbol, faGem, faGrimace, faGrin, faGrinAlt, faGrinBeam, faGrinBeamSweat, faGrinHearts, faGrinSquint, faGrinSquintTears, faGrinStars, faGrinTears, faGrinTongue, faGrinTongueSquint, faGrinTongueWink, faGrinWink, faHandLizard, faHandPaper, faHandPeace, faHandPointDown, faHandPointLeft, faHandPointRight, faHandPointUp, faHandPointer, faHandRock, faHandScissors, faHandSpock, faHandshake, faHdd, faHeart, faHospital, faHourglass, faIdBadge, faIdCard, faImage, faImages, faKeyboard, faKiss, faKissBeam, faKissWinkHeart, faLaugh, faLaughBeam, faLaughSquint, faLaughWink, faLemon, faLifeRing, faLightbulb, faListAlt, faMap, faMeh, faMehBlank, faMehRollingEyes, faMinusSquare, faMoneyBillAlt, faMoon, faNewspaper, faObjectGroup, faObjectUngroup, faPaperPlane, faPauseCircle, faPlayCircle, faPlusSquare, faQuestionCircle, faRegistered, faSadCry, faSadTear, faSave, faShareSquare, faSmile, faSmileBeam, faSmileWink, faSnowflake, faSquare, faStar, faStarHalf, faStickyNote, faStopCircle, faSun, faSurprise, faThumbsDown, faThumbsUp, faTimesCircle, faTired, faTrashAlt, faUser, faUserCircle, faWindowClose, faWindowMaximize, faWindowMinimize, faWindowRestore */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -3641,9 +3641,9 @@ var _iconsCache = {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js":
-/*!********************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
-  \********************************************************************************************/
+/*!***************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
+  \***************************************************************************************************************/
 /*! exports provided: fas, prefix, faAd, faAddressBook, faAddressCard, faAdjust, faAirFreshener, faAlignCenter, faAlignJustify, faAlignLeft, faAlignRight, faAllergies, faAmbulance, faAmericanSignLanguageInterpreting, faAnchor, faAngleDoubleDown, faAngleDoubleLeft, faAngleDoubleRight, faAngleDoubleUp, faAngleDown, faAngleLeft, faAngleRight, faAngleUp, faAngry, faAnkh, faAppleAlt, faArchive, faArchway, faArrowAltCircleDown, faArrowAltCircleLeft, faArrowAltCircleRight, faArrowAltCircleUp, faArrowCircleDown, faArrowCircleLeft, faArrowCircleRight, faArrowCircleUp, faArrowDown, faArrowLeft, faArrowRight, faArrowUp, faArrowsAlt, faArrowsAltH, faArrowsAltV, faAssistiveListeningSystems, faAsterisk, faAt, faAtlas, faAtom, faAudioDescription, faAward, faBaby, faBabyCarriage, faBackspace, faBackward, faBacon, faBacteria, faBacterium, faBahai, faBalanceScale, faBalanceScaleLeft, faBalanceScaleRight, faBan, faBandAid, faBarcode, faBars, faBaseballBall, faBasketballBall, faBath, faBatteryEmpty, faBatteryFull, faBatteryHalf, faBatteryQuarter, faBatteryThreeQuarters, faBed, faBeer, faBell, faBellSlash, faBezierCurve, faBible, faBicycle, faBiking, faBinoculars, faBiohazard, faBirthdayCake, faBlender, faBlenderPhone, faBlind, faBlog, faBold, faBolt, faBomb, faBone, faBong, faBook, faBookDead, faBookMedical, faBookOpen, faBookReader, faBookmark, faBorderAll, faBorderNone, faBorderStyle, faBowlingBall, faBox, faBoxOpen, faBoxTissue, faBoxes, faBraille, faBrain, faBreadSlice, faBriefcase, faBriefcaseMedical, faBroadcastTower, faBroom, faBrush, faBug, faBuilding, faBullhorn, faBullseye, faBurn, faBus, faBusAlt, faBusinessTime, faCalculator, faCalendar, faCalendarAlt, faCalendarCheck, faCalendarDay, faCalendarMinus, faCalendarPlus, faCalendarTimes, faCalendarWeek, faCamera, faCameraRetro, faCampground, faCandyCane, faCannabis, faCapsules, faCar, faCarAlt, faCarBattery, faCarCrash, faCarSide, faCaravan, faCaretDown, faCaretLeft, faCaretRight, faCaretSquareDown, faCaretSquareLeft, faCaretSquareRight, faCaretSquareUp, faCaretUp, faCarrot, faCartArrowDown, faCartPlus, faCashRegister, faCat, faCertificate, faChair, faChalkboard, faChalkboardTeacher, faChargingStation, faChartArea, faChartBar, faChartLine, faChartPie, faCheck, faCheckCircle, faCheckDouble, faCheckSquare, faCheese, faChess, faChessBishop, faChessBoard, faChessKing, faChessKnight, faChessPawn, faChessQueen, faChessRook, faChevronCircleDown, faChevronCircleLeft, faChevronCircleRight, faChevronCircleUp, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faChild, faChurch, faCircle, faCircleNotch, faCity, faClinicMedical, faClipboard, faClipboardCheck, faClipboardList, faClock, faClone, faClosedCaptioning, faCloud, faCloudDownloadAlt, faCloudMeatball, faCloudMoon, faCloudMoonRain, faCloudRain, faCloudShowersHeavy, faCloudSun, faCloudSunRain, faCloudUploadAlt, faCocktail, faCode, faCodeBranch, faCoffee, faCog, faCogs, faCoins, faColumns, faComment, faCommentAlt, faCommentDollar, faCommentDots, faCommentMedical, faCommentSlash, faComments, faCommentsDollar, faCompactDisc, faCompass, faCompress, faCompressAlt, faCompressArrowsAlt, faConciergeBell, faCookie, faCookieBite, faCopy, faCopyright, faCouch, faCreditCard, faCrop, faCropAlt, faCross, faCrosshairs, faCrow, faCrown, faCrutch, faCube, faCubes, faCut, faDatabase, faDeaf, faDemocrat, faDesktop, faDharmachakra, faDiagnoses, faDice, faDiceD20, faDiceD6, faDiceFive, faDiceFour, faDiceOne, faDiceSix, faDiceThree, faDiceTwo, faDigitalTachograph, faDirections, faDisease, faDivide, faDizzy, faDna, faDog, faDollarSign, faDolly, faDollyFlatbed, faDonate, faDoorClosed, faDoorOpen, faDotCircle, faDove, faDownload, faDraftingCompass, faDragon, faDrawPolygon, faDrum, faDrumSteelpan, faDrumstickBite, faDumbbell, faDumpster, faDumpsterFire, faDungeon, faEdit, faEgg, faEject, faEllipsisH, faEllipsisV, faEnvelope, faEnvelopeOpen, faEnvelopeOpenText, faEnvelopeSquare, faEquals, faEraser, faEthernet, faEuroSign, faExchangeAlt, faExclamation, faExclamationCircle, faExclamationTriangle, faExpand, faExpandAlt, faExpandArrowsAlt, faExternalLinkAlt, faExternalLinkSquareAlt, faEye, faEyeDropper, faEyeSlash, faFan, faFastBackward, faFastForward, faFaucet, faFax, faFeather, faFeatherAlt, faFemale, faFighterJet, faFile, faFileAlt, faFileArchive, faFileAudio, faFileCode, faFileContract, faFileCsv, faFileDownload, faFileExcel, faFileExport, faFileImage, faFileImport, faFileInvoice, faFileInvoiceDollar, faFileMedical, faFileMedicalAlt, faFilePdf, faFilePowerpoint, faFilePrescription, faFileSignature, faFileUpload, faFileVideo, faFileWord, faFill, faFillDrip, faFilm, faFilter, faFingerprint, faFire, faFireAlt, faFireExtinguisher, faFirstAid, faFish, faFistRaised, faFlag, faFlagCheckered, faFlagUsa, faFlask, faFlushed, faFolder, faFolderMinus, faFolderOpen, faFolderPlus, faFont, faFontAwesomeLogoFull, faFootballBall, faForward, faFrog, faFrown, faFrownOpen, faFunnelDollar, faFutbol, faGamepad, faGasPump, faGavel, faGem, faGenderless, faGhost, faGift, faGifts, faGlassCheers, faGlassMartini, faGlassMartiniAlt, faGlassWhiskey, faGlasses, faGlobe, faGlobeAfrica, faGlobeAmericas, faGlobeAsia, faGlobeEurope, faGolfBall, faGopuram, faGraduationCap, faGreaterThan, faGreaterThanEqual, faGrimace, faGrin, faGrinAlt, faGrinBeam, faGrinBeamSweat, faGrinHearts, faGrinSquint, faGrinSquintTears, faGrinStars, faGrinTears, faGrinTongue, faGrinTongueSquint, faGrinTongueWink, faGrinWink, faGripHorizontal, faGripLines, faGripLinesVertical, faGripVertical, faGuitar, faHSquare, faHamburger, faHammer, faHamsa, faHandHolding, faHandHoldingHeart, faHandHoldingMedical, faHandHoldingUsd, faHandHoldingWater, faHandLizard, faHandMiddleFinger, faHandPaper, faHandPeace, faHandPointDown, faHandPointLeft, faHandPointRight, faHandPointUp, faHandPointer, faHandRock, faHandScissors, faHandSparkles, faHandSpock, faHands, faHandsHelping, faHandsWash, faHandshake, faHandshakeAltSlash, faHandshakeSlash, faHanukiah, faHardHat, faHashtag, faHatCowboy, faHatCowboySide, faHatWizard, faHdd, faHeadSideCough, faHeadSideCoughSlash, faHeadSideMask, faHeadSideVirus, faHeading, faHeadphones, faHeadphonesAlt, faHeadset, faHeart, faHeartBroken, faHeartbeat, faHelicopter, faHighlighter, faHiking, faHippo, faHistory, faHockeyPuck, faHollyBerry, faHome, faHorse, faHorseHead, faHospital, faHospitalAlt, faHospitalSymbol, faHospitalUser, faHotTub, faHotdog, faHotel, faHourglass, faHourglassEnd, faHourglassHalf, faHourglassStart, faHouseDamage, faHouseUser, faHryvnia, faICursor, faIceCream, faIcicles, faIcons, faIdBadge, faIdCard, faIdCardAlt, faIgloo, faImage, faImages, faInbox, faIndent, faIndustry, faInfinity, faInfo, faInfoCircle, faItalic, faJedi, faJoint, faJournalWhills, faKaaba, faKey, faKeyboard, faKhanda, faKiss, faKissBeam, faKissWinkHeart, faKiwiBird, faLandmark, faLanguage, faLaptop, faLaptopCode, faLaptopHouse, faLaptopMedical, faLaugh, faLaughBeam, faLaughSquint, faLaughWink, faLayerGroup, faLeaf, faLemon, faLessThan, faLessThanEqual, faLevelDownAlt, faLevelUpAlt, faLifeRing, faLightbulb, faLink, faLiraSign, faList, faListAlt, faListOl, faListUl, faLocationArrow, faLock, faLockOpen, faLongArrowAltDown, faLongArrowAltLeft, faLongArrowAltRight, faLongArrowAltUp, faLowVision, faLuggageCart, faLungs, faLungsVirus, faMagic, faMagnet, faMailBulk, faMale, faMap, faMapMarked, faMapMarkedAlt, faMapMarker, faMapMarkerAlt, faMapPin, faMapSigns, faMarker, faMars, faMarsDouble, faMarsStroke, faMarsStrokeH, faMarsStrokeV, faMask, faMedal, faMedkit, faMeh, faMehBlank, faMehRollingEyes, faMemory, faMenorah, faMercury, faMeteor, faMicrochip, faMicrophone, faMicrophoneAlt, faMicrophoneAltSlash, faMicrophoneSlash, faMicroscope, faMinus, faMinusCircle, faMinusSquare, faMitten, faMobile, faMobileAlt, faMoneyBill, faMoneyBillAlt, faMoneyBillWave, faMoneyBillWaveAlt, faMoneyCheck, faMoneyCheckAlt, faMonument, faMoon, faMortarPestle, faMosque, faMotorcycle, faMountain, faMouse, faMousePointer, faMugHot, faMusic, faNetworkWired, faNeuter, faNewspaper, faNotEqual, faNotesMedical, faObjectGroup, faObjectUngroup, faOilCan, faOm, faOtter, faOutdent, faPager, faPaintBrush, faPaintRoller, faPalette, faPallet, faPaperPlane, faPaperclip, faParachuteBox, faParagraph, faParking, faPassport, faPastafarianism, faPaste, faPause, faPauseCircle, faPaw, faPeace, faPen, faPenAlt, faPenFancy, faPenNib, faPenSquare, faPencilAlt, faPencilRuler, faPeopleArrows, faPeopleCarry, faPepperHot, faPercent, faPercentage, faPersonBooth, faPhone, faPhoneAlt, faPhoneSlash, faPhoneSquare, faPhoneSquareAlt, faPhoneVolume, faPhotoVideo, faPiggyBank, faPills, faPizzaSlice, faPlaceOfWorship, faPlane, faPlaneArrival, faPlaneDeparture, faPlaneSlash, faPlay, faPlayCircle, faPlug, faPlus, faPlusCircle, faPlusSquare, faPodcast, faPoll, faPollH, faPoo, faPooStorm, faPoop, faPortrait, faPoundSign, faPowerOff, faPray, faPrayingHands, faPrescription, faPrescriptionBottle, faPrescriptionBottleAlt, faPrint, faProcedures, faProjectDiagram, faPumpMedical, faPumpSoap, faPuzzlePiece, faQrcode, faQuestion, faQuestionCircle, faQuidditch, faQuoteLeft, faQuoteRight, faQuran, faRadiation, faRadiationAlt, faRainbow, faRandom, faReceipt, faRecordVinyl, faRecycle, faRedo, faRedoAlt, faRegistered, faRemoveFormat, faReply, faReplyAll, faRepublican, faRestroom, faRetweet, faRibbon, faRing, faRoad, faRobot, faRocket, faRoute, faRss, faRssSquare, faRubleSign, faRuler, faRulerCombined, faRulerHorizontal, faRulerVertical, faRunning, faRupeeSign, faSadCry, faSadTear, faSatellite, faSatelliteDish, faSave, faSchool, faScrewdriver, faScroll, faSdCard, faSearch, faSearchDollar, faSearchLocation, faSearchMinus, faSearchPlus, faSeedling, faServer, faShapes, faShare, faShareAlt, faShareAltSquare, faShareSquare, faShekelSign, faShieldAlt, faShieldVirus, faShip, faShippingFast, faShoePrints, faShoppingBag, faShoppingBasket, faShoppingCart, faShower, faShuttleVan, faSign, faSignInAlt, faSignLanguage, faSignOutAlt, faSignal, faSignature, faSimCard, faSink, faSitemap, faSkating, faSkiing, faSkiingNordic, faSkull, faSkullCrossbones, faSlash, faSleigh, faSlidersH, faSmile, faSmileBeam, faSmileWink, faSmog, faSmoking, faSmokingBan, faSms, faSnowboarding, faSnowflake, faSnowman, faSnowplow, faSoap, faSocks, faSolarPanel, faSort, faSortAlphaDown, faSortAlphaDownAlt, faSortAlphaUp, faSortAlphaUpAlt, faSortAmountDown, faSortAmountDownAlt, faSortAmountUp, faSortAmountUpAlt, faSortDown, faSortNumericDown, faSortNumericDownAlt, faSortNumericUp, faSortNumericUpAlt, faSortUp, faSpa, faSpaceShuttle, faSpellCheck, faSpider, faSpinner, faSplotch, faSprayCan, faSquare, faSquareFull, faSquareRootAlt, faStamp, faStar, faStarAndCrescent, faStarHalf, faStarHalfAlt, faStarOfDavid, faStarOfLife, faStepBackward, faStepForward, faStethoscope, faStickyNote, faStop, faStopCircle, faStopwatch, faStopwatch20, faStore, faStoreAlt, faStoreAltSlash, faStoreSlash, faStream, faStreetView, faStrikethrough, faStroopwafel, faSubscript, faSubway, faSuitcase, faSuitcaseRolling, faSun, faSuperscript, faSurprise, faSwatchbook, faSwimmer, faSwimmingPool, faSynagogue, faSync, faSyncAlt, faSyringe, faTable, faTableTennis, faTablet, faTabletAlt, faTablets, faTachometerAlt, faTag, faTags, faTape, faTasks, faTaxi, faTeeth, faTeethOpen, faTemperatureHigh, faTemperatureLow, faTenge, faTerminal, faTextHeight, faTextWidth, faTh, faThLarge, faThList, faTheaterMasks, faThermometer, faThermometerEmpty, faThermometerFull, faThermometerHalf, faThermometerQuarter, faThermometerThreeQuarters, faThumbsDown, faThumbsUp, faThumbtack, faTicketAlt, faTimes, faTimesCircle, faTint, faTintSlash, faTired, faToggleOff, faToggleOn, faToilet, faToiletPaper, faToiletPaperSlash, faToolbox, faTools, faTooth, faTorah, faToriiGate, faTractor, faTrademark, faTrafficLight, faTrailer, faTrain, faTram, faTransgender, faTransgenderAlt, faTrash, faTrashAlt, faTrashRestore, faTrashRestoreAlt, faTree, faTrophy, faTruck, faTruckLoading, faTruckMonster, faTruckMoving, faTruckPickup, faTshirt, faTty, faTv, faUmbrella, faUmbrellaBeach, faUnderline, faUndo, faUndoAlt, faUniversalAccess, faUniversity, faUnlink, faUnlock, faUnlockAlt, faUpload, faUser, faUserAlt, faUserAltSlash, faUserAstronaut, faUserCheck, faUserCircle, faUserClock, faUserCog, faUserEdit, faUserFriends, faUserGraduate, faUserInjured, faUserLock, faUserMd, faUserMinus, faUserNinja, faUserNurse, faUserPlus, faUserSecret, faUserShield, faUserSlash, faUserTag, faUserTie, faUserTimes, faUsers, faUsersCog, faUsersSlash, faUtensilSpoon, faUtensils, faVectorSquare, faVenus, faVenusDouble, faVenusMars, faVial, faVials, faVideo, faVideoSlash, faVihara, faVirus, faVirusSlash, faViruses, faVoicemail, faVolleyballBall, faVolumeDown, faVolumeMute, faVolumeOff, faVolumeUp, faVoteYea, faVrCardboard, faWalking, faWallet, faWarehouse, faWater, faWaveSquare, faWeight, faWeightHanging, faWheelchair, faWifi, faWind, faWindowClose, faWindowMaximize, faWindowMinimize, faWindowRestore, faWineBottle, faWineGlass, faWineGlassAlt, faWonSign, faWrench, faXRay, faYenSign, faYinYang */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -10661,9 +10661,9 @@ var _iconsCache = {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/react-fontawesome/index.es.js":
-/*!*****************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/@fortawesome/react-fontawesome/index.es.js ***!
-  \*****************************************************************************************/
+/*!************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/@fortawesome/react-fontawesome/index.es.js ***!
+  \************************************************************************************************************/
 /*! exports provided: FontAwesomeIcon */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -11064,9 +11064,9 @@ var convertCurry = convert.bind(null, react__WEBPACK_IMPORTED_MODULE_2___default
 /***/ }),
 
 /***/ "../../node_modules/classnames/index.js":
-/*!******************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/classnames/index.js ***!
-  \******************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/classnames/index.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11132,9 +11132,9 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/actionTabs.scss":
-/*!****************************************************************************************************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/actionTabs.scss ***!
-  \****************************************************************************************************************************************************************************/
+/*!******************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/actionTabs.scss ***!
+  \******************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11150,9 +11150,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/performanceViewer/scss/performanceViewer.scss":
-/*!***************************************************************************************************************************************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/performanceViewer/scss/performanceViewer.scss ***!
-  \***************************************************************************************************************************************************************************************************************/
+/*!*****************************************************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/performanceViewer/scss/performanceViewer.scss ***!
+  \*****************************************************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11168,9 +11168,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/bottomBar.scss":
-/*!**************************************************************************************************************************************************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/bottomBar.scss ***!
-  \**************************************************************************************************************************************************************************************************************************/
+/*!****************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/bottomBar.scss ***!
+  \****************************************************************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11178,7 +11178,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#bottom-bar {\n  display: grid;\n  grid-template-rows: 100%;\n  grid-template-columns: 10px 210px 10px 1fr 10px 61px 10px; }\n  #bottom-bar #bottom-bar-total {\n    grid-row: 1;\n    grid-column: 6;\n    color: white;\n    background: #222222;\n    height: 25px;\n    align-self: center;\n    display: grid;\n    align-content: center;\n    justify-content: center;\n    font-family: 'acumin-pro-condensed';\n    font-size: 12pt; }\n  #bottom-bar .control-button .control-button-image {\n    display: unset; }\n  #bottom-bar .control-button .control-button-hover-image {\n    display: none; }\n  #bottom-bar .control-button:hover {\n    cursor: pointer; }\n    #bottom-bar .control-button:hover .control-button-image {\n      display: none; }\n    #bottom-bar .control-button:hover .control-button-hover-image {\n      display: unset; }\n  #bottom-bar .control-button:active {\n    transform-origin: 50% 50%;\n    transform: scale(0.96); }\n  #bottom-bar #media-player {\n    grid-row: 1;\n    grid-column: 2;\n    display: grid;\n    align-self: center;\n    justify-self: center;\n    grid-template-rows: 100%;\n    grid-template-columns: 23px 23px 23px 23px 23px 23px; }\n    #bottom-bar #media-player #start-key {\n      grid-row: 1;\n      grid-column: 1; }\n    #bottom-bar #media-player #first-key {\n      grid-row: 1;\n      grid-column: 2; }\n    #bottom-bar #media-player #rev-key {\n      grid-row: 1;\n      grid-column: 3; }\n    #bottom-bar #media-player #fwd-key {\n      grid-row: 1;\n      grid-column: 4; }\n    #bottom-bar #media-player #next-key {\n      grid-row: 1;\n      grid-column: 5; }\n    #bottom-bar #media-player #end-key {\n      grid-row: 1;\n      grid-column: 6; }\n  #bottom-bar #range-selector {\n    grid-row: 1;\n    grid-column: 4;\n    background: #222222;\n    width: 100%;\n    height: calc(100% - 20px);\n    margin: 10px 0;\n    position: relative; }\n    #bottom-bar #range-selector #range-scrollbar {\n      position: absolute;\n      left: 2px;\n      top: 2px;\n      right: 2px;\n      bottom: 2px;\n      background: #666666;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 20px auto 1fr auto 20px;\n      color: #222222;\n      font-family: 'acumin-pro-condensed';\n      font-size: 14px;\n      min-width: 70px; }\n      #bottom-bar #range-selector #range-scrollbar #left-handle {\n        grid-row: 1;\n        grid-column: 1; }\n      #bottom-bar #range-selector #range-scrollbar #right-handle {\n        grid-row: 1;\n        grid-column: 5; }\n      #bottom-bar #range-selector #range-scrollbar #from-key {\n        grid-row: 1;\n        grid-column: 2;\n        align-self: center;\n        justify-self: center;\n        user-select: none;\n        pointer-events: none; }\n      #bottom-bar #range-selector #range-scrollbar #to-key {\n        grid-row: 1;\n        grid-column: 4;\n        align-self: center;\n        justify-self: center;\n        user-select: none;\n        pointer-events: none; }\n      #bottom-bar #range-selector #range-scrollbar .handle {\n        width: 20px;\n        align-self: center;\n        justify-self: center;\n        cursor: pointer;\n        user-select: none; }\n        #bottom-bar #range-selector #range-scrollbar .handle img {\n          pointer-events: none; }\n", ""]);
+exports.push([module.i, "#bottom-bar {\n  display: grid;\n  grid-template-rows: 100%;\n  grid-template-columns: 10px 210px 10px 1fr 10px 61px 10px; }\n  #bottom-bar #bottom-bar-total {\n    grid-row: 1;\n    grid-column: 6;\n    color: white;\n    background: #222222;\n    height: 25px;\n    align-self: center;\n    font-size: 12pt; }\n    #bottom-bar #bottom-bar-total #clip-range {\n      width: 100%; }\n  #bottom-bar .control-button .control-button-image {\n    display: unset; }\n  #bottom-bar .control-button .control-button-hover-image {\n    display: none; }\n  #bottom-bar .control-button:hover {\n    cursor: pointer; }\n    #bottom-bar .control-button:hover .control-button-image {\n      display: none; }\n    #bottom-bar .control-button:hover .control-button-hover-image {\n      display: unset; }\n  #bottom-bar .control-button:active {\n    transform-origin: 50% 50%;\n    transform: scale(0.96); }\n  #bottom-bar #media-player {\n    grid-row: 1;\n    grid-column: 2;\n    display: grid;\n    align-self: center;\n    justify-self: center;\n    grid-template-rows: 100%;\n    grid-template-columns: 23px 23px 23px 23px 23px 23px 23px; }\n    #bottom-bar #media-player #start-key {\n      grid-row: 1;\n      grid-column: 1; }\n    #bottom-bar #media-player #prev-frame {\n      grid-row: 1;\n      grid-column: 2; }\n    #bottom-bar #media-player #first-key {\n      grid-row: 1;\n      grid-column: 3; }\n    #bottom-bar #media-player #rev-key {\n      grid-row: 1;\n      grid-column: 4; }\n    #bottom-bar #media-player #fwd-key {\n      grid-row: 1;\n      grid-column: 5; }\n    #bottom-bar #media-player #next-key {\n      grid-row: 1;\n      grid-column: 6; }\n    #bottom-bar #media-player #next-frame {\n      grid-row: 1;\n      grid-column: 7; }\n    #bottom-bar #media-player #end-key {\n      grid-row: 1;\n      grid-column: 8; }\n  #bottom-bar #range-selector {\n    grid-row: 1;\n    grid-column: 4;\n    background: #222222;\n    width: 100%;\n    height: calc(100% - 20px);\n    margin: 10px 0;\n    position: relative; }\n    #bottom-bar #range-selector #range-scrollbar {\n      position: absolute;\n      left: 2px;\n      top: 2px;\n      right: 2px;\n      bottom: 2px;\n      background: #666666;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 20px auto 1fr auto 20px;\n      color: #222222;\n      font-family: 'acumin-pro-condensed';\n      font-size: 14px;\n      min-width: 70px; }\n      #bottom-bar #range-selector #range-scrollbar #left-handle {\n        grid-row: 1;\n        grid-column: 1; }\n      #bottom-bar #range-selector #range-scrollbar #right-handle {\n        grid-row: 1;\n        grid-column: 5; }\n      #bottom-bar #range-selector #range-scrollbar #from-key {\n        grid-row: 1;\n        grid-column: 2;\n        align-self: center;\n        justify-self: center;\n        user-select: none;\n        pointer-events: none; }\n      #bottom-bar #range-selector #range-scrollbar #to-key {\n        grid-row: 1;\n        grid-column: 4;\n        align-self: center;\n        justify-self: center;\n        user-select: none;\n        pointer-events: none; }\n      #bottom-bar #range-selector #range-scrollbar .handle {\n        width: 20px;\n        align-self: center;\n        justify-self: center;\n        cursor: pointer;\n        user-select: none; }\n        #bottom-bar #range-selector #range-scrollbar .handle img {\n          pointer-events: none; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -11186,9 +11186,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/canvas.scss":
-/*!***********************************************************************************************************************************************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/canvas.scss ***!
-  \***********************************************************************************************************************************************************************************************************************/
+/*!*************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/canvas.scss ***!
+  \*************************************************************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11204,9 +11204,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/curveEditor.scss":
-/*!****************************************************************************************************************************************************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/curveEditor.scss ***!
-  \****************************************************************************************************************************************************************************************************************************/
+/*!******************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/curveEditor.scss ***!
+  \******************************************************************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11222,9 +11222,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/sideBar.scss":
-/*!************************************************************************************************************************************************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/sideBar.scss ***!
-  \************************************************************************************************************************************************************************************************************************/
+/*!**************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/sideBar.scss ***!
+  \**************************************************************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11240,9 +11240,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/topBar.scss":
-/*!***********************************************************************************************************************************************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/topBar.scss ***!
-  \***********************************************************************************************************************************************************************************************************************/
+/*!*************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/topBar.scss ***!
+  \*************************************************************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11250,7 +11250,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#top-bar {\n  display: grid;\n  grid-template-columns: 40px 200px 75px 8px 75px 8px 40px 40px 40px 40px 40px 40px 40px 1fr 40px;\n  grid-template-rows: 100%; }\n  #top-bar .disabled {\n    opacity: 20%;\n    pointer-events: none; }\n  #top-bar #top-bar-logo {\n    grid-row: 1;\n    grid-column: 1; }\n  #top-bar #top-bar-parent-name {\n    grid-row: 1;\n    grid-column: 2;\n    font-family: 'acumin-pro-condensed';\n    font-size: 15pt;\n    color: white;\n    display: grid;\n    align-content: center;\n    padding-bottom: 5px; }\n  #top-bar #key-frame {\n    grid-row: 1;\n    grid-column: 3;\n    height: 24px;\n    display: grid;\n    align-self: center; }\n  #top-bar #key-value {\n    grid-row: 1;\n    grid-column: 5;\n    height: 24px;\n    display: grid;\n    align-self: center; }\n  #top-bar #new-key {\n    grid-row: 1;\n    grid-column: 7; }\n  #top-bar #frame-canvas {\n    grid-row: 1;\n    grid-column: 8; }\n  #top-bar #flatten-tangent {\n    grid-row: 1;\n    grid-column: 9; }\n  #top-bar #linear-tangent {\n    grid-row: 1;\n    grid-column: 10; }\n  #top-bar #break-tangent {\n    grid-row: 1;\n    grid-column: 11; }\n  #top-bar #unify-tangent {\n    grid-row: 1;\n    grid-column: 12; }\n", ""]);
+exports.push([module.i, "#top-bar {\n  display: grid;\n  grid-template-columns: 40px 200px 75px 8px 75px 8px 40px 40px 40px 40px 40px 40px 40px 40px 1fr 40px;\n  grid-template-rows: 100%; }\n  #top-bar .disabled {\n    opacity: 20%;\n    pointer-events: none; }\n  #top-bar #top-bar-logo {\n    grid-row: 1;\n    grid-column: 1; }\n  #top-bar #top-bar-parent-name {\n    grid-row: 1;\n    grid-column: 2;\n    font-family: 'acumin-pro-condensed';\n    font-size: 15pt;\n    color: white;\n    display: grid;\n    align-content: center;\n    padding-bottom: 5px; }\n  #top-bar #key-frame {\n    grid-row: 1;\n    grid-column: 3;\n    height: 24px;\n    display: grid;\n    align-self: center; }\n  #top-bar #key-value {\n    grid-row: 1;\n    grid-column: 5;\n    height: 24px;\n    display: grid;\n    align-self: center; }\n  #top-bar #new-key {\n    grid-row: 1;\n    grid-column: 7; }\n  #top-bar #frame-canvas {\n    grid-row: 1;\n    grid-column: 8; }\n  #top-bar #flatten-tangent {\n    grid-row: 1;\n    grid-column: 9; }\n  #top-bar #linear-tangent {\n    grid-row: 1;\n    grid-column: 10; }\n  #top-bar #break-tangent {\n    grid-row: 1;\n    grid-column: 11; }\n  #top-bar #unify-tangent {\n    grid-row: 1;\n    grid-column: 12; }\n  #top-bar #step-tangent {\n    grid-row: 1;\n    grid-column: 13; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -11258,9 +11258,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/materials/textures/textureEditor.scss":
-/*!*********************************************************************************************************************************************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/materials/textures/textureEditor.scss ***!
-  \*********************************************************************************************************************************************************************************************************************/
+/*!***********************************************************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/materials/textures/textureEditor.scss ***!
+  \***********************************************************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11276,9 +11276,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/embedHost/embedHost.scss":
-/*!**************************************************************************************************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/embedHost/embedHost.scss ***!
-  \**************************************************************************************************************************************************************************/
+/*!****************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/embedHost/embedHost.scss ***!
+  \****************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11294,9 +11294,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/sceneExplorer/sceneExplorer.scss":
-/*!**********************************************************************************************************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/sceneExplorer/sceneExplorer.scss ***!
-  \**********************************************************************************************************************************************************************************/
+/*!************************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/sceneExplorer/sceneExplorer.scss ***!
+  \************************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11312,9 +11312,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss":
-/*!**************************************************************************************************************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss ***!
-  \**************************************************************************************************************************************************************************************/
+/*!****************************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss ***!
+  \****************************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11330,9 +11330,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/runtime/api.js":
-/*!*****************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/runtime/api.js ***!
-  \*****************************************************************************/
+/*!************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/runtime/api.js ***!
+  \************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11435,9 +11435,9 @@ function toComment(sourceMap) {
 /***/ }),
 
 /***/ "../../node_modules/gif.js.optimized/dist/gif.js":
-/*!***************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/gif.js.optimized/dist/gif.js ***!
-  \***************************************************************************/
+/*!**********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/gif.js.optimized/dist/gif.js ***!
+  \**********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11447,9 +11447,9 @@ function toComment(sourceMap) {
 /***/ }),
 
 /***/ "../../node_modules/object-assign/index.js":
-/*!*********************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/object-assign/index.js ***!
-  \*********************************************************************/
+/*!****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/object-assign/index.js ***!
+  \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11549,9 +11549,9 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 /***/ }),
 
 /***/ "../../node_modules/process/browser.js":
-/*!*****************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/process/browser.js ***!
-  \*****************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/process/browser.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -11744,9 +11744,9 @@ process.umask = function() { return 0; };
 /***/ }),
 
 /***/ "../../node_modules/prop-types/checkPropTypes.js":
-/*!***************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/prop-types/checkPropTypes.js ***!
-  \***************************************************************************/
+/*!**********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/prop-types/checkPropTypes.js ***!
+  \**********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11858,9 +11858,9 @@ module.exports = checkPropTypes;
 /***/ }),
 
 /***/ "../../node_modules/prop-types/factoryWithTypeCheckers.js":
-/*!************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/prop-types/factoryWithTypeCheckers.js ***!
-  \************************************************************************************/
+/*!*******************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/prop-types/factoryWithTypeCheckers.js ***!
+  \*******************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12461,9 +12461,9 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
 /***/ }),
 
 /***/ "../../node_modules/prop-types/index.js":
-/*!******************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/prop-types/index.js ***!
-  \******************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/prop-types/index.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12487,9 +12487,9 @@ if (true) {
 /***/ }),
 
 /***/ "../../node_modules/prop-types/lib/ReactPropTypesSecret.js":
-/*!*************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/prop-types/lib/ReactPropTypesSecret.js ***!
-  \*************************************************************************************/
+/*!********************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/prop-types/lib/ReactPropTypesSecret.js ***!
+  \********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12511,9 +12511,9 @@ module.exports = ReactPropTypesSecret;
 /***/ }),
 
 /***/ "../../node_modules/re-resizable/lib/index.es5.js":
-/*!****************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/re-resizable/lib/index.es5.js ***!
-  \****************************************************************************/
+/*!***********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/re-resizable/lib/index.es5.js ***!
+  \***********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13260,9 +13260,9 @@ module.exports = Resizable;
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/AbstractMenu.js":
-/*!************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/AbstractMenu.js ***!
-  \************************************************************************************/
+/*!*******************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/AbstractMenu.js ***!
+  \*******************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -13486,9 +13486,9 @@ var _initialiseProps = function _initialiseProps() {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/ContextMenu.js":
-/*!***********************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/ContextMenu.js ***!
-  \***********************************************************************************/
+/*!******************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/ContextMenu.js ***!
+  \******************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -13803,9 +13803,9 @@ ContextMenu.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/ContextMenuTrigger.js":
-/*!******************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/ContextMenuTrigger.js ***!
-  \******************************************************************************************/
+/*!*************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/ContextMenuTrigger.js ***!
+  \*************************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -14003,9 +14003,9 @@ ContextMenuTrigger.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/MenuItem.js":
-/*!********************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/MenuItem.js ***!
-  \********************************************************************************/
+/*!***************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/MenuItem.js ***!
+  \***************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -14143,9 +14143,9 @@ MenuItem.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/SubMenu.js":
-/*!*******************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/SubMenu.js ***!
-  \*******************************************************************************/
+/*!**************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/SubMenu.js ***!
+  \**************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -14483,9 +14483,9 @@ SubMenu.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/actions.js":
-/*!*******************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/actions.js ***!
-  \*******************************************************************************/
+/*!**************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/actions.js ***!
+  \**************************************************************************************************/
 /*! exports provided: MENU_SHOW, MENU_HIDE, dispatchGlobalEvent, showMenu, hideMenu */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -14543,9 +14543,9 @@ function hideMenu() {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/connectMenu.js":
-/*!***********************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/connectMenu.js ***!
-  \***********************************************************************************/
+/*!******************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/connectMenu.js ***!
+  \******************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -14641,9 +14641,9 @@ var ignoredTriggerProps = [].concat(_toConsumableArray(Object.keys(_ContextMenuT
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/globalEventListener.js":
-/*!*******************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/globalEventListener.js ***!
-  \*******************************************************************************************/
+/*!**************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/globalEventListener.js ***!
+  \**************************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -14703,9 +14703,9 @@ var GlobalEventListener = function GlobalEventListener() {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/helpers.js":
-/*!*******************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/helpers.js ***!
-  \*******************************************************************************/
+/*!**************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/helpers.js ***!
+  \**************************************************************************************************/
 /*! exports provided: callIfExists, hasOwnProp, uniqueId, cssClasses, store, canUseDOM */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -14752,9 +14752,9 @@ var canUseDOM = Boolean(typeof window !== 'undefined' && window.document && wind
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/index.js":
-/*!*****************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/index.js ***!
-  \*****************************************************************************/
+/*!************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/index.js ***!
+  \************************************************************************************************/
 /*! exports provided: ContextMenu, ContextMenuTrigger, MenuItem, SubMenu, connectMenu, hideMenu, showMenu */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -14790,9 +14790,9 @@ __webpack_require__.r(__webpack_exports__);
 /***/ }),
 
 /***/ "../../node_modules/react-dom/cjs/react-dom.development.js":
-/*!*************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-dom/cjs/react-dom.development.js ***!
-  \*************************************************************************************/
+/*!********************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-dom/cjs/react-dom.development.js ***!
+  \********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -39814,9 +39814,9 @@ exports.version = ReactVersion;
 /***/ }),
 
 /***/ "../../node_modules/react-dom/index.js":
-/*!*****************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-dom/index.js ***!
-  \*****************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-dom/index.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -39859,9 +39859,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/react-is/cjs/react-is.development.js":
-/*!***********************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-is/cjs/react-is.development.js ***!
-  \***********************************************************************************/
+/*!******************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-is/cjs/react-is.development.js ***!
+  \******************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -40052,9 +40052,9 @@ exports.typeOf = typeOf;
 /***/ }),
 
 /***/ "../../node_modules/react-is/index.js":
-/*!****************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-is/index.js ***!
-  \****************************************************************/
+/*!***********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-is/index.js ***!
+  \***********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -40069,9 +40069,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/react/cjs/react.development.js":
-/*!*****************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react/cjs/react.development.js ***!
-  \*****************************************************************************/
+/*!************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react/cjs/react.development.js ***!
+  \************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41993,9 +41993,9 @@ exports.version = ReactVersion;
 /***/ }),
 
 /***/ "../../node_modules/react/index.js":
-/*!*************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react/index.js ***!
-  \*************************************************************/
+/*!********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react/index.js ***!
+  \********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -42010,9 +42010,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/scheduler/cjs/scheduler-tracing.development.js":
-/*!*********************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
-  \*********************************************************************************************/
+/*!****************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
+  \****************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -42371,9 +42371,9 @@ exports.unstable_wrap = unstable_wrap;
 /***/ }),
 
 /***/ "../../node_modules/scheduler/cjs/scheduler.development.js":
-/*!*************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/scheduler/cjs/scheduler.development.js ***!
-  \*************************************************************************************/
+/*!********************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/scheduler/cjs/scheduler.development.js ***!
+  \********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -43241,9 +43241,9 @@ exports.unstable_wrapCallback = unstable_wrapCallback;
 /***/ }),
 
 /***/ "../../node_modules/scheduler/index.js":
-/*!*****************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/scheduler/index.js ***!
-  \*****************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/scheduler/index.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -43258,9 +43258,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/scheduler/tracing.js":
-/*!*******************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/scheduler/tracing.js ***!
-  \*******************************************************************/
+/*!**************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/scheduler/tracing.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -43275,9 +43275,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/setimmediate/setImmediate.js":
-/*!***************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/setimmediate/setImmediate.js ***!
-  \***************************************************************************/
+/*!**********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/setimmediate/setImmediate.js ***!
+  \**********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -43473,9 +43473,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/split.js/dist/split.es.js":
-/*!************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/split.js/dist/split.es.js ***!
-  \************************************************************************/
+/*!*******************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/split.js/dist/split.es.js ***!
+  \*******************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -44245,9 +44245,9 @@ var Split = function (idsOption, options) {
 /***/ }),
 
 /***/ "../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js":
-/*!****************************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js ***!
-  \****************************************************************************************************/
+/*!***********************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js ***!
+  \***********************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -44525,9 +44525,9 @@ module.exports = function (list, options) {
 /***/ }),
 
 /***/ "../../node_modules/timers-browserify/main.js":
-/*!************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/timers-browserify/main.js ***!
-  \************************************************************************/
+/*!*******************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/timers-browserify/main.js ***!
+  \*******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -44600,9 +44600,9 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
 /***/ }),
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!*****************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \*****************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \************************************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -46782,11 +46782,12 @@ var AnimationGridComponent = /** @class */ (function (_super) {
             this.playOrPause();
         }
     };
-    AnimationGridComponent.prototype.getSnapshotBeforeUpdate = function () {
-        this._animationCurveEditorContext = null;
-        return null;
-    };
-    AnimationGridComponent.prototype.componentDidUpdate = function () {
+    AnimationGridComponent.prototype.componentDidUpdate = function (prevProps) {
+        var prevId = prevProps.animatable.uniqueId;
+        var currId = this.props.animatable.uniqueId;
+        if (prevId !== currId) {
+            this._animationCurveEditorContext = null;
+        }
     };
     AnimationGridComponent.prototype.render = function () {
         var _this = this;
@@ -46907,7 +46908,9 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
                 this.props.context.prepare();
                 if (this.props.context.animations && this.props.context.animations.length) {
                     setTimeout(function () {
-                        _this.props.context.activeAnimations.push(_this.props.context.useTargetAnimations ? _this.props.context.animations[0].animation : _this.props.context.animations[0]);
+                        _this.props.context.activeAnimations.push(_this.props.context.useTargetAnimations
+                            ? _this.props.context.animations[0].animation
+                            : _this.props.context.animations[0]);
                         _this.props.context.onActiveAnimationChanged.notifyObservers();
                     });
                 }
@@ -46920,7 +46923,7 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
         var _a;
         switch (evt.key) {
             case "Delete":
-                if ((_a = this.props.context.activeKeyPoints) === null || _a === void 0 ? void 0 : _a.length) {
+                if (((_a = this.props.context.activeKeyPoints) === null || _a === void 0 ? void 0 : _a.length) && !this.props.context.focusedInput) {
                     this.props.context.onDeleteKeyActiveKeyPoints.notifyObservers();
                 }
                 break;
@@ -46939,6 +46942,27 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
                     evt.preventDefault();
                 }
                 break;
+            case "ArrowLeft":
+                if (!this.props.context.focusedInput) {
+                    this.props.context.onMoveToFrameRequired.notifyObservers(Math.max(0, this.props.context.activeFrame - 1));
+                }
+                break;
+            case "ArrowRight":
+                if (!this.props.context.focusedInput) {
+                    this.props.context.onMoveToFrameRequired.notifyObservers(Math.min(this.props.context.clipLength, this.props.context.activeFrame + 1));
+                }
+                break;
+            case "ArrowDown":
+                var prevKey = this.props.context.getPrevKey();
+                if (prevKey !== null) {
+                    this.props.context.onMoveToFrameRequired.notifyObservers(prevKey);
+                }
+                break;
+            case "ArrowUp":
+                var nextKey = this.props.context.getNextKey();
+                if (nextKey !== null) {
+                    this.props.context.onMoveToFrameRequired.notifyObservers(nextKey);
+                }
         }
     };
     AnimationCurveEditorComponent.prototype.render = function () {
@@ -46947,13 +46971,12 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Edit", onClick: function () {
                     _this.setState({ isOpen: true });
                 } }),
-            this.state.isOpen &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_popupComponent__WEBPACK_IMPORTED_MODULE_3__["PopupComponent"], { id: "curve-editor", title: "Animation Curve Editor", size: { width: 1024, height: 512 }, onResize: function () { return _this.props.context.onHostWindowResized.notifyObservers(); }, onClose: function (window) { return _this.onCloseAnimationCurveEditor(window); }, onKeyDown: function (evt) { return _this._onKeyDown(evt); } },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "curve-editor" },
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_topBarComponent__WEBPACK_IMPORTED_MODULE_5__["TopBarComponent"], { globalState: this.props.globalState, context: this.props.context }),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sideBar_sideBarComponent__WEBPACK_IMPORTED_MODULE_7__["SideBarComponent"], { globalState: this.props.globalState, context: this.props.context }),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_graph_canvasComponent__WEBPACK_IMPORTED_MODULE_6__["CanvasComponent"], { globalState: this.props.globalState, context: this.props.context }),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_bottomBar_bottomBarComponent__WEBPACK_IMPORTED_MODULE_4__["BottomBarComponent"], { globalState: this.props.globalState, context: this.props.context })))));
+            this.state.isOpen && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_popupComponent__WEBPACK_IMPORTED_MODULE_3__["PopupComponent"], { id: "curve-editor", title: "Animation Curve Editor", size: { width: 1024, height: 512 }, onResize: function () { return _this.props.context.onHostWindowResized.notifyObservers(); }, onClose: function (window) { return _this.onCloseAnimationCurveEditor(window); }, onKeyDown: function (evt) { return _this._onKeyDown(evt); } },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "curve-editor" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_topBarComponent__WEBPACK_IMPORTED_MODULE_5__["TopBarComponent"], { globalState: this.props.globalState, context: this.props.context }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sideBar_sideBarComponent__WEBPACK_IMPORTED_MODULE_7__["SideBarComponent"], { globalState: this.props.globalState, context: this.props.context }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_graph_canvasComponent__WEBPACK_IMPORTED_MODULE_6__["CanvasComponent"], { globalState: this.props.globalState, context: this.props.context }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_bottomBar_bottomBarComponent__WEBPACK_IMPORTED_MODULE_4__["BottomBarComponent"], { globalState: this.props.globalState, context: this.props.context }))))));
     };
     return AnimationCurveEditorComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -46969,7 +46992,7 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Crect width='30' height='30' style='fill:none'/%3E%3Cpath d='M15,8.18a.59.59,0,0,1,.58.5v5.74h5.66a.58.58,0,0,1,.08,1.16H15.58v5.65a.58.58,0,0,1-1.16.08V15.59H8.76a.59.59,0,0,1-.08-1.17h5.73V8.76A.58.58,0,0,1,15,8.18Z' style='fill:%23fff'/%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Crect width='30' height='30' style='fill:none'/%3E%3Cpath d='M15,8.27a.58.58,0,0,1,.57.5v5.65h5.57a.58.58,0,0,1,.08,1.15H15.58v5.57a.58.58,0,0,1-1.15.08V15.58H8.85a.58.58,0,0,1-.08-1.15h5.65V8.85A.58.58,0,0,1,15,8.27Z' style='fill:%23fff'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -46991,7 +47014,7 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='23' height='45' viewBox='0 0 23 45'%3E%3Crect width='23' height='45' style='fill:none'/%3E%3Cpath d='M11.67,16.31,19,22a.61.61,0,0,1,0,1l-7.35,5.71a.61.61,0,0,1-1-.48V24.07L4.74,28.69a.61.61,0,0,1-1-.48V16.79a.61.61,0,0,1,1-.48l5.94,4.62V16.79A.61.61,0,0,1,11.67,16.31Z' style='fill:%23ccc'/%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='23' height='45' viewBox='0 0 23 45'%3E%3Crect width='23' height='45' style='fill:none'/%3E%3Cpath d='M11.67,16.31,19,22a.61.61,0,0,1,.15.85A.54.54,0,0,1,19,23l-7.35,5.71a.61.61,0,0,1-.86-.08.63.63,0,0,1-.14-.4V24.07L4.74,28.69a.61.61,0,0,1-.86-.08.63.63,0,0,1-.14-.4V16.79a.61.61,0,0,1,.6-.62.63.63,0,0,1,.4.14l5.94,4.62V16.79a.61.61,0,0,1,.61-.61A.58.58,0,0,1,11.67,16.31Z' style='fill:%23ccc'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -47002,7 +47025,29 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='23' height='45' viewBox='0 0 23 45'%3E%3Crect width='23' height='45' style='fill:none'/%3E%3Cpath d='M11.67,16.31,19,22a.61.61,0,0,1,0,1l-7.35,5.71a.61.61,0,0,1-1-.48V24.07L4.74,28.69a.61.61,0,0,1-1-.48V16.79a.61.61,0,0,1,1-.48l5.94,4.62V16.79A.61.61,0,0,1,11.67,16.31ZM11.91,18V27l5.73-4.46ZM5,18V27l5.71-4.44v0Z' style='fill:%23888'/%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='23' height='45' viewBox='0 0 23 45'%3E%3Crect width='23' height='45' style='fill:none'/%3E%3Cpath d='M11.67,16.31,19,22a.61.61,0,0,1,.15.85A.54.54,0,0,1,19,23l-7.35,5.71a.61.61,0,0,1-.86-.08.63.63,0,0,1-.14-.4V24.07L4.74,28.69a.61.61,0,0,1-.86-.08.63.63,0,0,1-.14-.4V16.79a.61.61,0,0,1,.6-.62.63.63,0,0,1,.4.14l5.94,4.62V16.79a.61.61,0,0,1,.61-.61A.58.58,0,0,1,11.67,16.31ZM11.91,18v9l5.73-4.46ZM5,18v9l5.71-4.44h0Z' style='fill:%23888'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/animationLastFrameHoverIcon.svg":
+/*!****************************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/animationLastFrameHoverIcon.svg ***!
+  \****************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='23' height='45' viewBox='0 0 23 45'%3E%3Crect width='23' height='45' style='fill:none'/%3E%3Cpath d='M18.78,28.3a1.43,1.43,0,0,1-1.43,1.41,1.4,1.4,0,0,1-.75-.22L8.13,24.06a1.42,1.42,0,0,1-.42-2,1.45,1.45,0,0,1,.36-.38l8.47-6.07a1.42,1.42,0,0,1,2,.34,1.39,1.39,0,0,1,.26.81Z' style='fill:%23ccc'/%3E%3Cpath d='M4.22,29.17a.61.61,0,0,0,1.22,0V15.83a.61.61,0,0,0-1.22,0h0Z' style='fill:%23ccc'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/animationLastFrameIcon.svg":
+/*!***********************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/animationLastFrameIcon.svg ***!
+  \***********************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='23' height='45' viewBox='0 0 23 45'%3E%3Cpath d='M8.07,21.72a1.42,1.42,0,0,0-.32,2,1.44,1.44,0,0,0,.38.36l8.47,5.43a1.42,1.42,0,0,0,2-.44,1.4,1.4,0,0,0,.22-.75V16.8a1.43,1.43,0,0,0-1.43-1.41,1.39,1.39,0,0,0-.81.26Zm9.49,6.58a.2.2,0,0,1-.31.17L8.79,23a.22.22,0,0,1,0-.29l0-.05,8.46-6.07a.2.2,0,0,1,.28,0,.2.2,0,0,1,0,.13Zm-13.34.87a.61.61,0,0,0,1.22,0V15.83a.61.61,0,0,0-1.22,0h0Z' style='fill:%23888'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -47013,7 +47058,7 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='23' height='45' viewBox='0 0 23 45'%3E%3Crect width='23' height='45' transform='translate(23 45) rotate(-180)' style='fill:none'/%3E%3Cpath d='M18.78,28.3a1.42,1.42,0,0,1-2.18,1.19L8.13,24.06a1.42,1.42,0,0,1-.06-2.34l8.47-6.07a1.42,1.42,0,0,1,2.24,1.15Z' style='fill:%23ccc'/%3E%3Cpath d='M4.22,29.17a.61.61,0,0,0,1.22,0V15.83a.61.61,0,0,0-1.22,0Z' style='fill:%23ffc017'/%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='23' height='45' viewBox='0 0 23 45'%3E%3Crect width='23' height='45' style='fill:none'/%3E%3Cpath d='M18.78,28.3a1.43,1.43,0,0,1-1.43,1.41,1.4,1.4,0,0,1-.75-.22L8.13,24.06a1.42,1.42,0,0,1-.42-2,1.45,1.45,0,0,1,.36-.38l8.47-6.07a1.42,1.42,0,0,1,2,.34,1.39,1.39,0,0,1,.26.81Z' style='fill:%23ccc'/%3E%3Cpath d='M4.22,29.17a.61.61,0,0,0,1.22,0V15.83a.61.61,0,0,0-1.22,0h0Z' style='fill:%23ffc017'/%3E%3Cpath d='M3.48,25.91a1.35,1.35,0,1,0,2.7,0V19.09a1.35,1.35,0,1,0-2.7,0h0Z' style='fill:%23ffc017'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -47024,7 +47069,29 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='23' height='45' viewBox='0 0 23 45'%3E%3Crect width='23' height='45' transform='translate(23 45) rotate(-180)' style='fill:none'/%3E%3Cpath d='M4.22,29.17a.61.61,0,0,0,1.22,0V15.83a.61.61,0,0,0-1.22,0Z' style='fill:%23ffc017'/%3E%3Cpath d='M8.07,21.72a1.42,1.42,0,0,0,.06,2.34l8.47,5.43a1.42,1.42,0,0,0,2.18-1.19V16.8a1.42,1.42,0,0,0-2.24-1.15Zm9.49,6.58a.2.2,0,0,1-.31.17L8.79,23a.21.21,0,0,1,0-.34l8.46-6.07a.2.2,0,0,1,.32.17Z' style='fill:%23888'/%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='23' height='45' viewBox='0 0 23 45'%3E%3Crect width='23' height='45' style='fill:none'/%3E%3Cpath d='M8.07,21.72a1.42,1.42,0,0,0-.32,2,1.44,1.44,0,0,0,.38.36l8.47,5.43a1.42,1.42,0,0,0,2-.44,1.4,1.4,0,0,0,.22-.75V16.8a1.43,1.43,0,0,0-1.43-1.41,1.39,1.39,0,0,0-.81.26Zm9.49,6.58a.2.2,0,0,1-.31.17L8.79,23a.22.22,0,0,1,0-.29l0-.05,8.46-6.07a.2.2,0,0,1,.28,0,.2.2,0,0,1,0,.13Z' style='fill:%23888'/%3E%3Cpath d='M4.22,29.17a.61.61,0,0,0,1.22,0V15.83a.61.61,0,0,0-1.22,0h0Z' style='fill:%23ffc017'/%3E%3Cpath d='M3.48,25.91a1.35,1.35,0,1,0,2.7,0V19.09a1.35,1.35,0,1,0-2.7,0h0Z' style='fill:%23ffc017'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/animationNextFrameHoverIcon.svg":
+/*!****************************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/animationNextFrameHoverIcon.svg ***!
+  \****************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='23' height='45' viewBox='0 0 23 45'%3E%3Crect width='23' height='45' style='fill:none'/%3E%3Cpath d='M4.22,16.8a1.43,1.43,0,0,1,1.43-1.41,1.39,1.39,0,0,1,.81.26l8.47,6.07a1.42,1.42,0,0,1,.32,2,1.44,1.44,0,0,1-.38.36L6.4,29.49a1.42,1.42,0,0,1-2-.44,1.4,1.4,0,0,1-.22-.75Z' style='fill:%23ccc'/%3E%3Cpath d='M18.78,15.83a.61.61,0,0,0-1.22,0V29.17a.61.61,0,0,0,1.22,0Z' style='fill:%23ccc'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/animationNextFrameIcon.svg":
+/*!***********************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/animationNextFrameIcon.svg ***!
+  \***********************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='23' height='45' viewBox='0 0 23 45'%3E%3Crect width='23' height='45' style='fill:none'/%3E%3Cpath d='M6.46,15.65a1.42,1.42,0,0,0-2,.34,1.39,1.39,0,0,0-.26.81V28.3a1.43,1.43,0,0,0,1.43,1.41,1.4,1.4,0,0,0,.75-.22l8.47-5.43a1.42,1.42,0,0,0,.42-2,1.45,1.45,0,0,0-.36-.38Zm-1,1.15a.2.2,0,0,1,.32-.17l8.46,6.07a.22.22,0,0,1,0,.29s0,0,0,.05L5.75,28.47a.2.2,0,0,1-.28-.06.2.2,0,0,1,0-.11Z' style='fill:%23888'/%3E%3Cpath d='M17.56,29.17a.61.61,0,0,0,1.22,0V15.83a.61.61,0,0,0-1.22,0h0Z' style='fill:%23888'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -47035,7 +47102,7 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='23' height='45' viewBox='0 0 23 45'%3E%3Crect width='23' height='45' style='fill:none'/%3E%3Cpath d='M4.22,16.8a1.42,1.42,0,0,1,2.24-1.15l8.47,6.07a1.42,1.42,0,0,1-.06,2.34L6.4,29.49A1.42,1.42,0,0,1,4.22,28.3Z' style='fill:%23ccc'/%3E%3Cpath d='M18.78,15.83a.61.61,0,0,0-1.22,0V29.17a.61.61,0,0,0,1.22,0Z' style='fill:%23ffc017'/%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='23' height='45' viewBox='0 0 23 45'%3E%3Crect width='23' height='45' style='fill:none'/%3E%3Cpath d='M4.22,16.8a1.43,1.43,0,0,1,1.43-1.41,1.39,1.39,0,0,1,.81.26l8.47,6.07a1.42,1.42,0,0,1,.32,2,1.44,1.44,0,0,1-.38.36L6.4,29.49a1.42,1.42,0,0,1-2-.44,1.4,1.4,0,0,1-.22-.75Z' style='fill:%23ccc'/%3E%3Cpath d='M17.56,29.17a.61.61,0,0,0,1.22,0V15.83a.61.61,0,0,0-1.22,0h0Z' style='fill:%23ffc017'/%3E%3Cpath d='M16.82,25.91a1.35,1.35,0,0,0,2.7,0V19.09a1.35,1.35,0,1,0-2.7,0h0Z' style='fill:%23ffc017'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -47046,7 +47113,7 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='23' height='45' viewBox='0 0 23 45'%3E%3Crect width='23' height='45' style='fill:none'/%3E%3Cpath d='M18.78,15.83a.61.61,0,0,0-1.22,0V29.17a.61.61,0,0,0,1.22,0Z' style='fill:%23ffc017'/%3E%3Cpath d='M6.46,15.65A1.42,1.42,0,0,0,4.22,16.8V28.3A1.42,1.42,0,0,0,6.4,29.49l8.47-5.43a1.42,1.42,0,0,0,.06-2.34Zm-1,1.15a.2.2,0,0,1,.32-.17l8.46,6.07a.21.21,0,0,1,0,.34L5.75,28.47a.2.2,0,0,1-.31-.17Z' style='fill:%23888'/%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='23' height='45' viewBox='0 0 23 45'%3E%3Crect width='23' height='45' style='fill:none'/%3E%3Cpath d='M6.46,15.65a1.42,1.42,0,0,0-2,.34,1.39,1.39,0,0,0-.26.81V28.3a1.43,1.43,0,0,0,1.43,1.41,1.4,1.4,0,0,0,.75-.22l8.47-5.43a1.42,1.42,0,0,0,.42-2,1.45,1.45,0,0,0-.36-.38Zm-1,1.15a.2.2,0,0,1,.32-.17l8.46,6.07a.22.22,0,0,1,0,.29s0,0,0,.05L5.75,28.47a.2.2,0,0,1-.28-.06.2.2,0,0,1,0-.11Z' style='fill:%23888'/%3E%3Cpath d='M17.56,29.17a.61.61,0,0,0,1.22,0V15.83a.61.61,0,0,0-1.22,0h0Z' style='fill:%23ffc017'/%3E%3Cpath d='M16.82,25.91a1.35,1.35,0,0,0,2.7,0V19.09a1.35,1.35,0,1,0-2.7,0h0Z' style='fill:%23ffc017'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -47057,7 +47124,7 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Crect width='20' height='20' style='fill:none'/%3E%3Cpath d='M10,4.1a6.71,6.71,0,0,1,1.33.16l.34.39.1.92a.85.85,0,0,0,.83.75A1,1,0,0,0,13,6.25l.85-.38.5.1a6,6,0,0,1,1.35,2.31l-.17.49-.75.56a.83.83,0,0,0,0,1.34l.75.56.17.49A6,6,0,0,1,14.3,14l-.5.1L13,13.75a.85.85,0,0,0-.76.05.82.82,0,0,0-.41.63l-.1.92-.34.39a5.82,5.82,0,0,1-2.69,0l-.33-.39-.1-.92a.83.83,0,0,0-.41-.63.85.85,0,0,0-.76,0l-.85.37L5.7,14a6,6,0,0,1-1.35-2.31l.17-.49.75-.56a.83.83,0,0,0,0-1.34l-.75-.56-.17-.48A6,6,0,0,1,5.7,6l.5-.1.85.38a.85.85,0,0,0,.76,0,.83.83,0,0,0,.41-.63l.1-.92.34-.39A6.73,6.73,0,0,1,10,4.1ZM10,5a5.55,5.55,0,0,0-.82.07l-.07.59A1.74,1.74,0,0,1,6.69,7.08l-.55-.24a5,5,0,0,0-.81,1.4l.48.36a1.74,1.74,0,0,1,0,2.8l-.48.36a5.22,5.22,0,0,0,.81,1.41l.55-.24a1.73,1.73,0,0,1,2.43,1.4l.07.59a4.89,4.89,0,0,0,1.62,0l.07-.59a1.74,1.74,0,0,1,2.43-1.41l.55.24a5,5,0,0,0,.81-1.4l-.48-.36a1.74,1.74,0,0,1,0-2.8l.48-.36a5,5,0,0,0-.81-1.4l-.55.24a1.86,1.86,0,0,1-.7.14,1.74,1.74,0,0,1-1.73-1.55l-.07-.59A4.4,4.4,0,0,0,10,5Zm0,2.72A2.27,2.27,0,1,1,7.73,10,2.27,2.27,0,0,1,10,7.73Zm0,.91A1.36,1.36,0,1,0,11.36,10,1.36,1.36,0,0,0,10,8.64Z' style='fill:%23fff'/%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Crect width='20' height='20' style='fill:none'/%3E%3Cpath d='M10,4.1a6.62,6.62,0,0,1,1.33.16l.34.39.1.92a.85.85,0,0,0,.83.75,1.09,1.09,0,0,0,.4-.07l.85-.38.5.1A6,6,0,0,1,15.7,8.28l-.17.49-.75.56a.83.83,0,0,0-.18,1.16.77.77,0,0,0,.18.18l.75.56.17.49A6,6,0,0,1,14.3,14l-.5.1-.8-.35a.85.85,0,0,0-.76.05.83.83,0,0,0-.41.63l-.1.92-.34.39a5.82,5.82,0,0,1-2.69,0l-.33-.39-.1-.92a.83.83,0,0,0-.41-.63.85.85,0,0,0-.76,0l-.85.37L5.7,14a6,6,0,0,1-1.35-2.31l.17-.49.75-.56a.83.83,0,0,0,.18-1.16.77.77,0,0,0-.18-.18l-.75-.56-.17-.48A6.06,6.06,0,0,1,5.7,6l.5-.1.85.38a.85.85,0,0,0,.76,0,.83.83,0,0,0,.41-.63l.1-.92.34-.39A6.18,6.18,0,0,1,10,4.1ZM10,5a5.67,5.67,0,0,0-.82.07l-.07.59A1.73,1.73,0,0,1,7.2,7.21a1.53,1.53,0,0,1-.51-.13l-.55-.24a5,5,0,0,0-.81,1.4l.48.36A1.74,1.74,0,0,1,6.18,11a1.85,1.85,0,0,1-.37.37l-.48.36a5.07,5.07,0,0,0,.81,1.41l.55-.24A1.74,1.74,0,0,1,9,13.8a2,2,0,0,1,.14.53l.07.59a4.89,4.89,0,0,0,1.62,0l.07-.59a1.74,1.74,0,0,1,1.91-1.55,1.82,1.82,0,0,1,.52.14l.55.24a5,5,0,0,0,.81-1.4l-.48-.36A1.74,1.74,0,0,1,13.82,9a1.85,1.85,0,0,1,.37-.37l.48-.36a5,5,0,0,0-.81-1.4l-.55.24a1.86,1.86,0,0,1-.7.14,1.74,1.74,0,0,1-1.73-1.55l-.07-.59A4.45,4.45,0,0,0,10,5Zm0,2.72A2.27,2.27,0,1,1,7.73,10,2.27,2.27,0,0,1,10,7.72h0Zm0,.91A1.36,1.36,0,1,0,11.36,10,1.36,1.36,0,0,0,10,8.63Z' style='fill:%23fff'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -47068,7 +47135,7 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='23' height='45' viewBox='0 0 23 45'%3E%3Crect width='23' height='45' style='fill:none'/%3E%3Cpath d='M4.77,17.13a1.8,1.8,0,0,1,2.65-1.58l9.87,5.37a1.8,1.8,0,0,1,0,3.16L7.42,29.45a1.8,1.8,0,0,1-2.65-1.58Z' style='fill:%23ccc'/%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='23' height='45' viewBox='0 0 23 45'%3E%3Crect width='23' height='45' style='fill:none'/%3E%3Cpath d='M4.77,17.13a1.79,1.79,0,0,1,1.81-1.79,1.77,1.77,0,0,1,.84.21l9.87,5.37A1.81,1.81,0,0,1,18,23.36a1.85,1.85,0,0,1-.72.72L7.42,29.45A1.8,1.8,0,0,1,5,28.71a1.77,1.77,0,0,1-.21-.84Z' style='fill:%23ccc'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -47079,7 +47146,7 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='23' height='45' viewBox='0 0 23 45'%3E%3Crect width='23' height='45' style='fill:none'/%3E%3Cpath d='M6.85,16.61a.59.59,0,0,0-.88.52V27.87a.59.59,0,0,0,.88.52L16.72,23a.6.6,0,0,0,0-1.06Zm-2.08.52a1.8,1.8,0,0,1,2.65-1.58l9.87,5.37a1.8,1.8,0,0,1,0,3.16L7.42,29.45a1.8,1.8,0,0,1-2.65-1.58Z' style='fill:%23888'/%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='23' height='45' viewBox='0 0 23 45'%3E%3Crect width='23' height='45' style='fill:none'/%3E%3Cpath d='M6.85,16.61a.59.59,0,0,0-.8.22.64.64,0,0,0-.08.3V27.87a.6.6,0,0,0,.58.6.61.61,0,0,0,.3-.08L16.72,23a.6.6,0,0,0,0-1.06Zm-2.08.52a1.79,1.79,0,0,1,1.81-1.79,1.77,1.77,0,0,1,.84.21l9.87,5.37A1.81,1.81,0,0,1,18,23.36a1.85,1.85,0,0,1-.72.72L7.42,29.45A1.8,1.8,0,0,1,5,28.71a1.77,1.77,0,0,1-.21-.84Z' style='fill:%23888'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -47090,7 +47157,7 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='23' height='45' viewBox='0 0 23 45'%3E%3Crect width='23' height='45' style='fill:none'/%3E%3Cpath d='M18.23,27.87a1.8,1.8,0,0,1-2.65,1.58L5.71,24.08a1.8,1.8,0,0,1,0-3.16l9.87-5.37a1.8,1.8,0,0,1,2.65,1.58Z' style='fill:%23ccc'/%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='23' height='45' viewBox='0 0 23 45'%3E%3Crect width='23' height='45' style='fill:none'/%3E%3Cpath d='M18.23,27.87a1.79,1.79,0,0,1-1.81,1.79,1.77,1.77,0,0,1-.84-.21L5.71,24.08A1.81,1.81,0,0,1,5,21.64a1.85,1.85,0,0,1,.72-.72l9.87-5.37a1.8,1.8,0,0,1,2.44.74,1.77,1.77,0,0,1,.21.84Z' style='fill:%23ccc'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -47101,7 +47168,7 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='23' height='45' viewBox='0 0 23 45'%3E%3Crect width='23' height='45' style='fill:none'/%3E%3Cpath d='M6.28,22a.6.6,0,0,0,0,1.06l9.87,5.36a.59.59,0,0,0,.88-.52V17.13a.59.59,0,0,0-.88-.52Zm12,5.9a1.8,1.8,0,0,1-2.65,1.58L5.71,24.08a1.8,1.8,0,0,1,0-3.16l9.87-5.37a1.8,1.8,0,0,1,2.65,1.58Z' style='fill:%23888'/%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='23' height='45' viewBox='0 0 23 45'%3E%3Crect width='23' height='45' style='fill:none'/%3E%3Cpath d='M6.28,22a.6.6,0,0,0,0,1.06l9.87,5.36a.59.59,0,0,0,.8-.22.64.64,0,0,0,.08-.3V17.13a.6.6,0,0,0-.58-.6.61.61,0,0,0-.3.08Zm12,5.9a1.79,1.79,0,0,1-1.81,1.79,1.77,1.77,0,0,1-.84-.21l-9.92-5.4A1.81,1.81,0,0,1,5,21.64a1.85,1.85,0,0,1,.72-.72l9.87-5.37a1.8,1.8,0,0,1,2.44.74,1.77,1.77,0,0,1,.21.84Z' style='fill:%23888'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -47112,7 +47179,7 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='23' height='45' viewBox='0 0 23 45'%3E%3Crect width='23' height='45' transform='translate(23 45) rotate(-180)' style='fill:none'/%3E%3Cpath d='M11.33,16.31,4,22a.61.61,0,0,0,0,1l7.35,5.71a.61.61,0,0,0,1-.48V24.07l5.94,4.62a.61.61,0,0,0,1-.48V16.79a.61.61,0,0,0-1-.48l-5.94,4.62V16.79A.61.61,0,0,0,11.33,16.31Z' style='fill:%23ccc'/%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='23' height='45' viewBox='0 0 23 45'%3E%3Crect width='23' height='45' style='fill:none'/%3E%3Cpath d='M11.33,16.31,4,22a.61.61,0,0,0-.15.85A.54.54,0,0,0,4,23l7.35,5.71a.61.61,0,0,0,.86-.08.63.63,0,0,0,.14-.4V24.07l5.94,4.62a.61.61,0,0,0,.86-.08.63.63,0,0,0,.14-.4V16.79a.61.61,0,0,0-.6-.62.63.63,0,0,0-.4.14l-5.94,4.62V16.79a.61.61,0,0,0-1-.48Z' style='fill:%23ccc'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -47123,7 +47190,7 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='23' height='45' viewBox='0 0 23 45'%3E%3Crect width='23' height='45' transform='translate(23 45) rotate(-180)' style='fill:none'/%3E%3Cpath d='M12.32,16.79v4.14l5.94-4.62a.61.61,0,0,1,1,.48V28.21a.61.61,0,0,1-1,.48l-5.94-4.62v4.14a.61.61,0,0,1-1,.48L4,23a.61.61,0,0,1,0-1l7.35-5.71A.61.61,0,0,1,12.32,16.79Zm-7,5.71L11.09,27V18Zm7,0v0L18,27V18Z' style='fill:%23888'/%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='23' height='45' viewBox='0 0 23 45'%3E%3Crect width='23' height='45' style='fill:none'/%3E%3Cpath d='M12.32,16.79v4.14l5.94-4.62a.61.61,0,0,1,.86.08.63.63,0,0,1,.14.4V28.21a.61.61,0,0,1-.6.62.63.63,0,0,1-.4-.14l-5.94-4.62v4.14a.61.61,0,0,1-.6.62.63.63,0,0,1-.4-.14L4,23a.61.61,0,0,1-.15-.85A.54.54,0,0,1,4,22l7.35-5.71a.61.61,0,0,1,.85.13A.63.63,0,0,1,12.32,16.79Zm-7,5.71L11.09,27V18Zm7,0h0L18,27V18Z' style='fill:%23888'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -47134,7 +47201,7 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='23' height='45' viewBox='0 0 23 45'%3E%3Crect width='23' height='45' style='fill:none'/%3E%3Cpath d='M5.63,15.21a1.43,1.43,0,0,0-1.42,1.42V28.37a1.43,1.43,0,0,0,1.42,1.42H17.37a1.43,1.43,0,0,0,1.42-1.42V16.63a1.43,1.43,0,0,0-1.42-1.42Z' style='fill:%23c12d2d'/%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='23' height='45' viewBox='0 0 23 45'%3E%3Crect width='23' height='45' style='fill:none'/%3E%3Cpath d='M5.63,15.21a1.44,1.44,0,0,0-1.42,1.42V28.37a1.44,1.44,0,0,0,1.42,1.42H17.37a1.44,1.44,0,0,0,1.42-1.42V16.63a1.44,1.44,0,0,0-1.42-1.42Z' style='fill:%23c12d2d'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -47145,7 +47212,7 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='23' height='45' viewBox='0 0 23 45'%3E%3Crect width='23' height='45' style='fill:none'/%3E%3Cpath d='M17.37,16.43a.2.2,0,0,1,.2.2V28.37a.2.2,0,0,1-.2.2H5.63a.2.2,0,0,1-.2-.2V16.63a.2.2,0,0,1,.2-.2ZM5.63,15.21a1.43,1.43,0,0,0-1.42,1.42V28.37a1.43,1.43,0,0,0,1.42,1.42H17.37a1.43,1.43,0,0,0,1.42-1.42V16.63a1.43,1.43,0,0,0-1.42-1.42Z' style='fill:%238c2f2f'/%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='23' height='45' viewBox='0 0 23 45'%3E%3Crect width='23' height='45' style='fill:none'/%3E%3Cpath d='M17.37,16.43a.2.2,0,0,1,.2.2h0V28.37a.2.2,0,0,1-.2.2H5.63a.2.2,0,0,1-.2-.2h0V16.63a.2.2,0,0,1,.2-.2H17.37ZM5.63,15.21a1.44,1.44,0,0,0-1.42,1.42V28.37a1.44,1.44,0,0,0,1.42,1.42H17.37a1.44,1.44,0,0,0,1.42-1.42V16.63a1.44,1.44,0,0,0-1.42-1.42Z' style='fill:%238c2f2f'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -47156,7 +47223,7 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath d='M5.43,7.31,7.81,3.19a.49.49,0,0,0-.43-.75H2.62a.49.49,0,0,0-.43.75L4.57,7.31A.49.49,0,0,0,5.43,7.31Z' style='fill:%23888'/%3E%3Crect width='10' height='10' style='fill:none'/%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath d='M5.43,7.31,7.81,3.19a.51.51,0,0,0-.15-.68.55.55,0,0,0-.28-.07H2.62a.48.48,0,0,0-.5.47.45.45,0,0,0,.07.28L4.57,7.31a.49.49,0,0,0,.66.2A.48.48,0,0,0,5.43,7.31Z' style='fill:%23888'/%3E%3Crect width='10' height='10' style='fill:none'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -47167,7 +47234,7 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:none;%7D.cls-2%7Bfill:%23e0684b;%7D.cls-3%7Bfill:%23bb464b;%7D.cls-4%7Bfill:%23e0ded8;%7D.cls-5%7Bfill:%23d5d2ca;%7D.cls-6%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cg id='UI'%3E%3Crect class='cls-1' width='40' height='40'/%3E%3Cpolygon class='cls-2' points='32.91 13.78 29.54 11.84 26.29 13.71 29.66 15.65 32.91 13.78'/%3E%3Cpolygon class='cls-2' points='14.61 15.65 25.38 9.44 22.14 7.57 11.37 13.78 14.61 15.65'/%3E%3Cpolygon class='cls-2' points='18.77 21.95 22.14 23.89 25.51 21.95 22.14 20 18.77 21.95'/%3E%3Cpolygon class='cls-3' points='29.66 15.65 29.66 24.34 22.14 28.69 14.61 24.34 14.61 15.65 11.37 13.78 11.37 26.22 22.14 32.44 32.91 26.22 32.91 13.78 29.66 15.65'/%3E%3Cpolygon class='cls-3' points='22.14 16.11 18.77 18.05 18.77 21.95 22.14 20 25.51 21.95 25.51 18.05 22.14 16.11'/%3E%3Cpolygon class='cls-4' points='29.66 15.65 25.51 18.05 25.51 21.95 22.14 23.89 22.14 28.69 29.66 24.34 29.66 15.65'/%3E%3Cpolygon class='cls-5' points='14.61 15.65 18.77 18.05 18.77 21.95 22.14 23.89 22.14 28.69 14.61 24.34 14.61 15.65'/%3E%3Cpolygon class='cls-6' points='25.38 9.44 29.54 11.84 26.29 13.71 29.66 15.65 25.51 18.05 22.14 16.11 18.77 18.05 14.61 15.65 25.38 9.44'/%3E%3C/g%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpolygon points='22.14 7.57 11.37 13.78 11.37 26.22 22.14 32.44 32.91 26.22 32.91 13.78 22.14 7.57' style='fill:%23fff'/%3E%3Crect width='40' height='40' style='fill:none'/%3E%3Cpolygon points='32.91 13.78 29.54 11.84 26.29 13.71 29.66 15.65 32.91 13.78' style='fill:%23e0684b'/%3E%3Cpolygon points='14.61 15.65 25.38 9.44 22.14 7.57 11.37 13.78 14.61 15.65' style='fill:%23e0684b'/%3E%3Cpolygon points='18.77 21.95 22.14 23.89 25.51 21.95 22.14 20 18.77 21.95' style='fill:%23e0684b'/%3E%3Cpolygon points='29.66 15.65 29.66 24.34 22.14 28.69 14.61 24.34 14.61 15.65 11.37 13.78 11.37 26.22 22.14 32.44 32.91 26.22 32.91 13.78 29.66 15.65' style='fill:%23bb464b'/%3E%3Cpolygon points='22.14 16.11 18.77 18.05 18.77 21.95 22.14 20 25.51 21.95 25.51 18.05 22.14 16.11' style='fill:%23bb464b'/%3E%3Cpolygon points='29.66 15.65 25.51 18.05 25.51 21.95 22.14 23.89 22.14 28.69 29.66 24.34 29.66 15.65' style='fill:%23e0ded8'/%3E%3Cpolygon points='14.61 15.65 18.77 18.05 18.77 21.95 22.14 23.89 22.14 28.69 14.61 24.34 14.61 15.65' style='fill:%23d5d2ca'/%3E%3Cpolygon points='25.38 9.44 29.54 11.84 26.29 13.71 29.66 15.65 25.51 18.05 22.14 16.11 18.77 18.05 14.61 15.65 25.38 9.44' style='fill:%23fff'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -47178,7 +47245,7 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M29.89,13.53a1.2,1.2,0,0,0-2,1.18l-6.23,6.23L21,20.26a1.41,1.41,0,0,0-2,0l-.67.68-6.23-6.23a1.21,1.21,0,1,0-.85.83l6.24,6.24-.58.58a1.4,1.4,0,0,0,0,2L19,26.42a1.4,1.4,0,0,0,2,0l2.09-2.09a1.4,1.4,0,0,0,0-2l-.58-.58,6.24-6.24a1.2,1.2,0,0,0,1.15-2Zm-7.66,10-2.09,2.09a.19.19,0,0,1-.28,0l-2.09-2.09a.21.21,0,0,1,0-.28l2.09-2.09a.22.22,0,0,1,.28,0l2.09,2.09A.21.21,0,0,1,22.23,23.48Z' style='fill:%23fff'/%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M27.11,13.05a1.49,1.49,0,0,0-2.05.53,1.47,1.47,0,0,0,.14,1.72l-4.78,8L20,22.92l-.42.42-4.78-8a1.47,1.47,0,0,0,.14-1.72,1.49,1.49,0,0,0-2-.53,1.5,1.5,0,0,0,1,2.76l4.91,8.26-1,1L20,27.16,22.12,25l-1-1,4.91-8.26a1.5,1.5,0,0,0,1.05-2.76Z' style='fill:%23fff'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -47200,7 +47267,7 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Crect width='30' height='30' style='fill:none'/%3E%3Cpath d='M22,8a2.79,2.79,0,0,1,0,3.95l-9.33,9.33a1.76,1.76,0,0,1-.78.45l-4,1.09a.58.58,0,0,1-.72-.72l1.09-4a1.76,1.76,0,0,1,.45-.78L18.06,8A2.79,2.79,0,0,1,22,8Zm-4.7,2.41L9.56,18.15a.46.46,0,0,0-.15.26l-.82,3,3-.82a.46.46,0,0,0,.26-.15l7.75-7.75Zm1.58-1.58-.75.75,2.29,2.29.75-.75a1.62,1.62,0,0,0-2.29-2.29Z' style='fill:%23fff'/%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Crect width='30' height='30' style='fill:none'/%3E%3Cpath d='M22,8A2.79,2.79,0,0,1,22,12h0l-9.33,9.33a1.76,1.76,0,0,1-.78.45l-4,1.09a.58.58,0,0,1-.72-.39.62.62,0,0,1,0-.33l1.09-4a1.76,1.76,0,0,1,.45-.78L18.06,8A2.8,2.8,0,0,1,22,8Zm-4.7,2.41L9.56,18.15a.46.46,0,0,0-.15.26l-.82,3,3-.82a.46.46,0,0,0,.26-.15l7.75-7.75Zm1.58-1.58-.75.75,2.29,2.29.75-.75a1.62,1.62,0,0,0-2.29-2.29Z' style='fill:%23fff'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -47211,7 +47278,7 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' style='fill:none'/%3E%3Cpath d='M27.5,18.85a1.18,1.18,0,0,0-1,.62h-8.3a1.65,1.65,0,0,0-.3-.46l-2.1-2.09a1.4,1.4,0,0,0-2,0L11.7,19a1.41,1.41,0,0,0,0,2l2.09,2.09a1.39,1.39,0,0,0,2,0L17.86,21a1.67,1.67,0,0,0,.21-.33h8.4a1.2,1.2,0,1,0,1-1.81ZM17,20.14l-2.1,2.09a.2.2,0,0,1-.27,0l-2.09-2.09a.19.19,0,0,1,0-.28l2.09-2.09a.2.2,0,0,1,.14-.06.16.16,0,0,1,.13.06L17,19.86A.21.21,0,0,1,17,20.14Z' style='fill:%23fff'/%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M28,18.5a1.51,1.51,0,0,0-1.41,1H11.5v1H26.59a1.5,1.5,0,1,0,1.41-2Z' style='fill:%23fff'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -47222,7 +47289,7 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' style='fill:none'/%3E%3Cpath d='M14.05,15a1,1,0,0,1,1-1h1.59a.6.6,0,0,0,.59-.6.59.59,0,0,0-.59-.59H15A2.17,2.17,0,0,0,12.86,15v1.59a.59.59,0,0,0,.59.59.6.6,0,0,0,.6-.59Z' style='fill:%23fff'/%3E%3Cpath d='M14.05,25a1,1,0,0,0,1,1h1.59a.6.6,0,0,1,.59.6.59.59,0,0,1-.59.59H15A2.17,2.17,0,0,1,12.86,25V23.37a.59.59,0,0,1,.59-.59.6.6,0,0,1,.6.59Z' style='fill:%23fff'/%3E%3Cpath d='M25,14.05a1,1,0,0,1,1,1v1.59a.6.6,0,0,0,.6.59.59.59,0,0,0,.59-.59V15A2.17,2.17,0,0,0,25,12.86H23.37a.59.59,0,0,0-.59.59.6.6,0,0,0,.59.6Z' style='fill:%23fff'/%3E%3Cpath d='M26,25a1,1,0,0,1-1,1H23.37a.6.6,0,0,0-.59.6.59.59,0,0,0,.59.59H25A2.17,2.17,0,0,0,27.14,25V23.37a.59.59,0,0,0-.59-.59.6.6,0,0,0-.6.59Z' style='fill:%23fff'/%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M14.05,15a1,1,0,0,1,1-1h1.59a.6.6,0,0,0,.59-.6.58.58,0,0,0-.59-.59H15A2.18,2.18,0,0,0,12.86,15v1.59a.58.58,0,0,0,.59.59h0a.6.6,0,0,0,.6-.59Zm0,10a1,1,0,0,0,1,1h1.59a.6.6,0,0,1,.59.6.58.58,0,0,1-.59.59H15A2.18,2.18,0,0,1,12.86,25V23.37a.58.58,0,0,1,.59-.59h0a.6.6,0,0,1,.6.59ZM25,14.05a1,1,0,0,1,1,1v1.59a.6.6,0,0,0,.6.59.58.58,0,0,0,.59-.59h0V15A2.18,2.18,0,0,0,25,12.86H23.37a.58.58,0,0,0-.59.59h0a.6.6,0,0,0,.59.6Zm1,11a1,1,0,0,1-1,1H23.37a.6.6,0,0,0-.59.6.58.58,0,0,0,.59.59H25A2.18,2.18,0,0,0,27.14,25V23.37a.58.58,0,0,0-.59-.59h0a.6.6,0,0,0-.6.59Z' style='fill:%23fff'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -47233,7 +47300,7 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath d='M5,1.41a1,1,0,0,0-.71.3L1.71,4.29a1,1,0,0,0,0,1.42L4.29,8.29a1,1,0,0,0,1.42,0L8.29,5.71a1,1,0,0,0,0-1.42L5.71,1.71A1,1,0,0,0,5,1.41Z' style='fill:%23ffc017'/%3E%3Crect width='10' height='10' style='fill:none'/%3E%3Cpolyline points='5 2.41 5 2.41 7.59 5 5 7.59 2.41 5 5 2.41 5 2.41' style='fill:%23111'/%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath d='M5,1.41a1,1,0,0,0-.71.3L1.71,4.29a1,1,0,0,0,0,1.41h0L4.29,8.29a1,1,0,0,0,1.41,0h0L8.29,5.71a1,1,0,0,0,0-1.41h0L5.71,1.71A1,1,0,0,0,5,1.41Z' style='fill:%23ffc017'/%3E%3Crect width='10' height='10' style='fill:none'/%3E%3Cpolyline points='5 2.41 5 2.41 7.59 5 5 7.59 2.41 5 5 2.41 5 2.41' style='fill:%23111'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -47244,7 +47311,7 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Crect width='10' height='10' style='fill:none'/%3E%3Cpath d='M5,1.41a1,1,0,0,0-.71.3L1.71,4.29a1,1,0,0,0,0,1.42L4.29,8.29a1,1,0,0,0,1.42,0L8.29,5.71a1,1,0,0,0,0-1.42L5.71,1.71A1,1,0,0,0,5,1.41Z' style='fill:%23aaa'/%3E%3Cpolyline points='5 2.41 5 2.41 7.59 5 5 7.59 2.41 5 5 2.41 5 2.41' style='fill:%23111'/%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Crect width='10' height='10' style='fill:none'/%3E%3Cpath d='M5,1.41a1,1,0,0,0-.71.3L1.71,4.29a1,1,0,0,0,0,1.41h0L4.29,8.29a1,1,0,0,0,1.41,0h0L8.29,5.71a1,1,0,0,0,0-1.41h0L5.71,1.71A1,1,0,0,0,5,1.41Z' style='fill:%23aaa'/%3E%3Cpolyline points='5 2.41 5 2.41 7.59 5 5 7.59 2.41 5 5 2.41 5 2.41' style='fill:%23111'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -47266,7 +47333,7 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M26.51,13.53a1.2,1.2,0,0,0-2,1.18l-6.23,6.23-.68-.68a1.4,1.4,0,0,0-2,0l-2.09,2.1a1.4,1.4,0,0,0,0,2l2.09,2.09a1.39,1.39,0,0,0,2,0l2.1-2.09a1.4,1.4,0,0,0,0-2l-.58-.58,6.24-6.24a1.2,1.2,0,0,0,1.15-2Zm-7.66,10-2.1,2.09a.18.18,0,0,1-.27,0l-2.09-2.09a.19.19,0,0,1,0-.28l2.09-2.09a.19.19,0,0,1,.14-.05.15.15,0,0,1,.13.05l2.1,2.09A.21.21,0,0,1,18.85,23.48Z' style='fill:%23fff'/%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M26,14a1.49,1.49,0,0,0-2.4,1.69l-10,10,.71.71,10-10A1.49,1.49,0,0,0,26,14Z' style='fill:%23fff'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -47277,7 +47344,7 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Crect width='30' height='30' style='fill:none'/%3E%3Cpath d='M20.06,8.38a.59.59,0,1,0,0-1.17H9.93a.59.59,0,0,0,0,1.17ZM14.92,22.79H15a.59.59,0,0,0,.58-.5V11.55l2.9,2.89a.58.58,0,0,0,.76.06l.07-.06a.58.58,0,0,0,.05-.76l-.05-.06-3.9-3.89a.58.58,0,0,0-.76-.06l-.06.05-3.9,3.9a.57.57,0,0,0,0,.82.58.58,0,0,0,.76.06l.07-.06,2.89-2.89V22.21A.59.59,0,0,0,14.92,22.79Z' style='fill:%23fff'/%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Crect width='30' height='30' style='fill:none'/%3E%3Cpath d='M20.06,8.38a.59.59,0,0,0,.66-.51.59.59,0,0,0-.51-.66H9.93a.59.59,0,0,0-.51.66.57.57,0,0,0,.51.51ZM14.92,22.79H15a.59.59,0,0,0,.58-.5V11.55l2.9,2.89a.58.58,0,0,0,.76.06l.07-.06a.59.59,0,0,0,.05-.76l-.05-.06-3.9-3.89a.58.58,0,0,0-.76-.06l-.06.05-3.9,3.9a.58.58,0,0,0,0,.81h0a.58.58,0,0,0,.76.06l.07-.06,2.89-2.89V22.21A.59.59,0,0,0,14.92,22.79Z' style='fill:%23fff'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -47288,7 +47355,7 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M21.83,14.83l3.34,3.34a2.59,2.59,0,0,1,0,3.66l-3.34,3.34a2.59,2.59,0,0,1-3.66,0l-3.34-3.34a2.59,2.59,0,0,1,0-3.66l3.34-3.34A2.59,2.59,0,0,1,21.83,14.83ZM19,15.68,15.68,19a1.37,1.37,0,0,0,0,2L19,24.32a1.37,1.37,0,0,0,2,0L24.32,21a1.37,1.37,0,0,0,0-2L21,15.68A1.37,1.37,0,0,0,19,15.68Z' style='fill:%23fff'/%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' style='fill:none'/%3E%3Cpath d='M21.83,14.83l3.34,3.34a2.59,2.59,0,0,1,0,3.66l-3.34,3.34a2.59,2.59,0,0,1-3.66,0l-3.34-3.34a2.59,2.59,0,0,1,0-3.66l3.34-3.34A2.59,2.59,0,0,1,21.83,14.83ZM19,15.68,15.68,19a1.37,1.37,0,0,0-.06,1.94l.06.06L19,24.32a1.37,1.37,0,0,0,1.94.06l.06-.06L24.32,21a1.37,1.37,0,0,0,.06-1.94L24.32,19,21,15.68a1.37,1.37,0,0,0-1.94-.06Z' style='fill:%23fff'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -47299,7 +47366,7 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Crect width='30' height='30' style='fill:none'/%3E%3Cpath d='M8,10.16A2.13,2.13,0,0,1,10.15,8h7.73a2.51,2.51,0,0,1,1.78.73l1.58,1.58A2.51,2.51,0,0,1,22,12.12v7.73A2.13,2.13,0,0,1,19.84,22H10.15A2.14,2.14,0,0,1,8,19.85Zm2.13-1a1,1,0,0,0-1,1v9.69a1,1,0,0,0,1,1h.2V16.75A1.74,1.74,0,0,1,12.09,15h5.82a1.74,1.74,0,0,1,1.74,1.75v4.07h.19a1,1,0,0,0,1-1V12.12a1.35,1.35,0,0,0-.4-1L18.84,9.59a1.26,1.26,0,0,0-.74-.38v2.11a1.74,1.74,0,0,1-1.75,1.74H12.87a1.74,1.74,0,0,1-1.75-1.74V9.19Zm8.34,11.63V16.75a.58.58,0,0,0-.58-.59H12.09a.58.58,0,0,0-.58.59v4.07ZM12.29,9.19v2.13a.58.58,0,0,0,.58.58h3.48a.58.58,0,0,0,.59-.58V9.19Z' style='fill:%23fff'/%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Crect width='30' height='30' style='fill:none'/%3E%3Cpath d='M8,10.16A2.13,2.13,0,0,1,10.1,8h7.78a2.51,2.51,0,0,1,1.78.73l1.58,1.58A2.53,2.53,0,0,1,22,12.12v7.73A2.13,2.13,0,0,1,19.89,22H10.15A2.14,2.14,0,0,1,8,19.87V10.16Zm2.13-1a1,1,0,0,0-1,1v9.69a1,1,0,0,0,1,1h.2v-4.1A1.74,1.74,0,0,1,12.06,15h5.85a1.74,1.74,0,0,1,1.74,1.74h0v4.07h.19a1,1,0,0,0,1-1v-7.7a1.38,1.38,0,0,0-.4-1l-1.6-1.53a1.26,1.26,0,0,0-.74-.38v2.11a1.74,1.74,0,0,1-1.74,1.74H12.87a1.73,1.73,0,0,1-1.75-1.73h0V9.19Zm8.34,11.63v-4a.59.59,0,0,0-.57-.59H12.09a.58.58,0,0,0-.58.58h0v4.07ZM12.29,9.19v2.13a.58.58,0,0,0,.58.58h3.48a.58.58,0,0,0,.59-.57h0V9.19Z' style='fill:%23fff'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -47310,7 +47377,18 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='21' viewBox='0 0 20 21'%3E%3Crect width='20' height='21' style='fill:none'/%3E%3Cpath d='M13.68,17.39V3.61a.61.61,0,0,1,1.21-.08V17.39a.61.61,0,0,1-1.22.08Zm-4.29,0V3.61A.61.61,0,0,1,10,3a.62.62,0,0,1,.61.53V17.39a.61.61,0,0,1-1.21.08Zm-4.29,0V3.61a.61.61,0,0,1,1.22-.08V17.39a.61.61,0,0,1-1.21.08Z' style='fill:%23333'/%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='21' viewBox='0 0 20 21'%3E%3Crect width='20' height='21' style='fill:none'/%3E%3Cpath d='M13.68,17.39V3.61A.6.6,0,0,1,14.32,3a.61.61,0,0,1,.57.5V17.39a.61.61,0,1,1-1.22.08Zm-4.29,0V3.61A.61.61,0,0,1,10,3a.62.62,0,0,1,.61.53V17.39A.6.6,0,0,1,10,18a.61.61,0,0,1-.57-.5Zm-4.29,0V3.61a.61.61,0,0,1,1.22-.08V17.39a.6.6,0,0,1-.64.58.61.61,0,0,1-.57-.5Z' style='fill:%23333'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/stepTangentIcon.svg":
+/*!****************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/stepTangentIcon.svg ***!
+  \****************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M29,16.71a1.5,1.5,0,1,0-2,1.41v5.67H11v1H28V18.12A1.51,1.51,0,0,0,29,16.71Z' style='fill:%23fff'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -47321,7 +47399,7 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M29.89,10.2a1.2,1.2,0,0,0-2,1.18l-6.23,6.23L21,16.94a1.39,1.39,0,0,0-2,0L16.92,19a1.4,1.4,0,0,0,0,2l.57.56-6.23,6.23a1.18,1.18,0,0,0-1.15.3,1.2,1.2,0,0,0,0,1.71,1.2,1.2,0,0,0,2-1.18l6.22-6.22.68.69a1.4,1.4,0,0,0,2,0L23.08,21a1.4,1.4,0,0,0,0-2l-.58-.58,6.24-6.24a1.18,1.18,0,0,0,1.15-.3A1.2,1.2,0,0,0,29.89,10.2Zm-7.66,10-2.09,2.09a.19.19,0,0,1-.28,0l-2.09-2.09a.2.2,0,0,1,0-.27l2.09-2.09a.19.19,0,0,1,.28,0l2.09,2.09A.2.2,0,0,1,22.23,20.15Z' style='fill:%23fff'/%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M27.94,18.28a1.49,1.49,0,0,0-1.41,1h-5l-1.62-1.63-1.62,1.63h-5a1.5,1.5,0,1,0,0,1h5l1.62,1.62,1.62-1.62h5a1.5,1.5,0,1,0,1.41-2Z' style='fill:%23fff'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -47338,8 +47416,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _mediaPlayerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./mediaPlayerComponent */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/bottomBar/mediaPlayerComponent.tsx");
-/* harmony import */ var _rangeSelectorComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./rangeSelectorComponent */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/bottomBar/rangeSelectorComponent.tsx");
+/* harmony import */ var _controls_textInputComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../controls/textInputComponent */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/controls/textInputComponent.tsx");
+/* harmony import */ var _mediaPlayerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./mediaPlayerComponent */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/bottomBar/mediaPlayerComponent.tsx");
+/* harmony import */ var _rangeSelectorComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./rangeSelectorComponent */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/bottomBar/rangeSelectorComponent.tsx");
+
 
 
 
@@ -47349,18 +47429,56 @@ var BottomBarComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(BottomBarComponent, _super);
     function BottomBarComponent(props) {
         var _this = _super.call(this, props) || this;
-        _this.state = {};
+        _this.state = { clipLength: _this.props.context.clipLength ? _this.props.context.clipLength.toFixed(0) : _this.props.context.referenceMaxFrame.toFixed(0) };
         _this._onAnimationsLoadedObserver = _this.props.context.onAnimationsLoaded.add(function () {
             _this.forceUpdate();
         });
         _this._onActiveAnimationChangedObserver = _this.props.context.onActiveAnimationChanged.add(function () {
             _this.forceUpdate();
         });
+        _this._onClipLengthIncreasedObserver = _this.props.context.onClipLengthIncreased.add(function (newClipLength) {
+            // New clip length is greater than current clip length: add a key frame at the new clip length location with the same value as the previous frame
+            _this.props.context.clipLength = newClipLength;
+            _this.props.context.onMoveToFrameRequired.notifyObservers(newClipLength);
+            var keyAlreadyExists = _this._getKeyAtFrame(newClipLength) !== null;
+            if (!keyAlreadyExists) {
+                _this.props.context.onNewKeyPointRequired.notifyObservers();
+            }
+            _this.setState({ clipLength: newClipLength.toFixed(0) });
+        });
+        _this._onClipLengthIncreasedObserver = _this.props.context.onClipLengthDecreased.add(function (newClipLength) {
+            // New clip length is smaller than current clip length: move the playing range to the new clip length
+            _this.props.context.clipLength = newClipLength;
+            _this.props.context.onMoveToFrameRequired.notifyObservers(newClipLength);
+            var keyAlreadyExists = _this._getKeyAtFrame(newClipLength) !== null;
+            if (!keyAlreadyExists) {
+                _this.props.context.onNewKeyPointRequired.notifyObservers();
+            }
+            _this.props.context.toKey = Math.min(_this.props.context.toKey, _this.props.context.clipLength);
+            _this.props.context.onRangeUpdated.notifyObservers();
+            _this.setState({ clipLength: newClipLength.toFixed(0) });
+        });
         return _this;
     }
-    BottomBarComponent.prototype._renderMaxFrame = function () {
+    BottomBarComponent.prototype._changeClipLength = function (newClipLength) {
+        var currClipLength = this.props.context.clipLength || this.props.context.referenceMaxFrame;
+        if (currClipLength < newClipLength) {
+            this.props.context.onClipLengthIncreased.notifyObservers(newClipLength);
+        }
+        else if (currClipLength > newClipLength) {
+            this.props.context.onClipLengthDecreased.notifyObservers(newClipLength);
+        }
+        this.setState({ clipLength: newClipLength.toFixed(0) });
+    };
+    BottomBarComponent.prototype._getKeyAtFrame = function (frameNumber) {
         var keys = this.props.context.activeAnimations[0].getKeys();
-        return Math.round(keys[keys.length - 1].frame);
+        for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
+            var key = keys_1[_i];
+            if (Math.floor(frameNumber - key.frame) === 0) {
+                return key;
+            }
+        }
+        return null;
     };
     BottomBarComponent.prototype.componentWillUnmount = function () {
         if (this._onAnimationsLoadedObserver) {
@@ -47369,13 +47487,23 @@ var BottomBarComponent = /** @class */ (function (_super) {
         if (this._onActiveAnimationChangedObserver) {
             this.props.context.onActiveAnimationChanged.remove(this._onActiveAnimationChangedObserver);
         }
+        if (this._onClipLengthDecreasedObserver) {
+            this.props.context.onClipLengthDecreased.remove(this._onClipLengthDecreasedObserver);
+        }
+        if (this._onClipLengthIncreasedObserver) {
+            this.props.context.onClipLengthDecreased.remove(this._onClipLengthIncreasedObserver);
+        }
     };
     BottomBarComponent.prototype.render = function () {
+        var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "bottom-bar" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_mediaPlayerComponent__WEBPACK_IMPORTED_MODULE_2__["MediaPlayerComponent"], { globalState: this.props.globalState, context: this.props.context }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_rangeSelectorComponent__WEBPACK_IMPORTED_MODULE_3__["RangeSelectorComponent"], { globalState: this.props.globalState, context: this.props.context }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_mediaPlayerComponent__WEBPACK_IMPORTED_MODULE_3__["MediaPlayerComponent"], { globalState: this.props.globalState, context: this.props.context }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_rangeSelectorComponent__WEBPACK_IMPORTED_MODULE_4__["RangeSelectorComponent"], { globalState: this.props.globalState, context: this.props.context }),
             this.props.context.activeAnimations.length > 0 &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "bottom-bar-total" }, this._renderMaxFrame())));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "bottom-bar-total" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_textInputComponent__WEBPACK_IMPORTED_MODULE_2__["TextInputComponent"], { isNumber: true, value: this.state.clipLength, tooltip: "Clip Length", id: "clip-range", onValueAsNumberChanged: function (newValue, isFocused) {
+                            !isFocused && _this._changeClipLength(newValue);
+                        }, globalState: this.props.globalState, context: this.props.context }))));
     };
     return BottomBarComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -47415,6 +47543,10 @@ var endKeyIcon = __webpack_require__(/*! ../assets/animationEndIcon.svg */ "./co
 var endKeyHoverIcon = __webpack_require__(/*! ../assets/animationEndHoverIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/animationEndHoverIcon.svg");
 var stopIcon = __webpack_require__(/*! ../assets/animationStopIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/animationStopIcon.svg");
 var stopHoverIcon = __webpack_require__(/*! ../assets/animationStopHoverIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/animationStopHoverIcon.svg");
+var nextFrameIcon = __webpack_require__(/*! ../assets/animationNextFrameIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/animationNextFrameIcon.svg");
+var nextFrameHoverIcon = __webpack_require__(/*! ../assets/animationNextFrameHoverIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/animationNextFrameHoverIcon.svg");
+var lastFrameIcon = __webpack_require__(/*! ../assets/animationLastFrameIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/animationLastFrameIcon.svg");
+var lastFrameHoverIcon = __webpack_require__(/*! ../assets/animationLastFrameHoverIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/animationLastFrameHoverIcon.svg");
 var MediaPlayerComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(MediaPlayerComponent, _super);
     function MediaPlayerComponent(props) {
@@ -47439,24 +47571,10 @@ var MediaPlayerComponent = /** @class */ (function (_super) {
         this.props.context.onMoveToFrameRequired.notifyObservers(this.props.context.fromKey);
     };
     MediaPlayerComponent.prototype._onPrevKey = function () {
-        if (!this.props.context.animations || !this.props.context.animations.length || this.props.context.activeAnimations.length === 0) {
-            return;
+        var prevKey = this.props.context.getPrevKey();
+        if (prevKey !== null) {
+            this.props.context.onMoveToFrameRequired.notifyObservers(prevKey);
         }
-        var prevKey = -Number.MAX_VALUE;
-        for (var _i = 0, _a = this.props.context.activeAnimations; _i < _a.length; _i++) {
-            var animation = _a[_i];
-            var keys = animation.getKeys();
-            for (var _b = 0, keys_1 = keys; _b < keys_1.length; _b++) {
-                var key = keys_1[_b];
-                if (key.frame < this.props.context.activeFrame && key.frame > prevKey) {
-                    prevKey = key.frame;
-                }
-            }
-        }
-        if (prevKey === -Number.MAX_VALUE) {
-            prevKey = this.props.context.fromKey;
-        }
-        this.props.context.onMoveToFrameRequired.notifyObservers(prevKey);
     };
     MediaPlayerComponent.prototype._onRewind = function () {
         this.props.context.play(false);
@@ -47466,25 +47584,17 @@ var MediaPlayerComponent = /** @class */ (function (_super) {
         this.props.context.play(true);
         this.forceUpdate();
     };
+    MediaPlayerComponent.prototype._onPrevFrame = function () {
+        this.props.context.onMoveToFrameRequired.notifyObservers(Math.max(0, this.props.context.activeFrame - 1));
+    };
+    MediaPlayerComponent.prototype._onNextFrame = function () {
+        this.props.context.onMoveToFrameRequired.notifyObservers(this.props.context.activeFrame + 1);
+    };
     MediaPlayerComponent.prototype._onNextKey = function () {
-        if (!this.props.context.animations || !this.props.context.animations.length) {
-            return;
+        var nextKey = this.props.context.getNextKey();
+        if (nextKey !== null) {
+            this.props.context.onMoveToFrameRequired.notifyObservers(nextKey);
         }
-        var nextKey = Number.MAX_VALUE;
-        for (var _i = 0, _a = this.props.context.activeAnimations; _i < _a.length; _i++) {
-            var animation = _a[_i];
-            var keys = animation.getKeys();
-            for (var _b = 0, keys_2 = keys; _b < keys_2.length; _b++) {
-                var key = keys_2[_b];
-                if (key.frame > this.props.context.activeFrame && key.frame < nextKey) {
-                    nextKey = key.frame;
-                }
-            }
-        }
-        if (nextKey === Number.MAX_VALUE) {
-            nextKey = this.props.context.toKey;
-        }
-        this.props.context.onMoveToFrameRequired.notifyObservers(nextKey);
     };
     MediaPlayerComponent.prototype._onEndKey = function () {
         this.props.context.onMoveToFrameRequired.notifyObservers(this.props.context.toKey);
@@ -47497,6 +47607,7 @@ var MediaPlayerComponent = /** @class */ (function (_super) {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "media-player" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_controlButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ControlButtonComponent"], { tooltip: "Rewind to the first frame of the selected timeline", id: "start-key", context: this.props.context, globalState: this.props.globalState, icon: startKeyIcon, hoverIcon: startKeyHoverIcon, onClick: function () { return _this._onFirstKey(); } }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_controlButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ControlButtonComponent"], { tooltip: "Rewind to the previous frame", id: "prev-frame", context: this.props.context, globalState: this.props.globalState, icon: lastFrameIcon, hoverIcon: lastFrameHoverIcon, onClick: function () { return _this._onPrevFrame(); } }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_controlButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ControlButtonComponent"], { tooltip: "Rewind to the previous key frame", id: "first-key", context: this.props.context, globalState: this.props.globalState, icon: firstKeyIcon, hoverIcon: firstKeyHoverIcon, onClick: function () { return _this._onPrevKey(); } }),
             (this.props.context.isPlaying && this.props.context.forwardAnimation || !this.props.context.isPlaying) &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_controlButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ControlButtonComponent"], { tooltip: "Play backwards", id: "rev-key", context: this.props.context, globalState: this.props.globalState, icon: revKeyIcon, hoverIcon: revKeyHoverIcon, onClick: function () { return _this._onRewind(); } }),
@@ -47507,6 +47618,7 @@ var MediaPlayerComponent = /** @class */ (function (_super) {
             (this.props.context.isPlaying && this.props.context.forwardAnimation) &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_controlButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ControlButtonComponent"], { tooltip: "Stop", id: "stop-key", context: this.props.context, globalState: this.props.globalState, icon: stopIcon, hoverIcon: stopHoverIcon, onClick: function () { return _this._onStop(); } }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_controlButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ControlButtonComponent"], { tooltip: "Advance to the next key frame", id: "next-key", context: this.props.context, globalState: this.props.globalState, icon: nextKeyIcon, hoverIcon: nextKeyHoverIcon, onClick: function () { return _this._onNextKey(); } }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_controlButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ControlButtonComponent"], { tooltip: "Advance to the next frame", id: "next-frame", context: this.props.context, globalState: this.props.globalState, icon: nextFrameIcon, hoverIcon: nextFrameHoverIcon, onClick: function () { return _this._onNextFrame(); } }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_controlButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ControlButtonComponent"], { tooltip: "Advance to the last frame of the selected timeline", id: "end-key", context: this.props.context, globalState: this.props.globalState, icon: endKeyIcon, hoverIcon: endKeyHoverIcon, onClick: function () { return _this._onEndKey(); } })));
     };
     return MediaPlayerComponent;
@@ -47677,6 +47789,7 @@ var Context = /** @class */ (function () {
         this.forwardAnimation = true;
         this.referenceMinFrame = 0;
         this.referenceMaxFrame = 100;
+        this.focusedInput = false;
         this.onActiveAnimationChanged = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onActiveKeyPointChanged = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onHostWindowResized = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
@@ -47694,6 +47807,7 @@ var Context = /** @class */ (function () {
         this.onLinearTangentRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onBreakTangentRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onUnifyTangentRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onStepTangentRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onDeleteAnimation = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onGraphMoved = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onGraphScaled = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
@@ -47705,6 +47819,9 @@ var Context = /** @class */ (function () {
         this.onAnimationsLoaded = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onEditAnimationRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onEditAnimationUIClosed = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onClipLengthIncreased = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onClipLengthDecreased = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onInterpolationModeSet = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onSelectToActivated = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
     }
     Context.prototype.prepare = function () {
@@ -47719,6 +47836,7 @@ var Context = /** @class */ (function () {
         this.referenceMinFrame = 0;
         this.referenceMaxFrame = this.toKey;
         this.snippetId = animation.snippetId;
+        this.clipLength = this.referenceMaxFrame;
         if (!animation || !animation.hasRunningRuntimeAnimations) {
             return;
         }
@@ -47830,6 +47948,46 @@ var Context = /** @class */ (function () {
         }
         return -1;
     };
+    Context.prototype.getPrevKey = function () {
+        if (!this.animations || !this.animations.length || this.activeAnimations.length === 0) {
+            return null;
+        }
+        var prevKey = -Number.MAX_VALUE;
+        for (var _i = 0, _a = this.activeAnimations; _i < _a.length; _i++) {
+            var animation = _a[_i];
+            var keys = animation.getKeys();
+            for (var _b = 0, keys_1 = keys; _b < keys_1.length; _b++) {
+                var key = keys_1[_b];
+                if (key.frame < this.activeFrame && key.frame > prevKey) {
+                    prevKey = key.frame;
+                }
+            }
+        }
+        if (prevKey === -Number.MAX_VALUE) {
+            prevKey = this.fromKey;
+        }
+        return prevKey;
+    };
+    Context.prototype.getNextKey = function () {
+        if (!this.animations || !this.animations.length) {
+            return null;
+        }
+        var nextKey = Number.MAX_VALUE;
+        for (var _i = 0, _a = this.activeAnimations; _i < _a.length; _i++) {
+            var animation = _a[_i];
+            var keys = animation.getKeys();
+            for (var _b = 0, keys_2 = keys; _b < keys_2.length; _b++) {
+                var key = keys_2[_b];
+                if (key.frame > this.activeFrame && key.frame < nextKey) {
+                    nextKey = key.frame;
+                }
+            }
+        }
+        if (nextKey === Number.MAX_VALUE) {
+            nextKey = this.toKey;
+        }
+        return nextKey;
+    };
     return Context;
 }());
 
@@ -47933,23 +48091,24 @@ var TextInputComponent = /** @class */ (function (_super) {
             var valueAsNumber = parseFloat(value);
             if (!isNaN(valueAsNumber)) {
                 if (this.props.onValueAsNumberChanged) {
-                    this.props.onValueAsNumberChanged(valueAsNumber);
+                    this.props.onValueAsNumberChanged(valueAsNumber, true);
                 }
                 this._lastKnownGoodValue = valueAsNumber.toString();
             }
-            else if (value !== "-") {
+            else if (value !== "-" && value !== "") {
                 return;
             }
         }
-        this.setState({ value: value });
         this._lastKnownGoodValue = value;
+        this.setState({ value: value });
     };
     TextInputComponent.prototype._onBlur = function () {
+        this.props.context.focusedInput = false;
         if (this.props.isNumber) {
             var valueAsNumber = parseFloat(this.state.value);
             if (!isNaN(valueAsNumber)) {
                 if (this.props.onValueAsNumberChanged) {
-                    this.props.onValueAsNumberChanged(valueAsNumber);
+                    this.props.onValueAsNumberChanged(valueAsNumber, false);
                 }
                 this.setState({ value: valueAsNumber.toString(), isFocused: false });
             }
@@ -47961,6 +48120,7 @@ var TextInputComponent = /** @class */ (function (_super) {
         this.setState({ isFocused: false });
     };
     TextInputComponent.prototype._onFocus = function () {
+        this.props.context.focusedInput = true;
         this.setState({ isFocused: true });
     };
     TextInputComponent.prototype.shouldComponentUpdate = function (newProps, newState) {
@@ -47969,9 +48129,19 @@ var TextInputComponent = /** @class */ (function (_super) {
         }
         return true;
     };
+    TextInputComponent.prototype._onKeyPress = function (evt) {
+        if (evt.key === "Enter") {
+            var valueAsNumber = parseFloat(this.state.value);
+            if (!isNaN(valueAsNumber)) {
+                if (this.props.onValueAsNumberChanged) {
+                    this.props.onValueAsNumberChanged(valueAsNumber, false);
+                }
+            }
+        }
+    };
     TextInputComponent.prototype.render = function () {
         var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "text", title: this.props.tooltip, onFocus: function () { return _this._onFocus(); }, onBlur: function () { return _this._onBlur(); }, className: "text-input" + (this.props.className ? " " + this.props.className : ""), onChange: function (evt) { return _this._onChange(_this.props.complement ? evt.target.value.replace(_this.props.complement, "") : evt.target.value); }, value: (this.state.value || "") + (!this.state.isFocused && this.props.complement ? this.props.complement : ""), id: this.props.id }));
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "text", title: this.props.tooltip, onFocus: function () { return _this._onFocus(); }, onBlur: function () { return _this._onBlur(); }, className: "text-input" + (this.props.className ? " " + this.props.className : ""), onChange: function (evt) { return _this._onChange(_this.props.complement ? evt.target.value.replace(_this.props.complement, "") : evt.target.value); }, onKeyPress: function (evt) { return _this._onKeyPress(evt); }, value: (this.state.value || "") + (!this.state.isFocused && this.props.complement ? this.props.complement : ""), id: this.props.id }));
     };
     return TextInputComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -48045,13 +48215,14 @@ var CanvasComponent = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Curve", function() { return Curve; });
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var babylonjs_Animations_animationKey__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Animations/animationKey */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Animations_animationKey__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Animations_animationKey__WEBPACK_IMPORTED_MODULE_0__);
+
 
 var Curve = /** @class */ (function () {
     function Curve(color, animation, property, tangentBuilder, setDefaultInTangent, setDefaultOutTangent) {
         this.keys = new Array();
-        this.onDataUpdatedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onDataUpdatedObservable = new babylonjs_Animations_animationKey__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.color = color;
         this.animation = animation;
         this.property = property;
@@ -48059,7 +48230,7 @@ var Curve = /** @class */ (function () {
         this.setDefaultInTangent = setDefaultInTangent;
         this.setDefaultOutTangent = setDefaultOutTangent;
     }
-    Curve.prototype.gePathData = function (convertX, convertY) {
+    Curve.prototype.getPathData = function (convertX, convertY) {
         var keys = this.keys;
         if (keys.length < 2) {
             return "";
@@ -48071,7 +48242,14 @@ var Curve = /** @class */ (function () {
             var currentFrame = keys[keyIndex].frame;
             var currentValue = keys[keyIndex].value;
             var prevFrame = keys[keyIndex - 1].frame;
+            var prevValue = keys[keyIndex - 1].value;
             var frameDist = currentFrame - prevFrame;
+            var prevInterpolation = keys[keyIndex - 1].interpolation;
+            if (prevInterpolation === babylonjs_Animations_animationKey__WEBPACK_IMPORTED_MODULE_0__["AnimationKeyInterpolation"].STEP) { // Draw a stepped curve
+                pathData += "L " + convertX(currentFrame) + " " + convertY(prevValue);
+                pathData += "L " + convertX(currentFrame) + " " + convertY(currentValue);
+                continue;
+            }
             if (outTangent === undefined && inTangent === undefined) { // Draw a straight line
                 pathData += " L" + convertX(currentFrame) + " " + convertY(currentValue);
                 continue;
@@ -48092,13 +48270,20 @@ var Curve = /** @class */ (function () {
         var animationKeys = this.animation.getKeys();
         animationKeys[keyIndex].lockedTangent = enabled;
     };
+    Curve.prototype.updateInterpolationMode = function (keyIndex, interpolationMode) {
+        var keys = this.keys;
+        keys[keyIndex].interpolation = interpolationMode;
+        var animationKeys = this.animation.getKeys();
+        animationKeys[keyIndex].interpolation = interpolationMode;
+        this.onDataUpdatedObservable.notifyObservers();
+    };
     Curve.prototype.getInControlPoint = function (keyIndex) {
         if (keyIndex === 0) {
             return 0;
         }
         var keys = this.keys;
         var inTangent = keys[keyIndex].inTangent;
-        if (inTangent === undefined) {
+        if (inTangent === undefined && this.hasDefinedInTangent(keyIndex)) {
             inTangent = this.evaluateInTangent(keyIndex);
         }
         return inTangent;
@@ -48109,16 +48294,32 @@ var Curve = /** @class */ (function () {
             return 0;
         }
         var outTangent = keys[keyIndex].outTangent;
-        if (outTangent === undefined) {
+        if (outTangent === undefined && this.hasDefinedOutTangent(keyIndex)) {
             outTangent = this.evaluateOutTangent(keyIndex);
         }
         return outTangent;
+    };
+    Curve.prototype.hasDefinedOutTangent = function (keyIndex) {
+        var keys = this.keys;
+        if (keyIndex === this.keys.length - 1)
+            return false;
+        var prevFrame = keys[keyIndex].frame;
+        var currentFrame = keys[keyIndex + 1].frame;
+        return prevFrame !== currentFrame;
     };
     Curve.prototype.evaluateOutTangent = function (keyIndex) {
         var keys = this.keys;
         var prevFrame = keys[keyIndex].frame;
         var currentFrame = keys[keyIndex + 1].frame;
         return (keys[keyIndex + 1].value - keys[keyIndex].value) / (currentFrame - prevFrame);
+    };
+    Curve.prototype.hasDefinedInTangent = function (keyIndex) {
+        if (keyIndex === 0)
+            return false;
+        var keys = this.keys;
+        var prevFrame = keys[keyIndex - 1].frame;
+        var currentFrame = keys[keyIndex].frame;
+        return prevFrame !== currentFrame;
     };
     Curve.prototype.evaluateInTangent = function (keyIndex) {
         var keys = this.keys;
@@ -48129,8 +48330,14 @@ var Curve = /** @class */ (function () {
     Curve.prototype.storeDefaultInTangent = function (keyIndex) {
         var keys = this.keys;
         var animationKeys = this.animation.getKeys();
-        keys[keyIndex].inTangent = this.evaluateInTangent(keyIndex);
+        if (this.hasDefinedInTangent(keyIndex)) {
+            keys[keyIndex].inTangent = this.evaluateInTangent(keyIndex);
+        }
         if (this.property) {
+            if (!animationKeys[keyIndex].inTangent) {
+                animationKeys[keyIndex].inTangent = this.tangentBuilder();
+                this.setDefaultInTangent(keyIndex);
+            }
             animationKeys[keyIndex].inTangent[this.property] = keys[keyIndex].inTangent;
         }
         else {
@@ -48140,8 +48347,14 @@ var Curve = /** @class */ (function () {
     Curve.prototype.storeDefaultOutTangent = function (keyIndex) {
         var keys = this.keys;
         var animationKeys = this.animation.getKeys();
-        keys[keyIndex].outTangent = this.evaluateOutTangent(keyIndex);
+        if (this.hasDefinedOutTangent(keyIndex)) {
+            keys[keyIndex].outTangent = this.evaluateOutTangent(keyIndex);
+        }
         if (this.property) {
+            if (!animationKeys[keyIndex].outTangent) {
+                animationKeys[keyIndex].outTangent = this.tangentBuilder();
+                this.setDefaultOutTangent(keyIndex);
+            }
             animationKeys[keyIndex].outTangent[this.property] = keys[keyIndex].outTangent;
         }
         else {
@@ -48248,6 +48461,10 @@ var CurveComponent = /** @class */ (function (_super) {
             _this._onDataUpdatedObserver = null;
             _this.forceUpdate();
         });
+        _this._onInterpolationModeSetObserver = props.context.onInterpolationModeSet.add(function (_a) {
+            var keyId = _a.keyId, value = _a.value;
+            _this.props.curve.updateInterpolationMode(keyId, value);
+        });
         return _this;
     }
     CurveComponent.prototype.componentWillUnmount = function () {
@@ -48256,6 +48473,9 @@ var CurveComponent = /** @class */ (function (_super) {
         }
         if (this._onActiveAnimationChangedObserver) {
             this.props.context.onActiveAnimationChanged.remove(this._onActiveAnimationChangedObserver);
+        }
+        if (this._onInterpolationModeSetObserver) {
+            this.props.context.onInterpolationModeSet.remove(this._onInterpolationModeSetObserver);
         }
     };
     CurveComponent.prototype.componentDidUpdate = function () {
@@ -48270,7 +48490,7 @@ var CurveComponent = /** @class */ (function (_super) {
             return null;
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { style: { cursor: "pointer", overflow: "auto" } },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("path", { d: this.props.curve.gePathData(this.props.convertX, this.props.convertY), style: {
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("path", { d: this.props.curve.getPathData(this.props.convertX, this.props.convertY), style: {
                     stroke: this.props.curve.color,
                     fill: "none",
                     strokeWidth: "1",
@@ -48675,7 +48895,8 @@ var GraphComponent = /** @class */ (function (_super) {
                             value: key.value,
                             inTangent: key.inTangent,
                             outTangent: key.outTangent,
-                            lockedTangent: lockedTangent
+                            lockedTangent: lockedTangent,
+                            interpolation: key.interpolation
                         });
                     }
                     break;
@@ -48694,14 +48915,16 @@ var GraphComponent = /** @class */ (function (_super) {
                             value: key.value.x,
                             inTangent: (_a = key.inTangent) === null || _a === void 0 ? void 0 : _a.x,
                             outTangent: (_b = key.outTangent) === null || _b === void 0 ? void 0 : _b.x,
-                            lockedTangent: lockedTangent
+                            lockedTangent: lockedTangent,
+                            interpolation: key.interpolation
                         });
                         curvesToPushTo[1].keys.push({
                             frame: key.frame,
                             value: key.value.y,
                             inTangent: (_c = key.inTangent) === null || _c === void 0 ? void 0 : _c.y,
                             outTangent: (_d = key.outTangent) === null || _d === void 0 ? void 0 : _d.y,
-                            lockedTangent: lockedTangent
+                            lockedTangent: lockedTangent,
+                            interpolation: key.interpolation
                         });
                     }
                     break;
@@ -48724,21 +48947,24 @@ var GraphComponent = /** @class */ (function (_super) {
                             value: key.value.x,
                             inTangent: (_e = key.inTangent) === null || _e === void 0 ? void 0 : _e.x,
                             outTangent: (_f = key.outTangent) === null || _f === void 0 ? void 0 : _f.x,
-                            lockedTangent: lockedTangent
+                            lockedTangent: lockedTangent,
+                            interpolation: key.interpolation
                         });
                         curvesToPushTo[1].keys.push({
                             frame: key.frame,
                             value: key.value.y,
                             inTangent: (_g = key.inTangent) === null || _g === void 0 ? void 0 : _g.y,
                             outTangent: (_h = key.outTangent) === null || _h === void 0 ? void 0 : _h.y,
-                            lockedTangent: lockedTangent
+                            lockedTangent: lockedTangent,
+                            interpolation: key.interpolation
                         });
                         curvesToPushTo[2].keys.push({
                             frame: key.frame,
                             value: key.value.z,
                             inTangent: (_j = key.inTangent) === null || _j === void 0 ? void 0 : _j.z,
                             outTangent: (_k = key.outTangent) === null || _k === void 0 ? void 0 : _k.z,
-                            lockedTangent: lockedTangent
+                            lockedTangent: lockedTangent,
+                            interpolation: key.interpolation
                         });
                     }
                     break;
@@ -48761,21 +48987,24 @@ var GraphComponent = /** @class */ (function (_super) {
                             value: key.value.r,
                             inTangent: (_l = key.inTangent) === null || _l === void 0 ? void 0 : _l.r,
                             outTangent: (_m = key.outTangent) === null || _m === void 0 ? void 0 : _m.r,
-                            lockedTangent: lockedTangent
+                            lockedTangent: lockedTangent,
+                            interpolation: key.interpolation
                         });
                         curvesToPushTo[1].keys.push({
                             frame: key.frame,
                             value: key.value.g,
                             inTangent: (_o = key.inTangent) === null || _o === void 0 ? void 0 : _o.g,
                             outTangent: (_p = key.outTangent) === null || _p === void 0 ? void 0 : _p.g,
-                            lockedTangent: lockedTangent
+                            lockedTangent: lockedTangent,
+                            interpolation: key.interpolation
                         });
                         curvesToPushTo[2].keys.push({
                             frame: key.frame,
                             value: key.value.b,
                             inTangent: (_q = key.inTangent) === null || _q === void 0 ? void 0 : _q.b,
                             outTangent: (_r = key.outTangent) === null || _r === void 0 ? void 0 : _r.b,
-                            lockedTangent: lockedTangent
+                            lockedTangent: lockedTangent,
+                            interpolation: key.interpolation
                         });
                     }
                     break;
@@ -48802,28 +49031,32 @@ var GraphComponent = /** @class */ (function (_super) {
                             value: key.value.x,
                             inTangent: (_s = key.inTangent) === null || _s === void 0 ? void 0 : _s.x,
                             outTangent: (_t = key.outTangent) === null || _t === void 0 ? void 0 : _t.x,
-                            lockedTangent: lockedTangent
+                            lockedTangent: lockedTangent,
+                            interpolation: key.interpolation
                         });
                         curvesToPushTo[1].keys.push({
                             frame: key.frame,
                             value: key.value.y,
                             inTangent: (_u = key.inTangent) === null || _u === void 0 ? void 0 : _u.y,
                             outTangent: (_v = key.outTangent) === null || _v === void 0 ? void 0 : _v.y,
-                            lockedTangent: lockedTangent
+                            lockedTangent: lockedTangent,
+                            interpolation: key.interpolation
                         });
                         curvesToPushTo[2].keys.push({
                             frame: key.frame,
                             value: key.value.z,
                             inTangent: (_w = key.inTangent) === null || _w === void 0 ? void 0 : _w.z,
                             outTangent: (_x = key.outTangent) === null || _x === void 0 ? void 0 : _x.z,
-                            lockedTangent: lockedTangent
+                            lockedTangent: lockedTangent,
+                            interpolation: key.interpolation
                         });
                         curvesToPushTo[3].keys.push({
                             frame: key.frame,
                             value: key.value.w,
                             inTangent: (_y = key.inTangent) === null || _y === void 0 ? void 0 : _y.w,
                             outTangent: (_z = key.outTangent) === null || _z === void 0 ? void 0 : _z.w,
-                            lockedTangent: lockedTangent
+                            lockedTangent: lockedTangent,
+                            interpolation: key.interpolation
                         });
                     }
                     break;
@@ -48850,28 +49083,32 @@ var GraphComponent = /** @class */ (function (_super) {
                             value: key.value.r,
                             inTangent: (_0 = key.inTangent) === null || _0 === void 0 ? void 0 : _0.r,
                             outTangent: (_1 = key.outTangent) === null || _1 === void 0 ? void 0 : _1.r,
-                            lockedTangent: lockedTangent
+                            lockedTangent: lockedTangent,
+                            interpolation: key.interpolation
                         });
                         curvesToPushTo[1].keys.push({
                             frame: key.frame,
                             value: key.value.g,
                             inTangent: (_2 = key.inTangent) === null || _2 === void 0 ? void 0 : _2.g,
                             outTangent: (_3 = key.outTangent) === null || _3 === void 0 ? void 0 : _3.g,
-                            lockedTangent: lockedTangent
+                            lockedTangent: lockedTangent,
+                            interpolation: key.interpolation
                         });
                         curvesToPushTo[2].keys.push({
                             frame: key.frame,
                             value: key.value.b,
                             inTangent: (_4 = key.inTangent) === null || _4 === void 0 ? void 0 : _4.b,
                             outTangent: (_5 = key.outTangent) === null || _5 === void 0 ? void 0 : _5.b,
-                            lockedTangent: lockedTangent
+                            lockedTangent: lockedTangent,
+                            interpolation: key.interpolation
                         });
                         curvesToPushTo[3].keys.push({
                             frame: key.frame,
                             value: key.value.a,
                             inTangent: (_6 = key.inTangent) === null || _6 === void 0 ? void 0 : _6.a,
                             outTangent: (_7 = key.outTangent) === null || _7 === void 0 ? void 0 : _7.a,
-                            lockedTangent: lockedTangent
+                            lockedTangent: lockedTangent,
+                            interpolation: key.interpolation
                         });
                     }
                     break;
@@ -49177,10 +49414,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SelectionState", function() { return SelectionState; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "KeyPointComponent", function() { return KeyPointComponent; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Animations/animation */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_2__);
+
+
 
 
 
@@ -49251,6 +49490,14 @@ var KeyPointComponent = /** @class */ (function (_super) {
                 return;
             }
             _this._linearTangent();
+        });
+        _this._onStepTangentRequiredObserver = _this.props.context.onStepTangentRequired.add(function () {
+            var _a;
+            var isSelected = ((_a = _this.props.context.activeKeyPoints) === null || _a === void 0 ? void 0 : _a.indexOf(_this)) !== -1;
+            if (!isSelected) {
+                return;
+            }
+            _this._stepTangent();
         });
         _this._onSelectionRectangleMovedObserver = _this.props.context.onSelectionRectangleMoved.add(function (rect1) {
             if (!_this._svgHost.current) {
@@ -49377,6 +49624,9 @@ var KeyPointComponent = /** @class */ (function (_super) {
         if (this._onLinearTangentRequiredObserver) {
             this.props.context.onLinearTangentRequired.remove(this._onLinearTangentRequiredObserver);
         }
+        if (this._onStepTangentRequiredObserver) {
+            this.props.context.onStepTangentRequired.remove(this._onStepTangentRequiredObserver);
+        }
         if (this._onSelectionRectangleMovedObserver) {
             this.props.context.onSelectionRectangleMoved.remove(this._onSelectionRectangleMovedObserver);
         }
@@ -49407,14 +49657,17 @@ var KeyPointComponent = /** @class */ (function (_super) {
         return true;
     };
     KeyPointComponent.prototype._breakTangent = function () {
+        this.props.context.onInterpolationModeSet.notifyObservers({ keyId: this.props.keyId, value: babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_1__["AnimationKeyInterpolation"].NONE });
         this.props.curve.updateLockedTangentMode(this.props.keyId, false);
         this.forceUpdate();
     };
     KeyPointComponent.prototype._unifyTangent = function () {
+        this.props.context.onInterpolationModeSet.notifyObservers({ keyId: this.props.keyId, value: babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_1__["AnimationKeyInterpolation"].NONE });
         this.props.curve.updateLockedTangentMode(this.props.keyId, true);
         this.forceUpdate();
     };
     KeyPointComponent.prototype._flattenTangent = function () {
+        this.props.context.onInterpolationModeSet.notifyObservers({ keyId: this.props.keyId, value: babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_1__["AnimationKeyInterpolation"].NONE });
         if (this.state.tangentSelectedIndex === -1 || this.state.tangentSelectedIndex === 0) {
             if (this.props.keyId !== 0) {
                 this.props.curve.updateInTangentFromControlPoint(this.props.keyId, 0);
@@ -49428,6 +49681,7 @@ var KeyPointComponent = /** @class */ (function (_super) {
         this.forceUpdate();
     };
     KeyPointComponent.prototype._linearTangent = function () {
+        this.props.context.onInterpolationModeSet.notifyObservers({ keyId: this.props.keyId, value: babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_1__["AnimationKeyInterpolation"].NONE });
         if (this.state.tangentSelectedIndex === -1 || this.state.tangentSelectedIndex === 0) {
             if (this.props.keyId !== 0) {
                 this.props.curve.storeDefaultInTangent(this.props.keyId);
@@ -49439,6 +49693,10 @@ var KeyPointComponent = /** @class */ (function (_super) {
             }
         }
         this.props.curve.onDataUpdatedObservable.notifyObservers();
+        this.forceUpdate();
+    };
+    KeyPointComponent.prototype._stepTangent = function () {
+        this.props.context.onInterpolationModeSet.notifyObservers({ keyId: this.props.keyId, value: babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_1__["AnimationKeyInterpolation"].STEP });
         this.forceUpdate();
     };
     KeyPointComponent.prototype._select = function (allowMultipleSelection) {
@@ -49589,15 +49847,15 @@ var KeyPointComponent = /** @class */ (function (_super) {
             var isLockedTangent = keys[this.props.keyId].lockedTangent && this.props.keyId !== 0 && this.props.keyId !== keys.length - 1
                 && keys[this.props.keyId].inTangent !== undefined && keys[this.props.keyId].outTangent !== undefined;
             var angleDiff = 0;
-            var tmpVector = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["TmpVectors"].Vector2[0];
+            var tmpVector = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_1__["TmpVectors"].Vector2[0];
             if (isLockedTangent) {
-                var va = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["TmpVectors"].Vector2[1];
-                var vb = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["TmpVectors"].Vector2[2];
-                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"].NormalizeToRef(this._inVec, va);
-                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"].NormalizeToRef(this._outVec, vb);
-                angleDiff = Math.acos(Math.min(1.0, Math.max(-1, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"].Dot(va, vb))));
+                var va = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_1__["TmpVectors"].Vector2[1];
+                var vb = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_1__["TmpVectors"].Vector2[2];
+                babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_1__["Vector2"].NormalizeToRef(this._inVec, va);
+                babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_1__["Vector2"].NormalizeToRef(this._outVec, vb);
+                angleDiff = Math.acos(Math.min(1.0, Math.max(-1, babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_1__["Vector2"].Dot(va, vb))));
                 this._inVec.rotateToRef(-angleDiff, tmpVector);
-                if (babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"].Distance(tmpVector, this._outVec) > 0.01) {
+                if (babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_1__["Vector2"].Distance(tmpVector, this._outVec) > 0.01) {
                     angleDiff = -angleDiff;
                 }
             }
@@ -49632,20 +49890,35 @@ var KeyPointComponent = /** @class */ (function (_super) {
     };
     KeyPointComponent.prototype.render = function () {
         var _this = this;
-        var _a;
+        var _a, _b, _c, _d, _e;
         if (!this.props.context.isChannelEnabled(this.props.curve.animation, this.props.curve.color)) {
             return null;
         }
+        var animationType = this.props.curve.animation.dataType;
+        var isColorAnimation = animationType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_1__["Animation"].ANIMATIONTYPE_COLOR3 || animationType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_1__["Animation"].ANIMATIONTYPE_COLOR4;
         var svgImageIcon = this.state.selectedState === SelectionState.Selected ? keySelected : (this.state.selectedState === SelectionState.Siblings ? keyActive : keyInactive);
         var keys = this.props.curve.keys;
         var isLockedTangent = (_a = keys[this.props.keyId].lockedTangent) !== null && _a !== void 0 ? _a : true;
+        var hasStepTangentIn = (_c = (_b = keys[this.props.keyId - 1]) === null || _b === void 0 ? void 0 : _b.interpolation) !== null && _c !== void 0 ? _c : false;
+        var hasStepTangentOut = (_e = (_d = keys[this.props.keyId]) === null || _d === void 0 ? void 0 : _d.interpolation) !== null && _e !== void 0 ? _e : false;
+        var hasDefinedInTangent = this.props.curve.hasDefinedInTangent(this.props.keyId);
+        var hasDefinedOutTangent = this.props.curve.hasDefinedOutTangent(this.props.keyId);
         var convertedX = this.props.invertX(this.state.x);
         var convertedY = this.props.invertY(this.state.y);
-        var inControlPointValue = convertedY - this.props.curve.getInControlPoint(this.props.keyId);
-        var outControlPointValue = convertedY + this.props.curve.getOutControlPoint(this.props.keyId);
-        // We want to store the delta in the key local space
-        this._outVec = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](this.props.convertX(convertedX + 1) - this.state.x, this.props.convertY(outControlPointValue) - this.state.y);
-        this._inVec = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](this.props.convertX(convertedX - 1) - this.state.x, this.props.convertY(inControlPointValue) - this.state.y);
+        if (hasDefinedInTangent) {
+            var inControlPointValue = convertedY - this.props.curve.getInControlPoint(this.props.keyId);
+            this._inVec = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_1__["Vector2"](this.props.convertX(convertedX - 1) - this.state.x, this.props.convertY(inControlPointValue) - this.state.y);
+        }
+        else {
+            this._inVec = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_1__["Vector2"]();
+        }
+        if (hasDefinedOutTangent) {
+            var outControlPointValue = convertedY + this.props.curve.getOutControlPoint(this.props.keyId);
+            this._outVec = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_1__["Vector2"](this.props.convertX(convertedX + 1) - this.state.x, this.props.convertY(outControlPointValue) - this.state.y);
+        }
+        else {
+            this._outVec = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_1__["Vector2"]();
+        }
         this._storedLengthIn = this._inVec.length();
         this._storedLengthOut = this._outVec.length();
         this._inVec.normalize();
@@ -49656,7 +49929,7 @@ var KeyPointComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("image", { x: "-" + 8 * this.props.scale, y: "-" + 8 * this.props.scale, width: "" + 16 * this.props.scale, height: "" + 16 * this.props.scale, ref: this._keyPointSVG, href: svgImageIcon }),
             this.state.selectedState === SelectionState.Selected &&
                 react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("g", null,
-                    this.props.keyId !== 0 &&
+                    this.props.keyId !== 0 && !hasStepTangentIn && !isColorAnimation && hasDefinedInTangent &&
                         react__WEBPACK_IMPORTED_MODULE_2__["createElement"](react__WEBPACK_IMPORTED_MODULE_2__["Fragment"], null,
                             react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("line", { x1: 0, y1: 0, x2: this._inVec.x + "px", y2: this._inVec.y + "px", style: {
                                     stroke: this.state.tangentSelectedIndex === 0 || this.state.tangentSelectedIndex === -1 ? "#F9BF00" : "#AAAAAA",
@@ -49666,7 +49939,7 @@ var KeyPointComponent = /** @class */ (function (_super) {
                             react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("circle", { className: "left-tangent", cx: this._inVec.x + "px", cy: this._inVec.y + "px", r: "" + 4 * this.props.scale, style: {
                                     fill: this.state.tangentSelectedIndex === 0 || this.state.tangentSelectedIndex === -1 ? "#F9BF00" : "#AAAAAA"
                                 } })),
-                    this.props.keyId !== keys.length - 1 &&
+                    this.props.keyId !== keys.length - 1 && !hasStepTangentOut && !isColorAnimation && hasDefinedOutTangent &&
                         react__WEBPACK_IMPORTED_MODULE_2__["createElement"](react__WEBPACK_IMPORTED_MODULE_2__["Fragment"], null,
                             react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("line", { x1: 0, y1: 0, x2: this._outVec.x + "px", y2: this._outVec.y + "px", style: {
                                     stroke: this.state.tangentSelectedIndex === 1 || this.state.tangentSelectedIndex === -1 ? "#F9BF00" : "#AAAAAA",
@@ -51148,6 +51421,7 @@ var flatTangentIcon = __webpack_require__(/*! ./assets/flatTangentIcon.svg */ ".
 var linearTangentIcon = __webpack_require__(/*! ./assets/linearTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/linearTangentIcon.svg");
 var breakTangentIcon = __webpack_require__(/*! ./assets/breakTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/breakTangentIcon.svg");
 var unifyTangentIcon = __webpack_require__(/*! ./assets/unifyTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/unifyTangentIcon.svg");
+var stepTangentIcon = __webpack_require__(/*! ./assets/stepTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor/assets/stepTangentIcon.svg");
 var TopBarComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TopBarComponent, _super);
     function TopBarComponent(props) {
@@ -51195,7 +51469,8 @@ var TopBarComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { className: this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 0 ? "" : "disabled", tooltip: "Flatten tangent", id: "flatten-tangent", globalState: this.props.globalState, context: this.props.context, icon: flatTangentIcon, onClick: function () { return _this.props.context.onFlattenTangentRequired.notifyObservers(); } }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { className: this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 0 ? "" : "disabled", tooltip: "Linear tangent", id: "linear-tangent", globalState: this.props.globalState, context: this.props.context, icon: linearTangentIcon, onClick: function () { return _this.props.context.onLinearTangentRequired.notifyObservers(); } }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { className: this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 0 ? "" : "disabled", tooltip: "Break tangent", id: "break-tangent", globalState: this.props.globalState, context: this.props.context, icon: breakTangentIcon, onClick: function () { return _this.props.context.onBreakTangentRequired.notifyObservers(); } }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { className: this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 0 ? "" : "disabled", tooltip: "Unify tangent", id: "unify-tangent", globalState: this.props.globalState, context: this.props.context, icon: unifyTangentIcon, onClick: function () { return _this.props.context.onUnifyTangentRequired.notifyObservers(); } })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { className: this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 0 ? "" : "disabled", tooltip: "Unify tangent", id: "unify-tangent", globalState: this.props.globalState, context: this.props.context, icon: unifyTangentIcon, onClick: function () { return _this.props.context.onUnifyTangentRequired.notifyObservers(); } }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { className: this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 0 ? "" : "disabled", tooltip: "Step tangent", id: "step-tangent", globalState: this.props.globalState, context: this.props.context, icon: stepTangentIcon, onClick: function () { return _this.props.context.onStepTangentRequired.notifyObservers(); } })));
     };
     return TopBarComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
