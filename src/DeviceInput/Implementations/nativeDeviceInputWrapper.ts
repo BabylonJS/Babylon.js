@@ -99,7 +99,7 @@ export class NativeDeviceInputWrapper implements IDeviceInputSystem {
             pollInput: () => {return 0;},
             isDeviceAvailable: () => {return false;},
             dispose: () => {},
-        }
+        };
 
         return nativeInput;
     }
