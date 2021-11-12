@@ -190,13 +190,13 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
 
             let rotation = node.rotation;
             let parent = node.parent;
-            while (parent) {
+            while (parent) { //#S69ESC
                 rotation += parent.rotation;
                 parent = parent.parent;
             }
-            rotation = rotation % 2 * Math.PI;
-            rotation += Math.PI / 4;
-            let rotationIndex = Math.floor(rotation / (Math.PI / 2));
+            rotation = rotation % 6.28;
+            rotation += 0.785398;
+            let rotationIndex = Math.floor(rotation / 1.5708);
             if (rotationIndex % 2 == 0) {
                 switch ((this._scalePointIndex + rotationIndex) % 4) {
                     case 0:
