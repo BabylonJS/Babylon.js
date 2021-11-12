@@ -341,6 +341,7 @@
 
 ## Breaking changes
 
+- When a six character hex string is passed to `Color4.FromHexString`, the alpha component will default to 1 instead of defaulting all components (r, g, b, and a) to 0. ([BlakeOne](https://github.com/BlakeOne))
 - [List of breaking changes introduced by our compatibility with WebGPU](https://doc.babylonjs.com/advanced_topics/webGPU/webGPUBreakingChanges)
   - [ReadPixels and ProceduralTexture.getContent are now async](https://doc.babylonjs.com/advanced_topics/webGPU/webGPUBreakingChanges#readpixels-is-now-asynchronous)
   - [Shader support differences](https://doc.babylonjs.com/advanced_topics/webGPU/webGPUBreakingChanges#shader-code-differences)
