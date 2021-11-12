@@ -98,4 +98,7 @@ export class _KTXTextureLoader implements IInternalTextureLoader {
 }
 
 // Register the loader.
-Engine._TextureLoaders.unshift(new _KTXTextureLoader());
+Engine._TextureLoaderFactories.push({
+    create: () => { return new _KTXTextureLoader() },
+    dispose: (loader: IInternalTextureLoader) => { KhronosTextureContainer2.Uninitialize(); }
+});

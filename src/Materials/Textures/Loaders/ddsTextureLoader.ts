@@ -104,4 +104,7 @@ export class _DDSTextureLoader implements IInternalTextureLoader {
 }
 
 // Register the loader.
-Engine._TextureLoaders.push(new _DDSTextureLoader());
+Engine._TextureLoaderFactories.push({
+    create: () => { return new _DDSTextureLoader() },
+    dispose: (loader: IInternalTextureLoader) => {}
+});

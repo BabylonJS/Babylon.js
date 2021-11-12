@@ -69,4 +69,7 @@ export class _HDRTextureLoader implements IInternalTextureLoader {
 }
 
 // Register the loader.
-Engine._TextureLoaders.push(new _HDRTextureLoader());
+Engine._TextureLoaderFactories.push({
+    create: () => { return new _HDRTextureLoader() },
+    dispose: (loader: IInternalTextureLoader) => {}
+});

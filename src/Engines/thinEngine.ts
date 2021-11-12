@@ -175,8 +175,30 @@ export class ThinEngine {
         { key: "Mac OS.+Chrome\/72", capture: null, captureConstraint: null, targets: ["vao"] }
     ];
 
+    private static _textureLoaders: Nullable<IInternalTextureLoader[]>;
+
     /** @hidden */
-    public static _TextureLoaders: IInternalTextureLoader[] = [];
+    public static get _TextureLoaders(): IInternalTextureLoader[] {
+        if (!ThinEngine._textureLoaders) {
+            ThinEngine._textureLoaders = [];
+            ThinEngine._TextureLoaderFactories.forEach((factory) => {
+                ThinEngine._textureLoaders!.push(factory.create());
+            });
+        }
+        return ThinEngine._textureLoaders!;
+    }
+
+    /** @hidden */
+    public static _TextureLoaderFactories: { create: () => IInternalTextureLoader, dispose: (loader: IInternalTextureLoader) => void }[] = [];
+
+    public static MinimizeMemoryFootprint(): void {
+        if (ThinEngine._textureLoaders) {
+            for (let idx = 0; idx < ThinEngine._TextureLoaderFactories.length; ++idx) {
+                ThinEngine._TextureLoaderFactories[idx].dispose(ThinEngine._textureLoaders![idx]);
+            }
+            ThinEngine._textureLoaders = null;
+        }
+    }
 
     /**
      * Returns the current npm package of the sdk

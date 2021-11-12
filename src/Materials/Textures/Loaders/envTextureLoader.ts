@@ -76,4 +76,7 @@ export class _ENVTextureLoader implements IInternalTextureLoader {
 }
 
 // Register the loader.
-Engine._TextureLoaders.push(new _ENVTextureLoader());
+Engine._TextureLoaderFactories.push({
+    create: () => { return new _ENVTextureLoader() },
+    dispose: (loader: IInternalTextureLoader) => {}
+});

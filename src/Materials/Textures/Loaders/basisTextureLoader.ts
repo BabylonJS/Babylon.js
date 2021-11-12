@@ -97,4 +97,7 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
 }
 
 // Register the loader.
-Engine._TextureLoaders.push(new _BasisTextureLoader());
+Engine._TextureLoaderFactories.push({
+    create: () => { return new _BasisTextureLoader() },
+    dispose: (loader: IInternalTextureLoader) => {}
+});

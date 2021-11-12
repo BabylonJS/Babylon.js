@@ -131,6 +131,14 @@ export class KhronosTextureContainer2 {
         }
     }
 
+    public static Uninitialize(): void {
+        KhronosTextureContainer2._WorkerPoolPromise?.then((pool) => {
+            pool.dispose();
+        });
+        // TODO: Get rid of the rest of the resources?
+        KhronosTextureContainer2._Initialized = false;
+    }
+
     /**
      * Constructor
      * @param engine The engine to use

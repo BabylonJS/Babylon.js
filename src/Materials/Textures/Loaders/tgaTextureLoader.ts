@@ -54,4 +54,7 @@ export class _TGATextureLoader implements IInternalTextureLoader {
 }
 
 // Register the loader.
-Engine._TextureLoaders.push(new _TGATextureLoader());
+Engine._TextureLoaderFactories.push({
+    create: () => { return new _TGATextureLoader() },
+    dispose: (loader: IInternalTextureLoader) => {}
+});
