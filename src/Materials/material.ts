@@ -60,6 +60,14 @@ export interface ICustomShaderNameResolveOptions {
     processFinalCode?: Nullable<(shaderType: string, code: string) => string>;
 }
 
+export enum MaterialEvent {
+    Created = 0x0001,
+    GetDisableAlphaBlending = 0x0002,
+    Disposed = 0x0004,
+
+    All = 0xFFFF
+}
+
 /**
  * Base class for the main features of a material in Babylon.js
  */
@@ -179,6 +187,14 @@ export class Material implements IAnimatable {
      */
     public static readonly MATERIAL_NORMALBLENDMETHOD_RNM = 1;
 
+    public static OnEventObservable = new Observable<Material>();
+
+    // object used by OnEventObservable.notifyObservers to pass data to and from the observers
+    private static _EventInfo: any = {
+        disableAlphaBlending: false,
+        forceDisposeTextures: false,
+    };
+    
     /**
      * Custom callback helping to override the default shader used in the material.
      */
@@ -764,7 +780,7 @@ export class Material implements IAnimatable {
             this.meshMap = {};
         }
 
-        MaterialPluginManager.InjectPlugins(this);
+        Material.OnEventObservable.notifyObservers(this, MaterialEvent.Created);
         this._defineNamesFromPlugins = MaterialPluginManager.CollectDefineNames(this);
     }
 
@@ -893,9 +909,10 @@ export class Material implements IAnimatable {
      * Returns true if alpha blending should be disabled.
      */
     protected get _disableAlphaBlending(): boolean {
+        Material.OnEventObservable.notifyObservers(this, MaterialEvent.GetDisableAlphaBlending, undefined, undefined, Material._EventInfo);
         return (this._transparencyMode === Material.MATERIAL_OPAQUE ||
             this._transparencyMode === Material.MATERIAL_ALPHATEST ||
-            MaterialPluginManager.DisableAlphaBlending(this));
+            Material._EventInfo.disableAlphaBlending);
     }
 
     /**
@@ -1466,7 +1483,8 @@ export class Material implements IAnimatable {
         // Remove from scene
         scene.removeMaterial(this);
 
-        MaterialPluginManager.Dispose(this, forceDisposeTextures);
+        Material._EventInfo.forceDisposeTextures = forceDisposeTextures;
+        Material.OnEventObservable.notifyObservers(this, MaterialEvent.Disposed, undefined, undefined, Material._EventInfo);
 
         if (this._parentContainer) {
             const index = this._parentContainer.materials.indexOf(this);

@@ -1,7 +1,8 @@
+import { EventState } from "../Misc/observable";
 import { SmartArray } from "../Misc/smartArray";
 import { Nullable } from "../types";
 import { IMaterialPlugin } from "./IMaterialPlugin";
-import { Material } from "./material";
+import { Material, MaterialEvent } from "./material";
 
 declare type Engine = import("../Engines/engine").Engine;
 declare type Scene = import("../scene").Scene;
@@ -19,7 +20,32 @@ export class MaterialPluginManager {
 
     private static _Plugins: Array<[string, pluginMaterialFactory]> = [];
 
+    private static _Inited = false;
+
+    private static _Initialize(): void {
+        Material.OnEventObservable.add((material: Material, eventState: EventState) => {
+            switch (eventState.mask) {
+                case MaterialEvent.Created:
+                    MaterialPluginManager.InjectPlugins(material);
+                    break;
+
+                case MaterialEvent.GetDisableAlphaBlending:
+                    eventState.userInfo.disableAlphaBlending = MaterialPluginManager.DisableAlphaBlending(material);
+                    break;
+
+                case MaterialEvent.Disposed:
+                    MaterialPluginManager.Dispose(material, eventState.userInfo.forceDisposeTextures);
+                    break;
+            }
+        }, MaterialEvent.All);
+
+        MaterialPluginManager._Inited = true;
+    }
+
     public static RegisterPlugin(propertyName: string, factory: pluginMaterialFactory): void {
+        if (!MaterialPluginManager._Inited) {
+            MaterialPluginManager._Initialize();
+        }
         const existing = MaterialPluginManager._Plugins.filter(([name, plugin]) => name === propertyName);
         if (existing.length > 0) {
             existing[0][1] = factory;
