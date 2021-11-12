@@ -42,7 +42,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _setConstraintDirection: boolean = false;
     private _mouseStartPointX: Nullable<number> = null;
     private _mouseStartPointY: Nullable<number> = null;
-    private _textureMesh: Mesh;
+    public _textureMesh: Mesh;
     public _scene: Scene;
     private _selectedGuiNodes: Control[] = [];
     private _ctrlKeyIsPressed = false;
@@ -761,12 +761,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._scene.getEngine().onCanvasPointerOutObservable.clear();
         this._scene.doNotHandleCursors = true;
 
-        /*let rectangle = new Rectangle();
+        let rectangle = new Rectangle();
         rectangle.widthInPixels = 20;
         rectangle.heightInPixels = 20
         rectangle.background = "red";
         this.globalState.guiTexture.addControl(rectangle);
-        this.testControl = rectangle;*/
+        this.testControl = rectangle;
 
         // Watch for browser/canvas resize events
         window.addEventListener("resize", () => {
