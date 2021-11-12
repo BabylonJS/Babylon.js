@@ -21,7 +21,12 @@ export class DeviceInputSystem {
     public static Create(engine: Engine): IDeviceInputSystem {
         // If running in Babylon Native, then defer to the native input system, which has the same public contract
         if (!engine.deviceInputSystem) {
-            engine.deviceInputSystem = (typeof _native !== 'undefined' && _native.DeviceInputSystem) ? new NativeDeviceInputWrapper(new _native.DeviceInputSystem()) : new WebDeviceInputSystem(engine);
+            if (typeof _native !== 'undefined') {
+                engine.deviceInputSystem = (_native.DeviceInputSystem) ? new NativeDeviceInputWrapper(new _native.DeviceInputSystem()) : new NativeDeviceInputWrapper();
+            }
+            else {
+                engine.deviceInputSystem = new WebDeviceInputSystem(engine);
+            }
         }
 
         return engine.deviceInputSystem;
