@@ -826,9 +826,9 @@ declare module BABYLON {
         private _attachAfterBind;
     }
     /**
-    * Babylon universal shader material pro class
-    * @class UniversalShaderMaterial
-    */
+     * Babylon universal shader material pro class
+     * @class UniversalShaderMaterial
+     */
     class UniversalShaderMaterial extends BABYLON.ShaderMaterial {
         private _enableTime;
         constructor(name: string, scene?: BABYLON.Scene, options?: Partial<BABYLON.IShaderMaterialOptions>);
