@@ -1390,7 +1390,7 @@ export class SolidParticleSystem implements IDisposable {
     public pickedParticle(pickingInfo: PickingInfo): Nullable<{ idx: number, faceId: number }> {
         if (pickingInfo.hit) {
             const subMesh = pickingInfo.subMeshId;
-            const faceId = pickingInfo.faceId;
+            const faceId = pickingInfo.faceId - this.mesh.subMeshes[subMesh].indexStart / 3;
             const picked = this.pickedBySubMesh;
             if (picked[subMesh] && picked[subMesh][faceId]) {
                 return picked[subMesh][faceId];
