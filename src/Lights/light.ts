@@ -633,6 +633,8 @@ export abstract class Light extends Node implements ISortableLight {
         SerializationHelper.AppendSerializedAnimations(this, serializationObject);
         serializationObject.ranges = this.serializeAnimationRanges();
 
+        serializationObject.isEnabled = this.isEnabled();
+
         return serializationObject;
     }
 
@@ -708,6 +710,11 @@ export abstract class Light extends Node implements ISortableLight {
 
         if (parsedLight.autoAnimate) {
             scene.beginAnimation(light, parsedLight.autoAnimateFrom, parsedLight.autoAnimateTo, parsedLight.autoAnimateLoop, parsedLight.autoAnimateSpeed || 1.0);
+        }
+
+        // Check if isEnabled is defined to be back compatible with prior serialized versions.
+        if (parsedLight.isEnabled !== undefined) {
+            light.setEnabled(parsedLight.isEnabled);
         }
 
         return light;
