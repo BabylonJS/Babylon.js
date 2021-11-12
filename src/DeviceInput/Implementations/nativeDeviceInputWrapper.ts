@@ -91,14 +91,14 @@ export class NativeDeviceInputWrapper implements IDeviceInputSystem {
      * For versions of BabylonNative that don't have the NativeInput plugin initialized, create a dummy version
      * @returns Object with dummy functions
      */
-     private _createDummyNativeInput() {
+    private _createDummyNativeInput() {
         let nativeInput = {
-            onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => {},
-            onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => {},
-            onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number>, eventData?: any) => {},
-            pollInput: () => {return 0;},
-            isDeviceAvailable: () => {return false;},
-            dispose: () => {},
+            onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => { },
+            onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => { },
+            onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number>, eventData?: any) => { },
+            pollInput: () => { return 0; },
+            isDeviceAvailable: () => { return false; },
+            dispose: () => { },
         };
 
         return nativeInput;
