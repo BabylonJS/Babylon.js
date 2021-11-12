@@ -1,4 +1,3 @@
-import { Control } from "babylonjs-gui/2D/controls/control";
 import { Matrix2D } from "babylonjs-gui/2D/math2D";
 import { Measure } from "babylonjs-gui/2D/measure";
 import { Axis } from "babylonjs/Maths/math.axis";
@@ -91,12 +90,9 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                 let translateBack = Matrix2D.Identity();
                 let translateTo = Matrix2D.Identity();
                 let resultMatrix = Matrix2D.Identity();
-
-                var oox = ox ;
-                var ooy = oy ;
                 
-                Matrix2D.TranslationToRef(oox, ooy, translateBack);
-                Matrix2D.TranslationToRef(-oox, -ooy, translateTo);
+                Matrix2D.TranslationToRef(ox, oy, translateBack);
+                Matrix2D.TranslationToRef(-ox, -oy, translateTo);
                 Matrix2D.RotationToRef(node.rotation, m2d);
                 let parent = node.parent;
                 while (parent) { //#S69ESC
@@ -211,9 +207,6 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                 default:
                     break;
             }
-
-            //this.props.globalState.workbench.testControl.leftInPixels = newPosition.x;
-            //this.props.globalState.workbench.testControl.topInPixels = -newPosition.z;
 
             this._previousPositions[this._scalePointIndex].x = newPosition.x;
             this._previousPositions[this._scalePointIndex].y = newPosition.z;

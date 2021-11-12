@@ -64,7 +64,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _cameraMaxRadiasFactor = 16384; // 2^13
     private _pasted: boolean;
     private _engine: Engine;
-    testControl: Rectangle;
     public get globalState() {
         return this.props.globalState;
     }
@@ -760,13 +759,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         this._scene.getEngine().onCanvasPointerOutObservable.clear();
         this._scene.doNotHandleCursors = true;
-
-        let rectangle = new Rectangle();
-        rectangle.widthInPixels = 20;
-        rectangle.heightInPixels = 20
-        rectangle.background = "red";
-        this.globalState.guiTexture.addControl(rectangle);
-        this.testControl = rectangle;
 
         // Watch for browser/canvas resize events
         window.addEventListener("resize", () => {
