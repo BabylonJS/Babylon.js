@@ -4,6 +4,7 @@
         "types": [],
         "baseUrl": "./",
         "rootDir": "./",
-        "outDir": "../.temp/manualBuildCore"
+        "outDir": "../.temp/manualBuildCore",
+        "downlevelIteration": true
     }
 }

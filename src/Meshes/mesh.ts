@@ -11,7 +11,7 @@ import { Color3 } from "../Maths/math.color";
 import { Engine } from "../Engines/engine";
 import { Node } from "../node";
 import { VertexBuffer } from "../Buffers/buffer";
-import { VertexData, IGetSetVerticesData } from "./mesh.vertexData";
+import { VertexData, IGetSetVerticesData, Coroutine, makeSyncFunction, createYieldingScheduler, makeAsyncFunction } from "./mesh.vertexData";
 import { Buffer } from "../Buffers/buffer";
 import { Geometry } from "./geometry";
 import { AbstractMesh } from "./abstractMesh";
@@ -4273,6 +4273,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         return Vector3.Center(minMaxVector.min, minMaxVector.max);
     }
 
+    public static readonly MergeMeshes = makeSyncFunction(Mesh._MergeMeshesCoroutine);
+    public static readonly MergeMeshesAsync = makeAsyncFunction(Mesh._MergeMeshesCoroutine, createYieldingScheduler());
+
     /**
      * Merge the array of meshes into a single mesh for performance reasons.
      * @param meshes defines he vertices source.  They should all be of the same material.  Entries can empty
@@ -4283,14 +4286,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param multiMultiMaterials when true (false default), subdivide mesh and accept multiple multi materials, ignores subdivideWithSubMeshes.
      * @returns a new mesh
      */
-    public static MergeMeshes(
+    public static *_MergeMeshesCoroutine(
         meshes: Array<Mesh>,
         disposeSource = true,
         allow32BitsIndices?: boolean,
         meshSubclass?: Mesh,
         subdivideWithSubMeshes?: boolean,
         multiMultiMaterials?: boolean
-    ): Nullable<Mesh> {
+    ): Coroutine<Nullable<Mesh>> {
         // Remove any null/undefined entries from the mesh array
         meshes = meshes.filter(Boolean);
 
@@ -4372,13 +4375,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             vertexData.transform(wm);
             return vertexData;
         };
-        const vertexData = getVertexDataFromMesh(source).merge(meshes.slice(1).map((mesh) => getVertexDataFromMesh(mesh)), allow32BitsIndices);
+
+        const vertexData: VertexData = yield* getVertexDataFromMesh(source)._mergeCoroutine(meshes.slice(1).map((mesh) => getVertexDataFromMesh(mesh)), allow32BitsIndices);
 
         if (!meshSubclass) {
             meshSubclass = new Mesh(source.name + "_merged", source.getScene());
         }
 
-        (<VertexData>vertexData).applyToMesh(meshSubclass);
+        vertexData.applyToMesh(meshSubclass);
 
         // Setting properties
         meshSubclass.checkCollisions = source.checkCollisions;
