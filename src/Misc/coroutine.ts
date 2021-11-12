@@ -42,7 +42,7 @@ function inlineScheduler<T>(coroutine: Coroutine<T>, onSuccess: (stepResult: Cor
 
 // The yielding scheduler steps the coroutine synchronously until the specified time interval has elapsed, then yields control so other operations can be performed.
 // A single instance of a yielding scheduler could be shared across multiple coroutines to yield when their collective work exceeds the threshold.
-function createYieldingScheduler<T>(yieldAfterMS = 50): CoroutineScheduler<T> {
+function createYieldingScheduler<T>(yieldAfterMS = 25): CoroutineScheduler<T> {
     let start: number | undefined;
     return (coroutine: Coroutine<T>, onSuccess: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) => {
         if (start === undefined) {
