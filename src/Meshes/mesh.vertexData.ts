@@ -74,6 +74,66 @@ export interface IGetSetVerticesData {
     setIndices(indices: IndicesArray, totalVertices: Nullable<number>, updatable?: boolean): void;
 }
 
+// Add a resume<T>(coroutine: Coroutine<T>, onSuccess: (stepResult: IteratorResult<undefined, TReturn>) => void, onError: (stepError: any) => void)
+// Make Scheduler be a function that takes a Coroutine<T> as well as onSuccess/onError. It "schedules" a call to the above resume function
+// Have an inline scheduler that just calls things synchronously
+// Have a yielding scheduler that does the setTimeout stuff
+// Have a runCoroutine<T>(coroutine: Coroutine<T>, scheduler: Scheduler<T>, onSuccess: (result: T) => void, onError: (error: any) => void)
+// Have makeSyncFunction and makeAsyncFunction call runCoroutine
+
+export type Coroutine<T> = Iterator<undefined, T, unknown> & IterableIterator<undefined>;
+type ExtractIteratorReturnType<T> = T extends Coroutine<infer TReturn> ? TReturn : never;
+
+export function makeSyncFunction<TReturn, TFunc extends (...params: any[]) => Coroutine<TReturn>>(func: TFunc): (...params: Parameters<TFunc>) => ExtractIteratorReturnType<ReturnType<TFunc>> {
+    return (...params: Parameters<TFunc>): ExtractIteratorReturnType<ReturnType<TFunc>> => {
+        const generator = func(...params);
+        let iteratorResult = generator.next();
+        while(!iteratorResult.done) {
+            iteratorResult = generator.next();
+        }
+        return iteratorResult.value as ExtractIteratorReturnType<ReturnType<TFunc>>; // How can I remove this cast?
+    };
+}
+
+export type Scheduler = (func: () => void) => Promise<void> | void;
+
+export function createYieldingScheduler(yieldAfterMS = 50) {
+    let start: number | undefined;
+    return (func: () => void): Promise<void> | void => {
+        if (start === undefined) {
+            start = performance.now();
+        } else {
+            const end = performance.now();
+            if (end - start > yieldAfterMS) {
+                start = end;
+                return new Promise(resolve => setTimeout(() => {
+                    func();
+                    resolve();
+                }, 0));
+            }
+        }
+
+        func();
+    };
+}
+
+export function makeAsyncFunction<TReturn, TFunc extends (...params: any[]) => Coroutine<TReturn>>(func: TFunc, schedule: Scheduler): (...params: Parameters<TFunc>) => Promise<ExtractIteratorReturnType<ReturnType<TFunc>>> {
+    return async (...params: Parameters<TFunc>): Promise<ExtractIteratorReturnType<ReturnType<TFunc>>> => {
+        const generator = func(...params);
+        let iteratorResult: IteratorResult<undefined, TReturn>;
+        const next = () => { iteratorResult = generator.next() };
+        do {
+            await schedule(next);
+        } while (!iteratorResult!.done)
+        return iteratorResult!.value as ExtractIteratorReturnType<ReturnType<TFunc>>; // How can I remove this cast?
+    };
+}
+
+// const x = makeSyncFunction(function* (value: string): CoroutineIterator<number> {
+//     //yield;
+//     return 7;
+// });
+
 /**
  * This class contains the various kinds of data on every vertex of a mesh used in determining its shape and appearance
  */
@@ -478,13 +538,15 @@ export class VertexData {
         return this;
     }
 
+    public readonly merge = makeSyncFunction(this._mergeCoroutine.bind(this) as typeof this._mergeCoroutine);
+
     /**
      * Merges the passed VertexData into the current one
      * @param others the VertexData to be merged into the current one
      * @param use32BitsIndices defines a boolean indicating if indices must be store in a 32 bits array
      * @returns the modified VertexData
      */
-    public merge(others: VertexData | VertexData[], use32BitsIndices = false): VertexData {
+    public *_mergeCoroutine(others: VertexData | VertexData[], use32BitsIndices = false): Coroutine<VertexData> {
         this._validate();
 
         others = Array.isArray(others) ? others : [others];
@@ -538,23 +600,38 @@ export class VertexData {
                     // The call to _validate already checked for positions
                     positionsOffset += other.positions!.length / 3;
                     indicesOffset += other.indices.length;
+
+                    yield;
                 }
             }
         }
 
         this.positions = VertexData._mergeElement(this.positions, others.map((other) => other.positions));
+        yield;
         this.normals = VertexData._mergeElement(this.normals, others.map((other) => other.normals));
+        yield;
         this.tangents = VertexData._mergeElement(this.tangents, others.map((other) => other.tangents));
+        yield;
         this.uvs = VertexData._mergeElement(this.uvs, others.map((other) => other.uvs));
+        yield;
         this.uvs2 = VertexData._mergeElement(this.uvs2, others.map((other) => other.uvs2));
+        yield;
         this.uvs3 = VertexData._mergeElement(this.uvs3, others.map((other) => other.uvs3));
+        yield;
         this.uvs4 = VertexData._mergeElement(this.uvs4, others.map((other) => other.uvs4));
+        yield;
         this.uvs5 = VertexData._mergeElement(this.uvs5, others.map((other) => other.uvs5));
+        yield;
         this.uvs6 = VertexData._mergeElement(this.uvs6, others.map((other) => other.uvs6));
+        yield;
         this.colors = VertexData._mergeElement(this.colors, others.map((other) => other.colors));
+        yield;
         this.matricesIndices = VertexData._mergeElement(this.matricesIndices, others.map((other) => other.matricesIndices));
+        yield;
         this.matricesWeights = VertexData._mergeElement(this.matricesWeights, others.map((other) => other.matricesWeights));
+        yield;
         this.matricesIndicesExtra = VertexData._mergeElement(this.matricesIndicesExtra, others.map((other) => other.matricesIndicesExtra));
+        yield;
         this.matricesWeightsExtra = VertexData._mergeElement(this.matricesWeightsExtra, others.map((other) => other.matricesWeightsExtra));
 
         return this;
