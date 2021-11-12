@@ -4472,6 +4472,16 @@ declare module BABYLON {
          */
         static LerpToRef(left: DeepImmutable<Color3>, right: DeepImmutable<Color3>, amount: number, result: Color3): void;
         /**
+         * Returns a new Color3 located for "amount" (float) on the Hermite interpolation spline defined by the vectors "value1", "tangent1", "value2", "tangent2"
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent Color3
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent Color3
+         * @param amount defines the amount on the interpolation spline (between 0 and 1)
+         * @returns the new Color3
+         */
+        static Hermite(value1: DeepImmutable<Color3>, tangent1: DeepImmutable<Color3>, value2: DeepImmutable<Color3>, tangent2: DeepImmutable<Color3>, amount: number): Color3;
+        /**
          * Returns a new Color3 which is the 1st derivative of the Hermite spline defined by the colors "value1", "value2", "tangent1", "tangent2".
          * @param value1 defines the first control point
          * @param tangent1 defines the first tangent
@@ -4780,6 +4790,16 @@ declare module BABYLON {
          * @param result defines the Color4 object where to store data
          */
         static LerpToRef(left: DeepImmutable<Color4>, right: DeepImmutable<Color4>, amount: number, result: Color4): void;
+        /**
+         * Interpolate between two Color4 using Hermite interpolation
+         * @param value1 defines first Color4
+         * @param tangent1 defines the incoming tangent
+         * @param value2 defines second Color4
+         * @param tangent2 defines the outgoing tangent
+         * @param amount defines the target Color4
+         * @returns the new interpolated Color4
+         */
+        static Hermite(value1: DeepImmutable<Color4>, tangent1: DeepImmutable<Color4>, value2: DeepImmutable<Color4>, tangent2: DeepImmutable<Color4>, amount: number): Color4;
         /**
          * Returns a new Color4 which is the 1st derivative of the Hermite spline defined by the colors "value1", "value2", "tangent1", "tangent2".
          * @param value1 defines the first control point
@@ -5527,6 +5547,10 @@ declare module BABYLON {
      * Enum for the animation key frame interpolation type
      */
     export enum AnimationKeyInterpolation {
+        /**
+         * Use tangents to interpolate between start and end values.
+         */
+        NONE = 0,
         /**
          * Do not interpolate between keys and use the start key value only. Tangents are ignored
          */
@@ -27088,6 +27112,16 @@ declare module BABYLON {
          */
         color3InterpolateFunction(startValue: Color3, endValue: Color3, gradient: number): Color3;
         /**
+         * Interpolates a Color3 cubically
+         * @param startValue Start value of the animation curve
+         * @param outTangent End tangent of the animation
+         * @param endValue End value of the animation curve
+         * @param inTangent Start tangent of the animation curve
+         * @param gradient Scalar amount to interpolate
+         * @returns interpolated value
+         */
+        color3InterpolateFunctionWithTangents(startValue: Color3, outTangent: Color3, endValue: Color3, inTangent: Color3, gradient: number): Color3;
+        /**
          * Interpolates a Color4 linearly
          * @param startValue Start value of the animation curve
          * @param endValue End value of the animation curve
@@ -27095,6 +27129,16 @@ declare module BABYLON {
          * @returns Interpolated Color3 value
          */
         color4InterpolateFunction(startValue: Color4, endValue: Color4, gradient: number): Color4;
+        /**
+         * Interpolates a Color4 cubically
+         * @param startValue Start value of the animation curve
+         * @param outTangent End tangent of the animation
+         * @param endValue End value of the animation curve
+         * @param inTangent Start tangent of the animation curve
+         * @param gradient Scalar amount to interpolate
+         * @returns interpolated value
+         */
+        color4InterpolateFunctionWithTangents(startValue: Color4, outTangent: Color4, endValue: Color4, inTangent: Color4, gradient: number): Color4;
         /**
          * @hidden Internal use only
          */
@@ -31246,7 +31290,7 @@ declare module BABYLON {
      * @returns the plane polygonal mesh
      * @see https://doc.babylonjs.com/how_to/set_shapes#disc-or-regular-polygon
      */
-    export function CreateDisc(name: string, options: {
+    export function CreateDisc(name: string, options?: {
         radius?: number;
         tessellation?: number;
         arc?: number;
@@ -34700,6 +34744,13 @@ declare module BABYLON {
          * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
          * @return all children nodes of all types
          */
+        getDescendants<T extends Node>(directDescendantsOnly?: boolean, predicate?: (node: Node) => node is T): T[];
+        /**
+         * Will return all nodes that have this node as ascendant
+         * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
+         * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+         * @return all children nodes of all types
+         */
         getDescendants(directDescendantsOnly?: boolean, predicate?: (node: Node) => boolean): Node[];
         /**
          * Get all child-meshes of this node
@@ -34707,7 +34758,21 @@ declare module BABYLON {
          * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
          * @returns an array of AbstractMesh
          */
+        getChildMeshes<T extends AbstractMesh>(directDescendantsOnly?: boolean, predicate?: (node: Node) => node is T): T[];
+        /**
+         * Get all child-meshes of this node
+         * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered (Default: false)
+         * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+         * @returns an array of AbstractMesh
+         */
         getChildMeshes(directDescendantsOnly?: boolean, predicate?: (node: Node) => boolean): AbstractMesh[];
+        /**
+         * Get all direct children of this node
+         * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+         * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered (Default: true)
+         * @returns an array of Node
+         */
+        getChildren<T extends Node>(predicate?: (node: Node) => node is T, directDescendantsOnly?: boolean): T[];
         /**
          * Get all direct children of this node
          * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
@@ -41535,7 +41600,8 @@ declare module BABYLON {
          * Disable previously set scissor test rectangle
          */
         disableScissor(): void;
-        protected _reportDrawCall(numDrawCalls?: number): void;
+        /** @hidden */
+        _reportDrawCall(numDrawCalls?: number): void;
         /**
          * Initializes a webVR display and starts listening to display change events
          * The onVRDisplayChangedObservable will be notified upon these changes
@@ -42779,7 +42845,6 @@ declare module BABYLON {
          * Gets the shader platfrom name used by the effects.
          */
         get shaderPlatformName(): string;
-        protected _snapshotRenderingEnabled: boolean;
         /**
          * Enables or disables the snapshot rendering mode
          * Note that the WebGL engine does not support snapshot rendering so setting the value won't have any effect for this engine
@@ -48145,6 +48210,12 @@ declare module BABYLON {
          */
         getTextureByUniqueId(uniqueId: number): Nullable<BaseTexture>;
         /**
+         * Gets a texture using its name
+         * @param name defines the texture's name
+         * @return the texture or null if none found.
+         */
+        getTextureByName(name: string): Nullable<BaseTexture>;
+        /**
          * Gets a camera using its Id
          * @param id defines the Id to look for
          * @returns the camera or null if not found
@@ -51277,7 +51348,7 @@ declare module BABYLON {
      * @returns the plane mesh
      * @see https://doc.babylonjs.com/how_to/set_shapes#plane
      */
-    export function CreatePlane(name: string, options: {
+    export function CreatePlane(name: string, options?: {
         size?: number;
         width?: number;
         height?: number;
@@ -53650,7 +53721,7 @@ declare module BABYLON {
      * @returns the sphere mesh
      * @see https://doc.babylonjs.com/how_to/set_shapes#sphere
      */
-    export function CreateSphere(name: string, options: {
+    export function CreateSphere(name: string, options?: {
         segments?: number;
         diameter?: number;
         diameterX?: number;
@@ -54094,7 +54165,7 @@ declare module BABYLON {
      * @returns the icosahedron mesh
      * @see https://doc.babylonjs.com/how_to/polyhedra_shapes#icosphere
      */
-    export function CreateIcoSphere(name: string, options: {
+    export function CreateIcoSphere(name: string, options?: {
         radius?: number;
         radiusX?: number;
         radiusY?: number;
@@ -57754,23 +57825,23 @@ declare module BABYLON {
      * @see https://doc.babylonjs.com/how_to/set_shapes#cylinder-or-cone
      */
     export function CreateCylinder(name: string, options: {
-        height?: number;
-        diameterTop?: number;
-        diameterBottom?: number;
-        diameter?: number;
-        tessellation?: number;
-        subdivisions?: number;
-        arc?: number;
-        faceColors?: Color4[];
-        faceUV?: Vector4[];
-        updatable?: boolean;
-        hasRings?: boolean;
-        enclose?: boolean;
-        cap?: number;
-        sideOrientation?: number;
-        frontUVs?: Vector4;
-        backUVs?: Vector4;
-    }, scene: any): Mesh;
+        height?: number | undefined;
+        diameterTop?: number | undefined;
+        diameterBottom?: number | undefined;
+        diameter?: number | undefined;
+        tessellation?: number | undefined;
+        subdivisions?: number | undefined;
+        arc?: number | undefined;
+        faceColors?: Color4[] | undefined;
+        faceUV?: Vector4[] | undefined;
+        updatable?: boolean | undefined;
+        hasRings?: boolean | undefined;
+        enclose?: boolean | undefined;
+        cap?: number | undefined;
+        sideOrientation?: number | undefined;
+        frontUVs?: Vector4 | undefined;
+        backUVs?: Vector4 | undefined;
+    } | undefined, scene: any): Mesh;
     /**
      * Class containing static functions to help procedurally build meshes
      * @deprecated Please use CreateCylinder directly
@@ -57814,14 +57885,14 @@ declare module BABYLON {
      * @see https://doc.babylonjs.com/how_to/set_shapes#torus
      */
     export function CreateTorus(name: string, options: {
-        diameter?: number;
-        thickness?: number;
-        tessellation?: number;
-        updatable?: boolean;
-        sideOrientation?: number;
-        frontUVs?: Vector4;
-        backUVs?: Vector4;
-    }, scene: any): Mesh;
+        diameter?: number | undefined;
+        thickness?: number | undefined;
+        tessellation?: number | undefined;
+        updatable?: boolean | undefined;
+        sideOrientation?: number | undefined;
+        frontUVs?: Vector4 | undefined;
+        backUVs?: Vector4 | undefined;
+    } | undefined, scene: any): Mesh;
     /**
      * Class containing static functions to help procedurally build meshes
      * @deprecated use CreateTorus instead
@@ -58488,13 +58559,13 @@ declare module BABYLON {
      * @see https://doc.babylonjs.com/how_to/set_shapes#ground
      */
     export function CreateGround(name: string, options: {
-        width?: number;
-        height?: number;
-        subdivisions?: number;
-        subdivisionsX?: number;
-        subdivisionsY?: number;
-        updatable?: boolean;
-    }, scene: any): Mesh;
+        width?: number | undefined;
+        height?: number | undefined;
+        subdivisions?: number | undefined;
+        subdivisionsX?: number | undefined;
+        subdivisionsY?: number | undefined;
+        updatable?: boolean | undefined;
+    } | undefined, scene: any): Mesh;
     /**
      * Creates a tiled ground mesh
      * * The parameters `xmin` and `xmax` (floats, default -1 and 1) set the ground minimum and maximum X coordinates
@@ -58542,7 +58613,7 @@ declare module BABYLON {
      * @see https://doc.babylonjs.com/babylon101/height_map
      * @see https://doc.babylonjs.com/how_to/set_shapes#ground-from-a-height-map
      */
-    export function CreateGroundFromHeightMap(name: string, url: string, options: {
+    export function CreateGroundFromHeightMap(name: string, url: string, options?: {
         width?: number;
         height?: number;
         subdivisions?: number;
@@ -60721,7 +60792,7 @@ declare module BABYLON {
      * @returns the polyhedron mesh
      * @see https://doc.babylonjs.com/how_to/polyhedra_shapes
      */
-    export function CreatePolyhedron(name: string, options: {
+    export function CreatePolyhedron(name: string, options?: {
         type?: number;
         size?: number;
         sizeX?: number;
@@ -60788,7 +60859,7 @@ declare module BABYLON {
      * @param scene defines the hosting scene
      * @returns the box mesh
      */
-    export function CreateBox(name: string, options: {
+    export function CreateBox(name: string, options?: {
         size?: number;
         width?: number;
         height?: number;
@@ -65748,6 +65819,31 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /** @hidden */
+    export class WebGPUSnapshotRendering {
+        private _engine;
+        private _record;
+        private _play;
+        private _mainPassBundleList;
+        private _modeSaved;
+        private _bundleList;
+        private _bundleListRenderTarget;
+        private _enabled;
+        private _mode;
+        constructor(engine: WebGPUEngine, renderingMode: number, bundleList: WebGPUBundleList, bundleListRenderTarget: WebGPUBundleList);
+        get enabled(): boolean;
+        get play(): boolean;
+        get record(): boolean;
+        set enabled(activate: boolean);
+        get mode(): number;
+        set mode(mode: number);
+        endMainRenderPass(): void;
+        endRenderTargetPass(currentRenderPass: GPURenderPassEncoder, gpuWrapper: WebGPUHardwareTexture): boolean;
+        endFrame(mainRenderPass: Nullable<GPURenderPassEncoder>): void;
+        reset(): void;
+    }
+}
+declare module BABYLON {
     /**
      * Options to load the associated Glslang library
      */
@@ -65979,10 +66075,7 @@ declare module BABYLON {
         dbgLogIfNotDrawWrapper: boolean;
         /** @hidden */
         dbgShowEmptyEnableEffectCalls: boolean;
-        private _snapshotRenderingRecordBundles;
-        private _snapshotRenderingPlayBundles;
-        private _snapshotRenderingMainPassBundleList;
-        private _snapshotRenderingModeSaved;
+        private _snapshotRendering;
         /**
          * Gets or sets the snapshot rendering mode
          */
@@ -67149,10 +67242,10 @@ declare module BABYLON {
      * @returns the hemisphere mesh
      */
     export function CreateHemisphere(name: string, options: {
-        segments?: number;
-        diameter?: number;
-        sideOrientation?: number;
-    }, scene: any): Mesh;
+        segments?: number | undefined;
+        diameter?: number | undefined;
+        sideOrientation?: number | undefined;
+    } | undefined, scene: any): Mesh;
     /**
      * Class containing static functions to help procedurally build meshes
      * @deprecated use the function directly from the module
@@ -79154,17 +79247,17 @@ declare module BABYLON {
      * @see  https://doc.babylonjs.com/how_to/set_shapes#torus-knot
      */
     export function CreateTorusKnot(name: string, options: {
-        radius?: number;
-        tube?: number;
-        radialSegments?: number;
-        tubularSegments?: number;
-        p?: number;
-        q?: number;
-        updatable?: boolean;
-        sideOrientation?: number;
-        frontUVs?: Vector4;
-        backUVs?: Vector4;
-    }, scene: any): Mesh;
+        radius?: number | undefined;
+        tube?: number | undefined;
+        radialSegments?: number | undefined;
+        tubularSegments?: number | undefined;
+        p?: number | undefined;
+        q?: number | undefined;
+        updatable?: boolean | undefined;
+        sideOrientation?: number | undefined;
+        frontUVs?: Vector4 | undefined;
+        backUVs?: Vector4 | undefined;
+    } | undefined, scene: any): Mesh;
     /**
      * Class containing static functions to help procedurally build meshes
      * @deprecated use CreateTorusKnot instead
