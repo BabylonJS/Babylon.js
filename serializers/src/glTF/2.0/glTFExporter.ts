@@ -26,6 +26,10 @@ import { IExportOptions } from "./glTFSerializer";
 import { _GLTFUtilities } from "./glTFUtilities";
 import { GLTFData } from "./glTFData";
 import { _GLTFAnimation } from "./glTFAnimation";
+import { TmpVectors } from "babylonjs/Maths/math";
+
+// Matrix that inverts the handedness by inverting the x scale.
+const invertHandednessMatrix = Matrix.Compose(new Vector3(-1, 1, 1), Quaternion.Identity(), Vector3.Zero());
 
 /**
  * Utility interface for storing vertex attribute data
@@ -135,14 +139,9 @@ export class _Exporter {
     public _nodeMap: { [key: number]: number };
 
     /**
-     * Specifies if the source Babylon scene was left handed, and needed conversion.
-     */
-    public _convertToRightHandedSystem: boolean;
-
-    /**
      * Specifies if a Babylon node should be converted to right-handed on export
      */
-    public _convertToRightHandedSystemMap: { [nodeId: number]: boolean };
+    public _convertToRightHandedSystemMap: { [nodeId: number]: boolean } = {};
 
     /*
     * Specifies if root Babylon empty nodes that act as a coordinate space transform should be included in export
@@ -1155,29 +1154,37 @@ export class _Exporter {
      * Sets the TRS for each node
      * @param node glTF Node for storing the transformation data
      * @param babylonTransformNode Babylon mesh used as the source for the transformation data
+     * @param invertTransformHandedness Multiplies the transform by the invert handedness matrix
      * @param convertToRightHandedSystem Converts the values to right-handed
      */
-    private setNodeTransformation(node: INode, babylonTransformNode: TransformNode, convertToRightHandedSystem: boolean): void {
+    private setNodeTransformation(node: INode, babylonTransformNode: TransformNode, invertTransformHandedness: boolean, convertToRightHandedSystem: boolean): void {
         if (!babylonTransformNode.getPivotPoint().equalsToFloats(0, 0, 0)) {
             Tools.Warn("Pivot points are not supported in the glTF serializer");
         }
-        if (!babylonTransformNode.position.equalsToFloats(0, 0, 0)) {
-            node.translation = convertToRightHandedSystem ? _GLTFUtilities._GetRightHandedPositionVector3(babylonTransformNode.position).asArray() : babylonTransformNode.position.asArray();
+
+        let matrix = babylonTransformNode._localMatrix;
+        if (invertTransformHandedness) {
+            matrix = matrix.multiplyToRef(invertHandednessMatrix, matrix);
         }
 
-        if (!babylonTransformNode.scaling.equalsToFloats(1, 1, 1)) {
+        const scale = TmpVectors.Vector3[0];
+        const rotationQuaternion = TmpVectors.Quaternion[0];
+        const translation = TmpVectors.Vector3[1];
+        matrix.decompose(scale, rotationQuaternion, translation);
+
+        if (!translation.equalsToFloats(0, 0, 0)) {
+            node.translation = convertToRightHandedSystem ? _GLTFUtilities._GetRightHandedPositionVector3(translation).asArray() : translation.asArray();
+        }
+
+        if (!scale.equalsToFloats(1, 1, 1)) {
             node.scale = babylonTransformNode.scaling.asArray();
         }
 
-        let rotationQuaternion = Quaternion.RotationYawPitchRoll(babylonTransformNode.rotation.y, babylonTransformNode.rotation.x, babylonTransformNode.rotation.z);
-        if (babylonTransformNode.rotationQuaternion) {
-            rotationQuaternion.multiplyInPlace(babylonTransformNode.rotationQuaternion);
-        }
-        if (!(rotationQuaternion.x === 0 && rotationQuaternion.y === 0 && rotationQuaternion.z === 0 && rotationQuaternion.w === 1)) {
+        if (!Quaternion.IsIdentity(rotationQuaternion)) {
             if (convertToRightHandedSystem) {
                 _GLTFUtilities._GetRightHandedQuaternionFromRef(rotationQuaternion);
-
             }
+
             node.rotation = rotationQuaternion.normalize().asArray();
         }
     }
@@ -1229,12 +1236,12 @@ export class _Exporter {
     }
 
     /**
- * Creates a bufferview based on the vertices type for the Babylon mesh
- * @param babylonSubMesh The Babylon submesh that the morph target is applied to
- * @param babylonMorphTarget the morph target to be exported
- * @param binaryWriter The buffer to write the bufferview data to
- * @param convertToRightHandedSystem Converts the values to right-handed
- */
+     * Creates a bufferview based on the vertices type for the Babylon mesh
+     * @param babylonSubMesh The Babylon submesh that the morph target is applied to
+     * @param babylonMorphTarget the morph target to be exported
+     * @param binaryWriter The buffer to write the bufferview data to
+     * @param convertToRightHandedSystem Converts the values to right-handed
+     */
     private setMorphTargetAttributes(babylonSubMesh: SubMesh, meshPrimitive: IMeshPrimitive, babylonMorphTarget: MorphTarget, binaryWriter: _BinaryWriter, convertToRightHandedSystem: boolean) {
         if (babylonMorphTarget) {
             if (!meshPrimitive.targets) {
@@ -1622,83 +1629,51 @@ export class _Exporter {
     }
 
     /**
-     * Check if the node is used to convert its descendants from a right handed coordinate system to the Babylon scene's coordinate system.
-     * @param node The node to check
-     * @returns True if the node is used to convert its descendants from right-handed to left-handed. False otherwise
-     */
-    private isBabylonCoordinateSystemConvertingNode(node: Node): boolean {
-        if (node instanceof TransformNode) {
-            if (node.name !== "__root__") {
-                return false;
-            }
-
-            // Transform
-            let matrix = node.getWorldMatrix();
-
-            if (matrix.determinant() === 1) {
-                return false;
-            }
-
-            // Geometry
-            if ((node instanceof Mesh && node.geometry !== null) ||
-                (node instanceof InstancedMesh && node.sourceMesh.geometry !== null)) {
-                return false;
-            }
-
-            if (this._includeCoordinateSystemConversionNodes) {
-                return false;
-            }
-            return true;
-        }
-        return false;
-    }
-
-    /**
      * Creates a glTF scene based on the array of meshes
      * Returns the the total byte offset
      * @param babylonScene Babylon scene to get the mesh data from
      * @param binaryWriter Buffer to write binary data to
      */
     private createSceneAsync(babylonScene: Scene, binaryWriter: _BinaryWriter): Promise<void> {
-        const scene: IScene = { nodes: [] };
-        let glTFNodeIndex: number;
-        let glTFNode: INode;
-        let directDescendents: Node[];
-        const nodes: Node[] = [...babylonScene.transformNodes, ...babylonScene.meshes, ...babylonScene.lights];
-        let rootNodesToLeftHanded: Node[] = [];
+        const babylonNodes: Node[] = [...babylonScene.transformNodes, ...babylonScene.meshes, ...babylonScene.lights];
+        const rootBabylonNodesToInvertHandedness: Node[] = [];
 
-        this._convertToRightHandedSystem = !babylonScene.useRightHandedSystem;
-        this._convertToRightHandedSystemMap = {};
+        if (babylonScene.useRightHandedSystem) {
+            for (const babylonNode of babylonScene.rootNodes) {
+                if (babylonNode.getWorldMatrix().isIdentity()) {
+                    // Don't export root nodes that are identity.
+                    babylonNodes.splice(babylonNodes.indexOf(babylonNode), 1);
+                }
+            }
+        } else {
+            const tmpMatrix = TmpVectors.Matrix[0];
 
-        // Set default values for all nodes
-        babylonScene.rootNodes.forEach((rootNode) => {
-            this._convertToRightHandedSystemMap[rootNode.uniqueId] = this._convertToRightHandedSystem;
-            rootNode.getDescendants(false).forEach((descendant) => {
-                this._convertToRightHandedSystemMap[descendant.uniqueId] = this._convertToRightHandedSystem;
-            });
-        });
-
-        // Check if root nodes converting to left-handed are present
-        babylonScene.rootNodes.forEach((rootNode) => {
-            if (this.isBabylonCoordinateSystemConvertingNode(rootNode)) {
-                rootNodesToLeftHanded.push(rootNode);
-
-                // Exclude the node from list of nodes to export
-                const indexRootNode = nodes.indexOf(rootNode);
-                if (indexRootNode !== -1) { // should always be true
-                    nodes.splice(indexRootNode, 1);
+            // Check each root nodes for conversion to right handed.
+            for (const babylonNode of babylonScene.rootNodes) {
+                if (!this._includeCoordinateSystemConversionNodes && babylonNode instanceof TransformNode && !(babylonNode instanceof Mesh && babylonNode.geometry)) {
+                    babylonNode.getWorldMatrix().multiplyToRef(invertHandednessMatrix, tmpMatrix);
+                    if (tmpMatrix.isIdentity()) {
+                        // Don't export root nodes that result in identity after inverting handedness.
+                        babylonNodes.splice(babylonNodes.indexOf(babylonNode), 1);
+                        continue;
+                    } else if (babylonNode.getWorldMatrix().determinant() < 0) {
+                        // Invert handedness of root Babylon nodes that have a negative determinant.
+                        rootBabylonNodesToInvertHandedness.push(babylonNode);
+                        continue;
+                    }
                 }
 
-                // Cancel conversion to right handed system
-                rootNode.getDescendants(false).forEach((descendant) => {
-                    this._convertToRightHandedSystemMap[descendant.uniqueId] = false;
-                });
+                // Otherwise, convert the data to right handed.
+                this._convertToRightHandedSystemMap[babylonNode.uniqueId] = true;
+                for (const descendant of babylonNode.getDescendants()) {
+                    this._convertToRightHandedSystemMap[descendant.uniqueId] = true;
+                }
             }
-        });
+        }
 
-        const [exportNodes, exportMaterials] = this.getExportNodes(nodes);
+        const [exportNodes, exportMaterials] = this.getExportNodes(babylonNodes);
         return this._glTFMaterialExporter._convertMaterialsToGLTFAsync(exportMaterials, ImageMimeType.PNG, true).then(() => {
-            return this.createNodeMapAndAnimationsAsync(babylonScene, exportNodes, binaryWriter).then((nodeMap) => {
+            return this.createNodeMapAndAnimationsAsync(babylonScene, exportNodes, rootBabylonNodesToInvertHandedness, binaryWriter).then((nodeMap) => {
                 return this.createSkinsAsync(babylonScene, nodeMap, binaryWriter).then((skinMap) => {
                     this._nodeMap = nodeMap;
 
@@ -1708,10 +1683,11 @@ export class _Exporter {
                     }
 
                     // Build Hierarchy with the node map.
-                    for (let babylonNode of nodes) {
-                        glTFNodeIndex = this._nodeMap[babylonNode.uniqueId];
-                        if (glTFNodeIndex !== undefined) {
-                            glTFNode = this._nodes[glTFNodeIndex];
+                    const sceneNodes: number[] = [];
+                    for (const babylonNode of babylonNodes) {
+                        const nodeIndex = this._nodeMap[babylonNode.uniqueId];
+                        if (nodeIndex !== undefined) {
+                            const glTFNode = this._nodes[nodeIndex];
 
                             if (babylonNode.metadata) {
                                 if (this._options.metadataSelector) {
@@ -1721,22 +1697,8 @@ export class _Exporter {
                                 }
                             }
 
-                            if (!babylonNode.parent || rootNodesToLeftHanded.indexOf(babylonNode.parent) !== -1) {
-                                if (this._options.shouldExportNode && !this._options.shouldExportNode(babylonNode)) {
-                                    Tools.Log("Omitting " + babylonNode.name + " from scene.");
-                                }
-                                else {
-                                    let convertToRightHandedSystem = this._convertToRightHandedSystemMap[babylonNode.uniqueId];
-                                    if (convertToRightHandedSystem) {
-                                        if (glTFNode.translation) {
-                                            glTFNode.translation[2] *= -1;
-                                            glTFNode.translation[0] *= -1;
-                                        }
-                                        glTFNode.rotation = glTFNode.rotation ? Quaternion.FromArray([0, 1, 0, 0]).multiply(Quaternion.FromArray(glTFNode.rotation)).asArray() : (Quaternion.FromArray([0, 1, 0, 0])).asArray();
-                                    }
-
-                                    scene.nodes.push(glTFNodeIndex);
-                                }
+                            if (!babylonNode.parent || exportNodes.indexOf(babylonNode.parent) === -1) {
+                                sceneNodes.push(nodeIndex);
                             }
 
                             if (babylonNode instanceof Mesh) {
@@ -1746,22 +1708,15 @@ export class _Exporter {
                                 }
                             }
 
-                            directDescendents = babylonNode.getDescendants(true);
-                            if (!glTFNode.children && directDescendents && directDescendents.length) {
-                                const children: number[] = [];
-                                for (let descendent of directDescendents) {
-                                    if (this._nodeMap[descendent.uniqueId] != null) {
-                                        children.push(this._nodeMap[descendent.uniqueId]);
-                                    }
-                                }
-                                if (children.length) {
-                                    glTFNode.children = children;
-                                }
+                            const children = babylonNode.getDescendants(true).map((descendent) => this._nodeMap[descendent.uniqueId]);
+                            if (children.length) {
+                                glTFNode.children = children;
                             }
                         }
                     }
-                    if (scene.nodes.length) {
-                        this._scenes.push(scene);
+
+                    if (sceneNodes.length) {
+                        this._scenes.push({ nodes: sceneNodes });
                     }
                 });
             });
@@ -1779,25 +1734,25 @@ export class _Exporter {
         const exportMaterials: Set<Material> = new Set<Material>();
 
         for (const babylonNode of nodes) {
-            if (!this._options.shouldExportNode || this._options.shouldExportNode(babylonNode)) {
-                exportNodes.push(babylonNode);
+            if (this._options.shouldExportNode && !this._options.shouldExportNode(babylonNode)) {
+                Tools.Log(`Omitting ${babylonNode.name} from scene.`);
+                continue;
+            }
 
-                if (babylonNode.getClassName() === "Mesh") {
-                    const mesh = babylonNode as Mesh;
+            exportNodes.push(babylonNode);
+
+            if (babylonNode.getClassName() === "Mesh") {
+                const mesh = babylonNode as Mesh;
+                if (mesh.material) {
+                    exportMaterials.add(mesh.material);
+                }
+            } else {
+                const meshes: AbstractMesh[] = babylonNode.getChildMeshes(false);
+                for (const mesh of meshes) {
                     if (mesh.material) {
                         exportMaterials.add(mesh.material);
                     }
-                } else {
-                    const meshes: AbstractMesh[] = babylonNode.getChildMeshes(false);
-                    for (const mesh of meshes) {
-                        if (mesh.material) {
-                            exportMaterials.add(mesh.material);
-                        }
-                    }
                 }
-
-            } else {
-                `Excluding node ${babylonNode.name}`;
             }
         }
 
@@ -1807,11 +1762,11 @@ export class _Exporter {
     /**
      * Creates a mapping of Node unique id to node index and handles animations
      * @param babylonScene Babylon Scene
-     * @param nodes Babylon transform nodes
+     * @param babylonNodes Babylon transform nodes
      * @param binaryWriter Buffer to write binary data to
      * @returns Node mapping of unique id to index
      */
-    private createNodeMapAndAnimationsAsync(babylonScene: Scene, nodes: Node[], binaryWriter: _BinaryWriter): Promise<{ [key: number]: number }>  {
+    private createNodeMapAndAnimationsAsync(babylonScene: Scene, babylonNodes: Node[], babylonNodesToInvertHandedness: Node[], binaryWriter: _BinaryWriter): Promise<{ [key: number]: number }>  {
         let promiseChain = Promise.resolve();
         const nodeMap: { [key: number]: number } = {};
         let nodeIndex: number;
@@ -1822,10 +1777,11 @@ export class _Exporter {
         };
         let idleGLTFAnimations: IAnimation[] = [];
 
-        for (let babylonNode of nodes) {
+        for (let babylonNode of babylonNodes) {
             promiseChain = promiseChain.then(() => {
-                let convertToRightHandedSystem = this._convertToRightHandedSystemMap[babylonNode.uniqueId];
-                return this.createNodeAsync(babylonNode, binaryWriter, convertToRightHandedSystem, nodeMap).then((node) => {
+                const invertTransformHandedness = (babylonNodesToInvertHandedness.indexOf(babylonNode) !== -1);
+                const convertToRightHandedSystem = this._convertToRightHandedSystemMap[babylonNode.uniqueId];
+                return this.createNodeAsync(babylonNode, binaryWriter, invertTransformHandedness, convertToRightHandedSystem, nodeMap).then((node) => {
                     const promise = this._extensionsPostExportNodeAsync("createNodeAsync", node, babylonNode, nodeMap);
                     if (promise == null) {
                         Tools.Warn(`Not exporting node ${babylonNode.name}`);
@@ -1878,7 +1834,7 @@ export class _Exporter {
      * @param nodeMap Node mapping of unique id to glTF node index
      * @returns glTF node
      */
-    private createNodeAsync(babylonNode: Node, binaryWriter: _BinaryWriter, convertToRightHandedSystem: boolean, nodeMap?: { [key: number]: number }): Promise<INode> {
+    private createNodeAsync(babylonNode: Node, binaryWriter: _BinaryWriter, invertTransformHandedness: boolean, convertToRightHandedSystem: boolean, nodeMap?: { [key: number]: number }): Promise<INode> {
         return Promise.resolve().then(() => {
             // create node to hold translation/rotation/scale and the mesh
             const node: INode = {};
@@ -1891,7 +1847,7 @@ export class _Exporter {
 
             if (babylonNode instanceof TransformNode) {
                 // Set transformation
-                this.setNodeTransformation(node, babylonNode, convertToRightHandedSystem);
+                this.setNodeTransformation(node, babylonNode, invertTransformHandedness, convertToRightHandedSystem);
                 if (babylonNode instanceof Mesh) {
                     let morphTargetManager = babylonNode.morphTargetManager;
                     if (morphTargetManager && morphTargetManager.numTargets > 0) {
