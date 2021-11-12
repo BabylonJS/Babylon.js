@@ -66,17 +66,17 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             new Vector3(ox, 0, oy),
             new Vector3(ox, 0, oy),];
 
-            startingPositions[0].x -= node._currentMeasure.width / 2;
-            startingPositions[0].z += node._currentMeasure.height / 2;
+            startingPositions[0].x -= node._currentMeasure.width * node.scaleX / 2;
+            startingPositions[0].z += node._currentMeasure.height * node.scaleY / 2;
 
-            startingPositions[1].x -= node._currentMeasure.width / 2;
-            startingPositions[1].z -= node._currentMeasure.height / 2;
+            startingPositions[1].x -= node._currentMeasure.width * node.scaleX / 2;
+            startingPositions[1].z -= node._currentMeasure.height * node.scaleY / 2;
 
-            startingPositions[2].x += node._currentMeasure.width / 2;
-            startingPositions[2].z -= node._currentMeasure.height / 2;
+            startingPositions[2].x += node._currentMeasure.width * node.scaleX / 2;
+            startingPositions[2].z -= node._currentMeasure.height * node.scaleY / 2;
 
-            startingPositions[3].x += node._currentMeasure.width / 2;
-            startingPositions[3].z += node._currentMeasure.height / 2
+            startingPositions[3].x += node._currentMeasure.width * node.scaleX / 2;
+            startingPositions[3].z += node._currentMeasure.height * node.scaleY / 2
 
 
             let index = 0;
@@ -90,7 +90,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                 let translateBack = Matrix2D.Identity();
                 let translateTo = Matrix2D.Identity();
                 let resultMatrix = Matrix2D.Identity();
-                
+
                 Matrix2D.TranslationToRef(ox, oy, translateBack);
                 Matrix2D.TranslationToRef(-ox, -oy, translateTo);
                 Matrix2D.RotationToRef(node.rotation, m2d);
@@ -132,6 +132,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                 ++index;
 
             });
+
         }
 
     }
@@ -187,25 +188,65 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             let dx = newPosition.x - this._previousPositions[this._scalePointIndex].x;
             let dy = newPosition.z - this._previousPositions[this._scalePointIndex].y;
 
-            switch (this._scalePointIndex) {
-                case 0:
-                    node.widthInPixels -= dx * 2;
-                    node.heightInPixels -= dy * 2;
-                    break;
-                case 1:
-                    node.widthInPixels -= dx * 2;
-                    node.heightInPixels += dy * 2;
-                    break;
-                case 2:
-                    node.widthInPixels += dx * 2;
-                    node.heightInPixels += dy * 2;
-                    break;
-                case 3:
-                    node.widthInPixels += dx * 2;
-                    node.heightInPixels -= dy * 2;
-                    break;
-                default:
-                    break;
+            let rotation = node.rotation;
+            let parent = node.parent;
+            while (parent) {
+                rotation += parent.rotation;
+                parent = parent.parent;
+            }
+            rotation = rotation % 2 * Math.PI;
+            rotation += Math.PI / 4;
+            let rotationIndex = Math.floor(rotation / (Math.PI / 2));
+            if (rotationIndex % 2 == 0) {
+                switch ((this._scalePointIndex + rotationIndex) % 4) {
+                    case 0:
+                        node.widthInPixels -= dx * 2;
+                        node.heightInPixels -= dy * 2;
+                        break;
+                    case 1:
+                        node.widthInPixels -= dx * 2;
+                        node.heightInPixels += dy * 2;
+                        break;
+                    case 2:
+                        node.widthInPixels += dx * 2;
+                        node.heightInPixels += dy * 2;
+                        break;
+                    case 3:
+                        node.widthInPixels += dx * 2;
+                        node.heightInPixels -= dy * 2;
+                        break;
+                    default:
+                        break;
+                }
+            }
+            else {
+                switch ((this._scalePointIndex + rotationIndex - 1) % 4) {
+                    case 0:
+                        node.widthInPixels += dy * 2;
+                        node.heightInPixels -= dx * 2;
+                        break;
+                    case 1:
+                        node.widthInPixels += dy * 2;
+                        node.heightInPixels += dx * 2;
+                        break;
+                    case 2:
+                        node.widthInPixels -= dy * 2;
+                        node.heightInPixels += dx * 2;
+                        break;
+                    case 3:
+                        node.widthInPixels -= dy * 2;
+                        node.heightInPixels -= dx * 2;
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            if (node.widthInPixels < 0) {
+                node.widthInPixels = 0;
+            }
+            if (node.heightInPixels < 0) {
+                node.heightInPixels = 0;
             }
 
             this._previousPositions[this._scalePointIndex].x = newPosition.x;
