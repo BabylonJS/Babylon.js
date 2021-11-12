@@ -5,7 +5,7 @@ import { _WarnImport } from '../Misc/devTools';
 import { Color4, Color3 } from '../Maths/math.color';
 import { Logger } from '../Misc/logger';
 import { nativeOverride } from '../Misc/decorators';
-import { Deferred } from '../Misc/deferred';
+import { Coroutine, makeSyncFunction } from '../Misc/coroutine';
 
 declare type Geometry = import("../Meshes/geometry").Geometry;
 declare type Mesh = import("../Meshes/mesh").Mesh;
@@ -73,83 +73,6 @@ export interface IGetSetVerticesData {
      * @param updatable defines if the index buffer must be flagged as updatable (false by default)
      */
     setIndices(indices: IndicesArray, totalVertices: Nullable<number>, updatable?: boolean): void;
-}
-
-// Add a resume<T>(coroutine: Coroutine<T>, onSuccess: (stepResult: IteratorResult<undefined, TReturn>) => void, onError: (stepError: any) => void)
-// Make Scheduler be a function that takes a Coroutine<T> as well as onSuccess/onError. It "schedules" a call to the above resume function
-// Have an inline scheduler that just calls things synchronously
-// Have a yielding scheduler that does the setTimeout stuff
-// Have a runCoroutine<T>(coroutine: Coroutine<T>, scheduler: Scheduler<T>, onSuccess: (result: T) => void, onError: (error: any) => void)
-// Have makeSyncFunction and makeAsyncFunction call runCoroutine
-
-export type Coroutine<T> = Iterator<undefined, T, unknown> & IterableIterator<undefined>;
-type CoroutineStep<T> = IteratorResult<undefined, T>;
-type ExtractCoroutineReturnType<T> = T extends Coroutine<infer TReturn> ? TReturn : never;
-type CoroutineScheduler<T> = (coroutine: Coroutine<T>, onSuccess: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) => void;
-
-function inlineScheduler<T>(coroutine: Coroutine<T>, onSuccess: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) {
-    try {
-        onSuccess(coroutine.next());
-    } catch (error) {
-        onError(error);
-    }
-}
-
-function createYieldingScheduler<T>(yieldAfterMS = 50): CoroutineScheduler<T> {
-    let start: number | undefined;
-    return (coroutine: Coroutine<T>, onSuccess: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) => {
-        if (start === undefined) {
-            start = performance.now();
-        } else {
-            const end = performance.now();
-            if (end - start > yieldAfterMS) {
-                start = end;
-                setTimeout(() => {
-                    inlineScheduler(coroutine, onSuccess, onError);
-                }, 0);
-                return;
-            }
-        }
-
-        inlineScheduler(coroutine, onSuccess, onError);
-    };
-}
-
-function runCoroutine<T>(coroutine: Coroutine<T>, scheduler: CoroutineScheduler<T>, onSuccess: (result: T) => void, onError: (error: any) => void) {
-    function resume() {
-        scheduler(coroutine,
-            (stepResult: CoroutineStep<T>) => {
-                if (stepResult.done) {
-                    onSuccess(stepResult.value);
-                } else {
-                    resume();
-                }
-            },
-            (error: any) => {
-                onError(error);
-            });
-    }
-
-    resume();
-}
-
-export function makeSyncFunction<TReturn, TCoroutineFactory extends (...params: any[]) => Coroutine<TReturn>>(coroutineFactory: TCoroutineFactory): (...params: Parameters<TCoroutineFactory>) => ExtractCoroutineReturnType<ReturnType<TCoroutineFactory>> {
-    return (...params: Parameters<TCoroutineFactory>): ExtractCoroutineReturnType<ReturnType<TCoroutineFactory>> => {
-        const coroutine = coroutineFactory(...params)
-        let result: TReturn | undefined;
-        runCoroutine(coroutine, inlineScheduler, (r: TReturn) => result = r, (e: any) => { throw e; });
-        return result as ExtractCoroutineReturnType<ReturnType<TCoroutineFactory>>; // How can I remove this cast?;
-    };
-}
-
-export function makeAsyncFunction<TReturn, TCoroutineFactory extends (...params: any[]) => Coroutine<TReturn>>(coroutineFactory: TCoroutineFactory): (...params: Parameters<TCoroutineFactory>) => Promise<ExtractCoroutineReturnType<ReturnType<TCoroutineFactory>>> {
-    return (...params: Parameters<TCoroutineFactory>): Promise<ExtractCoroutineReturnType<ReturnType<TCoroutineFactory>>> => {
-        const coroutine = coroutineFactory(...params);
-        const result = new Deferred<TReturn>();
-        const scheduler = createYieldingScheduler<TReturn>();
-        runCoroutine(coroutine, scheduler, (r: TReturn) => result.resolve(r), (e: any) => result.reject(e));
-        return result.promise as Promise<ExtractCoroutineReturnType<ReturnType<TCoroutineFactory>>>; // How can I remove this cast?;
-    };
 }
 
 /**
