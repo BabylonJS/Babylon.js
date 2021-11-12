@@ -773,15 +773,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             }
         });
 
-        //Included For future debuging sessions //#GZI99M#14//
-        /*NodeMaterial.ParseFromSnippetAsync("#8VNE5G#11", this._scene).then(nodeMaterial => {
-            this._textureMesh.material = nodeMaterial;
-            if (nodeMaterial) {
-                let block = nodeMaterial.getBlockByName("Texture") as TextureBlock;
-                block.texture = this.globalState.guiTexture;
-            }
-        });*/
-
         this.setCameraRadius();
         this._camera = new ArcRotateCamera("Camera", -Math.PI / 2, 0, this._cameraRadias, Vector3.Zero(), this._scene);
         this._camera.maxZ = this._cameraMaxRadiasFactor * 2;
