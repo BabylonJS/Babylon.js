@@ -238,7 +238,7 @@
 
 ## Bugs
 
-- Fix an issue with `TargetMaera`'s UpVector which was introduced by the previous PR ([BlakeOne](https://github.com/BlakeOne))
+- Fix an issue with `TargetCamera`'s UpVector which was introduced by the previous PR ([BlakeOne](https://github.com/BlakeOne))
 - Fix an issue with `TargetCamera`'s rotation caching ([BlakeOne](https://github.com/BlakeOne))
 - Fix incorrect GUI.TextBlock width when resizeToFit is true & fontStyle is italic ([Kalkut](https://github.com/Kalkut))
 - Fix CubeTexture extension detection when rootUrl has a query string ([civa86](https://github.com/civa86))
