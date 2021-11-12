@@ -26,7 +26,6 @@ import { IExportOptions } from "./glTFSerializer";
 import { _GLTFUtilities } from "./glTFUtilities";
 import { GLTFData } from "./glTFData";
 import { _GLTFAnimation } from "./glTFAnimation";
-import { Epsilon } from 'babylonjs/Maths/math.constants';
 
 /**
  * Utility interface for storing vertex attribute data
