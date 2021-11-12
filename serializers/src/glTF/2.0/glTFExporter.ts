@@ -1636,12 +1636,9 @@ export class _Exporter {
             let matrix = node.getWorldMatrix();
             let matrixToLeftHanded = Matrix.Compose(this._convertToRightHandedSystem ? new Vector3(-1, 1, 1) : Vector3.One(), Quaternion.Identity(), Vector3.Zero());
             let matrixProduct = matrix.multiply(matrixToLeftHanded);
-            let matrixIdentity = Matrix.IdentityReadOnly;
 
-            for (let i = 0; i < 16; i++) {
-                if (matrixProduct.m[i] * matrixIdentity.m[i] < 0) { // checking if they have the same sign
-                    return false;
-                }
+            if (matrixProduct.determinant() !== 1) {
+                return false;
             }
 
             // Geometry
