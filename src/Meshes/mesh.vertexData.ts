@@ -6,7 +6,6 @@ import { Color4, Color3 } from '../Maths/math.color';
 import { Logger } from '../Misc/logger';
 import { nativeOverride } from '../Misc/decorators';
 import { Deferred } from '../Misc/deferred';
-import { Tools } from '../Misc/tools';
 
 declare type Geometry = import("../Meshes/geometry").Geometry;
 declare type Mesh = import("../Meshes/mesh").Mesh;
@@ -353,88 +352,85 @@ export class VertexData {
         return this;
     }
 
-    private _applyTo(meshOrGeometry: IGetSetVerticesData, updatable: boolean = false): VertexData {
+    private readonly _applyTo = makeSyncFunction(this._applyToCoroutine.bind(this) as typeof this._applyToCoroutine);
+
+    public *_applyToCoroutine(meshOrGeometry: IGetSetVerticesData, updatable: boolean = false): Coroutine<VertexData> {
         if (this.positions) {
-            Tools.StartPerformanceCounter("POSITIONS");
             meshOrGeometry.setVerticesData(VertexBuffer.PositionKind, this.positions, updatable);
-            Tools.EndPerformanceCounter("POSITIONS");
+            yield;
         }
 
         if (this.normals) {
-            Tools.StartPerformanceCounter("NORMALS");
             meshOrGeometry.setVerticesData(VertexBuffer.NormalKind, this.normals, updatable);
-            Tools.EndPerformanceCounter("NORMALS");
+            yield;
         }
 
         if (this.tangents) {
-            Tools.StartPerformanceCounter("TANGENTS");
             meshOrGeometry.setVerticesData(VertexBuffer.TangentKind, this.tangents, updatable);
-            Tools.EndPerformanceCounter("TANGENTS");
+            yield;
         }
 
         if (this.uvs) {
-            Tools.StartPerformanceCounter("UVS");
             meshOrGeometry.setVerticesData(VertexBuffer.UVKind, this.uvs, updatable);
-            Tools.EndPerformanceCounter("UVS");
+            yield;
         }
 
         if (this.uvs2) {
-            Tools.StartPerformanceCounter("UVS2");
             meshOrGeometry.setVerticesData(VertexBuffer.UV2Kind, this.uvs2, updatable);
-            Tools.EndPerformanceCounter("UVS2");
+            yield;
         }
 
         if (this.uvs3) {
-            Tools.StartPerformanceCounter("UVS3");
             meshOrGeometry.setVerticesData(VertexBuffer.UV3Kind, this.uvs3, updatable);
-            Tools.EndPerformanceCounter("UVS3");
+            yield;
         }
 
         if (this.uvs4) {
-            Tools.StartPerformanceCounter("UVS4");
             meshOrGeometry.setVerticesData(VertexBuffer.UV4Kind, this.uvs4, updatable);
-            Tools.EndPerformanceCounter("UVS4");
+            yield;
         }
 
         if (this.uvs5) {
             meshOrGeometry.setVerticesData(VertexBuffer.UV5Kind, this.uvs5, updatable);
+            yield;
         }
 
         if (this.uvs6) {
             meshOrGeometry.setVerticesData(VertexBuffer.UV6Kind, this.uvs6, updatable);
+            yield;
         }
 
         if (this.colors) {
-            Tools.StartPerformanceCounter("COLORS");
             meshOrGeometry.setVerticesData(VertexBuffer.ColorKind, this.colors, updatable);
-            Tools.EndPerformanceCounter("COLORS");
+            yield;
         }
 
         if (this.matricesIndices) {
-            Tools.StartPerformanceCounter("MATRICESINDICES");
             meshOrGeometry.setVerticesData(VertexBuffer.MatricesIndicesKind, this.matricesIndices, updatable);
-            Tools.EndPerformanceCounter("MATRICESINDICES");
+            yield;
         }
 
         if (this.matricesWeights) {
             meshOrGeometry.setVerticesData(VertexBuffer.MatricesWeightsKind, this.matricesWeights, updatable);
+            yield;
         }
 
         if (this.matricesIndicesExtra) {
             meshOrGeometry.setVerticesData(VertexBuffer.MatricesIndicesExtraKind, this.matricesIndicesExtra, updatable);
+            yield;
         }
 
         if (this.matricesWeightsExtra) {
             meshOrGeometry.setVerticesData(VertexBuffer.MatricesWeightsExtraKind, this.matricesWeightsExtra, updatable);
+            yield;
         }
 
-        Tools.StartPerformanceCounter("INDICES");
         if (this.indices) {
             meshOrGeometry.setIndices(this.indices, null, updatable);
+            yield;
         } else {
             meshOrGeometry.setIndices([], null);
         }
-        Tools.EndPerformanceCounter("INDICES");
 
         return this;
     }

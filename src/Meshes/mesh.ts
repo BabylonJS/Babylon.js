@@ -4391,7 +4391,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             meshSubclass = new Mesh(source.name + "_merged", source.getScene());
         }
 
-        vertexData.applyToMesh(meshSubclass);
+        yield* vertexData._applyToCoroutine(meshSubclass);
 
         // Setting properties
         meshSubclass.checkCollisions = source.checkCollisions;
