@@ -284,7 +284,7 @@ export function CreateGroundFromHeightMapVertexData(options: { width: number, he
  * @returns the ground mesh
  * @see https://doc.babylonjs.com/how_to/set_shapes#ground
  */
-export function CreateGround(name: string, options: { width?: number, height?: number, subdivisions?: number, subdivisionsX?: number, subdivisionsY?: number, updatable?: boolean }, scene: any): Mesh {
+export function CreateGround(name: string, options: { width?: number, height?: number, subdivisions?: number, subdivisionsX?: number, subdivisionsY?: number, updatable?: boolean } = {}, scene: any): Mesh {
     var ground = new GroundMesh(name, scene);
     ground._setReady(false);
     ground._subdivisionsX = options.subdivisionsX || options.subdivisions || 1;
@@ -347,7 +347,7 @@ export function CreateTiledGround(name: string, options: { xmin: number, zmin: n
  * @see https://doc.babylonjs.com/babylon101/height_map
  * @see https://doc.babylonjs.com/how_to/set_shapes#ground-from-a-height-map
  */
-export function CreateGroundFromHeightMap(name: string, url: string, options: { width?: number, height?: number, subdivisions?: number, minHeight?: number, maxHeight?: number, colorFilter?: Color3, alphaFilter?: number, updatable?: boolean, onReady?: (mesh: GroundMesh) => void }, scene: Nullable<Scene> = null): GroundMesh {
+export function CreateGroundFromHeightMap(name: string, url: string, options: { width?: number, height?: number, subdivisions?: number, minHeight?: number, maxHeight?: number, colorFilter?: Color3, alphaFilter?: number, updatable?: boolean, onReady?: (mesh: GroundMesh) => void } = {}, scene: Nullable<Scene> = null): GroundMesh {
     var width = options.width || 10.0;
     var height = options.height || 10.0;
     var subdivisions = options.subdivisions || 1 | 0;

@@ -81,7 +81,7 @@ function CreateDiscVertexData(options: { radius?: number, tessellation?: number,
  * @returns the plane polygonal mesh
  * @see https://doc.babylonjs.com/how_to/set_shapes#disc-or-regular-polygon
  */
-export function CreateDisc(name: string, options: { radius?: number, tessellation?: number, arc?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Nullable<Scene> = null): Mesh {
+export function CreateDisc(name: string, options: { radius?: number, tessellation?: number, arc?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 } = {}, scene: Nullable<Scene> = null): Mesh {
     var disc = new Mesh(name, scene);
 
     options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);

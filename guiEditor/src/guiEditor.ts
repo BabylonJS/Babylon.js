@@ -61,16 +61,17 @@ export class GUIEditor {
         ReactDOM.render(graphEditor, hostElement);
         // create the middle workbench canvas
         if (!globalState.guiTexture) {
-            globalState.workbench.createGUICanvas();
-            globalState.guiGizmo.createBaseGizmo();
-            if (options.currentSnippetToken) {
-                try {
-                    globalState.workbench.loadFromSnippet(options.currentSnippetToken);
+            globalState.workbench.createGUICanvas().then(() => {
+                globalState.guiGizmo.createBaseGizmo();
+                if (options.currentSnippetToken) {
+                    try {
+                        globalState.workbench.loadFromSnippet(options.currentSnippetToken);
 
-                } catch (error) {
-                    //swallow and continue
+                    } catch (error) {
+                        //swallow and continue
+                    }
                 }
-            }
+            }, () => console.log("Error loading GUI Editor"));
         }
 
         if (options.customLoadObservable) {
