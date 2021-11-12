@@ -5,6 +5,8 @@ import { _WarnImport } from '../Misc/devTools';
 import { Color4, Color3 } from '../Maths/math.color';
 import { Logger } from '../Misc/logger';
 import { nativeOverride } from '../Misc/decorators';
+import { Deferred } from '../Misc/deferred';
+import { Tools } from '../Misc/tools';
 
 declare type Geometry = import("../Meshes/geometry").Geometry;
 declare type Mesh = import("../Meshes/mesh").Mesh;
@@ -82,57 +84,74 @@ export interface IGetSetVerticesData {
 // Have makeSyncFunction and makeAsyncFunction call runCoroutine
 
 export type Coroutine<T> = Iterator<undefined, T, unknown> & IterableIterator<undefined>;
-type ExtractIteratorReturnType<T> = T extends Coroutine<infer TReturn> ? TReturn : never;
+type CoroutineStep<T> = IteratorResult<undefined, T>;
+type ExtractCoroutineReturnType<T> = T extends Coroutine<infer TReturn> ? TReturn : never;
+type CoroutineScheduler<T> = (coroutine: Coroutine<T>, onSuccess: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) => void;
 
-export function makeSyncFunction<TReturn, TFunc extends (...params: any[]) => Coroutine<TReturn>>(func: TFunc): (...params: Parameters<TFunc>) => ExtractIteratorReturnType<ReturnType<TFunc>> {
-    return (...params: Parameters<TFunc>): ExtractIteratorReturnType<ReturnType<TFunc>> => {
-        const generator = func(...params);
-        let iteratorResult = generator.next();
-        while(!iteratorResult.done) {
-            iteratorResult = generator.next();
-        }
-        return iteratorResult.value as ExtractIteratorReturnType<ReturnType<TFunc>>; // How can I remove this cast?
-    };
+function inlineScheduler<T>(coroutine: Coroutine<T>, onSuccess: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) {
+    try {
+        onSuccess(coroutine.next());
+    } catch (error) {
+        onError(error);
+    }
 }
 
-export type Scheduler = (func: () => void) => Promise<void> | void;
-
-export function createYieldingScheduler(yieldAfterMS = 50) {
+function createYieldingScheduler<T>(yieldAfterMS = 50): CoroutineScheduler<T> {
     let start: number | undefined;
-    return (func: () => void): Promise<void> | void => {
+    return (coroutine: Coroutine<T>, onSuccess: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) => {
         if (start === undefined) {
             start = performance.now();
         } else {
             const end = performance.now();
             if (end - start > yieldAfterMS) {
                 start = end;
-                return new Promise(resolve => setTimeout(() => {
-                    func();
-                    resolve();
-                }, 0));
+                setTimeout(() => {
+                    inlineScheduler(coroutine, onSuccess, onError);
+                }, 0);
+                return;
             }
         }
 
-        func();
+        inlineScheduler(coroutine, onSuccess, onError);
     };
 }
 
-export function makeAsyncFunction<TReturn, TFunc extends (...params: any[]) => Coroutine<TReturn>>(func: TFunc, schedule: Scheduler): (...params: Parameters<TFunc>) => Promise<ExtractIteratorReturnType<ReturnType<TFunc>>> {
-    return async (...params: Parameters<TFunc>): Promise<ExtractIteratorReturnType<ReturnType<TFunc>>> => {
-        const generator = func(...params);
-        let iteratorResult: IteratorResult<undefined, TReturn>;
-        const next = () => { iteratorResult = generator.next() };
-        do {
-            await schedule(next);
-        } while (!iteratorResult!.done)
-        return iteratorResult!.value as ExtractIteratorReturnType<ReturnType<TFunc>>; // How can I remove this cast?
+function runCoroutine<T>(coroutine: Coroutine<T>, scheduler: CoroutineScheduler<T>, onSuccess: (result: T) => void, onError: (error: any) => void) {
+    function resume() {
+        scheduler(coroutine,
+            (stepResult: CoroutineStep<T>) => {
+                if (stepResult.done) {
+                    onSuccess(stepResult.value);
+                } else {
+                    resume();
+                }
+            },
+            (error: any) => {
+                onError(error);
+            });
+    }
+
+    resume();
+}
+
+export function makeSyncFunction<TReturn, TCoroutineFactory extends (...params: any[]) => Coroutine<TReturn>>(coroutineFactory: TCoroutineFactory): (...params: Parameters<TCoroutineFactory>) => ExtractCoroutineReturnType<ReturnType<TCoroutineFactory>> {
+    return (...params: Parameters<TCoroutineFactory>): ExtractCoroutineReturnType<ReturnType<TCoroutineFactory>> => {
+        const coroutine = coroutineFactory(...params)
+        let result: TReturn | undefined;
+        runCoroutine(coroutine, inlineScheduler, (r: TReturn) => result = r, (e: any) => { throw e; });
+        return result as ExtractCoroutineReturnType<ReturnType<TCoroutineFactory>>; // How can I remove this cast?;
     };
 }
 
-// const x = makeSyncFunction(function* (value: string): CoroutineIterator<number> {
-//     //yield;
-//     return 7;
-// });
+export function makeAsyncFunction<TReturn, TCoroutineFactory extends (...params: any[]) => Coroutine<TReturn>>(coroutineFactory: TCoroutineFactory): (...params: Parameters<TCoroutineFactory>) => Promise<ExtractCoroutineReturnType<ReturnType<TCoroutineFactory>>> {
+    return (...params: Parameters<TCoroutineFactory>): Promise<ExtractCoroutineReturnType<ReturnType<TCoroutineFactory>>> => {
+        const coroutine = coroutineFactory(...params);
+        const result = new Deferred<TReturn>();
+        const scheduler = createYieldingScheduler<TReturn>();
+        runCoroutine(coroutine, scheduler, (r: TReturn) => result.resolve(r), (e: any) => result.reject(e));
+        return result.promise as Promise<ExtractCoroutineReturnType<ReturnType<TCoroutineFactory>>>; // How can I remove this cast?;
+    };
+}
 
 /**
  * This class contains the various kinds of data on every vertex of a mesh used in determining its shape and appearance
@@ -336,31 +355,45 @@ export class VertexData {
 
     private _applyTo(meshOrGeometry: IGetSetVerticesData, updatable: boolean = false): VertexData {
         if (this.positions) {
+            Tools.StartPerformanceCounter("POSITIONS");
             meshOrGeometry.setVerticesData(VertexBuffer.PositionKind, this.positions, updatable);
+            Tools.EndPerformanceCounter("POSITIONS");
         }
 
         if (this.normals) {
+            Tools.StartPerformanceCounter("NORMALS");
             meshOrGeometry.setVerticesData(VertexBuffer.NormalKind, this.normals, updatable);
+            Tools.EndPerformanceCounter("NORMALS");
         }
 
         if (this.tangents) {
+            Tools.StartPerformanceCounter("TANGENTS");
             meshOrGeometry.setVerticesData(VertexBuffer.TangentKind, this.tangents, updatable);
+            Tools.EndPerformanceCounter("TANGENTS");
         }
 
         if (this.uvs) {
+            Tools.StartPerformanceCounter("UVS");
             meshOrGeometry.setVerticesData(VertexBuffer.UVKind, this.uvs, updatable);
+            Tools.EndPerformanceCounter("UVS");
         }
 
         if (this.uvs2) {
+            Tools.StartPerformanceCounter("UVS2");
             meshOrGeometry.setVerticesData(VertexBuffer.UV2Kind, this.uvs2, updatable);
+            Tools.EndPerformanceCounter("UVS2");
         }
 
         if (this.uvs3) {
+            Tools.StartPerformanceCounter("UVS3");
             meshOrGeometry.setVerticesData(VertexBuffer.UV3Kind, this.uvs3, updatable);
+            Tools.EndPerformanceCounter("UVS3");
         }
 
         if (this.uvs4) {
+            Tools.StartPerformanceCounter("UVS4");
             meshOrGeometry.setVerticesData(VertexBuffer.UV4Kind, this.uvs4, updatable);
+            Tools.EndPerformanceCounter("UVS4");
         }
 
         if (this.uvs5) {
@@ -372,11 +405,15 @@ export class VertexData {
         }
 
         if (this.colors) {
+            Tools.StartPerformanceCounter("COLORS");
             meshOrGeometry.setVerticesData(VertexBuffer.ColorKind, this.colors, updatable);
+            Tools.EndPerformanceCounter("COLORS");
         }
 
         if (this.matricesIndices) {
+            Tools.StartPerformanceCounter("MATRICESINDICES");
             meshOrGeometry.setVerticesData(VertexBuffer.MatricesIndicesKind, this.matricesIndices, updatable);
+            Tools.EndPerformanceCounter("MATRICESINDICES");
         }
 
         if (this.matricesWeights) {
@@ -391,11 +428,13 @@ export class VertexData {
             meshOrGeometry.setVerticesData(VertexBuffer.MatricesWeightsExtraKind, this.matricesWeightsExtra, updatable);
         }
 
+        Tools.StartPerformanceCounter("INDICES");
         if (this.indices) {
             meshOrGeometry.setIndices(this.indices, null, updatable);
         } else {
             meshOrGeometry.setIndices([], null);
         }
+        Tools.EndPerformanceCounter("INDICES");
 
         return this;
     }

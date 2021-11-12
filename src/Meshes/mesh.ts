@@ -11,7 +11,7 @@ import { Color3 } from "../Maths/math.color";
 import { Engine } from "../Engines/engine";
 import { Node } from "../node";
 import { VertexBuffer } from "../Buffers/buffer";
-import { VertexData, IGetSetVerticesData, Coroutine, makeSyncFunction, createYieldingScheduler, makeAsyncFunction } from "./mesh.vertexData";
+import { VertexData, IGetSetVerticesData, Coroutine, makeSyncFunction, makeAsyncFunction } from "./mesh.vertexData";
 import { Buffer } from "../Buffers/buffer";
 import { Geometry } from "./geometry";
 import { AbstractMesh } from "./abstractMesh";
@@ -4274,7 +4274,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     public static readonly MergeMeshes = makeSyncFunction(Mesh._MergeMeshesCoroutine);
-    public static readonly MergeMeshesAsync = makeAsyncFunction(Mesh._MergeMeshesCoroutine, createYieldingScheduler());
+    public static readonly MergeMeshesAsync = makeAsyncFunction(Mesh._MergeMeshesCoroutine);
 
     /**
      * Merge the array of meshes into a single mesh for performance reasons.
@@ -4376,7 +4376,16 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return vertexData;
         };
 
-        const vertexData: VertexData = yield* getVertexDataFromMesh(source)._mergeCoroutine(meshes.slice(1).map((mesh) => getVertexDataFromMesh(mesh)), allow32BitsIndices);
+        const sourceVertexData = getVertexDataFromMesh(source);
+        yield;
+
+        const meshVertexDatas = new Array<VertexData>(meshes.length - 1);
+        for (let i = 1; i < meshes.length; i++) {
+            meshVertexDatas[i - 1] = getVertexDataFromMesh(meshes[i]);
+            yield;
+        }
+
+        const vertexData: VertexData = yield* sourceVertexData._mergeCoroutine(meshVertexDatas, allow32BitsIndices);
 
         if (!meshSubclass) {
             meshSubclass = new Mesh(source.name + "_merged", source.getScene());
