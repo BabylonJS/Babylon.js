@@ -51,6 +51,7 @@ export class Context {
 
     onFrameRequired = new Observable<void>();
     onNewKeyPointRequired = new Observable<void>();
+    onCreateOrUpdateKeyPointRequired = new Observable<void>();
     onFlattenTangentRequired = new Observable<void>();
     onLinearTangentRequired = new Observable<void>();
     onBreakTangentRequired = new Observable<void>();
@@ -275,16 +276,27 @@ export class Context {
         return nextKey;
     }
 
-    public getKeyAtFrame(frameNumber: number) {
+    /**
+     * If any current active animation has a key at the received frameNumber,
+     * return the index of the animation in the active animation array, and
+     * the index of the frame on the animation.
+     */
+    public getKeyAtAnyFrameIndex(frameNumber: number) {
         if (!this.animations || !this.animations.length || !this.activeAnimations || !this.activeAnimations.length) {
             return null;
         }
 
-        const keys = this.activeAnimations[0].getKeys();
-        for (let key of keys) {
-            if (Math.floor(frameNumber - key.frame) === 0) {
-                return key;
+        let animIdx = 0;
+        for (let animation of this.activeAnimations) {
+            const keys = animation.getKeys();
+            let idx = 0;
+            for (let key of keys) {
+                if (Math.floor(frameNumber - key.frame) === 0) {
+                    return { animationIndex: animIdx, keyIndex: idx };
+                }
+                idx++;
             }
+            animIdx++;
         }
         return null;
     }
