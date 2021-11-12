@@ -983,7 +983,7 @@ export class Color4 {
      * @param hex defines a string containing valid hexadecimal values
      * @returns a new Color4 object
      */
-     public static FromHexString(hex: string): Color4 {
+    public static FromHexString(hex: string): Color4 {
         if (hex.substring(0, 1) !== "#" || (hex.length !== 9 && hex.length !== 7)) {
             return new Color4(0.0, 0.0, 0.0, 0.0);
         }
