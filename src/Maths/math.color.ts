@@ -991,7 +991,7 @@ export class Color4 {
         var r = parseInt(hex.substring(1, 3), 16);
         var g = parseInt(hex.substring(3, 5), 16);
         var b = parseInt(hex.substring(5, 7), 16);
-        var a = hex.length === 9? parseInt(hex.substring(7, 9), 16) : 255;
+        var a = hex.length === 9 ? parseInt(hex.substring(7, 9), 16) : 255;
 
         return Color4.FromInts(r, g, b, a);
     }
