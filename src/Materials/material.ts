@@ -909,6 +909,7 @@ export class Material implements IAnimatable {
      * Returns true if alpha blending should be disabled.
      */
     protected get _disableAlphaBlending(): boolean {
+        Material._EventInfo.disableAlphaBlending = false;
         Material.OnEventObservable.notifyObservers(this, MaterialEvent.GetDisableAlphaBlending, undefined, undefined, Material._EventInfo);
         return (this._transparencyMode === Material.MATERIAL_OPAQUE ||
             this._transparencyMode === Material.MATERIAL_ALPHATEST ||

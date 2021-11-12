@@ -30,7 +30,7 @@ export class MaterialPluginManager {
                     break;
 
                 case MaterialEvent.GetDisableAlphaBlending:
-                    eventState.userInfo.disableAlphaBlending = MaterialPluginManager.DisableAlphaBlending(material);
+                    eventState.userInfo.disableAlphaBlending ||= MaterialPluginManager.DisableAlphaBlending(material);
                     break;
 
                 case MaterialEvent.Disposed:
