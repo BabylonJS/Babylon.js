@@ -934,9 +934,7 @@ export class Tools {
     }
 
     /**
-     * Gets the absolute url.
-     * @param url the input url
-     * @return the absolute url
+     * Function used to get the absolute url. Override for custom implementation.
      */
     public static GetAbsoluteUrl: (url: string) => string =
         (typeof document === "object") ? (url) => { const a = document.createElement("a"); a.href = url; return a.href; } :
