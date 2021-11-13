@@ -82,10 +82,13 @@ import { MatrixBuilderBlock } from 'babylonjs/Materials/Node/Blocks/matrixBuilde
 import { SceneDepthBlock } from 'babylonjs/Materials/Node/Blocks/Dual/sceneDepthBlock';
 import { ImageSourceBlock } from 'babylonjs/Materials/Node/Blocks/Dual/imageSourceBlock';
 import { CloudBlock } from 'babylonjs/Materials/Node/Blocks/cloudBlock';
+import { VoronoiNoiseBlock } from 'babylonjs/Materials/Node/Blocks/voronoiNoiseBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
         switch (data) {
+            case "VoronoiNoiseBlock":
+                return new VoronoiNoiseBlock("VoronoiNoise");
             case "CloudBlock":
                 return new CloudBlock("Cloud");
             case "MatrixBuilderBlock":
