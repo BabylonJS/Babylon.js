@@ -121,12 +121,16 @@ export class WebXRExperienceHelper implements IDisposable {
         try {
             await this.sessionManager.initializeSessionAsync(sessionMode, sessionCreationOptions);
             await this.sessionManager.setReferenceSpaceTypeAsync(referenceSpaceType);
-            await renderTarget.initializeXRLayerAsync(this.sessionManager.session);
-            await this.sessionManager.updateRenderStateAsync({
+            const xrLayer = await renderTarget.initializeXRLayerAsync(this.sessionManager.session);
+
+            const xrRenderState: XRRenderStateInit = {
+                baseLayer: (xrLayer.isCompositionLayer ? undefined : xrLayer.layer as XRWebGLLayer),
                 depthFar: this.camera.maxZ,
                 depthNear: this.camera.minZ,
-                baseLayer: renderTarget.xrLayer!,
-            });
+                layers: (xrLayer.isCompositionLayer ? [xrLayer.layer as XRCompositionLayer] : undefined)
+            };
+
+            await this.sessionManager.updateRenderStateAsync(xrRenderState, xrLayer);
             // run the render loop
             this.sessionManager.runXRRenderLoop();
             // Cache pre xr scene settings

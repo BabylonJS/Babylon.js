@@ -1,6 +1,6 @@
 import { Nullable } from "../types";
 import { ThinEngine } from "../Engines/thinEngine";
-import { WebXRRenderTarget } from "./webXRTypes";
+import { WebXRLayerWrapper, WebXRRenderTarget } from "./webXRTypes";
 import { WebXRSessionManager } from "./webXRSessionManager";
 import { Observable } from "../Misc/observable";
 import { Tools } from "../Misc/tools";
@@ -62,12 +62,12 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
     /**
      * xr layer for the canvas
      */
-    public xrLayer: Nullable<XRWebGLLayer> = null;
+    public xrLayer: Nullable<WebXRLayerWrapper> = null;
 
     /**
      * Observers registered here will be triggered when the xr layer was initialized
      */
-    public onXRLayerInitObservable: Observable<XRWebGLLayer> = new Observable();
+    public onXRLayerInitObservable: Observable<WebXRLayerWrapper> = new Observable();
 
     /**
      * Initializes the canvas to be added/removed upon entering/exiting xr
@@ -110,11 +110,31 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
      * @param xrSession xr session
      * @returns a promise that will resolve once the XR Layer has been created
      */
-    public initializeXRLayerAsync(xrSession: XRSession): Promise<XRWebGLLayer> {
+    public initializeXRLayerAsync(xrSession: XRSession): Promise<WebXRLayerWrapper> {
         const createLayer = () => {
-            const layer = new XRWebGLLayer(xrSession, this.canvasContext, this._options.canvasOptions);
-            this.onXRLayerInitObservable.notifyObservers(layer);
-            return layer;
+            let wrapper: WebXRLayerWrapper;
+
+            const useLayersAPI = typeof XRWebGLBinding !== 'undefined' && XRWebGLBinding.prototype.createProjectionLayer;
+            if (useLayersAPI) {
+                const xrFramebuffer = this.canvasContext.createFramebuffer();
+                if (!xrFramebuffer) {
+                    throw new Error("Unable to create framebuffer for XR projection layer.");
+                }
+                const xrGLBinding = new XRWebGLBinding(xrSession, this.canvasContext);
+                let layer = xrGLBinding.createProjectionLayer({
+                    textureType: "texture",
+                    colorFormat: this.canvasContext.RGBA,
+                    depthFormat: this.canvasContext.DEPTH_COMPONENT,
+                    scaleFactor: 1.0,
+                });
+                wrapper = WebXRLayerWrapper.CreateFromXRProjectionLayer(layer, xrFramebuffer, xrGLBinding);
+            } else {
+                const layer = new XRWebGLLayer(xrSession, this.canvasContext, this._options.canvasOptions);
+                wrapper = WebXRLayerWrapper.CreateFromXRWebGLLayer(layer);
+                this.onXRLayerInitObservable.notifyObservers(wrapper);
+            }
+
+            return wrapper;
         };
 
         // support canvases without makeXRCompatible
@@ -166,10 +186,10 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
         if (init) {
             if (xrLayer) {
                 if (this._canvas !== this._engine.getRenderingCanvas()) {
-                    this._canvas.style.width = xrLayer.framebufferWidth + "px";
-                    this._canvas.style.height = xrLayer.framebufferHeight + "px";
+                    this._canvas.style.width = xrLayer.getWidth() + "px";
+                    this._canvas.style.height = xrLayer.getHeight() + "px";
                 } else {
-                    this._engine.setSize(xrLayer.framebufferWidth, xrLayer.framebufferHeight);
+                    this._engine.setSize(xrLayer.getWidth(), xrLayer.getHeight());
                 }
             }
         } else {

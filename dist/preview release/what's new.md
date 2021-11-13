@@ -210,6 +210,7 @@
 - New experimental walking locomotion feature for VR sessions ([syntheticmagus](https://github.com/syntheticmagus))
 - Updated `SixDofDragBehavior` to support XR motion controller specific rotation options when one is used, allowing for 1:1 mesh rotation with controllers ([rickfromwork](https://github.com/rickfromwork))
 - Allow customizing the selection and laser point meshes of the pointer selection feature ([#11487](https://github.com/BabylonJS/Babylon.js/issues/11487)) ([RaananW](https://github.com/RaananW))
+- Support rendering to an XRProjectionLayer ([#10588](https://github.com/BabylonJS/Babylon.js/issues/10588)) ([rgerd](https://github.com/rgerd))
 
 ### Gizmos
 
@@ -366,3 +367,4 @@
 - You should now access joint meshes from `WebXRHand` through the `getJointMesh()` function ([rgerd](https://github.com/rgerd))
 - Rework of the inner working of render targets. Those are mostly internal changes. From the end user standpoint, the most visible change is that the `PostProcess` class is now dealing with `RenderTargetWrapper` instead of `InternalTexture` objects. So, if you are directly updating the `inputTexture` property with a render target texture that you previously rendered, you will need to pass a `RenderTargetWrapper` instead of an `InternalTexture`: you will get it by doing `rtt.renderTarget`, where `rtt` is the instance of your `RenderTargetTexture`. ([Popov72](https://github.com/Popov72))
 - `ShaderMaterial` is now storing the effect on submeshes by default. It may be a breaking change in some special cases where one creates a `ShaderMaterial` not to be used as the material property of a mesh but instead to handle it "by hand" by calling `ShaderMaterial.isReady` / `ShaderMaterial.bind` directly. If you are doing that, you may want to pass `false` as the 5th parameter of the `ShaderMaterial` constructor to disable storing the effect on submeshes.
+- For both `WebXRManagedOutputCanvas` and `WebXRRenderTarget`, instances of type `XRWebGLLayer` have been replaced with `WebXRLayerWrapper` in order to support both the original `XRWebGLLayer` and the `XRProjectionLayer` from the new WebXR layers api. ([rgerd](https://github.com/rgerd))
