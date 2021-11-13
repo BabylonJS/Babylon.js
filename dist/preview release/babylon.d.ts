@@ -77696,6 +77696,14 @@ declare module BABYLON {
          * Gets the output component
          */
         get output(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the x component
+         */
+        get x(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the y component
+         */
+        get y(): NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
         /**
          * Exposes the properties to the UI?
@@ -78714,6 +78722,83 @@ declare module BABYLON {
         protected _dumpPropertiesCode(): string;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * block used to Generate a Voronoi Noise Pattern
+     */
+    export class VoronoiNoiseBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new VoronoiNoiseBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the seed input component
+         */
+        get seed(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the offset input component
+        */
+        get offset(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the density input component
+        */
+        get density(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        get output(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+        */
+        get cells(): NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to transform a vector3 or a vector4 into screen space
+     */
+    export class ScreenSpaceBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new ScreenSpaceBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the vector input
+         */
+        get vector(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the worldViewProjection transform input
+         */
+        get worldViewProjection(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        get output(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the x output component
+         */
+        get x(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the y output component
+         */
+        get y(): NodeMaterialConnectionPoint;
+        autoConfigure(material: NodeMaterial): void;
+        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
     }
 }
 declare module BABYLON {
