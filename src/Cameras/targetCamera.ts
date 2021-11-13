@@ -422,7 +422,7 @@ export class TargetCamera extends Camera {
             this._cachedQuaternionRotationZ = this.rotationQuaternion.z;
         } else if (this._cachedRotationZ !== this.rotation.z) {
                 this._rotateUpVectorWithCameraRotationMatrix();
-                this._cachedRotationZ = this.rotation.z;            
+                this._cachedRotationZ = this.rotation.z;
         }
 
         Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
