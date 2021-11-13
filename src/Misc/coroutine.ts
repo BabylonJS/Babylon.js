@@ -100,7 +100,7 @@ type ExtractCoroutineReturnType<T> = T extends Coroutine<infer TReturn> ? TRetur
 export function makeSyncFunction<TReturn, TCoroutineFactory extends (...params: any[]) => Coroutine<TReturn>>(coroutineFactory: TCoroutineFactory): (...params: Parameters<TCoroutineFactory>) => ExtractCoroutineReturnType<ReturnType<TCoroutineFactory>> {
     return (...params: Parameters<TCoroutineFactory>): ExtractCoroutineReturnType<ReturnType<TCoroutineFactory>> => {
         // Create the coroutine from the factory function.
-        const coroutine = coroutineFactory(...params)
+        const coroutine = coroutineFactory(...params);
 
         // Run the coroutine with the inline scheduler, storing the returned value, or re-throwing the error (since the error callback will be called synchronously by the inline scheduler).
         let result: TReturn | undefined;
