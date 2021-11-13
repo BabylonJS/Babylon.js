@@ -96,6 +96,11 @@ interface XRWebGLLayerInit {
 declare class XRWebGLBinding {
     constructor(xrSession: XRSession, context: WebGLRenderingContext | WebGL2RenderingContext);
     getReflectionCubeMap: (lightProbe: XRLightProbe) => WebGLTexture;
+
+    // https://immersive-web.github.io/layers/#XRWebGLBindingtype
+    createProjectionLayer(init: XRProjectionLayerInit): XRProjectionLayer;
+    getSubImage(layer: XRCompositionLayer, frame: XRFrame, eye: XREye): XRWebGLSubImage;
+    getViewSubImage(layer: XRProjectionLayer, view: XRView): XRWebGLSubImage;
 }
 
 declare class XRWebGLLayer {
@@ -110,6 +115,51 @@ declare class XRWebGLLayer {
     getViewport: (view: XRView) => XRViewport;
 }
 
+type XRLayerLayout = "default" | "mono" | "stereo" | "stereo-left-right" | "stereo-top-bottom";
+
+// https://immersive-web.github.io/layers/#xrcompositionlayertype
+interface XRCompositionLayer extends XRLayer {
+    layout: XRLayerLayout;
+
+    blendTextureSourceAlpha: boolean;
+    chromaticAberrationCorrection: boolean;
+    mipLevels: number;
+
+    needsRedraw: boolean;
+
+    destroy(): void;
+}
+
+type XRTextureType = "texture" | "texture-array";
+
+interface XRProjectionLayerInit {
+    textureType: XRTextureType; //  Default  "texture";
+    colorFormat: GLenum;        //  Default 0x1908, RGBA
+    depthFormat: GLenum;        //  Default 0x1902, DEPTH_COMPONENT
+    scaleFactor: number;        //  Default 1.0;
+}
+
+interface XRProjectionLayer extends XRCompositionLayer {
+    textureWidth: number;
+    textureHeight: number;
+    textureArrayLength: number;
+
+    ignoreDepthValues: boolean;
+    fixedFoveation?: number;
+}
+
+interface XRSubImage {
+    viewport: XRViewport;
+}
+
+interface XRWebGLSubImage extends XRSubImage {
+    colorTexture: WebGLTexture;
+    depthStencilTexture?: WebGLTexture;
+    imageIndex?: number;
+    textureWidth: number;
+    textureHeight: number;
+}
+
 // tslint:disable-next-line no-empty-interface
 interface XRSpace extends EventTarget { }
 
@@ -118,10 +168,11 @@ interface XRRenderState {
     readonly depthFar: number;
     readonly depthNear: number;
     readonly inlineVerticalFieldOfView?: number;
+    readonly layers?: XRLayer[];
 }
 
 interface XRRenderStateInit extends XRRenderState {
-    baseLayer: XRWebGLLayer;
+    baseLayer?: XRWebGLLayer;
     depthFar: number;
     depthNear: number;
     inlineVerticalFieldOfView?: number;
@@ -260,7 +311,7 @@ interface XRSession {
      */
     requestLightProbe(options?: XRLightProbeInit): Promise<XRLightProbe>;
 
-    updateRenderState(XRRenderStateInit: XRRenderState): Promise<void>;
+    updateRenderState(state: XRRenderStateInit): Promise<void>;
 
     onend: XREventHandler;
     oneyetrackingstart: XREventHandler;
