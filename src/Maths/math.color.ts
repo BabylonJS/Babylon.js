@@ -984,14 +984,14 @@ export class Color4 {
      * @returns a new Color4 object
      */
     public static FromHexString(hex: string): Color4 {
-        if (hex.substring(0, 1) !== "#" || hex.length !== 9) {
+        if (hex.substring(0, 1) !== "#" || (hex.length !== 9 && hex.length !== 7)) {
             return new Color4(0.0, 0.0, 0.0, 0.0);
         }
 
         var r = parseInt(hex.substring(1, 3), 16);
         var g = parseInt(hex.substring(3, 5), 16);
         var b = parseInt(hex.substring(5, 7), 16);
-        var a = parseInt(hex.substring(7, 9), 16);
+        var a = hex.length === 9 ? parseInt(hex.substring(7, 9), 16) : 255;
 
         return Color4.FromInts(r, g, b, a);
     }
