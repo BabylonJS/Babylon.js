@@ -138,7 +138,8 @@ export class HDRCubeTexture extends BaseTexture {
             if (onLoad) {
                 onLoad();
             }
-        }
+        };
+
         this._onError = onError;
         this.gammaSpace = gammaSpace;
 
