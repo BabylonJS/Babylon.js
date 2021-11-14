@@ -10,7 +10,7 @@ import { Deferred } from './deferred';
 // Technically yielding generator functions are not required - anything that implements the contract of Coroutine<T> can be run as a coroutine.
 
 // The coroutine is started with the first call to next on the iterator, it is suspended with yield statements, and it is resumed with additional calls to next on the iterator.
-// To create an object satisfying the Coroutine<T> contract with a generator function, it must not yield values, but rather only undefined via a plain "yield;" statement.
+// To create an object satisfying the Coroutine<T> contract with a generator function, it must not yield values, but rather only void via a plain "yield;" statement.
 // Coroutines can call other coroutines via:
 // 1. yield* someOtherCoroutine(); // If the called coroutine does not return a value
 // 2. const result = yield* someOtherCoroutine(); // If the called coroutine returns a value
@@ -20,21 +20,43 @@ import { Deferred } from './deferred';
 
 /**
  * A Coroutine<T> is the intersection of:
- * 1. An Iterator that yields undefined, returns a T, and is not passed values with calls to next.
- * 2. An IterableIterator of undefined (since it only yields undefined).
+ * 1. An Iterator that yields void, returns a T, and is not passed values with calls to next.
+ * 2. An IterableIterator of void (since it only yields void).
  */
-export type Coroutine<T> = Iterator<undefined, T, unknown> & IterableIterator<undefined>;
+type CoroutineBase<TStep, TReturn> = Iterator<TStep, TReturn, void> & IterableIterator<TStep>;
+export type Coroutine<T> = CoroutineBase<void, T>;
+export type AsyncCoroutine<T> = CoroutineBase<void | Promise<void>, T>;
 
 // A CoroutineStep<T> represents a single step of a coroutine, and is an IteratorResult as returned from Coroutine<T>.next().
-type CoroutineStep<T> = IteratorResult<undefined, T>;
+type CoroutineStep<T> = IteratorResult<void, T>;
 
 // A CoroutineScheduler<T> is responsible for scheduling the call to Coroutine<T>.next and invokes the success or error callback after next is called.
-type CoroutineScheduler<T> = (coroutine: Coroutine<T>, onSuccess: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) => void;
+type CoroutineScheduler<T> = (coroutine: AsyncCoroutine<T>, onSuccess: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) => void;
 
 // The inline scheduler simply steps the coroutine synchronously. This is useful for running a coroutine synchronously, and also as a helper function for other schedulers.
-function inlineScheduler<T>(coroutine: Coroutine<T>, onSuccess: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) {
+function inlineScheduler<T>(coroutine: AsyncCoroutine<T>, onSuccess: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) {
     try {
-        onSuccess(coroutine.next());
+        const step = coroutine.next();
+
+        if (!!step.value) {
+            if (step.done) {
+                onSuccess(step);
+            } else {
+                step.value.then(
+                    // TODO: Ideally just set step.value to undefined and reuse the same object
+                    () => onSuccess({done: step.done, value: undefined}),
+                    (error) => onError(error),
+                );
+            }
+        } else {
+            if (step.done) {
+                onSuccess(step);
+            } else {
+                // const {done, value} = step;
+                // onSuccess({done, value});
+                onSuccess(step as IteratorYieldResult<void>); // TODO: WTF?
+            }
+        }
     } catch (error) {
         onError(error);
     }
@@ -44,7 +66,7 @@ function inlineScheduler<T>(coroutine: Coroutine<T>, onSuccess: (stepResult: Cor
 // A single instance of a yielding scheduler could be shared across multiple coroutines to yield when their collective work exceeds the threshold.
 function createYieldingScheduler<T>(yieldAfterMS = 25): CoroutineScheduler<T> {
     let start: number | undefined;
-    return (coroutine: Coroutine<T>, onSuccess: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) => {
+    return (coroutine: AsyncCoroutine<T>, onSuccess: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) => {
         if (start === undefined) {
             // If start is undefined, this is the first step of a coroutine.
             start = performance.now();
@@ -67,7 +89,7 @@ function createYieldingScheduler<T>(yieldAfterMS = 25): CoroutineScheduler<T> {
 }
 
 // Runs the specified coroutine with the specified scheduler. The success or error callback will be invoked when the coroutine finishes.
-function runCoroutine<T>(coroutine: Coroutine<T>, scheduler: CoroutineScheduler<T>, onSuccess: (result: T) => void, onError: (error: any) => void) {
+function runCoroutine<T>(coroutine: AsyncCoroutine<T>, scheduler: CoroutineScheduler<T>, onSuccess: (result: T) => void, onError: (error: any) => void) {
     function resume() {
         scheduler(coroutine,
             (stepResult: CoroutineStep<T>) => {
@@ -89,7 +111,7 @@ function runCoroutine<T>(coroutine: Coroutine<T>, scheduler: CoroutineScheduler<
 }
 
 // This is a helper type to extract the return type of a Coroutine<T>. It is conceptually very similar to the Awaited<T> utility type.
-type ExtractCoroutineReturnType<T> = T extends Coroutine<infer TReturn> ? TReturn : never;
+type ExtractCoroutineReturnType<T> = T extends AsyncCoroutine<infer TReturn> ? TReturn : never;
 
 /**
  * Given a function that returns a Coroutine<T>, produce a function with the same parameters that returns a T.
@@ -117,7 +139,7 @@ export function makeSyncFunction<TReturn, TCoroutineFactory extends (...params: 
  * @param coroutineFactory A function that returns a Coroutine<T>.
  * @returns A function that runs the coroutine asynchronously.
  */
-export function makeAsyncFunction<TReturn, TCoroutineFactory extends (...params: any[]) => Coroutine<TReturn>>(coroutineFactory: TCoroutineFactory): (...params: Parameters<TCoroutineFactory>) => Promise<ExtractCoroutineReturnType<ReturnType<TCoroutineFactory>>> {
+export function makeAsyncFunction<TReturn, TCoroutineFactory extends (...params: any[]) => AsyncCoroutine<TReturn>>(coroutineFactory: TCoroutineFactory): (...params: Parameters<TCoroutineFactory>) => Promise<ExtractCoroutineReturnType<ReturnType<TCoroutineFactory>>> {
     return (...params: Parameters<TCoroutineFactory>): Promise<ExtractCoroutineReturnType<ReturnType<TCoroutineFactory>>> => {
         // Create the coroutine from the factory function.
         const coroutine = coroutineFactory(...params);
