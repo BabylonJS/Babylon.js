@@ -925,7 +925,8 @@ export class ThinEngine {
         const versionToLog = `Babylon.js v${ThinEngine.Version}`;
         console.log(versionToLog + ` - ${this.description}`);
 
-        if (this._renderingCanvas) {
+        // Check setAttribute in case of workers
+        if (this._renderingCanvas && this._renderingCanvas.setAttribute) {
             this._renderingCanvas.setAttribute('data-engine', versionToLog);
         }
     }
