@@ -41,7 +41,7 @@ class SimpleMaterialDefines extends MaterialDefines {
     public BonesPerMesh = 0;
     public INSTANCES = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
-    public CLAMPFINALCOLOR = true;
+    public SKIPFINALCOLORCLAMP = false;
 
     constructor() {
         super();

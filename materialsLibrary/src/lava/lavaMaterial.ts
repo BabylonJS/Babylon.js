@@ -83,7 +83,7 @@ class LavaMaterialDefines extends MaterialDefines {
     public INSTANCES = false;
     public UNLIT = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
-    public CLAMPFINALCOLOR = true;
+    public SKIPFINALCOLORCLAMP = false;
 
     constructor() {
         super();
