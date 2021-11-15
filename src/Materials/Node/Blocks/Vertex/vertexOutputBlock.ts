@@ -57,7 +57,7 @@ export class VertexOutputBlock extends NodeMaterialBlock {
         if (this._isLogarithmicDepthEnabled(state.sharedData.fragmentOutputNodes)) {
             state._emitUniformFromString("logarithmicDepthConstant", "float");
             state._emitVaryingFromString("vFragmentDepth", "float");
-    
+
             state.compilationString += `vFragmentDepth = 1.0 + gl_Position.w;\r\n`;
             state.compilationString += `gl_Position.z = log2(max(0.000001, vFragmentDepth)) * logarithmicDepthConstant;\r\n`;
         }
