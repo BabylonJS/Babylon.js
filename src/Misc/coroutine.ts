@@ -52,7 +52,7 @@ export function inlineScheduler<T>(coroutine: AsyncCoroutine<T>, onSuccess: (ste
             } else {
                 // const {done, value} = step;
                 // onSuccess({done, value});
-                onSuccess(step as IteratorYieldResult<void>); // TODO: WTF?
+                onSuccess(step as IteratorYieldResult<void>); // TODO: Why is this typing wonky?
             }
         }
     } catch (error) {
@@ -85,6 +85,29 @@ export function createYieldingScheduler<T>(yieldAfterMS = 25) {
         inlineScheduler(coroutine, onSuccess, onError);
     };
 }
+
+// function createObservableScheduler<T>(observable: Observable<any>) {
+//     const coroutines = new Array<AsyncCoroutine<T>>();
+//     const onSuccesses = new Array<(stepResult: CoroutineStep<T>) => void>();
+//     const onErrors = new Array<(stepError: any) => void>();
+
+//     const observer = observable.add(() => {
+//         const count = coroutines.length;
+//         for (let i = 0; i < count; i++) {
+//             inlineScheduler(coroutines.pop()!, onSuccesses.pop()!, onErrors.pop()!);
+//         }
+//     });
+
+//     const scheduler = (coroutine: AsyncCoroutine<T>, onSuccess: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) => {
+//         coroutines.push(coroutine);
+//         onSuccesses.push(onSuccess);
+//         onErrors.push(onError);
+//     };
+
+//     return Object.assign(scheduler, {
+//         dispose: () => observable.remove(observer),
+//     });
+// }
 
 // Runs the specified coroutine with the specified scheduler. The success or error callback will be invoked when the coroutine finishes.
 export function runCoroutine<T>(coroutine: AsyncCoroutine<T>, scheduler: CoroutineScheduler<T>, onSuccess: (result: T) => void, onError: (error: any) => void, abortSignal?: AbortSignal) {
