@@ -224,6 +224,7 @@ export class PBRMaterialDefines extends MaterialDefines
     public SAMPLER3DGREENDEPTH = false;
     public SAMPLER3DBGRMAP = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
+    public CLAMPFINALCOLOR = true;
     public EXPOSURE = false;
     public MULTIVIEW = false;
     public ORDER_INDEPENDENT_TRANSPARENCY = false;

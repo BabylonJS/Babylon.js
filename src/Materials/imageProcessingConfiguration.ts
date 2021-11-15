@@ -29,6 +29,7 @@ export interface IImageProcessingConfigurationDefines {
     SAMPLER3DGREENDEPTH: boolean;
     SAMPLER3DBGRMAP: boolean;
     IMAGEPROCESSINGPOSTPROCESS: boolean;
+    CLAMPFINALCOLOR: boolean;
 }
 
 /**
@@ -49,6 +50,7 @@ export class ImageProcessingConfigurationDefines extends MaterialDefines impleme
     public SAMPLER3DBGRMAP = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public EXPOSURE = false;
+    public CLAMPFINALCOLOR = true;
 
     constructor() {
         super();
@@ -340,6 +342,29 @@ export class ImageProcessingConfiguration {
 
     /** @hidden */
     @serialize()
+    public _clampFinalColor = true;
+    /**
+     * If applyByPostProcess is set to false the final color will be clamped unless this is set to false
+     * Applies to PBR materials.
+     */
+    public get clampFinalColor(): boolean {
+        return this._clampFinalColor;
+    }
+    /**
+     * If applyByPostProcess is set to false the final color will be clamped unless this is set to false
+     * Applies to PBR materials.
+     */
+    public set clampFinalColor(value: boolean) {
+        if (this._clampFinalColor === value) {
+            return;
+        }
+
+        this._clampFinalColor = value;
+        this._updateParameters();
+    }
+
+    /** @hidden */
+    @serialize()
     public _applyByPostProcess = false;
     /**
      * Gets whether the image processing is applied through a post process or not.
@@ -451,6 +476,7 @@ export class ImageProcessingConfiguration {
             defines.COLORGRADING = false;
             defines.COLORGRADING3D = false;
             defines.IMAGEPROCESSING = false;
+            defines.CLAMPFINALCOLOR = this.clampFinalColor;
             defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess && this._isEnabled;
             return;
         }
@@ -481,6 +507,7 @@ export class ImageProcessingConfiguration {
         defines.SAMPLER3DGREENDEPTH = this.colorGradingWithGreenDepth;
         defines.SAMPLER3DBGRMAP = this.colorGradingBGR;
         defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess;
+        defines.CLAMPFINALCOLOR = this.clampFinalColor;
         defines.IMAGEPROCESSING = defines.VIGNETTE || defines.TONEMAPPING || defines.CONTRAST || defines.EXPOSURE || defines.COLORCURVES || defines.COLORGRADING;
     }
 

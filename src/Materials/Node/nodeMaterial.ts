@@ -106,6 +106,7 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     public SAMPLER3DGREENDEPTH = false;
     public SAMPLER3DBGRMAP = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
+    public CLAMPFINALCOLOR = true;
 
     /** MISC. */
     public BUMPDIRECTUV = 0;
