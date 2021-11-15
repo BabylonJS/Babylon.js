@@ -3,9 +3,7 @@ import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
 import { Node } from "../../node";
-
-// Side effect import to define the stereoscopic mode.
-import "../RigModes/stereoscopicAnaglyphRigMode";
+import { setStereoscopicAnaglyphRigMode } from "../RigModes/stereoscopicAnaglyphRigMode";
 
 Node.AddNodeConstructor("AnaglyphArcRotateCamera", (name, scene, options) => {
     return () => new AnaglyphArcRotateCamera(name, 0, 0, 1.0, Vector3.Zero(), options.interaxial_distance, scene);
@@ -40,4 +38,6 @@ export class AnaglyphArcRotateCamera extends ArcRotateCamera {
     public getClassName(): string {
         return "AnaglyphArcRotateCamera";
     }
+
+    protected _setRigMode = setStereoscopicAnaglyphRigMode.bind(null, this);
 }

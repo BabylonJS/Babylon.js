@@ -1,5 +1,4 @@
 import { Nullable } from '../types';
-import { RenderTargetTexture } from './Textures/renderTargetTexture';
 import { ThinEngine } from '../Engines/thinEngine';
 import { VertexBuffer } from '../Buffers/buffer';
 import { Viewport } from '../Maths/math.viewport';
@@ -8,7 +7,8 @@ import { Observable, Observer } from '../Misc/observable';
 import { Effect } from './effect';
 import { DataBuffer } from '../Buffers/dataBuffer';
 import { DrawWrapper } from "./drawWrapper";
-import { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
+import { IRenderTargetTexture, RenderTargetWrapper } from "../Engines/renderTargetWrapper";
+import { ShaderLanguage } from "./shaderLanguage";
 
 // Prevents ES6 Crash if not imported.
 import "../Shaders/postprocess.vertex";
@@ -115,8 +115,8 @@ export class EffectRenderer {
         this.engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, 6);
     }
 
-    private isRenderTargetTexture(texture: RenderTargetWrapper | RenderTargetTexture): texture is RenderTargetTexture {
-        return (texture as RenderTargetTexture).renderList !== undefined;
+    private isRenderTargetTexture(texture: RenderTargetWrapper | IRenderTargetTexture): texture is IRenderTargetTexture {
+        return (texture as IRenderTargetTexture).renderTarget !== undefined;
     }
 
     /**
@@ -124,7 +124,7 @@ export class EffectRenderer {
      * @param effectWrapper the effect to renderer
      * @param outputTexture texture to draw to, if null it will render to the screen.
      */
-    public render(effectWrapper: EffectWrapper, outputTexture: Nullable<RenderTargetWrapper | RenderTargetTexture> = null) {
+    public render(effectWrapper: EffectWrapper, outputTexture: Nullable<RenderTargetWrapper | IRenderTargetTexture> = null) {
         // Ensure effect is ready
         if (!effectWrapper.effect.isReady()) {
             return;
@@ -215,6 +215,10 @@ interface EffectWrapperCreationOptions {
      * The friendly name of the effect displayed in Spector.
      */
     name?: string;
+    /**
+     * The language the shader is written in (default: GLSL)
+     */
+     shaderLanguage?: ShaderLanguage;
 }
 
 /**
@@ -284,13 +288,16 @@ export class EffectWrapper {
             delete effectCreationOptions.fragmentSource;
             delete effectCreationOptions.vertexSource;
 
-            this.effect = creationOptions.engine.createEffect(effectCreationOptions.spectorName,
+            this.effect = creationOptions.engine.createEffect(effectCreationOptions,
                 creationOptions.attributeNames || ["position"],
                 uniformNames,
                 creationOptions.samplerNames,
                 defines,
                 undefined,
-                creationOptions.onCompiled
+                creationOptions.onCompiled,
+                undefined,
+                undefined,
+                creationOptions.shaderLanguage,
             );
         } else {
             this.effect = new Effect(effectCreationOptions,
@@ -301,6 +308,10 @@ export class EffectWrapper {
                 defines,
                 undefined,
                 creationOptions.onCompiled,
+                undefined,
+                undefined,
+                undefined,
+                creationOptions.shaderLanguage,
             );
 
             this._onContextRestoredObserver = creationOptions.engine.onContextRestoredObservable.add(() => {

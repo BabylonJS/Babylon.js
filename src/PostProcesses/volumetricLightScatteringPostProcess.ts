@@ -25,8 +25,9 @@ import "../Shaders/volumetricLightScatteringPass.vertex";
 import "../Shaders/volumetricLightScatteringPass.fragment";
 import { Color4, Color3 } from '../Maths/math.color';
 import { Viewport } from '../Maths/math.viewport';
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 import { DrawWrapper } from "../Materials/drawWrapper";
+import { CreatePlane } from "../Meshes/Builders/planeBuilder";
 
 declare type Engine = import("../Engines/engine").Engine;
 
@@ -480,7 +481,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
     * @return the default mesh
     */
     public static CreateDefaultMesh(name: string, scene: Scene): Mesh {
-        var mesh = Mesh.CreatePlane(name, 1, scene);
+        var mesh = CreatePlane(name, { size: 1 }, scene);
         mesh.billboardMode = AbstractMesh.BILLBOARDMODE_ALL;
 
         var material = new StandardMaterial(name + "Material", scene);
@@ -492,4 +493,4 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.VolumetricLightScatteringPostProcess"] = VolumetricLightScatteringPostProcess;
+RegisterClass("BABYLON.VolumetricLightScatteringPostProcess", VolumetricLightScatteringPostProcess);

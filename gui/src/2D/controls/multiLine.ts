@@ -4,7 +4,7 @@ import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { Control } from "./control";
 import { MultiLinePoint } from "../multiLinePoint";
 import { Measure } from "../measure";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 import { Vector3 } from "babylonjs/Maths/math.vector";
 import { serialize } from 'babylonjs/Misc/decorators';
 import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
@@ -273,4 +273,4 @@ export class MultiLine extends Control {
         super.dispose();
     }
 }
-_TypeStore.RegisteredTypes["BABYLON.GUI.MultiLine"] = MultiLine;
+RegisterClass("BABYLON.GUI.MultiLine", MultiLine);

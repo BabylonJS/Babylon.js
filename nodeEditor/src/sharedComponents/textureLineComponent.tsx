@@ -97,6 +97,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
             { width: width, height: height },
             scene, false);
 
+        passPostProcess.externalTextureSamplerBinding = true;
         passPostProcess.onApply = function(effect) {
             effect.setTexture("textureSampler", texture);
         };
@@ -104,7 +105,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
         let internalTexture = rtt.renderTarget;
 
         if (internalTexture) {
-            scene.postProcessManager.directRender([passPostProcess], internalTexture);
+            scene.postProcessManager.directRender([passPostProcess], internalTexture, true);
 
             // Read the contents of the framebuffer
             var numberOfChannelsByLine = width * 4;

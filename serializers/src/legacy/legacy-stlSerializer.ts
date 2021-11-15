@@ -1,4 +1,4 @@
-import * as Serializers from "../stl";
+import * as Serializers from "../stl/index";
 
 /**
  * This is the entry point for the UMD module.
@@ -11,4 +11,4 @@ if (typeof globalObject !== "undefined") {
     }
 }
 
-export * from "../stl";
+export * from "../stl/index";

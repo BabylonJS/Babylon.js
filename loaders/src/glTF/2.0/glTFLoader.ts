@@ -30,7 +30,7 @@ import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData, GLTFLoad
 import { IAnimationKey, AnimationKeyInterpolation } from 'babylonjs/Animations/animationKey';
 import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 import { IDataBuffer } from 'babylonjs/Misc/dataReader';
-import { FileTools, LoadFileError } from 'babylonjs/Misc/fileTools';
+import { DecodeBase64UrlToBinary, IsBase64DataUrl, LoadFileError } from 'babylonjs/Misc/fileTools';
 import { Logger } from 'babylonjs/Misc/logger';
 import { Light } from 'babylonjs/Lights/light';
 import { TmpVectors } from 'babylonjs/Maths/math.vector';
@@ -979,13 +979,13 @@ export class GLTFLoader implements IGLTFLoader {
 
         babylonMesh.morphTargetManager = new MorphTargetManager(babylonMesh.getScene());
         babylonMesh.morphTargetManager.areUpdatesFrozen = true;
+
         for (let index = 0; index < primitive.targets.length; index++) {
             const weight = node.weights ? node.weights[index] : mesh.weights ? mesh.weights[index] : 0;
             const name = targetNames ? targetNames[index] : `morphTarget${index}`;
             babylonMesh.morphTargetManager.addTarget(new MorphTarget(name, weight, babylonMesh.getScene()));
             // TODO: tell the target whether it has positions, normals, tangents
         }
-        babylonMesh.morphTargetManager.areUpdatesFrozen = false;
     }
 
     private _loadMorphTargetsAsync(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh, babylonGeometry: Geometry): Promise<void> {
@@ -1001,7 +1001,9 @@ export class GLTFLoader implements IGLTFLoader {
             promises.push(this._loadMorphTargetVertexDataAsync(`${context}/targets/${index}`, babylonGeometry, primitive.targets[index], babylonMorphTarget));
         }
 
-        return Promise.all(promises).then(() => { });
+        return Promise.all(promises).then(() => {
+            morphTargetManager.areUpdatesFrozen = false;
+        });
     }
 
     private _loadMorphTargetVertexDataAsync(context: string, babylonGeometry: Geometry, attributes: { [name: string]: number }, babylonMorphTarget: MorphTarget): Promise<void> {
@@ -1178,8 +1180,6 @@ export class GLTFLoader implements IGLTFLoader {
             if (babylonParentBone) {
                 baseMatrix.multiplyToRef(babylonParentBone.getInvertedAbsoluteTransform(), baseMatrix);
             }
-
-            babylonBone.setBindPose(baseMatrix);
 
             babylonBone.updateMatrix(baseMatrix, false, false);
             babylonBone._updateDifferenceMatrix(undefined, false);
@@ -2118,8 +2118,8 @@ export class GLTFLoader implements IGLTFLoader {
             throw new Error(`${context}: '${uri}' is invalid`);
         }
 
-        if (FileTools.IsBase64DataUrl(uri)) {
-            const data = new Uint8Array(FileTools.DecodeBase64UrlToBinary(uri));
+        if (IsBase64DataUrl(uri)) {
+            const data = new Uint8Array(DecodeBase64UrlToBinary(uri));
             this.log(`${context}: Decoded ${uri.substr(0, 64)}... (${data.length} bytes)`);
             return Promise.resolve(data);
         }

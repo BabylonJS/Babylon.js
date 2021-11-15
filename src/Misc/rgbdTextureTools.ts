@@ -4,7 +4,7 @@ import "../Shaders/rgbdDecode.fragment";
 import { Engine } from '../Engines/engine';
 
 import "../Engines/Extensions/engine.renderTarget";
-import { TextureTools } from './textureTools';
+import { ApplyPostProcess } from './textureTools';
 
 declare type Texture = import("../Materials/Textures/texture").Texture;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
@@ -53,6 +53,7 @@ export class RGBDTextureTools {
             if (expandTexture) {
                 // Simply run through the decode PP.
                 const rgbdPostProcess = new PostProcess("rgbdDecode", "rgbdDecode", null, null, 1, null, Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, engine, false, undefined, internalTexture.type, undefined, null, false);
+                rgbdPostProcess.externalTextureSamplerBinding = true;
 
                 // Hold the output of the decoding.
                 const expandedTexture = engine.createRenderTargetTexture(internalTexture.width, {
@@ -103,6 +104,6 @@ export class RGBDTextureTools {
      * @return a promise with the internalTexture having its texture replaced by the result of the processing
      */
     public static EncodeTextureToRGBD(internalTexture: InternalTexture, scene: Scene, outputTextureType = Constants.TEXTURETYPE_UNSIGNED_BYTE): Promise<InternalTexture> {
-        return TextureTools.ApplyPostProcess("rgbdEncode", internalTexture, scene, outputTextureType, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTUREFORMAT_RGBA);
+        return ApplyPostProcess("rgbdEncode", internalTexture, scene, outputTextureType, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTUREFORMAT_RGBA);
     }
 }

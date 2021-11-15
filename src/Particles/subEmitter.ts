@@ -1,7 +1,7 @@
 import { Vector3 } from "../Maths/math.vector";
-import { _DevTools } from '../Misc/devTools';
+import { _WarnImport } from '../Misc/devTools';
 import { ThinEngine } from '../Engines/thinEngine';
-import { _TypeStore } from '../Misc/typeStore';
+import { GetClass } from '../Misc/typeStore';
 
 declare type Scene = import("../scene").Scene;
 declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
@@ -50,7 +50,7 @@ export class SubEmitter {
     ) {
         // Create mesh as emitter to support rotation
         if (!particleSystem.emitter || !(<AbstractMesh>particleSystem.emitter).dispose) {
-            const internalClass = _TypeStore.GetClass("BABYLON.AbstractMesh");
+            const internalClass = GetClass("BABYLON.AbstractMesh");
             particleSystem.emitter = new internalClass("SubemitterSystemEmitter", particleSystem.getScene());
         }
     }
@@ -66,7 +66,7 @@ export class SubEmitter {
         } else if (emitter instanceof Vector3) {
             emitter = emitter.clone();
         } else if (emitter.getClassName().indexOf("Mesh") !== -1) {
-            const internalClass = _TypeStore.GetClass("BABYLON.Mesh");
+            const internalClass = GetClass("BABYLON.Mesh");
             emitter = new internalClass("", emitter.getScene());
             (emitter! as any).isVisible = false;
         }
@@ -85,22 +85,23 @@ export class SubEmitter {
 
     /**
      * Serialize current object to a JSON object
+     * @param serializeTexture defines if the texture must be serialized as well
      * @returns the serialized object
      */
-    public serialize(): any {
+    public serialize(serializeTexture: boolean = false): any {
         let serializationObject: any = {};
 
         serializationObject.type = this.type;
         serializationObject.inheritDirection = this.inheritDirection;
         serializationObject.inheritedVelocityAmount = this.inheritedVelocityAmount;
-        serializationObject.particleSystem = this.particleSystem.serialize();
+        serializationObject.particleSystem = this.particleSystem.serialize(serializeTexture);
 
         return serializationObject;
     }
 
     /** @hidden */
     public static _ParseParticleSystem(system: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart = false): ParticleSystem {
-        throw _DevTools.WarnImport("ParseParticle");
+        throw _WarnImport("ParseParticle");
     }
 
     /**

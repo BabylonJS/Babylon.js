@@ -40,6 +40,13 @@ export class LoadManager {
                 pgHash = "#" + query.pg + "#" + (query.revision || "0");
             }
         } else if (location.hash) {
+            // in case there is a query post-hash, we need to clean it
+            const splitQuery = location.hash.split("?");
+            if (splitQuery[1]) {
+                location.hash = splitQuery[0];
+                // this will force a reload
+                location.search = splitQuery[1];
+            }
             if (this._previousHash !== location.hash) {
                 this._cleanHash();
                 pgHash = location.hash;

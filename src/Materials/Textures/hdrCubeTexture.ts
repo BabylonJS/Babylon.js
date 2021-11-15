@@ -6,12 +6,13 @@ import { Texture } from "../../Materials/Textures/texture";
 import { Constants } from "../../Engines/constants";
 import { HDRTools } from "../../Misc/HighDynamicRange/hdr";
 import { CubeMapToSphericalPolynomialTools } from "../../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
-import { _TypeStore } from '../../Misc/typeStore';
+import { RegisterClass } from '../../Misc/typeStore';
+import { Observable } from "../../Misc/observable";
 import { Tools } from '../../Misc/tools';
 import { ToGammaSpace } from '../../Maths/math.constants';
 import { ThinEngine } from '../../Engines/thinEngine';
 import { HDRFiltering } from "../../Materials/Textures/Filtering/hdrFiltering";
-import { TextureTools } from "../../Misc/textureTools";
+import { ToHalfFloat } from "../../Misc/textureTools";
 import "../../Engines/Extensions/engine.rawTexture";
 import "../../Materials/Textures/baseTexture.polynomial";
 
@@ -37,7 +38,7 @@ export class HDRCubeTexture extends BaseTexture {
     private _prefilterOnLoad: boolean;
     private _textureMatrix: Matrix;
     private _size: number;
-    private _onLoad: Nullable<() => void> = null;
+    private _onLoad: () => void;
     private _onError: Nullable<() => void> = null;
 
     /**
@@ -103,6 +104,11 @@ export class HDRCubeTexture extends BaseTexture {
     }
 
     /**
+     * Observable triggered once the texture has been loaded.
+     */
+    public onLoadObservable: Observable<HDRCubeTexture> = new Observable<HDRCubeTexture>();
+
+    /**
      * Instantiates an HDRTexture from the following parameters.
      *
      * @param url The location of the HDR raw data (Panorama stored in RGBE format)
@@ -127,7 +133,13 @@ export class HDRCubeTexture extends BaseTexture {
         this.isCube = true;
         this._textureMatrix = Matrix.Identity();
         this._prefilterOnLoad = prefilterOnLoad;
-        this._onLoad = onLoad;
+        this._onLoad = () => {
+            this.onLoadObservable.notifyObservers(this);
+            if (onLoad) {
+                onLoad();
+            }
+        };
+
         this._onError = onError;
         this.gammaSpace = gammaSpace;
 
@@ -143,11 +155,11 @@ export class HDRCubeTexture extends BaseTexture {
             } else {
                 this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
             }
-        } else if (onLoad) {
+        } else {
             if (this._texture.isReady) {
-                Tools.SetImmediate(() => onLoad());
+                Tools.SetImmediate(() => this._onLoad());
             } else {
-                this._texture.onLoadedObservable.add(onLoad);
+                this._texture.onLoadedObservable.add(this._onLoad);
             }
         }
     }
@@ -219,9 +231,9 @@ export class HDRCubeTexture extends BaseTexture {
 
                         // Convert to half float texture for fallback.
                         if (shortArray) {
-                            shortArray[(i * 3) + 0] = TextureTools.ToHalfFloat(dataFace[(i * 3) + 0]);
-                            shortArray[(i * 3) + 1] = TextureTools.ToHalfFloat(dataFace[(i * 3) + 1]);
-                            shortArray[(i * 3) + 2] = TextureTools.ToHalfFloat(dataFace[(i * 3) + 2]);
+                            shortArray[(i * 3) + 0] = ToHalfFloat(dataFace[(i * 3) + 0]);
+                            shortArray[(i * 3) + 1] = ToHalfFloat(dataFace[(i * 3) + 1]);
+                            shortArray[(i * 3) + 2] = ToHalfFloat(dataFace[(i * 3) + 2]);
                         }
 
                         // Convert to int texture for fallback.
@@ -329,6 +341,14 @@ export class HDRCubeTexture extends BaseTexture {
     }
 
     /**
+     * Dispose the texture and release its associated resources.
+     */
+    public dispose(): void {
+        this.onLoadObservable.clear();
+        super.dispose();
+    }
+
+    /**
      * Parses a JSON representation of an HDR Texture in order to create the texture
      * @param parsedTexture Define the JSON representation
      * @param scene Define the scene the texture should be created in
@@ -383,4 +403,4 @@ export class HDRCubeTexture extends BaseTexture {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.HDRCubeTexture"] = HDRCubeTexture;
+RegisterClass("BABYLON.HDRCubeTexture", HDRCubeTexture);

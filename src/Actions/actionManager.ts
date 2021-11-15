@@ -11,7 +11,7 @@ import { EngineStore } from "../Engines/engineStore";
 import { IActionEvent } from "../Actions/actionEvent";
 import { Logger } from "../Misc/logger";
 import { DeepCopier } from "../Misc/deepCopier";
-import { _TypeStore } from "../Misc/typeStore";
+import { GetClass } from "../Misc/typeStore";
 import { AbstractActionManager } from './abstractActionManager';
 import { Constants } from "../Engines/constants";
 
@@ -423,7 +423,7 @@ export class ActionManager extends AbstractActionManager {
 
         // instanciate a new object
         var instanciate = (name: string, params: Array<any>): any => {
-            const internalClassType = _TypeStore.GetClass("BABYLON." + name);
+            const internalClassType = GetClass("BABYLON." + name);
             if (internalClassType) {
                 var newInstance: Object = Object.create(internalClassType.prototype);
                 newInstance.constructor.apply(newInstance, params);

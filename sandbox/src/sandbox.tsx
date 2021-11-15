@@ -8,7 +8,7 @@ import { EnvironmentTools } from "./tools/environmentTools";
 import { Vector3 } from "babylonjs/Maths/math.vector";
 import { Deferred } from "babylonjs/Misc/deferred";
 import { Scene } from "babylonjs/scene";
-import { ScreenshotTools } from "babylonjs/Misc/screenshotTools";
+import { CreateScreenshotAsync } from "babylonjs/Misc/screenshotTools";
 import { IScreenshotSize } from "babylonjs/Misc/interfaces/screenshotSize";
 import { Color3, Color4 } from "babylonjs/Maths/math";
 
@@ -99,7 +99,23 @@ export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: b
     }
 
     checkUrl() {
-        // Check URL
+        const set3DCommerceMode = () => {
+            document.title = "Babylon.js Sandbox for 3D Commerce";
+            this._globalState.commerceMode = true;
+        }
+
+        const setReflectorMode = () => {
+            document.title = "Babylon.js Reflector";
+            this._globalState.reflector = { hostname: "localhost", port: 1234 };
+        }
+
+        const host = location.host.toLowerCase();
+        if (host.indexOf("3dcommerce") === 0) {
+            set3DCommerceMode();
+        } else if (host.toLowerCase().indexOf("reflector") === 0) {
+            setReflectorMode();
+        }
+
         const indexOf = location.href.indexOf("?");
         if (indexOf !== -1) {
             const params = location.href.substr(indexOf + 1).split("&");
@@ -125,8 +141,11 @@ export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: b
                         break;
                     }
                     case "reflector": {
-                        document.title = "Babylon.js Reflector";
-                        this._globalState.reflector = { hostname: "localhost", port: 1234 };
+                        setReflectorMode();
+                        break;
+                    }
+                    case "3dcommerce": {
+                        set3DCommerceMode();
                         break;
                     }
                     case "hostname": {
@@ -216,7 +235,7 @@ export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: b
 
     public static CaptureScreenshotAsync(size: IScreenshotSize | number, mimeType?: string): Promise<string> {
         return this._sceneLoadedDeferred.promise.then((scene) => {
-            return ScreenshotTools.CreateScreenshotAsync(scene.getEngine(), scene.activeCamera!, size, mimeType);
+            return CreateScreenshotAsync(scene.getEngine(), scene.activeCamera!, size, mimeType);
         });
     }
 }

@@ -1,4 +1,4 @@
-import * as proceduralTexture from "../fire";
+import * as proceduralTexture from "../fire/index";
 
 /**
  * This is the entry point for the UMD module.
@@ -11,4 +11,4 @@ if (typeof globalObject !== "undefined") {
     }
 }
 
-export * from "../fire";
+export * from "../fire/index";

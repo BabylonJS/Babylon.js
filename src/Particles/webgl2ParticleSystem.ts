@@ -9,7 +9,10 @@ import { DataArray } from "../types";
 import { DataBuffer } from "../Buffers/dataBuffer";
 import { UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEffectCommonAccessor";
 import { Constants } from "../Engines/constants";
-import { _TypeStore } from "../Misc/typeStore";
+import { RegisterClass } from "../Misc/typeStore";
+
+import "../Shaders/gpuUpdateParticles.fragment";
+import "../Shaders/gpuUpdateParticles.vertex";
 
 declare type Engine = import("../Engines/engine").Engine;
 
@@ -262,4 +265,4 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.WebGL2ParticleSystem"] = WebGL2ParticleSystem;
+RegisterClass("BABYLON.WebGL2ParticleSystem", WebGL2ParticleSystem);

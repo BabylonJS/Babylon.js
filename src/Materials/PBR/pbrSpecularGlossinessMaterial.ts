@@ -3,7 +3,7 @@ import { Scene } from "../../scene";
 import { Color3 } from "../../Maths/math.color";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { PBRBaseSimpleMaterial } from "./pbrBaseSimpleMaterial";
-import { _TypeStore } from '../../Misc/typeStore';
+import { RegisterClass } from '../../Misc/typeStore';
 
 /**
  * The PBR material of BJS following the specular glossiness convention.
@@ -133,4 +133,4 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.PBRSpecularGlossinessMaterial"] = PBRSpecularGlossinessMaterial;
+RegisterClass("BABYLON.PBRSpecularGlossinessMaterial", PBRSpecularGlossinessMaterial);

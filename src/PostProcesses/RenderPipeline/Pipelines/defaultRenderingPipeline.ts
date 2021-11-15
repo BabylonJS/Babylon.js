@@ -21,7 +21,7 @@ import { PostProcessRenderPipeline } from "../../../PostProcesses/RenderPipeline
 import { PostProcessRenderEffect } from "../../../PostProcesses/RenderPipeline/postProcessRenderEffect";
 import { DepthOfFieldEffect, DepthOfFieldEffectBlurLevel } from "../../../PostProcesses/depthOfFieldEffect";
 import { BloomEffect } from "../../../PostProcesses/bloomEffect";
-import { _TypeStore } from '../../../Misc/typeStore';
+import { RegisterClass } from '../../../Misc/typeStore';
 import { EngineStore } from "../../../Engines/engineStore";
 
 import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
@@ -756,4 +756,4 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.DefaultRenderingPipeline"] = DefaultRenderingPipeline;
+RegisterClass("BABYLON.DefaultRenderingPipeline", DefaultRenderingPipeline);

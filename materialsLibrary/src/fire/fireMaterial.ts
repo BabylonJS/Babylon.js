@@ -14,7 +14,7 @@ import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SubMesh } from "babylonjs/Meshes/subMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 
 import "./fire.fragment";
@@ -40,6 +40,7 @@ class FireMaterialDefines extends MaterialDefines {
     public NUM_BONE_INFLUENCERS = 0;
     public INSTANCES = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
+    public SKIPFINALCOLORCLAMP = false;
 
     constructor() {
         super();
@@ -96,11 +97,11 @@ export class FireMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh._materialDefines) {
+        if (!subMesh.materialDefines) {
             subMesh.materialDefines = new FireMaterialDefines();
         }
 
-        var defines = <FireMaterialDefines>subMesh._materialDefines;
+        var defines = <FireMaterialDefines>subMesh.materialDefines;
         var scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
@@ -211,7 +212,7 @@ export class FireMaterial extends PushMaterial {
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         var scene = this.getScene();
 
-        var defines = <FireMaterialDefines>subMesh._materialDefines;
+        var defines = <FireMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }
@@ -397,4 +398,4 @@ export class FireMaterial extends PushMaterial {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.FireMaterial"] = FireMaterial;
+RegisterClass("BABYLON.FireMaterial", FireMaterial);

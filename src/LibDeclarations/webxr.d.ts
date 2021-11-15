@@ -35,6 +35,8 @@ type XREventType = "devicechange" | "visibilitychange" | "end" | "inputsourcesch
 
 type XRDOMOverlayType = "screen" | "floating" | "head-locked";
 
+type XRReflectionFormat = "srgba8" | "rgba16f";
+
 type XRFrameRequestCallback = (time: DOMHighResTimeStamp, frame: XRFrame) => void;
 
 type XRPlaneSet = Set<XRPlane>;
@@ -49,6 +51,10 @@ type XRDOMOverlayInit = {
      * The root attribute specifies the overlay element that will be displayed to the user as the content of the DOM overlay. This is a required attribute, there is no default.
      */
     root: Element;
+};
+
+type XRLightProbeInit = {
+     reflectionFormat: XRReflectionFormat;
 };
 
 interface XRSessionInit {
@@ -84,6 +90,12 @@ interface XRWebGLLayerInit {
     alpha?: boolean;
     multiview?: boolean;
     framebufferScaleFactor?: number;
+}
+
+// https://www.w3.org/TR/webxrlayers-1/#XRWebGLBindingtype
+declare class XRWebGLBinding {
+    constructor(xrSession: XRSession, context: WebGLRenderingContext | WebGL2RenderingContext);
+    getReflectionCubeMap: (lightProbe: XRLightProbe) => WebGLTexture;
 }
 
 declare class XRWebGLLayer {
@@ -135,6 +147,12 @@ interface XRInputSource {
     readonly hand?: XRHand;
 }
 
+interface XRLightEstimate {
+    readonly sphericalHarmonicsCoefficients: Float32Array;
+    readonly primaryLightDirection: DOMPointReadOnly;
+    readonly primaryLightIntensity: DOMPointReadOnly;
+}
+
 interface XRPose {
     readonly transform: XRRigidTransform;
     readonly emulatedPosition: boolean;
@@ -166,6 +184,7 @@ interface XRFrame {
     fillJointRadii?(jointSpaces: XRJointSpace[], radii: Float32Array): boolean;
     // Image tracking
     getImageTrackingResults?(): Array<XRImageTrackingResult>;
+    getLightEstimate(xrLightProbe: XRLightProbe): XRLightEstimate;
 }
 
 interface XRInputSourceEvent extends Event {
@@ -185,6 +204,11 @@ type XRDOMOverlayState = {
      */
     type: XRDOMOverlayType | null
 };
+
+interface XRLightProbe extends EventTarget {
+    readonly probeSpace: XRSpace ;
+    onreflectionchange: XREventHandler ;
+  }
 
 interface XRSession {
     addEventListener(type: XREventType, listener: XREventHandler, options?: boolean | AddEventListenerOptions): void;
@@ -228,6 +252,14 @@ interface XRSession {
     requestReferenceSpace(type: XRReferenceSpaceType): Promise<XRReferenceSpace>;
     requestReferenceSpace(type: XRBoundedReferenceSpaceType): Promise<XRBoundedReferenceSpace>;
 
+    /**
+     * The XRSession interface is extended with the ability to create new XRLightProbe instances.
+     * XRLightProbe instances have a session object, which is the XRSession that created this XRLightProbe.
+     *
+     * Can reject with with a "NotSupportedError" DOMException
+     */
+    requestLightProbe(options?: XRLightProbeInit): Promise<XRLightProbe>;
+
     updateRenderState(XRRenderStateInit: XRRenderState): Promise<void>;
 
     onend: XREventHandler;
@@ -259,6 +291,10 @@ interface XRSession {
      * Provided when the optional 'dom-overlay' feature is requested.
      */
     readonly domOverlayState?: XRDOMOverlayState;
+    /**
+     * Indicates the XRReflectionFormat most closely supported by the underlying XR device
+     */
+    readonly preferredReflectionFormat?: XRReflectionFormat;
 
     readonly frameRate?: number;
     readonly supportedFrameRates?: Float32Array;

@@ -6,7 +6,6 @@ import { LogComponent } from "./components/log/logComponent";
 import { DataStorage } from "babylonjs/Misc/dataStorage";
 import { GUINodeTools } from "./guiNodeTools";
 import { WorkbenchComponent } from "./diagram/workbench";
-import { _TypeStore } from "babylonjs/Misc/typeStore";
 import { MessageDialogComponent } from "./sharedComponents/messageDialog";
 import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorerComponent";
 
@@ -31,7 +30,6 @@ const lineIcon: string = require("../public/imgs/lineIcon.svg");
 const displaygridIcon: string = require("../public/imgs/displaygridIcon.svg");
 const colorPickerIcon: string = require("../public/imgs/colorPickerIcon.svg");
 const scrollbarIcon: string = require("../public/imgs/scrollbarIcon.svg");
-const imageSliderIcon: string = require("../public/imgs/imageSliderIcon.svg");
 const radioButtonIcon: string = require("../public/imgs/radioButtonIcon.svg");
 
 interface IGraphEditorProps {
@@ -43,7 +41,6 @@ interface IGraphEditorState {
 }
 
 export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEditorState> {
-    private _workbenchCanvas: WorkbenchComponent;
 
     private _startX: number;
     private _moveInProgress: boolean;
@@ -57,10 +54,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
 
 
     componentDidMount() {
-        if (this.props.globalState.hostDocument) {
-            this._workbenchCanvas = this.refs["workbenchCanvas"] as WorkbenchComponent;
-        }
-
         if (navigator.userAgent.indexOf("Mobile") !== -1) {
             ((this.props.globalState.hostDocument || document).querySelector(".blocker") as HTMLElement).style.visibility = "visible";
         }
@@ -140,23 +133,11 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         rootElement.style.gridTemplateColumns = this.buildColumnLayout();
 
         this._startX = evt.clientX;
+        this.props.globalState.onWindowResizeObservable.notifyObservers();
     }
 
     buildColumnLayout() {
         return `${this._leftWidth}px 4px ${this._toolBarIconSize}px calc(100% - ${this._leftWidth + this._toolBarIconSize + 8 + this._rightWidth}px) 4px ${this._rightWidth}px`;
-    }
-
-    emitNewBlock(event: React.DragEvent<HTMLDivElement>) {
-        var data = event.dataTransfer.getData("babylonjs-gui-node") as string;
-
-        let guiElement = GUINodeTools.CreateControlFromString(data);
-
-        let newGuiNode = this._workbenchCanvas.appendBlock(guiElement);
-
-        this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-        this.props.globalState.onSelectionChangedObservable.notifyObservers(newGuiNode);
-
-        this.forceUpdate();
     }
 
     handlePopUp = () => {
@@ -268,7 +249,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                     {/* Node creation menu */}
 
                     <div id="leftGrab" onPointerDown={(evt) => this.onPointerDown(evt)} onPointerUp={(evt) => this.onPointerUp(evt)} onPointerMove={(evt) => this.resizeColumns(evt)}></div>
-                    <SceneExplorerComponent globalState={this.props.globalState}></SceneExplorerComponent>
+                    <SceneExplorerComponent globalState={this.props.globalState} noExpand={true}></SceneExplorerComponent>
                     {
                         this.createToolbar()
                     }
@@ -369,12 +350,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                 icon: buttonIcon,
                 onClick: () => { this.onCreate("TextButton") }
             },
-
-            {
-                label: "ImageButton",
-                icon: buttonIcon,
-                onClick: () => { this.onCreate("ImageButton") }
-            },
             {
                 label: "Checkbox",
                 icon: checkboxIcon,
@@ -391,11 +366,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                 onClick: () => { this.onCreate("Slider") }
             },
             {
-                label: "ImageBasedSlider",
-                icon: imageSliderIcon,
-                onClick: () => { this.onCreate("ImageBasedSlider") }
-            },
-            {
                 label: "VirtualKeyboard",
                 icon: keyboardIcon,
                 onClick: () => { this.onCreate("VirtualKeyboard") }
@@ -408,6 +378,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
 
         ]
     }
+    
     onCreate(value: string): void {
         let guiElement = GUINodeTools.CreateControlFromString(value);
         let newGuiNode = this.props.globalState.workbench.appendBlock(guiElement);

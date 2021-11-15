@@ -3,9 +3,7 @@ import { UniversalCamera } from "../../Cameras/universalCamera";
 import { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
 import { Node } from "../../node";
-
-// Side effect import to define the stereoscopic mode.
-import "../RigModes/stereoscopicRigMode";
+import { setStereoscopicRigMode } from "../RigModes/stereoscopicRigMode";
 
 Node.AddNodeConstructor("StereoscopicFreeCamera", (name, scene, options) => {
     return () => new StereoscopicUniversalCamera(name, Vector3.Zero(), options.interaxial_distance, options.isStereoscopicSideBySide, scene);
@@ -37,4 +35,6 @@ export class StereoscopicUniversalCamera extends UniversalCamera {
     public getClassName(): string {
         return "StereoscopicUniversalCamera";
     }
+
+    protected _setRigMode = setStereoscopicRigMode.bind(null, this);
 }

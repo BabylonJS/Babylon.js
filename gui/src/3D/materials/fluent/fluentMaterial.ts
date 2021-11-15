@@ -11,7 +11,7 @@ import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SubMesh } from "babylonjs/Meshes/subMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
-import { _TypeStore } from "babylonjs/Misc/typeStore";
+import { RegisterClass } from "babylonjs/Misc/typeStore";
 import { Color3, Color4 } from "babylonjs/Maths/math.color";
 
 import "./shaders/fluent.vertex";
@@ -139,12 +139,12 @@ export class FluentMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh._materialDefines) {
+        if (!subMesh.materialDefines) {
             subMesh.materialDefines = new FluentMaterialDefines();
         }
 
         var scene = this.getScene();
-        var defines = <FluentMaterialDefines>subMesh._materialDefines;
+        var defines = <FluentMaterialDefines>subMesh.materialDefines;
         if (!this.checkReadyOnEveryCall && subMesh.effect) {
             if (defines._renderId === scene.getRenderId()) {
                 return true;
@@ -224,7 +224,7 @@ export class FluentMaterial extends PushMaterial {
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         var scene = this.getScene();
 
-        var defines = <FluentMaterialDefines>subMesh._materialDefines;
+        var defines = <FluentMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }
@@ -309,4 +309,4 @@ export class FluentMaterial extends PushMaterial {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.GUI.FluentMaterial"] = FluentMaterial;
+RegisterClass("BABYLON.GUI.FluentMaterial", FluentMaterial);

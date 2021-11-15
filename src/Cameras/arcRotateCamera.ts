@@ -1,4 +1,4 @@
-import { serialize, serializeAsVector3 } from "../Misc/decorators";
+import { serialize, serializeAsVector3, serializeAsMeshReference } from "../Misc/decorators";
 import { Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
@@ -52,6 +52,7 @@ export class ArcRotateCamera extends TargetCamera {
 
     @serializeAsVector3("target")
     protected _target: Vector3;
+    @serializeAsMeshReference("targetHost")
     protected _targetHost: Nullable<AbstractMesh>;
 
     /**
@@ -64,6 +65,27 @@ export class ArcRotateCamera extends TargetCamera {
     }
     public set target(value: Vector3) {
         this.setTarget(value);
+    }
+
+    /**
+     * Defines the target mesh of the camera.
+     * The camera looks towards it from the radius distance.
+     */
+    public get targetHost(): Nullable<AbstractMesh> {
+        return this._targetHost;
+    }
+    public set targetHost(value: Nullable<AbstractMesh>) {
+        if (value) {
+            this.setTarget(value);
+        }
+    }
+
+    /**
+     * Return the current target position of the camera. This value is expressed in local space.
+     * @returns the target position
+     */
+    public getTarget(): Vector3 {
+        return this.target;
     }
 
     /**
@@ -523,6 +545,11 @@ export class ArcRotateCamera extends TargetCamera {
     public panningAxis: Vector3 = new Vector3(1, 1, 0);
     protected _transformedDirection: Vector3 = new Vector3();
 
+    /**
+     * Defines if camera will eliminate transform on y axis.
+     */
+    public mapPanning: boolean = false;
+
     // Behaviors
     private _bouncingBehavior: Nullable<BouncingBehavior>;
 
@@ -911,6 +938,10 @@ export class ArcRotateCamera extends TargetCamera {
             this._viewMatrix.invertToRef(this._cameraTransformMatrix);
             localDirection.multiplyInPlace(this.panningAxis);
             Vector3.TransformNormalToRef(localDirection, this._cameraTransformMatrix, this._transformedDirection);
+            // Eliminate y if mapPanning is enabled
+            if (this.mapPanning) {
+                this._transformedDirection.y = 0;
+            }
 
             if (!this._targetHost) {
                 if (this.panningDistanceLimit) {

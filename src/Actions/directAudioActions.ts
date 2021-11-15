@@ -1,6 +1,6 @@
 import { Action } from "./action";
 import { Condition } from "./condition";
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 import { Sound } from "../Audio/sound";
 
 /**
@@ -89,5 +89,5 @@ export class StopSoundAction extends Action {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.PlaySoundAction"] = PlaySoundAction;
-_TypeStore.RegisteredTypes["BABYLON.StopSoundAction"] = StopSoundAction;
+RegisterClass("BABYLON.PlaySoundAction", PlaySoundAction);
+RegisterClass("BABYLON.StopSoundAction", StopSoundAction);

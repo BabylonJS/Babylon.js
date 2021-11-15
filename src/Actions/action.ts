@@ -2,7 +2,7 @@ import { Observable } from "../Misc/observable";
 import { Vector2, Vector3 } from "../Maths/math.vector";
 import { Color3, Color4 } from "../Maths/math.color";
 import { Condition } from "./condition";
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 import { AbstractActionManager } from './abstractActionManager';
 import { Nullable } from "../types";
 
@@ -317,4 +317,4 @@ export class Action implements IAction {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.Action"] = Action;
+RegisterClass("BABYLON.Action", Action);

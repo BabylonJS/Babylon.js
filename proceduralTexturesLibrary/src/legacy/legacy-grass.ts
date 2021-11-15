@@ -1,4 +1,4 @@
-import * as proceduralTexture from "../grass";
+import * as proceduralTexture from "../grass/index";
 
 /**
  * This is the entry point for the UMD module.
@@ -11,4 +11,4 @@ if (typeof globalObject !== "undefined") {
     }
 }
 
-export * from "../grass";
+export * from "../grass/index";

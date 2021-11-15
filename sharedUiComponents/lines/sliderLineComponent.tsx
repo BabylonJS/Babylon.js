@@ -3,6 +3,7 @@ import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../propertyChangedEvent";
 import { Tools } from 'babylonjs/Misc/tools';
 import { FloatLineComponent } from './floatLineComponent';
+import { LockObject } from "../tabs/propertyGrids/lockObject";
 
 interface ISliderLineComponentProps {
     label: string;
@@ -20,6 +21,7 @@ interface ISliderLineComponentProps {
     margin?: boolean;
     icon? : string;
     iconLabel? : string;
+    lockObject?: LockObject;
 }
 
 export class SliderLineComponent extends React.Component<ISliderLineComponentProps, { value: number }> {
@@ -117,7 +119,7 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
                         {this.props.label}
                     </div>
                 }
-                <FloatLineComponent isInteger={this.props.decimalCount === 0} smallUI={true} label="" target={this.state} digits={this.props.decimalCount === undefined ? 4 : this.props.decimalCount} propertyName="value" min={this.props.minimum} max={this.props.maximum}
+                <FloatLineComponent lockObject={this.props.lockObject} isInteger={this.props.decimalCount === 0} smallUI={true} label="" target={this.state} digits={this.props.decimalCount === undefined ? 4 : this.props.decimalCount} propertyName="value" min={this.props.minimum} max={this.props.maximum}
                     onEnter={ () => { 
                         var changed = this.prepareDataToRead(this.state.value); this.onChange(changed);
                     }

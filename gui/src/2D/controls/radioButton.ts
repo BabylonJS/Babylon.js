@@ -4,7 +4,7 @@ import { Vector2 } from "babylonjs/Maths/math.vector";
 import { Control } from "./control";
 import { StackPanel } from "./stackPanel";
 import { TextBlock } from "./textBlock";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
 import { serialize } from 'babylonjs/Misc/decorators';
 import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
@@ -216,4 +216,4 @@ export class RadioButton extends Control {
         return panel;
     }
 }
-_TypeStore.RegisteredTypes["BABYLON.GUI.RadioButton"] = RadioButton;
+RegisterClass("BABYLON.GUI.RadioButton", RadioButton);

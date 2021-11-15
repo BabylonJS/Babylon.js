@@ -1,8 +1,8 @@
 import * as Exporters from "../glTF/glTFFileExporter";
 import * as Datas from "../glTF/2.0/glTFData";
 import * as Serializers from "../glTF/2.0/glTFSerializer";
-import * as Extensions from "../glTF/2.0/Extensions";
-import * as GLTF2 from "../glTF/2.0";
+import * as Extensions from "../glTF/2.0/Extensions/index";
+import * as GLTF2 from "../glTF/2.0/index";
 
 /**
  * This is the entry point for the UMD module.
@@ -46,4 +46,4 @@ if (typeof globalObject !== "undefined") {
 }
 
 export * from "../glTF/glTFFileExporter";
-export * from "../glTF/2.0";
+export * from "../glTF/2.0/index";

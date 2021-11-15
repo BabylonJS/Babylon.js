@@ -1,9 +1,9 @@
-import { EnvironmentTextureTools } from "../../../Misc/environmentTextureTools";
+import { GetEnvInfo, UploadEnvLevelsAsync, UploadEnvSpherical } from "../../../Misc/environmentTextureTools";
 import { Nullable } from "../../../types";
 import { Engine } from "../../../Engines/engine";
 import { InternalTexture } from "../../../Materials/Textures/internalTexture";
 import { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
-import { StringTools } from '../../../Misc/stringTools';
+import { EndsWith } from '../../../Misc/stringTools';
 
 /**
  * Implementation of the ENV Texture Loader.
@@ -21,7 +21,7 @@ export class _ENVTextureLoader implements IInternalTextureLoader {
      * @returns true if the loader can load the specified file
      */
     public canLoad(extension: string): boolean {
-        return StringTools.EndsWith(extension, ".env");
+        return EndsWith(extension, ".env");
     }
 
     /**
@@ -37,14 +37,14 @@ export class _ENVTextureLoader implements IInternalTextureLoader {
             return;
         }
 
-        var info = EnvironmentTextureTools.GetEnvInfo(data);
+        var info = GetEnvInfo(data);
         if (info) {
             texture.width = info.width;
             texture.height = info.width;
 
             try {
-                EnvironmentTextureTools.UploadEnvSpherical(texture, info);
-                EnvironmentTextureTools.UploadEnvLevelsAsync(texture, data, info).then(() => {
+                UploadEnvSpherical(texture, info);
+                UploadEnvLevelsAsync(texture, data, info).then(() => {
                     texture.isReady = true;
                     texture.onLoadedObservable.notifyObservers(texture);
                     texture.onLoadedObservable.clear();

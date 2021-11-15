@@ -8,7 +8,7 @@ import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
 import { Effect } from '../../../effect';
 import { Mesh } from '../../../../Meshes/mesh';
 import { Nullable } from '../../../../types';
-import { _TypeStore } from '../../../../Misc/typeStore';
+import { RegisterClass } from '../../../../Misc/typeStore';
 import { Scene } from '../../../../scene';
 import { InputBlock } from '../Input/inputBlock';
 import { NodeMaterialSystemValues } from '../../Enums/nodeMaterialSystemValues';
@@ -506,4 +506,4 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.ReflectionTextureBaseBlock"] = ReflectionTextureBaseBlock;
+RegisterClass("BABYLON.ReflectionTextureBaseBlock", ReflectionTextureBaseBlock);

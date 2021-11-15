@@ -10,7 +10,7 @@ import { MaterialHelper } from '../../../materialHelper';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
 import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
 import { InputBlock } from '../Input/inputBlock';
-import { _TypeStore } from '../../../../Misc/typeStore';
+import { RegisterClass } from '../../../../Misc/typeStore';
 
 import "../../../../Shaders/ShadersInclude/bonesDeclaration";
 import "../../../../Shaders/ShadersInclude/bonesVertex";
@@ -199,4 +199,4 @@ export class BonesBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.BonesBlock"] = BonesBlock;
+RegisterClass("BABYLON.BonesBlock", BonesBlock);

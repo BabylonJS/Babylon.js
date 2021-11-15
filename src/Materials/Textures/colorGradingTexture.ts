@@ -4,7 +4,7 @@ import { Matrix } from "../../Maths/math.vector";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Constants } from "../../Engines/constants";
-import { _TypeStore } from "../../Misc/typeStore";
+import { RegisterClass } from "../../Misc/typeStore";
 import { ThinEngine } from "../../Engines/thinEngine";
 
 // Ensures Raw texture are included
@@ -292,4 +292,4 @@ export class ColorGradingTexture extends BaseTexture {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.ColorGradingTexture"] = ColorGradingTexture;
+RegisterClass("BABYLON.ColorGradingTexture", ColorGradingTexture);

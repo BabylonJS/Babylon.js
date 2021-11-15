@@ -8,7 +8,7 @@ import { Constants } from "../Engines/constants";
 
 import "../Shaders/extractHighlights.fragment";
 import { serialize } from '../Misc/decorators';
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 
 /**
  * The extract highlights post process sets all pixels to black except pixels above the specified luminance threshold. Used as the first step for a bloom effect.
@@ -40,6 +40,7 @@ export class ExtractHighlightsPostProcess extends PostProcess {
     constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
         super(name, "extractHighlights", ["threshold", "exposure"], null, options, camera, samplingMode, engine, reusable, null, textureType, undefined, null, blockCompilation);
         this.onApplyObservable.add((effect: Effect) => {
+            this.externalTextureSamplerBinding = !!this._inputPostProcess;
             if (this._inputPostProcess) {
                 effect.setTextureFromPostProcess("textureSampler", this._inputPostProcess);
             }
@@ -49,4 +50,4 @@ export class ExtractHighlightsPostProcess extends PostProcess {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.ExtractHighlightsPostProcess"] = ExtractHighlightsPostProcess;
+RegisterClass("BABYLON.ExtractHighlightsPostProcess", ExtractHighlightsPostProcess);

@@ -1,5 +1,5 @@
 import { ProcessingOptions } from './shaderProcessingOptions';
-import { StringTools } from '../../Misc/stringTools';
+import { StartsWith } from '../../Misc/stringTools';
 
 /** @hidden */
 export class ShaderCodeNode {
@@ -23,11 +23,22 @@ export class ShaderCodeNode {
                     value = processor.lineProcessor(value, options.isFragment, options.processingContext);
                 }
 
-                if (processor.attributeProcessor && StringTools.StartsWith(this.line, "attribute")) {
+                if (processor.attributeProcessor && StartsWith(this.line, "attribute")) {
                     value = processor.attributeProcessor(this.line, preprocessors, options.processingContext);
-                } else if (processor.varyingProcessor && StringTools.StartsWith(this.line, "varying")) {
+                } else if (processor.varyingProcessor && StartsWith(this.line, "varying")) {
                     value = processor.varyingProcessor(this.line, options.isFragment, preprocessors, options.processingContext);
-                } else if ((processor.uniformProcessor || processor.uniformBufferProcessor) && StringTools.StartsWith(this.line, "uniform") && !options.lookForClosingBracketForUniformBuffer) {
+                } else if (processor.uniformProcessor && processor.uniformRegexp && processor.uniformRegexp.test(this.line)) {
+                    if (!options.lookForClosingBracketForUniformBuffer) {
+                        value = processor.uniformProcessor(this.line, options.isFragment, preprocessors, options.processingContext);
+                    }
+                } else if (processor.uniformBufferProcessor && processor.uniformBufferRegexp && processor.uniformBufferRegexp.test(this.line)) {
+                    if (!options.lookForClosingBracketForUniformBuffer) {
+                        value = processor.uniformBufferProcessor(this.line, options.isFragment, options.processingContext);
+                        options.lookForClosingBracketForUniformBuffer = true;
+                    }
+                } else if (processor.textureProcessor && processor.textureRegexp && processor.textureRegexp.test(this.line)) {
+                    value = processor.textureProcessor(this.line, options.isFragment, preprocessors, options.processingContext);
+                } else if ((processor.uniformProcessor || processor.uniformBufferProcessor) && StartsWith(this.line, "uniform") && !options.lookForClosingBracketForUniformBuffer) {
                     let regex = /uniform\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s+(\S+)\s*;/;
 
                     if (regex.test(this.line)) { // uniform

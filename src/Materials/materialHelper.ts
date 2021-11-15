@@ -227,6 +227,16 @@ export class MaterialHelper {
     }
 
     /**
+     * Prepares the defines for baked vertex animation
+     * @param mesh The mesh containing the geometry data we will draw
+     * @param defines The defines to update
+     */
+     public static PrepareDefinesForBakedVertexAnimation(mesh: AbstractMesh, defines: any) {
+        const manager = (<Mesh>mesh).bakedVertexAnimationManager;
+        defines["BAKED_VERTEX_ANIMATION_TEXTURE"] = manager && manager.isEnabled ? true : false;
+    }
+
+    /**
      * Prepares the defines used in the shader depending on the attributes data available in the mesh
      * @param mesh The mesh containing the geometry data we will draw
      * @param defines The defines to update
@@ -234,9 +244,10 @@ export class MaterialHelper {
      * @param useBones Precise whether bones should be used or not (override mesh info)
      * @param useMorphTargets Precise whether morph targets should be used or not (override mesh info)
      * @param useVertexAlpha Precise whether vertex alpha should be used or not (override mesh info)
+     * @param useBakedVertexAnimation Precise whether baked vertex animation should be used or not (override mesh info)
      * @returns false if defines are considered not dirty and have not been checked
      */
-    public static PrepareDefinesForAttributes(mesh: AbstractMesh, defines: any, useVertexColor: boolean, useBones: boolean, useMorphTargets = false, useVertexAlpha = true): boolean {
+    public static PrepareDefinesForAttributes(mesh: AbstractMesh, defines: any, useVertexColor: boolean, useBones: boolean, useMorphTargets = false, useVertexAlpha = true, useBakedVertexAnimation = true): boolean {
         if (!defines._areAttributesDirty && defines._needNormals === defines._normals && defines._needUVs === defines._uvs) {
             return false;
         }
@@ -268,6 +279,10 @@ export class MaterialHelper {
             this.PrepareDefinesForMorphTargets(mesh, defines);
         }
 
+        if (useBakedVertexAnimation) {
+            this.PrepareDefinesForBakedVertexAnimation(mesh, defines);
+        }
+
         return true;
     }
 
@@ -283,6 +298,24 @@ export class MaterialHelper {
             if (defines.MULTIVIEW != previousMultiview) {
                 defines.markAsUnprocessed();
             }
+        }
+    }
+
+    /**
+     * Prepares the defines related to order independant transparency
+     * @param scene The scene we are intending to draw
+     * @param defines The defines to update
+     * @param needAlphaBlending Determines if the material needs alpha blending
+     */
+    public static PrepareDefinesForOIT(scene: Scene, defines: any, needAlphaBlending: boolean) {
+        const previousDefine = defines.ORDER_INDEPENDENT_TRANSPARENCY;
+        const previousDefine16Bits = defines.ORDER_INDEPENDENT_TRANSPARENCY_16BITS;
+
+        defines.ORDER_INDEPENDENT_TRANSPARENCY = scene.useOrderIndependentTransparency && needAlphaBlending;
+        defines.ORDER_INDEPENDENT_TRANSPARENCY_16BITS = !scene.getEngine().getCaps().textureFloatLinearFiltering;
+
+        if (previousDefine !== defines.ORDER_INDEPENDENT_TRANSPARENCY || previousDefine16Bits !== defines.ORDER_INDEPENDENT_TRANSPARENCY_16BITS) {
+            defines.markAsUnprocessed();
         }
     }
 
@@ -321,9 +354,9 @@ export class MaterialHelper {
                 index: "PREPASS_IRRADIANCE_INDEX",
             },
             {
-                type: Constants.PREPASS_ALBEDO_TEXTURE_TYPE,
-                define: "PREPASS_ALBEDO",
-                index: "PREPASS_ALBEDO_INDEX",
+                type: Constants.PREPASS_ALBEDO_SQRT_TEXTURE_TYPE,
+                define: "PREPASS_ALBEDO_SQRT",
+                index: "PREPASS_ALBEDO_SQRT_INDEX",
             },
             {
                 type: Constants.PREPASS_DEPTH_TEXTURE_TYPE,
@@ -624,6 +657,13 @@ export class MaterialHelper {
         if (defines["NUM_MORPH_INFLUENCERS"]) {
             uniformsList.push("morphTargetInfluences");
         }
+
+        if (defines["BAKED_VERTEX_ANIMATION_TEXTURE"]) {
+            uniformsList.push("bakedVertexAnimationSettings");
+            uniformsList.push("bakedVertexAnimationTextureSizeInverted");
+            uniformsList.push("bakedVertexAnimationTime");
+            samplersList.push("bakedVertexAnimationTexture");
+        }
     }
 
     /**
@@ -724,6 +764,20 @@ export class MaterialHelper {
                     Logger.Error("Cannot add more vertex attributes for mesh " + mesh.name);
                 }
             }
+        }
+    }
+
+    /**
+     * Prepares the list of attributes required for baked vertex animations according to the effect defines.
+     * @param attribs The current list of supported attribs
+     * @param mesh The mesh to prepare the morph targets attributes for
+     * @param defines The current Defines of the effect
+     */
+    public static PrepareAttributesForBakedVertexAnimation(attribs: string[], mesh: AbstractMesh, defines: any): void {
+        const enabled = defines["BAKED_VERTEX_ANIMATION_TEXTURE"] && defines["INSTANCES"];
+
+        if (enabled) {
+            attribs.push("bakedVertexAnimationSettingsInstanced");
         }
     }
 
@@ -866,10 +920,10 @@ export class MaterialHelper {
                 if (matrices) {
                     effect.setMatrices("mBones", matrices);
                     if (prePassConfiguration && mesh.getScene().prePassRenderer && mesh.getScene().prePassRenderer!.getIndex(Constants.PREPASS_VELOCITY_TEXTURE_TYPE)) {
-                        if (prePassConfiguration.previousBones[mesh.uniqueId]) {
-                            effect.setMatrices("mPreviousBones", prePassConfiguration.previousBones[mesh.uniqueId]);
+                        if (!prePassConfiguration.previousBones[mesh.uniqueId]) {
+                            prePassConfiguration.previousBones[mesh.uniqueId] = matrices.slice();
                         }
-
+                        effect.setMatrices("mPreviousBones", prePassConfiguration.previousBones[mesh.uniqueId]);
                         MaterialHelper._CopyBonesTransformationMatrices(matrices, prePassConfiguration.previousBones[mesh.uniqueId]);
                     }
                 }
@@ -905,8 +959,12 @@ export class MaterialHelper {
      * @param scene The scene we are willing to render with logarithmic scale for
      */
     public static BindLogDepth(defines: any, effect: Effect, scene: Scene): void {
-        if (defines["LOGARITHMICDEPTH"]) {
-            effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log((<Camera>scene.activeCamera).maxZ + 1.0) / Math.LN2));
+        if (!defines || defines["LOGARITHMICDEPTH"]) {
+            const camera = <Camera>scene.activeCamera;
+            if (camera.mode === Camera.ORTHOGRAPHIC_CAMERA) {
+                Logger.Error("Logarithmic depth is not compatible with orthographic cameras!", 20);
+            }
+            effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log(camera.maxZ + 1.0) / Math.LN2));
         }
     }
 

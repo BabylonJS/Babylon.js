@@ -11,12 +11,13 @@ import { Light } from '../Lights/light';
 import { Scene } from '../scene';
 import { HemisphericLight } from '../Lights/hemisphericLight';
 import { DirectionalLight } from '../Lights/directionalLight';
-import { SphereBuilder } from '../Meshes/Builders/sphereBuilder';
-import { HemisphereBuilder } from '../Meshes/Builders/hemisphereBuilder';
+import { CreateSphere } from '../Meshes/Builders/sphereBuilder';
+import { CreateHemisphere } from '../Meshes/Builders/hemisphereBuilder';
 import { SpotLight } from '../Lights/spotLight';
 import { TransformNode } from '../Meshes/transformNode';
 import { PointerEventTypes, PointerInfo } from '../Events/pointerEvents';
 import { Observer, Observable } from "../Misc/observable";
+import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder";
 
 /**
  * Gizmo that enables viewing a light
@@ -153,11 +154,15 @@ export class LightGizmo extends Gizmo {
             this._attachedMeshParent.freezeWorldMatrix(this._light.parent.getWorldMatrix());
         }
 
+        // For light positon and direction, a dirty flag is set to true in the setter
+        // It means setting values individualy or copying values willl not call setter and
+        // dirty flag will not be set to true. Hence creating a new Vector3.
         if ((this._light as any).position) {
             // If the gizmo is moved update the light otherwise update the gizmo to match the light
             if (!this.attachedMesh!.position.equals(this._cachedPosition)) {
                 // update light to match gizmo
-                (this._light as any).position.copyFrom(this.attachedMesh!.position);
+                const position = this.attachedMesh!.position;
+                (this._light as any).position = new Vector3(position.x, position.y, position.z);
                 this._cachedPosition.copyFrom(this.attachedMesh!.position);
             } else {
                 // update gizmo to match light
@@ -171,7 +176,8 @@ export class LightGizmo extends Gizmo {
             // If the gizmo is moved update the light otherwise update the gizmo to match the light
             if (Vector3.DistanceSquared(this.attachedMesh!.forward, this._cachedForward) > 0.0001) {
                 // update light to match gizmo
-                (this._light as any).direction.copyFrom(this.attachedMesh!.forward);
+                const direction = this.attachedMesh!.forward;
+                (this._light as any).direction = new Vector3(direction.x, direction.y, direction.z);
                 this._cachedForward.copyFrom(this.attachedMesh!.forward);
             } else if (Vector3.DistanceSquared(this.attachedMesh!.forward, (this._light as any).direction) > 0.0001) {
                 // update gizmo to match light
@@ -197,7 +203,14 @@ export class LightGizmo extends Gizmo {
         // Create the top line, this will be cloned for all other lines
         var linePivot = new Mesh("linePivot", scene);
         linePivot.parent = root;
-        var line = Mesh.CreateCylinder("line", 2, 0.2, 0.3, 6, 1, scene);
+        var line = CreateCylinder("line", {
+            updatable: false,
+            height: 2,
+            diameterTop: 0.2,
+            diameterBottom: 0.3,
+            tessellation: 6,
+            subdivisions: 1,
+        }, scene);
         line.position.y = line.scaling.y / 2 + distFromSphere;
         line.parent = linePivot;
 
@@ -258,7 +271,7 @@ export class LightGizmo extends Gizmo {
 
     private static _CreateHemisphericLightMesh(scene: Scene) {
         var root = new Mesh("hemisphereLight", scene);
-        var hemisphere = HemisphereBuilder.CreateHemisphere(root.name, { segments: 10, diameter: 1 }, scene);
+        var hemisphere = CreateHemisphere(root.name, { segments: 10, diameter: 1 }, scene);
         hemisphere.position.z = -0.15;
         hemisphere.rotation.x = Math.PI / 2;
         hemisphere.parent = root;
@@ -274,7 +287,7 @@ export class LightGizmo extends Gizmo {
 
     private static _CreatePointLightMesh(scene: Scene) {
         var root = new Mesh("pointLight", scene);
-        var sphere = SphereBuilder.CreateSphere(root.name, { segments: 10, diameter: 1 }, scene);
+        var sphere = CreateSphere(root.name, { segments: 10, diameter: 1 }, scene);
         sphere.rotation.x = Math.PI / 2;
         sphere.parent = root;
 
@@ -288,10 +301,10 @@ export class LightGizmo extends Gizmo {
 
     private static _CreateSpotLightMesh(scene: Scene) {
         var root = new Mesh("spotLight", scene);
-        var sphere = SphereBuilder.CreateSphere(root.name, { segments: 10, diameter: 1 }, scene);
+        var sphere = CreateSphere(root.name, { segments: 10, diameter: 1 }, scene);
         sphere.parent = root;
 
-        var hemisphere = HemisphereBuilder.CreateHemisphere(root.name, { segments: 10, diameter: 2 }, scene);
+        var hemisphere = CreateHemisphere(root.name, { segments: 10, diameter: 2 }, scene);
         hemisphere.parent = root;
         hemisphere.rotation.x = -Math.PI / 2;
 
@@ -308,10 +321,17 @@ export class LightGizmo extends Gizmo {
 
         var mesh = new Mesh(root.name, scene);
         mesh.parent = root;
-        var sphere = SphereBuilder.CreateSphere(root.name, { diameter: 1.2, segments: 10 }, scene);
+        var sphere = CreateSphere(root.name, { diameter: 1.2, segments: 10 }, scene);
         sphere.parent = mesh;
 
-        var line = Mesh.CreateCylinder(root.name, 6, 0.3, 0.3, 6, 1, scene);
+        var line = CreateCylinder(root.name, {
+            updatable: false,
+            height: 6,
+            diameterTop: 0.3,
+            diameterBottom: 0.3,
+            tessellation: 6,
+            subdivisions: 1,
+        }, scene);
         line.parent = mesh;
 
         var left = line.clone(root.name)!;
@@ -322,7 +342,14 @@ export class LightGizmo extends Gizmo {
         right.scaling.y = 0.5;
         right.position.x += -1.25;
 
-        var arrowHead = Mesh.CreateCylinder(root.name, 1, 0, 0.6, 6, 1, scene);
+        var arrowHead = CreateCylinder(root.name, {
+            updatable: false,
+            height: 1,
+            diameterTop: 0,
+            diameterBottom: 0.6,
+            tessellation: 6,
+            subdivisions: 1,
+        }, scene);
         arrowHead.position.y += 3;
         arrowHead.parent = mesh;
 

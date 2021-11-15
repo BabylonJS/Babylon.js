@@ -13,7 +13,7 @@ import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SubMesh } from "babylonjs/Meshes/subMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 
 import "./gradient.fragment";
 import "./gradient.vertex";
@@ -40,6 +40,7 @@ class GradientMaterialDefines extends MaterialDefines {
     public BonesPerMesh = 0;
     public INSTANCES = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
+    public SKIPFINALCOLORCLAMP = false;
 
     constructor() {
         super();
@@ -107,11 +108,11 @@ export class GradientMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh._materialDefines) {
+        if (!subMesh.materialDefines) {
             subMesh.materialDefines = new GradientMaterialDefines();
         }
 
-        var defines = <GradientMaterialDefines>subMesh._materialDefines;
+        var defines = <GradientMaterialDefines>subMesh.materialDefines;
         var scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
@@ -220,7 +221,7 @@ export class GradientMaterial extends PushMaterial {
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         var scene = this.getScene();
 
-        var defines = <GradientMaterialDefines>subMesh._materialDefines;
+        var defines = <GradientMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }
@@ -301,4 +302,4 @@ export class GradientMaterial extends PushMaterial {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.GradientMaterial"] = GradientMaterial;
+RegisterClass("BABYLON.GradientMaterial", GradientMaterial);

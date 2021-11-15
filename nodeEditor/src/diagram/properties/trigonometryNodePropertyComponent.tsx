@@ -24,6 +24,7 @@ export class TrigonometryPropertyTabComponent extends React.Component<IPropertyC
             {label: "Round", value: TrigonometryBlockOperations.Round},
             {label: "Ceiling", value: TrigonometryBlockOperations.Ceiling},
             {label: "Floor", value: TrigonometryBlockOperations.Floor},
+            {label: "Sqrt", value: TrigonometryBlockOperations.Sqrt},
             {label: "ArcCos", value: TrigonometryBlockOperations.ArcCos},
             {label: "ArcSin", value: TrigonometryBlockOperations.ArcSin},
             {label: "ArcTan", value: TrigonometryBlockOperations.ArcTan},
@@ -44,7 +45,7 @@ export class TrigonometryPropertyTabComponent extends React.Component<IPropertyC
                 <GeneralPropertyTabComponent globalState={this.props.globalState} block={this.props.block}/>
                 <LineContainerComponent title="PROPERTIES">  
                     <OptionsLineComponent label="Operation" options={operationOptions} target={trigonometryBlock} propertyName="operation" onSelect={(value: any) => {
-                        this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
                         this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                         this.forceUpdate();
                     }} />                  

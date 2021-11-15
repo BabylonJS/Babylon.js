@@ -4,11 +4,9 @@ import { VRCameraMetrics } from "./vrCameraMetrics";
 import { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
 import { Node } from "../../node";
+import { setVRRigMode } from "../RigModes/vrRigMode";
 
 import "../Inputs/arcRotateCameraVRDeviceOrientationInput";
-
-// Side effect import to define the stereoscopic mode.
-import "../RigModes/vrRigMode";
 
 Node.AddNodeConstructor("VRDeviceOrientationFreeCamera", (name, scene) => {
     return () => new VRDeviceOrientationArcRotateCamera(name, 0, 0, 1.0, Vector3.Zero(), scene);
@@ -47,4 +45,6 @@ export class VRDeviceOrientationArcRotateCamera extends ArcRotateCamera {
     public getClassName(): string {
         return "VRDeviceOrientationArcRotateCamera";
     }
+
+    protected _setRigMode = setVRRigMode.bind(null, this);
 }

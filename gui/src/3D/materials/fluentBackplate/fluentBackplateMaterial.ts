@@ -13,7 +13,7 @@ import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SubMesh } from "babylonjs/Meshes/subMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
-import { _TypeStore } from "babylonjs/Misc/typeStore";
+import { RegisterClass } from "babylonjs/Misc/typeStore";
 import { Color4 } from "babylonjs/Maths/math.color";
 import { EffectFallbacks } from "babylonjs/Materials/effectFallbacks";
 import { Constants } from "babylonjs/Engines/constants";
@@ -245,11 +245,11 @@ export class FluentBackplateMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh._materialDefines) {
+        if (!subMesh.materialDefines) {
             subMesh.materialDefines = new FluentBackplateMaterialDefines();
         }
 
-        const defines = <FluentBackplateMaterialDefines>subMesh._materialDefines;
+        const defines = <FluentBackplateMaterialDefines>subMesh.materialDefines;
         const scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
@@ -352,7 +352,7 @@ export class FluentBackplateMaterial extends PushMaterial {
     }
 
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
-        const defines = <FluentBackplateMaterialDefines>subMesh._materialDefines;
+        const defines = <FluentBackplateMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }
@@ -488,4 +488,4 @@ export class FluentBackplateMaterial extends PushMaterial {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.GUI.FluentBackplateMaterial"] = FluentBackplateMaterial;
+RegisterClass("BABYLON.GUI.FluentBackplateMaterial", FluentBackplateMaterial);

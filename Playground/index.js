@@ -16,6 +16,7 @@ var Versions = {
         "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.0/dist/babylon.js",
         "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.0/dist/gui/babylon.gui.min.js",
         "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.0/dist/inspector/babylon.inspector.bundle.js",
+        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.0/dist/nodeEditor/babylon.nodeEditor.js",
         "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.0/dist/materialsLibrary/babylonjs.materials.min.js",
         "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.0/dist/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js",
         "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.0/dist/postProcessesLibrary/babylonjs.postProcess.min.js",
@@ -65,12 +66,14 @@ let loadScriptAsync = function(url) {
     });
 }
 
-let readStringFromStore = function(key, defaultValue) {
-    if (localStorage.getItem(key) === null) {
+let readStringFromStore = function(key, defaultValue, useSessionStorage) {
+    let storage = useSessionStorage ? sessionStorage : localStorage;
+
+    if (storage.getItem(key) === null) {
         return defaultValue;
     }
 
-    return localStorage.getItem(key);
+    return storage.getItem(key);
 }
 
 let loadInSequence = async function(versions, index, resolve) {
@@ -83,7 +86,7 @@ let loadInSequence = async function(versions, index, resolve) {
 }
 
 let checkBabylonVersionAsync= function () {
-    let activeVersion = readStringFromStore("version", "Latest");
+    let activeVersion = readStringFromStore("version", "Latest", true);
 
     if (activeVersion === "Latest") {
         return Promise.resolve();

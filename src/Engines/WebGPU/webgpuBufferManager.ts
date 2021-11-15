@@ -1,6 +1,6 @@
 import { DataBuffer } from '../../Buffers/dataBuffer';
 import { WebGPUDataBuffer } from '../../Meshes/WebGPU/webgpuDataBuffer';
-import { TextureTools } from "../../Misc/textureTools";
+import { FromHalfFloat } from "../../Misc/textureTools";
 import { Nullable } from '../../types';
 import { Constants } from "../constants";
 import { allocateAndCopyTypedBuffer } from "../Extensions/engine.readTexture";
@@ -45,6 +45,10 @@ export class WebGPUBufferManager {
         return dataBuffer;
     }
 
+    public setRawData(buffer: GPUBuffer, dstByteOffset: number, src: ArrayBufferView, srcByteOffset: number, byteLength: number): void {
+        this._device.queue.writeBuffer(buffer, dstByteOffset, src.buffer, srcByteOffset, byteLength);
+    }
+
     public setSubData(dataBuffer: WebGPUDataBuffer, dstByteOffset: number, src: ArrayBufferView, srcByteOffset = 0, byteLength = 0): void {
         const buffer = dataBuffer.underlyingResource as GPUBuffer;
 
@@ -84,7 +88,7 @@ export class WebGPUBufferManager {
         }
         const srcData = new Uint16Array(arrayBuffer);
         while (dataLength--) {
-            destArray[dataLength] = TextureTools.FromHalfFloat(srcData[dataLength]);
+            destArray[dataLength] = FromHalfFloat(srcData[dataLength]);
         }
 
         return destArray;

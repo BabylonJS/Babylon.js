@@ -8,7 +8,7 @@ import { Control } from "./control";
 import { IFocusableControl } from "./focusableControl";
 import { ValueAndUnit } from "../valueAndUnit";
 import { VirtualKeyboard } from "./virtualKeyboard";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 import { Measure } from '../measure';
 import { TextWrapper } from './textWrapper';
 import { serialize } from 'babylonjs/Misc/decorators';
@@ -893,7 +893,7 @@ export class InputText extends Control implements IFocusableControl {
             context.shadowOffsetY = 0;
         }
 
-        if (!this._fontOffset) {
+        if (!this._fontOffset || this._wasDirty) {
             this._fontOffset = Control._GetFontOffset(context.font);
         }
 
@@ -1101,4 +1101,4 @@ export class InputText extends Control implements IFocusableControl {
         this.onKeyboardEventProcessedObservable.clear();
     }
 }
-_TypeStore.RegisteredTypes["BABYLON.GUI.InputText"] = InputText;
+RegisterClass("BABYLON.GUI.InputText", InputText);

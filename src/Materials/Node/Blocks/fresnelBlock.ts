@@ -3,7 +3,7 @@ import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
 import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
-import { _TypeStore } from '../../../Misc/typeStore';
+import { RegisterClass } from '../../../Misc/typeStore';
 import { InputBlock } from './Input/inputBlock';
 import { NodeMaterial } from '../nodeMaterial';
 
@@ -106,4 +106,4 @@ export class FresnelBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.FresnelBlock"] = FresnelBlock;
+RegisterClass("BABYLON.FresnelBlock", FresnelBlock);

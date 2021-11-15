@@ -13,6 +13,7 @@ export * from "./multiMaterial";
 export * from "./Occlusion/index";
 export * from "./PBR/index";
 export * from "./pushMaterial";
+export * from "./shaderLanguage";
 export * from "./shaderMaterial";
 export * from "./standardMaterial";
 export * from "./Textures/index";

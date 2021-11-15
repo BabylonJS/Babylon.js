@@ -8,7 +8,7 @@ import { BlurPostProcess } from "./blurPostProcess";
 import { Engine } from "../Engines/engine";
 import { Scene } from "../scene";
 import { Constants } from "../Engines/constants";
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 import { serialize } from '../Misc/decorators';
 
 /**
@@ -52,6 +52,7 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
         super(name, direction, kernel, options, camera, samplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE, engine, reusable, textureType = Constants.TEXTURETYPE_UNSIGNED_INT, `#define DOF 1\r\n`, blockCompilation);
 
         this.direction = direction;
+        this.externalTextureSamplerBinding = !!imageToBlur;
 
         this.onApplyObservable.add((effect: Effect) => {
             if (imageToBlur != null) {
@@ -65,4 +66,4 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.DepthOfFieldBlurPostProcess"] = DepthOfFieldBlurPostProcess;
+RegisterClass("BABYLON.DepthOfFieldBlurPostProcess", DepthOfFieldBlurPostProcess);

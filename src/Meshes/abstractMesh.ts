@@ -18,13 +18,14 @@ import { MaterialDefines } from "../Materials/materialDefines";
 import { Light } from "../Lights/light";
 import { Skeleton } from "../Bones/skeleton";
 import { MorphTargetManager } from "../Morph/morphTargetManager";
+import { IBakedVertexAnimationManager } from "../BakedVertexAnimation/bakedVertexAnimationManager";
 import { IEdgesRenderer } from "../Rendering/edgesRenderer";
 import { SolidParticle } from "../Particles/solidParticle";
 import { Constants } from "../Engines/constants";
 import { AbstractActionManager } from "../Actions/abstractActionManager";
 import { UniformBuffer } from "../Materials/uniformBuffer";
 import { _MeshCollisionData } from "../Collisions/meshCollisionData";
-import { _DevTools } from "../Misc/devTools";
+import { _WarnImport } from "../Misc/devTools";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import { extractMinAndMax } from "../Maths/math.functions";
 import { Color3, Color4 } from "../Maths/math.color";
@@ -32,7 +33,7 @@ import { Epsilon } from "../Maths/math.constants";
 import { Plane } from "../Maths/math.plane";
 import { Axis } from "../Maths/math.axis";
 import { IParticleSystem } from "../Particles/IParticleSystem";
-import { _TypeStore } from "../Misc/typeStore";
+import { RegisterClass } from "../Misc/typeStore";
 
 declare type Ray = import("../Culling/ray").Ray;
 declare type Collider = import("../Collisions/collider").Collider;
@@ -95,7 +96,9 @@ class _InternalAbstractMeshDataInfo {
     public _collisionRetryCount: number = 3;
     public _morphTargetManager: Nullable<MorphTargetManager> = null;
     public _renderingGroupId = 0;
+    public _bakedVertexAnimationManager: Nullable<IBakedVertexAnimationManager> = null;
     public _material: Nullable<Material> = null;
+    public _materialForRenderPass: Array<Material | undefined>; // map a render pass id (index in the array) to a Material
     public _positions: Nullable<Vector3[]> = null;
     // Collisions
     public _meshCollisionData = new _MeshCollisionData();
@@ -285,6 +288,22 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         this._syncGeometryWithMorphTargetManager();
     }
 
+    /**
+     * Gets or sets the baked vertex animation manager
+     * @see https://doc.babylonjs.com/divingDeeper/animation/baked_texture_animations
+     */
+     public get bakedVertexAnimationManager(): Nullable<IBakedVertexAnimationManager> {
+        return this._internalAbstractMeshDataInfo._bakedVertexAnimationManager;
+    }
+
+    public set bakedVertexAnimationManager(value: Nullable<IBakedVertexAnimationManager>) {
+        if (this._internalAbstractMeshDataInfo._bakedVertexAnimationManager === value) {
+            return;
+        }
+        this._internalAbstractMeshDataInfo._bakedVertexAnimationManager = value;
+        this._markSubMeshesAsAttributesDirty();
+    }
+
     /** @hidden */
     public _syncGeometryWithMorphTargetManager(): void { }
 
@@ -446,6 +465,27 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         }
 
         this._unBindEffect();
+    }
+
+    /**
+     * Gets the material used to render the mesh in a specific render pass
+     * @param renderPassId render pass id
+     * @returns material used for the render pass. If no specific material is used for this render pass, undefined is returned (meaning mesh.material is used for this pass)
+     */
+    public getMaterialForRenderPass(renderPassId: number): Material | undefined {
+        return this._internalAbstractMeshDataInfo._materialForRenderPass?.[renderPassId];
+    }
+
+    /**
+     * Sets the material to be used to render the mesh in a specific render pass
+     * @param renderPassId render pass id
+     * @param material material to use for this render pass. If undefined is passed, no specific material will be used for this render pass but the regular material will be used instead (mesh.material)
+     */
+    public setMaterialForRenderPass(renderPassId: number, material?: Material): void {
+        if (!this._internalAbstractMeshDataInfo._materialForRenderPass) {
+            this._internalAbstractMeshDataInfo._materialForRenderPass = [];
+        }
+        this._internalAbstractMeshDataInfo._materialForRenderPass[renderPassId] = material;
     }
 
     /**
@@ -933,9 +973,13 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             return;
         }
 
-        for (var subMesh of this.subMeshes) {
-            if (subMesh._materialDefines) {
-                func(subMesh._materialDefines);
+        for (const subMesh of this.subMeshes) {
+            for (let i = 0; i < subMesh._drawWrappers.length; ++i) {
+                const drawWrapper = subMesh._drawWrappers[i];
+                if (!drawWrapper || !drawWrapper.defines || !(drawWrapper.defines as MaterialDefines).markAllAsDirty) {
+                    continue;
+                }
+                func(drawWrapper.defines as MaterialDefines);
             }
         }
     }
@@ -953,6 +997,30 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     /** @hidden */
     public _markSubMeshesAsMiscDirty() {
         this._markSubMeshesAsDirty((defines) => defines.markAsMiscDirty());
+    }
+
+    /**
+    * Flag the AbstractMesh as dirty (Forcing it to update everything)
+    * @param property if set to "rotation" the objects rotationQuaternion will be set to null
+    * @returns this AbstractMesh
+    */
+     public markAsDirty(property?: string): AbstractMesh {
+        this._currentRenderId = Number.MAX_VALUE;
+        this._isDirty = true;
+        return this;
+     }
+
+     /**
+     * Resets the draw wrappers cache for all submeshes of this abstract mesh
+     */
+    public resetDrawCache(): void {
+        if (!this.subMeshes) {
+             return;
+        }
+
+        for (const subMesh of this.subMeshes) {
+            subMesh.resetDrawCache();
+        }
     }
 
     /**
@@ -1426,7 +1494,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         if (this._boundingInfo) {
             this._boundingInfo.update(effectiveMesh.worldMatrixFromCache);
         } else {
-            this._boundingInfo = new BoundingInfo(this.absolutePosition, this.absolutePosition, effectiveMesh.worldMatrixFromCache);
+            this._boundingInfo = new BoundingInfo(this.position, this.position, effectiveMesh.worldMatrixFromCache);
         }
         this._updateSubMeshesBoundingInfo(effectiveMesh.worldMatrixFromCache);
         return this;
@@ -1953,20 +2021,22 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     /**
      * Adds the passed mesh as a child to the current mesh
      * @param mesh defines the child mesh
+     * @param preserveScalingSign if true, keep scaling sign of child. Otherwise, scaling sign might change.
      * @returns the current mesh
      */
-    public addChild(mesh: AbstractMesh): AbstractMesh {
-        mesh.setParent(this);
+    public addChild(mesh: AbstractMesh, preserveScalingSign: boolean = false): AbstractMesh {
+        mesh.setParent(this, preserveScalingSign);
         return this;
     }
 
     /**
      * Removes the passed mesh from the current mesh children list
      * @param mesh defines the child mesh
+     * @param preserveScalingSign if true, keep scaling sign of child. Otherwise, scaling sign might change.
      * @returns the current mesh
      */
-    public removeChild(mesh: AbstractMesh): AbstractMesh {
-        mesh.setParent(null);
+    public removeChild(mesh: AbstractMesh, preserveScalingSign: boolean = false): AbstractMesh {
+        mesh.setParent(null, preserveScalingSign);
         return this;
     }
 
@@ -2398,7 +2468,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @returns the currentAbstractMesh
      */
     disableEdgesRendering(): AbstractMesh {
-        throw _DevTools.WarnImport("EdgesRenderer");
+        throw _WarnImport("EdgesRenderer");
     }
 
     /**
@@ -2411,7 +2481,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @see https://www.babylonjs-playground.com/#19O9TU#0
      */
     enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean, options?: IEdgesRendererOptions): AbstractMesh {
-        throw _DevTools.WarnImport("EdgesRenderer");
+        throw _WarnImport("EdgesRenderer");
     }
 
     /**
@@ -2423,4 +2493,4 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.AbstractMesh"] = AbstractMesh;
+RegisterClass("BABYLON.AbstractMesh", AbstractMesh);

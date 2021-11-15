@@ -3,7 +3,7 @@ import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBloc
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
-import { _TypeStore } from '../../../Misc/typeStore';
+import { RegisterClass } from '../../../Misc/typeStore';
 import { NodeMaterial } from '../nodeMaterial';
 import { InputBlock } from './Input/inputBlock';
 import { Vector4 } from '../../../Maths/math.vector';
@@ -111,4 +111,4 @@ export class MatrixBuilderBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.MatrixBuilder"] = MatrixBuilderBlock;
+RegisterClass("BABYLON.MatrixBuilder", MatrixBuilderBlock);

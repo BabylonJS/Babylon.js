@@ -1,5 +1,5 @@
 import { InputText } from "./inputText";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 import { TextWrapper } from './textWrapper';
 
 /**
@@ -16,4 +16,4 @@ export class InputPassword extends InputText {
         return pwdTextWrapper;
     }
 }
-_TypeStore.RegisteredTypes["BABYLON.GUI.InputPassword"] = InputPassword;
+RegisterClass("BABYLON.GUI.InputPassword", InputPassword);

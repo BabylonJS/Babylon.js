@@ -3,7 +3,7 @@ import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from '../../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
 import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
-import { _TypeStore } from '../../../../Misc/typeStore';
+import { RegisterClass } from '../../../../Misc/typeStore';
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { ReflectionTextureBaseBlock } from '../Dual/reflectionTextureBaseBlock';
 import { AbstractMesh } from '../../../../Meshes/abstractMesh';
@@ -220,7 +220,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         effect.setFloat3(this._vReflectionMicrosurfaceInfosName, width, reflectionTexture.lodGenerationScale, reflectionTexture.lodGenerationOffset);
         effect.setFloat2(this._vReflectionFilteringInfoName, width, Scalar.Log2(width));
 
-        const defines = subMesh._materialDefines as NodeMaterialDefines;
+        const defines = subMesh.materialDefines as NodeMaterialDefines;
 
         const polynomials = reflectionTexture.sphericalPolynomial;
         if (defines.USESPHERICALFROMREFLECTIONMAP && polynomials) {
@@ -457,4 +457,4 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.ReflectionBlock"] = ReflectionBlock;
+RegisterClass("BABYLON.ReflectionBlock", ReflectionBlock);

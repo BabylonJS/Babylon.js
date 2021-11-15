@@ -577,10 +577,16 @@ export class Material implements IAnimatable {
     public pointSize = 1.0;
 
     /**
-     * Stores the z offset value
+     * Stores the z offset Factor value
      */
     @serialize()
     public zOffset = 0;
+
+    /**
+     * Stores the z offset Units value
+     */
+     @serialize()
+     public zOffsetUnits = 0;
 
     public get wireframe(): boolean {
         switch (this._fillMode) {
@@ -658,6 +664,10 @@ export class Material implements IAnimatable {
     public _getDrawWrapper(): DrawWrapper {
         return this._drawWrapper;
     }
+    /** @hidden */
+    public _setDrawWrapper(drawWrapper: DrawWrapper) {
+        this._drawWrapper = drawWrapper;
+    }
 
     /**
      * Specifies if uniform buffers should be used
@@ -668,7 +678,7 @@ export class Material implements IAnimatable {
      * Stores a reference to the scene
      */
     private _scene: Scene;
-    private _needToBindSceneUbo: boolean;
+    protected _needToBindSceneUbo: boolean;
 
     /**
      * Stores the fill mode state
@@ -951,7 +961,7 @@ export class Material implements IAnimatable {
         var reverse = orientation === Material.ClockWiseSideOrientation;
 
         engine.enableEffect(effect ? effect : this._getDrawWrapper());
-        engine.setState(this.backFaceCulling, this.zOffset, false, reverse, this.cullBackFaces, this.stencil);
+        engine.setState(this.backFaceCulling, this.zOffset, false, reverse, this.cullBackFaces, this.stencil, this.zOffsetUnits);
 
         return reverse;
     }
@@ -1027,8 +1037,8 @@ export class Material implements IAnimatable {
         if (this._needToBindSceneUbo) {
             if (effect) {
                 this._needToBindSceneUbo = false;
-                this._scene.finalizeSceneUbo();
                 MaterialHelper.BindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
+                this._scene.finalizeSceneUbo();
             }
         }
         if (mesh) {
@@ -1164,8 +1174,8 @@ export class Material implements IAnimatable {
                 var allDone = true, lastError = null;
                 if (mesh.subMeshes) {
                     let tempSubMesh = new SubMesh(0, 0, 0, 0, 0, mesh, undefined, false, false);
-                    if (tempSubMesh._materialDefines) {
-                        tempSubMesh._materialDefines._renderId = -1;
+                    if (tempSubMesh.materialDefines) {
+                        tempSubMesh.materialDefines._renderId = -1;
                     }
                     if (!this.isReadyForSubMesh(mesh, tempSubMesh, localOptions.useInstances)) {
                         if (tempSubMesh.effect && tempSubMesh.effect.getCompilationError() && tempSubMesh.effect.allFallbacksProcessed()) {
@@ -1301,20 +1311,23 @@ export class Material implements IAnimatable {
         }
 
         const meshes = this.getScene().meshes;
-        for (var mesh of meshes) {
+        for (const mesh of meshes) {
             if (!mesh.subMeshes) {
                 continue;
             }
-            for (var subMesh of mesh.subMeshes) {
+            for (const subMesh of mesh.subMeshes) {
                 if (subMesh.getMaterial() !== this) {
                     continue;
                 }
 
-                if (!subMesh._materialDefines) {
-                    continue;
+                for (const drawWrapper of subMesh._drawWrappers) {
+                    if (!drawWrapper || !drawWrapper.defines || !(drawWrapper.defines as MaterialDefines).markAllAsDirty) {
+                        continue;
+                    }
+                    if (this._materialContext === drawWrapper.materialContext) {
+                        func(drawWrapper.defines as MaterialDefines);
+                    }
                 }
-
-                func(subMesh._materialDefines);
             }
         }
     }
@@ -1494,9 +1507,9 @@ export class Material implements IAnimatable {
             var geometry = <Geometry>((<Mesh>mesh).geometry);
             if (this._storeEffectOnSubMeshes) {
                 for (var subMesh of mesh.subMeshes) {
-                    geometry._releaseVertexArrayObject(subMesh._materialEffect);
-                    if (forceDisposeEffect && subMesh._materialEffect) {
-                        subMesh._materialEffect.dispose();
+                    geometry._releaseVertexArrayObject(subMesh.effect);
+                    if (forceDisposeEffect && subMesh.effect) {
+                        subMesh.effect.dispose();
                     }
                 }
             } else {

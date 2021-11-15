@@ -4,7 +4,7 @@ import { Effect } from "../Materials/effect";
 import { Engine } from "../Engines/engine";
 
 import "../Shaders/blackAndWhite.fragment";
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 import { serialize, SerializationHelper } from '../Misc/decorators';
 import { Nullable } from '../types';
 
@@ -57,4 +57,4 @@ export class BlackAndWhitePostProcess extends PostProcess {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.BlackAndWhitePostProcess"] = BlackAndWhitePostProcess;
+RegisterClass("BABYLON.BlackAndWhitePostProcess", BlackAndWhitePostProcess);

@@ -15,7 +15,7 @@ import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SubMesh } from "babylonjs/Meshes/subMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 
 import "./mix.fragment";
 import "./mix.vertex";
@@ -44,6 +44,7 @@ class MixMaterialDefines extends MaterialDefines {
     public INSTANCES = false;
     public MIXMAP2 = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
+    public SKIPFINALCOLORCLAMP = false;
 
     constructor() {
         super();
@@ -157,11 +158,11 @@ export class MixMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh._materialDefines) {
+        if (!subMesh.materialDefines) {
             subMesh.materialDefines = new MixMaterialDefines();
         }
 
-        var defines = <MixMaterialDefines>subMesh._materialDefines;
+        var defines = <MixMaterialDefines>subMesh.materialDefines;
         var scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
@@ -325,7 +326,7 @@ export class MixMaterial extends PushMaterial {
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         var scene = this.getScene();
 
-        var defines = <MixMaterialDefines>subMesh._materialDefines;
+        var defines = <MixMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }
@@ -565,4 +566,4 @@ export class MixMaterial extends PushMaterial {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.MixMaterial"] = MixMaterial;
+RegisterClass("BABYLON.MixMaterial", MixMaterial);

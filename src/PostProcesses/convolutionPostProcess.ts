@@ -6,7 +6,7 @@ import { Effect } from "../Materials/effect";
 import { Constants } from "../Engines/constants";
 
 import "../Shaders/convolution.fragment";
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 import { serialize, SerializationHelper } from '../Misc/decorators';
 
 declare type Scene = import("../scene").Scene;
@@ -89,4 +89,4 @@ export class ConvolutionPostProcess extends PostProcess {
     public static GaussianKernel = [0, 1, 0, 1, 1, 1, 0, 1, 0];
 }
 
-_TypeStore.RegisteredTypes["BABYLON.ConvolutionPostProcess"] = ConvolutionPostProcess;
+RegisterClass("BABYLON.ConvolutionPostProcess", ConvolutionPostProcess);

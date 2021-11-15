@@ -5,3 +5,4 @@ export * from "./textureBlock";
 export * from "./reflectionTextureBlock";
 export * from "./currentScreenBlock";
 export * from "./sceneDepthBlock";
+export * from "./imageSourceBlock";

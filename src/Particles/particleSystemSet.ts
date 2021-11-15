@@ -1,7 +1,7 @@
 import { Nullable } from "../types";
 import { Color3 } from '../Maths/math.color';
 import { AbstractMesh } from "../Meshes/abstractMesh";
-import { SphereBuilder } from "../Meshes/Builders/sphereBuilder";
+import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
 import { IParticleSystem } from "./IParticleSystem";
 import { GPUParticleSystem } from "./gpuParticleSystem";
 import { EngineStore } from "../Engines/engineStore";
@@ -78,7 +78,7 @@ export class ParticleSystemSet implements IDisposable {
             renderingGroupId: renderingGroupId
         };
 
-        let emitterMesh = SphereBuilder.CreateSphere("emitterSphere", { diameter: options.diameter, segments: options.segments }, scene);
+        let emitterMesh = CreateSphere("emitterSphere", { diameter: options.diameter, segments: options.segments }, scene);
         emitterMesh.renderingGroupId = renderingGroupId;
 
         var material = new StandardMaterial("emitterSphereMaterial", scene);
@@ -148,16 +148,17 @@ export class ParticleSystemSet implements IDisposable {
      * @param data defines a JSON compatible representation of the set
      * @param scene defines the hosting scene
      * @param gpu defines if we want GPU particles or CPU particles
+     * @param capacity defines the system capacity (if null or undefined the sotred capacity will be used)
      * @returns a new ParticleSystemSet
      */
-    public static Parse(data: any, scene: Scene, gpu = false): ParticleSystemSet {
+    public static Parse(data: any, scene: Scene, gpu = false, capacity?: number): ParticleSystemSet {
         var result = new ParticleSystemSet();
         var rootUrl = this.BaseAssetsUrl + "/textures/";
 
         scene = scene || EngineStore.LastCreatedScene;
 
         for (var system of data.systems) {
-            result.systems.push(gpu ? GPUParticleSystem.Parse(system, scene, rootUrl, true) : ParticleSystem.Parse(system, scene, rootUrl, true));
+            result.systems.push(gpu ? GPUParticleSystem.Parse(system, scene, rootUrl, true, capacity) : ParticleSystem.Parse(system, scene, rootUrl, true, capacity));
         }
 
         if (data.emitter) {

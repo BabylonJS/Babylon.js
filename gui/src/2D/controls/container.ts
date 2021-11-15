@@ -4,7 +4,7 @@ import { Logger } from "babylonjs/Misc/logger";
 import { Control } from "./control";
 import { Measure } from "../measure";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
 import { serialize } from 'babylonjs/Misc/decorators';
 import { ICanvasRenderingContext } from 'babylonjs/Engines/ICanvas';
@@ -573,4 +573,4 @@ export class Container extends Control {
         }
     }
 }
-_TypeStore.RegisteredTypes["BABYLON.GUI.Container"] = Container;
+RegisterClass("BABYLON.GUI.Container", Container);

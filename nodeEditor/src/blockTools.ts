@@ -80,10 +80,21 @@ import { FragCoordBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fragCoo
 import { ScreenSizeBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/screenSizeBlock';
 import { MatrixBuilderBlock } from 'babylonjs/Materials/Node/Blocks/matrixBuilderBlock';
 import { SceneDepthBlock } from 'babylonjs/Materials/Node/Blocks/Dual/sceneDepthBlock';
+import { ImageSourceBlock } from 'babylonjs/Materials/Node/Blocks/Dual/imageSourceBlock';
+import { CloudBlock } from 'babylonjs/Materials/Node/Blocks/cloudBlock';
+import { VoronoiNoiseBlock } from 'babylonjs/Materials/Node/Blocks/voronoiNoiseBlock';
+import { ScreenSpaceBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/screenSpaceBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
         switch (data) {
+
+            case "VoronoiNoiseBlock":
+                return new VoronoiNoiseBlock("VoronoiNoise");
+            case "ScreenSpaceBlock":
+                return new ScreenSpaceBlock("ScreenSpace");
+            case "CloudBlock":
+                return new CloudBlock("Cloud");
             case "MatrixBuilderBlock":
                 return new MatrixBuilderBlock("MatrixBuilder");
             case "DesaturateBlock":
@@ -551,6 +562,8 @@ export class BlockTools {
                 let andBlock = new ConditionalBlock("And");
                 andBlock.condition = ConditionalBlockConditions.And;
                 return andBlock;
+            case "ImageSourceBlock":
+                return new ImageSourceBlock("ImageSource");
         }
 
         return null;

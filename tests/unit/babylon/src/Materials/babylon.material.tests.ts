@@ -35,13 +35,13 @@ describe('Babylon Material', function () {
     describe('#PBRMaterial', () => {
         it('forceCompilation of a single material', () => {
             const scene = new BABYLON.Scene(subject);
-            const mesh = BABYLON.Mesh.CreateBox("mesh", 1, scene);
+            const mesh = BABYLON.MeshBuilder.CreateBox("mesh", { size: 1 }, scene);
             const material = new BABYLON.PBRMaterial("material", scene);
             return material.forceCompilationAsync(mesh);
         });
         it('forceCompilation of already compiled material', () => {
             const scene = new BABYLON.Scene(subject);
-            const mesh = BABYLON.Mesh.CreateBox("mesh", 1, scene);
+            const mesh = BABYLON.MeshBuilder.CreateBox("mesh", { size: 1 }, scene);
             const material = new BABYLON.PBRMaterial("material", scene);
             material.albedoTexture = new BABYLON.Texture("/Playground/scenes/BoomBox/BoomBox_baseColor.png", scene);
             return material.forceCompilationAsync(mesh).then(() => {
@@ -50,7 +50,7 @@ describe('Babylon Material', function () {
         });
         it('forceCompilation of same material in parallel', () => {
             const scene = new BABYLON.Scene(subject);
-            const mesh = BABYLON.Mesh.CreateBox("mesh", 1, scene);
+            const mesh = BABYLON.MeshBuilder.CreateBox("mesh", { size: 1 }, scene);
             const material = new BABYLON.PBRMaterial("material", scene);
             material.albedoTexture = new BABYLON.Texture("/Playground/scenes/BoomBox/BoomBox_baseColor.png", scene);
             return Promise.all([

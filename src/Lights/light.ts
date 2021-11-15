@@ -8,7 +8,7 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Effect } from "../Materials/effect";
 import { UniformBuffer } from "../Materials/uniformBuffer";
 import { IShadowGenerator } from "./Shadows/shadowGenerator";
-import { _TypeStore } from '../Misc/typeStore';
+import { GetClass } from '../Misc/typeStore';
 import { ISortableLight, LightConstants } from "./lightConstants";
 
 /**
@@ -420,6 +420,8 @@ export abstract class Light extends Node implements ISortableLight {
 
         if (needUpdate) {
             this._uniformBuffer.update();
+        } else {
+            this._uniformBuffer.bindUniformBuffer();
         }
     }
 
@@ -590,6 +592,9 @@ export abstract class Light extends Node implements ISortableLight {
             clonedLight.parent = newParent;
         }
         clonedLight.setEnabled(this.isEnabled());
+
+        this.onClonedObservable.notifyObservers(clonedLight);
+
         return clonedLight;
     }
 
@@ -599,13 +604,14 @@ export abstract class Light extends Node implements ISortableLight {
      */
     public serialize(): any {
         var serializationObject = SerializationHelper.Serialize(this);
+        serializationObject.uniqueId = this.uniqueId;
 
         // Type
         serializationObject.type = this.getTypeID();
 
         // Parent
         if (this.parent) {
-            serializationObject.parentId = this.parent.id;
+            serializationObject.parentId = this.parent.uniqueId;
         }
 
         // Inclusion / exclusions
@@ -626,6 +632,8 @@ export abstract class Light extends Node implements ISortableLight {
         // Animations
         SerializationHelper.AppendSerializedAnimations(this, serializationObject);
         serializationObject.ranges = this.serializeAnimationRanges();
+
+        serializationObject.isEnabled = this.isEnabled();
 
         return serializationObject;
     }
@@ -692,7 +700,7 @@ export abstract class Light extends Node implements ISortableLight {
         if (parsedLight.animations) {
             for (var animationIndex = 0; animationIndex < parsedLight.animations.length; animationIndex++) {
                 var parsedAnimation = parsedLight.animations[animationIndex];
-                const internalClass = _TypeStore.GetClass("BABYLON.Animation");
+                const internalClass = GetClass("BABYLON.Animation");
                 if (internalClass) {
                     light.animations.push(internalClass.Parse(parsedAnimation));
                 }
@@ -702,6 +710,11 @@ export abstract class Light extends Node implements ISortableLight {
 
         if (parsedLight.autoAnimate) {
             scene.beginAnimation(light, parsedLight.autoAnimateFrom, parsedLight.autoAnimateTo, parsedLight.autoAnimateLoop, parsedLight.autoAnimateSpeed || 1.0);
+        }
+
+        // Check if isEnabled is defined to be back compatible with prior serialized versions.
+        if (parsedLight.isEnabled !== undefined) {
+            light.setEnabled(parsedLight.isEnabled);
         }
 
         return light;

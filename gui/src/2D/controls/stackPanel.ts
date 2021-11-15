@@ -3,7 +3,7 @@ import { Tools } from "babylonjs/Misc/tools";
 import { Container } from "./container";
 import { Measure } from "../measure";
 import { Control } from "./control";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 import { serialize } from 'babylonjs/Misc/decorators';
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
@@ -223,4 +223,4 @@ export class StackPanel extends Container {
     }
 
 }
-_TypeStore.RegisteredTypes["BABYLON.GUI.StackPanel"] = StackPanel;
+RegisterClass("BABYLON.GUI.StackPanel", StackPanel);

@@ -26,7 +26,6 @@ import { IExportOptions } from "./glTFSerializer";
 import { _GLTFUtilities } from "./glTFUtilities";
 import { GLTFData } from "./glTFData";
 import { _GLTFAnimation } from "./glTFAnimation";
-import { Epsilon } from 'babylonjs/Maths/math.constants';
 
 /**
  * Utility interface for storing vertex attribute data
@@ -1543,7 +1542,7 @@ export class _Exporter {
                     for (const attribute of attributeData) {
                         const attributeKind = attribute.kind;
                         if ((attributeKind === VertexBuffer.UVKind || attributeKind === VertexBuffer.UV2Kind) && !this._options.exportUnusedUVs) {
-                            if (glTFMaterial && !this._glTFMaterialExporter._hasTexturesPresent(glTFMaterial)) {
+                            if (!glTFMaterial || !this._glTFMaterialExporter._hasTexturesPresent(glTFMaterial)) {
                                 continue;
                             }
                         }
@@ -1632,16 +1631,12 @@ export class _Exporter {
             if (node.name !== "__root__") {
                 return false;
             }
+
             // Transform
             let matrix = node.getWorldMatrix();
-            let matrixToLeftHanded = Matrix.Compose(this._convertToRightHandedSystem ? new Vector3(-1, 1, 1) : Vector3.One(), Quaternion.Identity(), Vector3.Zero());
-            let matrixProduct = matrix.multiply(matrixToLeftHanded);
-            let matrixIdentity = Matrix.IdentityReadOnly;
 
-            for (let i = 0; i < 16; i++) {
-                if (Math.abs(matrixProduct.m[i] - matrixIdentity.m[i]) > Epsilon) {
-                    return false;
-                }
+            if (matrix.determinant() === 1) {
+                return false;
             }
 
             // Geometry
@@ -1701,8 +1696,9 @@ export class _Exporter {
             }
         });
 
-        return this._glTFMaterialExporter._convertMaterialsToGLTFAsync(babylonScene.materials, ImageMimeType.PNG, true).then(() => {
-            return this.createNodeMapAndAnimationsAsync(babylonScene, nodes, binaryWriter).then((nodeMap) => {
+        const [exportNodes, exportMaterials] = this.getExportNodes(nodes);
+        return this._glTFMaterialExporter._convertMaterialsToGLTFAsync(exportMaterials, ImageMimeType.PNG, true).then(() => {
+            return this.createNodeMapAndAnimationsAsync(babylonScene, exportNodes, binaryWriter).then((nodeMap) => {
                 return this.createSkinsAsync(babylonScene, nodeMap, binaryWriter).then((skinMap) => {
                     this._nodeMap = nodeMap;
 
@@ -1773,13 +1769,49 @@ export class _Exporter {
     }
 
     /**
+     * Getting the nodes and materials that would be exported.
+     * @param nodes Babylon transform nodes
+     * @returns Array of nodes which would be exported.
+     * @returns Set of materials which would be exported.
+     */
+    private getExportNodes(nodes: Node[]): [Node[], Set<Material>] {
+        const exportNodes: Node[] = [];
+        const exportMaterials: Set<Material> = new Set<Material>();
+
+        for (const babylonNode of nodes) {
+            if (!this._options.shouldExportNode || this._options.shouldExportNode(babylonNode)) {
+                exportNodes.push(babylonNode);
+
+                if (babylonNode.getClassName() === "Mesh") {
+                    const mesh = babylonNode as Mesh;
+                    if (mesh.material) {
+                        exportMaterials.add(mesh.material);
+                    }
+                } else {
+                    const meshes: AbstractMesh[] = babylonNode.getChildMeshes(false);
+                    for (const mesh of meshes) {
+                        if (mesh.material) {
+                            exportMaterials.add(mesh.material);
+                        }
+                    }
+                }
+
+            } else {
+                `Excluding node ${babylonNode.name}`;
+            }
+        }
+
+        return [exportNodes, exportMaterials];
+    }
+
+    /**
      * Creates a mapping of Node unique id to node index and handles animations
      * @param babylonScene Babylon Scene
      * @param nodes Babylon transform nodes
      * @param binaryWriter Buffer to write binary data to
      * @returns Node mapping of unique id to index
      */
-    private createNodeMapAndAnimationsAsync(babylonScene: Scene, nodes: Node[], binaryWriter: _BinaryWriter): Promise<{ [key: number]: number }> {
+    private createNodeMapAndAnimationsAsync(babylonScene: Scene, nodes: Node[], binaryWriter: _BinaryWriter): Promise<{ [key: number]: number }>  {
         let promiseChain = Promise.resolve();
         const nodeMap: { [key: number]: number } = {};
         let nodeIndex: number;
@@ -1791,38 +1823,33 @@ export class _Exporter {
         let idleGLTFAnimations: IAnimation[] = [];
 
         for (let babylonNode of nodes) {
-            if (!this._options.shouldExportNode || this._options.shouldExportNode(babylonNode)) {
-                promiseChain = promiseChain.then(() => {
-                    let convertToRightHandedSystem = this._convertToRightHandedSystemMap[babylonNode.uniqueId];
-                    return this.createNodeAsync(babylonNode, binaryWriter, convertToRightHandedSystem, nodeMap).then((node) => {
-                        const promise = this._extensionsPostExportNodeAsync("createNodeAsync", node, babylonNode, nodeMap);
-                        if (promise == null) {
-                            Tools.Warn(`Not exporting node ${babylonNode.name}`);
-                            return Promise.resolve();
-                        }
-                        else {
-                            return promise.then((node) => {
-                                if (!node) {
-                                    return;
-                                }
-                                this._nodes.push(node);
-                                nodeIndex = this._nodes.length - 1;
-                                nodeMap[babylonNode.uniqueId] = nodeIndex;
+            promiseChain = promiseChain.then(() => {
+                let convertToRightHandedSystem = this._convertToRightHandedSystemMap[babylonNode.uniqueId];
+                return this.createNodeAsync(babylonNode, binaryWriter, convertToRightHandedSystem, nodeMap).then((node) => {
+                    const promise = this._extensionsPostExportNodeAsync("createNodeAsync", node, babylonNode, nodeMap);
+                    if (promise == null) {
+                        Tools.Warn(`Not exporting node ${babylonNode.name}`);
+                        return Promise.resolve();
+                    }
+                    else {
+                        return promise.then((node) => {
+                            if (!node) {
+                                return;
+                            }
+                            this._nodes.push(node);
+                            nodeIndex = this._nodes.length - 1;
+                            nodeMap[babylonNode.uniqueId] = nodeIndex;
 
-                                if (!babylonScene.animationGroups.length) {
-                                    _GLTFAnimation._CreateMorphTargetAnimationFromMorphTargetAnimations(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, this._nodes, binaryWriter, this._bufferViews, this._accessors, convertToRightHandedSystem, this._animationSampleRate);
-                                    if (babylonNode.animations.length) {
-                                        _GLTFAnimation._CreateNodeAnimationFromNodeAnimations(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, this._nodes, binaryWriter, this._bufferViews, this._accessors, convertToRightHandedSystem, this._animationSampleRate);
-                                    }
+                            if (!babylonScene.animationGroups.length) {
+                                _GLTFAnimation._CreateMorphTargetAnimationFromMorphTargetAnimations(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, this._nodes, binaryWriter, this._bufferViews, this._accessors, convertToRightHandedSystem, this._animationSampleRate);
+                                if (babylonNode.animations.length) {
+                                    _GLTFAnimation._CreateNodeAnimationFromNodeAnimations(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, this._nodes, binaryWriter, this._bufferViews, this._accessors, convertToRightHandedSystem, this._animationSampleRate);
                                 }
-                            });
-                        }
-                    });
+                            }
+                        });
+                    }
                 });
-            }
-            else {
-                `Excluding node ${babylonNode.name}`;
-            }
+            });
         }
 
         return promiseChain.then(() => {
@@ -1902,35 +1929,37 @@ export class _Exporter {
             // create skin
             const skin: ISkin = { joints: [] };
             const inverseBindMatrices: Matrix[] = [];
-            const skeletonMesh = babylonScene.meshes.find((mesh) => { mesh.skeleton === skeleton; });
-            skin.skeleton = skeleton.overrideMesh === null ? (skeletonMesh ? nodeMap[skeletonMesh.uniqueId] : undefined) : nodeMap[skeleton.overrideMesh.uniqueId];
+
             const boneIndexMap: { [index: number]: Bone } = {};
-            let boneIndexMax: number = -1;
-            let boneIndex: number = -1;
-            for (let bone of skeleton.bones) {
-                boneIndex = bone.getIndex();
-                if (boneIndex > -1) {
+            let maxBoneIndex = -1;
+            for (let i = 0; i < skeleton.bones.length; ++i) {
+                const bone = skeleton.bones[i];
+                const boneIndex = bone.getIndex() ?? i;
+                if (boneIndex !== -1) {
                     boneIndexMap[boneIndex] = bone;
+                    if (boneIndex > maxBoneIndex) {
+                        maxBoneIndex = boneIndex;
+                    }
                 }
-                boneIndexMax = Math.max(boneIndexMax, boneIndex);
             }
-            for (let i = 0; i <= boneIndexMax; ++i) {
-                const bone = boneIndexMap[i]!;
+
+            for (let boneIndex = 0; boneIndex <= maxBoneIndex; ++boneIndex) {
+                const bone = boneIndexMap[boneIndex];
+                inverseBindMatrices.push(bone.getInvertedAbsoluteTransform());
+
                 const transformNode = bone.getTransformNode();
                 if (transformNode) {
-                    const boneMatrix = bone.getInvertedAbsoluteTransform();
-                    if (this._convertToRightHandedSystem) {
-                        _GLTFUtilities._GetRightHandedMatrixFromRef(boneMatrix);
-                    }
-                    inverseBindMatrices.push(boneMatrix);
                     skin.joints.push(nodeMap[transformNode.uniqueId]);
+                } else {
+                    Tools.Warn("Exporting a bone without a linked transform node is currently unsupported");
                 }
             }
+
             // create buffer view for inverse bind matrices
             const byteStride = 64; // 4 x 4 matrix of 32 bit float
             const byteLength = inverseBindMatrices.length * byteStride;
             const bufferViewOffset = binaryWriter.getByteOffset();
-            const bufferView = _GLTFUtilities._CreateBufferView(0, bufferViewOffset, byteLength, byteStride, "InverseBindMatrices" + " - " + skeleton.name);
+            const bufferView = _GLTFUtilities._CreateBufferView(0, bufferViewOffset, byteLength, undefined, "InverseBindMatrices" + " - " + skeleton.name);
             this._bufferViews.push(bufferView);
             const bufferViewIndex = this._bufferViews.length - 1;
             const bindMatrixAccessor = _GLTFUtilities._CreateAccessor(bufferViewIndex, "InverseBindMatrices" + " - " + skeleton.name, AccessorType.MAT4, AccessorComponentType.FLOAT, inverseBindMatrices.length, null, null, null);

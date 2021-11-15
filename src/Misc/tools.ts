@@ -1,20 +1,19 @@
 import { Nullable, float } from "../types";
 import { Observable } from "./observable";
-import { DomManagement } from "./domManagement";
+import { GetDOMTextContent, IsNavigatorAvailable, IsWindowObjectExist } from "./domManagement";
 import { Logger } from "./logger";
-import { _TypeStore } from "./typeStore";
 import { DeepCopier } from "./deepCopier";
 import { PrecisionDate } from "./precisionDate";
-import { _DevTools } from "./devTools";
+import { _WarnImport } from "./devTools";
 import { WebRequest } from "./webRequest";
 import { IFileRequest } from "./fileRequest";
 import { EngineStore } from "../Engines/engineStore";
-import { FileTools, ReadFileError } from "./fileTools";
+import { FileToolsOptions, DecodeBase64UrlToBinary, IsBase64DataUrl, LoadFile as FileToolsLoadFile, LoadImage as FileToolLoadImage, ReadFile as FileToolsReadFile, ReadFileError, SetCorsBehavior } from "./fileTools";
 import { IOfflineProvider } from "../Offline/IOfflineProvider";
 import { PromisePolyfill } from "./promise";
 import { TimingTools } from "./timingTools";
 import { InstantiationTools } from "./instantiationTools";
-import { GUID } from "./guid";
+import { RandomGUID } from "./guid";
 import { IScreenshotSize } from "./interfaces/screenshotSize";
 import { SliceTools } from "./sliceTools";
 
@@ -36,11 +35,11 @@ export class Tools {
      * Gets or sets the base URL to use to load assets
      */
     public static get BaseUrl() {
-        return FileTools.BaseUrl;
+        return FileToolsOptions.BaseUrl;
     }
 
     public static set BaseUrl(value: string) {
-        FileTools.BaseUrl = value;
+        FileToolsOptions.BaseUrl = value;
     }
 
     /**
@@ -60,11 +59,11 @@ export class Tools {
      * Gets or sets the retry strategy to apply when an error happens while loading an asset
      */
     public static get DefaultRetryStrategy() {
-        return FileTools.DefaultRetryStrategy;
+        return FileToolsOptions.DefaultRetryStrategy;
     }
 
     public static set DefaultRetryStrategy(strategy: (url: string, request: WebRequest, retryIndex: number) => number) {
-        FileTools.DefaultRetryStrategy = strategy;
+        FileToolsOptions.DefaultRetryStrategy = strategy;
     }
 
     /**
@@ -73,11 +72,11 @@ export class Tools {
      * Or a callback to be able to set it per url or on a group of them (in case of Video source for instance)
      */
     public static get CorsBehavior(): string | ((url: string | string[]) => string) {
-        return FileTools.CorsBehavior;
+        return FileToolsOptions.CorsBehavior;
     }
 
     public static set CorsBehavior(value: string | ((url: string | string[]) => string)) {
-        FileTools.CorsBehavior = value;
+        FileToolsOptions.CorsBehavior = value;
     }
 
     /**
@@ -252,9 +251,9 @@ export class Tools {
 
     /**
      * Extracts text content from a DOM element hierarchy
-     * Back Compat only, please use DomManagement.GetDOMTextContent instead.
+     * Back Compat only, please use GetDOMTextContent instead.
      */
-    public static GetDOMTextContent = DomManagement.GetDOMTextContent;
+    public static GetDOMTextContent = GetDOMTextContent;
 
     /**
      * Convert an angle in radians to degrees
@@ -297,7 +296,7 @@ export class Tools {
         var eventPrefix = "pointer";
 
         // Check if pointer events are supported
-        if (DomManagement.IsWindowObjectExist() && !window.PointerEvent && DomManagement.IsNavigatorAvailable() && !navigator.pointerEnabled) {
+        if (IsWindowObjectExist() && !window.PointerEvent && IsNavigatorAvailable() && !navigator.pointerEnabled) {
             eventPrefix = "mouse";
         }
 
@@ -320,7 +319,7 @@ export class Tools {
      * @param element define the dom element where to configure the cors policy
      */
     public static SetCorsBehavior(url: string | string[], element: { crossOrigin: string | null }): void {
-        FileTools.SetCorsBehavior(url, element);
+        SetCorsBehavior(url, element);
     }
 
     // External files
@@ -339,11 +338,11 @@ export class Tools {
      * Gets or sets a function used to pre-process url before using them to load assets
      */
     public static get PreprocessUrl() {
-        return FileTools.PreprocessUrl;
+        return FileToolsOptions.PreprocessUrl;
     }
 
     public static set PreprocessUrl(processor: (url: string) => string) {
-        FileTools.PreprocessUrl = processor;
+        FileToolsOptions.PreprocessUrl = processor;
     }
 
     /**
@@ -353,10 +352,13 @@ export class Tools {
      * @param onError callback called when the image fails to load
      * @param offlineProvider offline provider for caching
      * @param mimeType optional mime type
+     * @param imageBitmapOptions optional the options to use when creating an ImageBitmap
      * @returns the HTMLImageElement of the loaded image
      */
-    public static LoadImage(input: string | ArrayBuffer | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string): Nullable<HTMLImageElement> {
-        return FileTools.LoadImage(input, onLoad, onError, offlineProvider, mimeType);
+    public static LoadImage(input: string | ArrayBuffer | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void,
+        onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>,
+        mimeType?: string, imageBitmapOptions?: ImageBitmapOptions): Nullable<HTMLImageElement> {
+        return FileToolLoadImage(input, onLoad, onError, offlineProvider, mimeType, imageBitmapOptions);
     }
 
     /**
@@ -369,8 +371,10 @@ export class Tools {
      * @param onError callback called when the file fails to load
      * @returns a file request object
      */
-    public static LoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest {
-        return FileTools.LoadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
+    public static LoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,
+        onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean,
+        onError?: (request?: WebRequest, exception?: any) => void): IFileRequest {
+        return FileToolsLoadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
     }
 
     /**
@@ -381,7 +385,7 @@ export class Tools {
      */
     public static LoadFileAsync(url: string, useArrayBuffer: boolean = true): Promise<ArrayBuffer | string> {
         return new Promise((resolve, reject) => {
-            FileTools.LoadFile(
+            FileToolsLoadFile(
                 url,
                 (data) => {
                     resolve(data);
@@ -405,7 +409,7 @@ export class Tools {
      * @param scriptId defines the id of the script element
      */
     public static LoadScript(scriptUrl: string, onSuccess: () => void, onError?: (message?: string, exception?: any) => void, scriptId?: string) {
-        if (!DomManagement.IsWindowObjectExist()) {
+        if (!IsWindowObjectExist()) {
             return;
         }
         var head = document.getElementsByTagName("head")[0];
@@ -493,7 +497,7 @@ export class Tools {
      * @returns a file request object
      */
     public static ReadFile(file: File, onSuccess: (data: any) => void, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean, onError?: (error: ReadFileError) => void): IFileRequest {
-        return FileTools.ReadFile(file, onSuccess, onProgress, useArrayBuffer, onError);
+        return FileToolsReadFile(file, onSuccess, onProgress, useArrayBuffer, onError);
     }
 
     /**
@@ -617,8 +621,9 @@ export class Tools {
      * @param fileName defines the filename to download. If present, the result will automatically be downloaded
      * @param invertY true to invert the picture in the Y dimension
      * @param toArrayBuffer true to convert the data to an ArrayBuffer (encoded as `mimeType`) instead of a base64 string
+     * @param quality defines the quality of the result
      */
-    public static DumpData(width: number, height: number, data: ArrayBufferView, successCallback?: (data: string | ArrayBuffer) => void, mimeType: string = "image/png", fileName?: string, invertY = false, toArrayBuffer = false) {
+    public static DumpData(width: number, height: number, data: ArrayBufferView, successCallback?: (data: string | ArrayBuffer) => void, mimeType: string = "image/png", fileName?: string, invertY = false, toArrayBuffer = false, quality?: number) {
         // Create a 2D canvas to store the result
         if (!Tools._ScreenshotCanvas) {
             Tools._ScreenshotCanvas = document.createElement("canvas");
@@ -674,9 +679,9 @@ export class Tools {
                         }
                     };
                     fileReader.readAsArrayBuffer(blob!);
-                });
+                }, mimeType, quality);
             } else {
-                Tools.EncodeScreenshotCanvasData(successCallback, mimeType, fileName, canvas);
+                Tools.EncodeScreenshotCanvasData(successCallback, mimeType, fileName, canvas, quality);
             }
         }
     }
@@ -686,16 +691,16 @@ export class Tools {
      * @param width defines the rendering width
      * @param height defines the rendering height
      * @param data the data array
-     * @param successCallback defines the callback triggered once the data are available
      * @param mimeType defines the mime type of the result
      * @param fileName defines the filename to download. If present, the result will automatically be downloaded
      * @param invertY true to invert the picture in the Y dimension
      * @param toArrayBuffer true to convert the data to an ArrayBuffer (encoded as `mimeType`) instead of a base64 string
+     * @param quality defines the quality of the result
      * @return a promise that resolve to the final data
      */
-    public static DumpDataAsync(width: number, height: number, data: ArrayBufferView, mimeType: string = "image/png", fileName?: string, invertY = false, toArrayBuffer = false): Promise<string | ArrayBuffer> {
+    public static DumpDataAsync(width: number, height: number, data: ArrayBufferView, mimeType: string = "image/png", fileName?: string, invertY = false, toArrayBuffer = false, quality?: number): Promise<string | ArrayBuffer> {
         return new Promise((resolve) => {
-            Tools.DumpData(width, height, data, (result) => resolve(result), mimeType, fileName, invertY, toArrayBuffer);
+            Tools.DumpData(width, height, data, (result) => resolve(result), mimeType, fileName, invertY, toArrayBuffer, quality);
         });
     }
 
@@ -705,8 +710,9 @@ export class Tools {
      * @param canvas Defines the canvas to extract the data from
      * @param successCallback Defines the callback triggered once the data are available
      * @param mimeType Defines the mime type of the result
+     * @param quality defines the quality of the result
      */
-    static ToBlob(canvas: HTMLCanvasElement, successCallback: (blob: Nullable<Blob>) => void, mimeType: string = "image/png"): void {
+    static ToBlob(canvas: HTMLCanvasElement, successCallback: (blob: Nullable<Blob>) => void, mimeType: string = "image/png", quality?: number): void {
         // We need HTMLCanvasElement.toBlob for HD screenshots
         if (!canvas.toBlob) {
             //  low performance polyfill based on toDataURL (https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob)
@@ -725,7 +731,7 @@ export class Tools {
         }
         canvas.toBlob(function (blob) {
             successCallback(blob);
-        }, mimeType);
+        }, mimeType, quality);
     }
 
     /**
@@ -734,10 +740,11 @@ export class Tools {
      * @param mimeType defines the mime type of the result
      * @param fileName defines he filename to download. If present, the result will automatically be downloaded
      * @param canvas canvas to get the data from. If not provided, use the default screenshot canvas
+     * @param quality defines the quality of the result
      */
-    static EncodeScreenshotCanvasData(successCallback?: (data: string) => void, mimeType: string = "image/png", fileName?: string, canvas?: HTMLCanvasElement): void {
+    static EncodeScreenshotCanvasData(successCallback?: (data: string) => void, mimeType: string = "image/png", fileName?: string, canvas?: HTMLCanvasElement, quality?: number): void {
         if (successCallback) {
-            var base64Image = (canvas ?? Tools._ScreenshotCanvas).toDataURL(mimeType);
+            var base64Image = (canvas ?? Tools._ScreenshotCanvas).toDataURL(mimeType, quality);
             successCallback(base64Image);
         }
         else {
@@ -764,7 +771,7 @@ export class Tools {
                     img.src = url;
                     newWindow.document.body.appendChild(img);
                 }
-            }, mimeType);
+            }, mimeType, quality);
         }
     }
 
@@ -829,7 +836,7 @@ export class Tools {
      * Check your browser for supported MIME types
      */
     public static CreateScreenshot(engine: Engine, camera: Camera, size: IScreenshotSize | number, successCallback?: (data: string) => void, mimeType: string = "image/png"): void {
-        throw _DevTools.WarnImport("ScreenshotTools");
+        throw _WarnImport("ScreenshotTools");
     }
 
     /**
@@ -848,7 +855,7 @@ export class Tools {
      * to the src parameter of an <img> to display it
      */
     public static CreateScreenshotAsync(engine: Engine, camera: Camera, size: IScreenshotSize | number, mimeType: string = "image/png"): Promise<string> {
-        throw _DevTools.WarnImport("ScreenshotTools");
+        throw _WarnImport("ScreenshotTools");
     }
 
     /**
@@ -871,7 +878,7 @@ export class Tools {
      * @param fileName A name for for the downloaded file.
      */
     public static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: IScreenshotSize | number, successCallback?: (data: string) => void, mimeType: string = "image/png", samples: number = 1, antialiasing: boolean = false, fileName?: string): void {
-        throw _DevTools.WarnImport("ScreenshotTools");
+        throw _WarnImport("ScreenshotTools");
     }
 
     /**
@@ -893,7 +900,7 @@ export class Tools {
      * to the src parameter of an <img> to display it
      */
     public static CreateScreenshotUsingRenderTargetAsync(engine: Engine, camera: Camera, size: IScreenshotSize | number, mimeType: string = "image/png", samples: number = 1, antialiasing: boolean = false, fileName?: string): Promise<string> {
-        throw _DevTools.WarnImport("ScreenshotTools");
+        throw _WarnImport("ScreenshotTools");
     }
 
     /**
@@ -903,7 +910,7 @@ export class Tools {
      * @returns a pseudo random id
      */
     public static RandomId(): string {
-        return GUID.RandomId();
+        return RandomGUID();
     }
 
     /**
@@ -913,7 +920,7 @@ export class Tools {
      * @return True if the uri is a base64 string or false otherwise
      */
     public static IsBase64(uri: string): boolean {
-        return FileTools.IsBase64DataUrl(uri);
+        return IsBase64DataUrl(uri);
     }
 
     /**
@@ -923,19 +930,16 @@ export class Tools {
      * @return The decoded base64 data.
      */
     public static DecodeBase64(uri: string): ArrayBuffer {
-        return FileTools.DecodeBase64UrlToBinary(uri);
+        return DecodeBase64UrlToBinary(uri);
     }
 
     /**
-     * Gets the absolute url.
-     * @param url the input url
-     * @return the absolute url
+     * Function used to get the absolute url. Override for custom implementation.
      */
-    public static GetAbsoluteUrl(url: string): string {
-        const a = document.createElement("a");
-        a.href = url;
-        return a.href;
-    }
+    public static GetAbsoluteUrl: (url: string) => string =
+        (typeof document === "object") ? (url) => { const a = document.createElement("a"); a.href = url; return a.href; } :
+        (typeof URL === "function" && typeof location === "object") ? (url) => new URL(url, location.origin).href :
+        (url) => { throw new Error("Unable to get absolute URL. Override BABYLON.Tools.GetAbsoluteUrl to a custom implementation for the current context."); };
 
     // Logs
     /**
@@ -1019,9 +1023,9 @@ export class Tools {
 
     /**
      * Checks if the window object exists
-     * Back Compat only, please use DomManagement.IsWindowObjectExist instead.
+     * Back Compat only, please use IsWindowObjectExist instead.
      */
-    public static IsWindowObjectExist = DomManagement.IsWindowObjectExist;
+    public static IsWindowObjectExist = IsWindowObjectExist;
 
     // Performances
 
@@ -1066,7 +1070,7 @@ export class Tools {
 
     private static _StartUserMark(counterName: string, condition = true): void {
         if (!Tools._performance) {
-            if (!DomManagement.IsWindowObjectExist()) {
+            if (!IsWindowObjectExist()) {
                 return;
             }
             Tools._performance = window.performance;
@@ -1215,6 +1219,10 @@ export class Tools {
      * @returns whether or not the current user agent is safari
      */
     public static IsSafari(): boolean {
+        if (!IsNavigatorAvailable()) {
+            return false;
+        }
+
         return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     }
 }

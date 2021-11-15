@@ -23,7 +23,7 @@ import { TransformBlock } from './Blocks/transformBlock';
 import { VertexOutputBlock } from './Blocks/Vertex/vertexOutputBlock';
 import { FragmentOutputBlock } from './Blocks/Fragment/fragmentOutputBlock';
 import { InputBlock } from './Blocks/Input/inputBlock';
-import { _TypeStore } from '../../Misc/typeStore';
+import { GetClass, RegisterClass } from '../../Misc/typeStore';
 import { serialize, SerializationHelper } from '../../Misc/decorators';
 import { TextureBlock } from './Blocks/Dual/textureBlock';
 import { ReflectionTextureBaseBlock } from './Blocks/Dual/reflectionTextureBaseBlock';
@@ -51,6 +51,7 @@ import { ProceduralTexture } from '../Textures/Procedurals/proceduralTexture';
 import { AnimatedInputBlockTypes } from './Blocks/Input/animatedInputBlockTypes';
 import { TrigonometryBlock, TrigonometryBlockOperations } from './Blocks/trigonometryBlock';
 import { NodeMaterialSystemValues } from './Enums/nodeMaterialSystemValues';
+import { ImageSourceBlock } from './Blocks/Dual/imageSourceBlock';
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -105,6 +106,7 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     public SAMPLER3DGREENDEPTH = false;
     public SAMPLER3DBGRMAP = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
+    public SKIPFINALCOLORCLAMP = false;
 
     /** MISC. */
     public BUMPDIRECTUV = 0;
@@ -659,6 +661,7 @@ export class NodeMaterial extends PushMaterial {
 
         // Shared data
         this._sharedData = new NodeMaterialBuildStateSharedData();
+        this._sharedData.fragmentOutputNodes = this._fragmentOutputNodes;
         this._vertexCompilationState.sharedData = this._sharedData;
         this._fragmentCompilationState.sharedData = this._sharedData;
         this._sharedData.buildId = this._buildId;
@@ -735,11 +738,11 @@ export class NodeMaterial extends PushMaterial {
                     continue;
                 }
 
-                if (!subMesh._materialDefines) {
+                if (!subMesh.materialDefines) {
                     continue;
                 }
 
-                let defines = subMesh._materialDefines;
+                let defines = subMesh.materialDefines;
                 defines.markAllAsDirty();
                 defines.reset();
             }
@@ -837,7 +840,7 @@ export class NodeMaterial extends PushMaterial {
 
                 tempName = this.name + this._buildId;
 
-                defines.markAsUnprocessed();
+                defines.markAllAsDirty();
 
                 buildId = this._buildId;
             }
@@ -904,7 +907,7 @@ export class NodeMaterial extends PushMaterial {
 
                 tempName = this.name + this._buildId;
 
-                defines.markAsUnprocessed();
+                defines.markAllAsDirty();
 
                 buildId = this._buildId;
             }
@@ -976,7 +979,7 @@ export class NodeMaterial extends PushMaterial {
 
                 tempName = this.name + this._buildId + "_" + blendMode;
 
-                defines!.markAsUnprocessed();
+                defines!.markAllAsDirty();
 
                 buildId = this._buildId;
             }
@@ -988,7 +991,7 @@ export class NodeMaterial extends PushMaterial {
             const particleSystemDefinesJoinedCurrent = particleSystemDefines.join("\n");
 
             if (particleSystemDefinesJoinedCurrent !== particleSystemDefinesJoined) {
-                defines!.markAsUnprocessed();
+                defines!.markAllAsDirty();
                 particleSystemDefinesJoined = particleSystemDefinesJoinedCurrent;
             }
 
@@ -1158,11 +1161,11 @@ export class NodeMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh._materialDefines) {
+        if (!subMesh.materialDefines) {
             subMesh.materialDefines = new NodeMaterialDefines();
         }
 
-        var defines = <NodeMaterialDefines>subMesh._materialDefines;
+        var defines = <NodeMaterialDefines>subMesh.materialDefines;
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }
@@ -1286,12 +1289,16 @@ export class NodeMaterial extends PushMaterial {
         this.bindOnlyWorldMatrix(world);
 
         let mustRebind = this._mustRebind(scene, effect, mesh.visibility);
+        let sharedData = this._sharedData;
 
         if (mustRebind) {
-            let sharedData = this._sharedData;
             if (effect) {
                 // Bindable blocks
                 for (var block of sharedData.bindableBlocks) {
+                    block.bind(effect, this, mesh, subMesh);
+                }
+
+                for (var block of sharedData.forcedBindableBlocks) {
                     block.bind(effect, this, mesh, subMesh);
                 }
 
@@ -1299,6 +1306,10 @@ export class NodeMaterial extends PushMaterial {
                 for (var inputBlock of sharedData.inputBlocks) {
                     inputBlock._transmit(effect, scene);
                 }
+            }
+        } else if (!this.isFrozen) {
+            for (var block of sharedData.forcedBindableBlocks) {
+                block.bind(effect, this, mesh, subMesh);
             }
         }
 
@@ -1323,7 +1334,7 @@ export class NodeMaterial extends PushMaterial {
      * Gets the list of texture blocks
      * @returns an array of texture blocks
      */
-    public getTextureBlocks(): (TextureBlock | ReflectionTextureBaseBlock | RefractionBlock | CurrentScreenBlock | ParticleTextureBlock)[] {
+    public getTextureBlocks(): (TextureBlock | ReflectionTextureBaseBlock | RefractionBlock | CurrentScreenBlock | ParticleTextureBlock | ImageSourceBlock)[] {
         if (!this._sharedData) {
             return [];
         }
@@ -1787,7 +1798,7 @@ export class NodeMaterial extends PushMaterial {
 
         // Create blocks
         for (var parsedBlock of source.blocks) {
-            let blockType = _TypeStore.GetClass(parsedBlock.customType);
+            let blockType = GetClass(parsedBlock.customType);
             if (blockType) {
                 let block: NodeMaterialBlock = new blockType();
                 block._deserialize(parsedBlock, this.getScene(), rootUrl);
@@ -1977,4 +1988,4 @@ export class NodeMaterial extends PushMaterial {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.NodeMaterial"] = NodeMaterial;
+RegisterClass("BABYLON.NodeMaterial", NodeMaterial);

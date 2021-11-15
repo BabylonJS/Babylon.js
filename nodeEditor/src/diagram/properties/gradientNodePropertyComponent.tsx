@@ -23,7 +23,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
         let gradientBlock = this.props.block as GradientBlock;
         this.onValueChangedObserver = gradientBlock.onValueChangedObservable.add(() => {
             this.forceUpdate();
-            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+            this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
         });
     }
 
@@ -36,7 +36,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
     }
 
     forceRebuild() {
-        this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+        this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
         this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
     }
 
@@ -89,7 +89,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
         });
         gradientBlock.colorStepsUpdated();
 
-        this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+        this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
         this.forceUpdate();
     }
 
@@ -128,7 +128,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
                                         break;
                                 }
                                 this.forceUpdate();
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
                                 this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                             }} />
                 </LineContainerComponent>

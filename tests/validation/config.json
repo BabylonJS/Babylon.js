@@ -116,7 +116,7 @@
         },
         {
             "title": "Nested BBG",
-            "playgroundId": "#ZG0C8B#1",
+            "playgroundId": "#ZG0C8B#5",
             "renderCount": 10,
             "referenceImage": "nested_BBG.png"
         },
@@ -240,13 +240,13 @@
         },
         {
             "title": "Chibi Rex",
-            "playgroundId": "#QATUCH#11",
+            "playgroundId": "#QATUCH#18",
             "renderCount": 50,
             "referenceImage": "chibi_rex.png"
         },
         {
             "title": "Yeti",
-            "playgroundId": "#QATUCH#3",
+            "playgroundId": "#QATUCH#19",
             "renderCount": 150,
             "referenceImage": "yeti.png"
         },
@@ -361,6 +361,7 @@
         },
         {
             "title": "Highlights",
+            "renderCount": 2,
             "scriptToRun": "/Demos/Highlights/highlights.js",
             "functionToCall": "CreateHighlightsScene",
             "referenceImage": "highlights.png",
@@ -382,10 +383,8 @@
         },
         {
             "title": "Bones",
-            "scriptToRun": "/Demos/Bones/bones.js",
-            "functionToCall": "CreateBonesTestScene",
-            "referenceImage": "bones.png",
-            "replace": "Dude.babylon, dude.babylon"
+            "playgroundId": "#7EC27T#3",
+            "referenceImage": "bones.png"
         },
         {
             "title": "LOD",
@@ -412,13 +411,13 @@
         {
             "title": "Advanced shadows",
             "renderCount": 20,
-            "playgroundId": "#SLV8LW#0",
+            "playgroundId": "#SLV8LW#3",
             "referenceImage": "advancedShadows.png"
         },
         {
             "title": "Advanced shadows (right handed)",
             "renderCount": 20,
-            "playgroundId": "#B48X7G#32",
+            "playgroundId": "#B48X7G#64",
             "referenceImage": "advancedShadows2.png"
         },
         {
@@ -445,7 +444,7 @@
         {
             "title": "Custom render target",
             "renderCount": 20,
-            "playgroundId": "#TQCEBF#1",
+            "playgroundId": "#TQCEBF#3",
             "referenceImage": "customRTT.png"
         },
         {
@@ -687,7 +686,7 @@
         },
         {
             "title": "GLTF Serializer Morph Target Animation Group",
-            "playgroundId": "#T087A8#27",
+            "playgroundId": "#T087A8#29",
             "referenceImage": "gltfSerializerMorphTargetAnimationGroup.png"
         },
         {
@@ -909,6 +908,7 @@
         },
         {
             "title": "GlowLayer",
+            "renderCount": 2,
             "playgroundId": "#LRFB2D#1",
             "referenceImage": "GlowLayer.png"
         },
@@ -1010,7 +1010,7 @@
         },
         {
             "title": "Motion Blur",
-            "playgroundId": "#E5YGEL#2",
+            "playgroundId": "#E5YGEL#20",
             "referenceImage": "motionBlur.png",
             "renderCount": 10,
             "excludedEngines": ["webgl1"],
@@ -1271,7 +1271,7 @@
         {
             "title": "Instances manual update + motion blur",
             "renderCount": 10,
-            "playgroundId": "#HJGC2G#50",
+            "playgroundId": "#HJGC2G#127",
             "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "instances-mb-manual.png"
         },
@@ -1285,7 +1285,7 @@
         {
             "title": "Thin instances + motion blur + manual",
             "renderCount": 30,
-            "playgroundId": "#HJGC2G#61",
+            "playgroundId": "#HJGC2G#132",
             "excludedEngines": ["webgl1"],
             "referenceImage": "thin-instances-mb-manual.png"
         },
@@ -1312,7 +1312,7 @@
         },
         {
             "title": "Basic GPU particle system",
-            "playgroundId": "#PU4WYI#241",
+            "playgroundId": "#PU4WYI#262",
             "excludedEngines": ["webgl1"],
             "referenceImage": "gpuparticle-basic.png",
             "excludeFromAutomaticTesting": true
@@ -1325,14 +1325,14 @@
         {
             "title": "Reverse depth buffer and shadows",
             "renderCount": 10,
-            "playgroundId": "#WL4Q8J#16",
+            "playgroundId": "#WL4Q8J#20",
             "excludedEngines": ["webgl1"],
             "referenceImage": "reverseDepthBufferShadows.png"
         },
         {
             "title": "Reverse depth buffer and CSM shadows",
             "renderCount": 10,
-            "playgroundId": "#IIZ9UU#180",
+            "playgroundId": "#IIZ9UU#248",
             "excludedEngines": ["webgl1"],
             "referenceImage": "reverseDepthBufferCSMShadows.png"
         },
@@ -1346,8 +1346,40 @@
         {
             "title": "Multi cameras and output render target",
             "renderCount": 2,
-            "playgroundId": "#BCYE7J#17",
+            "playgroundId": "#BCYE7J#31",
             "referenceImage": "multiCamerasOutputRenderTarget.png"
+        },
+        {
+            "title": "Sample depth texture",
+            "renderCount": 5,
+            "playgroundId": "#8RU8Q3#81",
+            "excludedEngines": ["webgl1"],
+            "referenceImage": "sampleDepthTexture.png"
+        },
+        {
+            "title": "Order independent transparency",
+            "renderCount": 5,
+            "playgroundId": "#1PLV5Z#104",
+            "excludedEngines": ["webgl1"],
+            "referenceImage": "oit.png"
+        },
+        {
+            "title": "Show all procedural textures",
+            "renderCount": 5,
+            "playgroundId": "#4N0QRP#1",
+            "referenceImage": "allProcTextures.png",
+            "excludeFromAutomaticTesting": true
+        },
+        {
+            "title": "Custom material with depth renderer",
+            "renderCount": 5,
+            "playgroundId": "#6GFJNR#152",
+            "referenceImage": "customMatDepthRenderer.png"
+        },
+        {
+            "title": "Baked Vertex Animation",
+            "playgroundId": "#14WJWW#11",
+            "referenceImage": "bakedVertexAnimation.png"
         }
     ]
 }

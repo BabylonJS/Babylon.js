@@ -7,7 +7,7 @@ import { Engine } from "../Engines/engine";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { TransformNode } from "../Meshes/transformNode";
 import { Logger } from "../Misc/logger";
-import { _DevTools } from "../Misc/devTools";
+import { _WarnImport } from "../Misc/devTools";
 import { ISoundOptions } from './Interfaces/ISoundOptions';
 
 /**
@@ -150,7 +150,7 @@ export class Sound {
 
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
-        throw _DevTools.WarnImport("AudioSceneComponent");
+        throw _WarnImport("AudioSceneComponent");
     };
 
     /**
@@ -625,6 +625,9 @@ export class Sound {
      * @param newPosition Defines the new position
      */
     public setPosition(newPosition: Vector3): void {
+        if (newPosition.equals(this._position)) {
+            return;
+        }
         this._position = newPosition;
 
         if (Engine.audioEngine?.canUseWebAudio && this.spatialSound && this._soundPanner && !isNaN(this._position.x) && !isNaN(this._position.y) && !isNaN(this._position.z)) {
