@@ -464,7 +464,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 }
 
                 // compute delta position: compensate the difference between shape center and mesh origin
-                if (impostor.type !== PhysicsImpostor.MeshImpostor) {
+                if (impostor.type !== PhysicsImpostor.MeshImpostor && impostor.type !== PhysicsImpostor.NoImpostor) {
                     const boundingInfo = impostor.object.getBoundingInfo();
                     this._tmpVec3.copyFrom(impostor.object.getAbsolutePosition());
                     this._tmpVec3.subtractInPlace(boundingInfo.boundingBox.centerWorld);
