@@ -30,6 +30,7 @@ class SkyMaterialDefines extends MaterialDefines {
     public VERTEXCOLOR = false;
     public VERTEXALPHA = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
+    public SKIPFINALCOLORCLAMP = false;
 
     constructor() {
         super();

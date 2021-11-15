@@ -361,6 +361,7 @@ export class ImageProcessingPostProcess extends PostProcess {
         SAMPLER3DBGRMAP: false,
         IMAGEPROCESSINGPOSTPROCESS: false,
         EXPOSURE: false,
+        SKIPFINALCOLORCLAMP: false,
     };
 
     constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera> = null, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, imageProcessingConfiguration?: ImageProcessingConfiguration) {

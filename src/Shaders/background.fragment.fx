@@ -286,7 +286,9 @@ void main(void) {
 #ifdef IMAGEPROCESSINGPOSTPROCESS
     // Sanitize output incase invalid normals or tangents have caused div by 0 or undefined behavior
     // this also limits the brightness which helpfully reduces over-sparkling in bloom (native handles this in the bloom blur shader)
+#if !defined(SKIPFINALCOLORCLAMP)
     color.rgb = clamp(color.rgb, 0., 30.0);
+#endif
 #else
     // Alway run even to ensure going back to gamma space.
     color = applyImageProcessing(color);

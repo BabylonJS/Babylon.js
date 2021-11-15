@@ -1,12 +1,12 @@
-import { NodeMaterialBlock } from '../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
-import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
-import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
-import { RegisterClass } from '../../../Misc/typeStore';
-import { NodeMaterial } from '../nodeMaterial';
-import { NodeMaterialSystemValues } from '../Enums/nodeMaterialSystemValues';
-import { InputBlock } from './Input/inputBlock';
+import { NodeMaterialBlock } from '../../nodeMaterialBlock';
+import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
+import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
+import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
+import { RegisterClass } from '../../../../Misc/typeStore';
+import { NodeMaterial } from '../../nodeMaterial';
+import { NodeMaterialSystemValues } from '../../Enums/nodeMaterialSystemValues';
+import { InputBlock } from '../Input/inputBlock';
 
 /**
  * Block used to transform a vector3 or a vector4 into screen space
@@ -17,7 +17,7 @@ export class ScreenSpaceBlock extends NodeMaterialBlock {
      * @param name defines the block name
      */
     public constructor(name: string) {
-        super(name, NodeMaterialBlockTargets.Neutral);
+        super(name, NodeMaterialBlockTargets.Fragment);
 
         this.target = NodeMaterialBlockTargets.Vertex;
 

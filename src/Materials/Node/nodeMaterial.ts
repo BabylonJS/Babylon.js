@@ -106,6 +106,7 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     public SAMPLER3DGREENDEPTH = false;
     public SAMPLER3DBGRMAP = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
+    public SKIPFINALCOLORCLAMP = false;
 
     /** MISC. */
     public BUMPDIRECTUV = 0;
@@ -660,6 +661,7 @@ export class NodeMaterial extends PushMaterial {
 
         // Shared data
         this._sharedData = new NodeMaterialBuildStateSharedData();
+        this._sharedData.fragmentOutputNodes = this._fragmentOutputNodes;
         this._vertexCompilationState.sharedData = this._sharedData;
         this._fragmentCompilationState.sharedData = this._sharedData;
         this._sharedData.buildId = this._buildId;
