@@ -182,7 +182,7 @@ hr.ge {
         background-color: #c2c2c2;
         margin-top: 5px;
         filter: invert(1);
-        grid-template-columns: auto auto auto auto auto auto;
+
     }
 
     .ge-grid-edit {
@@ -190,7 +190,12 @@ hr.ge {
         background-color: #878787;
         margin-top: 5px;
         filter: invert(1);
-        grid-template-columns: auto auto auto auto auto auto;
+
+    }
+  
+    .ge-grid {
+        display: grid;
+        margin-top: 5px;
     }
 
 
