@@ -2,7 +2,7 @@
     "name": "babylonjs",
     "description": "Babylon.js is a complete JavaScript framework for building 3D games with HTML 5 and WebGL",
     "main": "./dist/babylon.js",
-    "homepage": "https://www.babylonjs.com",
+    "homepage": "https://babylonjs.com",
     "repository": {
         "type": "git",
         "url": "git://github.com/BabylonJS/Babylon.js.git"
