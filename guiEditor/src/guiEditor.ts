@@ -25,7 +25,7 @@ export class GUIEditor {
      * Show the gui editor
      * @param options defines the options to use to configure the gui editor
      */
-    public static Show(options: IGUIEditorOptions) {
+    public static async Show(options: IGUIEditorOptions) {
         if (this._CurrentState) {
             var popupWindow = (Popup as any)["gui-editor"];
             if (popupWindow) {
@@ -61,16 +61,16 @@ export class GUIEditor {
         ReactDOM.render(graphEditor, hostElement);
         // create the middle workbench canvas
         if (!globalState.guiTexture) {
-            globalState.workbench.createGUICanvas().then(() => {
-                if (options.currentSnippetToken) {
-                    try {
-                        globalState.workbench.loadFromSnippet(options.currentSnippetToken);
+            await globalState.workbench.createGUICanvas();
+            if (options.currentSnippetToken) {
+                try {
+                    globalState.workbench.loadFromSnippet(options.currentSnippetToken);
 
-                    } catch (error) {
-                        //swallow and continue
-                    }
+                } catch (error) {
+                    //swallow and continue
                 }
-            }, () => console.log("Error loading GUI Editor"));
+
+            }
         }
 
         if (options.customLoadObservable) {
