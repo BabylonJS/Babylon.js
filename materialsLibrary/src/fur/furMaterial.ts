@@ -46,7 +46,7 @@ class FurMaterialDefines extends MaterialDefines {
     public INSTANCES = false;
     public HIGHLEVEL = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
-    public CLAMPFINALCOLOR = true;
+    public SKIPFINALCOLORCLAMP = false;
 
     constructor() {
         super();

@@ -40,7 +40,7 @@ class FireMaterialDefines extends MaterialDefines {
     public NUM_BONE_INFLUENCERS = 0;
     public INSTANCES = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
-    public CLAMPFINALCOLOR = true;
+    public SKIPFINALCOLORCLAMP = false;
 
     constructor() {
         super();

@@ -26,7 +26,7 @@ class GridMaterialDefines extends MaterialDefines {
     public INSTANCES = false;
     public THIN_INSTANCES = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
-    public CLAMPFINALCOLOR = true;
+    public SKIPFINALCOLORCLAMP = false;
 
     constructor() {
         super();

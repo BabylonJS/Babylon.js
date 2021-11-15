@@ -3,7 +3,7 @@
     // this also limits the brightness which helpfully reduces over-sparkling in bloom (native handles this in the bloom blur shader)
     //
     // Subsurface scattering also requires to stay in linear space
-#if defined(CLAMPFINALCOLOR)
+#if !defined(SKIPFINALCOLORCLAMP)
     finalColor.rgb = clamp(finalColor.rgb, 0., 30.0);
 #endif
 #else
