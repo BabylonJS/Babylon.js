@@ -1,5 +1,3 @@
-import { Deferred } from './deferred';
-
 // "Coroutines are computer program components that generalize subroutines for non-preemptive multitasking, by allowing execution to be suspended and resumed."
 // https://en.wikipedia.org/wiki/Coroutine
 
@@ -125,11 +123,9 @@ export function runCoroutineSync<T>(coroutine: Coroutine<T>, abortSignal?: Abort
 
 export function runCoroutineAsync<T>(coroutine: AsyncCoroutine<T>, scheduler: CoroutineScheduler<T>, abortSignal?: AbortSignal): Promise<T> {
     // Run the coroutine with a yielding scheduler, resolving or rejecting the result promise when the coroutine finishes.
-    const result = new Deferred<T>();
-    runCoroutine(coroutine, scheduler, (r: T) => result.resolve(r), (e: any) => result.reject(e), abortSignal);
-
-    // Return the promise that will be resolved when the coroutine finishes.
-    return result.promise;
+    return new Promise((resolve, reject) => {
+        runCoroutine(coroutine, scheduler, resolve, reject);
+    });
 }
 
 // This is a helper type to extract the return type of a Coroutine<T>. It is conceptually very similar to the Awaited<T> utility type.
