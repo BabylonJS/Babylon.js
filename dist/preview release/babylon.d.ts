@@ -45160,11 +45160,9 @@ declare module BABYLON {
          */
         static DecodeBase64(uri: string): ArrayBuffer;
         /**
-         * Gets the absolute url.
-         * @param url the input url
-         * @return the absolute url
+         * Function used to get the absolute url. Override for custom implementation.
          */
-        static GetAbsoluteUrl(url: string): string;
+        static GetAbsoluteUrl: (url: string) => string;
         /**
          * No log
          */
@@ -45570,7 +45568,7 @@ declare module BABYLON {
          */
         readonly onInputChangedObservable: Observable<IDeviceEvent>;
         private _nativeInput;
-        constructor(nativeInput: INativeInput);
+        constructor(nativeInput?: INativeInput);
         /**
          * Configures events to work with an engine's active element
          */
@@ -45593,6 +45591,11 @@ declare module BABYLON {
          * Dispose of all the observables
          */
         dispose(): void;
+        /**
+         * For versions of BabylonNative that don't have the NativeInput plugin initialized, create a dummy version
+         * @returns Object with dummy functions
+         */
+        private _createDummyNativeInput;
     }
 }
 declare module BABYLON {
@@ -73944,6 +73947,10 @@ declare module BABYLON {
         set boundingBoxSize(value: Vector3);
         get boundingBoxSize(): Vector3;
         /**
+         * Observable triggered once the texture has been loaded.
+         */
+        onLoadObservable: Observable<HDRCubeTexture>;
+        /**
          * Instantiates an HDRTexture from the following parameters.
          *
          * @param url The location of the HDR raw data (Panorama stored in RGBE format)
@@ -73976,6 +73983,10 @@ declare module BABYLON {
          * @param value Define the reflection matrix to set
          */
         setReflectionTextureMatrix(value: Matrix): void;
+        /**
+         * Dispose the texture and release its associated resources.
+         */
+        dispose(): void;
         /**
          * Parses a JSON representation of an HDR Texture in order to create the texture
          * @param parsedTexture Define the JSON representation
